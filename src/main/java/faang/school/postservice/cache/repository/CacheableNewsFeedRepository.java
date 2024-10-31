@@ -1,0 +1,57 @@
+package faang.school.postservice.cache.repository;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.DefaultTypedTuple;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations;
+import org.springframework.stereotype.Repository;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+@Repository
+@RequiredArgsConstructor
+public class CacheableNewsFeedRepository {
+    private final RedisTemplate<String, Object> redisTemplate;
+
+    public void addPostId(String key, Long postId) {
+        redisTemplate.opsForZSet().add(key, postId, -postId);
+    }
+
+    public void addAll(String key, List<Long> postIds) {
+        Set<ZSetOperations.TypedTuple<Object>> tuples = postIds.stream()
+                .map(postId -> new DefaultTypedTuple<>((Object) postId, (double) -postId))
+                .collect(Collectors.toSet());
+        redisTemplate.opsForZSet().add(key, tuples);
+    }
+
+    public List<Long> getSortedPostIds(String key) {
+        Set<Object> postIds = redisTemplate.opsForZSet().range(key, 0, -1);
+        if (postIds == null) {
+            return new ArrayList<>();
+        }
+        return postIds.stream()
+                .map(postId -> ((Number) postId).longValue())
+                .toList();
+    }
+
+    public void removePostId(String key, Long postId) {
+        redisTemplate.opsForZSet().remove(key, postId);
+    }
+
+    public void removeLastPostId(String key) {
+        Set<Object> postIds = redisTemplate.opsForZSet().range(key, -1, -1);
+        if (postIds == null) {
+            return;
+        }
+        postIds.stream()
+                .findFirst()
+                .ifPresent(postId -> removePostId(key, (Long) postId));
+    }
+
+    public Long getSize(String key) {
+        return redisTemplate.opsForZSet().size(key);
+    }
+}

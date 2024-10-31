@@ -1,0 +1,18 @@
+spring:
+  data:
+    redis:
+      cache:
+        post:
+          prefix: "testPost:"
+          field:
+            likes: likesCount
+          comments:
+            max-size: 3
+        news-feed:
+          prefix: "testNewsFeed:"
+
+news-feed:
+  max-size: 10
+  batch-size: 5
+  heater:
+    batch-size: 3

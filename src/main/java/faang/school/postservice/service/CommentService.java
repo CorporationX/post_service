@@ -1,16 +1,17 @@
 package faang.school.postservice.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import faang.school.postservice.cache.model.CacheableComment;
+import faang.school.postservice.cache.service.CacheableUserService;
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.dto.comment.CommentDto;
-import faang.school.postservice.dto.event.CommentEvent;
+import faang.school.postservice.dto.CommentDto;
+import faang.school.postservice.dto.UserDto;
+import faang.school.postservice.kafka.KafkaTopicProperties;
+import faang.school.postservice.kafka.producer.KafkaProducer;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.publisher.PublicationService;
-import faang.school.postservice.service.publisher.messagePublisherImpl.CommentEventPublisher;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Service;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.TreeSet;
 
 @Service
 @RequiredArgsConstructor
@@ -35,12 +37,15 @@ public class CommentService {
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final UserServiceClient userServiceClient;
-    private final PublicationService<CommentEventPublisher, CommentEvent> publishService;
+    private final KafkaProducer kafkaProducer;
+    private final CacheableUserService cacheableUserService;
+    private final KafkaTopicProperties topicProperties;
 
-    public CommentDto addComment(Long postId, CommentDto dto) throws JsonProcessingException {
+    public CommentDto addComment(Long postId, CommentDto dto) {
         Post post = getPost(postId);
+        UserDto userDto;
         try {
-            userServiceClient.getUser(dto.getAuthorId());
+            userDto = userServiceClient.getUser(dto.getAuthorId());
         } catch (FeignException e) {
             throw new RuntimeException(MESSAGE_USER_LEFT_COMMENT_NOT_EXIST);
         }
@@ -49,7 +54,8 @@ public class CommentService {
         comment.setPost(post);
         Comment savedComment = commentRepository.save(comment);
         log.info("comment with id:{} created.", savedComment.getId());
-        publishService.publishEvent(mapper.toCommentEvent(savedComment));
+        saveUserToCache(userDto);
+        kafkaProducer.send(topicProperties.getCommentAddedTopic(), mapper.toCommentEvent(savedComment));
         return mapper.toDto(savedComment);
     }
 
@@ -71,6 +77,18 @@ public class CommentService {
         Comment commentForDelete = getCommentForDelete(commentId, post.getComments());
         commentRepository.delete(commentForDelete);
         return mapper.toDto(commentForDelete);
+    }
+
+    public TreeSet<CacheableComment> findLastBatchByPostId(int batchSize, Long postId) {
+        return mapper.toCacheableTreeSet(commentRepository.findLastBatchByPostId(batchSize, postId));
+    }
+
+    public List<CacheableComment> findLastBatchByPostIds(int batchSize, List<Long> postIds) {
+        return mapper.toCacheable(commentRepository.findLastBatchByPostIds(batchSize, postIds));
+    }
+
+    private void saveUserToCache(UserDto userDto) {
+        cacheableUserService.save(userDto);
     }
 
     private List<CommentDto> getListCommentDto(List<Comment> comments) {

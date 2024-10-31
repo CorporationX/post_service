@@ -22,6 +22,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("org.springframework.boot:spring-boot-starter-integration")
     implementation("org.springframework.cloud:spring-cloud-starter-openfeign:4.0.2")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
@@ -30,7 +31,13 @@ dependencies {
      */
     implementation("org.liquibase:liquibase-core")
     implementation("redis.clients:jedis:4.3.2")
+    implementation ("org.springframework.integration:spring-integration-redis")
     runtimeOnly("org.postgresql:postgresql")
+
+    /**
+     * Message broker
+     */
+    implementation ("org.springframework.kafka:spring-kafka:3.2.4")
 
     /**
      * Utils & Logging

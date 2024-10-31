@@ -1,15 +1,18 @@
 package faang.school.postservice.mapper;
 
-import faang.school.postservice.dto.comment.CommentDto;
-import faang.school.postservice.dto.event.CommentEvent;
+import faang.school.postservice.cache.model.CacheableComment;
+import faang.school.postservice.dto.CommentDto;
+import faang.school.postservice.kafka.event.comment.CommentAddedEvent;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
+import faang.school.postservice.cache.model.CacheableUser;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 import org.mapstruct.ReportingPolicy;
 
 import java.util.List;
+import java.util.TreeSet;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface CommentMapper {
@@ -19,12 +22,33 @@ public interface CommentMapper {
 
     Comment toEntity(CommentDto commentDto);
 
+    @Mapping(source = "id", target = "commentId")
+    @Mapping(source = "post.id", target = "postId")
+    CommentAddedEvent toCommentEvent(Comment comment);
+
+    @Mapping(source = "commentId", target = "id")
+    @Mapping(source = "authorId", target = "author", qualifiedByName = "authorIdToAuthor")
+    CacheableComment toCacheable(CommentAddedEvent event);
+
+    @Mapping(source = "post.id", target = "postId")
+    @Mapping(source = "authorId", target = "author", qualifiedByName = "authorIdToAuthor")
+    CacheableComment toCacheable(Comment comment);
+
+    TreeSet<CacheableComment> toCacheableTreeSet(List<Comment> comments);
+
+    List<CacheableComment> toCacheable(List<Comment> comments);
+
     @Named("likesToLikesId")
     default List<Long> likesToLikesId(List<Like> likes) {
         if (likes == null) return List.of();
         return likes.stream().map(Like::getId).toList();
     }
 
-    @Mapping(source = "post.id", target = "postId")
-    CommentEvent toCommentEvent(Comment comment);
+    @Named("authorIdToAuthor")
+    default CacheableUser authorIdToAuthor(Long authorId) {
+        if (authorId == null) {
+            return null;
+        }
+        return new CacheableUser(authorId, null);
+    }
 }
