@@ -3,9 +3,12 @@ package faang.school.postservice.service.post;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.redis.service.AuthorCacheService;
+import faang.school.postservice.redis.service.FeedService;
+import faang.school.postservice.redis.service.PostCacheService;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.validator.PostServiceValidator;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -18,15 +21,15 @@ public class PostService {
 
     private final PostMapper postMapper;
     private final PostRepository postRepository;
-    private final PostServiceValidator<PostDto> validator;
+    private final PostCacheService postCacheService;
+    private final AuthorCacheService authorCacheService;
+    private final FeedService feedService;
 
     public PostDto createPost(final PostDto postDto) {
-        validator.validate(postDto);
-
         Post post = postMapper.toEntity(postDto);
-
         return postMapper.toDto(postRepository.save(post));
     }
+
 
     public PostDto publishPost(final long postId) {
         Post post = getPostByIdOrFail(postId);
@@ -38,7 +41,18 @@ public class PostService {
         post.setPublishedAt(now);
         post.setUpdatedAt(now);
 
-        return postMapper.toDto(postRepository.save(post));
+
+        PostDto postDto = postMapper.toDto(postRepository.save(post));
+        redisFilling(postDto);
+
+        return postDto;
+    }
+
+    @Async
+    protected void redisFilling(final PostDto postDto) {
+        authorCacheService.updateAuthorCache(postDto.getAuthorId(), postDto.getId());
+        postCacheService.savePostEvent(postDto);
+        feedService.fillingFeed(postDto);
     }
 
     private void validatePostPublishing(Post post) {

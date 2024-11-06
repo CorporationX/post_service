@@ -1,5 +1,6 @@
 package faang.school.postservice.dto.post;
 
+import faang.school.postservice.dto.comment.CommentEventDto;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -9,6 +10,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Builder
@@ -16,21 +18,20 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class PostDto {
     private long id;
-    @NotBlank(message = "Пост должен содержать текст.")
+    @NotBlank
     private String content;
-    @Min(value = 0, message = "АйДи автора должно быть положительным.")
-    @NotNull(message = "АйДи автора не может быть пустым.")
+    @Min(value = 0)
+    @NotNull
     private Long authorId;
-    @Min(value = 0, message = "АйДи проекта должно быть положительным.")
-    @NotNull(message = "АйДи проекта не может быть пустым.")
+    @Min(value = 0)
+    @NotNull
     private Long projectId;
     boolean published;
-
-    LocalDateTime publishedAt;
-
-    LocalDateTime scheduledAt;
-
-    LocalDateTime createdAt;
-
-    LocalDateTime updatedAt;
+    private Integer likes;
+    private Integer views;
+    private List<CommentEventDto> comments;
+    private LocalDateTime publishedAt;
+    private LocalDateTime scheduledAt;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

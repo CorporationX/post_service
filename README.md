@@ -99,9 +99,3 @@ RESTful приложения калькулятор с единственным 
 * AssertJ
 * JUnit5
 * Parameterized tests
-
-# TODO
-
-* Dockerfile, который подключается к сети запущенной postgres в docker-compose
-* Redis connectivity
-* ...

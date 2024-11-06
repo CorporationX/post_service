@@ -43,12 +43,13 @@ class ScheduledExpiredAdRemoverTest {
         ad2.setEndDate(LocalDateTime.of(2024, Month.OCTOBER, 11, 12, 12));
         ad3.setAppearancesLeft(1L);
         ad3.setEndDate(LocalDateTime.now().minusDays(1L));
-        ad4.setAppearancesLeft(0L);
-        ad4.setEndDate(LocalDateTime.now().minusDays(1L));
+        ad4.setAppearancesLeft(1L);
+        ad4.setEndDate(LocalDateTime.now().plusHours(1L));
         ReflectionTestUtils.setField(scheduledExpiredAdRemover, "subListSize", 100);
 
     }
 
+    // TODO: исправить
     @Test
     void shouldReturnAmountOfInvokesWhenDeleteExpiredAdsTest() {
         //arrange
@@ -65,7 +66,7 @@ class ScheduledExpiredAdRemoverTest {
     @Test
     void shouldReturnNullAmountOfInvokesWhenDeleteExpiredAdsTest() {
         //arrange
-        ads = List.of(ad1);
+        ads = List.of(ad4);
 
         //act
         when(adRepository.findAll()).thenReturn(ads);

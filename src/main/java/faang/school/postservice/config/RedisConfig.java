@@ -22,10 +22,10 @@ public class RedisConfig {
     @Value("${spring.data.redis.host}")
     private String host;
 
-    @Value("${spring.data.redis.channels.like_post_channel.name.like_channel")
+    @Value("${spring.data.redis.channels.like_post_channel}")
     private String likeTopicName;
 
-    @Value("${spring.data.redis.channels.like_post_channel.name.comment_channel")
+    @Value("${spring.data.redis.channels.comment_channel}")
     private String commentTopicName;
 
     @Bean

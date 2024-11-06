@@ -22,7 +22,7 @@ public class ScheduledExpiredAdRemover {
     @Value("${sizeof-sublist}")
     private int subListSize;
 
-    @Scheduled(cron = "${cron-expression}")
+    @Scheduled(cron = "${post.ad-remover.scheduler.cron}")
     public void scheduledDeleteExpiredAds() {
         log.info("Стартовала задача по удалению истёкших рекламных объявлений.");
         List<Ad> ads = (List<Ad>) adRepository.findAll();

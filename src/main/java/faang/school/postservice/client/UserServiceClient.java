@@ -25,4 +25,7 @@ public interface UserServiceClient {
     @PostMapping("/users")
     List<UserDto> getUsersByIds(@RequestBody @NotEmpty(message = "Список не должен быть пустым.")
                                 List<Long> ids);
+
+    @PostMapping("/subscribe/following/{followerId}")
+    List<UserDto> getFollowers(@PathVariable Long followerId);
 }

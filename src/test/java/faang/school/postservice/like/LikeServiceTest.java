@@ -5,17 +5,16 @@ import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.event.LikeEvent;
+import faang.school.postservice.kafka.producer.KafkaEventProducer;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.publisher.LikeEventPublisher;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.service.comment.CommentService;
-import faang.school.postservice.service.like.LikeServiceImpl;
+import faang.school.postservice.service.like.LikeService;
 import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.validator.LikeValidator;
 import jakarta.persistence.EntityNotFoundException;
@@ -29,19 +28,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.ArrayList;
 import java.util.List;
 
-import static faang.school.postservice.util.TestDataFactory.ID;
-import static faang.school.postservice.util.TestDataFactory.INVALID_ID;
-import static faang.school.postservice.util.TestDataFactory.getUserDtoList;
+import static faang.school.postservice.util.TestDataFactory.*;
 import static java.util.Collections.emptyList;
 import static java.util.List.of;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.anyList;
-import static org.mockito.Mockito.anyLong;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class LikeServiceImplTest {
@@ -53,8 +47,6 @@ class LikeServiceImplTest {
     @Mock
     private LikeMapper likeMapper;
     @Mock
-    private LikeEventPublisher likePublisher;
-    @Mock
     private PostService postService;
     @Mock
     private CommentService commentService;
@@ -64,9 +56,10 @@ class LikeServiceImplTest {
     private CommentMapper commentMapper;
     @Mock
     UserServiceClient userServiceClient;
-
+    @Mock
+    KafkaEventProducer kafkaEventProducer;
     @InjectMocks
-    private LikeServiceImpl likeService;
+    private LikeService likeService;
 
     private LikeDto likeDto;
     private Like like;
@@ -124,8 +117,7 @@ class LikeServiceImplTest {
         verify(likeValidator).validateUserExistence(likeDto.getUserId());
         verify(likeValidator).validateLikeToPost(post, likeDto.getUserId());
         verify(likeRepository).save(like);
-        verify(likePublisher).publish(any(LikeEvent.class));
-
+        verify(kafkaEventProducer).sendLikeEvent(any());
         assertEquals(likeDto, result);
     }
 
@@ -153,7 +145,6 @@ class LikeServiceImplTest {
         verify(likeValidator).validateUserExistence(likeDto.getUserId());
         verify(likeValidator).validateLikeToComment(comment, likeDto.getUserId());
         verify(likeRepository).save(like);
-        verify(likePublisher).publish(any(LikeEvent.class));
 
         assertEquals(likeDto, result);
     }
@@ -168,7 +159,6 @@ class LikeServiceImplTest {
 
         verify(likeRepository).deleteByCommentIdAndUserId(likeDto.getCommentId(), likeDto.getUserId());
     }
-
 
 
     @Test
@@ -223,6 +213,7 @@ class LikeServiceImplTest {
         assertThat(actualResult).usingRecursiveFieldByFieldElementComparator()
                 .containsAnyElementsOf(userDtoList);
     }
+
     @Test
     void givenInvalidCommentIdWhenFindUsersByPostIdThenThrowException() {
         // given - precondition
