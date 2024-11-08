@@ -23,8 +23,10 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.util.Collections;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -261,21 +263,26 @@ class PostServiceImplTest {
     void testVerifyPostsForSwearWords_Success() {
         List<Post> unverifiedPostsBatch = List.of(
                 Post.builder().id(1L).content("This is clean content")
-                        .verified(null).verifiedDate(null).build(),
+                        .verified(null).verifiedDate(null).authorId(1L).build(),
                 Post.builder().id(2L).content("This is bad content")
-                        .verified(null).verifiedDate(null).build()
+                        .verified(null).verifiedDate(null).authorId(2L).build()
         );
 
-        when(moderationDictionary.containsSwearWords("This is clean content")).thenReturn(true);
-        when(moderationDictionary.containsSwearWords("This is bad content")).thenReturn(false);
+        when(moderationDictionary.containsSwearWords("This is clean content")).thenReturn(false);
+        when(moderationDictionary.containsSwearWords("This is bad content")).thenReturn(true);
 
-        CompletableFuture<Void> future = postService.verifyPostsForSwearWords(unverifiedPostsBatch);
+        Set<Long> usersWithImproperContent = Collections.synchronizedSet(new HashSet<>());
+
+        CompletableFuture<Void> future = postService.verifyPostsForSwearWords(unverifiedPostsBatch, usersWithImproperContent);
         future.join();
 
-        assertFalse(unverifiedPostsBatch.get(0).getVerified());
+        assertTrue(unverifiedPostsBatch.get(0).getVerified());
         assertNotNull(unverifiedPostsBatch.get(0).getVerifiedDate());
-        assertTrue(unverifiedPostsBatch.get(1).getVerified());
+        assertFalse(unverifiedPostsBatch.get(1).getVerified());
         assertNotNull(unverifiedPostsBatch.get(1).getVerifiedDate());
+
+        assertTrue(usersWithImproperContent.contains(2L));
+        assertFalse(usersWithImproperContent.contains(1L));
 
         verify(postRepository, times(1)).saveAll(unverifiedPostsBatch);
     }

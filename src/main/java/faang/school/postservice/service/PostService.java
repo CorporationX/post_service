@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 public interface PostService {
@@ -25,5 +26,5 @@ public interface PostService {
     List<CompletableFuture<Void>> publishScheduledPosts();
     void correctSpellingInUnpublishedPosts();
     List<List<Post>> findAndSplitUnverifiedPosts();
-    CompletableFuture<Void> verifyPostsForSwearWords(List<Post> unverifiedPostsBatch);
+    CompletableFuture<Void> verifyPostsForSwearWords(List<Post> unverifiedPostsBatch, Set<Long> usersWithImproperContent);
 }

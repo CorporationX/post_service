@@ -33,6 +33,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
@@ -264,12 +265,17 @@ public class PostServiceImpl implements PostService {
     @Override
     @Async("postOperationsAsyncExecutor")
     @Transactional
-    public CompletableFuture<Void> verifyPostsForSwearWords(List<Post> unverifiedPostsBatch) {
+    public CompletableFuture<Void> verifyPostsForSwearWords(List<Post> unverifiedPostsBatch, Set<Long> usersWithImproperContent) {
         return CompletableFuture.runAsync(() -> {
+
             unverifiedPostsBatch.forEach(post -> {
                 boolean hasImproperContent = moderationDictionary.containsSwearWords(post.getContent());
                 post.setVerified(!hasImproperContent);
                 post.setVerifiedDate(LocalDateTime.now());
+
+                if (hasImproperContent) {
+                    usersWithImproperContent.add(post.getAuthorId());
+                }
             });
 
             postRepository.saveAll(unverifiedPostsBatch);

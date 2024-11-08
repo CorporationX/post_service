@@ -35,6 +35,9 @@ public class RedisConfig {
     @Value("${redis.channels.user_ban}")
     private String bannedUserTopic;
 
+    @Value("${redis.channels.rate_decrease}")
+    private String rateDecreaseChannel;
+
     public interface MessagePublisher<T> {
         void publish(T redisEvent);
     }
@@ -67,6 +70,11 @@ public class RedisConfig {
     @Bean
     public ChannelTopic bannedUserTopic() {
         return new ChannelTopic(bannedUserTopic);
+    }
+
+    @Bean
+    public ChannelTopic rateDecreaseTopic() {
+        return new ChannelTopic(rateDecreaseChannel);
     }
 
     @Bean
