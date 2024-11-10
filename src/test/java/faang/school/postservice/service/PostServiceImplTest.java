@@ -26,7 +26,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
@@ -280,6 +282,7 @@ class PostServiceImplTest {
 
         postService.getAllPublishedByProjectId(1L);
 
+        assertFalse(postService.getAllPublishedByProjectId(1L).isEmpty());
         verify(postMapper, times(0)).toDto(any());
     }
 }
