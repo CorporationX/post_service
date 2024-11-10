@@ -2,10 +2,10 @@ name: Post Service CI
 on:
   push:
     branches:
-      - Dragon-master-stream7
+      - feature-pipelineTest123
   pull_request:
     branches:
-      - Dragon-master-stream7
+      - feature-pipelineTest123
 
 jobs:
   test-build:
