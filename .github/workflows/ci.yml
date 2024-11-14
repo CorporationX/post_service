@@ -1,7 +1,7 @@
 name: Java CI with Gradle
 on:
   pull_request:
-    branches: [ "pipline-BJS2-40869" ]
+    branches: [ "feature/pipline-BJS2-40869" ]
 jobs:
   test:
     runs-on: ubuntu-latest
