@@ -5,6 +5,7 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.post.PostMapperImpl;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.repository.CachePostRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,6 +37,9 @@ class PostServiceImplTest {
 
     @Mock
     private PostRepository postRepository;
+
+    @Mock
+    private CachePostRepository cachePostRepository;
 
     @Mock
     private ProjectServiceClient projectServiceClient;
@@ -117,6 +121,7 @@ class PostServiceImplTest {
         postService.publishPost(postId);
 
         verify(postRepository, never()).save(post);
+        verify(cachePostRepository, never()).save(post.getAuthorId().toString(), postId);
     }
 
     @Test
@@ -127,6 +132,7 @@ class PostServiceImplTest {
 
         postService.publishPost(postId);
 
+        verify(cachePostRepository).save(post.getAuthorId().toString(), postId);
         verify(postRepository).save(postCaptor.capture());
 
         Post post = postCaptor.getValue();

@@ -6,6 +6,7 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.repository.CachePostRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.AsyncPostPublishService;
 import faang.school.postservice.service.PostService;
@@ -30,6 +31,7 @@ public class PostServiceImpl implements PostService {
     private int sizeBatch;
 
     private final PostRepository postRepository;
+    private final CachePostRepository cachePostRepository;
     private final ProjectServiceClient projectServiceClient;
     private final UserServiceClient userServiceClient;
     private final PostValidator validator;
@@ -66,7 +68,9 @@ public class PostServiceImpl implements PostService {
         if (!post.isPublished()) {
             post.setPublishedAt(LocalDateTime.now());
             post.setPublished(true);
+
             postRepository.save(post);
+            cachePostRepository.save(post.getAuthorId().toString(), post.getId());
         }
     }
 

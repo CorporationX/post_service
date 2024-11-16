@@ -21,6 +21,11 @@ spring:
     redis:
       port: 6379
       host: localhost
+      transaction:
+        retry:
+          max-attempts: 5
+          backoff:
+            delay: 1000
       channels:
         calculations-channel: calculations_channel
         user-service: ban_user_channel
@@ -48,6 +53,9 @@ logging:
     root: info
 
 post:
+  cache:
+    count-hours-time-to-live: 24
+    news-feed-size: 500
   publisher:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
