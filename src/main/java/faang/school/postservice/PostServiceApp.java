@@ -10,6 +10,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
+@ConfigurationPropertiesScan("faang.school.postservice.config")
 @EnableScheduling
 @EnableFeignClients(basePackages = "faang.school.postservice.client")
 public class PostServiceApp {
