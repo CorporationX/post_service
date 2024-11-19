@@ -13,6 +13,7 @@ import faang.school.postservice.publisher.LikeEventPublisherImpl;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.kafka.LikeEventService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +32,7 @@ public class LikeServiceImpl implements LikeService {
     private final UserContext userContext;
     private final LikeMapper likeMapper;
     private final LikeEventPublisherImpl likeEventPublisher;
+    private final LikeEventService likeEventService;
 
     @Override
     public LikeDto likePost(Long postId) {
@@ -54,7 +56,9 @@ public class LikeServiceImpl implements LikeService {
                 .build();
         likeEventPublisher.publish(likeEvent);
         log.info("Publishing LikeEvent for user with id {} liking post with id {}", userId, postId);
-        return likeMapper.toLikeDto(like);
+        LikeDto savedLikeDto = likeMapper.toLikeDto(like);
+        likeEventService.produce(savedLikeDto);
+        return savedLikeDto;
     }
 
     @Override

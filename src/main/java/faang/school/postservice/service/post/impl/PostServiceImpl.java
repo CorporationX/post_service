@@ -17,6 +17,8 @@ import faang.school.postservice.model.Resource;
 import faang.school.postservice.model.post.PostCreator;
 import faang.school.postservice.publisher.MessagePublisher;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.kafka.PostEventService;
+import faang.school.postservice.service.kafka.PostViewEventService;
 import faang.school.postservice.service.post.PostContentVerifier;
 import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.service.post.impl.filter.PostFilter;
@@ -36,6 +38,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Slf4j
@@ -51,6 +54,8 @@ public class PostServiceImpl implements PostService {
     private final MessagePublisher<Long> banUserPublisher;
     private final MessagePublisher<PostViewEvent> postViewEventPublisher;
     private final UserContext userContext;
+    private final PostEventService postEventService;
+    private final PostViewEventService postViewEventService;
 
     @Setter
     @Value("${post.moderator.post-batch-size}")
@@ -103,7 +108,9 @@ public class PostServiceImpl implements PostService {
         post.setPublishedAt(LocalDateTime.now());
         postRepository.save(post);
         log.info("Published post: {}", post.getId());
-        return postMapper.toPostDto(post);
+        PostDto savedPostDto = postMapper.toPostDto(post);
+        postEventService.produce(savedPostDto);
+        return savedPostDto;
     }
 
     @Override
@@ -146,7 +153,9 @@ public class PostServiceImpl implements PostService {
         event.setViewerId(userContext.getUserId());
         event.setTimestamp(LocalDateTime.now());
         postViewEventPublisher.publish(event);
-        return postMapper.toPostDto(post);
+        PostDto savedPostDto = postMapper.toPostDto(post);
+        postViewEventService.produce(userContext.getUserId(), savedPostDto);
+        return savedPostDto;
     }
 
     @Override

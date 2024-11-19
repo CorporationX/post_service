@@ -15,6 +15,7 @@ import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.comment.sort.CommentSortingStrategy;
 import faang.school.postservice.service.comment.sort.SortingStrategyAppliersMap;
+import faang.school.postservice.service.kafka.CommentEventService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -44,6 +45,7 @@ public class CommentServiceImpl implements CommentService {
     private final CommentChecker commentChecker;
     private final MessagePublisher<Long> banUserPublisher;
     private final MessagePublisher<CommentEvent> commentPublisher;
+    private final CommentEventService commentEventService;
 
     @Value("${comment.constants.verification-days-limit}")
     private int verificationDaysLimit;
@@ -59,7 +61,9 @@ public class CommentServiceImpl implements CommentService {
 
         CommentEvent event = commentMapper.toCommentEvent(comment);
         commentPublisher.publish(event);
-        return commentMapper.toCommentDto(comment);
+        CommentDto savedCommentDto = commentMapper.toCommentDto(comment);
+        commentEventService.produce(postId, savedCommentDto);
+        return savedCommentDto;
     }
 
     @Override

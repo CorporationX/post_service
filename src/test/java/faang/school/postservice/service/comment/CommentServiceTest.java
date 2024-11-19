@@ -19,6 +19,7 @@ import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.comment.sort.SortByUpdateAscending;
 import faang.school.postservice.service.comment.sort.SortByUpdateDescending;
 import faang.school.postservice.service.comment.sort.SortingStrategyAppliersMap;
+import faang.school.postservice.service.kafka.CommentEventService;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -83,6 +84,9 @@ class CommentServiceTest {
     @Mock
     private MessagePublisher<CommentEvent> commentPublisher;
 
+    @Mock
+    private CommentEventService commentEventService;
+
     private SortingStrategyAppliersMap sortingStrategyAppliersMap;
 
     @BeforeEach
@@ -98,7 +102,9 @@ class CommentServiceTest {
                 sortingStrategyAppliersMap,
                 commentChecker,
                 userBanEventPublisher,
-                commentPublisher);
+                commentPublisher,
+                commentEventService
+            );
         post = initPost(POST_ID, true, false);
         author = initAuthor(AUTHOR_ID);
     }

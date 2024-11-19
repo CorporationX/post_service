@@ -26,6 +26,7 @@ dependencies {
     implementation("org.springframework.cloud:spring-cloud-starter-openfeign:4.0.2")
     implementation("org.springframework.retry:spring-retry")
     implementation("org.springframework:spring-aspects")
+    implementation("org.springframework.kafka:spring-kafka")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
     /**

@@ -16,6 +16,8 @@ import faang.school.postservice.model.Resource;
 import faang.school.postservice.model.post.PostCreator;
 import faang.school.postservice.publisher.PostViewEventPublisher;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.kafka.PostEventService;
+import faang.school.postservice.service.kafka.PostViewEventService;
 import faang.school.postservice.service.post.impl.PostServiceImpl;
 import faang.school.postservice.service.resource.ResourceService;
 import jakarta.persistence.EntityNotFoundException;
@@ -76,6 +78,12 @@ class PostServiceTest {
 
     @Mock
     private UserContext userContext;
+
+    @Mock
+    private PostViewEventService postViewEventService;
+
+    @Mock
+    private PostEventService postEventService;
 
     @InjectMocks
     private PostServiceImpl postService;
@@ -431,7 +439,7 @@ class PostServiceTest {
         PostDto postDto = postService.getPostById(0L);
 
         verify(postRepository).findByIdAndDeletedFalse(0L);
-        verify(userContext).getUserId();
+        verify(userContext, times(2)).getUserId();
         verify(postViewEventPublisher).publish(any());
         assertNotNull(postDto);
         assertEquals(0L, postDto.id());

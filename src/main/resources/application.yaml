@@ -33,6 +33,38 @@ spring:
         post-view-channel:
           name: post_view_channel
 
+    kafka:
+      bootstrap-servers: localhost:9092
+      topic:
+        post-topic:
+          name: posts
+          partitions: 1
+          replicationFactor: 1
+        comment-topic:
+          name: comments
+          partitions: 1
+          replicationFactor: 1
+        like-topic:
+          name: likes
+          partitions: 1
+          replicationFactor: 1
+        post-view-topic:
+          name: post_views
+          partitions: 1
+          replicationFactor: 1
+      producer:
+        retry:
+          maxAttempts: 3
+          backOffDelay: 800
+        executor:
+          core-pool-size: 100
+          max-pool-size: 500
+          queue-capacity: 10000
+          thread-name-prefix: ProducerThread-
+        producers:
+          post:
+            limit-amount-user-ids: 10000
+
   config:
     import: text-gears-api.yaml
 
@@ -133,3 +165,4 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
