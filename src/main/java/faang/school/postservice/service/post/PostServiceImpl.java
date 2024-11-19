@@ -6,7 +6,8 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.PostException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.post.PostCacheRepository;
+import faang.school.postservice.repository.post.PostRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
+    private final PostCacheRepository postCacheRepository;
     private final PostMapper postMapper;
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
@@ -48,9 +50,11 @@ public class PostServiceImpl implements PostService {
 
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
-
         postRepository.save(post);
-        return postMapper.toDto(post);
+
+        PostDto postDto = postMapper.toDto(post);
+        postCacheRepository.cachePost(postDto);
+        return postDto;
     }
 
     @Override
