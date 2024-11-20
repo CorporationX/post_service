@@ -1,4 +1,9 @@
 spring:
+  auto:
+    create:
+      topics:
+        enable: true
+
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://localhost:5432/postgres
@@ -25,6 +30,11 @@ spring:
         calculations_channel: calculations_channel
         comment_channel: comment_channel
         like_channel: like_channel
+
+    kafka:
+      bootstrap-servers: localhost:29092
+      topics:
+        comment: comment-topic
 
 
 server:
