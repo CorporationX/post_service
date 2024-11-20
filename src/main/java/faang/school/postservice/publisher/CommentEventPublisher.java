@@ -12,7 +12,7 @@ public class CommentEventPublisher {
 
     private final RedisTemplate<String, Object> redisTemplate;
 
-    private ChannelTopic commentEventTopic;
+    private final ChannelTopic commentEventTopic;
 
     public void publish(CommentEvent event) {
         redisTemplate.convertAndSend(commentEventTopic.getTopic(), event);
