@@ -7,8 +7,10 @@ import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.properties.KafkaTopics;
+import faang.school.postservice.publisher.kafka.KafkaEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
-import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.post.PostRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,7 +21,8 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class CommentServiceImpl implements CommentService {
-
+    private final KafkaEventPublisher<CommentDto> kafkaEventPublisher;
+    private final KafkaTopics kafkaTopics;
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final CommentMapper mapper;
@@ -30,7 +33,12 @@ public class CommentServiceImpl implements CommentService {
         Post post = postRepository.findById(postId).orElseThrow(
                 () -> new EntityNotFoundException(String.format("Post with id %s does not exist", postId)));
         validateUser(commentDto);
+
         Comment comment = commentRepository.save(mapper.toEntity(commentDto, post));
+        kafkaEventPublisher.publishEvent(commentDto,
+                kafkaTopics.getComment().getPublished()
+        );
+
         return mapper.toDto(comment);
     }
 

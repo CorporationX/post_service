@@ -1,6 +1,5 @@
 package faang.school.postservice.service.like;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
@@ -10,10 +9,12 @@ import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.properties.KafkaTopics;
 import faang.school.postservice.publisher.LikeEventPublisher;
+import faang.school.postservice.publisher.kafka.KafkaEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
-import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.post.PostRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +30,8 @@ import java.util.Objects;
 @Service
 @RequiredArgsConstructor
 public class LikeServiceImpl implements LikeService {
-
+    private final KafkaEventPublisher<LikeDto> kafkaEventPublisher;
+    private final KafkaTopics kafkaTopics;
     private final LikeRepository likeRepository;
     private final LikeMapper likeMapper;
     private final CommentRepository commentRepository;
@@ -51,9 +53,10 @@ public class LikeServiceImpl implements LikeService {
         likeRepository.save(like);
         log.info("The like was added to the database to {} post", likeDto.getPostId());
 
+        kafkaEventPublisher.publishEvent(likeDto, kafkaTopics.getLike());
         publishLikeEvent(likeDto, post);
 
-        return likeMapper.toDto(like);
+        return likeDto;
     }
 
     @Transactional
