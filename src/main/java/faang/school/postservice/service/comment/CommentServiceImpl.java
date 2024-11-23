@@ -3,10 +3,10 @@ package faang.school.postservice.service.comment;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CommentEvent;
-import faang.school.postservice.dto.comment.CommentPublishedEvent;
 import faang.school.postservice.dto.comment.UpdateCommentDto;
 import faang.school.postservice.exception.comment.CommentException;
 import faang.school.postservice.mapper.comment.CommentMapper;
+import faang.school.postservice.mapper.comment.CommentPublishedEventMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.post.Post;
 import faang.school.postservice.publisher.CommentEventPublisher;
@@ -33,6 +33,7 @@ public class CommentServiceImpl implements CommentService {
     private final CommentMapper commentMapper;
     private final CommentEventPublisher commentEventPublisher;
     private final KafkaCommentProducer kafkaCommentProducer;
+    private final CommentPublishedEventMapper commentPublishedEventMapper;
 
     @Override
     public CommentDto addComment(CommentDto commentDto) {
@@ -53,13 +54,7 @@ public class CommentServiceImpl implements CommentService {
         commentEventPublisher.publish(commentEvent);
         log.info("comment event published to topic, event: {}", commentEvent);
 
-        kafkaCommentProducer.publish(CommentPublishedEvent.builder()
-                .id(commentDto.getId())
-                .authorId(commentDto.getAuthorId())
-                .postId(commentDto.getPostId())
-                .content(comment.getContent())
-                .date(comment.getCreatedAt())
-                .build());
+        kafkaCommentProducer.publish(commentPublishedEventMapper.fromCommentToEvent(comment));
 
         return commentMapper.toDto(comment);
     }
