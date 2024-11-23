@@ -9,7 +9,7 @@ import java.time.ZoneOffset;
 public interface DateTimeMapper {
     default Timestamp localDateTimeToTimestamp(LocalDateTime localDateTime) {
         if (localDateTime == null) {
-            return null;
+            return Timestamp.getDefaultInstance();
         }
         return Timestamp.newBuilder()
                 .setSeconds(localDateTime.atZone(ZoneId.systemDefault()).toEpochSecond())
@@ -18,6 +18,9 @@ public interface DateTimeMapper {
     }
 
     default LocalDateTime mapTimestampToTime(Timestamp timestamp) {
+        if (timestamp == null) {
+            return null;
+        }
         return LocalDateTime.ofEpochSecond(timestamp.getSeconds(), timestamp.getNanos(), ZoneOffset.UTC);
     }
 }
