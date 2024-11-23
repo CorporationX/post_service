@@ -47,6 +47,10 @@ spring:
         name: comments_topic
         num-partitions: 3
         replication-factor: 1
+      likes:
+        name: likes_topic
+        num-partitions: 3
+        replication-factor: 1
     listener:
       concurrency: 5
       poll-timeout: 5000

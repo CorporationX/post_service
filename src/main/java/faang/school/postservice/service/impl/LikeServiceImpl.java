@@ -6,11 +6,13 @@ import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.UserNotFoundException;
 import faang.school.postservice.mapper.LikeMapper;
+import faang.school.postservice.mapper.LikePostEventMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.post.Post;
 import faang.school.postservice.model.event.LikeEvent;
 import faang.school.postservice.publisher.LikeEventPublisherImpl;
+import faang.school.postservice.publisher.kafka.KafkaLikeProducer;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.post.PostRepository;
@@ -37,6 +39,8 @@ public class LikeServiceImpl implements LikeService {
     private final UserServiceClient client;
     private final UserServiceClient userServiceClient;
     private final LikeEventPublisherImpl likeEventPublisher;
+    private final KafkaLikeProducer kafkaLikeProducer;
+    private final LikePostEventMapper likePostEventMapper;
 
     @Override
     public void publish(LikeEvent likeEvent) {
@@ -60,6 +64,8 @@ public class LikeServiceImpl implements LikeService {
         like.setPost(post);
         likeRepository.save(like);
         likeEventPublisher.publishLikeEvent(likeEvent);
+
+        kafkaLikeProducer.publish(likePostEventMapper.toLikePostEventFromLike(like));
     }
 
     @Override
