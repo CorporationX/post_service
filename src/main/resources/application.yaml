@@ -36,6 +36,9 @@ spring:
           name: post_view_channel
         userBanChannel:
           name: user_ban_channel
+      post:
+        ttl: 86400 # in seconds
+        key: POST_ID_
 
 server:
   port: 8081

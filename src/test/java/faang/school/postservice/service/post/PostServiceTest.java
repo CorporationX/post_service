@@ -1,11 +1,14 @@
 package faang.school.postservice.service.post;
 
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.post.PostCacheDto;
+import faang.school.postservice.dto.post.PostRequestDto;
 import faang.school.postservice.dto.post.PostResponseDto;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.publisher.post.PostViewEventPublisher;
+import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.redis.CacheRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -42,6 +45,8 @@ public class PostServiceTest {
     private static final long ID = 1L;
     private Post post;
     private PostResponseDto postResponseDto;
+    private PostRequestDto postRequestDto;
+    private PostCacheDto postCacheDto;
 
     @InjectMocks
     private PostService postService;
@@ -61,6 +66,9 @@ public class PostServiceTest {
     @Mock
     private List<Post> posts;
 
+    @Mock
+    private CacheRepository<PostCacheDto> cacheRepository;
+
     @BeforeEach
     public void setup() {
         post = new Post();
@@ -77,11 +85,45 @@ public class PostServiceTest {
                 post.getProjectId(),
                 0,
                 post.getPublishedAt());
+
+        postRequestDto = PostRequestDto.builder()
+                .projectId(ID)
+                .authorId(ID)
+                .content("")
+                .build();
+
+        postCacheDto = PostCacheDto.builder()
+                .id(ID)
+                .build();
     }
 
     @Nested
     @DisplayName("Позитивные тесты")
     class PositiveTests {
+
+        @Test
+        @DisplayName("When save post then should return response dto")
+        void whenSavePostThenShouldReturnResponseDto() {
+            when(postMapper.toEntity(any(PostRequestDto.class)))
+                    .thenReturn(post);
+            when(postRepository.save(any(Post.class)))
+                    .thenReturn(post);
+            when(postMapper.toPostCacheDto(any(Post.class)))
+                    .thenReturn(postCacheDto);
+
+            postService.createPost(postRequestDto);
+
+            verify(postMapper)
+                    .toEntity(any(PostRequestDto.class));
+            verify(postRepository)
+                    .save(any(Post.class));
+            verify(postMapper)
+                    .toPostCacheDto(any(Post.class));
+            verify(cacheRepository)
+                    .save(any(PostCacheDto.class));
+            verify(postMapper)
+                    .toResponseDto(any(Post.class));
+        }
 
         @Test
         @DisplayName("When post exists then return post response dto")

@@ -1,5 +1,6 @@
 package faang.school.postservice.controller.post;
 
+import faang.school.postservice.dto.post.PostRequestDto;
 import faang.school.postservice.dto.post.PostResponseDto;
 import faang.school.postservice.service.post.PostImagesService;
 import faang.school.postservice.service.post.PostService;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,7 +29,7 @@ public class PostController {
     private final PostImagesService postImagesService;
 
     @GetMapping("/{postId}")
-    public PostResponseDto getPost(@PathVariable @Positive Long postId){
+    public PostResponseDto getPost(@PathVariable @Positive Long postId) {
         return postService.getPost(postId);
     }
 
@@ -41,5 +43,10 @@ public class PostController {
     public void updateImages(@PathVariable Long postId,
                              @RequestPart("images") List<MultipartFile> images) {
         postImagesService.updatePostImages(postId, images);
+    }
+
+    @PostMapping
+    public PostResponseDto createPost(@RequestBody PostRequestDto postRequestDto) {
+        return postService.createPost(postRequestDto);
     }
 }

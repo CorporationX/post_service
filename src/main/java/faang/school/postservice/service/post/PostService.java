@@ -2,18 +2,22 @@ package faang.school.postservice.service.post;
 
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.event.PostViewEvent;
+import faang.school.postservice.dto.post.PostCacheDto;
+import faang.school.postservice.dto.post.PostRequestDto;
 import faang.school.postservice.dto.post.PostResponseDto;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.moderation.ModerationDictionary;
-import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.publisher.post.PostViewEventPublisher;
+import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.redis.CacheRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -35,13 +39,22 @@ public class PostService {
     private final ExecutorService executor;
     private final PostViewEventPublisher postViewEventPublisher;
     private final UserContext userContext;
+    private final CacheRepository<PostCacheDto> cacheRepository;
 
-    public PostResponseDto getPost(long postId){
+    public PostResponseDto getPost(long postId) {
         Post post = findById(postId);
 
         publishEvent(postId, post.getAuthorId());
 
         return postMapper.toResponseDto(post, post.getLikes().size());
+    }
+
+    @Transactional
+    public PostResponseDto createPost(PostRequestDto postRequestDto) {
+        Post post = postMapper.toEntity(postRequestDto);
+        post = postRepository.save(post);
+        cacheRepository.save(postMapper.toPostCacheDto(post));
+        return postMapper.toResponseDto(post);
     }
 
     public List<Post> getAllPostsNotPublished() {
@@ -54,7 +67,7 @@ public class PostService {
 
     public Post findById(Long postId) {
         return postRepository.findById(postId)
-                .orElseThrow(()-> new EntityNotFoundException("Post service. Post not found. id: " + postId));
+                .orElseThrow(() -> new EntityNotFoundException("Post service. Post not found. id: " + postId));
     }
 
     public List<PostResponseDto> getPostsByAuthorWithLikes(long authorId) {
