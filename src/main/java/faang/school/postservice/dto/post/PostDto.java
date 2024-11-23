@@ -13,8 +13,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @NoArgsConstructor
-@Data
 @Builder
+@Data
 @AllArgsConstructor
 public class PostDto {
     private Long id;

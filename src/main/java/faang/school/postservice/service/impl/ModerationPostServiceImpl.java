@@ -1,7 +1,7 @@
 package faang.school.postservice.service.impl;
 
-import faang.school.postservice.model.Post;
-import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.model.post.Post;
+import faang.school.postservice.repository.post.PostRepository;
 import faang.school.postservice.service.ModerationPostService;
 import faang.school.postservice.util.ModerationDictionary;
 import lombok.RequiredArgsConstructor;

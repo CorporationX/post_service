@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+option java_outer_classname = "CommentPublishedEventProto";
+
+message CommentPublishedEvent {
+  int64 id = 1;
+  string content = 2;
+  int64 authorId = 3;
+  int64 postId = 4;
+  google.protobuf.Timestamp date = 5;
+}
+

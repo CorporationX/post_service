@@ -1,6 +1,6 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.model.Post;
+import faang.school.postservice.model.post.Post;
 
 import java.util.List;
 

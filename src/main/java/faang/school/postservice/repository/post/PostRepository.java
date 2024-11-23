@@ -1,6 +1,6 @@
-package faang.school.postservice.repository;
+package faang.school.postservice.repository.post;
 
-import faang.school.postservice.model.Post;
+import faang.school.postservice.model.post.Post;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
