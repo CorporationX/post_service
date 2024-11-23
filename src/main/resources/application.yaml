@@ -43,6 +43,9 @@ spring:
         name: posts_topic
         num-partitions: 3
         replication-factor: 1
+    listener:
+      concurrency: 5
+      poll-timeout: 5000
 
 server:
   port: 8081
@@ -70,6 +73,10 @@ post:
       cron: "0 0 2 * * *" # every day
   thread-pool:
     count_pool: 10
+
+feed:
+  cache:
+    count: 500
 
 user-service:
   host: localhost

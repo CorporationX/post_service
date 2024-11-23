@@ -14,6 +14,8 @@ import java.util.List;
 
 @NoArgsConstructor
 @Data
+@Builder
+@AllArgsConstructor
 public class PostDto {
     private Long id;
     private Long authorId;
