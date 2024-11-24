@@ -3,6 +3,7 @@ package faang.school.postservice.service.impl;
 import faang.school.postservice.dto.comment.CommentPublishedEvent;
 import faang.school.postservice.dto.like.LikePostEvent;
 import faang.school.postservice.dto.post.PostPublishedEvent;
+import faang.school.postservice.dto.post.PostViewEvent;
 import faang.school.postservice.mapper.post.CacheablePostMapper;
 import faang.school.postservice.model.Feed;
 import faang.school.postservice.model.post.CacheablePost;
@@ -56,10 +57,21 @@ public class FeedServiceImpl implements FeedService {
     }
 
     @Override
+    @Transactional
     public void addNewLike(LikePostEvent likePostEvent) {
         CacheablePost post = getPost(likePostEvent.getPostId());
 
         post.incrementLikes();
+
+        postCacheRepository.save(post);
+    }
+
+    @Override
+    @Transactional
+    public void addNewView(PostViewEvent postViewEvent) {
+        CacheablePost post = getPost(postViewEvent.postId());
+
+        post.incrementViews();
 
         postCacheRepository.save(post);
     }
@@ -89,7 +101,7 @@ public class FeedServiceImpl implements FeedService {
                 ));
 
         if (post == null) {
-            throw new EntityNotFoundException("post with id = " + post + " not found");
+            throw new EntityNotFoundException("post with id = " + postId + " not found");
         }
 
         return post;
