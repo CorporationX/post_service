@@ -30,4 +30,12 @@ public class CacheablePost {
 
     @TimeToLive
     private long timeToLive;
+
+    public void incrementLikes() {
+        this.countOfLikes++;
+    }
+
+    public void incrementComments() {
+        this.countOfComments++;
+    }
 }

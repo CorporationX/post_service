@@ -1,6 +1,7 @@
 package faang.school.postservice.service.impl;
 
 import faang.school.postservice.dto.comment.CommentPublishedEvent;
+import faang.school.postservice.dto.like.LikePostEvent;
 import faang.school.postservice.dto.post.PostPublishedEvent;
 import faang.school.postservice.mapper.post.CacheablePostMapper;
 import faang.school.postservice.model.Feed;
@@ -43,19 +44,22 @@ public class FeedServiceImpl implements FeedService {
     @Override
     @Transactional
     public void addNewComment(CommentPublishedEvent commentEvent) {
-        CacheablePost post = postCacheRepository.findById(commentEvent.getPostId())
-                .orElse(cacheablePostMapper.toCacheablePost(
-                        postRepository.getReferenceById(commentEvent.getPostId())
-                ));
-
-        if (post == null) {
-            throw new EntityNotFoundException("post with id = " + commentEvent.getPostId() + " not found");
-        }
+        CacheablePost post = getPost(commentEvent.getPostId());
 
         var comments = Optional.ofNullable(post.getComments())
                 .orElse(new ArrayList<>());
         comments.add(commentEvent);
         post.setComments(comments);
+        post.incrementComments();
+
+        postCacheRepository.save(post);
+    }
+
+    @Override
+    public void addNewLike(LikePostEvent likePostEvent) {
+        CacheablePost post = getPost(likePostEvent.getPostId());
+
+        post.incrementLikes();
 
         postCacheRepository.save(post);
     }
@@ -76,5 +80,18 @@ public class FeedServiceImpl implements FeedService {
         }
 
         feed.setPostIds(postIds);
+    }
+
+    private CacheablePost getPost(long postId) {
+        CacheablePost post = postCacheRepository.findById(postId)
+                .orElse(cacheablePostMapper.toCacheablePost(
+                        postRepository.getReferenceById(postId)
+                ));
+
+        if (post == null) {
+            throw new EntityNotFoundException("post with id = " + post + " not found");
+        }
+
+        return post;
     }
 }
