@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -85,5 +86,10 @@ public class PostController {
     public ResponseEntity<List<PostDto>> getPublishedPostsByProjectId(@PathVariable long id) {
         List<PostDto> posts = postService.getPublishedPostsByProjectId(id);
         return new ResponseEntity<>(posts, HttpStatus.OK);
+    }
+
+    @PatchMapping("/view/{postId}")
+    public void viewPost(@PathVariable("postId") long postId) {
+        postService.viewPost(postId);
     }
 }

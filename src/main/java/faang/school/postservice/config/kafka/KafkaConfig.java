@@ -82,4 +82,10 @@ public class KafkaConfig {
         Topic topic = properties.getTopics().get("comments");
         return new NewTopic(topic.getName(), topic.getNumPartitions(), topic.getReplicationFactor());
     }
+
+    @Bean
+    public NewTopic postViewTopic() {
+        Topic topic = properties.getTopics().get("post_views");
+        return new NewTopic(topic.getName(), topic.getNumPartitions(), topic.getReplicationFactor());
+    }
 }

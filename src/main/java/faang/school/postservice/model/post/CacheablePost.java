@@ -24,6 +24,7 @@ public class CacheablePost {
     private Long projectId;
     private long countOfLikes;
     private long countOfComments;
+    private long countOfViews;
     private List<CommentPublishedEvent> comments;
     private LocalDateTime publishedAt;
     private LocalDateTime updatedAt;
@@ -37,5 +38,8 @@ public class CacheablePost {
 
     public void incrementComments() {
         this.countOfComments++;
+    }
+    public void incrementViews() {
+        this.countOfViews++;
     }
 }

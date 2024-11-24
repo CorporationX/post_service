@@ -4,12 +4,14 @@ import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.PostPublishedEvent;
+import faang.school.postservice.dto.post.PostViewEvent;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.post.CacheablePostMapper;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.post.Post;
 import faang.school.postservice.model.User;
 import faang.school.postservice.publisher.kafka.KafkaPostProducer;
+import faang.school.postservice.publisher.kafka.KafkaPostViewProducer;
 import faang.school.postservice.repository.post.PostCacheRepository;
 import faang.school.postservice.repository.post.PostRepository;
 import faang.school.postservice.repository.UserRepository;
@@ -45,6 +47,7 @@ public class PostServiceImpl implements PostService {
     private final UserRepository userRepository;
     private final PostCacheRepository postCacheRepository;
     private final CacheablePostMapper cacheablePostMapper;
+    private final KafkaPostViewProducer kafkaPostViewProducer;
 
     @Override
     public void createDraftPost(PostDto postDto) {
@@ -138,6 +141,11 @@ public class PostServiceImpl implements PostService {
         } else {
             log.info("Unpublished posts at {} not found", currentDateTime);
         }
+    }
+
+    @Override
+    public void viewPost(long postId) {
+        kafkaPostViewProducer.publish(new PostViewEvent(postId, LocalDateTime.now()));
     }
 
     @Override
