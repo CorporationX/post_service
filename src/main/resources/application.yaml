@@ -92,6 +92,8 @@ feed:
     count: 500
     post:
       time-to-live-in-seconds: 86400
+    user:
+      time-to-live-in-seconds: 86400
 
 user-service:
   host: localhost
