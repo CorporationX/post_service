@@ -1,6 +1,6 @@
 package faang.school.postservice.publisher.post;
 
-import faang.school.postservice.dto.event.PostViewEvent;
+import faang.school.postservice.event.like.PostViewEvent;
 import faang.school.postservice.publisher.MessagePublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

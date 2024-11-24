@@ -37,6 +37,21 @@ spring:
         userBanChannel:
           name: user_ban_channel
 
+  kafka:
+    producerConfig:
+      bootstrapServersConfig: 127.0.0.1:29092
+      acks: 1
+      retries: 3
+    topics:
+      postView:
+        name: post-view
+        partitions: 1
+        replicationFactor: 1
+      asd:
+        name: a
+        partitions: 1
+        replicationFactor: 1
+
 server:
   port: 8081
 

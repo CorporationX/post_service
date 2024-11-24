@@ -4,6 +4,7 @@ import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostResponseDto;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.KafkaPostViewProducer;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.publisher.post.PostViewEventPublisher;
 import jakarta.persistence.EntityNotFoundException;
@@ -61,6 +62,9 @@ public class PostServiceTest {
     @Mock
     private List<Post> posts;
 
+    @Mock
+    private KafkaPostViewProducer kafkaPostViewProducer;
+
     @BeforeEach
     public void setup() {
         post = new Post();
@@ -99,6 +103,9 @@ public class PostServiceTest {
             verify(postViewEventPublisher).publish(argThat(event ->
                     event.getPostId() == ID &&
                             event.getAuthorId().equals(ID)));
+            verify(kafkaPostViewProducer)
+                    .sendMessage(argThat(event ->
+                            event.getPostId() == ID && event.getAuthorId() == ID));
         }
 
         @Test

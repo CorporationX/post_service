@@ -1,13 +1,14 @@
 package faang.school.postservice.service.post;
 
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.dto.event.PostViewEvent;
 import faang.school.postservice.dto.post.PostResponseDto;
+import faang.school.postservice.event.like.PostViewEvent;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.moderation.ModerationDictionary;
-import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.producer.KafkaPostViewProducer;
 import faang.school.postservice.publisher.post.PostViewEventPublisher;
+import faang.school.postservice.repository.PostRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,11 +36,13 @@ public class PostService {
     private final ExecutorService executor;
     private final PostViewEventPublisher postViewEventPublisher;
     private final UserContext userContext;
+    private final KafkaPostViewProducer kafkaPostViewProducer;
 
-    public PostResponseDto getPost(long postId){
+    public PostResponseDto getPost(long postId) {
         Post post = findById(postId);
 
         publishEvent(postId, post.getAuthorId());
+        publishEventInKafka(post);
 
         return postMapper.toResponseDto(post, post.getLikes().size());
     }
@@ -54,7 +57,7 @@ public class PostService {
 
     public Post findById(Long postId) {
         return postRepository.findById(postId)
-                .orElseThrow(()-> new EntityNotFoundException("Post service. Post not found. id: " + postId));
+                .orElseThrow(() -> new EntityNotFoundException("Post service. Post not found. id: " + postId));
     }
 
     public List<PostResponseDto> getPostsByAuthorWithLikes(long authorId) {
@@ -101,5 +104,22 @@ public class PostService {
         } catch (Exception ex) {
             log.error("Failed to send notification with postViewEvent: {}", postViewEvent.toString(), ex);
         }
+    }
+
+    private void publishEventInKafka(Post post) {
+        long postId = post.getId();
+
+        log.debug("publishEventInKafka() start, postId - {}", postId);
+
+        PostViewEvent postViewEvent = PostViewEvent.builder()
+                .postId(postId)
+                .authorId(post.getAuthorId())
+                .userId(userContext.getUserId())
+                .viewTime(LocalDateTime.now())
+                .build();
+
+        kafkaPostViewProducer.sendMessage(postViewEvent);
+
+        log.debug("publishEventInKafka() finish, postId - {}", postId);
     }
 }
