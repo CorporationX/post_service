@@ -71,3 +71,5 @@ redis:
 cache:
   post:
     live-time: 86400
+  author:
+    live-time: 86400

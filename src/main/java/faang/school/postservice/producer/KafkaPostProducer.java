@@ -18,7 +18,7 @@ public class KafkaPostProducer {
 
     public void sendPostEvent(PostEvent postEvent) {
         kafkaTemplate.send(topic, postEvent)
-                .thenRunAsync(() -> log.info("Kafka sent an event post with id: " + postEvent.getId()));
+                .thenRunAsync(() -> log.info("Kafka sent an event post with id: {}", postEvent.getId()));
     }
 
 }
