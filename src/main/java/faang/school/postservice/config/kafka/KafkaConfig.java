@@ -94,4 +94,10 @@ public class KafkaConfig {
         Topic topic = properties.getTopics().get("post_views");
         return new NewTopic(topic.getName(), topic.getNumPartitions(), topic.getReplicationFactor());
     }
+
+    @Bean
+    public NewTopic feedHeaterTopic() {
+        Topic topic = properties.getTopics().get("feed-heater");
+        return new NewTopic(topic.getName(), topic.getNumPartitions(), topic.getReplicationFactor());
+    }
 }

@@ -55,6 +55,10 @@ spring:
         name: post_views_topic
         num-partitions: 3
         replication-factor: 1
+      feed-heater:
+        name: feed-heater_topic
+        num-partitions: 10
+        replication-factor: 1
     listener:
       concurrency: 5
       poll-timeout: 5000
@@ -88,12 +92,16 @@ post:
 
 
 feed:
+  heater:
+    batch-size: 10000
   cache:
     count: 500
     post:
       time-to-live-in-seconds: 86400
     user:
       time-to-live-in-seconds: 86400
+  thread:
+    pool-size: 10
 
 user-service:
   host: localhost

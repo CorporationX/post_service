@@ -4,6 +4,7 @@ import faang.school.postservice.model.post.Post;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -69,4 +70,13 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             HAVING COUNT(*) > 5 ;
             """)
     List<Long> findAuthorsWithMoreThanFiveUnverifiedPosts();
+
+    @Query(nativeQuery = true,
+            value = """
+                     select p.* from subscription s
+                     join post p on s.followee_id = p.author_id where
+                     s.follower_id = :userId order by p.published_at limit :limit
+                     """
+    )
+    List<Post> getPostsForFeedByUserId(@Param("userId") long userId, @Param("limit") int limit);
 }

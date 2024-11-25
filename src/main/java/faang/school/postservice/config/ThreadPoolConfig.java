@@ -11,10 +11,18 @@ import java.util.concurrent.Executors;
 public class ThreadPoolConfig {
 
     @Value("${post.thread-pool.count_pool}")
-    private int countPool;
+    private int publishedPostCountPool;
+
+    @Value("${feed.thread.pool-size}")
+    private int feedPoolSize;
 
     @Bean
     public ExecutorService publishedPostThreadPool() {
-        return Executors.newFixedThreadPool(countPool);
+        return Executors.newFixedThreadPool(publishedPostCountPool);
+    }
+
+    @Bean(name = "feedThreadPool")
+    public ExecutorService feedThreadPool() {
+        return Executors.newFixedThreadPool(feedPoolSize);
     }
 }

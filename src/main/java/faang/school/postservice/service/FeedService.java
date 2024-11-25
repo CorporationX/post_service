@@ -13,4 +13,6 @@ public interface FeedService {
     void addNewLike(LikePostEvent likePostEvent);
 
     void addNewView(PostViewEvent postViewEvent);
+
+    void generateFeedForUser(long userId);
 }
