@@ -57,6 +57,10 @@ public class PostService {
                 .orElseThrow(()-> new EntityNotFoundException("Post service. Post not found. id: " + postId));
     }
 
+    public List<Post> findAllById(List<Long> ids) {
+        return postRepository.findAllById(ids);
+    }
+
     public List<PostResponseDto> getPostsByAuthorWithLikes(long authorId) {
         List<Post> posts = postRepository.findByAuthorIdWithLikes(authorId);
         return posts.stream()

@@ -110,3 +110,6 @@ executor:
   corePoolSize: 1
   maximumPoolSize: 10
   keepAliveTime: 60
+
+feed:
+  page-size: 20
