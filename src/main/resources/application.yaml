@@ -56,6 +56,11 @@ comment:
       cron: "00 01 06 * * *"
 
 post:
+  cache:
+    default-ttl-seconds: 3600
+    publish-ttl-seconds: 7200
+    update-ttl-seconds: 1800
+    delete-ttl-seconds: 0
   publisher:
     scheduler:
       cron: "0 0/1 * 1/1 * ?" # every minute
@@ -86,3 +91,5 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+# application.yaml

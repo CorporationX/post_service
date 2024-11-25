@@ -1,5 +1,6 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.annotation.post.CachePost;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
@@ -9,6 +10,7 @@ import faang.school.postservice.event.EventType;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.PostRequirementsException;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.redis.CacheOperation;
 import faang.school.postservice.publis.aspect.post.PostEventPublish;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.tools.YandexSpeller;
@@ -40,6 +42,7 @@ public class PostService {
     }
 
     @Transactional
+    @CachePost(keyPrefix = "Post:", operation = CacheOperation.PUBLISH)
     @PostEventPublish
     public Post publishPost(Long id) {
         Post existingPost = postRepository.findById(id).orElseThrow(() -> new PostRequirementsException("Post not found"));
@@ -61,6 +64,7 @@ public class PostService {
     }
 
     @Transactional
+    @CachePost(keyPrefix = "Post:", operation = CacheOperation.UPDATE)
     public Post updatePost(Long id, String content) {
         Post existingPost = postRepository.findById(id).orElseThrow(() -> new PostRequirementsException("Post not found"));
         updateContent(existingPost, content);
@@ -69,6 +73,7 @@ public class PostService {
     }
 
     @Transactional
+    @CachePost(keyPrefix = "Post:", operation = CacheOperation.DELETE)
     public Post deletePost(Long id) {
         Post post = postRepository.findById(id).orElseThrow(() -> new PostRequirementsException("Post not found"));
         delete(post);
@@ -76,6 +81,7 @@ public class PostService {
     }
 
     @Transactional
+    @CachePost(keyPrefix = "Post:", operation = CacheOperation.DEFAULT)
     @AnalyticsEvent(EventType.POST_VIEW)
     public Post getPostById(Long id) {
         Post post = postRepository.findById(id)
@@ -169,4 +175,3 @@ public class PostService {
         post.setPublished(false);
     }
 }
-
