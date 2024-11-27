@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 option java_outer_classname = "PostPublishedEventProto";
-option java_package = "";
+option java_package = "faang.school.postservice.protobuf.generate";
 
 message PostPublishedEvent {
   int64 postId = 1;

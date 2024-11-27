@@ -84,5 +84,4 @@ public class User {
             inverseJoinColumns = {@JoinColumn(name = "follower_id")}
     )
     private List<User> subscribers;
-
 }

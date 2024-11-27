@@ -5,12 +5,17 @@ import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CommentEvent;
 import faang.school.postservice.dto.comment.UpdateCommentDto;
 import faang.school.postservice.exception.comment.CommentException;
+import faang.school.postservice.mapper.UserMapper;
 import faang.school.postservice.mapper.comment.CommentMapper;
+import faang.school.postservice.mapper.comment.CommentPublishedEventMapper;
 import faang.school.postservice.model.Comment;
-import faang.school.postservice.model.Post;
+import faang.school.postservice.model.post.Post;
 import faang.school.postservice.publisher.CommentEventPublisher;
+import faang.school.postservice.publisher.kafka.KafkaCommentProducer;
 import faang.school.postservice.repository.CommentRepository;
-import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.UserCacheRepository;
+import faang.school.postservice.repository.UserRepository;
+import faang.school.postservice.repository.post.PostRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +35,11 @@ public class CommentServiceImpl implements CommentService {
     private final UserServiceClient userServiceClient;
     private final CommentMapper commentMapper;
     private final CommentEventPublisher commentEventPublisher;
+    private final KafkaCommentProducer kafkaCommentProducer;
+    private final CommentPublishedEventMapper commentPublishedEventMapper;
+    private final UserCacheRepository userCacheRepository;
+    private final UserMapper userMapper;
+    private final UserRepository userRepository;
 
     @Override
     public CommentDto addComment(CommentDto commentDto) {
@@ -43,13 +53,19 @@ public class CommentServiceImpl implements CommentService {
 
         Comment comment = commentMapper.toComment(commentDto);
         comment.setPost(post);
+        comment = commentRepository.save(comment);
+        userCacheRepository.save(userMapper.toCacheable(
+                userRepository.getReferenceById(comment.getAuthorId())
+        ));
 
         CommentEvent commentEvent = new CommentEvent(commentDto.getId(), commentDto.getAuthorId(),
                 commentDto.getPostId(), LocalDateTime.now());
         commentEventPublisher.publish(commentEvent);
         log.info("comment event published to topic, event: {}", commentEvent);
 
-        return commentMapper.toDto(commentRepository.save(comment));
+        kafkaCommentProducer.publish(commentPublishedEventMapper.fromCommentToEvent(comment));
+
+        return commentMapper.toDto(comment);
     }
 
     @Override

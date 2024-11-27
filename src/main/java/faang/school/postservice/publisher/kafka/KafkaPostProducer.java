@@ -1,7 +1,8 @@
-package faang.school.postservice.publisher;
+package faang.school.postservice.publisher.kafka;
 
 import faang.school.postservice.dto.post.PostPublishedEvent;
 import faang.school.postservice.mapper.post.PostPublishedEventMapper;
+import faang.school.postservice.publisher.EventPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

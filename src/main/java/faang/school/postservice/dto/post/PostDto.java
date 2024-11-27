@@ -13,7 +13,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @NoArgsConstructor
+@Builder
 @Data
+@AllArgsConstructor
 public class PostDto {
     private Long id;
     private Long authorId;

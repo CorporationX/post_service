@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+option java_outer_classname = "PostViewEventProto";
+option java_package = "faang.school.postservice.protobuf.generate";
+
+message PostViewEvent {
+  int64 postId = 1;
+  google.protobuf.Timestamp date = 2;
+}

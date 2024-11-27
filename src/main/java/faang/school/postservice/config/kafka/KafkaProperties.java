@@ -12,4 +12,5 @@ public class KafkaProperties {
     private String bootstrapServers;
     private int poolSize;
     private Map<String, Topic> topics = new HashMap<>();
+    private Map<String, Integer> listener = new HashMap<>();
 }

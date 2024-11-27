@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class LikeEventPublisherImplTest {
+public class LikePostEventPublisherImplTest {
     @InjectMocks
     private LikeEventPublisherImpl likeEventPublisherImpl;
     @Mock

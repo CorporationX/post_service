@@ -27,4 +27,6 @@ public interface PostService {
     List<Long> getAuthorsWithMoreFiveUnverifiedPosts();
 
     void publishScheduledPosts();
+
+    void viewPost(long postId);
 }

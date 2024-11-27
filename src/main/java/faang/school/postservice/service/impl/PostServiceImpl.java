@@ -4,13 +4,19 @@ import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.PostPublishedEvent;
+import faang.school.postservice.dto.post.PostViewEvent;
 import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.mapper.UserMapper;
+import faang.school.postservice.mapper.post.CacheablePostMapper;
 import faang.school.postservice.mapper.post.PostMapper;
-import faang.school.postservice.model.Post;
 import faang.school.postservice.model.User;
-import faang.school.postservice.publisher.KafkaPostProducer;
-import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.model.post.Post;
+import faang.school.postservice.publisher.kafka.KafkaPostProducer;
+import faang.school.postservice.publisher.kafka.KafkaPostViewProducer;
+import faang.school.postservice.repository.UserCacheRepository;
 import faang.school.postservice.repository.UserRepository;
+import faang.school.postservice.repository.post.PostCacheRepository;
+import faang.school.postservice.repository.post.PostRepository;
 import faang.school.postservice.service.AsyncPostPublishService;
 import faang.school.postservice.service.PostService;
 import faang.school.postservice.validator.PostValidator;
@@ -41,6 +47,11 @@ public class PostServiceImpl implements PostService {
     private final AsyncPostPublishService asyncPostPublishService;
     private final KafkaPostProducer kafkaPostProducer;
     private final UserRepository userRepository;
+    private final PostCacheRepository postCacheRepository;
+    private final CacheablePostMapper cacheablePostMapper;
+    private final KafkaPostViewProducer kafkaPostViewProducer;
+    private final UserCacheRepository userCacheRepository;
+    private final UserMapper userMapper;
 
     @Override
     public void createDraftPost(PostDto postDto) {
@@ -75,6 +86,10 @@ public class PostServiceImpl implements PostService {
             post.setPublished(true);
             postRepository.save(post);
             publishPostPublishedEvent(post);
+            postCacheRepository.save(cacheablePostMapper.toCacheablePost(post));
+            userCacheRepository.save(
+                    userMapper.toCacheable(userRepository.getReferenceById(post.getAuthorId()))
+            );
         }
     }
 
@@ -133,6 +148,11 @@ public class PostServiceImpl implements PostService {
         } else {
             log.info("Unpublished posts at {} not found", currentDateTime);
         }
+    }
+
+    @Override
+    public void viewPost(long postId) {
+        kafkaPostViewProducer.publish(new PostViewEvent(postId, LocalDateTime.now()));
     }
 
     @Override

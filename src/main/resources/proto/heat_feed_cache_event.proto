@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+option java_outer_classname = "HeatFeedCacheEventProto";
+option java_package = "faang.school.postservice.protobuf.generate";
+
+message HeatFeedCacheEvent {
+  repeated int64 usersIds = 1;
+}

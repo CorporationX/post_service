@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+option java_outer_classname = "LikePostEventProto";
+option java_package = "faang.school.postservice.protobuf.generate";
+
+message LikePostEvent {
+  int64 id = 1;
+  int64 postId = 2;
+  int64 userId = 3;
+}
