@@ -8,6 +8,7 @@ import faang.school.postservice.mapper.like.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.like.KafkaLikeProducer;
 import faang.school.postservice.publisher.like.LikePostEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
@@ -60,11 +61,15 @@ public class LikeServiceTest {
 
     @Mock
     private UserServiceClient userServiceClient;
+
     @Mock
     private UserContext userContext;
 
     @Mock
     private LikePostEventPublisher likePostEventPublisher;
+
+    @Mock
+    private KafkaLikeProducer kafkaLikeProducer;
 
     @InjectMocks
     private LikeService likeService;
@@ -104,6 +109,7 @@ public class LikeServiceTest {
             verify(userServiceClient).getUser(likeRequestDto.getUserId());
             verify(likePostEventPublisher).publish(any());
             verify(likePostEventPublisher).publish(any());
+            verify(kafkaLikeProducer).sendMessage(any());
             assertEquals(likeResponseDto, result);
         }
 

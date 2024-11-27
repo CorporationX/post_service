@@ -11,6 +11,7 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.EventType;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.like.KafkaLikeProducer;
 import faang.school.postservice.publisher.like.LikePostEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
@@ -31,10 +32,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class LikeService {
 
-    private final LikeRepository likeRepository;
-    private final UserServiceClient userServiceClient;
     private static final int BATCH_SIZE = 100;
 
+    private final LikeRepository likeRepository;
+    private final UserServiceClient userServiceClient;
+    private final KafkaLikeProducer kafkaLikeProducer;
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final LikeMapper likeMapper;
@@ -136,6 +138,12 @@ public class LikeService {
             likePostEventPublisher.publish(likePostEvent);
         } catch (Exception ex) {
             log.error("Failed to send notification with likePostEvent: {}", likePostEvent.toString(), ex);
+        }
+
+        try {
+            kafkaLikeProducer.sendMessage(likePostEvent);
+        } catch (Exception ex) {
+            log.error("Failed to send event {} to kafka", likePostEvent.toString(), ex);
         }
     }
 }
