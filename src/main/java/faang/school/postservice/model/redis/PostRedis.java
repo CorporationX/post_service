@@ -1,16 +1,15 @@
 package faang.school.postservice.model.redis;
 
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.redis.core.RedisHash;
 import org.springframework.data.redis.core.TimeToLive;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-@NoArgsConstructor
 @Data
 @RedisHash(value = "Posts")
 public class PostRedis implements Serializable {
@@ -26,20 +25,8 @@ public class PostRedis implements Serializable {
     private LocalDateTime updatedAt;
 
     @TimeToLive
+    @Transient
+    @Value("${cache.post.live-time}")
     private long timeToLive;
-
-    public PostRedis(Long id, String content, Long authorId, Long projectId, Long countLikes,
-                     LocalDateTime createdAt, LocalDateTime publishedAt, LocalDateTime updatedAt,
-                     @Value("${cache.post.live-time}") long timeToLive) {
-        this.id = id;
-        this.content = content;
-        this.authorId = authorId;
-        this.projectId = projectId;
-        this.countLikes = countLikes;
-        this.createdAt = createdAt;
-        this.publishedAt = publishedAt;
-        this.updatedAt = updatedAt;
-        this.timeToLive = timeToLive;
-    }
 
 }

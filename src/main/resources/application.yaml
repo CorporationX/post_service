@@ -29,7 +29,8 @@ spring:
     kafka:
       bootstrap-servers: localhost:29092
       topics:
-        posts-channel: posts
+        posts: posts
+        comments: comments
 
 server:
   port: 8081
@@ -70,4 +71,6 @@ redis:
 
 cache:
   post:
+    live-time: 86400
+  author:
     live-time: 86400
