@@ -1,0 +1,38 @@
+package faang.school.postservice.config.kafka.producer;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
+import org.apache.kafka.common.serialization.Serializer;
+
+import java.io.IOException;
+import java.util.Map;
+
+@RequiredArgsConstructor
+public class KafkaJsonSerializer implements Serializer<Object> {
+
+    private final ObjectMapper objectMapper;
+
+    @Override
+    public void configure(Map<String, ?> configs, boolean isKey) {
+        // Ничего не делаем
+    }
+
+    @Override
+    public byte[] serialize(String topic, Object data) {
+        if (data == null) {
+            return null;
+        }
+
+        try {
+            // Преобразуем объект в JSON и возвращаем массив байт
+            return objectMapper.writeValueAsBytes(data);
+        } catch (IOException e) {
+            throw new RuntimeException("Object serialization error in JSON", e);
+        }
+    }
+
+    @Override
+    public void close() {
+        // Закрываем ресурсы, если они используются
+    }
+}

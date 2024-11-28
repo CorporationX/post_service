@@ -1,6 +1,7 @@
 package faang.school.postservice.repository;
 
 import faang.school.postservice.model.Like;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
@@ -21,4 +22,15 @@ public interface LikeRepository extends CrudRepository<Like, Long> {
     Optional<Like> findByPostIdAndUserId(long postId, long userId);
 
     Optional<Like> findByCommentIdAndUserId(long commentId, long userId);
+
+    @Query(nativeQuery = true, value = """
+        select
+            l.id
+        from likes l
+        where l.post_id = :postId
+            and l.id > :likeId
+        order by l.id desc
+        limit :limit
+        """)
+    List<Long> findLastLikeIdsByPostId(long postId, long likeId, int limit);
 }

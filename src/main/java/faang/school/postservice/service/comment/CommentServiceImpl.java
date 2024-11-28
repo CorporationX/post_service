@@ -62,7 +62,7 @@ public class CommentServiceImpl implements CommentService {
         CommentEvent event = commentMapper.toCommentEvent(comment);
         commentPublisher.publish(event);
         CommentDto savedCommentDto = commentMapper.toCommentDto(comment);
-        commentEventService.produce(postId, savedCommentDto);
+        commentEventService.produceToBroker(postId, savedCommentDto);
         return savedCommentDto;
     }
 

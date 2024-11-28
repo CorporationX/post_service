@@ -1,4 +1,6 @@
 spring:
+  main: # потом попробовать без этого
+    allow-bean-definition-overriding: true
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://localhost:5432/postgres
@@ -55,7 +57,7 @@ spring:
       producer:
         retry:
           maxAttempts: 3
-          backOffDelay: 800
+          backOffDelay: 1
         executor:
           core-pool-size: 100
           max-pool-size: 500
@@ -64,6 +66,15 @@ spring:
         producers:
           post:
             limit-amount-user-ids: 10000
+      consumer:
+        comment-consumer:
+          group-id: "comments"
+        post-consumer:
+          group-id: "posts"
+        like-consumer:
+          group-id: "likes"
+        post-view-consumer:
+          group-id: "post_views"
 
   config:
     import: text-gears-api.yaml
@@ -73,6 +84,9 @@ spring:
       enabled: true
       max-file-size: 10MB
       max-request-size: 50MB
+  cache:
+    caffeine:
+      expireAfterAccess: 86400 # 24 часа
 
 server:
   port: 8081
@@ -157,7 +171,7 @@ retryable:
   delay: 5000
 
 user-service:
-  host: localhost
+  host: 127.0.0.1
   port: 8080
 project-service:
   host: localhost
@@ -166,3 +180,34 @@ payment-service:
   host: localhost
   port: 9080
 
+feed:
+  feed:
+    default-feed-amount: 20
+    #issued-feed-size: 100
+    cache:
+      max-cache-size: 500
+    retry:
+      max-attempts: 3
+      delay: 800
+  comment:
+    default-comment-amount: 5
+    cache:
+      max-cache-size: 10
+    retry:
+      max-attempts: 3
+      delay: 800
+  like:
+    default-like-amount: 5
+    cache:
+      max-cache-size: 10
+    retry:
+      max-attempts: 3
+      delay: 800
+
+  post-view:
+    default-post-view-amount: 5
+    cache:
+      max-cache-size: 5
+    retry:
+      max-attempts: 3
+      delay: 800

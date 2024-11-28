@@ -3,6 +3,10 @@ package faang.school.postservice.config.redis;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.dto.event.LikeEvent;
 import faang.school.postservice.dto.event.PostViewEvent;
+import faang.school.postservice.dto.kafka.event.CommentEventDto;
+import faang.school.postservice.dto.kafka.event.LikeEventDto;
+import faang.school.postservice.dto.kafka.event.PostEventDto;
+import faang.school.postservice.dto.kafka.event.PostViewEventDto;
 import faang.school.postservice.dto.redis.event.CommentEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -57,6 +61,13 @@ public class RedisConfig {
         template.setConnectionFactory(jedisConnectionFactory());
         template.setKeySerializer(new StringRedisSerializer());
         template.setValueSerializer(new Jackson2JsonRedisSerializer<>(objectMapper, PostViewEvent.class));
+        return template;
+    }
+
+    @Bean
+    public RedisTemplate<byte[], byte[]> byteRedisTemplate() {
+        RedisTemplate<byte[], byte[]> template = new RedisTemplate<>();
+        template.setConnectionFactory(jedisConnectionFactory());
         return template;
     }
 

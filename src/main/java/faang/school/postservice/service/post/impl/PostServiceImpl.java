@@ -109,7 +109,7 @@ public class PostServiceImpl implements PostService {
         postRepository.save(post);
         log.info("Published post: {}", post.getId());
         PostDto savedPostDto = postMapper.toPostDto(post);
-        postEventService.produce(savedPostDto);
+        postEventService.produceToBroker(savedPostDto);
         return savedPostDto;
     }
 

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class KafkaLikeProducer extends AbstractKafkaProducer<LikeEventDto> {
     public KafkaLikeProducer(
-        KafkaTemplate<String, LikeEventDto> kafkaTemplate,
+        KafkaTemplate<String, String> kafkaTemplate,
 
         @Qualifier("likeKafkaTopic")
         NewTopic topic

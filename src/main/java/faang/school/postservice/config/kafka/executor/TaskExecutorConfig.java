@@ -13,7 +13,7 @@ public class TaskExecutorConfig {
     private final ProducerExecutorParams producerExecutorParams;
 
     @Bean
-    public ThreadPoolTaskExecutor producerExecutor() {
+    public ThreadPoolTaskExecutor kafkaProducerConsumerExecutor() {
         ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
         taskExecutor.setCorePoolSize(producerExecutorParams.getCorePoolSize());
         taskExecutor.setMaxPoolSize(producerExecutorParams.getMaxPoolSize());

@@ -9,3 +9,5 @@ databaseChangeLog:
       file: db/changelog/changeset/post_V004_ad_verified.sql
   - include:
       file: db/changelog/changeset/post_V004_update_comment_add_verified.sql
+  - include:
+      file: db/changelog/changeset/post_V005_add_feed.sql

@@ -16,30 +16,30 @@ import org.springframework.scheduling.annotation.Async;
 @RequiredArgsConstructor
 @Slf4j
 public abstract class AbstractKafkaProducer<T> {
-    private final KafkaTemplate<String, T> kafkaTemplate;
+    private final KafkaTemplate<String, String> kafkaTemplate;
     private final NewTopic topic;
 
-    @Async("kafkaProducerExecutor")
+    @Async("kafkaProducerConsumerExecutor")
     @Retryable(
         retryFor = {RuntimeException.class},
         maxAttemptsExpression = "${spring.data.kafka.producer.retry.maxAttempts}",
         backoff = @Backoff(delayExpression = "${spring.data.kafka.producer.retry.backOffDelay}")
     )
-    public void send(T event) {
+    public void send(String event) {
         try {
             kafkaTemplate.send(topic.name(), event);
-            log.info("Publish event: {}", event);
+            log.info("Publish event: {} into topic: {}", event, topic.name());
         } catch (Exception e) {
             int numberOfRetry = RetrySynchronizationManager.getContext().getRetryCount();
-            String message = "Failed to publish event %s, effort: %d".formatted(event, numberOfRetry);
-            log.error(message);
-            throw new RuntimeException(message);
+            String message = "Failed to publish event %s into topic: %s, effort: %d".formatted(event, topic.name(), numberOfRetry);
+            log.error(message, e);
+            throw new RuntimeException(e);
         }
     }
 
     @Recover
     public void handleFailure(RuntimeException e, T event) {
-        log.error("Event {} could not be published, reason: {}", event, e.getMessage());
+        log.error("Event {} could not be published into topic: {}, reason: {}", event, e.getMessage(), topic.name());
         throw new RuntimeException(e);
     }
 }

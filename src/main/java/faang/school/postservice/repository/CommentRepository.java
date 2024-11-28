@@ -19,10 +19,21 @@ public interface CommentRepository extends CrudRepository<Comment, Long> {
     List<Comment> findUnverifiedComments(@Param("startDate") LocalDateTime startDate);
 
     @Query(""" 
-            SELECT c.authorId 
-            FROM Comment c  
-            WHERE c.verified = false AND c.verifiedDate IS NOT NULL  
-            GROUP BY c.authorId 
+            SELECT c.authorId
+            FROM Comment c
+            WHERE c.verified = false AND c.verifiedDate IS NOT NULL
+            GROUP BY c.authorId
             HAVING COUNT(c.id) > :banCommentLimit""")
     List<Long> findUserIdsToBan(@Param("banCommentLimit") int banCommentLimit);
+
+    @Query(nativeQuery = true, value = """
+        select
+            c.id
+        from "comment" c
+        where c.post_id = :postId
+            and c.id > :commentId
+        order by c.id desc
+        limit :limit
+        """)
+    List<Long> findLastCommentIdsByPostId(long postId, long commentId, int limit);
 }

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class KafkaPostViewProducer extends AbstractKafkaProducer<PostViewEventDto> {
     public KafkaPostViewProducer(
-        KafkaTemplate<String, PostViewEventDto> kafkaTemplate,
+        KafkaTemplate<String, String> kafkaTemplate,
         @Qualifier("postViewKafkaTopic")
         NewTopic topic
     ) {
