@@ -2,6 +2,7 @@ package faang.school.postservice.service.comment;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.config.moderation.ModerationDictionary;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.ResponseCommentDto;
 import faang.school.postservice.dto.user.UserDto;
@@ -14,12 +15,19 @@ import faang.school.postservice.validator.comment.CommentIdValidator;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.comment.CommentValidator;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.ListUtils;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Validated
@@ -31,6 +39,8 @@ public class CommentService {
     private final PostRepository postRepository;
     private final CommentMapper commentMapper;
     private final UserContext userContext;
+    private final ModerationDictionary moderator;
+
 
     public ResponseCommentDto addComment(Long postId, CommentDto commentDto) {
         validateUser(commentDto.getAuthorId());
@@ -96,5 +106,32 @@ public class CommentService {
     public boolean isExits(Long commentId) {
         commentIdValidator.validateCommentId(commentId);
         return commentRepository.existsById(commentId);
+    }
+
+    @Transactional
+    public void verifyComments(int subListSize) {
+        List<Comment> comments = commentRepository.findAllUnCheckedComments();
+        if (comments.isEmpty()) {
+            log.info("No comments for moderation");
+            return;
+        }
+        log.info("Found {} comments for moderation", comments.size());
+        List<List<Comment>> partitionsComments = ListUtils.partition(comments, subListSize);
+        for (List<Comment> partitionComments : partitionsComments) {
+            verifyComment(partitionComments);
+        }
+        log.info("Verified all {} comments", comments.size());
+    }
+
+    @Async("executorCommentModerator")
+    protected void verifyComment(List<Comment> comments) {
+        CompletableFuture.runAsync(() -> {
+            comments.forEach(comment -> {
+                comment.setVerified(moderator.checkCurseWordsInComment(comment.getContent()));
+                comment.setVerifiedAt(LocalDateTime.now());
+            });
+            commentRepository.saveAll(comments);
+            log.info("Verified {} comments", comments.size());
+        });
     }
 }

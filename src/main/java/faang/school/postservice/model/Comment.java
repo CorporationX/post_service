@@ -21,13 +21,13 @@ public class Comment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
 
     @Column(name = "content", nullable = false, length = 4096)
     private String content;
 
     @Column(name = "author_id", nullable = false)
-    private long authorId;
+    private Long authorId;
 
     @OneToMany(mappedBy = "comment", orphanRemoval = true)
     private List<Like> likes;
@@ -45,4 +45,12 @@ public class Comment {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+
+    @Column(name = "verified")
+    private Boolean verified;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "verified_at")
+    private LocalDateTime verifiedAt;
 }

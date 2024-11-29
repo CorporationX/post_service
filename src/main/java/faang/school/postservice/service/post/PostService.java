@@ -96,6 +96,7 @@ public class PostService {
         return postMapper.toDtoFromPost(postRepository.save(post));
     }
 
+    @Transactional
     public PostResponseDto updatePostWithFiles(
             @Positive long postId, @NotNull @Valid PostUpdateDto dto, MultipartFile[] files) throws IOException {
         fileValidator.checkFiles(files);
@@ -204,6 +205,9 @@ public class PostService {
     }
 
     private void removeIrrelevantResourcesFromMinio(List<Resource> resourcesFromDateBase, List<Resource> resourcesToUpdate) {
+        if (resourcesToUpdate == null) {
+            resourcesToUpdate = new ArrayList<>();
+        }
         for (Resource resource : resourcesFromDateBase) {
             if (!resourcesToUpdate.contains(resource)) {
                 amazonS3.deleteFile(resource.getKey());

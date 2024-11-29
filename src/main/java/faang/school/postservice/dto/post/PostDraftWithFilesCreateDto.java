@@ -17,18 +17,10 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PostDraftWithFilesCreateDto {
-    @NotBlank(message = "Content should not be blank")
-    @Size(min = 1, max = 4096, message = "Content should be between 1 and 4096 characters")
     private String content;
-
-    @Positive(message = "Author ID must be a positive number or null")
     private Long authorId;
-
-    @Positive(message = "Project ID must be a positive number or null")
     private Long projectId;
-
-    @Size(min = 1, message = "Albums ID should not be empty")
-    private List<@NotNull @Positive Long> albumsId;
+    private List<Long> albumsId;
 
     @AssertTrue(message = "The author of a post can be either a user or a project")
     public boolean isAuthorOrProject() {

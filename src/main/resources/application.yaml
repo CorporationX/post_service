@@ -17,7 +17,7 @@ spring:
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      ddl-auto: none
+      ddl-auto: update
     show-sql: true
     properties:
       hibernate:
@@ -42,6 +42,14 @@ spring:
         queue-capacity: 500
       thread-name-prefix: async-worker-thread- # префикс для имен потоков
 
+  scheduler:
+    comment:
+      moderator:
+        path-curse-words: src/main/resources/curse-words.txt
+        cron: 0 * * * * *
+        partition-size: 1000
+        treads-count: 10
+
 server:
   port: 8081
 
@@ -51,7 +59,7 @@ logging:
 
 services:
   s3:
-    endpoint: http://192.168.1.100:9000
+    endpoint: http://localhost:9000
     accessKey: user
     secretKey: password
     bucketName: resource-post

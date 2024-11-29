@@ -52,6 +52,7 @@ class Amazons3ServiceImplTest {
         when(fileValidator.contentIsImage(mockFile)).thenReturn(true);
         when(imageProcessingService.optimizeImage(any(InputStream.class)))
                 .thenReturn(new ByteArrayInputStream("optimized data".getBytes()));
+        when(imageProcessingService.toByteArray(any(InputStream.class))).thenReturn("optimized data".getBytes());
 
         amazons3Service.uploadFile(mockFile, key);
 

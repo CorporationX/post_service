@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -41,11 +42,14 @@ public class Amazons3ServiceImpl implements AmazonS3Service {
             inputStream = imageProcessingService.optimizeImage(inputStream);
         }
 
+        byte[] contentBytes = imageProcessingService.toByteArray(inputStream);
+        long contentLength = contentBytes.length;
+
         ObjectMetadata objectMetadata = new ObjectMetadata();
-        objectMetadata.setContentLength(file.getSize());
+        objectMetadata.setContentLength(contentLength);
         objectMetadata.setContentType(file.getContentType());
         try {
-            PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, key, inputStream, objectMetadata);
+            PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, key, new ByteArrayInputStream(contentBytes), objectMetadata);
             s3Client.putObject(putObjectRequest);
         } catch (Exception e) {
             log.error("when trying to add a file an error occurred {}", e.getMessage());

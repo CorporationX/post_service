@@ -16,16 +16,16 @@ import java.io.*;
 public class ImageProcessingService {
 
     @Value("${file.max_vertical_width}")
-    private static int maxVerticalWidth;
+    private int maxVerticalWidth;
 
     @Value("${file.max_vertical_height}")
-    private static int maxVerticalHeight;
+    private int maxVerticalHeight;
 
     @Value("${file.max_horizontal_width}")
-    private static int maxHorizontalWidth;
+    private int maxHorizontalWidth;
 
     @Value("${file.max_horizontal_height}")
-    private static int maxHorizontalHeight;
+    private int maxHorizontalHeight;
 
     public InputStream optimizeImage(InputStream inputStream) throws IOException {
         BufferedImage originalImage = ImageIO.read(inputStream);
@@ -60,5 +60,15 @@ public class ImageProcessingService {
                 .size(newWidth, newHeight)
                 .keepAspectRatio(true)
                 .asBufferedImage();
+    }
+
+    public byte[] toByteArray(InputStream inputStream) throws IOException {
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        byte[] temp = new byte[8192];
+        int bytesRead;
+        while ((bytesRead = inputStream.read(temp)) != -1) {
+            buffer.write(temp, 0, bytesRead);
+        }
+        return buffer.toByteArray();
     }
 }
