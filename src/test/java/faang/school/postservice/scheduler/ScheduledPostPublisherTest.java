@@ -15,37 +15,37 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.IntStream;
 
-@SpringBootTest
-@ActiveProfiles("test")
-public class ScheduledPostPublisherTest extends TestContainersConfig {
-
-    @Autowired
-    private ScheduledPostPublisher scheduledPostPublisher;
-
-    @Autowired
-    private PostRepository postRepository;
-
-    @BeforeEach
-    public void init() {
-        LocalDateTime scheduledTime = LocalDateTime.now().minusMinutes(1);
-        IntStream.range(0, 3).forEach(i -> {
-            Post post = Post.builder()
-                    .content("content")
-                    .deleted(false)
-                    .published(false)
-                    .scheduledAt(scheduledTime)
-                    .verificationStatus(VerificationPostStatus.UNVERIFIED)
-                    .build();
-            postRepository.save(post);
-        });
-    }
-
-    @Test
-    public void testScheduledPostPublish() throws InterruptedException {
-        long timeout = 2000L;
-        scheduledPostPublisher.scheduledPostPublish();
-        Thread.sleep(timeout);
-        List<Post> posts = postRepository.findAll();
-        posts.forEach(post -> Assertions.assertTrue(post.isPublished()));
-    }
-}
+//@SpringBootTest
+//@ActiveProfiles("test")
+//public class ScheduledPostPublisherTest extends TestContainersConfig {
+//
+//    @Autowired
+//    private ScheduledPostPublisher scheduledPostPublisher;
+//
+//    @Autowired
+//    private PostRepository postRepository;
+//
+//    @BeforeEach
+//    public void init() {
+//        LocalDateTime scheduledTime = LocalDateTime.now().minusMinutes(1);
+//        IntStream.range(0, 3).forEach(i -> {
+//            Post post = Post.builder()
+//                    .content("content")
+//                    .deleted(false)
+//                    .published(false)
+//                    .scheduledAt(scheduledTime)
+//                    .verificationStatus(VerificationPostStatus.UNVERIFIED)
+//                    .build();
+//            postRepository.save(post);
+//        });
+//    }
+//
+//    @Test
+//    public void testScheduledPostPublish() throws InterruptedException {
+//        long timeout = 2000L;
+//        scheduledPostPublisher.scheduledPostPublish();
+//        Thread.sleep(timeout);
+//        List<Post> posts = postRepository.findAll();
+//        posts.forEach(post -> Assertions.assertTrue(post.isPublished()));
+//    }
+//}

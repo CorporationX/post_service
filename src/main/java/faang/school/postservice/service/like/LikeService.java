@@ -2,11 +2,14 @@ package faang.school.postservice.service.like;
 
 import faang.school.postservice.annotations.PublishPostLikeEvent;
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.like.LikeAction;
 import faang.school.postservice.exception.RecordAlreadyExistsException;
 import faang.school.postservice.exception.like.LikeNotFoundException;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.kafka.KafkaEventProducer;
+import faang.school.postservice.publisher.kafka.events.PostLikeEvent;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.service.comment.CommentService;
 import faang.school.postservice.service.post.PostService;
@@ -25,6 +28,7 @@ public class LikeService {
     private final PostService postService;
     private final CommentService commentService;
     private final UserContext userContext;
+    private final KafkaEventProducer kafkaEventProducer;
 
     @PublishPostLikeEvent
     @Transactional
@@ -43,8 +47,10 @@ public class LikeService {
                 .post(post)
                 .userId(userId)
                 .build();
-
-        return likeRepository.save(like);
+        likeRepository.save(like);
+        PostLikeEvent event = new PostLikeEvent(postId, LikeAction.ADD);
+        kafkaEventProducer.sendEvent(event);
+        return like;
     }
 
     @Transactional
@@ -60,6 +66,8 @@ public class LikeService {
         }
 
         likeRepository.deleteByPostIdAndUserId(postId, userId);
+        PostLikeEvent event = new PostLikeEvent(postId, LikeAction.REMOVE);
+        kafkaEventProducer.sendEvent(event);
     }
 
     @Transactional

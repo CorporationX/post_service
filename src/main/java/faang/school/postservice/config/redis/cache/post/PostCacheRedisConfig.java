@@ -2,11 +2,15 @@ package faang.school.postservice.config.redis.cache.post;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.dto.post.serializable.PostCacheDto;
+import faang.school.postservice.model.redis.CachedPost;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
@@ -46,6 +50,23 @@ public class PostCacheRedisConfig {
 
         template.setEnableTransactionSupport(true);
 
+        return template;
+    }
+    @Bean
+    @Qualifier("redisCacheTemplate")
+    public RedisTemplate<String, CachedPost> redisTemplate(RedisConnectionFactory connectionFactory) {
+        RedisTemplate<String, CachedPost> template = new RedisTemplate<>();
+        template.setConnectionFactory(connectionFactory);
+
+        StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
+        template.setKeySerializer(stringRedisSerializer);
+        template.setHashKeySerializer(stringRedisSerializer);
+
+        GenericJackson2JsonRedisSerializer jackson2JsonRedisSerializer = new GenericJackson2JsonRedisSerializer();
+        template.setValueSerializer(jackson2JsonRedisSerializer);
+        template.setHashValueSerializer(jackson2JsonRedisSerializer);
+
+        template.afterPropertiesSet();
         return template;
     }
 }

@@ -6,11 +6,13 @@ import lombok.RequiredArgsConstructor;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 
 @Aspect
 @RequiredArgsConstructor
+@Lazy
 @Component
 public class CommentEventPublishingAspect {
     private final CommentEventService commentEventService;

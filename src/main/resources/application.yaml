@@ -23,6 +23,16 @@ spring:
     redis:
       host: localhost
       port: 6379
+      feed-cache:
+        max-size: 500
+        page-size: 20
+        key-prefix: "feed:"
+      post-cache:
+          sync-rate-ms: 60000
+          post: "post:"
+          views: "views"
+          likes: "likes"
+          comments-in-post: 3
       channels:
         calculations_channel:
           name: calculations_channel
@@ -34,6 +44,34 @@ spring:
         post_like_event_channel:
           name: post_like_event
         post-crated: post_created_topic
+
+  kafka:
+    bootstrap-servers: host.docker.internal:9092
+    consumer:
+      group-id: default-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring:
+          json:
+            trusted:
+              packages: "*"
+      auto-offset-reset: earliest
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring:
+          json:
+            add-type-info: false
+    listener:
+      missing-topics-fatal: false
+    topic-name:
+      post-comments: "post-comments"
+      posts: "posts"
+      post-likes: "post-likes"
+      post-views: "post-views"
+      heat-feed: "heat-feed"
 
 server:
   port: 8081
@@ -94,7 +132,12 @@ quartz:
     interval-seconds: 30
 
 app:
+  send-view-events: 30000
+  cache-heat:
+    batch-size: 1000
   post:
+    subgroup:
+        size: 1000
     cache:
       post_id_prefix: "post:"
       number_of_top_in_cache: 10

@@ -108,4 +108,7 @@ public class Post {
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "hash_tags")
     private List<String> hashTags;
+
+    @Column(name = "views")
+    private Long views;
 }

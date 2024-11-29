@@ -2,6 +2,7 @@ package faang.school.postservice.client;
 
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.dto.user.UserExtendedFilterDto;
+import faang.school.postservice.dto.user.UserNewsFeedDto;
 import faang.school.postservice.dto.user.UserResponseShortDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.context.annotation.Primary;
@@ -15,7 +16,6 @@ import java.util.List;
 @Primary
 @FeignClient(name = "user-service", url = "${user-service.host}:${user-service.port}")
 public interface UserServiceClient {
-
     @GetMapping("/users/{userId}")
     UserDto getUser(@PathVariable long userId);
 
@@ -28,4 +28,12 @@ public interface UserServiceClient {
     @PostMapping("/users/active")
     List<Long> getOnlyActiveUsersFromList(@RequestBody List<Long> ids);
 
+    @GetMapping("/users/{userId}")
+    UserNewsFeedDto getUserWithFollowers(@PathVariable long userId);
+
+    @GetMapping("/users/ids")
+    List<Long> getAllUserIds();
+
+    @GetMapping("/users/{userId}/followees")
+    List<Long> getFollowees(@PathVariable long userId);
 }

@@ -2,11 +2,17 @@ package faang.school.postservice.service.comment;
 
 import faang.school.postservice.annotations.PublishCommentEvent;
 import faang.school.postservice.annotations.PublishCommentNotificationEvent;
+import faang.school.postservice.dto.comment.CommentNewsFeedDto;
 import faang.school.postservice.exception.comment.CommentNotFoundException;
+import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.kafka.KafkaEventProducer;
+import faang.school.postservice.publisher.kafka.events.PostCommentEvent;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.service.post.PostService;
+import faang.school.postservice.service.redis.CachedAuthorService;
+import faang.school.postservice.service.redis.CachedPostService;
 import faang.school.postservice.validator.CommentValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,15 +27,23 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final PostService postService;
     private final CommentValidator commentValidator;
+    private final CachedPostService cachedPostService;
+    private final CachedAuthorService cachedAuthorService;
+    private final KafkaEventProducer kafkaEventProducer;
+    private final CommentMapper commentMapper;
 
-    @PublishCommentEvent
-    @PublishCommentNotificationEvent
     @Transactional
     public Comment createComment(Long postId, Comment comment) {
         commentValidator.validateCreate(postId, comment);
         Post post = postService.findPostById(postId);
         comment.setPost(post);
         Comment savedComment = commentRepository.save(comment);
+        CommentNewsFeedDto commentNewsFeedDto = commentMapper.toNewsFeedDto(savedComment);
+        cachedPostService.addCommentToCachedPost(postId, commentNewsFeedDto);
+        cachedAuthorService.saveAuthorCache(comment.getAuthorId());
+
+        PostCommentEvent event = new PostCommentEvent(commentNewsFeedDto);
+        kafkaEventProducer.sendEvent(event);
         return savedComment;
     }
 

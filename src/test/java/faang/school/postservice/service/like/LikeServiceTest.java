@@ -1,19 +1,22 @@
 package faang.school.postservice.service.like;
 
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.like.LikeAction;
 import faang.school.postservice.exception.RecordAlreadyExistsException;
 import faang.school.postservice.exception.like.LikeNotFoundException;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.kafka.KafkaEventProducer;
+import faang.school.postservice.publisher.kafka.events.PostLikeEvent;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.service.comment.CommentService;
 import faang.school.postservice.service.post.PostService;
-import faang.school.postservice.util.like.LikeTestUtil;
 import faang.school.postservice.validator.UserValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -23,9 +26,10 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -43,6 +47,8 @@ public class LikeServiceTest {
     private CommentService commentService;
     @Mock
     private UserContext userContext;
+    @Mock
+    private KafkaEventProducer kafkaEventProducer;
 
     private Post post;
     private Comment comment;
@@ -58,10 +64,10 @@ public class LikeServiceTest {
         postId = 7L;
         commentId = 5L;
         userId = 2L;
-        post = new Post();
-        comment = new Comment();
-        like = LikeTestUtil.getPostLike(likeId, userId, post);
-        likeComment = LikeTestUtil.getCommentLike(likeId, userId, comment);
+        post = Post.builder().id(postId).build();
+        comment = Comment.builder().id(commentId).build();
+        like = Like.builder().id(likeId).userId(userId).post(post).build();
+        likeComment = Like.builder().id(likeId).userId(userId).comment(comment).build();
     }
 
     @Test
@@ -70,17 +76,24 @@ public class LikeServiceTest {
         when(userContext.getUserId()).thenReturn(userId);
         doNothing().when(userValidator).validateUserExists(userId);
         when(likeRepository.findByPostIdAndUserId(postId, userId)).thenReturn(Optional.empty());
-        when(likeRepository.save(any(Like.class))).thenReturn(like);
+
+        when(likeRepository.save(any(Like.class))).thenAnswer(invocation -> {
+            Like likeToSave = invocation.getArgument(0);
+            likeToSave.setId(1L);
+            return likeToSave;
+        });
 
         Like result = likeService.createPostLike(postId);
 
-        verify(postService, times(1)).findPostById(postId);
-        verify(userContext, times(1)).getUserId();
-        verify(userValidator, times(1)).validateUserExists(userId);
-        verify(likeRepository, times(1)).findByPostIdAndUserId(postId, userId);
-        verify(likeRepository, times(1)).save(any(Like.class));
+        verify(postService).findPostById(postId);
+        verify(userContext).getUserId();
+        verify(userValidator).validateUserExists(userId);
+        verify(likeRepository).findByPostIdAndUserId(postId, userId);
+        verify(likeRepository).save(any(Like.class));
 
-        assertEquals(like, result);
+        assertEquals(1L, result.getId());
+        assertEquals(userId, result.getUserId());
+        assertEquals(post, result.getPost());
     }
 
     @Test
@@ -92,11 +105,12 @@ public class LikeServiceTest {
 
         assertThrows(RecordAlreadyExistsException.class, () -> likeService.createPostLike(postId));
 
-        verify(postService, times(1)).findPostById(postId);
-        verify(userContext, times(1)).getUserId();
-        verify(userValidator, times(1)).validateUserExists(userId);
-        verify(likeRepository, times(1)).findByPostIdAndUserId(postId, userId);
+        verify(postService).findPostById(postId);
+        verify(userContext).getUserId();
+        verify(userValidator).validateUserExists(userId);
+        verify(likeRepository).findByPostIdAndUserId(eq(postId), eq(userId));
         verify(likeRepository, never()).save(any(Like.class));
+        verify(kafkaEventProducer, never()).sendEvent(any());
     }
 
     @Test
@@ -105,15 +119,21 @@ public class LikeServiceTest {
         when(userContext.getUserId()).thenReturn(userId);
         doNothing().when(userValidator).validateUserExists(userId);
         when(likeRepository.findByPostIdAndUserId(postId, userId)).thenReturn(Optional.of(like));
-        doNothing().when(likeRepository).deleteByPostIdAndUserId(postId, userId);
 
         likeService.deletePostLike(postId);
 
-        verify(postService, times(1)).findPostById(postId);
-        verify(userContext, times(1)).getUserId();
-        verify(userValidator, times(1)).validateUserExists(userId);
-        verify(likeRepository, times(1)).findByPostIdAndUserId(postId, userId);
-        verify(likeRepository, times(1)).deleteByPostIdAndUserId(any(Long.class), any(Long.class));
+        verify(postService).findPostById(postId);
+        verify(userContext).getUserId();
+        verify(userValidator).validateUserExists(userId);
+        verify(likeRepository).findByPostIdAndUserId(postId, userId);
+        verify(likeRepository).deleteByPostIdAndUserId(postId, userId);
+
+        ArgumentCaptor<PostLikeEvent> eventCaptor = ArgumentCaptor.forClass(PostLikeEvent.class);
+        verify(kafkaEventProducer).sendEvent(eventCaptor.capture());
+        PostLikeEvent capturedEvent = eventCaptor.getValue();
+
+        assertEquals(postId, capturedEvent.getPostId());
+        assertEquals(LikeAction.REMOVE, capturedEvent.getLikeAction());
     }
 
     @Test
@@ -125,11 +145,12 @@ public class LikeServiceTest {
 
         assertThrows(LikeNotFoundException.class, () -> likeService.deletePostLike(postId));
 
-        verify(postService, times(1)).findPostById(postId);
-        verify(userContext, times(1)).getUserId();
-        verify(userValidator, times(1)).validateUserExists(userId);
-        verify(likeRepository, times(1)).findByPostIdAndUserId(postId, userId);
-        verify(likeRepository, never()).deleteByPostIdAndUserId(any(Long.class), any(Long.class));
+        verify(postService).findPostById(postId);
+        verify(userContext).getUserId();
+        verify(userValidator).validateUserExists(userId);
+        verify(likeRepository).findByPostIdAndUserId(eq(postId), eq(userId));
+        verify(likeRepository, never()).deleteByPostIdAndUserId(anyLong(), anyLong());
+        verify(kafkaEventProducer, never()).sendEvent(any());
     }
 
     @Test
@@ -142,11 +163,11 @@ public class LikeServiceTest {
 
         Like result = likeService.createCommentLike(commentId);
 
-        verify(commentService, times(1)).getById(commentId);
-        verify(userContext, times(1)).getUserId();
-        verify(userValidator, times(1)).validateUserExists(userId);
-        verify(likeRepository, times(1)).findByCommentIdAndUserId(commentId, userId);
-        verify(likeRepository, times(1)).save(any(Like.class));
+        verify(commentService).getById(commentId);
+        verify(userContext).getUserId();
+        verify(userValidator).validateUserExists(userId);
+        verify(likeRepository).findByCommentIdAndUserId(eq(commentId), eq(userId));
+        verify(likeRepository).save(any(Like.class));
 
         assertEquals(likeComment, result);
     }
@@ -160,10 +181,10 @@ public class LikeServiceTest {
 
         assertThrows(RecordAlreadyExistsException.class, () -> likeService.createCommentLike(commentId));
 
-        verify(commentService, times(1)).getById(commentId);
-        verify(userContext, times(1)).getUserId();
-        verify(userValidator, times(1)).validateUserExists(userId);
-        verify(likeRepository, times(1)).findByCommentIdAndUserId(commentId, userId);
+        verify(commentService).getById(commentId);
+        verify(userContext).getUserId();
+        verify(userValidator).validateUserExists(userId);
+        verify(likeRepository).findByCommentIdAndUserId(eq(commentId), eq(userId));
         verify(likeRepository, never()).save(any(Like.class));
     }
 
@@ -173,15 +194,14 @@ public class LikeServiceTest {
         when(userContext.getUserId()).thenReturn(userId);
         doNothing().when(userValidator).validateUserExists(userId);
         when(likeRepository.findByCommentIdAndUserId(commentId, userId)).thenReturn(Optional.of(likeComment));
-        doNothing().when(likeRepository).deleteByCommentIdAndUserId(commentId, userId);
 
         likeService.deleteCommentLike(commentId);
 
-        verify(commentService, times(1)).getById(commentId);
-        verify(userContext, times(1)).getUserId();
-        verify(userValidator, times(1)).validateUserExists(userId);
-        verify(likeRepository, times(1)).findByCommentIdAndUserId(commentId, userId);
-        verify(likeRepository, times(1)).deleteByCommentIdAndUserId(any(Long.class), any(Long.class));
+        verify(commentService).getById(commentId);
+        verify(userContext).getUserId();
+        verify(userValidator).validateUserExists(userId);
+        verify(likeRepository).findByCommentIdAndUserId(eq(commentId), eq(userId));
+        verify(likeRepository).deleteByCommentIdAndUserId(eq(commentId), eq(userId));
     }
 
     @Test
@@ -193,10 +213,10 @@ public class LikeServiceTest {
 
         assertThrows(LikeNotFoundException.class, () -> likeService.deleteCommentLike(commentId));
 
-        verify(commentService, times(1)).getById(commentId);
-        verify(userContext, times(1)).getUserId();
-        verify(userValidator, times(1)).validateUserExists(userId);
-        verify(likeRepository, times(1)).findByCommentIdAndUserId(commentId, userId);
-        verify(likeRepository, never()).deleteByCommentIdAndUserId(any(Long.class), any(Long.class));
+        verify(commentService).getById(commentId);
+        verify(userContext).getUserId();
+        verify(userValidator).validateUserExists(userId);
+        verify(likeRepository).findByCommentIdAndUserId(eq(commentId), eq(userId));
+        verify(likeRepository, never()).deleteByCommentIdAndUserId(anyLong(), anyLong());
     }
 }

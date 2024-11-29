@@ -8,12 +8,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 @Slf4j
 @Aspect
 @RequiredArgsConstructor
+@Lazy
 @Component
 public class PostLikeEventPublishingAspect {
     private final RedisPostLikeEventPublisher redisPostLikeEventPublisher;

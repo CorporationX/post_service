@@ -76,4 +76,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     @Query(value = "select * from post where id in (:ids)", nativeQuery = true)
     List<Post> findPostsByIds(@Param("ids") List<Long> ids);
+
+    @Query("SELECT p FROM Post p WHERE p.authorId IN :authorIds AND p.published = true AND p.deleted = false ORDER BY p.publishedAt DESC")
+    List<Post> findLatestPostsByAuthors(@Param("authorIds") List<Long> authorIds, Pageable pageable);
 }

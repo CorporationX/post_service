@@ -3,3 +3,6 @@ ALTER TABLE post
 
 ALTER TABLE post
     ADD COLUMN verified_date TIMESTAMPTZ;
+
+ALTER TABLE post
+    ADD COLUMN views BIGINT;

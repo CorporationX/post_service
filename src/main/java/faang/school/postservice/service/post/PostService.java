@@ -2,7 +2,9 @@ package faang.school.postservice.service.post;
 
 import faang.school.postservice.annotations.SendPostCreatedEvent;
 import faang.school.postservice.annotations.SendPostViewEventToAnalytics;
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.serializable.PostCacheDto;
+import faang.school.postservice.dto.user.UserNewsFeedDto;
 import faang.school.postservice.exception.ResourceNotFoundException;
 import faang.school.postservice.exception.post.PostNotFoundException;
 import faang.school.postservice.exception.post.PostPublishedException;
@@ -13,12 +15,17 @@ import faang.school.postservice.exception.spelling_corrector.RepeatableServiceEx
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
+import faang.school.postservice.publisher.kafka.KafkaEventProducer;
+import faang.school.postservice.publisher.kafka.events.PostEvent;
+import faang.school.postservice.publisher.kafka.events.PostViewEvent;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ResourceRepository;
 import faang.school.postservice.service.aws.s3.S3Service;
 import faang.school.postservice.service.post.cache.PostCacheProcessExecutor;
 import faang.school.postservice.service.post.cache.PostCacheService;
 import faang.school.postservice.service.post.hash.tag.PostHashTagParser;
+import faang.school.postservice.service.redis.CachedAuthorService;
+import faang.school.postservice.service.redis.CachedPostService;
 import faang.school.postservice.validator.PostValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +41,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
 import static faang.school.postservice.model.VerificationPostStatus.REJECTED;
@@ -50,6 +58,9 @@ public class PostService {
     @Value("${app.post.cache.number_of_top_in_cache}")
     private int numberOfTopInCache;
 
+    @Value("${app.post.subgroup.size}")
+    private int subgroupSize;
+
     private final PostRepository postRepository;
     private final PostValidator postValidator;
     private final SpellingCorrectionService spellingCorrectionService;
@@ -59,6 +70,11 @@ public class PostService {
     private final PostCacheProcessExecutor postCacheProcessExecutor;
     private final PostMapper postMapper;
     private final PostCacheService postCacheService;
+    private final CachedPostService cachedPostService;
+    private final CachedAuthorService cachedAuthorService;
+    private final UserServiceClient userServiceClient;
+    private final KafkaEventProducer kafkaEventProducer;
+    private final PostQueryService postQueryService;
 
     @Transactional
     @SendPostCreatedEvent
@@ -89,10 +105,36 @@ public class PostService {
         postHashTagParser.updateHashTags(post);
         postRepository.save(post);
 
-        postCacheProcessExecutor.executeNewPostProcess(postMapper.toPostCacheDto(post));
+        cachedPostService.savePostCache(post);
+        cachedAuthorService.saveAuthorCache(post.getAuthorId());
+
+        processPostEventAsync(post);
 
         return post;
     }
+
+    @Async
+    public void processPostEventAsync(Post post) {
+        getFollowersIds(post)
+                .thenAccept(followerIds -> {
+                    PostEvent postEvent = new PostEvent(post.getId(), followerIds, post.getPublishedAt());
+                    kafkaEventProducer.sendPostEventWithSubgroups(postEvent, subgroupSize);
+                    log.info("Post event sent for post ID {}", post.getId());
+                })
+                .exceptionally(ex -> {
+                    log.error("Error processing post event for post ID {}: {}", post.getId(), ex.getMessage());
+                    return null;
+                });
+    }
+
+    @Async
+    public CompletableFuture<List<Long>> getFollowersIds(Post post) {
+        return CompletableFuture.supplyAsync(() -> {
+            UserNewsFeedDto author = userServiceClient.getUserWithFollowers(post.getAuthorId());
+            return author.getFollowers();
+        });
+    }
+
 
     @Transactional
     public Post update(Post updatePost) {
@@ -145,7 +187,7 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public Post findPostById(Long id) {
-        return postRepository.findByIdAndNotDeleted(id).orElseThrow(() -> new PostNotFoundException(id));
+        return postQueryService.findPostById(id);
     }
 
     @Transactional(readOnly = true)
@@ -160,7 +202,6 @@ public class PostService {
         List<Post> posts = postRepository.findByAuthorId(filterPost.getAuthorId());
         posts = applyFiltersAndSorted(posts, filterPost)
                 .toList();
-
         return posts;
     }
 
