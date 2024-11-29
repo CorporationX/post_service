@@ -69,4 +69,12 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             HAVING COUNT(*) > 5 ;
             """)
     List<Long> findAuthorsWithMoreThanFiveUnverifiedPosts();
+
+    @Query(nativeQuery = true, value = """
+            SELECT p.id FROM post p
+            WHERE p.author_id IN (:followeeIds)
+            ORDER BY p.created_at DESC
+            LIMIT :count
+            """)
+    List<Long> findIdsForNewsFeed(List<Long> followeeIds, int count);
 }

@@ -16,6 +16,8 @@ public interface PostService {
 
     PostDto getPost(long id);
 
+    List<PostDto> getPosts(List<Long> postIds);
+
     List<PostDto> getDraftPostsByUserId(long id);
 
     List<PostDto> getDraftPostsByProjectId(long id);

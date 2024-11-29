@@ -21,6 +21,11 @@ spring:
     redis:
       port: 6379
       host: localhost
+      transaction:
+        retry:
+          max-attempts: 5
+          backoff:
+            delay: 1000
       channels:
         calculations-channel: calculations_channel
         user-service: ban_user_channel
@@ -34,14 +39,52 @@ spring:
     consumer:
       group-id: "group"
       auto-offset-reset: earliest
+      enable-auto-commit: false
     topics:
       album-created:
         name: album-created_topic
         num-partitions: 3
         replication-factor: 1
+      post-for-feed:
+        name: post_for_feed_topic
+        num-partitions: 3
+        replication-factor: 1
+      comment-for-feed:
+        name: comment-for-feed_topic
+        num-partitions: 3
+        replication-factor: 1
+      like-for-feed:
+        name: like-for-feed_topic
+        num-partitions: 3
+        replication-factor: 1
+      view_post:
+        name: view_post_topic
+        num-partitions: 3
+        replication-factor: 1
 
 server:
   port: 8081
+  news:
+    feed:
+      news-feed-size: 500
+      limit-comments-on-post: 3
+      batch-size: 20
+      thread:
+        pool:
+          corePoolSize: 4
+          maximumPoolSize: 10
+          keepAliveTime: 60
+          queueCapacity: 100
+  cache:
+    post:
+      count-hours-time-to-live: 24
+    user:
+      count-hours-time-to-live: 24
+
+mock:
+  user-service:
+    client:
+      enabled: true
 
 logging:
   level:

@@ -60,7 +60,11 @@ class LikeServiceImplTest {
         post = new Post();
         like1 = new Like();
         comment = new Comment();
-        likeDto = new LikeDto(1L, 2L, LocalDateTime.now());
+        likeDto = LikeDto.builder()
+                .id(1L)
+                .userId(1L)
+                .likeDate(LocalDateTime.now())
+                .build();
         postId = 3L;
         commentId = 3L;
         likes1 = new ArrayList<>();
@@ -117,6 +121,7 @@ class LikeServiceImplTest {
 
       //  verify(likeRepository, times(1)).save(like1);
    // }
+    // :)
 
     @Test
     void deleteLikeFromPostThatNotLiked() {

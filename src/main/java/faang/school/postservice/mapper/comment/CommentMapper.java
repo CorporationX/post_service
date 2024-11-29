@@ -2,6 +2,7 @@ package faang.school.postservice.mapper.comment;
 
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.model.Comment;
+import faang.school.postservice.protobuf.generate.FeedEventProto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
@@ -18,4 +19,10 @@ public interface CommentMapper {
     CommentDto toDto(Comment comment);
 
     List<CommentDto> toDto(List<Comment> comments);
+
+    @Mapping(target = "commentContent", source = "content")
+    FeedEventProto.FeedEvent toProto(CommentDto commentDto);
+
+    @Mapping(target = "content", source = "commentContent")
+    CommentDto toDto(FeedEventProto.FeedEvent feedEvent);
 }

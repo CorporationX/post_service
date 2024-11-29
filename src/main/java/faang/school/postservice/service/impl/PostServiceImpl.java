@@ -3,23 +3,35 @@ package faang.school.postservice.service.impl;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.dto.user.UserFilterDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.protobuf.generate.FeedEventProto;
+import faang.school.postservice.publisher.EventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.AsyncPostPublishService;
 import faang.school.postservice.service.PostService;
+import faang.school.postservice.service.cache.MultiSaveCacheService;
+import faang.school.postservice.service.cache.SingleCacheService;
+import faang.school.postservice.util.CollectionUtils;
 import faang.school.postservice.validator.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.ListUtils;
+import org.aspectj.weaver.Utils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.ExecutorService;
 
 @Service
 @RequiredArgsConstructor
@@ -30,11 +42,19 @@ public class PostServiceImpl implements PostService {
     private int sizeBatch;
 
     private final PostRepository postRepository;
+    private final SingleCacheService<Long, PostDto> singleCacheService;
+    private final MultiSaveCacheService<PostDto> multiSaveCacheService;
+    private final SingleCacheService<Long, UserDto> cacheUserRepository;
     private final ProjectServiceClient projectServiceClient;
     private final UserServiceClient userServiceClient;
     private final PostValidator validator;
     private final PostMapper postMapper;
     private final AsyncPostPublishService asyncPostPublishService;
+    private final EventPublisher<FeedEventProto.FeedEvent> postForFeedPublisher;
+    private final EventPublisher<PostDto> viewPostPublisher;
+    private final TransactionTemplate transactionTemplate;
+    private final ExecutorService newsFeedThreadPoolExecutor;
+    private final CollectionUtils collectionUtils;
 
     @Override
     public void createDraftPost(PostDto postDto) {
@@ -50,24 +70,14 @@ public class PostServiceImpl implements PostService {
         postRepository.save(newPost);
     }
 
-    private boolean existsCreator(PostDto postDto) {
-        if (postDto.getAuthorId() == null) {
-            return projectServiceClient.existsProjectById(postDto.getProjectId());
-        } else {
-            return userServiceClient.existsUserById(postDto.getAuthorId());
-        }
-    }
-
     @Override
     public void publishPost(long id) {
-        Post post = postRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("There is no post with ID " + id));
-
-        if (!post.isPublished()) {
-            post.setPublishedAt(LocalDateTime.now());
-            post.setPublished(true);
-            postRepository.save(post);
-        }
+        Post postOrNull = transactionTemplate.execute(transactionStatus -> publishPostAndGet(id));
+        Optional.ofNullable(postOrNull)
+                .ifPresent((post) -> newsFeedThreadPoolExecutor.execute(() -> {
+                    saveToCache(post);
+                    publishForFeed(post);
+                }));
     }
 
     @Override
@@ -82,9 +92,30 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public PostDto getPost(long id) {
-        Post post = postRepository.findById(id)
+        return postRepository.findById(id)
+                .map(postMapper::toDto)
                 .orElseThrow(() -> new EntityNotFoundException("There is no post with ID " + id));
-        return postMapper.toDto(post);
+    }
+
+    @Override
+    public List<PostDto> getPosts(List<Long> postIds) {
+        List<PostDto> posts = new ArrayList<>(postIds.size());
+        List<Long> missingPostIds = new ArrayList<>();
+
+        for (Long postId : postIds) {
+            PostDto postDto = singleCacheService.get(postId);
+            if (postDto == null) {
+                missingPostIds.add(postId);
+            }
+            posts.add(postDto);
+        }
+
+        List<Post> missingPosts = postRepository.findAllById(missingPostIds);
+        List<PostDto> missingPostDtos = postMapper.toDto(missingPosts);
+        multiSaveCacheService.saveAll(missingPostDtos);
+        collectionUtils.replaceNullsWith(posts, missingPostDtos);
+
+        return posts;
     }
 
     @Override
@@ -130,5 +161,46 @@ public class PostServiceImpl implements PostService {
     @Override
     public List<Long> getAuthorsWithMoreFiveUnverifiedPosts() {
         return postRepository.findAuthorsWithMoreThanFiveUnverifiedPosts();
+    }
+
+    private Post publishPostAndGet(long id) {
+        Post post = postRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("There is no post with ID " + id));
+
+        if (!post.isPublished()) {
+            post.setPublishedAt(LocalDateTime.now());
+            post.setPublished(true);
+            postRepository.save(post);
+        }
+
+        return post;
+    }
+
+    private void saveToCache(Post post) {
+        UserDto user = userServiceClient.getUser(post.getAuthorId());
+        singleCacheService.save(post.getId(), postMapper.toDto(post));
+        cacheUserRepository.save(user.getId(), user);
+    }
+
+    private void publishForFeed(Post post) {
+        Iterable<Long> followers = userServiceClient.getFollowers(post.getAuthorId(), new UserFilterDto())
+                .stream()
+                .map(UserDto::getId)
+                .toList();
+        FeedEventProto.FeedEvent feedEvent = FeedEventProto.FeedEvent.newBuilder()
+                .setPostId(post.getId())
+                .addAllFollowerIds(followers)
+                .build();
+
+        postForFeedPublisher.publish(feedEvent);
+        viewPostPublisher.publish(postMapper.toDto(post));
+    }
+
+    private boolean existsCreator(PostDto postDto) {
+        if (postDto.getAuthorId() == null) {
+            return projectServiceClient.existsProjectById(postDto.getProjectId());
+        } else {
+            return userServiceClient.existsUserById(postDto.getAuthorId());
+        }
     }
 }

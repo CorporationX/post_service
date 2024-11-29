@@ -5,6 +5,7 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.post.PostMapperImpl;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.service.cache.NewsFeedAsyncCacheService;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.PostValidator;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,6 +37,9 @@ class PostServiceImplTest {
 
     @Mock
     private PostRepository postRepository;
+
+    @Mock
+    private NewsFeedAsyncCacheService newsFeedAsyncCacheService;
 
     @Mock
     private ProjectServiceClient projectServiceClient;
@@ -117,6 +121,7 @@ class PostServiceImplTest {
         postService.publishPost(postId);
 
         verify(postRepository, never()).save(post);
+        verify(newsFeedAsyncCacheService, never()).save(post.getAuthorId(), postId);
     }
 
     @Test
@@ -127,6 +132,7 @@ class PostServiceImplTest {
 
         postService.publishPost(postId);
 
+        verify(newsFeedAsyncCacheService).save(post.getAuthorId(), postId);
         verify(postRepository).save(postCaptor.capture());
 
         Post post = postCaptor.getValue();

@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+option java_outer_classname = "FeedEventProto";
+
+message FeedEvent {
+  int64 post_id = 1;
+  int64 author_id = 2;
+  string comment_content = 3;
+  repeated int64 follower_ids = 4;
+}
