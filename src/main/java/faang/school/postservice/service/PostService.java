@@ -3,13 +3,18 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.SpellCheckerDto;
 import faang.school.postservice.event.AnalyticsEvent;
 import faang.school.postservice.event.EventType;
+import faang.school.postservice.event.kafka.EventsBuilder;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.PostRequirementsException;
+import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publis.aspect.post.PostEventPublish;
+import faang.school.postservice.redis.service.AuthorCacheService;
+import faang.school.postservice.redis.service.PostCacheService;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.tools.YandexSpeller;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +36,10 @@ public class PostService {
     private final ProjectServiceClient projectServiceClient;
     private final UserContext userContext;
     private final YandexSpeller yandexSpeller;
+    private final PostCacheService postCacheService;
+    private final EventsBuilder eventsBuilder;
+    private final AuthorCacheService authorCacheService;
+    private final PostMapper postMapper;
 
     @Transactional
     public Post createDraftPost(Post post) {
@@ -47,6 +56,7 @@ public class PostService {
             throw new PostRequirementsException("This post is already published");
         }
         publish(existingPost);
+        cacheAndSendToKafka(existingPost);
         return postRepository.save(existingPost);
     }
 
@@ -80,6 +90,8 @@ public class PostService {
     public Post getPostById(Long id) {
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new PostRequirementsException("Post not found"));
+
+        eventsBuilder.buildAndSendPostViewEvent(postMapper.toDto(post));
         return post;
     }
 
@@ -167,6 +179,13 @@ public class PostService {
     private void delete(Post post) {
         post.setDeleted(true);
         post.setPublished(false);
+    }
+
+    private void cacheAndSendToKafka(Post existingPost) {
+        PostDto postDto = postMapper.toDto(existingPost);
+        authorCacheService.saveAuthorCache(postDto.getAuthorId());
+        postCacheService.savePostCache(postDto);
+        eventsBuilder.buildAndSendPostFollowersEvent(postDto);
     }
 }
 
