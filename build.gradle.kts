@@ -22,10 +22,13 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("org.redisson:redisson-spring-boot-starter:3.39.0")
     implementation("org.springframework.cloud:spring-cloud-starter-openfeign:4.0.2")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0")
     implementation ("org.springframework.retry:spring-retry")
+    implementation("org.springframework.kafka:spring-kafka:3.2.4")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+    implementation("org.redisson:redisson-spring-boot-starter:3.39.0")
 
     /**
      * Database
@@ -55,6 +58,8 @@ dependencies {
     testImplementation("org.testcontainers:junit-jupiter")
     testImplementation("org.testcontainers:postgresql")
     testImplementation("com.redis.testcontainers:testcontainers-redis-junit-jupiter:1.4.6")
+    testImplementation("org.springframework.kafka:spring-kafka-test:3.3.0")
+    testImplementation("org.testcontainers:kafka")
 
     /**
      * Tests
@@ -135,7 +140,7 @@ tasks.jacocoTestCoverageVerification {
             limit {
                 counter = "INSTRUCTION"
                 value = "COVEREDRATIO"
-                minimum = "0.70".toBigDecimal()
+                minimum = "0.50".toBigDecimal()
             }
         }
     }

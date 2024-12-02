@@ -140,7 +140,7 @@ class ResourceServiceTest {
     @Test
     @DisplayName("Should restore deleted resource and update timestamp")
     public void testRestoreResource() {
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now().minusMinutes(3);
         resource.setUpdatedAt(now);
         resource.setStatus(ResourceStatus.DELETED);
 

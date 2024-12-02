@@ -3,9 +3,12 @@ package faang.school.postservice.service;
 import faang.school.postservice.model.entity.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.util.PostgreSQLContainerConfig;
+import faang.school.postservice.util.SharedTestContainers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -13,9 +16,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 class PostServiceIntegrationTest extends PostgreSQLContainerConfig {
@@ -25,6 +26,12 @@ class PostServiceIntegrationTest extends PostgreSQLContainerConfig {
 
     @Autowired
     private PostService postService;
+
+    @DynamicPropertySource
+    static void overrideSourceProperties(DynamicPropertyRegistry registry) {
+        registry.add("spring.data.redis.host", SharedTestContainers.REDIS_CONTAINER::getHost);
+        registry.add("spring.data.redis.port", () -> SharedTestContainers.REDIS_CONTAINER.getMappedPort(6379));
+    }
 
     @Test
     public void testPublishScheduledPosts_OneButch() {

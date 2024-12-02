@@ -16,6 +16,21 @@ spring:
     url: jdbc:postgresql://localhost:5432/postgres
     username: user
     password: password
+  kafka:
+    consumer:
+      group-id: 1
+      auto-offset-reset: latest
+    bootstrap-servers: localhost:9092
+    listener:
+      ack-mode: manual
+    topics:
+      comment: comment_topic
+      posts: post_topic
+      post-view: post_view_topic
+      cache-heat: cache_heat_topic
+      like: like_topic
+      comment-partitions-num: 5
+    followers-batch-size: 2
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
@@ -109,3 +124,34 @@ logging:
     org.hibernate.SQL: DEBUG
     org.hibernate.type: ERROR
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+cache:
+  author-ttl: 86400
+  post-ttl: 86400
+  post:
+    prefix: "posts:"
+    fields:
+      views: numberOfViews
+      number-of-likes: numberOfLikes
+  author:
+    prefix: "author:"
+  heat:
+    producer-batch-size: 1000
+    process-batch-size: 100
+    max-posts: 500
+    max-days-back: 60
+
+post-comments:
+  size: 3
+feed-posts:
+  size: 500
+feed-posts-per-request:
+  size: 20
+
+thread:
+  queue:
+    size: 100
+  pool:
+    feed:
+      size: 5
+      max-size: 10

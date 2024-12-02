@@ -30,7 +30,7 @@ class LikeValidatorTest {
     private LikeValidator likeValidator;
 
     Long userId;
-    UserDto userDto = new UserDto(userId, null, null);
+    UserDto userDto = new UserDto(userId, null, null, null);
     LikeDto likeDto;
     Long postId;
     Long commentId;

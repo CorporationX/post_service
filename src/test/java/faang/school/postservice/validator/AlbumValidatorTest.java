@@ -98,7 +98,7 @@ public class AlbumValidatorTest {
     @Test
     public void testValidateUser_UserExists_ShouldPass() {
         long userId = 1L;
-        UserDto userDto = new UserDto(userId, "John", "john@gmail.com");
+        UserDto userDto = new UserDto(userId, "John", "john@gmail.com", null);
 
         when(userServiceClient.getUser(userId)).thenReturn(userDto);
 

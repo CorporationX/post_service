@@ -36,4 +36,6 @@ public class PostDto {
     private LocalDateTime updatedAt;
     private LocalDateTime scheduledAt;
     private List<Like> likes;
+    private int numberOfLikes;
+    private int numberOfViews;
 }

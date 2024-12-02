@@ -1,4 +1,4 @@
-package faang.school.postservice.model.enums;
+package faang.school.postservice.model.event;
 
 import lombok.Data;
 import lombok.ToString;

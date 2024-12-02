@@ -12,7 +12,7 @@ public class PostgreSQLContainerConfig extends BaseContextTest{
 
     @Container
     public static PostgreSQLContainer<?> POSTGRESQL_CONTAINER =
-            new PostgreSQLContainer<>("postgres:13.6");
+            new PostgreSQLContainer<>("postgres:13.3");
 
     @DynamicPropertySource
     static void postgresqlProperties(DynamicPropertyRegistry registry) {

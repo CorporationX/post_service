@@ -9,6 +9,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -22,4 +24,5 @@ public class UserDto {
     @Email
     @Size(max = 64)
     private String email;
+    private List<Long> followees;
 }

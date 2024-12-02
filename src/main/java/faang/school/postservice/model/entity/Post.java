@@ -94,4 +94,22 @@ public class Post {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "verified_date")
     private LocalDateTime verifiedDate;
+
+    @Version
+    @Column(name = "version")
+    private int version;
+
+    @Column(name = "number_of_views", nullable = false)
+    private int numberOfViews;
+
+    @Column(name = "number_of_likes", nullable = false)
+    private int numberOfLikes;
+
+    public void incrementViews() {
+        numberOfViews++;
+    }
+
+    public void incrementLikes() {
+        numberOfLikes++;
+    }
 }

@@ -1,0 +1,4 @@
+ALTER TABLE post
+    ADD COLUMN number_of_views INT DEFAULT 0 NOT NULL,
+    ADD COLUMN number_of_likes INT DEFAULT 0 NOT NULL,
+    ADD COLUMN version BIGINT DEFAULT 0 NOT NULL;

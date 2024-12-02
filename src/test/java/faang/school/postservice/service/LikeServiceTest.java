@@ -7,6 +7,7 @@ import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.entity.Comment;
 import faang.school.postservice.model.entity.Like;
 import faang.school.postservice.model.entity.Post;
+import faang.school.postservice.publisher.kafka.KafkaPostLikeProducer;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.publisher.LikeEventPublisher;
@@ -47,8 +48,8 @@ class LikeServiceTest {
 
     private static final Request REQUEST = Request.create(Request.HttpMethod.GET, "/some-url", Collections.emptyMap(), null, Charset.defaultCharset(), new RequestTemplate());
     private static final FeignException.NotFound USER_NOT_FOUND = new FeignException.NotFound("User not found", REQUEST, null, null);
-    private static final UserDto USER_1 = new UserDto(101L, "user1", "user1@example.com");
-    private static final UserDto USER_2 = new UserDto(102L, "user2", "user2@example.com");
+    private static final UserDto USER_1 = new UserDto(101L, "user1", "user1@example.com", null);
+    private static final UserDto USER_2 = new UserDto(102L, "user2", "user2@example.com", null);
 
     @Mock
     private LikeRepository likeRepository;
@@ -64,6 +65,8 @@ class LikeServiceTest {
     private LikeValidator likeValidator;
     @Mock
     private LikeMapper likeMapper;
+    @Mock
+    KafkaPostLikeProducer kafkaPostLikeProducer;
     @InjectMocks
     private LikeServiceImpl likeService;
 

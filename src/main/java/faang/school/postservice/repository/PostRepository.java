@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,7 +34,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("SELECT p FROM Post p WHERE p.published = false" +
             " AND p.deleted = false" +
             " AND p.scheduledAt < CURRENT_TIMESTAMP" +
-            " AND p.spellCheckCompleted = false" )
+            " AND p.spellCheckCompleted = false")
     List<Post> findReadyForSpellCheck();
 
     @Query(value = "SELECT p FROM post p JOIN p.hashtags h WHERE h.id = :hashtagId", nativeQuery = true)
@@ -53,4 +54,12 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             "GROUP BY p.authorId " +
             "HAVING COUNT(p) > 5")
     List<Long> findAuthorsWithMoreThanFiveUnverifiedPostsInRange(Long minAuthorId, Long maxAuthorId);
+
+    @Query("SELECT p FROM Post p LEFT JOIN FETCH p.likes WHERE p.authorId = :authorId AND p.publishedAt BETWEEN :startDate AND :endDate")
+    List<Post> getUserPublishedPostsByDateRange(@Param("authorId") Long authorId,
+                                                @Param("startDate") LocalDateTime startDate,
+                                                @Param("endDate") LocalDateTime endDate);
+
+    @Query(nativeQuery = true, value = "SELECT p.* FROM post p WHERE p.author_id IN (:authorIds) order by published_at desc offset :offset limit :limit")
+    List<Post> findAllByAuthorIdIn(List<Long> authorIds, int offset, int limit);
 }

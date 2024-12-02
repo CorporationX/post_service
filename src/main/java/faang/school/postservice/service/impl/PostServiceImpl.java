@@ -3,27 +3,37 @@ package faang.school.postservice.service.impl;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.model.enums.AuthorType;
+import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.dto.PostDto;
 import faang.school.postservice.model.dto.ProjectDto;
 import faang.school.postservice.model.dto.UserDto;
-import faang.school.postservice.exception.DataValidationException;
-import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.entity.Post;
-import faang.school.postservice.publisher.NewPostPublisher;
+import faang.school.postservice.model.enums.AuthorType;
 import faang.school.postservice.model.event.PostViewEvent;
+import faang.school.postservice.model.event.kafka.PostEventKafka;
+import faang.school.postservice.model.event.kafka.PostViewEventKafka;
+import faang.school.postservice.publisher.NewPostPublisher;
 import faang.school.postservice.publisher.PostViewPublisher;
+import faang.school.postservice.publisher.kafka.KafkaPostProducer;
+import faang.school.postservice.publisher.kafka.KafkaPostViewProducer;
+import faang.school.postservice.redis.service.AuthorCacheService;
+import faang.school.postservice.redis.service.PostCacheService;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.BatchProcessService;
 import faang.school.postservice.service.PostBatchService;
 import faang.school.postservice.service.PostService;
 import faang.school.postservice.util.moderation.ModerationDictionary;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.OptimisticLockException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,6 +52,9 @@ import java.util.stream.Collectors;
 @Slf4j
 public class PostServiceImpl implements PostService {
 
+    @Value("${spring.kafka.followers-batch-size}")
+    private int followersBatchSize;
+
     @Value("${spell-checker.batch-size}")
     private int correcterBatchSize;
 
@@ -55,7 +68,11 @@ public class PostServiceImpl implements PostService {
     private final ExecutorService schedulingThreadPoolExecutor;
     private final PostBatchService postBatchService;
     private final PostViewPublisher postViewPublisher;
+    private final KafkaPostProducer kafkaPostProducer;
     private final UserContext userContext;
+    private final AuthorCacheService authorCacheService;
+    private final PostCacheService postCacheService;
+    private final KafkaPostViewProducer kafkaPostViewProducer;
 
     @Value("${post.publisher.batch-size}")
     private int batchSize;
@@ -97,9 +114,18 @@ public class PostServiceImpl implements PostService {
 
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
-        postRepository.save(post);
+        post = postRepository.save(post);
 
-        return postMapper.toPostDto(post);
+        List<Long> followersIds = userServiceClient.getAllFollowingIds(post.getAuthorId());
+        List<List<Long>> followersLists = divideFollowerIds(followersIds);
+        publishKafkaEvents(followersLists, post);
+
+        PostDto postDto = postMapper.toPostDto(post);
+
+        authorCacheService.saveAuthorToCache(postDto.getAuthorId());
+        postCacheService.savePostToCache(postDto);
+
+        return postDto;
     }
 
     @Override
@@ -124,11 +150,28 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    @Retryable(
+            retryFor = OptimisticLockException.class,
+            maxAttempts = 5,
+            backoff = @Backoff(delay = 1000, multiplier = 1.5)
+    )
+    @Transactional
     public PostDto getPost(Long id) {
-        Post post = getPostById(id);
-        System.out.println("yyyyyyyyyyy");
+        Post post = postRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Post not found with id: " + id));
+
+        post.incrementViews();
+        postRepository.save(post);
+
+        PostDto postDto = postMapper.toPostDto(post);
+
         postViewPublisher.publish(createPostViewEvent(post));
-        return postMapper.toPostDto(post);
+
+        PostViewEventKafka postViewEventKafka = new PostViewEventKafka(postDto);
+        //postViewEventKafka.setPostDto(postDto);
+        kafkaPostViewProducer.sendEvent(postViewEventKafka);
+
+        return postDto;
     }
 
     @Override
@@ -237,7 +280,7 @@ public class PostServiceImpl implements PostService {
         return partitions;
     }
 
-
+    @Override
     @Transactional
     public void correctSpellingInUnpublishedPosts() {
         List<Post> unpublishedPosts = postRepository.findReadyForSpellCheck();
@@ -277,11 +320,30 @@ public class PostServiceImpl implements PostService {
     }
 
     private PostViewEvent createPostViewEvent(Post post) {
-        System.out.println("5555555555555555");
         return new PostViewEvent(post.getId(), post.getAuthorId(), userContext.getUserId(), LocalDateTime.now());
     }
 
     private PostViewEvent createPostViewEvent(PostDto post) {
         return new PostViewEvent(post.getId(), post.getAuthorId(), userContext.getUserId(), LocalDateTime.now());
+    }
+
+    private List<List<Long>> divideFollowerIds(List<Long> followersIds) {
+        List<List<Long>> followersLists = new ArrayList<>();
+        for (int i = 0; i < followersIds.size(); i += followersBatchSize) {
+            List<Long> batch = new ArrayList<>(followersIds.subList(i, Math.min(followersIds.size(), i + followersBatchSize)));
+            followersLists.add(batch);
+        }
+        return followersLists;
+    }
+
+    private void publishKafkaEvents(List<List<Long>> followersLists, Post post) {
+        followersLists.forEach(list -> {
+            PostEventKafka postEventKafka = PostEventKafka.builder()
+                    .postId(post.getId())
+                    .authorId(post.getAuthorId())
+                    .createdAt(post.getCreatedAt())
+                    .followerIds(list).build();
+            kafkaPostProducer.sendEvent(postEventKafka);
+        });
     }
 }

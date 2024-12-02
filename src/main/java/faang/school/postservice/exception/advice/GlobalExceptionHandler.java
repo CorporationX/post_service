@@ -4,6 +4,7 @@ import faang.school.postservice.exception.ErrorResponse;
 import jakarta.xml.bind.ValidationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.kafka.KafkaException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -64,6 +65,13 @@ public class GlobalExceptionHandler {
     public ErrorResponse handleSerialException(SerialException e) {
         log.error("SerialException", e);
         return new ErrorResponse("SerialException", e.getMessage());
+    }
+
+    @ExceptionHandler(KafkaException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleKafkaException(KafkaException e) {
+        log.error("KafkaException", e);
+        return new ErrorResponse("KafkaException", e.getMessage());
     }
 
     @ExceptionHandler(RuntimeException.class)

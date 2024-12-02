@@ -6,17 +6,22 @@ import faang.school.postservice.model.dto.UserDto;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.entity.Like;
 import faang.school.postservice.model.entity.Post;
+import faang.school.postservice.model.event.kafka.PostLikeEventKafka;
+import faang.school.postservice.publisher.kafka.KafkaPostLikeProducer;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.publisher.LikeEventPublisher;
-import faang.school.postservice.model.enums.LikePostEvent;
+import faang.school.postservice.model.event.LikePostEvent;
 import faang.school.postservice.service.LikeService;
 import faang.school.postservice.util.ExceptionThrowingValidator;
 import faang.school.postservice.validator.LikeValidator;
 import feign.FeignException;
+import jakarta.persistence.OptimisticLockException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -40,6 +45,7 @@ public class LikeServiceImpl implements LikeService {
     private final LikeMapper likeMapper;
 
     private final LikeEventPublisher likeEventPublisher;
+    private final KafkaPostLikeProducer kafkaPostLikeProducer;
 
     @Override
     public List<UserDto> getAllUsersLikedPost(long postId) {
@@ -96,6 +102,11 @@ public class LikeServiceImpl implements LikeService {
     }
 
     @Override
+    @Retryable(
+            retryFor = OptimisticLockException.class,
+            maxAttempts = 5,
+            backoff = @Backoff(delay = 1000, multiplier = 1.5)
+    )
     @Transactional
     public LikeDto addLikeToPost(Long postId, LikeDto likeDto) {
         likeValidator.userValidation(likeDto.getUserId());
@@ -110,9 +121,18 @@ public class LikeServiceImpl implements LikeService {
         like.setCreatedAt(LocalDateTime.now());
         like.setComment(null); // иначе TransientPropertyValueException
         likeRepository.save(like);
-        Long postAuthorId = getPostById(postId).getAuthorId(); // иначе like.getPost().getAuthorId() == null
+
+        Post likedPost = getPostById(postId);
+        Long postAuthorId = likedPost.getAuthorId(); // иначе like.getPost().getAuthorId() == null
         likeEventPublisher.publish(new LikePostEvent(like.getUserId(), like.getPost().getId(), postAuthorId));
-        return likeMapper.toDto(like);
+
+        likedPost.incrementLikes();
+        postRepository.save(likedPost);
+
+        LikeDto savedLike = likeMapper.toDto(like);
+        kafkaPostLikeProducer.sendEvent(new PostLikeEventKafka(savedLike));
+
+        return savedLike;
     }
 
     @Override
