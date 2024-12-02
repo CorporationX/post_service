@@ -37,9 +37,11 @@ logging:
 user-service:
   host: localhost
   port: 8080
+
 project-service:
   host: localhost
   port: 8082
+
 payment-service:
   host: localhost
   port: 9080
@@ -66,3 +68,13 @@ resilience4j:
         max-attempts: 10
         wait-duration: 200ms
         exponential-backoff-multiplier: 2.0
+
+task-scheduler:
+  fixedThread:
+      count: 10
+
+  fixedRate:
+    in:
+      milliseconds: 60000
+
+  batch-size: 1000

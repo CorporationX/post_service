@@ -10,6 +10,7 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.validator.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,15 +23,22 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.anyLong;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -58,6 +66,7 @@ public class PostServiceTest {
     private ProjectDto projectDto;
     private UserDto userDto;
     private List<Post> postList;
+    private List<Post> readyToPublishPosts;
     long postId;
     Post post5;
 
@@ -93,6 +102,29 @@ public class PostServiceTest {
         post5 = Post.builder()
                 .id(postId)
                 .build();
+
+        Post post1 = Post.builder()
+                .id(1L)
+                .content("Content 1")
+                .published(false)
+                .build();
+
+        Post post2 = Post.builder()
+                .id(2L)
+                .content("Content 2")
+                .published(false)
+                .build();
+
+        Post post3 = Post.builder()
+                .id(3L)
+                .content("Content 3")
+                .published(false)
+                .build();
+
+        readyToPublishPosts = new ArrayList<>();
+        readyToPublishPosts.add(post1);
+        readyToPublishPosts.add(post2);
+        readyToPublishPosts.add(post3);
     }
 
     @Test
@@ -242,7 +274,7 @@ public class PostServiceTest {
     }
 
     @Test
-    public void testGetPostByIdWithExistentPost(){
+    public void testGetPostByIdWithExistentPost() {
         when(postRepository.findById(postId))
                 .thenReturn(Optional.ofNullable(post5));
 
@@ -253,16 +285,14 @@ public class PostServiceTest {
     }
 
     @Test
-    public void testGetPostByIdWhenPostNotExist(){
-        when(postRepository.findById(postId))
-                .thenThrow(EntityNotFoundException.class);
+    public void testGetPostByIdWhenPostNotExist() {
+        when(postRepository.findById(postId)).thenThrow(EntityNotFoundException.class);
 
-        assertThrows(EntityNotFoundException.class,
-                () -> postService.getPostById(postId));
+        assertThrows(EntityNotFoundException.class, () -> postService.getPostById(postId));
     }
 
     @Test
-    public void testIsPostNotExistWithExistentPost(){
+    public void testIsPostNotExistWithExistentPost() {
         when(postRepository.existsById(postId)).thenReturn(true);
 
         boolean result = postService.isPostNotExist(postId);
@@ -277,5 +307,27 @@ public class PostServiceTest {
         boolean result = postService.isPostNotExist(postId);
 
         assertTrue(result);
+    }
+
+    @Test
+    public void testPublishScheduledPostsWithNoPosts() {
+        when(postRepository.findReadyToPublish()).thenReturn(List.of());
+
+        postService.publishScheduledPosts();
+
+        verify(postRepository, never()).saveAll(anyList());
+    }
+
+    @Test
+    void testPublishBatch() {
+        List<Post> batch = Arrays.asList(new Post(), new Post(), new Post());
+
+        CompletableFuture<Void> future = postService.publishBatch(batch);
+
+        assertDoesNotThrow(() -> future.get());
+        for (Post post : batch) {
+            assertTrue(post.isPublished());
+            assertNotNull(post.getPublishedAt());
+        }
     }
 }

@@ -1,4 +1,4 @@
-package faang.school.postservice.service;
+package faang.school.postservice.service.post;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
@@ -14,12 +14,16 @@ import feign.FeignException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @Slf4j
@@ -30,6 +34,9 @@ public class PostService {
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
     private final PostValidator validator;
+
+    @Value("${scheduler.batch-size}")
+    private int batchSize;
 
     @Transactional
     public PostDto createPost(PostDto postDto) {
@@ -162,5 +169,44 @@ public class PostService {
     public boolean isPostNotExist(long postId) {
         log.debug("start searching for existence post with id {}", postId);
         return !postRepository.existsById(postId);
+    }
+
+
+    public void publishScheduledPosts() {
+        log.info("Started publish posts from scheduler");
+        List<Post> readyToPublishPosts = postRepository.findReadyToPublish();
+
+        if (readyToPublishPosts.isEmpty()) {
+            log.info("Unpublished posts not found");
+            return;
+        }
+
+        int countBatch = (int) Math.ceil((double) readyToPublishPosts.size() / batchSize);
+        List<CompletableFuture<Void>> futures = new ArrayList<>();
+
+        for (int i = 0; i < countBatch; i++) {
+            int start = i * batchSize;
+            int end = (i + 1) * batchSize;
+
+            List<Post> batch = readyToPublishPosts.subList(start, end);
+            CompletableFuture<Void> futureBatch = publishBatch(batch).exceptionally(ex -> {
+                log.error("Error while publishing batch starting from index {}", start, ex);
+                return null;
+            });
+            futures.add(futureBatch);
+        }
+
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+        log.info("posts={} has been successfully published and saved.", readyToPublishPosts.size());
+    }
+
+    @Async("executor")
+    public CompletableFuture<Void> publishBatch(List<Post> batch) {
+        for (Post post : batch) {
+            post.setPublished(true);
+            post.setPublishedAt(LocalDateTime.now());
+        }
+        postRepository.saveAll(batch);
+        return CompletableFuture.completedFuture(null);
     }
 }

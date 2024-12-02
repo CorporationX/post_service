@@ -111,7 +111,7 @@ class LikeControllerTest {
         when(userContext.getUserId()).thenReturn(userId);
         doNothing().when(likeService).deleteLikeFromPost(postId, userId);
 
-        mockMvc.perform(delete("/like/delete/post/{postId}", postId))
+        mockMvc.perform(delete("/like/post/{postId}", postId))
                 .andExpect(status().isOk());
 
         verify(likeService, times(1)).deleteLikeFromPost(postId, userId);
@@ -131,7 +131,7 @@ class LikeControllerTest {
         when(userContext.getUserId()).thenReturn(userId);
         doNothing().when(likeService).deleteLikeFromComment(commentId, userId);
 
-        mockMvc.perform(delete("/like/delete/comment/{commentId}", commentId))
+        mockMvc.perform(delete("/like/comment/{commentId}", commentId))
                 .andExpect(status().isOk());
 
         verify(likeService, times(1)).deleteLikeFromComment(commentId, userId);
