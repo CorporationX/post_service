@@ -39,4 +39,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
         HAVING COUNT(*) >= :limit
         """)
     List<Long> findAuthorsWithUnverifiedPosts(int limit, LocalDate fromDate);
+
+    List<Post> findAllByAuthorIdIn(List<Long> ids);
 }

@@ -145,6 +145,13 @@ executor:
   maximumPoolSize: 10
   keepAliveTime: 60
 
+feed:
+  threadPool:
+    initialPoolSize: 10
+    maxPoolSize: 20
+  queue:
+    capacity: 1_000_000
+
 aws:
   java:
     v1:
