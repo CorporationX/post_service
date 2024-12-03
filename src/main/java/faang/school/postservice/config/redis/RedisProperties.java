@@ -22,6 +22,7 @@ public class RedisProperties {
     private String postPrefix;
     private String commentPrefix;
     private String redissonAddress;
+    private short commentsSize;
 
     @Getter
     @Setter

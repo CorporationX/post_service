@@ -1,4 +1,4 @@
-package faang.school.postservice.consumer;
+package faang.school.postservice.consumer.post;
 
 import faang.school.postservice.dto.cache.feed.FeedCacheDto;
 import faang.school.postservice.event.kafka.post.PostCreatedEvent;

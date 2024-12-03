@@ -8,6 +8,7 @@ spring:
       defaultTtl: 1 # in days
       authorTtl: 1 # in days
       commentTtl: 1 # in days
+      commentsSize: 3
 
     kafka:
       consumerConfig:
@@ -35,5 +36,9 @@ spring:
           replicationFactor: 1
         postCreatedTopic:
           name: postsTopic
+          numPartitions: 5
+          replicationFactor: 1
+        commentCreatedTopic:
+          name: comments
           numPartitions: 5
           replicationFactor: 1

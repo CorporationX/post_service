@@ -1,7 +1,9 @@
 package faang.school.postservice.repository.cache.post;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import faang.school.postservice.config.redis.RedisProperties;
 import faang.school.postservice.dto.cache.post.PostCacheDto;
+import faang.school.postservice.dto.comment.CommentDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
@@ -9,6 +11,9 @@ import org.redisson.api.RedissonClient;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.LinkedList;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
@@ -20,6 +25,7 @@ public class PostCacheRepositoryImpl implements PostCacheRepository {
     private final RedisTemplate<String, Object> redisTemplate;
     private final ObjectMapper objectMapper;
     private final RedissonClient redissonClient;
+    private final RedisProperties redisProperties;
 
     @Override
     public void save(PostCacheDto postCacheDto) {
@@ -67,5 +73,34 @@ public class PostCacheRepositoryImpl implements PostCacheRepository {
         } catch (Exception e) {
             return Optional.empty();
         }
+    }
+
+    @Override
+    public boolean updatePostsComments(Long postId, CommentDto commentDto) {
+        log.debug("Starting to insert commentDto into postCacheDto");
+        try {
+            Optional<PostCacheDto> postCacheDtoOptional = findById(postId);
+            if (postCacheDtoOptional.isPresent()) {
+                PostCacheDto postCacheDto = postCacheDtoOptional.get();
+                Deque<CommentDto> commentsDeque = postCacheDto.getComments() != null
+                        ? new LinkedList<>(postCacheDto.getComments())
+                        : new LinkedList<>();
+                commentsDeque.addFirst(commentDto);
+                log.debug("Redis commentsSize property: {}", redisProperties.getCommentsSize());
+                if (commentsDeque.size() >= redisProperties.getCommentsSize()) {
+                    commentsDeque.removeLast();
+                }
+                postCacheDto.setComments(new ArrayList<>(commentsDeque));
+                save(postCacheDto);
+                log.debug("Updated postCacheDto: {}", postCacheDto);
+            } else {
+                log.warn("PostCacheDto not found for postId: {}", postId);
+            }
+        } catch (Exception e) {
+            log.error("Exception occurred while inserting comment into post cache dto", e);
+            return false;
+        }
+        log.debug("Successfully added comment to post in cache");
+        return true;
     }
 }

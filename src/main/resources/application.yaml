@@ -29,6 +29,7 @@ spring:
       maxPostCountInFeed: 500
       commentTtl: 1 # in days
       redissonAddress: redis://localhost:6379
+      commentsSize: 3
       channels:
         calculationsChannel:
           name: calculations_channel
@@ -68,6 +69,10 @@ spring:
           replicationFactor: 1
         postCreatedTopic:
           name: postsTopic
+          numPartitions: 5
+          replicationFactor: 1
+        commentCreatedTopic:
+          name: comments
           numPartitions: 5
           replicationFactor: 1
 
