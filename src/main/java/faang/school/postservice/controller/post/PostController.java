@@ -68,4 +68,8 @@ public class PostController {
         return postService.getPostsById(projectId, filterDto);
     }
 
+    @GetMapping("/authors")
+    public void checkAndBanAuthors() {
+        postService.checkAndBanAuthors();
+    }
 }

@@ -9,6 +9,7 @@ import faang.school.postservice.filter.post.PostFilter;
 import faang.school.postservice.filter.post.PublishedFilter;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.RedisMessagePublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.PostService;
 import faang.school.postservice.sort.PostField;
@@ -47,6 +48,9 @@ class PostServiceTest {
     @Spy
     private ProjectServiceClient projectServiceClient;
 
+    @Mock
+    private RedisMessagePublisher redisMessagePublisher;
+
     @Spy
     private PostMapperImpl postMapper;
 
@@ -72,6 +76,7 @@ class PostServiceTest {
         sort.add(new SortByPublishedAt());
 
         postService = new PostService(
+                redisMessagePublisher,
                 postRepository,
                 postMapper,
                 postFilters,

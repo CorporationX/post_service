@@ -24,6 +24,8 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
+      topic:
+        user-ban: user_ban
 
 server:
   port: 8081
@@ -41,3 +43,7 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+schedule:
+  author-banner-cron: "0 0 0 * * ?"
+
