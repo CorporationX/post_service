@@ -45,4 +45,11 @@ public class KafkaTopicConfig {
                 kafkaProperties.getTopics().getCommentLikeTopic().getNumPartitions(),
                 kafkaProperties.getTopics().getCommentLikeTopic().getReplicationFactor());
     }
+
+    @Bean
+    public NewTopic commentTopic() {
+        return new NewTopic(kafkaProperties.getTopics().getCommentCreatedTopic().getName(),
+                kafkaProperties.getTopics().getCommentCreatedTopic().getNumPartitions(),
+                kafkaProperties.getTopics().getCommentCreatedTopic().getReplicationFactor());
+    }
 }

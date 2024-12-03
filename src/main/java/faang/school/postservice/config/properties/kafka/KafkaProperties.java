@@ -46,6 +46,7 @@ public class KafkaProperties {
         private PostLikeTopic postLikeTopic;
         private CommentLikeTopic commentLikeTopic;
         private PostCreatedTopic postCreatedTopic;
+        private CommentCreatedTopic commentCreatedTopic;
 
         @Getter
         @Setter
@@ -68,6 +69,15 @@ public class KafkaProperties {
         @Getter
         @Setter
         public static class PostCreatedTopic {
+
+            private String name;
+            private int numPartitions;
+            private short replicationFactor;
+        }
+
+        @Getter
+        @Setter
+        public static class CommentCreatedTopic {
 
             private String name;
             private int numPartitions;

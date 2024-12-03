@@ -37,3 +37,7 @@ spring:
           name: postsTopic
           numPartitions: 5
           replicationFactor: 1
+        commentCreatedTopic:
+          name: comments
+          numPartitions: 5
+          replicationFactor: 1
