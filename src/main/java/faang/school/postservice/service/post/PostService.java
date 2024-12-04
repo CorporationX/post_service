@@ -1,7 +1,16 @@
 package faang.school.postservice.service.post;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.json.dto.DtoBanSchema;
+import faang.school.postservice.client.ProjectServiceClient;
+import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.redis.MessageSender;
+import faang.school.postservice.dto.post.PostDraftCreateDto;
+import faang.school.postservice.dto.post.PostDraftResponseDto;
+import faang.school.postservice.dto.post.PostDraftWithFilesCreateDto;
+import faang.school.postservice.dto.post.PostResponseDto;
+import faang.school.postservice.dto.post.PostUpdateDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.json.student.DtoBanShema;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.redis.MessageSenderForUserBanImpl;
@@ -9,6 +18,7 @@ import faang.school.postservice.dto.post.*;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
+import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.album.AlbumService;
 import faang.school.postservice.service.amazons3.Amazons3ServiceImpl;
@@ -61,9 +71,11 @@ public class PostService {
     private final Amazons3ServiceImpl amazonS3;
     private final FileValidator fileValidator;
     private final KeyKeeper keyKeeper;
+    private final CommentRepository commentRepository;
+    private final MessageSender redisSender;
+    private final ObjectMapper objectMapper;
     private final GingerCorrector gingerCorrector;
     private final MessageSenderForUserBanImpl messageSenderForUserBan;
-    private final ObjectMapper objectMapper;
 
     @Value("${size.not-verified-posts-for-users}")
     private int sizeNotVerifiedPostsForUsers;
@@ -177,6 +189,16 @@ public class PostService {
                 .toList();
     }
 
+    public void allAuthorIdWithNotVerifyComments() {
+        List<Long> idsForBan = commentRepository.findAllWereVerifiedFalse();
+        try {
+            redisSender.send(objectMapper.writeValueAsString(getDtoBanSchema(idsForBan)));
+            log.info("Ids was sending");
+        } catch (JsonProcessingException e) {
+            log.error("Failed to serialize DtoBanSchema to JSON", e);
+        }
+    }
+
     @Async("workerPool")
     public void checkingPostForErrors() throws IOException, InterruptedException {
         List<Post> posts = postRepository.findByNotPublished();
@@ -200,9 +222,7 @@ public class PostService {
             log.info("Users' posts are in good shape");
             return;
         }
-        DtoBanShema dtoBanShema = new DtoBanShema();
-        dtoBanShema.setIds(userIds);
-        messageSenderForUserBan.send(objectMapper.writeValueAsString(dtoBanShema));
+        messageSenderForUserBan.send(objectMapper.writeValueAsString(getDtoBanSchema(userIds)));
         log.info("users sent to block");
     }
 
@@ -267,10 +287,17 @@ public class PostService {
                         .build());
     }
 
+    private DtoBanSchema getDtoBanSchema(List<Long> idsForBan) {
+        DtoBanSchema dto = new DtoBanSchema();
+        dto.setIds(idsForBan);
+        return dto;
+    }
+
+
     @Transactional
     public void publishScheduledPosts(@Positive int subListSize) {
         List<Post> posts = postRepository.findReadyToPublish();
-        if (posts.isEmpty()){
+        if (posts.isEmpty()) {
             log.info("No posts to publish");
             return;
         }

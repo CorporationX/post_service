@@ -20,9 +20,8 @@ public class RedisConfig {
 
     @Bean
     public JedisConnectionFactory jedisConnectionFactory() {
-        RedisStandaloneConfiguration redisStandaloneConfiguration = new RedisStandaloneConfiguration(
-                redisProperties.getHost(), redisProperties.getPort()
-        );
+        RedisStandaloneConfiguration redisStandaloneConfiguration =
+                new RedisStandaloneConfiguration(redisProperties.host(), redisProperties.port());
         return new JedisConnectionFactory(redisStandaloneConfiguration);
     }
 
@@ -37,13 +36,24 @@ public class RedisConfig {
     }
 
     @Bean
-    public ChannelTopic channelTopicForUserBan() {
-        String topic = redisProperties.getUserBanTopic();
-        log.info("Creating ChannelTopic for User Ban with topic: {}", topic);
-        return new ChannelTopic(topic);    }
+    public ChannelTopic topic() {
+        return new ChannelTopic(redisProperties.usersBanTopic());
+    }
 
     @Bean
-    public MessageSenderForUserBanImpl messageSenderForUserBan(RedisTemplate<String, List<Long>> redisTemplate, ChannelTopic channelTopicForUserBan) {
+    public MessageSender redisSender() {
+        return new MessageSenderImpl(redisTemplate(), topic());
+    }
+
+    @Bean
+    public ChannelTopic channelTopicForUserBan() {
+        String topic = redisProperties.usersBanTopic();
+        log.info("Creating ChannelTopic for User Ban with topic: {}", topic);
+        return new ChannelTopic(topic);    
+    }
+
+    @Bean
+    public MessageSender messageSenderForUserBan(RedisTemplate<String, List<Long>> redisTemplate, ChannelTopic channelTopicForUserBan) {
         return new MessageSenderForUserBanImpl(redisTemplate, channelTopicForUserBan);
     }
 }

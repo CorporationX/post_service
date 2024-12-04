@@ -1,6 +1,16 @@
 package faang.school.postservice.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,13 +31,13 @@ public class Comment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private long id;
 
     @Column(name = "content", nullable = false, length = 4096)
     private String content;
 
     @Column(name = "author_id", nullable = false)
-    private Long authorId;
+    private long authorId;
 
     @OneToMany(mappedBy = "comment", orphanRemoval = true)
     private List<Like> likes;
@@ -46,11 +56,10 @@ public class Comment {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-
-    @Column(name = "verified")
-    private Boolean verified;
-
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "verified_at")
     private LocalDateTime verifiedAt;
+
+    @Column(name = "verified")
+    private Boolean verified;
 }

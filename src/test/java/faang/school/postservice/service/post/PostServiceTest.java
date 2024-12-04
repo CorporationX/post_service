@@ -1,10 +1,18 @@
 package faang.school.postservice.service.post;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.json.student.DtoBanShema;
+
+import com.json.dto.DtoBanSchema;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.redis.MessageSender;
 import faang.school.postservice.config.redis.MessageSenderForUserBanImpl;
+import faang.school.postservice.dto.post.PostDraftCreateDto;
+import faang.school.postservice.dto.post.PostDraftResponseDto;
+import faang.school.postservice.dto.post.PostDraftWithFilesCreateDto;
+import faang.school.postservice.dto.post.PostResponseDto;
+import faang.school.postservice.dto.post.PostUpdateDto;
 import faang.school.postservice.dto.post.*;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
@@ -12,6 +20,7 @@ import faang.school.postservice.mapper.post.PostMapperImpl;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
+import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.album.AlbumService;
 import faang.school.postservice.service.amazons3.Amazons3ServiceImpl;
@@ -48,10 +57,23 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class PostServiceTest {
@@ -89,6 +111,11 @@ class PostServiceTest {
     private ObjectMapper objectMapper;
 
     private Validator validator;
+    @Mock
+    private CommentRepository commentRepository;
+    
+    @Mock
+    private MessageSender messageSender;
 
     @BeforeEach
     void setUp() {
@@ -823,6 +850,43 @@ class PostServiceTest {
     }
 
     @Test
+    @DisplayName("Positive allAuthorIdWithNotVerifyComments")
+    void PositiveAllAuthorIdWithNotVerifyComments() throws JsonProcessingException {
+        List<Long> list = List.of(1L, 2L, 3L, 4L, 5L);
+        DtoBanSchema dto = new DtoBanSchema();
+        dto.setIds(list);
+
+        String json = "[1,2,3,4,5]";
+
+        when(commentRepository.findAllWereVerifiedFalse()).thenReturn(list);
+        when(objectMapper.writeValueAsString(dto)).thenReturn(json);
+        doNothing().when(messageSender).send(json);
+
+        postService.allAuthorIdWithNotVerifyComments();
+
+        verify(commentRepository, times(1)).findAllWereVerifiedFalse();
+        verify(objectMapper, times(1)).writeValueAsString(dto);
+        verify(messageSender, times(1)).send(json);
+    }
+
+    @Test
+    void NegativeAllAuthorIdWithNotVerifyComments() throws JsonProcessingException {
+        List<Long> list = List.of(1L, 2L, 3L, 4L, 5L);
+        DtoBanSchema dto = new DtoBanSchema();
+        dto.setIds(list);
+
+        when(commentRepository.findAllWereVerifiedFalse()).thenReturn(list);
+        doThrow(new JsonProcessingException("Test Exception") {
+        })
+                .when(objectMapper).writeValueAsString(any(DtoBanSchema.class));
+
+        postService.allAuthorIdWithNotVerifyComments();
+
+        verify(commentRepository, times(1)).findAllWereVerifiedFalse();
+        verify(messageSender, times(0)).send(anyString());
+    }
+
+    @Test
     void testPublishScheduledPosts_Positive() throws Exception {
         int partitionSize = 1;
         List<Post> posts = Arrays.asList(
@@ -915,14 +979,14 @@ class PostServiceTest {
                 Post.builder().id(245L).authorId(2L).verified(false).build()
         );
         List<Long> userIds = List.of(1L, 2L);
-        DtoBanShema dtoBanShema = new DtoBanShema();
-        dtoBanShema.setIds(userIds);
+        DtoBanSchema dtoBanSсhema = new DtoBanSchema();
+        dtoBanSсhema.setIds(userIds);
         String prefix = "[1,2]";
 
         when(postRepository.findByNotVerified()).thenReturn(posts);
-        when(objectMapper.writeValueAsString(dtoBanShema)).thenReturn(prefix);
+        when(objectMapper.writeValueAsString(dtoBanSсhema)).thenReturn(prefix);
         postService.checkPostsForVerification();
-        verify(messageSenderForUserBan, times((1))).send(objectMapper.writeValueAsString(dtoBanShema));
+        verify(messageSenderForUserBan, times((1))).send(objectMapper.writeValueAsString(dtoBanSсhema));
     }
 
     @Test
@@ -936,12 +1000,12 @@ class PostServiceTest {
                 Post.builder().id(10L).authorId(2L).verified(false).build()
         );
         List<Long> userIds = List.of(1L, 2L);
-        DtoBanShema dtoBanShema = new DtoBanShema();
-        dtoBanShema.setIds(userIds);
+        DtoBanSchema dtoBanSсhema = new DtoBanSchema();
+        dtoBanSсhema.setIds(userIds);
         postService.setSizeNotVerifiedPostsForUsers(5);
 
         when(postRepository.findByNotVerified()).thenReturn(posts);
         postService.checkPostsForVerification();
-        verify(messageSenderForUserBan, times((0))).send(objectMapper.writeValueAsString(dtoBanShema));
+        verify(messageSenderForUserBan, times((0))).send(objectMapper.writeValueAsString(dtoBanSсhema));
     }
 }

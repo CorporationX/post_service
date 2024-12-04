@@ -1,16 +1,7 @@
 package faang.school.postservice.config.redis;
 
-import lombok.Getter;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@Getter
-@Component
-public class RedisProperties {
-    @Value("${spring.data.redis.host}")
-    private String host;
-    @Value("${spring.data.redis.port}")
-    private Integer port;
-    @Value("${spring.data.redis.user-ban-topic}")
-    private String userBanTopic;
+@ConfigurationProperties(prefix = "spring.data.redis")
+public record RedisProperties(Integer port, String host, String usersBanTopic) {
 }

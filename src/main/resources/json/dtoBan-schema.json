@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "ids": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "format": "int64",
+        "javaType": "long",
+        "nullable": false
+      }
+    }
+  },
+  "required": ["ids"]
+}
