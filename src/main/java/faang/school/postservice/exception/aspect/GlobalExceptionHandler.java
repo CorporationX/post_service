@@ -1,5 +1,6 @@
 package faang.school.postservice.exception.aspect;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import faang.school.postservice.dto.error.ErrorDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.ResourceAlreadyExistsException;
@@ -160,5 +161,18 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                                 .setStackTrace(trace)
                                 .build()
                 );
+    }
+
+    @ExceptionHandler(JsonProcessingException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ResponseEntity<ErrorResponse> handleJsonProcessingException(JsonProcessingException ex) {
+        log.error("JSON processing error", ex);
+        ErrorResponse errorResponse = new ErrorResponse(
+                LocalDateTime.now(),
+                ex.getMessage(),
+                "Error processing JSON",
+                "INTERNAL_SERVER_ERROR"
+        );
+        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

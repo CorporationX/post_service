@@ -17,6 +17,8 @@ public interface PostDaoService {
     Post update(Post post);
 
     Post deleteById(Long id);
+
     List<Post> filterNonPublishedPostsByTime(List<Post> posts);
+
     List<Post> getAllNonPublishedByAuthorId(Long id);
 }
