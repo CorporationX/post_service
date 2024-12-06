@@ -1,5 +1,6 @@
 package faang.school.postservice.service.post;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import faang.school.postservice.dto.post.PostDto;
 
 import java.util.List;
@@ -7,7 +8,7 @@ import java.util.List;
 public interface PostService {
     PostDto createPost(PostDto postDto);
 
-    PostDto publishPost(Long id);
+    PostDto publishPost(Long id) throws JsonProcessingException;
 
     PostDto updatePost(PostDto postDto);
 

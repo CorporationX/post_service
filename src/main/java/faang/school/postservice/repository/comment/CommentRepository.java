@@ -1,4 +1,4 @@
-package faang.school.postservice.repository;
+package faang.school.postservice.repository.comment;
 
 import faang.school.postservice.model.Comment;
 import org.springframework.data.jpa.repository.Query;

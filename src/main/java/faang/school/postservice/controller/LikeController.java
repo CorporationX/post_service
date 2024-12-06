@@ -46,5 +46,4 @@ public class LikeController {
     public List<UserDto> getUsersByCommentId(@PathVariable long commentId) {
         return likeService.getUsersLikedComment(commentId);
     }
-
 }

@@ -2,19 +2,28 @@ package faang.school.postservice.service.post;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.kafka.events.KafkaPostEvent;
+import faang.school.postservice.dto.kafka.events.KafkaPostViewEvent;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.PostException;
-import faang.school.postservice.mapper.PostMapper;
+import faang.school.postservice.mapper.post.PostMapper;
+import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.producer.KafkaProducer;
+import faang.school.postservice.properties.topics.KafkaTopics;
+import faang.school.postservice.repository.post.PostRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PostServiceImpl implements PostService {
@@ -22,6 +31,8 @@ public class PostServiceImpl implements PostService {
     private final PostMapper postMapper;
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
+    private final KafkaProducer kafkaProducer;
+    private final KafkaTopics kafkaTopics;
 
     @Override
     public PostDto createPost(PostDto postDto) {
@@ -32,11 +43,13 @@ public class PostServiceImpl implements PostService {
         Post post = postMapper.toEntity(postDto);
         post.setPublished(false);
         post.setDeleted(false);
+        post.setComments(List.of(new Comment()));
 
         postRepository.save(post);
         return postDto;
     }
 
+    @Transactional
     @Override
     public PostDto publishPost(Long id) {
         Post post = postRepository.findById(id)
@@ -46,10 +59,21 @@ public class PostServiceImpl implements PostService {
             throw new PostException("Post is already published");
         }
 
-        post.setPublished(true);
+//        post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
 
         postRepository.save(post);
+
+        UserDto userDto = userServiceClient.getUser(post.getAuthorId());
+
+        KafkaPostEvent event = KafkaPostEvent.builder()
+                .author(userDto)
+                .postId(post.getId())
+                .countComments((long) post.getComments().size())
+                .countLikes((long) post.getLikes().size())
+                .createdAt(LocalDateTime.now())
+                .build();
+        kafkaProducer.send(kafkaTopics.getPublish_post().getName(), event);
         return postMapper.toDto(post);
     }
 
@@ -87,6 +111,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public PostDto getPost(Long id) {
+        kafkaProducer.send(kafkaTopics.getPost_view().getName(), KafkaPostViewEvent.builder().postId(id).build());
         return postRepository.findById(id)
                 .map(postMapper::toDto)
                 .orElseThrow(EntityNotFoundException::new);

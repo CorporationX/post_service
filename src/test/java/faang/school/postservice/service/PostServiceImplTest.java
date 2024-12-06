@@ -1,15 +1,15 @@
 package faang.school.postservice.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.PostException;
-import faang.school.postservice.mapper.PostMapper;
+import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.post.PostRepository;
 import faang.school.postservice.service.post.PostServiceImpl;
 import feign.FeignException;
 import jakarta.persistence.EntityNotFoundException;
@@ -91,7 +91,7 @@ class PostServiceImplTest {
 
     @Test
     void testPostCreatePost() {
-        UserDto userDto = new UserDto(1L, "v", "@");
+        UserDto userDto = new UserDto(1L, "v", "@", List.of());
         ProjectDto projectDto = new ProjectDto();
         projectDto.setId(1L);
 
@@ -140,7 +140,7 @@ class PostServiceImplTest {
     }
 
     @Test
-    void testPublishPostExistentPost() {
+    void testPublishPostExistentPost() throws JsonProcessingException {
         when(postRepository.findById(postDto.getId())).thenReturn(Optional.of(post));
 
         postService.publishPost(postDto.getId());

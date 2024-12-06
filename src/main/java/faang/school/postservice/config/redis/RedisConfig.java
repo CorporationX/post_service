@@ -2,7 +2,8 @@ package faang.school.postservice.config.redis;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import faang.school.postservice.publisher.LikeEventPublisher;
+import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.publisher.redis.LikeEventPublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -10,12 +11,16 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.convert.KeyspaceConfiguration;
 import org.springframework.data.redis.listener.ChannelTopic;
+import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
-import org.springframework.data.redis.serializer.StringRedisSerializer;
+
+import java.util.Collections;
 
 @Configuration
 @RequiredArgsConstructor
+@EnableRedisRepositories
 public class RedisConfig {
     private final RedisDto redisDto;
 
@@ -30,6 +35,14 @@ public class RedisConfig {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
         return objectMapper;
+    }
+
+    public static class MyKeyspaceConfiguration extends KeyspaceConfiguration {
+
+        @Override
+        protected Iterable<KeyspaceSettings> initialConfiguration() {
+            return Collections.singleton(new KeyspaceSettings(PostDto.class, "people"));
+        }
     }
 
     @Bean

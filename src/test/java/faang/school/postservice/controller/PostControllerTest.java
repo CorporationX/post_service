@@ -1,5 +1,6 @@
 package faang.school.postservice.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.service.post.PostService;
 import org.junit.jupiter.api.BeforeEach;
@@ -48,7 +49,7 @@ class PostControllerTest {
     }
 
     @Test
-    void testPublish() {
+    void testPublish() throws JsonProcessingException {
         postController.publish(id);
         verify(postService, times(1)).publishPost(id);
     }

@@ -1,4 +1,4 @@
-package faang.school.postservice.mapper;
+package faang.school.postservice.mapper.post;
 
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.model.Post;

@@ -1,9 +1,8 @@
-package faang.school.postservice.publisher;
+package faang.school.postservice.publisher.redis;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
-import org.springframework.stereotype.Component;
 
 @RequiredArgsConstructor
 public class LikeEventPublisher {

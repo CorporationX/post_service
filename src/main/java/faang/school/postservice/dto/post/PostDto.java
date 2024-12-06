@@ -7,14 +7,18 @@ import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.redis.core.RedisHash;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @AuthorOrProjectIdOnly
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class PostDto {
+public class PostDto implements Serializable {
     private Long id;
     private Long authorId;
     private Long projectId;

@@ -1,19 +1,20 @@
 package faang.school.postservice.service.like;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.kafka.events.KafkaLikeEvent;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.like.LikeEvent;
 import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.mapper.LikeMapper;
+import faang.school.postservice.mapper.like.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.publisher.LikeEventPublisher;
-import faang.school.postservice.repository.CommentRepository;
-import faang.school.postservice.repository.LikeRepository;
-import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.producer.KafkaProducer;
+import faang.school.postservice.properties.topics.KafkaTopics;
+import faang.school.postservice.publisher.redis.LikeEventPublisher;
+import faang.school.postservice.repository.comment.CommentRepository;
+import faang.school.postservice.repository.like.LikeRepository;
+import faang.school.postservice.repository.post.PostRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,8 +36,9 @@ public class LikeServiceImpl implements LikeService {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
-    private final ObjectMapper objectMapper;
     private final LikeEventPublisher likeEventPublisher;
+    private final KafkaProducer kafkaProducer;
+    private final KafkaTopics kafkaTopics;
 
     public LikeDto likePost(LikeDto likeDto) {
         Post post = postRepository.findById(likeDto.getPostId())
@@ -49,10 +51,16 @@ public class LikeServiceImpl implements LikeService {
         like.setCreatedAt(LocalDateTime.now());
 
         likeRepository.save(like);
+        post.getLikes().add(like);
         log.info("The like was added to the database to {} post", likeDto.getPostId());
 
         publishLikeEvent(likeDto, post);
-
+        kafkaProducer.send(kafkaTopics.getLikes().getName(), KafkaLikeEvent.builder()
+                        .likeId(likeDto.getPostId())
+                        .authorId(likeDto.getUserId())
+                        .commentId(likeDto.getCommentId())
+                        .postId(likeDto.getPostId())
+                .build());
         return likeMapper.toDto(like);
     }
 

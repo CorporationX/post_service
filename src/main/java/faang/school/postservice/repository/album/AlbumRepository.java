@@ -1,4 +1,4 @@
-package faang.school.postservice.repository;
+package faang.school.postservice.repository.album;
 
 import faang.school.postservice.model.Album;
 import org.springframework.data.jpa.repository.Modifying;

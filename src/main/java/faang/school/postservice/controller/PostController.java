@@ -1,8 +1,9 @@
 package faang.school.postservice.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import faang.school.postservice.dto.event.CommentEvent;
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.publisher.CommentEventPublisher;
+import faang.school.postservice.publisher.redis.CommentEventPublisher;
 import faang.school.postservice.service.post.PostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +26,7 @@ public class PostController {
     }
 
     @PutMapping("/{id}")
-    public PostDto publish(@PathVariable Long id) {
+    public PostDto publish(@PathVariable Long id) throws JsonProcessingException {
         return postService.publishPost(id);
     }
 

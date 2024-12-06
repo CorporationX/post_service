@@ -1,11 +1,11 @@
 package faang.school.postservice.service.resource;
 
 import faang.school.postservice.exception.FileException;
-import faang.school.postservice.mapper.ResourceMapper;
+import faang.school.postservice.mapper.resource.ResourceMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
-import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.repository.ResourceRepository;
+import faang.school.postservice.repository.post.PostRepository;
+import faang.school.postservice.repository.resource.ResourceRepository;
 import faang.school.postservice.service.s3.S3Service;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

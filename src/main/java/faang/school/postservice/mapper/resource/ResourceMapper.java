@@ -1,4 +1,4 @@
-package faang.school.postservice.mapper;
+package faang.school.postservice.mapper.resource;
 
 import faang.school.postservice.dto.resource.ResourceDto;
 import faang.school.postservice.model.Resource;

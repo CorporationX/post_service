@@ -3,15 +3,19 @@ package faang.school.postservice.service.comment;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CommentUpdateDto;
+import faang.school.postservice.dto.kafka.events.KafkaCommentEvent;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.repository.CommentRepository;
-import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.producer.KafkaProducer;
+import faang.school.postservice.properties.topics.KafkaTopics;
+import faang.school.postservice.repository.comment.CommentRepository;
+import faang.school.postservice.repository.post.PostRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
@@ -24,13 +28,22 @@ public class CommentServiceImpl implements CommentService {
     private final PostRepository postRepository;
     private final CommentMapper mapper;
     private final UserServiceClient userServiceClient;
+    private final KafkaProducer kafkaProducer;
+    private final KafkaTopics kafkaTopics;
 
     @Override
+    @Transactional
     public CommentDto createComment(Long postId, CommentDto commentDto) {
         Post post = postRepository.findById(postId).orElseThrow(
                 () -> new EntityNotFoundException(String.format("Post with id %s does not exist", postId)));
         validateUser(commentDto);
         Comment comment = commentRepository.save(mapper.toEntity(commentDto, post));
+        post.getComments().add(comment);
+        kafkaProducer.send(kafkaTopics.getComments().getName(), KafkaCommentEvent.builder()
+                        .authorId(comment.getAuthorId())
+                        .commentId(comment.getId())
+                        .postId(post.getId())
+                .build());
         return mapper.toDto(comment);
     }
 

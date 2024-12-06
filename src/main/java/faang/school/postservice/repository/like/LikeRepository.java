@@ -1,4 +1,4 @@
-package faang.school.postservice.repository;
+package faang.school.postservice.repository.like;
 
 import faang.school.postservice.model.Like;
 import org.springframework.data.repository.CrudRepository;

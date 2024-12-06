@@ -1,0 +1,4 @@
+CREATE TABLE feed(
+    id BIGSERIAL PRIMARY KEY,
+
+);
