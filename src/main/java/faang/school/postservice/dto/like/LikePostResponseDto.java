@@ -12,15 +12,15 @@ import java.time.LocalDateTime;
 @Builder
 public class LikePostResponseDto {
 
-    @NotNull
+    @NotNull(message = "Author post ID cannot be null")
     private Long authorPostId;
 
-    @NotNull
+    @NotNull(message = "Liked user ID cannot be null")
     private Long likedUserId;
 
-    @NotNull
+    @NotNull(message = "Post ID cannot be null")
     private Long postId;
 
-    @NotNull
+    @NotNull(message = "Like time cannot be null")
     private LocalDateTime likeTime;
 }

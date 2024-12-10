@@ -10,9 +10,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class LikePostCreateDto {
 
-    @NotNull
+    @NotNull(message = "Post ID cannot be null")
     private Long postId;
 
-    @NotNull
+    @NotNull(message = "Liked user ID cannot be null")
     private Long likedUserId;
 }

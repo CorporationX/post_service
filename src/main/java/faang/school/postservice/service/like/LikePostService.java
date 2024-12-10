@@ -9,10 +9,12 @@ import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class LikePostService {
@@ -22,8 +24,13 @@ public class LikePostService {
     private final LikeRepository likeRepository;
 
     public LikePostCreateDto likePost(LikePostCreateDto likePostCreateDto) {
+        log.info("Attempting to like post with ID: {}", likePostCreateDto.getPostId());
+
         Post post = postRepository.findById(likePostCreateDto.getPostId())
-                .orElseThrow(EntityNotFoundException::new);
+                .orElseThrow(() -> {
+                    log.error("Post with ID: {} not found", likePostCreateDto.getPostId());
+                    return new EntityNotFoundException("Post not found");
+                });
 
         Like like = Like.builder()
                 .userId(likePostCreateDto.getLikedUserId())
@@ -31,6 +38,7 @@ public class LikePostService {
                 .build();
 
         likeRepository.save(like);
+        log.info("Like saved for post ID: {} by user ID: {}", likePostCreateDto.getPostId(), likePostCreateDto.getLikedUserId());
 
         likeEventPublisher.publish(LikePostResponseDto.builder()
                 .authorPostId(post.getAuthorId())
@@ -39,6 +47,8 @@ public class LikePostService {
                 .likeTime(LocalDateTime.now())
                 .build()
         );
+        log.info("Like event published for post ID: {}", likePostCreateDto.getPostId());
+
         return likePostCreateDto;
     }
 }
