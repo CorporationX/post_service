@@ -83,4 +83,10 @@ resilience4j:
 
 daily:
   cron:
+   check-posts: 0 0 12 * * *
    comment-moderation: 0 0 10 * * *
+
+grammarbot:
+  url: https://grammarbot.p.rapidapi.com/check
+  api-key: d40d62ff3cmsh1d3c9b411e7835dp1d42f1jsnb5e4b2ef47fb
+  host: grammarbot.p.rapidapi.com

@@ -10,6 +10,7 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.grammar.GrammarBot;
 import faang.school.postservice.validator.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,6 +23,8 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,7 +33,10 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.anyLong;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -40,6 +46,9 @@ public class PostServiceTest {
 
     @InjectMocks
     private PostService postService;
+
+    @Mock
+    private GrammarBot grammarBot;
 
     @Mock
     private PostRepository postRepository;
@@ -65,6 +74,8 @@ public class PostServiceTest {
     public void setUp() {
         post = new Post();
         post.setId(1L);
+        post.setContent("This is a test.");
+        post.setPublished(false);
         post.setCreatedAt(LocalDateTime.MIN);
         post.setPublishedAt(LocalDateTime.now());
 
@@ -266,5 +277,56 @@ public class PostServiceTest {
         boolean result = postService.isPostNotExist(postId);
 
         assertTrue(result);
+    }
+
+    @Test
+    void testCorrectUnpublishedPosts_success() {
+
+        List<Post> unpublishedPosts = new ArrayList<>(List.of(post));
+
+        when(postRepository.findReadyToPublish()).thenReturn(unpublishedPosts);
+        when(grammarBot.checkGrammar("Ths is a tst.")).thenReturn("This is a test.");
+        when(grammarBot.checkGrammar("Anothr eror.")).thenReturn("Another error.");
+
+        postService.correctUnpublishedPosts();
+
+        verify(postRepository).findReadyToPublish();
+        verify(grammarBot).checkGrammar("Ths is a tst.");
+        verify(grammarBot).checkGrammar("Anothr eror.");
+        verify(postRepository, times(2)).save(any(Post.class));
+
+        assertEquals("This is a test.", post.getContent());
+        assertTrue(post.isPublished());
+    }
+
+    @Test
+    void testCorrectUnpublishedPosts_partialFailure() {
+        List<Post> unpublishedPosts = List.of(post);
+
+        when(postRepository.findReadyToPublish()).thenReturn(unpublishedPosts);
+        when(grammarBot.checkGrammar("Ths is a tst.")).thenReturn("This is a test.");
+        when(grammarBot.checkGrammar("Anothr eror.")).thenThrow(new RuntimeException("Grammar service failure"));
+
+        postService.correctUnpublishedPosts();
+
+        verify(postRepository).findReadyToPublish();
+        verify(grammarBot).checkGrammar("Ths is a tst.");
+        verify(grammarBot).checkGrammar("Anothr eror.");
+        verify(postRepository, times(1)).save(post);
+        verify(postRepository, never()).save(post);
+
+        assertEquals("This is a test.", post.getContent());
+        assertTrue(post.isPublished());
+    }
+
+    @Test
+    void testCorrectUnpublishedPosts_noPostsToProcess() {
+
+        when(postRepository.findReadyToPublish()).thenReturn(Collections.emptyList());
+
+        postService.correctUnpublishedPosts();
+
+        verify(postRepository).findReadyToPublish();
+        verify(grammarBot, never()).checkGrammar(anyString());
     }
 }

@@ -9,11 +9,14 @@ import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.grammar.GrammarBot;
 import faang.school.postservice.validator.PostValidator;
 import feign.FeignException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +34,7 @@ public class PostService {
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
     private final PostValidator validator;
+    private final GrammarBot grammarCheck;
 
     @Transactional
     public PostDto createPost(PostDto postDto) {
@@ -82,6 +86,29 @@ public class PostService {
         post.setDeleted(true);
         log.info("Post with id {} has been deleted", id);
         return postMapper.toDto(post);
+    }
+
+    @Transactional
+    @Retryable(
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 1000, multiplier = 2),
+            value = RuntimeException.class
+    )
+    public void correctUnpublishedPosts() {
+        List<Post> unpublishedPosts = postRepository.findReadyToPublish();
+
+        for (Post post : unpublishedPosts) {
+            try {
+                log.info("Processing post with ID: {}", post.getId());
+                String correctedText = grammarCheck.checkGrammar(post.getContent());
+                post.setContent(correctedText);
+                post.setPublished(true);
+                postRepository.save(post);
+                log.info("Post with ID: {} corrected and published.", post.getId());
+            } catch (Exception e) {
+                log.error("Failed to process post with ID: {}", post.getId(), e);
+            }
+        }
     }
 
     public List<PostDto> getAllDraftNotDeletedPostsByUserId(long userId) {
