@@ -3,6 +3,7 @@ package faang.school.postservice.controller;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.service.PostService;
+import faang.school.postservice.service.moderation.sightengine.SightEngineReactiveClient;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -25,6 +26,7 @@ import java.util.List;
 @Validated
 public class PostControllerV1 {
     private final PostService postService;
+    private final SightEngineReactiveClient sightEngineReactiveClient;
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping

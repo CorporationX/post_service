@@ -1,5 +1,6 @@
-package faang.school.postservice.service.sightengine;
+package faang.school.postservice.service.moderation.sightengine;
 
+import faang.school.postservice.config.resilience4j.Resilience4jProperties;
 import faang.school.postservice.dto.sightengine.textAnalysis.TextAnalysisResponse;
 import faang.school.postservice.exception.SightengineBadRequestException;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
@@ -20,7 +21,7 @@ import java.util.List;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class TextAnalysisService {
+public class SightEngineReactiveClient {
     private final WebClient webClient;
 
     @Value("${api.content-analysis-service.key}")
@@ -29,8 +30,8 @@ public class TextAnalysisService {
     @Value("${api.content-analysis-service.secret}")
     private String apiSecret;
 
-    @CircuitBreaker(name = "sightengine-api-circuit-breaker")
-    @Retry(name = "sightengine-api-retry")
+    @CircuitBreaker(name = Resilience4jProperties.DEFAULT_CIRCUIT_BREAKER_CONFIG_NAME)
+    @Retry(name = Resilience4jProperties.DEFAULT_RETRY_CONFIG_NAME)
     public Mono<TextAnalysisResponse> analyzeText(String text) {
         MultiValueMap<String, String> requestBody = buildRequestBody(text);
         log.info("Creating a request for text analysis in the sightengine service: {}", requestBody);

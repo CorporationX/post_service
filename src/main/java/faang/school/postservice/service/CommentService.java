@@ -6,7 +6,7 @@ import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
-import faang.school.postservice.service.sightengine.TextAnalysisService;
+import faang.school.postservice.service.moderation.sightengine.SightEngineReactiveClient;
 import feign.FeignException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -28,7 +28,7 @@ public class CommentService {
     private final CommentMapper commentMapper;
     private final PostService postService;
     private final UserServiceClient userServiceClient;
-    private final TextAnalysisService textAnalysisService;
+    private final SightEngineReactiveClient textAnalysisService;
 
     @Transactional
     public CommentDto addComment(long postId, CommentDto commentDto) {
@@ -81,7 +81,7 @@ public class CommentService {
 
     private void validateUserExists(long userId) {
         try {
-            userServiceClient.getUser(userId);
+            userServiceClient.getUserById(userId);
         } catch (FeignException ex) {
             throw new EntityNotFoundException("User does not exist");
         }

@@ -1,4 +1,4 @@
-package faang.school.postservice.config;
+package faang.school.postservice.config.sight.engine;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

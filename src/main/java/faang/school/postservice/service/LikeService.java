@@ -1,11 +1,16 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.redis.RedisTopicProperties;
 import faang.school.postservice.dto.like.LikeCommentDto;
 import faang.school.postservice.dto.like.LikePostDto;
+import faang.school.postservice.dto.user.UserForNotificationDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.LikeMapper;
+import faang.school.postservice.message.event.PostLikeEvent;
+import faang.school.postservice.message.producer.MessagePublisher;
 import faang.school.postservice.model.Like;
+import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.LikeRepository;
 import feign.FeignException;
 import jakarta.persistence.EntityNotFoundException;
@@ -23,23 +28,40 @@ public class LikeService {
     private final PostService postService;
     private final CommentService commentService;
     private final LikeMapper likeMapper;
+    private final MessagePublisher messagePublisher;
+    private final RedisTopicProperties redisTopicProperties;
 
-    public LikePostDto createLikePost(long postId, long userId) {
-        log.info("Creating like with ownerLikeId={} and postId={}", userId, postId);
+    public LikePostDto createLikePost(long postId, long actorId) {
+        log.info("Creating like with ownerLikeId={} and postId={}", actorId, postId);
 
-        validateUserExists(userId);
+        validateUserExists(actorId);
         validatePostExists(postId);
-        validatePostLiked(postId, userId);
+        validatePostLiked(postId, actorId);
 
         Like like = Like.builder()
-                .userId(userId)
+                .userId(actorId)
                 .post(postService.getPostById(postId))
                 .build();
 
         Like savedLike = likeRepository.save(like);
+        Post post = postService.getPostById(postId);
 
-        log.info("UserId={} successfully liked postId={} with {} ", userId, postId, savedLike);
+        UserForNotificationDto actor = userServiceClient.getUserForNotificationById(actorId);
+        PostLikeEvent postLikeEvent = buildPostLikeEvent(actor, post, savedLike);
+        messagePublisher.publish(redisTopicProperties.getPostLikeTopic(), postLikeEvent);
+
+        log.info("UserId={} successfully liked postId={} with {} ", actorId, postId, savedLike);
         return likeMapper.toLikePostDto(savedLike);
+    }
+
+    private PostLikeEvent buildPostLikeEvent(UserForNotificationDto actor, Post post, Like savedLike) {
+        return PostLikeEvent.builder()
+                .receiverId(post.getAuthorId())
+                .authorId(actor.id())
+                .authorName(actor.username())
+                .postId(post.getId())
+                .likeTime(savedLike.getCreatedAt())
+                .build();
     }
 
     public LikeCommentDto createLikeComment(long commentId, long userId) {
@@ -73,12 +95,12 @@ public class LikeService {
     }
 
     private void validateUserExists(long userId) {
-          try {
-              userServiceClient.getUser(userId);
-          }catch (FeignException e){
-              log.error("User not exist with userID={}", userId);
-              throw new EntityNotFoundException("User not exist");
-          }
+        try {
+            userServiceClient.getUserById(userId);
+        } catch (FeignException e) {
+            log.error("User not exist with userID={}", userId, e);
+            throw new EntityNotFoundException("User not exist");
+        }
     }
 
     private void validatePostExists(long postId) {

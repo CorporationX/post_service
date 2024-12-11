@@ -27,6 +27,10 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
+        ban-user-channel:
+          name: ban_user_channel
+        post-like-channel:
+          name: notification_like_channel
 
   task:
     scheduling:
@@ -67,7 +71,7 @@ api:
 resilience4j:
   circuitbreaker:
     instances:
-      sightengine-api-circuit-breaker:
+      default-circuit-breaker:
         failure-rate-threshold: 50
         wait-duration-in-open-state: 30s
         sliding-window-size: 10
@@ -76,10 +80,31 @@ resilience4j:
         permitted-number-of-calls-in-half-open-state: 3
   retry:
     instances:
-      sightengine-api-retry:
-        max-attempts: 10
+      default-retry:
+        max-attempts: 5
         wait-duration: 200ms
         exponential-backoff-multiplier: 2.0
+
+thread-pool:
+  verification-content-pool:
+    num-of-thread: 5
+    num-of-chunk: 10
+
+schedule:
+  verify-posts:
+    cron: "0 0 3 * * ?"
+  ban-users: "0 0 3 * * ?"
+
+moderation:
+  dictionary:
+    path: src/main/resources/dictionary.json
+    text-split-regex: "[^\\p{L}\\p{N}]+"
+  targets:
+    SEXUAL: 0.7
+    DISCRIMINATORY: 0.7
+    INSULTING: 0.7
+    VIOLENT: 0.7
+    TOXIC: 0.7
 
 daily:
   cron:

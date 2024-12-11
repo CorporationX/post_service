@@ -23,7 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 
 @ExtendWith(MockitoExtension.class)
-class LikeControllerTest {
+class LikeV1ControllerTest {
 
     private MockMvc mockMvc;
 
@@ -34,7 +34,7 @@ class LikeControllerTest {
     private UserContext userContext;
 
     @InjectMocks
-    private LikeController likeController;
+    private LikeV1Controller likeV1Controller;
 
     private long userId;
     private long postId;
@@ -42,7 +42,7 @@ class LikeControllerTest {
 
     @BeforeEach
     public void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(likeController).build();
+        mockMvc = MockMvcBuilders.standaloneSetup(likeV1Controller).build();
 
         userId = 1L;
         postId = 5L;
@@ -74,7 +74,7 @@ class LikeControllerTest {
         when(userContext.getUserId()).thenReturn(nonExistentUser);
 
         assertThrows(IllegalArgumentException.class,
-                () -> likeController.likePost(postId));
+                () -> likeV1Controller.likePost(postId));
     }
 
     @Test
@@ -103,7 +103,7 @@ class LikeControllerTest {
         when(userContext.getUserId()).thenReturn(nonExistentUser);
 
         assertThrows(IllegalArgumentException.class,
-                () -> likeController.likeComment(commentId));
+                () -> likeV1Controller.likeComment(commentId));
     }
 
     @Test
@@ -123,7 +123,7 @@ class LikeControllerTest {
         when(userContext.getUserId()).thenReturn(nonExistentUser);
 
         assertThrows(IllegalArgumentException.class,
-                () -> likeController.deleteLikeFromPost(postId));
+                () -> likeV1Controller.deleteLikeFromPost(postId));
     }
 
     @Test
@@ -143,6 +143,6 @@ class LikeControllerTest {
         when(userContext.getUserId()).thenReturn(nonExistentUser);
 
         assertThrows(IllegalArgumentException.class,
-                () -> likeController.deleteLikeFromComment(commentId));
+                () -> likeV1Controller.deleteLikeFromComment(commentId));
     }
 }

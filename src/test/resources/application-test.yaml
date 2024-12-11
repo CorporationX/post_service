@@ -14,3 +14,14 @@ spring:
         format_sql: true
   liquibase:
     enabled: false
+
+moderation:
+  dictionary:
+    path: src/main/resources/dictionary.json
+    text-split-regex: "[^\\p{L}\\p{N}]+"
+  targets:
+    SEXUAL: 0.7
+    DISCRIMINATORY: 0.7
+    INSULTING: 0.7
+    VIOLENT: 0.7
+    TOXIC: 0.7
