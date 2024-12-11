@@ -35,6 +35,25 @@ spring:
       max-request-size: 100MB
       max-file-size: 10MB
 
+  kafka:
+    admin:
+      auto-create-topics: false
+      client-id: post-service-kafka-admin
+    bootstrap-servers: localhost:9092
+    producer:
+      acks: all
+      retries: 3
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    consumer:
+      bootstrap-servers: localhost:9092
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      properties:
+        spring.json.trusted.packages: faang.school.postservice.model.event.kafka,school.faang.user_service.model.event.kafka
+    listener:
+      ack-mode: manual
+
 server:
   port: 8081
 
@@ -105,7 +124,41 @@ redis:
     ad_bought: ad_bought_channel
     user_ban: user_ban_channel
     comment_channel: comment_channel
+  feed:
+    comment:
+      max-size: 3
+    ttl:
+      post: 86400
+      user: 86400
+      comment: 86400
+      post-view: 86400
+      like: 86400
+    size: 500
+    heater:
+      time-range-days: 7
+      batch-size: 100
+
+kafka:
+  topics:
+    post: post_topic
+    comment: comment_topic
+    post-view: post_view_topic
+    like: like_topic
+    feed-heat: feed_heat_topic
+    author-published-post: author_published_post_topic
+    author-of-comment: author_of_comment_topic
+    author-post-by-heat: author_post_by_heat_topic
+  consumer:
+    groups:
+      post-service:
+        concurrency: 3
+        group-id: post-service-group
+      feed-heat:
+        concurrency: 3
+        group-id: feed-heater-group
 
 scheduler:
   cron:
-    ban-users: "0 0 0 * * ?" # every day at midnight
+    ban-users: "0 0 0 * * ?"
+
+system-user-id: -1

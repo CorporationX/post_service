@@ -1,28 +1,31 @@
 package faang.school.postservice.service.impl;
 
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.model.dto.PostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
+import faang.school.postservice.model.dto.PostDto;
 import faang.school.postservice.model.entity.Post;
-import faang.school.postservice.publisher.PostViewPublisher;
+import faang.school.postservice.redis.publisher.PostViewPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.BatchProcessService;
 import faang.school.postservice.util.moderation.ModerationDictionary;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Collections;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -61,6 +64,9 @@ class PostServiceImplTest {
     @Mock
     private BatchProcessService batchProcessService;
 
+    @Mock
+    private ApplicationEventPublisher applicationEventPublisher;
+
     @InjectMocks
     private PostServiceImpl postService;
 
@@ -89,6 +95,7 @@ class PostServiceImplTest {
         Pageable pageable = mock(Pageable.class);
         Page<Post> postPage = new PageImpl<>(List.of(post));
 
+        when(postRepository.incrementViewCount(post.getId())).thenReturn(1);
         when(postRepository.findByHashtagsContent(anyString(), any(Pageable.class))).thenReturn(postPage);
         when(postMapper.toPostDto(any(Post.class))).thenReturn(postDto);
 
@@ -98,30 +105,28 @@ class PostServiceImplTest {
         assertEquals(1, result.getTotalElements());
         verify(postRepository, times(1)).findByHashtagsContent(anyString(), any(Pageable.class));
         verify(postMapper, times(1)).toPostDto(any(Post.class));
-        verify(postViewPublisher,times(1)).publish(any());
     }
 
     @Test
     void testGetPostByIdInternal_PostExists() {
         when(postRepository.findById(1L)).thenReturn(Optional.of(post));
+        when(postRepository.incrementViewCount(1L)).thenReturn(1);
 
         Post result = postService.getPostByIdInternal(1L);
 
         assertNotNull(result);
         assertEquals(1L, result.getId());
         verify(postRepository, times(1)).findById(1L);
-        verify(postViewPublisher,times(1)).publish(any());
     }
 
     @Test
     void testGetPostByIdInternal_PostNotFound() {
         when(postRepository.findById(1L)).thenReturn(Optional.empty());
 
-        DataValidationException exception = assertThrows(DataValidationException.class, () -> {
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
             postService.getPostByIdInternal(1L);
         });
 
-        assertEquals("'Post not in database' error occurred while fetching post", exception.getMessage());
         verify(postRepository, times(1)).findById(1L);
         verify(postViewPublisher,times(0)).publish(any());
     }
@@ -138,43 +143,43 @@ class PostServiceImplTest {
     }
 
     @Test
-    void testGetUserPublishedPosts() {
+    void testGetAllPostPublishedByUser() {
         Long authorId = 1L;
 
         post.setPublished(true);
         post.setDeleted(false);
 
-        when(postRepository.findByAuthorIdWithLikes(authorId)).thenReturn(List.of(post));
+        when(postRepository.incrementViewCount(post.getId())).thenReturn(1);
+        when(postRepository.findByAuthorId(authorId)).thenReturn(List.of(post));
         when(postMapper.toPostDto(any(Post.class))).thenReturn(postDto);
 
-        List<PostDto> result = postService.getUserPublishedPosts(authorId);
+        List<PostDto> result = postService.getAllPostPublishedByUser(authorId);
 
         assertEquals(1, result.size());
         assertEquals(postDto.getId(), result.get(0).getId());
         assertEquals(postDto.getPublishedAt(), result.get(0).getPublishedAt());
-        verify(postRepository, times(1)).findByAuthorIdWithLikes(authorId);
+        verify(postRepository, times(1)).findByAuthorId(authorId);
         verify(postMapper, times(1)).toPostDto(any(Post.class));
-        verify(postViewPublisher,times(1)).publish(any());
     }
 
     @Test
-    void testGetProjectPublishedPosts() {
+    void testGetAllPostPublishedByProject() {
         Long projectId = 2L;
 
         post.setPublished(true);
         post.setDeleted(false);
 
-        when(postRepository.findByProjectIdWithLikes(projectId)).thenReturn(List.of(post));
+        when(postRepository.incrementViewCount(post.getId())).thenReturn(1);
+        when(postRepository.findByProjectId(projectId)).thenReturn(List.of(post));
         when(postMapper.toPostDto(any(Post.class))).thenReturn(postDto);
 
-        List<PostDto> result = postService.getProjectPublishedPosts(projectId);
+        List<PostDto> result = postService.getAllPostPublishedByProject(projectId);
 
         assertEquals(1, result.size());
         assertEquals(postDto.getId(), result.get(0).getId());
         assertEquals(postDto.getPublishedAt(), result.get(0).getPublishedAt());
-        verify(postRepository, times(1)).findByProjectIdWithLikes(projectId);
+        verify(postRepository, times(1)).findByProjectId(projectId);
         verify(postMapper, times(1)).toPostDto(any(Post.class));
-        verify(postViewPublisher,times(1)).publish(any());
     }
 
     @Test

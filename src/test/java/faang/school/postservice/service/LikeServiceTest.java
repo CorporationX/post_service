@@ -1,15 +1,15 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.mapper.LikeMapper;
+import faang.school.postservice.model.dto.LikeCount;
 import faang.school.postservice.model.dto.LikeDto;
 import faang.school.postservice.model.dto.UserDto;
-import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.entity.Comment;
 import faang.school.postservice.model.entity.Like;
 import faang.school.postservice.model.entity.Post;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.publisher.LikeEventPublisher;
 import faang.school.postservice.service.impl.LikeServiceImpl;
 import faang.school.postservice.util.ExceptionThrowingValidator;
 import faang.school.postservice.validator.LikeValidator;
@@ -22,12 +22,15 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.nio.charset.Charset;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -55,8 +58,6 @@ class LikeServiceTest {
     @Mock
     private PostRepository postRepository;
     @Mock
-    private LikeEventPublisher likeEventPublisher;
-    @Mock
     private UserServiceClient userServiceClient;
     @Mock
     private ExceptionThrowingValidator validator;
@@ -64,6 +65,8 @@ class LikeServiceTest {
     private LikeValidator likeValidator;
     @Mock
     private LikeMapper likeMapper;
+    @Mock
+    private ApplicationEventPublisher applicationEventPublisher;
     @InjectMocks
     private LikeServiceImpl likeService;
 
@@ -328,4 +331,103 @@ class LikeServiceTest {
         assertTrue(result.contains(2L));
         assertTrue(result.contains(3L));
     }
+
+    @Test
+    void testGetPostIdLikeCountMap() {
+        List<Long> postIds = List.of(1L, 2L, 3L);
+        List<LikeCount> likeCounts = List.of(
+                new LikeCount(1L, 5L),
+                new LikeCount(2L, 10L)
+        );
+
+        when(likeRepository.findLikeCountsByPostIds(postIds)).thenReturn(likeCounts);
+
+        Map<Long, Integer> result = likeService.getPostIdLikeCountMap(postIds);
+
+        assertEquals(3, result.size());
+        assertEquals(5, result.get(1L));
+        assertEquals(10, result.get(2L));
+        assertEquals(0, result.get(3L));
+    }
+
+    @Test
+    void testGetPostIdLikeCountMap_EmptyPostIds() {
+        List<Long> postIds = List.of();
+
+        Map<Long, Integer> result = likeService.getPostIdLikeCountMap(postIds);
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+        verify(likeRepository).findLikeCountsByPostIds(any());
+    }
+
+    @Test
+    void testGetPostIdLikeCountMap_NoLikes() {
+        List<Long> postIds = List.of(1L, 2L, 3L);
+        when(likeRepository.findLikeCountsByPostIds(postIds)).thenReturn(List.of());
+
+        Map<Long, Integer> result = likeService.getPostIdLikeCountMap(postIds);
+
+        assertEquals(3, result.size());
+        assertEquals(0, result.get(1L));
+        assertEquals(0, result.get(2L));
+        assertEquals(0, result.get(3L));
+    }
+
+    @Test
+    void addLikeToPostTest_PostNotFound() {
+        doNothing().when(likeValidator).userValidation(userId);
+        doNothing().when(likeValidator).validatePostExists(postId);
+
+        when(postRepository.findById(postId)).thenReturn(Optional.empty());
+        when(likeMapper.toEntity(likeDto)).thenReturn(likeEntity);
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> likeService.addLikeToPost(postId, likeDto));
+        assertEquals("404 NOT_FOUND \"Post not found with id: 1\"", exception.getMessage());
+    }
+
+    @Test
+    void removeLikeFromPostTest_NoLikeExists() {
+        doNothing().when(likeValidator).userValidation(userId);
+        doNothing().when(likeValidator).validatePostExists(postId);
+
+        likeService.removeLikeFromPost(postId, likeDto);
+
+        verify(likeRepository, times(1)).deleteByPostIdAndUserId(postId, userId);
+    }
+
+    @Test
+    void getLikesFromPostTest_NoLikes() {
+        when(likeRepository.findByPostId(postId)).thenReturn(List.of());
+
+        List<Long> result = likeService.getLikesFromPost(postId);
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+        verify(likeRepository, times(1)).findByPostId(postId);
+    }
+
+    @Test
+    void getLikesFromCommentTest_NoLikes() {
+        when(likeRepository.findByCommentId(commentId)).thenReturn(List.of());
+
+        List<Long> result = likeService.getLikesFromComment(commentId);
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+        verify(likeRepository, times(1)).findByCommentId(commentId);
+    }
+
+    @Test
+    void getAllUsersLikedPostTest_NoLikes() {
+        when(likeRepository.findByPostId(postId)).thenReturn(List.of());
+
+        List<UserDto> result = likeService.getAllUsersLikedPost(postId);
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+        verify(likeRepository, times(1)).findByPostId(postId);
+        verify(userServiceClient, never()).getUsersByIds(anyList());
+    }
+
 }

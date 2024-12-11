@@ -25,6 +25,7 @@ dependencies {
     implementation("org.springframework.cloud:spring-cloud-starter-openfeign:4.0.2")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0")
     implementation ("org.springframework.retry:spring-retry")
+    implementation("org.springframework.kafka:spring-kafka:3.3.0")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
     /**

@@ -1,21 +1,22 @@
 package faang.school.postservice.service.impl;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.mapper.LikeMapper;
+import faang.school.postservice.model.dto.LikeCount;
 import faang.school.postservice.model.dto.LikeDto;
 import faang.school.postservice.model.dto.UserDto;
-import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.entity.Like;
 import faang.school.postservice.model.entity.Post;
+import faang.school.postservice.model.event.application.LikeCommitedEvent;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.publisher.LikeEventPublisher;
-import faang.school.postservice.model.enums.LikePostEvent;
 import faang.school.postservice.service.LikeService;
 import faang.school.postservice.util.ExceptionThrowingValidator;
 import faang.school.postservice.validator.LikeValidator;
 import feign.FeignException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +25,9 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -38,8 +42,7 @@ public class LikeServiceImpl implements LikeService {
     private final ExceptionThrowingValidator validator;
     private final LikeValidator likeValidator;
     private final LikeMapper likeMapper;
-
-    private final LikeEventPublisher likeEventPublisher;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Override
     public List<UserDto> getAllUsersLikedPost(long postId) {
@@ -109,9 +112,10 @@ public class LikeServiceImpl implements LikeService {
         Like like = likeMapper.toEntity(likeDto);
         like.setCreatedAt(LocalDateTime.now());
         like.setComment(null); // иначе TransientPropertyValueException
-        likeRepository.save(like);
+        Like savedLike = likeRepository.save(like);
         Long postAuthorId = getPostById(postId).getAuthorId(); // иначе like.getPost().getAuthorId() == null
-        likeEventPublisher.publish(new LikePostEvent(like.getUserId(), like.getPost().getId(), postAuthorId));
+        applicationEventPublisher.publishEvent(
+                new LikeCommitedEvent(savedLike.getId(), savedLike.getUserId(), postId, postAuthorId));
         return likeMapper.toDto(like);
     }
 
@@ -176,6 +180,21 @@ public class LikeServiceImpl implements LikeService {
                 .toList();
         log.info("Найдено {} лайков для комментария с ID: {}", userIds.size(), commentId);
         return userIds;
+    }
+
+    @Override
+    public int getLikeCount(Long postId) {
+        return likeRepository.countByPostId(postId);
+    }
+
+    @Override
+    public Map<Long, Integer> getPostIdLikeCountMap(List<Long> postIds) {
+        Map<Long, Integer> postIdLikeCountMap = postIds.stream()
+                .collect(Collectors.toMap(Function.identity(), id -> 0));
+
+        likeRepository.findLikeCountsByPostIds(postIds).forEach(likeCount ->
+                postIdLikeCountMap.put(likeCount.getPostId(), likeCount.getCount().intValue()));
+        return postIdLikeCountMap;
     }
 
     private Post getPostById(Long id) {

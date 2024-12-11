@@ -14,7 +14,7 @@ import java.util.List;
         url = "${user-service.host}:${user-service.port}")
 public interface UserServiceClient {
 
-    @GetMapping("api/v1/users/{userId}")
+    @GetMapping("/users/{userId}")
     UserDto getUser(@PathVariable long userId);
 
     @PostMapping("/users")

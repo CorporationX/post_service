@@ -3,11 +3,12 @@ package faang.school.postservice.service.impl;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.model.event.BanedUserEvent;
-import faang.school.postservice.publisher.BanedUserEventPublisher;
+import faang.school.postservice.redis.publisher.BanedUserEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.BanUserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -23,7 +24,8 @@ import java.util.concurrent.Executors;
 public class BanUserServiceImpl implements BanUserService {
     private static final int SIZE_OF_BATCH = 1000;
     private static final int NUMBER_OF_THREADS = 4;
-    private static final long SYSTEM_USER_ID = -1L;
+    @Value("${system-user-id}")
+    private int systemUserId;
 
     private final UserServiceClient userServiceClient;
     private final PostRepository postRepository;
@@ -43,7 +45,7 @@ public class BanUserServiceImpl implements BanUserService {
 
             CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
                 try {
-                    userContext.setUserId(SYSTEM_USER_ID);
+                    userContext.setUserId(systemUserId);
                     List<Long> authorIdsToBan = postRepository.findAuthorsWithMoreThanFiveUnverifiedPostsInRange(finalMinId, maxId);
                     authorIdsToBan.forEach(authorId -> {
                         log.info("Sending authorId {} to Redis", authorId);

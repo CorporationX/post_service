@@ -2,6 +2,9 @@ package faang.school.postservice.controller;
 
 import faang.school.postservice.model.dto.PostDto;
 import faang.school.postservice.service.PostService;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.data.domain.Page;
@@ -36,6 +39,8 @@ public class PostController {
         return ResponseEntity.ok(postService.createPost(postDto));
     }
 
+    @Parameter(name = "x-user-id", in = ParameterIn.HEADER, required = true,
+            description = "ID of the user making the request", schema = @Schema(type = "string"))
     @PostMapping("/publish/{id}")
     public ResponseEntity<PostDto> publishPost(@NotNull @PathVariable Long id) {
         return ResponseEntity.ok(postService.publishPost(id));
@@ -68,13 +73,13 @@ public class PostController {
     }
 
     @GetMapping("/published/user/{authorId}")
-    public ResponseEntity<List<PostDto>> getUserPublishedPosts(@PathVariable @NotNull Long authorId) {
-        return ResponseEntity.ok(postService.getUserPublishedPosts(authorId));
+    public ResponseEntity<List<PostDto>> getAllPostPublishedByUser(@PathVariable @NotNull Long authorId) {
+        return ResponseEntity.ok(postService.getAllPostPublishedByUser(authorId));
     }
 
     @GetMapping("/published/project/{projectId}")
-    public ResponseEntity<List<PostDto>> getProjectPublishedPosts(@PathVariable @NotNull Long projectId) {
-        return ResponseEntity.ok(postService.getProjectPublishedPosts(projectId));
+    public ResponseEntity<List<PostDto>> getAllPostPublishedByProject(@PathVariable @NotNull Long projectId) {
+        return ResponseEntity.ok(postService.getAllPostPublishedByProject(projectId));
     }
 
     @GetMapping("/all/hashtag/")

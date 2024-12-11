@@ -1,7 +1,7 @@
 package faang.school.postservice.config;
 
 
-import faang.school.postservice.listener.HashtagListener;
+import faang.school.postservice.redis.listener.HashtagListener;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -35,7 +35,7 @@ class RedisConfigTest {
 
     @Test
     void testRedisTemplate() {
-        RedisTemplate<String, Object> redisTemplate = redisConfig.redisTemplate(lettuceConnectionFactory);
+        RedisTemplate<String, Object> redisTemplate = redisConfig.eventRedisTemplate(lettuceConnectionFactory);
         assertNotNull(redisTemplate);
         assertEquals(lettuceConnectionFactory, redisTemplate.getConnectionFactory());
         assertTrue(redisTemplate.getKeySerializer() instanceof StringRedisSerializer);

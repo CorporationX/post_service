@@ -3,24 +3,26 @@ package faang.school.postservice.service.impl;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.model.enums.AuthorType;
+import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.dto.PostDto;
 import faang.school.postservice.model.dto.ProjectDto;
 import faang.school.postservice.model.dto.UserDto;
-import faang.school.postservice.exception.DataValidationException;
-import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.entity.Post;
-import faang.school.postservice.publisher.NewPostPublisher;
-import faang.school.postservice.model.event.PostViewEvent;
-import faang.school.postservice.publisher.PostViewPublisher;
+import faang.school.postservice.model.enums.AuthorType;
+import faang.school.postservice.model.event.application.PostViewCommittedEvent;
+import faang.school.postservice.model.event.application.PostsPublishCommittedEvent;
+import faang.school.postservice.redis.publisher.NewPostPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.BatchProcessService;
 import faang.school.postservice.service.PostBatchService;
 import faang.school.postservice.service.PostService;
 import faang.school.postservice.util.moderation.ModerationDictionary;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.OptimisticLockException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -45,6 +47,12 @@ public class PostServiceImpl implements PostService {
     @Value("${spell-checker.batch-size}")
     private int correcterBatchSize;
 
+    @Value("${post.publisher.batch-size}")
+    private int batchSize;
+
+    @Value("${post.moderation.batch-size}")
+    private int moderationBatchSize;
+
     private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
@@ -54,14 +62,8 @@ public class PostServiceImpl implements PostService {
     private final BatchProcessService batchProcessService;
     private final ExecutorService schedulingThreadPoolExecutor;
     private final PostBatchService postBatchService;
-    private final PostViewPublisher postViewPublisher;
     private final UserContext userContext;
-
-    @Value("${post.publisher.batch-size}")
-    private int batchSize;
-
-    @Value("${post.moderation.batch-size}")
-    private int moderationBatchSize;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Override
     public PostDto createPost(PostDto postDto) {
@@ -88,6 +90,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    @Transactional
     public PostDto publishPost(Long id) {
         Post post = getPostById(id);
 
@@ -97,9 +100,11 @@ public class PostServiceImpl implements PostService {
 
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
-        postRepository.save(post);
-
-        return postMapper.toPostDto(post);
+        log.debug("Saving post with id = {} in DB", post.getId());
+        Post savedPost = postRepository.save(post);
+        PostDto postDto = postMapper.toPostDto(savedPost);
+        applicationEventPublisher.publishEvent(new PostsPublishCommittedEvent(List.of(savedPost)));
+        return postDto;
     }
 
     @Override
@@ -123,11 +128,11 @@ public class PostServiceImpl implements PostService {
         postRepository.save(post);
     }
 
+    @Transactional
     @Override
     public PostDto getPost(Long id) {
-        Post post = getPostById(id);
-        System.out.println("yyyyyyyyyyy");
-        postViewPublisher.publish(createPostViewEvent(post));
+        Post post = incrementViewCountAndGetPost(id);
+        applicationEventPublisher.publishEvent(new PostViewCommittedEvent(id, post.getAuthorId(), userContext.getUserId()));
         return postMapper.toPostDto(post);
     }
 
@@ -149,34 +154,43 @@ public class PostServiceImpl implements PostService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     @Override
-    public List<PostDto> getUserPublishedPosts(Long authorId) {
-        List<PostDto> dtos = postRepository.findByAuthorIdWithLikes(authorId).stream()
+    public List<PostDto> getAllPostPublishedByUser(Long authorId) {
+        List<PostDto> dtos = postRepository.findByAuthorId(authorId).stream()
                 .filter(post -> !post.isDeleted() && post.isPublished())
                 .map(postMapper::toPostDto)
                 .sorted(Comparator.comparing(PostDto::getPublishedAt).reversed())
                 .collect(Collectors.toList());
 
         if (!dtos.isEmpty()) {
-            dtos.forEach(postDto -> postViewPublisher.publish(createPostViewEvent(postDto)));
-
+            dtos.forEach(postDto -> {
+                        incrementPostViewCount(postDto.getId());
+                        applicationEventPublisher.publishEvent(
+                                new PostViewCommittedEvent(postDto.getId(), authorId, userContext.getUserId()));
+                    }
+            );
         }
-
         return dtos;
     }
 
+    @Transactional
     @Override
-    public List<PostDto> getProjectPublishedPosts(Long projectId) {
-        List<PostDto> dtos = postRepository.findByProjectIdWithLikes(projectId).stream()
+    public List<PostDto> getAllPostPublishedByProject(Long projectId) {
+        List<PostDto> dtos = postRepository.findByProjectId(projectId).stream()
                 .filter(post -> !post.isDeleted() && post.isPublished())
                 .map(postMapper::toPostDto)
                 .sorted(Comparator.comparing(PostDto::getPublishedAt).reversed())
                 .collect(Collectors.toList());
 
         if (!dtos.isEmpty()) {
-            dtos.forEach(postDto -> postViewPublisher.publish(createPostViewEvent(postDto)));
+            dtos.forEach(postDto -> {
+                        incrementPostViewCount(postDto.getId());
+                        applicationEventPublisher.publishEvent(
+                                new PostViewCommittedEvent(postDto.getId(), postDto.getAuthorId(), userContext.getUserId()));
+                    }
+            );
         }
-
         return dtos;
     }
 
@@ -190,7 +204,12 @@ public class PostServiceImpl implements PostService {
     public Page<PostDto> getAllPostsByHashtagId(String content, Pageable pageable) {
         Page<PostDto> pagesDtos = postRepository.findByHashtagsContent(content, pageable).map(postMapper::toPostDto);
         if (pagesDtos.getSize() > 0) {
-            pagesDtos.getContent().forEach(postDto -> postViewPublisher.publish(createPostViewEvent(postDto)));
+            pagesDtos.getContent().forEach(postDto -> {
+                        incrementPostViewCount(postDto.getId());
+                        applicationEventPublisher.publishEvent(
+                                new PostViewCommittedEvent(postDto.getId(), postDto.getAuthorId(), userContext.getUserId()));
+                    }
+            );
         }
         return pagesDtos;
     }
@@ -198,10 +217,9 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional(readOnly = true)
     public Post getPostByIdInternal(Long id) {
-        Post post = postRepository.findById(id)
-                .orElseThrow(() -> new DataValidationException("'Post not in database' error occurred while fetching post"));
-        postViewPublisher.publish(createPostViewEvent(post));
-
+        Post post = incrementViewCountAndGetPost(id);
+        applicationEventPublisher.publishEvent(
+                new PostViewCommittedEvent(id, post.getAuthorId(), userContext.getUserId()));
         return post;
     }
 
@@ -276,12 +294,32 @@ public class PostServiceImpl implements PostService {
         });
     }
 
-    private PostViewEvent createPostViewEvent(Post post) {
-        System.out.println("5555555555555555");
-        return new PostViewEvent(post.getId(), post.getAuthorId(), userContext.getUserId(), LocalDateTime.now());
+    private void incrementPostViewCount(long postId) {
+        try {
+            int updatedRows = postRepository.incrementViewCount(postId);
+            if (updatedRows == 0) {
+                throw new EntityNotFoundException("Post not found with id " + postId);
+            }
+        } catch (OptimisticLockException e) {
+            throw new IllegalStateException("Failed to increment view count due to concurrent modification", e);
+        }
     }
 
-    private PostViewEvent createPostViewEvent(PostDto post) {
-        return new PostViewEvent(post.getId(), post.getAuthorId(), userContext.getUserId(), LocalDateTime.now());
+    @Override
+    public int getViewCount(Long postId) {
+        return postRepository.getViewCountByPostId(postId);
+    }
+
+    private Post incrementViewCountAndGetPost(long postId) {
+        Post post = getPostById(postId);
+        try {
+            int incremented = postRepository.incrementViewCount(postId);
+            if (incremented == 0) {
+                throw new EntityNotFoundException("Post not found with id " + postId);
+            }
+            return post;
+        } catch (OptimisticLockException e) {
+            throw new IllegalStateException("Failed to increment view count due to concurrent modification", e);
+        }
     }
 }

@@ -1,11 +1,12 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.publisher.PostViewPublisher;
+import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.dto.PostDto;
 import faang.school.postservice.model.entity.Post;
+import faang.school.postservice.redis.publisher.PostViewPublisher;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.service.impl.PostServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,12 +14,20 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.time.LocalDateTime;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.argThat;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class PublishPostTest {
@@ -35,6 +44,12 @@ public class PublishPostTest {
     @Mock
     PostViewPublisher postViewPublisher;
 
+    @Mock
+    private UserServiceClient userServiceClient;
+
+    @Mock
+    private ApplicationEventPublisher applicationEventPublisher;
+
     @InjectMocks
     private PostServiceImpl postService;
 
@@ -48,12 +63,14 @@ public class PublishPostTest {
         unpublishedPost.setId(1L);
         unpublishedPost.setPublished(false);
         unpublishedPost.setContent("Here is the unpublished post");
+        unpublishedPost.setAuthorId(1L);
 
         publishedPost = new Post();
         publishedPost.setId(2L);
         publishedPost.setPublished(true);
         publishedPost.setContent("Here is the already published post");
         publishedPost.setPublishedAt(LocalDateTime.now());
+        publishedPost.setAuthorId(1L);
 
         publishedPostDto = new PostDto();
         publishedPostDto.setId(1L);

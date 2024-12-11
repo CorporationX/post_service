@@ -1,6 +1,5 @@
 package faang.school.postservice.model.dto;
 
-import faang.school.postservice.model.entity.Like;
 import faang.school.postservice.model.enums.AuthorType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -12,7 +11,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -35,5 +33,4 @@ public class PostDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime scheduledAt;
-    private List<Like> likes;
 }

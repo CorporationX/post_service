@@ -11,3 +11,9 @@ databaseChangeLog:
       file: db/changelog/changeset/post_V_005_BJS2-27264_add_spellcheck_completed_to_post.sql
   - include:
       file: db/changelog/changeset/post_V_006_BJS2-27273_add_verified_fields_to_post.sql
+  - include:
+      file: db/changelog/changeset/post_V_007_BJS2-43452_user_short_info.sql
+  - include:
+      file: db/changelog/changeset/post_V_008_BJS2-43446_add_view_count_to_post.sql
+  - include:
+      file: db/changelog/changeset/post_V_009_BJS2-43440-2_drop_user_short_info.sql

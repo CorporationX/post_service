@@ -1,7 +1,7 @@
 package faang.school.postservice.service.messaging.likepost;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import faang.school.postservice.publisher.LikeEventPublisher;
+import faang.school.postservice.redis.publisher.LikeEventPublisher;
 import faang.school.postservice.model.enums.LikePostEvent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

@@ -6,10 +6,8 @@ import faang.school.postservice.model.dto.CommentDto;
 import faang.school.postservice.model.dto.UserDto;
 import faang.school.postservice.model.entity.Comment;
 import faang.school.postservice.model.entity.Post;
-import faang.school.postservice.model.event.CommentEvent;
-import faang.school.postservice.publisher.CommentEventPublisher;
+import faang.school.postservice.redis.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
-import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.impl.CommentServiceImpl;
 import faang.school.postservice.validator.comment.CommentServiceValidator;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,6 +19,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -55,7 +54,7 @@ class CommentServiceTest {
     private CommentEventPublisher commentEventPublisher;
 
     @Mock
-    private PostRepository postRepository;
+    private ApplicationEventPublisher applicationEventPublisher;
 
     @InjectMocks
     private CommentServiceImpl commentService;
@@ -86,13 +85,10 @@ class CommentServiceTest {
     @Test
     void createComment() {
         when(commentRepository.save(any(Comment.class))).thenReturn(comment);
-        when(postRepository.findById(any(Long.class))).thenReturn(Optional.of(post));
 
         commentService.createComment(commentDto, userId);
 
         verify(commentRepository).save(commentCaptor.capture());
-        verify(postRepository).findById(any(Long.class));
-        verify(commentEventPublisher).publish(any(CommentEvent.class));
 
         Comment savedComment = commentCaptor.getValue();
         assertAll(

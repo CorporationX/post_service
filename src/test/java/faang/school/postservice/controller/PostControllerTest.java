@@ -129,29 +129,29 @@ class PostControllerTest {
     }
 
     @Test
-    void testGetUserPublishedPosts_Success() {
+    void testGetAllPostPublishedByUser_Success() {
         PostDto postDto = createTestPostDto(POST_ID, "Published user post");
 
-        when(postService.getUserPublishedPosts(AUTHOR_ID)).thenReturn(List.of(postDto));
+        when(postService.getAllPostPublishedByUser(AUTHOR_ID)).thenReturn(List.of(postDto));
 
-        List<PostDto> result = postController.getUserPublishedPosts(AUTHOR_ID).getBody();
+        List<PostDto> result = postController.getAllPostPublishedByUser(AUTHOR_ID).getBody();
 
         assertEquals(1, result.size());
         assertEquals("Published user post", result.get(0).getContent());
-        verify(postService, times(1)).getUserPublishedPosts(AUTHOR_ID);
+        verify(postService, times(1)).getAllPostPublishedByUser(AUTHOR_ID);
     }
 
     @Test
-    void testGetProjectPublishedPosts_Success() {
+    void testGetAllPostPublishedByProject_Success() {
         PostDto postDto = createTestPostDto(POST_ID, "Published project post");
 
-        when(postService.getProjectPublishedPosts(PROJECT_ID)).thenReturn(List.of(postDto));
+        when(postService.getAllPostPublishedByProject(PROJECT_ID)).thenReturn(List.of(postDto));
 
-        List<PostDto> result = postController.getProjectPublishedPosts(PROJECT_ID).getBody();
+        List<PostDto> result = postController.getAllPostPublishedByProject(PROJECT_ID).getBody();
 
         assertEquals(1, result.size());
         assertEquals("Published project post", result.get(0).getContent());
-        verify(postService, times(1)).getProjectPublishedPosts(PROJECT_ID);
+        verify(postService, times(1)).getAllPostPublishedByProject(PROJECT_ID);
     }
 
     @Test

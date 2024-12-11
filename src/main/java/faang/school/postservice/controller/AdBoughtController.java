@@ -1,7 +1,7 @@
 package faang.school.postservice.controller;
 
 import faang.school.postservice.model.event.AdBoughtEvent;
-import faang.school.postservice.publisher.AdBoughtEventPublisher;
+import faang.school.postservice.redis.publisher.AdBoughtEventPublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 

@@ -8,7 +8,7 @@ import faang.school.postservice.model.dto.UserDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.entity.Post;
 import faang.school.postservice.model.enums.AuthorType;
-import faang.school.postservice.publisher.NewPostPublisher;
+import faang.school.postservice.redis.publisher.NewPostPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.impl.PostServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
