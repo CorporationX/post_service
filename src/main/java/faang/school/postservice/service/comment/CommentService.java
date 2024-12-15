@@ -1,10 +1,12 @@
 package faang.school.postservice.service.comment;
 
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.event.CommentEvent;
 import faang.school.postservice.exception.DataValidationException;
-import faang.school.postservice.mapper.comment.CommentMapper;
+import faang.school.postservice.mapper.comment.CommentMapperImpl;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.validator.comment.CommentValidator;
@@ -18,9 +20,10 @@ import java.util.List;
 @Service
 @AllArgsConstructor
 public class CommentService {
+    private final CommentEventPublisher commentEventPublisher;
     private final CommentValidator commentValidator;
     private final PostService postService;
-    private final CommentMapper commentMapper;
+    private final CommentMapperImpl commentMapper;
     private final CommentRepository commentRepository;
 
     public Comment findEntityById(long id) {
@@ -37,7 +40,19 @@ public class CommentService {
 
         Comment comment = commentMapper.toEntity(commentDto);
         comment.setPost(post);
-        return commentMapper.toDto(commentRepository.save(comment));
+
+        comment = commentRepository.save(comment);
+
+        CommentEvent event = CommentEvent.builder()
+                .commentId(comment.getId())
+                .authorId(commentDto.getAuthorId())
+                .postId(commentDto.getPostId())
+                .date(LocalDateTime.now())
+                .build();
+
+        commentEventPublisher.publish(event);
+
+        return commentMapper.toDto(comment);
     }
 
     public CommentDto updateComment(CommentDto commentDto) {
