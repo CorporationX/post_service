@@ -14,7 +14,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class AlbumDto {
 
-    @Min(value = 1, message = "Некорректный ID альбома")
     private long id;
     @NotBlank(message = "Имя не должно быть пустым.")
     private String title;

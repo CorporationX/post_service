@@ -5,6 +5,7 @@ import faang.school.postservice.exception.AlbumException;
 import faang.school.postservice.mapper.album.AlbumMapperImpl;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.album.AlbumCreatedEventPublisher;
 import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.validator.album.AlbumValidator;
@@ -25,6 +26,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -39,6 +41,8 @@ public class AlbumServiceTest {
     private AlbumValidator albumValidator;
     @Mock
     private AlbumRepository albumRepository;
+    @Mock
+    private AlbumCreatedEventPublisher albumCreatedEventPublisher;
 
     @Spy
     private AlbumMapperImpl albumMapper;
@@ -48,7 +52,17 @@ public class AlbumServiceTest {
     public void testCreatePositive() {
         AlbumDto albumDto = dtoSetUp();
 
+        Album album = Album.builder()
+                .title("Test")
+                .authorId(1L)
+                .id(1L)
+                .build();
+        when(albumMapper.toEntity(albumDto)).thenReturn(album);
+        when(albumRepository.save(any(Album.class))).thenReturn(album);
+
         albumService.create(albumDto);
+
+        verify(albumCreatedEventPublisher, times(1)).publish(any());
 
         Mockito.verify(albumRepository).save(any());
     }

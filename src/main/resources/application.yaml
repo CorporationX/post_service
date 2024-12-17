@@ -24,6 +24,8 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
+        album_created_channel:
+          name: album_channel
 
   servlet:
     multipart:

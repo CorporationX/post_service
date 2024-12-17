@@ -2,11 +2,13 @@ package faang.school.postservice.service.album;
 
 import faang.school.postservice.dto.album.AlbumDto;
 import faang.school.postservice.dto.album.AlbumFilterDto;
+import faang.school.postservice.event.AlbumCreatedEvent;
 import faang.school.postservice.exception.AlbumException;
 import faang.school.postservice.filters.album.AlbumFilter;
 import faang.school.postservice.mapper.album.AlbumMapper;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.album.AlbumCreatedEventPublisher;
 import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.validator.album.AlbumValidator;
@@ -27,11 +29,19 @@ public class AlbumService {
     private final PostService postService;
     private final AlbumValidator albumValidator;
     private final List<AlbumFilter> albumFilters;
+    private final AlbumCreatedEventPublisher albumCreatedEventPublisher;
 
     public AlbumDto create(AlbumDto albumDto) {
         albumValidator.validateByTitleAndAuthorId(albumDto.getTitle(), albumDto.getAuthorId());
         Album album = albumMapper.toEntity(albumDto);
-        albumRepository.save(album);
+        album = albumRepository.save(album);
+
+        albumCreatedEventPublisher.publish(AlbumCreatedEvent.builder()
+                .albumTitle(albumDto.getTitle())
+                .userId(albumDto.getAuthorId())
+                .albumId(album.getId())
+                .build());
+
         return albumMapper.toDto(album);
     }
 
