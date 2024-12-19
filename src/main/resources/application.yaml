@@ -28,6 +28,7 @@ spring:
         calculations_channel:
           name: calculations_channel
         like-event-topic: likeEventTopic
+        comment: comment_channel
 
   task:
     scheduling:

@@ -1,12 +1,17 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.redis.RedisTopicProperties;
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.dto.user.UserForNotificationDto;
 import faang.school.postservice.mapper.comment.CommentMapper;
+import faang.school.postservice.message.event.PostCommentEvent;
+import faang.school.postservice.message.poducer.impl.RedisMessagePublisher;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
-import faang.school.postservice.service.sightengine.TextAnalysisService;
+import faang.school.postservice.service.moderation.sightengine.SightEngineReactiveClient;
 import feign.FeignException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -28,7 +33,9 @@ public class CommentService {
     private final CommentMapper commentMapper;
     private final PostService postService;
     private final UserServiceClient userServiceClient;
-    private final TextAnalysisService textAnalysisService;
+    private final SightEngineReactiveClient textAnalysisService;
+    private final RedisMessagePublisher redisMessagePublisher;
+    private final RedisTopicProperties redisTopicProperties;
 
     @Transactional
     public CommentDto addComment(long postId, CommentDto commentDto) {
@@ -42,7 +49,11 @@ public class CommentService {
         postService.addCommentToPost(post, comment);
         comment.setPost(post);
 
-        commentRepository.save(comment);
+        comment = commentRepository.save(comment);
+        if (post.getAuthorId() != null) {
+            PostCommentEvent postCommentEvent = buildPostCommentEvent(comment, post);
+            redisMessagePublisher.publish(redisTopicProperties.getPostCommentChannel(), postCommentEvent);
+        }
         return commentMapper.toDto(comment);
     }
 
@@ -107,5 +118,16 @@ public class CommentService {
                 .doOnComplete(() -> log.info("The comment moderation process has been completed"))
                 .doOnError(e -> log.error("Error during overall comment processing: ", e))
                 .subscribe();
+    }
+
+    private PostCommentEvent buildPostCommentEvent(Comment comment, Post post) {
+        UserDto commentAuthor = userServiceClient.getUser(comment.getAuthorId());
+        UserForNotificationDto userForNotification = userServiceClient.getUserForNotificationById(post.getAuthorId());
+
+        return PostCommentEvent.builder()
+                .receiverId(userForNotification.id())
+                .commentAuthorUserName(commentAuthor.getUsername())
+                .commentContent(comment.getContent())
+                .build();
     }
 }

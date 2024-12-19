@@ -1,6 +1,8 @@
 package faang.school.postservice.client;
 
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.dto.user.UserForNotificationDto;
+import jakarta.validation.constraints.Positive;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,4 +19,7 @@ public interface UserServiceClient {
 
     @PostMapping("/get")
     List<UserDto> getUsersByIds(@RequestBody List<Long> ids);
+
+    @GetMapping("/notification/{userId}")
+    UserForNotificationDto getUserForNotificationById(@Positive @PathVariable long userId);
 }
