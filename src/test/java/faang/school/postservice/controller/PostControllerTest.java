@@ -5,6 +5,7 @@ import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.exception.ExternalServiceException;
 import faang.school.postservice.exception.PostValidationException;
+import faang.school.postservice.publisher.PostViewEventPublisher;
 import faang.school.postservice.service.PostService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +41,10 @@ public class PostControllerTest {
 
     @MockBean
     private UserContext userContext;
+
+    @MockBean
+    private PostViewEventPublisher postViewEventPublisher;
+
 
     @Test
     void testCreatePostDraftSuccessful() throws Exception {
@@ -158,11 +163,14 @@ public class PostControllerTest {
 
     @Test
     void testGetPostByIdSuccessful() throws Exception {
-        PostDto postDto = createPostDto(1L, "Post content", 1L, null, false);
+        Long postId = 1L;
+        Long viewerId = 2L;
+        PostDto postDto = createPostDto(postId, "Post content", 1L, null, false);
 
-        when(postService.getPostById(1L)).thenReturn(postDto);
+        when(postService.getPostById(postId)).thenReturn(postDto);
 
-        mockMvc.perform(get("/posts/1")
+        mockMvc.perform(get("/posts/{postId}", postId)
+                        .param("viewerId", viewerId.toString())
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(postDto)));
