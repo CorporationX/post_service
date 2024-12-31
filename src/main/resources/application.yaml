@@ -1,13 +1,11 @@
 spring:
   config:
     import: classpath:application-minio.yaml
-
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://localhost:5432/postgres
     username: user
     password: password
-
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
@@ -16,10 +14,8 @@ spring:
     properties:
       hibernate:
         format_sql: true
-
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
-
   data:
     redis:
       port: 6379
@@ -27,36 +23,89 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
-        user_ban_channel:
+        user-ban-channel:
           name: user_ban
-        comment_channel:
+        comment-channel:
           name: comment_event_channel
+        post_view_channel:
+          name: post_view
+        post-like-channel:
+          name: post_like_event_channel
+        post_channel:
+          name: post_event_channel
+      url:
+        days_to_live: 2
+      feed_cache:
+        max_size: 500
+        key_prefix: "feed:"
+        batch_size: 20
+      post_cache:
+        key_prefix: "post:"
+        views_field: "view"
+        comments: "comments"
+        max_comments_quantity: 3
+      heat:
+        max_posts_in_heat_feed: 100
+
+    kafka:
+      consumer:
+        group-id: post_service_group
+        enable_auto_commit: false
+      producer:
+        acks: 1
+        retries: 3
+      listener:
+        ack_mode: manual
+      bootstrap_servers:
+        server: "localhost:9092"
+      topic_name:
+        posts: "posts"
+        post_views: "post_views"
+        comments: "comments"
+        heat_feed: "heat_feed"
+        heat_posts: "heat_posts"
+      topics_param:
+        partitions: 1
+        replicas: 1
+      backoff:
+        interval: 1000
+        max_attempt: 3
+
   servlet:
     multipart:
       max-file-size: 50MB
       max-request-size: 50MB
-
-
 server:
   port: 8081
-
 logging:
   level:
     root: info
-
+comment:
+  banner:
+    scheduler:
+      cron: "00 01 06 * * *"
 post:
   publisher:
     scheduler:
-      cron: "0 0/1 * 1/1 * ?" # every minute
+      cron: "00 01 06 * * *"
   ad-remover:
     scheduler:
-      cron: "0 0/1 * 1/1 * ?" # every minute
+      cron: "00 01 06 * * *"
+  config:
+    thread-pool:
+      max-size: 10
+    batch-size: 1000
+  async:
+    hash_generator:
+      core_pool_size: 4
+      queue_capacity: 500
+      thread_name_prefix: "AsyncExecutor-"
   user_ban:
     scheduler:
       cron: "00 01 06 * * *"
   spell-corrector:
     scheduler:
-      cron: "0 0/1 * 1/1 * ?" # every minute
+      cron: "00 01 06 * * *"
     url: "https://speller.yandex.net/services/spellservice.json/checkText"
 
 user-service:

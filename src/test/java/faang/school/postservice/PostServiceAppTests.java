@@ -41,7 +41,7 @@ class PostServiceAppTests {
 
     @BeforeEach
     public void setUp() {
-        UserDto userDto = new UserDto(1L, "Alex", "alex@mail.com", List.of(), List.of());
+        UserDto userDto = new UserDto(1L, "Alex", "alex@mail.com", List.of(), List.of(), List.of());
 
     }
     @Test

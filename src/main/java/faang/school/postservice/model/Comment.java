@@ -29,6 +29,8 @@ public class Comment {
     @Column(name = "author_id", nullable = false)
     private long authorId;
 
+    private Boolean verified;
+
     @OneToMany(mappedBy = "comment", orphanRemoval = true)
     private List<Like> likes;
 
