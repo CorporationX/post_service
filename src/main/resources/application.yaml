@@ -76,6 +76,11 @@ moderation:
   zone: Europe/Moscow
   thread-pool-size: 1
 
+scheduled-publication:
+  batch-size: 4
+  cron: 0 * * * * *
+  thread-pool-size: 4
+
 api:
   version: "/api/v1"
 

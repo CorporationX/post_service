@@ -14,8 +14,10 @@ import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.image.ImageResizeService;
 import faang.school.postservice.service.resource.ResourceService;
 import faang.school.postservice.validator.post.PostValidator;
+import jakarta.annotation.Resource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.ListUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +27,8 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 
 @Slf4j
 @Service
@@ -34,6 +38,11 @@ public class PostService {
     private int maxImageWidth;
     @Value("${app.posts.files.picture-max-height}")
     private int maxImageHeight;
+    @Value("${scheduled-publication.batch-size}")
+    private Integer postPublishingBatchSize;
+
+    @Resource(name = "publishPostThreadPool")
+    private ExecutorService publishPostThreadPool;
 
     private final PostValidator postValidator;
     private final PostRepository postRepository;
@@ -78,6 +87,7 @@ public class PostService {
         postValidator.validateUpdate(post, postDto);
 
         post.setContent(postDto.getContent());
+        post.setScheduledAt(postDto.getScheduledAt());
         post.setUpdatedAt(LocalDateTime.now());
         return postMapper.toDto(postRepository.save(post));
     }
@@ -175,5 +185,24 @@ public class PostService {
         postDtos.stream()
                 .map(postDto -> postViewEventMapper.toAnalyticsEventDto(postDto, actorId))
                 .forEach(postViewEventPublisher::publish);
+    }
+
+    public void publishScheduledPosts() {
+        List<Post> postsForPublishing = postRepository.findReadyToPublish();
+        List<CompletableFuture<Void>> publishedPostsFutures = ListUtils
+                .partition(postsForPublishing, postPublishingBatchSize).stream()
+                .map(posts -> CompletableFuture.runAsync(() -> publishPosts(posts), publishPostThreadPool))
+                .toList();
+        CompletableFuture.allOf(publishedPostsFutures.toArray(new CompletableFuture[0]))
+                .join();
+    }
+
+    private void publishPosts(List<Post> posts) {
+        posts.forEach(post -> {
+            post.setPublished(true);
+            post.setPublishedAt(LocalDateTime.now());
+            post.setUpdatedAt(LocalDateTime.now());
+        });
+        postRepository.saveAll(posts);
     }
 }

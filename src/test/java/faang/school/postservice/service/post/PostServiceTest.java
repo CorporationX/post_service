@@ -18,18 +18,19 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -58,6 +59,7 @@ class PostServiceTest {
     private ImageResizeService imageResizeService;
     @InjectMocks
     private PostService postService;
+    private ExecutorService publishPostThreadPool = Executors.newFixedThreadPool(4);
 
     @Test
     void testFindEntityByIdFounded() {
@@ -228,6 +230,28 @@ class PostServiceTest {
         Mockito.verify(imageResizeService, times(2)).resizeAndConvert(any(), anyInt(), anyInt());
         Mockito.verify(resourceService, times(1)).uploadResources(any(), any());
 
+    }
+
+    @Test
+    void testPublishScheduledPosts() {
+        ReflectionTestUtils.setField(postService, "postPublishingBatchSize", 2);
+        ReflectionTestUtils.setField(postService, "publishPostThreadPool", publishPostThreadPool);
+        List<Post> posts = List.of
+                (
+                        Post.builder().id(1L).published(false).build(),
+                        Post.builder().id(2L).published(false).build(),
+                        Post.builder().id(3L).published(false).build(),
+                        Post.builder().id(4L).published(false).build(),
+                        Post.builder().id(5L).published(false).build()
+                );
+        when(postRepository.findReadyToPublish()).thenReturn(posts);
+        postService.publishScheduledPosts();
+        verify(postRepository, times(3)).saveAll(any());
+        posts.forEach(post -> {
+            assertTrue(post.isPublished());
+            assertNotNull(post.getPublishedAt());
+            assertNotNull(post.getUpdatedAt());
+        });
     }
 
     private List<Post> getPosts() {

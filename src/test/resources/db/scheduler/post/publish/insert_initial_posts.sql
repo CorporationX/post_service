@@ -1,0 +1,3 @@
+insert into post (content, author_id, published, scheduled_at, deleted) values ('Content', 1, false, '1990-12-31 10:10:00+00', false);
+insert into post (content, author_id, published, scheduled_at, deleted) values ('Content', 1, false, '1990-12-31 10:10:00+00', false);
+insert into post (content, author_id, published, scheduled_at, deleted) values ('Content', 1, false, '1990-12-31 10:10:00+00', false);
