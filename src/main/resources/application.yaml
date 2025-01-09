@@ -76,6 +76,12 @@ moderation:
   zone: Europe/Moscow
   thread-pool-size: 1
 
+scheduler:
+  expired-ad:
+    cron: 0 0 * * *
+    thread-pool: 2
+    batch-size: 50
+
 api:
   version: "/api/v1"
 
