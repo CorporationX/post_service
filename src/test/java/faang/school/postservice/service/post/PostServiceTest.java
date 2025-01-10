@@ -9,6 +9,7 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostViewEventMapper;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.post.PostEventPublisher;
 import faang.school.postservice.publisher.postview.PostViewEventPublisher;
 import faang.school.postservice.publisher.user.UserBanPublisher;
 import faang.school.postservice.repository.PostRepository;
@@ -70,6 +71,8 @@ class PostServiceTest {
     private UserBanPublisher userBanPublisher;
     @Captor
     private ArgumentCaptor<BanUsersDto> usersIdsForBanCapture = ArgumentCaptor.forClass(BanUsersDto.class);
+    @Mock
+    private PostEventPublisher postEventPublisher;
     private int minimumSizeOfUnverifiedPosts = 5;
 
     @BeforeEach
@@ -97,9 +100,9 @@ class PostServiceTest {
     @Test
     void testCreateOk() {
         Mockito.doNothing().when(postValidator).validateCreation(any());
-        Mockito.when(postMapper.toEntity(any())).thenReturn(new Post());
+        Mockito.when(postMapper.toEntity(any())).thenReturn(Post.builder().id(1L).authorId(1L).build());
         Mockito.when(postRepository.save(any())).thenReturn(new Post());
-        Mockito.when(postMapper.toDto(any())).thenReturn(PostDto.builder().build());
+        Mockito.when(postMapper.toDto(any())).thenReturn(PostDto.builder().id(1L).build());
 
         PostDto postDto = PostDto.builder().id(1L).build();
 

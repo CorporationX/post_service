@@ -25,6 +25,9 @@ public class RedisConfig {
     @Value("${spring.data.redis.channels.ban_user_channel.name}")
     private String userBanChannelTopic;
 
+    @Value("${spring.data.redis.channels.post_create_channel.name}")
+    private String postCreateChannel;
+
     @Bean
     public JedisConnectionFactory jedisConnectionFactory() {
         RedisStandaloneConfiguration redisConfig = new RedisStandaloneConfiguration(redisHost, redisPort);
@@ -44,5 +47,10 @@ public class RedisConfig {
     @Bean
     public ChannelTopic userBanTopic() {
         return new ChannelTopic(userBanChannelTopic);
+    }
+
+    @Bean
+    public ChannelTopic postCreateTopic() {
+        return new ChannelTopic(postCreateChannel);
     }
 }

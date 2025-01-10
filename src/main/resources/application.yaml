@@ -30,6 +30,9 @@ spring:
           name: ban_user
         comment_channel:
           name: comment_channel
+        post_create_channel:
+          name: post_channel
+          thread_pool_size: 1
 
   servlet:
     multipart:

@@ -1,4 +1,4 @@
-package faang.school.postservice.publisher.user;
+package faang.school.postservice.publisher.post;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.publisher.AbstractEventPublisher;
@@ -11,13 +11,12 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-public class UserBanPublisher extends AbstractEventPublisher implements MessagePublisher {
+public class PostEventPublisher extends AbstractEventPublisher implements MessagePublisher {
     @Autowired
-    public UserBanPublisher(
-            ObjectMapper objectMapper,
-            RedisTemplate<String, Object> redisTemplate,
-            ChannelTopic userBanTopic) {
-        super(objectMapper, redisTemplate, userBanTopic);
+    public PostEventPublisher(ObjectMapper objectMapper,
+                              RedisTemplate<String, Object> redisTemplate,
+                              ChannelTopic postCreateTopic) {
+        super(objectMapper, redisTemplate, postCreateTopic);
     }
 
     @Override

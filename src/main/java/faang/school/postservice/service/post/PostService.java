@@ -3,6 +3,7 @@ package faang.school.postservice.service.post;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostAuthorFilterDto;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.post.PostEvent;
 import faang.school.postservice.dto.resource.ResourceDto;
 import faang.school.postservice.dto.resource.ResourceInfoDto;
 import faang.school.postservice.dto.user.BanUsersDto;
@@ -10,6 +11,7 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostViewEventMapper;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.post.PostEventPublisher;
 import faang.school.postservice.publisher.postview.PostViewEventPublisher;
 import faang.school.postservice.publisher.user.UserBanPublisher;
 import faang.school.postservice.repository.PostRepository;
@@ -49,6 +51,7 @@ public class PostService {
     private final ResourceService resourceService;
     private final ImageResizeService imageResizeService;
     private final UserBanPublisher userBanPublisher;
+    private final PostEventPublisher postEventPublisher;
 
     public Post findEntityById(long id) {
         return postRepository.findById(id)
@@ -67,7 +70,14 @@ public class PostService {
         postDto.setUpdatedAt(LocalDateTime.now());
 
         Post post = postMapper.toEntity(postDto);
-        return postMapper.toDto(postRepository.save(post));
+        PostDto createdPost = postMapper.toDto(postRepository.save(post));
+        if(post.getAuthorId() != null) {
+            postEventPublisher.publish(PostEvent.builder()
+                    .userId(post.getAuthorId())
+                    .postId(createdPost.getId())
+                    .build());
+        }
+        return createdPost;
     }
 
     public PostDto publish(long postId) {
