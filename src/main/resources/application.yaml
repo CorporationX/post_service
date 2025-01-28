@@ -21,6 +21,7 @@ spring:
     redis:
       port: 6379
       host: localhost
+      ttl_days: 1
       channels:
         post_view_channel:
           name: post_view_channel
@@ -30,6 +31,36 @@ spring:
           name: ban_user
         comment_channel:
           name: comment_channel
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      acks: all
+      retries: 3
+      group-id: post-service
+      autoOffsetReset: earliest
+      keyDeserializer: org.apache.kafka.common.serialization.StringDeserializer
+      valueDeserializer: org.apache.kafka.common.serialization.StringSerializer
+      concurrency: 3
+    producer:
+      enable-auto-commit: false
+      auto-commit-interval: 1000
+      auto-offset-reset: earliest
+      enable: true
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    topic:
+      comment:
+        name: comments
+        partitions: 1
+        replicationFactor: 1
+      post:
+        name: posts
+        partitions: 1
+        replicationFactor: 1
+        retry:
+          delay: 2000
+          multiplier: 2
 
   servlet:
     multipart:
@@ -91,3 +122,12 @@ banner:
   cron: 0 0 0 * * *
   zone: Europe/Moscow
   thread-pool: 1
+
+threadpool:
+  core-pool-size: 5
+  max-pool-size: 10
+  queue-capacity: 20
+
+
+batch:
+  BatchSizeSubscribers: 100

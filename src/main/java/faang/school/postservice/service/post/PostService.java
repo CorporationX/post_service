@@ -13,12 +13,14 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.postview.PostViewEventPublisher;
 import faang.school.postservice.publisher.user.UserBanPublisher;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.batches.PostEventBatchSender;
 import faang.school.postservice.service.image.ImageResizeService;
 import faang.school.postservice.service.resource.ResourceService;
 import faang.school.postservice.validator.post.PostValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -49,12 +51,14 @@ public class PostService {
     private final ResourceService resourceService;
     private final ImageResizeService imageResizeService;
     private final UserBanPublisher userBanPublisher;
+    private final PostEventBatchSender postEventBatchSender;
 
     public Post findEntityById(long id) {
         return postRepository.findById(id)
                 .orElseThrow(() -> new DataValidationException("Incorrect post id"));
     }
 
+//    @CacheEvict(value = "posts", key = "#postDto.id")
     public PostDto create(PostDto postDto) {
         postValidator.validateCreation(postDto);
         if (!Boolean.TRUE.equals(postDto.getPublished())) {
@@ -70,15 +74,21 @@ public class PostService {
         return postMapper.toDto(postRepository.save(post));
     }
 
+    @CachePut(value = "posts", key = "#postId")
     public PostDto publish(long postId) {
         Post post = findEntityById(postId);
 
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
         post.setUpdatedAt(LocalDateTime.now());
-        return postMapper.toDto(postRepository.save(post));
+
+        post = postRepository.saveAndFlush(post);
+        postEventBatchSender.sendBatch(post);
+
+        return postMapper.toDto(post);
     }
 
+    @CachePut(value = "posts", key = "#postDto.id")
     public PostDto update(PostDto postDto) {
         Post post = findEntityById(postDto.getId());
         postValidator.validateUpdate(post, postDto);

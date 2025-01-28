@@ -12,6 +12,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.postview.PostViewEventPublisher;
 import faang.school.postservice.publisher.user.UserBanPublisher;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.batches.PostEventBatchSender;
 import faang.school.postservice.service.image.ImageResizeService;
 import faang.school.postservice.service.resource.ResourceService;
 import faang.school.postservice.validator.post.PostValidator;
@@ -68,6 +69,8 @@ class PostServiceTest {
     private PostService postService;
     @Mock
     private UserBanPublisher userBanPublisher;
+    @Mock
+    private PostEventBatchSender postEventBatchSender;
     @Captor
     private ArgumentCaptor<BanUsersDto> usersIdsForBanCapture = ArgumentCaptor.forClass(BanUsersDto.class);
     private int minimumSizeOfUnverifiedPosts = 5;
@@ -118,12 +121,15 @@ class PostServiceTest {
 
     @Test
     void testPublish() {
-        Mockito.when(postRepository.findById(anyLong())).thenReturn(Optional.of(new Post()));
-        Mockito.when(postRepository.save(any())).thenReturn(new Post());
+        Post post = new Post();
+        Mockito.when(postRepository.findById(anyLong())).thenReturn(Optional.of(post));
+        Mockito.when(postRepository.saveAndFlush(any())).thenReturn(post);
         Mockito.when(postMapper.toDto(any())).thenReturn(PostDto.builder().build());
 
-        PostDto post = assertDoesNotThrow(() -> postService.publish(1));
-        assertNotNull(post);
+        PostDto postDto = assertDoesNotThrow(() -> postService.publish(1));
+
+        verify(postEventBatchSender).sendBatch(post);
+        assertNotNull(postDto);
     }
 
     @Test
