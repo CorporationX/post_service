@@ -1,9 +1,11 @@
 package faang.school.postservice.mapper;
 
+import faang.school.postservice.dto.comment.CommentFileReadDto;
 import faang.school.postservice.dto.comment.CommentReadDto;
 import faang.school.postservice.dto.comment.CommentCreateDto;
 import faang.school.postservice.dto.comment.CommentUpdateDto;
 import faang.school.postservice.model.Comment;
+import faang.school.postservice.model.CommentFile;
 import faang.school.postservice.model.Like;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.IterableMapping;
@@ -39,5 +41,8 @@ public interface CommentMapper {
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateEntityFromDto(CommentUpdateDto updateDto, @MappingTarget Comment comment);
+
+    @Mapping(target = "commentId", source = "comment.id")
+    CommentFileReadDto toFileDto(CommentFile commentFile);
 
 }

@@ -1,5 +1,7 @@
 package faang.school.postservice.controller;
 
+import faang.school.postservice.dto.comment.CommentFileReadDto;
+import faang.school.postservice.dto.file.FileReadDto;
 import faang.school.postservice.dto.comment.CommentReadDto;
 import faang.school.postservice.dto.comment.CommentCreateDto;
 import faang.school.postservice.dto.comment.CommentUpdateDto;
@@ -7,6 +9,8 @@ import faang.school.postservice.service.CommentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import faang.school.postservice.service.comment.CommentFileService;
+import faang.school.postservice.service.comment.CommentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -18,7 +22,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.InputStream;
 import java.util.List;
 
 @RestController
@@ -27,6 +33,7 @@ import java.util.List;
 @Tag(name = "Комментарии")
 public class CommentController {
     private final CommentService commentService;
+    private final CommentFileService commentFileService;
 
     @PostMapping
     @Operation(summary = "Создание комментария")
@@ -58,5 +65,20 @@ public class CommentController {
             long commentId
     ) {
         commentService.remove(commentId);
+    }
+
+    @PostMapping("/{commentId}")
+    public CommentFileReadDto addImage(@PathVariable long commentId, @RequestBody MultipartFile file) {
+        return commentFileService.uploadImage(commentId, file);
+    }
+
+    @DeleteMapping("/attachments/{imageId}")
+    public void removeImage(@PathVariable long imageId) {
+        commentFileService.removeImage(imageId);
+    }
+
+    @GetMapping("/attachments/{imageId}")
+    public InputStream downloadImage(@PathVariable long imageId) {
+        return commentFileService.downloadImage(imageId);
     }
 }
