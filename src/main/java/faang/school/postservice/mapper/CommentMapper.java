@@ -1,6 +1,7 @@
 package faang.school.postservice.mapper;
 
 import faang.school.postservice.dto.CommentDto;
+import faang.school.postservice.events.CommentEvent;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
@@ -18,6 +19,10 @@ public interface CommentMapper {
     @Mapping(source = "likes", target = "likeIds")
     @Mapping(source = "post.id", target = "postId")
     CommentDto toDto(Comment comment);
+
+    @Mapping(source = "likes", target = "likeIds")
+    @Mapping(source = "post.id", target = "postId")
+    CommentEvent toEvent(Comment comment);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "authorId", ignore = true)

@@ -1,6 +1,7 @@
 package faang.school.postservice.mapper;
 
 import faang.school.postservice.dto.LikeDto;
+import faang.school.postservice.events.LikeEvent;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
@@ -17,6 +18,10 @@ public interface LikeMapper {
     @Mapping(source = "commentId", target = "comment")
     @Mapping(source = "postId", target = "post")
     Like toEntity(LikeDto likeDto);
+
+    @Mapping(source = "comment.id", target = "commentId")
+    @Mapping(source = "post.id", target = "postId")
+    LikeEvent toEvent(Like like);
 
     default Comment mapIdToComment(Long id) {
         if (id == null) {

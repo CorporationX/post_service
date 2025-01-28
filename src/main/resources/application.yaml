@@ -31,6 +31,31 @@ spring:
           name: calculations_channel
         ban_user_topic:
           name: user_ban
+      post-cache:
+        key-prefix: Posts
+        field:
+          views: views
+      feed :
+        key-prefix: feed
+
+
+
+  kafka:
+    consumer:
+      enable-auto-commit: false
+      properties:
+        spring.json.trusted.packages: faang.school.postservice.dto
+    producer:
+      acks: 1
+      retries: 10
+    listener:
+      ack-mode: manual
+    bootstrap_servers: "localhost:29092"
+    topic-name:
+      likes: "likes"
+      comments: "comments"
+      post-view: "postView"
+      post: "post"
 
 server:
   port: 8081
@@ -52,6 +77,7 @@ payment-service:
 schedule:
   banUser:
     cron: 0 0 * * * *
+
 services:
   s3:
     endpoint: http://127.0.0.1:9000
@@ -60,3 +86,6 @@ services:
     bucketName: corpbucket
     isMocked: true
     region: Monte
+cache:
+  post:
+    ttl:

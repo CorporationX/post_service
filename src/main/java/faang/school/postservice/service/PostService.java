@@ -5,12 +5,15 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.filter.FilterDto;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.events.BanUserEvent;
+import faang.school.postservice.events.PostViewEvent;
 import faang.school.postservice.filter.post.PostFilter;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.PostViewEventPublisher;
 import faang.school.postservice.publisher.RedisBanMessagePublisher;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.RedisPostRepository;
 import faang.school.postservice.sort.PostField;
 import faang.school.postservice.sort.SortBy;
 import faang.school.postservice.validator.PostServiceValidator;
@@ -38,6 +41,8 @@ public class PostService {
     private final List<SortBy> sort;
     private final CommentService commentService;
     private final RedisBanMessagePublisher redisBanMessagePublisher;
+    private final CacheService cacheService;
+    private final PostViewEventPublisher postViewEventPublisher;
 
     public PostDto createPost(PostDto postDto) {
         log.info("validate post dto argument");
@@ -69,6 +74,9 @@ public class PostService {
         log.info("update at db post " + post.getId());
         savePost(post);
 
+        log.info("calling cache service to add new post to redis");
+        cacheService.publishPostAndAuthorAtRedis(post);
+
         log.info("mapping entity to dto");
         return postMapper.toDto(post);
     }
@@ -82,11 +90,18 @@ public class PostService {
         log.info("update at db post " + post.getId());
         savePost(post);
 
+        cacheService.updatePostAtRedis(post);
+
         log.info("mapping entity to dto");
         return postMapper.toDto(post);
     }
 
     public PostDto getPostDto(long id) {
+        log.info("getting post from db");
+        Post post = getPost(id);
+
+        postViewEventPublisher.sendMessage(new PostViewEvent(post.getId()));
+
         log.info("mapping entity to dto");
         return postMapper.toDto(getPost(id));
     }
@@ -100,6 +115,8 @@ public class PostService {
 
         log.info("update at db post " + post.getId());
         savePost(post);
+
+        cacheService.deletePostFromRedis(id);
 
         log.info("mapping entity to dto");
         return postMapper.toDto(post);
@@ -118,7 +135,10 @@ public class PostService {
                 .filter(filter -> filter.isApplicable(filterDto))
                 .forEach(filter -> filter.apply(posts, filterDto));
 
-        return sort(posts, filterDto.getPostField());
+        List<PostDto> result = sort(posts, filterDto.getPostField());
+        result.forEach(postDto -> postViewEventPublisher.sendMessage(new PostViewEvent(postDto.getId())));
+
+        return result;
     }
 
     public Post getPost(long id) {

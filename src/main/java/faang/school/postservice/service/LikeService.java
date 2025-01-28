@@ -6,6 +6,7 @@ import faang.school.postservice.dto.LikeDto;
 import faang.school.postservice.dto.UserDto;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Like;
+import faang.school.postservice.publisher.LikeEventPublisher;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.validator.LikeValidator;
 import jakarta.persistence.EntityNotFoundException;
@@ -28,6 +29,7 @@ public class LikeService {
     private final PostService postService;
     private final CommentService commentService;
     private final LikeMapper likeMapper;
+    private final LikeEventPublisher likeEventPublisher;
 
     public LikeDto getLikeById(long id) {
         return likeMapper.toDto(likeRepository.findById(id).orElseThrow(
@@ -55,6 +57,8 @@ public class LikeService {
         addedLike.setUserId(userId);
         setLikeObject(likeDto, addedLike);
         addedLike.setCreatedAt(LocalDateTime.now());
+
+        likeEventPublisher.sendMessage(likeMapper.toEvent(addedLike));
 
         return likeMapper.toDto(likeRepository.save(addedLike));
     }
@@ -120,4 +124,5 @@ public class LikeService {
             like.setComment(commentService.getComment(likeDto.getCommentId()));
         }
     }
+
 }
