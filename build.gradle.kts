@@ -2,6 +2,8 @@ plugins {
     java
     id("org.springframework.boot") version "3.0.6"
     id("io.spring.dependency-management") version "1.1.0"
+    jacoco
+    checkstyle
 }
 
 group = "faang.school"
@@ -65,6 +67,43 @@ tasks.test {
 tasks.withType<Test> {
     useJUnitPlatform()
 }
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+    }
+}
+
+checkstyle {
+    toolVersion = "10.17.0"
+    configFile = file("${project.rootDir}/config/checkstyle/checkstyle.xml")
+    checkstyle.enableExternalDtdLoad.set(true)
+}
+
+tasks.checkstyleMain {
+    source = fileTree("${project.rootDir}/src/main/java")
+    include("**/*.java")
+    exclude("**/resources/**")
+
+    classpath = files()
+}
+
+tasks.jacocoTestCoverageVerification {
+    dependsOn(tasks.jacocoTestReport)
+    violationRules {
+        rule {
+            element = "PACKAGE"
+            includes = listOf("faang.school.postservice.service")
+
+            limit {
+                minimum = BigDecimal.valueOf(0.7)
+            }
+        }
+    }
+}
+
 
 val test by tasks.getting(Test::class) { testLogging.showStandardStreams = true }
 
