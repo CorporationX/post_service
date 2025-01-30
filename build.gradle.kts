@@ -27,6 +27,11 @@ dependencies {
     implementation ("org.springframework.retry:spring-retry:2.0.10")
 
     /**
+     * Micrometer
+     */
+//    implementation("io.micrometer:micrometer-core")
+//    implementation("io.micrometer:micrometer-registry-prometheus")
+    /**
      * Database
      */
     implementation("org.liquibase:liquibase-core")
@@ -64,6 +69,14 @@ dependencies {
      * Kafka
      */
     implementation ("org.springframework.kafka:spring-kafka")
+    implementation("org.springframework.boot:spring-boot-starter-data-redis")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.14.2")
+
+    /**
+     * Metrics
+     */
+//    implementation("io.micrometer:micrometer-core")
+//    implementation("io.micrometer:micrometer-registry-prometheus")
 }
 
 tasks.test {

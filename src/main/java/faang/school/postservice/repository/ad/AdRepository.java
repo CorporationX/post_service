@@ -18,5 +18,4 @@ public interface AdRepository extends CrudRepository<Ad, Long> {
 
     @Query("SELECT a FROM Ad a WHERE a.endDate <CURRENT_TIMESTAMP OR a.appearancesLeft <=0")
     List<Ad> findAllExpiredAds();
-
 }

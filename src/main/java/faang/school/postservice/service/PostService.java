@@ -12,6 +12,7 @@ import faang.school.postservice.exception.ExternalServiceException;
 import faang.school.postservice.exception.PostValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.KafkaPostViewProducer;
 import faang.school.postservice.repository.PostRepository;
 import feign.FeignException;
 import jakarta.persistence.EntityNotFoundException;
@@ -43,6 +44,7 @@ public class PostService {
     @Value("${side-api.text-gears.key}")
     private String apiKey;
     private final ThreadPoolExecutor threadPoolExecutor;
+    private final KafkaPostViewProducer kafkaPostViewProducer;
 
     public PostDto createPostDraft(PostDto postDto) {
         validateAuthor(postDto);
@@ -54,7 +56,11 @@ public class PostService {
         postToSave.setDeleted(false);
 
         Post savedPost = postRepository.save(postToSave);
+
         log.info("Post was created with ID: {}", savedPost.getId());
+
+        kafkaPostViewProducer.sendPostViewEvent(savedPost.getId());
+
         return postMapper.toDto(savedPost);
     }
 

@@ -1,9 +1,25 @@
 spring:
   config:
-    import: optional:secrets.yaml
+    import: optional:secrets.yaml  # ✅ Avoids errors if `secrets.yaml` is missing
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: post-views-consumer-group
+      auto-offset-reset: earliest
+      enable-auto-commit: false  # ✅ Recommended for better offset control
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer  # ✅ Fixed Incorrect Class
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    listener:
+      missing-topics-fatal: false
+      ack-mode: batch
+
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/postgres
+    url: jdbc:postgresql://localhost:5433/postgres  # ✅ Matches your Docker setup
     username: user
     password: password
 
@@ -21,19 +37,18 @@ spring:
 
   data:
     redis:
-      port: 6379
       host: localhost
+      port: 6380  # ✅ Matches Redis in Docker
       channels:
         calculations_channel:
           name: calculations_channel
 
 server:
-  port: 8081
+  port: 8081  # ✅ Your app runs on port 8081
 
 logging:
   level:
     root: info
-
 
 post:
   publisher:
@@ -48,20 +63,34 @@ post:
 user-service:
   host: localhost
   port: 8080
+
 project-service:
   host: localhost
   port: 8082
+
 payment-service:
   host: localhost
   port: 9080
 
 thread-pool:
   size: 10
+
 cron:
   spelling-check: 0 0 3 * * *
 
 side-api:
   text-gears:
-    key: ${secrets.text-gears-api-key}
+    key: ${secrets.text-gears-api-key:default_dummy_key}  # ✅ Uses a default value if missing
     base-url: https://api.textgears.com
     auto-correct: /correct
+
+
+#management:
+#  endpoints:
+#    web:
+#      exposure:
+#        include: "*"
+#    metrics:
+#      export:
+#        prometheus:
+#          enabled: true
