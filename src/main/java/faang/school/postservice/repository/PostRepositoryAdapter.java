@@ -1,5 +1,6 @@
 package faang.school.postservice.repository;
 
+import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.model.Post;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -11,9 +12,9 @@ public class PostRepositoryAdapter {
 
     public Post findById(long postId) {
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException(String.format("Пост с id:%s не найден!", postId)));
+                .orElseThrow(() -> new DataValidationException(String.format("Пост с id:%s не найден!", postId)));
         if (post.isDeleted()) {
-            throw new IllegalArgumentException(String.format("Пост с id:%s удален!", postId));
+            throw new DataValidationException(String.format("Пост с id:%s удален!", postId));
         }
         return post;
     }

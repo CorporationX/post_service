@@ -19,18 +19,16 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(DataNotFoundException.class)
     public ResponseEntity<String> dataNotFound(DataNotFoundException e) {
-        return new ResponseEntity<>(e.getMessage(), getHeaders(), HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(IntegrationException.class)
     public ResponseEntity<String> integrationException(IntegrationException e) {
-        return new ResponseEntity<>(e.getMessage(), getHeaders(), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    private HttpHeaders getHeaders() {
-        HttpHeaders headers = new HttpHeaders();
-        MediaType mediaType = MediaType.TEXT_PLAIN;
-        headers.setContentType(new MediaType(mediaType.getType(), mediaType.getSubtype(), StandardCharsets.UTF_8));
-        return headers;
+    @ExceptionHandler(CheckException.class)
+    public ResponseEntity<String> checkException(CheckException e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
     }
 }
