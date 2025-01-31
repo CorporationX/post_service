@@ -8,6 +8,7 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.comment.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
+import faang.school.postservice.service.post.ModerationDictionary;
 import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.validator.comment.CommentValidator;
 import org.junit.jupiter.api.Test;
@@ -16,6 +17,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -24,7 +26,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class CommentServiceTest {
@@ -38,6 +40,8 @@ class CommentServiceTest {
     CommentMapper commentMapper;
     @Mock
     CommentEventPublisher commentEventPublisher;
+    @Mock
+    ModerationDictionary moderationDictionary;
     @InjectMocks
     CommentService commentService;
 
@@ -136,5 +140,25 @@ class CommentServiceTest {
     void testDelete() {
         Mockito.doNothing().when(commentRepository).deleteById(anyLong());
         assertDoesNotThrow(() -> commentService.deleteComment(1));
+    }
+
+    @Test
+    void testCheckProfanities() {
+        ReflectionTestUtils.setField(commentService, "moderationBachSize", 1);
+        ReflectionTestUtils.setField(commentService, "moderationDaysPeriod", 1);
+        String profanitiesContent = "With profanities";
+        String noProfanitiesContent = "No profanities";
+        Comment comment1 = Comment.builder().content(profanitiesContent).build();
+        Comment comment2 = Comment.builder().content(noProfanitiesContent).build();
+        when(commentRepository.findNotCheckedToVerificationComments(any()))
+                .thenReturn(List.of(comment1, comment2));
+        when(moderationDictionary.containsProfanity(profanitiesContent)).thenReturn(true);
+        when(moderationDictionary.containsProfanity(noProfanitiesContent)).thenReturn(false);
+
+        commentService.checkProfanities();
+
+        verify(commentRepository, times(2)).save(any());
+        assertFalse(comment1.getVerified());
+        assertTrue(comment2.getVerified());
     }
 }

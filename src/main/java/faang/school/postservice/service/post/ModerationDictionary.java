@@ -36,6 +36,6 @@ public class ModerationDictionary {
 
     public boolean containsProfanity(String content) {
         return Arrays.stream(content.toLowerCase().split(" "))
-                .anyMatch(word -> profaneWords.contains(content));
+                .anyMatch(profaneWords::contains);
     }
 }
