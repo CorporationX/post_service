@@ -16,6 +16,7 @@ import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.service.comment.CommentService;
+import faang.school.postservice.service.kafka.KafkaService;
 import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.validator.dto.user.UserDtoValidator;
 import jakarta.persistence.EntityNotFoundException;
@@ -36,6 +37,7 @@ public class LikeService {
     private final UserDtoValidator userDtoValidator;
     private final MessageSenderForLikeAnalyticsImpl likeEventPublisher;
     private final ObjectMapper objectMapper;
+    private final KafkaService kafkaService;
 
     @Transactional
     public ResponseLikeDto addLikeByPost(LikeDtoForPost likeDtoForPost) {
@@ -56,7 +58,7 @@ public class LikeService {
         likeRepository.save(likeForPost);
 
         publishLikeEvent(userId, post.getAuthorId());
-
+        kafkaService.sendLikeEvent(post.getId(), userId);
         return likeMapper.toLikeDtoFromEntity(likeForPost);
     }
 

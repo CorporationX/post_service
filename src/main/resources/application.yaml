@@ -5,6 +5,8 @@ spring:
     username: user
     password: password
 
+
+
   profiles:
     active: dev
 
@@ -38,6 +40,43 @@ spring:
           name: calculations_channel
         ad-bought-channel:
           name: ad_bought_channel
+        post-channel:
+          name: post_channel
+      prefix-users: users
+      prefix-posts: posts
+      prefix-feeds: feeds
+      max-feeds: 500
+      ttl-users: 1
+      ttl-posts: 1
+      ttl-feeds: 1
+
+
+  kafka:
+    producer:
+      bootstrap-servers: localhost:9092, localhost:9094
+      group-id: feed
+      retries: 10
+      acks: all
+      properties:
+        delivery-timeout-ms: 10000
+        linger-ms: 0
+        request-timeout-ms: 5000
+        idempotence: true
+        max-in-flight-requests-per-connection: 5
+    consumer:
+      bootstrap-servers: localhost:9092, localhost:9094
+      group-id: feed
+      properties:
+        spring.json.value.default.type: "faang.school.postservice.event"
+        spring.json.trusted.packages: "faang.school.postservice, faang.school.postservice.event"
+    topics:
+      post-published: post-published-events-topic
+      post-view: post-view-events-topic
+      post-like: post-like-events-topic
+      post-comment: post-comment-events-topic
+      partitions: 3
+      replicasCount: 3
+      min-insync-replicas: 2
 
   task:
     execution:
@@ -50,17 +89,17 @@ spring:
     comment:
       moderator:
         path-curse-words: src/main/resources/curse-words.txt
-        cron: 0 * * * * *
+        cron: 0 0 * * * *
         partition-size: 1000
         treads-count: 10
     post:
       publisher:
-        cron: 1/5 * * * * *
+        cron: 0 0 * * * *
         partition-size: 1000
         threads-count: 10
 
 server:
-  port: 8081
+  port: 8975
 
 logging:
   level:
@@ -75,7 +114,7 @@ services:
 
 user-service:
   host: localhost
-  port: 8080
+  port: 14546
 project-service:
   host: localhost
   port: 8082

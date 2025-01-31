@@ -6,13 +6,16 @@ import faang.school.postservice.config.moderation.ModerationDictionary;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.ResponseCommentDto;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.dto.user.UserNFDto;
+import faang.school.postservice.event.PostCommentEvent;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
-
-import faang.school.postservice.validator.comment.CommentIdValidator;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.kafka.KafkaService;
+import faang.school.postservice.service.redis.RedisCacheService;
+import faang.school.postservice.validator.comment.CommentIdValidator;
 import faang.school.postservice.validator.comment.CommentValidator;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -40,6 +43,8 @@ public class CommentService {
     private final CommentMapper commentMapper;
     private final UserContext userContext;
     private final ModerationDictionary moderator;
+    private final RedisCacheService redisCacheService;
+    private final KafkaService kafkaService;
 
 
     public ResponseCommentDto addComment(Long postId, CommentDto commentDto) {
@@ -48,6 +53,16 @@ public class CommentService {
         comment.setAuthorId(userContext.getUserId());
         comment.setPost(getPost(postId));
         comment = commentRepository.save(comment);
+        UserNFDto userNFDto = userServiceClient.getUserNF(comment.getAuthorId());
+        redisCacheService.saveUser(userNFDto);
+        PostCommentEvent event = PostCommentEvent.builder()
+                .id(comment.getId())
+                .authorId(commentDto.getAuthorId())
+                .postId(postId)
+                .content(comment.getContent())
+                .createdAt(comment.getCreatedAt())
+                .build();
+        kafkaService.sendCommentEvent(event);
         return commentMapper.toResponseDto(comment);
     }
 

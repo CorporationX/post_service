@@ -24,4 +24,9 @@ public class ExecutorConfig {
     public ExecutorService executorPostPublisher() {
         return Executors.newFixedThreadPool(threadsCountForPostPublisher);
     }
+
+    @Bean(name = "executorKafkaSend")
+    public ExecutorService executorPostPublishedEvent() {
+        return Executors.newCachedThreadPool();
+    }
 }

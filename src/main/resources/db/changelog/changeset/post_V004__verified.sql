@@ -1,2 +1,2 @@
 ALTER TABLE post
-    ADD COLUMN verified boolean DEFAULT FALSE NOT NULL
+    ADD COLUMN if not exists verified boolean DEFAULT FALSE NOT NULL

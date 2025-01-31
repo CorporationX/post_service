@@ -15,10 +15,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-
-import javax.annotation.processing.FilerException;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 @ControllerAdvice
 @Slf4j
@@ -65,7 +64,7 @@ public class GlobalExceptionHandler {
 
     @ResponseBody
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    @ExceptionHandler(IOException.class)
+    @ExceptionHandler({IOException.class, InterruptedException.class, ExecutionException.class})
     public ResponseEntity<String> onIOException(@NotNull IOException e) {
         log.error("IOException: {}", e.getMessage());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
