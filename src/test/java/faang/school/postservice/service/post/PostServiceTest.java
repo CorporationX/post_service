@@ -1,5 +1,6 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.async.AsyncPostEventSender;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.analytics.AnalyticsEventDto;
 import faang.school.postservice.dto.post.PostDto;
@@ -71,6 +72,8 @@ class PostServiceTest {
     private PostService postService;
     @Mock
     private UserBanPublisher userBanPublisher;
+    @Mock
+    private AsyncPostEventSender asyncPostEventSender;
     @Captor
     private ArgumentCaptor<BanUsersDto> usersIdsForBanCapture = ArgumentCaptor.forClass(BanUsersDto.class);
     private int minimumSizeOfUnverifiedPosts = 5;

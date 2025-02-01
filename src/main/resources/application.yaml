@@ -39,6 +39,10 @@ spring:
           name: comments
           partitions: 3
           replicas: 1
+        posts:
+          name: posts
+          partitions: 3
+          replicas: 1
 
   servlet:
     multipart:
@@ -89,6 +93,9 @@ post-correction:
   thread-pool-size: 1
   cron: 0 0 0 * * *
   api-url: https://speller.yandex.net/services/spellservice.json
+
+post-event:
+  thread-pool-size: 2
 
 api:
   version: "/api/v1"
