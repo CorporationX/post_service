@@ -9,6 +9,7 @@ import faang.school.postservice.dto.resource.ResourceDto;
 import faang.school.postservice.dto.resource.ResourceInfoDto;
 import faang.school.postservice.dto.user.BanUsersDto;
 import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.kafka.producer.ProducerFacade;
 import faang.school.postservice.mapper.PostViewEventMapper;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
@@ -18,7 +19,10 @@ import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.image.ImageResizeService;
 import faang.school.postservice.service.resource.ResourceService;
 import faang.school.postservice.validator.post.PostValidator;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -26,10 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -52,6 +53,7 @@ public class PostService {
     private final ImageResizeService imageResizeService;
     private final UserBanPublisher userBanPublisher;
     private final CacheFacade<PostCache> postCacheFacade;
+    private final ProducerFacade<PostCache> postProducerFacade;
 
     public Post findEntityById(long id) {
         return postRepository.findById(id)
@@ -80,7 +82,9 @@ public class PostService {
         post.setPublishedAt(LocalDateTime.now());
         post.setUpdatedAt(LocalDateTime.now());
         Post createdPost = postRepository.save(post);
-        postCacheFacade.cacheWithDetails(postMapper.toCache(createdPost));
+        var postCache = postMapper.toCache(createdPost);
+        postCacheFacade.cacheWithDetails(postCache);
+        postProducerFacade.publish(postCache);
         return postMapper.toDto(createdPost);
     }
 
@@ -215,6 +219,21 @@ public class PostService {
                         .stream().map(Post::getAuthorId).toList(), authorId) >= minimumSizeOfUnverifiedPosts
                 )
                 .distinct()
+                .toList();
+    }
+
+    @SneakyThrows
+    public Set<Long> getLastFolloweePostIds(List<Long> follweeIds, int limit) {
+        return postRepository.findLastFolloweePostIds(follweeIds, limit)
+                .orElseThrow(() -> new EntityNotFoundException("Posts not found"));
+    }
+
+    @Transactional
+    public List<PostCache> getPostsByIds(@NotNull Set<Long> postIds) {
+        return postRepository.findAllByIds(postIds)
+                .orElseThrow(() -> new EntityNotFoundException("Posts by ids not found!"))
+                .stream()
+                .map(postMapper::toCache)
                 .toList();
     }
 }

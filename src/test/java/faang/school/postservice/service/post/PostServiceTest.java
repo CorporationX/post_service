@@ -8,6 +8,7 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.resource.ResourceDto;
 import faang.school.postservice.dto.user.BanUsersDto;
 import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.kafka.producer.ProducerFacade;
 import faang.school.postservice.mapper.PostViewEventMapper;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
@@ -59,6 +60,8 @@ class PostServiceTest {
     private PostService postService;
     @Mock
     private UserBanPublisher userBanPublisher;
+    @Mock
+    private ProducerFacade<PostCache> postProducerFacade;
     @Captor
     private ArgumentCaptor<BanUsersDto> usersIdsForBanCapture = ArgumentCaptor.forClass(BanUsersDto.class);
     private int minimumSizeOfUnverifiedPosts = 5;
