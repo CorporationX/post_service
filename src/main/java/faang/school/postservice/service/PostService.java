@@ -8,11 +8,14 @@ import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.dto.postCorrecter.PostCorrecterRequest;
 import faang.school.postservice.dto.postCorrecter.PostCorrecterResponse;
 import faang.school.postservice.dto.postCorrecter.textGears.TextGearsRequest;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.ExternalServiceException;
 import faang.school.postservice.exception.PostValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.utils.KafkaSender;
+import faang.school.postservice.utils.PublishedPostMessage;
 import feign.FeignException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -43,6 +46,7 @@ public class PostService {
     @Value("${side-api.text-gears.key}")
     private String apiKey;
     private final ThreadPoolExecutor threadPoolExecutor;
+    private final KafkaSender kafkaSender;
 
     public PostDto createPostDraft(PostDto postDto) {
         validateAuthor(postDto);
@@ -68,6 +72,9 @@ public class PostService {
         post.setPublishedAt(LocalDateTime.now());
 
         Post publishedPost = postRepository.save(post);
+        UserDto user = userServiceClient.getUser(publishedPost.getAuthorId());
+
+        kafkaSender.send(new PublishedPostMessage(publishedPost, user), "posts");
 
         PostDto postDto = postMapper.toDto(publishedPost);
         postDto.setLikeCount(countLikesForPost(postId));

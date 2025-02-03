@@ -27,6 +27,12 @@ spring:
         calculations_channel:
           name: calculations_channel
 
+    kafka:
+      bootstrap-servers: localhost:29092
+      topics:
+        post-channel: posts
+        feed-heat: feed-heat-topic
+
 server:
   port: 8081
 

@@ -103,7 +103,7 @@ class LikeControllerTest {
     void unlikeComment_shouldReturnStatusOk_whenRequestDataIsValid() throws Exception {
         Long userId = 1L;
         Long commentId = 1L;
-        UserDto mockUserDto = new UserDto(userId, "testuser", "test@example.com");
+        UserDto mockUserDto = new UserDto(userId, "testuser", "test@example.com", null, null, null);
 
         when(userServiceClient.getUser(userId)).thenReturn(mockUserDto);
 
