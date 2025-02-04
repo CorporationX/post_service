@@ -6,6 +6,8 @@ import faang.school.postservice.dto.comment.CommentRequestDto;
 import faang.school.postservice.dto.comment.CommentResponseDto;
 import faang.school.postservice.dto.comment.CommentUpdateDto;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.exception.CommentValidationException;
+import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
@@ -39,7 +41,7 @@ public class CommentServiceImpl implements CommentService {
     public CommentResponseDto updateComment(long commentId, long authorId, CommentUpdateDto commentUpdateDto) {
         Comment foundComment = getById(commentId);
         if (!foundComment.getAuthorId().equals(authorId)) {
-            throw new IllegalArgumentException(String.format("User with id %s is not allowed to update this comment.",
+            throw new CommentValidationException(String.format("User with id %s is not allowed to update this comment.",
                     authorId));
         }
         foundComment.setContent(commentUpdateDto.content());
@@ -64,21 +66,21 @@ public class CommentServiceImpl implements CommentService {
     private Comment getById(Long id) {
         return commentRepository.findById(id)
                 .orElseThrow(
-                        () -> new IllegalArgumentException(String.format("Comment with id %d not found", id))
+                        () -> new EntityNotFoundException(String.format("Comment with id %d not found", id))
                 );
     }
 
     private Post getPostById(long postId) {
         return postRepository.findById(postId)
                 .orElseThrow(()
-                        -> new IllegalArgumentException(String.format("Post with id %s not found.", postId))
+                        -> new EntityNotFoundException(String.format("Post with id %s not found.", postId))
                 );
     }
 
     private void validateUser(CommentRequestDto commentDto) {
         UserDto user = userServiceClient.getUser(commentDto.authorId());
         if (user == null) {
-            throw new IllegalArgumentException(String.format("User with id %s not found", commentDto.authorId()));
+            throw new EntityNotFoundException(String.format("User with id %s not found", commentDto.authorId()));
         }
     }
 }

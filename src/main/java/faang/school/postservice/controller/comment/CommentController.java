@@ -27,24 +27,24 @@ public class CommentController {
     private final CommentService commentService;
 
     @PostMapping
-    public CommentResponseDto createComment(@RequestBody @Valid CommentRequestDto commentRequestDto) {
+    public CommentResponseDto createComment(@Valid @RequestBody CommentRequestDto commentRequestDto) {
         return commentService.createComment(commentRequestDto);
     }
 
     @DeleteMapping("/{commentId}")
-    public void deleteComment(@PathVariable @NotNull Long commentId) {
+    public void deleteComment(@NotNull @PathVariable Long commentId) {
         commentService.deleteComment(commentId);
     }
 
     @PutMapping("/{commentId}")
-    public void updateComment(@PathVariable @NotNull Long commentId,
-                              @RequestParam @NotNull Long authorId,
-                              @RequestBody @Valid CommentUpdateDto commentUpdateDto) {
+    public void updateComment(@NotNull @PathVariable Long commentId,
+                              @NotNull @RequestParam Long authorId,
+                              @Valid @RequestBody CommentUpdateDto commentUpdateDto) {
         commentService.updateComment(commentId, authorId, commentUpdateDto);
     }
 
     @GetMapping
-    public List<CommentResponseDto> getCommentsByFilters(@RequestBody @Valid CommentFiltersDto commentFiltersDto) {
+    public List<CommentResponseDto> getCommentsByFilters(@Valid @RequestBody CommentFiltersDto commentFiltersDto) {
         return commentService.getComments(commentFiltersDto);
     }
 }

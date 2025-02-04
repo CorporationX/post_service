@@ -6,6 +6,8 @@ import faang.school.postservice.dto.comment.CommentRequestDto;
 import faang.school.postservice.dto.comment.CommentResponseDto;
 import faang.school.postservice.dto.comment.CommentUpdateDto;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.exception.CommentValidationException;
+import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.comment.CommentMapperImpl;
 import faang.school.postservice.mapper.comment.LikeMapperImpl;
 import faang.school.postservice.mapper.comment.PostMapperImpl;
@@ -146,7 +148,7 @@ public class CommentServiceTest {
     @Test
     void testCreateCommentIfUserNotFoundFailed() {
         when(userServiceClient.getUser(anyLong())).thenReturn(null);
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class,
                 () -> commentService.createComment(commentRequestDto));
         assertEquals(String.format("User with id %s not found", authorId), exception.getMessage());
     }
@@ -155,7 +157,7 @@ public class CommentServiceTest {
     void testCreateCommentIfPostNotFoundFailed() {
         when(userServiceClient.getUser(authorId)).thenReturn(userDto);
         when(postRepository.findById(postId)).thenReturn(Optional.empty());
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class,
                 () -> commentService.createComment(commentRequestDto));
         assertEquals(String.format("Post with id %s not found.", postId), exception.getMessage());
     }
@@ -192,7 +194,7 @@ public class CommentServiceTest {
     void testUpdateCommentIfUserNotAuthorFailed() {
         Long wrongAuthorId = 5L;
         when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+        CommentValidationException exception = assertThrows(CommentValidationException.class,
                 () -> commentService.updateComment(commentId, wrongAuthorId, commentUpdateDto));
         assertEquals(String.format("User with id %s is not allowed to update this comment.", wrongAuthorId),
                 exception.getMessage());
@@ -201,7 +203,7 @@ public class CommentServiceTest {
     @Test
     void testUpdateCommentIfCommentNotFoundFailed() {
         when(commentRepository.findById(anyLong())).thenReturn(Optional.empty());
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class,
                 () -> commentService.updateComment(commentId, authorId, commentUpdateDto));
         assertEquals(String.format("Comment with id %d not found", commentId), exception.getMessage());
     }
@@ -217,7 +219,7 @@ public class CommentServiceTest {
     @Test
     void testDeleteCommentIfCommentNotFoundFailed() {
         when(commentRepository.findById(anyLong())).thenReturn(Optional.empty());
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class,
                 () -> commentService.deleteComment(commentId));
         assertEquals(String.format("Comment with id %d not found", commentId), exception.getMessage());
     }
