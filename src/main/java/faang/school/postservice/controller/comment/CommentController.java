@@ -37,10 +37,10 @@ public class CommentController {
     }
 
     @PutMapping("/{commentId}")
-    public void updateComment(@NotNull @PathVariable Long commentId,
+    public CommentResponseDto updateComment(@NotNull @PathVariable Long commentId,
                               @NotNull @RequestParam Long authorId,
                               @Valid @RequestBody CommentUpdateDto commentUpdateDto) {
-        commentService.updateComment(commentId, authorId, commentUpdateDto);
+        return commentService.updateComment(commentId, authorId, commentUpdateDto);
     }
 
     @GetMapping
