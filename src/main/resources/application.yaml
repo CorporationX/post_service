@@ -24,6 +24,8 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
+        ban-channel:
+          name: user_ban
 
 server:
   port: 8081
@@ -41,3 +43,8 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+commenter-banner:
+  cron: "0 0 12 * * ?"
+  thread-pool-size: 1
+  comments-count-for-ban: 5
