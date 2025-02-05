@@ -1,9 +1,8 @@
 package faang.school.postservice.config.redis;
 
 import faang.school.postservice.scheduler.CommenterBanner;
-import faang.school.postservice.service.CommentService;
+import faang.school.postservice.service.comment.CommentService;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

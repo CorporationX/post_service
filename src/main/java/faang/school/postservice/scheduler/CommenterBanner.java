@@ -1,7 +1,7 @@
 package faang.school.postservice.scheduler;
 
 import faang.school.postservice.config.redis.RedisMessagePublisher;
-import faang.school.postservice.service.CommentService;
+import faang.school.postservice.service.comment.CommentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
