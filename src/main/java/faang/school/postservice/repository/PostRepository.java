@@ -23,6 +23,34 @@ public interface PostRepository extends CrudRepository<Post, Long> {
     @Query("SELECT p FROM Post p WHERE p.published = false AND p.deleted = false AND p.scheduledAt <= CURRENT_TIMESTAMP")
     List<Post> findReadyToPublish();
 
+    @Query("""
+    SELECT p FROM Post p
+    WHERE p.authorId = :authorId AND p.published = false AND p.deleted = false
+    ORDER BY p.createdAt DESC
+    """)
+    List<Post> findAllDraftsByAuthorId(long authorId);
+
+    @Query("""
+    SELECT p FROM Post p
+    WHERE p.projectId = :projectId AND p.published = false AND p.deleted = false
+    ORDER BY p.createdAt DESC
+    """)
+    List<Post> findAllDraftsByProjectId(long projectId);
+
+    @Query("""
+    SELECT p FROM Post p
+    WHERE p.authorId = :authorId AND p.published = true AND p.deleted = false
+    ORDER BY p.publishedAt DESC
+    """)
+    List<Post> findAllPublishedByAuthorId(long authorId);
+
+    @Query("""
+    SELECT p FROM Post p
+    WHERE p.projectId = :projectId AND p.published = true AND p.deleted = false
+    ORDER BY p.publishedAt DESC
+    """)
+    List<Post> findAllPublishedByProjectId(long projectId);
+
     @Query("SELECT p FROM Post p WHERE p.published = false AND p.deleted = false AND p.scheduledAt <= CURRENT_TIMESTAMP")
     Page<Post> findReadyToPublish(Pageable pageable);
 }
