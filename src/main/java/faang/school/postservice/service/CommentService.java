@@ -35,6 +35,8 @@ import java.util.stream.Stream;
 public class CommentService {
     private final CommentRepository commentRepository;
 
+    @Value("${commenter-banner.comments-count-for-ban}")
+    private int unverifiedCommentsCountForBan;
     private final PostService postService;
     private final UserServiceClient userServiceClient;
     private final AwsService awsService;
@@ -55,6 +57,9 @@ public class CommentService {
     private final ModerationDictionary moderationDictionary;
 
     @Transactional(readOnly = true)
+    public List<Long> findAuthorIdsForBan() {
+        return commentRepository
+                .findAuthorsForBanWithUnverifiedCommentsCount(unverifiedCommentsCountForBan);
     public List<Comment> getCommentsByPostId(Long postId) {
         postService.get(postId);
 
