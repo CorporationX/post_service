@@ -22,10 +22,14 @@ public abstract class CommentMapper {
     private PostMapper postMapper;
 
     @Autowired
-    public void setLikeMapper(LikeMapper likeMapper) { this.likeMapper = likeMapper; }
+    public void setLikeMapper(LikeMapper likeMapper) {
+        this.likeMapper = likeMapper;
+    }
 
     @Autowired
-    public void setPostMapper(PostMapper postMapper) { this.postMapper = postMapper; }
+    public void setPostMapper(PostMapper postMapper) {
+        this.postMapper = postMapper;
+    }
 
     @Mapping(target = "post", ignore = true)
     @Mapping(target = "likes", ignore = true)

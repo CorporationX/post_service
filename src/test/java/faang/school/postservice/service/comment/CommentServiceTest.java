@@ -1,6 +1,7 @@
 package faang.school.postservice.service.comment;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CommentFiltersDto;
 import faang.school.postservice.dto.comment.CommentRequestDto;
 import faang.school.postservice.dto.comment.CommentResponseDto;
@@ -67,6 +68,9 @@ public class CommentServiceTest {
 
     @Spy
     private PostMapperImpl postMapper;
+
+    @Mock
+    private UserContext userContext;
 
     @InjectMocks
     private CommentServiceImpl commentService;
@@ -164,6 +168,7 @@ public class CommentServiceTest {
 
     @Test
     void testUpdateCommentSuccess() {
+        when(userContext.getUserId()).thenReturn(authorId);
         when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
         when(commentRepository.save(any(Comment.class)))
                 .thenAnswer(invocation -> {
@@ -173,7 +178,7 @@ public class CommentServiceTest {
                     return savedComment;
                 });
         CommentResponseDto commentResponseDtoFromDb;
-        commentResponseDtoFromDb = commentService.updateComment(commentId, authorId, commentUpdateDto);
+        commentResponseDtoFromDb = commentService.updateComment(commentId, commentUpdateDto);
 
         verifyNoMoreInteractions(userServiceClient, commentRepository, postRepository);
         verify(commentRepository, Mockito.times(1))
@@ -193,18 +198,20 @@ public class CommentServiceTest {
     @Test
     void testUpdateCommentIfUserNotAuthorFailed() {
         Long wrongAuthorId = 5L;
+        when(userContext.getUserId()).thenReturn(wrongAuthorId);
         when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
         CommentValidationException exception = assertThrows(CommentValidationException.class,
-                () -> commentService.updateComment(commentId, wrongAuthorId, commentUpdateDto));
+                () -> commentService.updateComment(commentId, commentUpdateDto));
         assertEquals(String.format("User with id %s is not allowed to update this comment.", wrongAuthorId),
                 exception.getMessage());
     }
 
     @Test
     void testUpdateCommentIfCommentNotFoundFailed() {
+        when(userContext.getUserId()).thenReturn(authorId);
         when(commentRepository.findById(anyLong())).thenReturn(Optional.empty());
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class,
-                () -> commentService.updateComment(commentId, authorId, commentUpdateDto));
+                () -> commentService.updateComment(commentId, commentUpdateDto));
         assertEquals(String.format("Comment with id %d not found", commentId), exception.getMessage());
     }
 

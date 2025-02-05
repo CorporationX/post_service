@@ -15,31 +15,31 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
-        @ExceptionHandler(DataValidationException.class)
-        @ResponseStatus(HttpStatus.BAD_REQUEST)
-        public ErrorDto handleDataValidationException(DataValidationException ex) {
-            log.error(ex.getMessage(), ex);
-            return new ErrorDto("Data validation exception", ex.getMessage());
-        }
+    @ExceptionHandler(DataValidationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorDto handleDataValidationException(DataValidationException ex) {
+        log.error(ex.getMessage(), ex);
+        return new ErrorDto("Data validation exception", ex.getMessage());
+    }
 
-        @ExceptionHandler(EntityNotFoundException.class)
-        @ResponseStatus(HttpStatus.NOT_FOUND)
-        public ErrorDto handleEntityNotFoundException(EntityNotFoundException ex) {
-            log.error(ex.getMessage(), ex);
-            return new ErrorDto("Entity not found exception", ex.getMessage());
-        }
+    @ExceptionHandler(EntityNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorDto handleEntityNotFoundException(EntityNotFoundException ex) {
+        log.error(ex.getMessage(), ex);
+        return new ErrorDto("Entity not found exception", ex.getMessage());
+    }
 
-        @ExceptionHandler(CommentValidationException.class)
-        @ResponseStatus(HttpStatus.BAD_REQUEST)
-        public ErrorDto handleCommentValidationException(CommentValidationException ex) {
-            log.error("Comment validation failure", ex);
-            return new ErrorDto("Comment validation failure", ex.getMessage());
-        }
+    @ExceptionHandler(CommentValidationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorDto handleCommentValidationException(CommentValidationException ex) {
+        log.error("Comment validation failure", ex);
+        return new ErrorDto("Comment validation failure", ex.getMessage());
+    }
 
-        @ExceptionHandler(Throwable.class)
-        @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-        public ErrorDto handleThrowable(Throwable t) {
-            log.error(t.getMessage(), t);
-            return new ErrorDto("Interaction failure", t.getMessage());
-        }
+    @ExceptionHandler(Throwable.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorDto handleThrowable(Throwable t) {
+        log.error(t.getMessage(), t);
+        return new ErrorDto("Interaction failure", t.getMessage());
+    }
 }

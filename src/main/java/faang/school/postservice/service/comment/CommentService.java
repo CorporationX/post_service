@@ -10,7 +10,7 @@ import java.util.List;
 public interface CommentService {
     CommentResponseDto createComment(CommentRequestDto commentDto);
 
-    CommentResponseDto updateComment(long commentId, long authorId, CommentUpdateDto commentUpdateDto);
+    CommentResponseDto updateComment(long commentId, CommentUpdateDto commentUpdateDto);
 
     List<CommentResponseDto> getComments(CommentFiltersDto commentFiltersDto);
 

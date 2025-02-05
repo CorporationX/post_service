@@ -15,14 +15,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/comments")
+@RequestMapping("/comments")
 public class CommentController {
     private final CommentService commentService;
 
@@ -38,13 +37,12 @@ public class CommentController {
 
     @PutMapping("/{commentId}")
     public CommentResponseDto updateComment(@NotNull @PathVariable Long commentId,
-                              @NotNull @RequestParam Long authorId,
                               @Valid @RequestBody CommentUpdateDto commentUpdateDto) {
-        return commentService.updateComment(commentId, authorId, commentUpdateDto);
+        return commentService.updateComment(commentId, commentUpdateDto);
     }
 
     @GetMapping
-    public List<CommentResponseDto> getCommentsByFilters(@Valid @RequestBody CommentFiltersDto commentFiltersDto) {
+    public List<CommentResponseDto> getCommentsByFilters(@Valid CommentFiltersDto commentFiltersDto) {
         return commentService.getComments(commentFiltersDto);
     }
 }

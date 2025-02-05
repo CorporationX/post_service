@@ -1,6 +1,7 @@
 package faang.school.postservice.service.comment;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CommentFiltersDto;
 import faang.school.postservice.dto.comment.CommentRequestDto;
 import faang.school.postservice.dto.comment.CommentResponseDto;
@@ -27,10 +28,11 @@ public class CommentServiceImpl implements CommentService {
     private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
     private final CommentMapper commentMapper;
+    private final UserContext userContext;
 
     @Override
     public CommentResponseDto createComment(CommentRequestDto commentDto) {
-        validateUser(commentDto);
+        validateUser(commentDto.authorId());
         Post post = getPostById(commentDto.postId());
         Comment comment = commentMapper.toCommentEntity(commentDto);
         comment.setPost(post);
@@ -38,7 +40,8 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public CommentResponseDto updateComment(long commentId, long authorId, CommentUpdateDto commentUpdateDto) {
+    public CommentResponseDto updateComment(long commentId, CommentUpdateDto commentUpdateDto) {
+        Long authorId = userContext.getUserId();
         Comment foundComment = getById(commentId);
         if (!foundComment.getAuthorId().equals(authorId)) {
             throw new CommentValidationException(String.format("User with id %s is not allowed to update this comment.",
@@ -77,10 +80,10 @@ public class CommentServiceImpl implements CommentService {
                 );
     }
 
-    private void validateUser(CommentRequestDto commentDto) {
-        UserDto user = userServiceClient.getUser(commentDto.authorId());
+    private void validateUser(Long authorId) {
+        UserDto user = userServiceClient.getUser(authorId);
         if (user == null) {
-            throw new EntityNotFoundException(String.format("User with id %s not found", commentDto.authorId()));
+            throw new EntityNotFoundException(String.format("User with id %s not found", authorId));
         }
     }
 }
