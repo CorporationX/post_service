@@ -2,8 +2,6 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.dto.likes.LikeDto;
 import faang.school.postservice.dto.user.UserDto;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.List;
 
@@ -52,7 +50,7 @@ public interface LikeService {
      * @param postId the ID of the post to retrieve users for
      * @return a ResponseEntity containing a list of UserDto objects associated with the post ID
      */
-    List<UserDto> usersByPostId(@PathVariable long postId);
+    List<UserDto> usersByPostId(long postId);
 
     /**
      * Retrieves a list of users associated with a specific comment ID.
@@ -60,5 +58,5 @@ public interface LikeService {
      * @param commentId the ID of the comment to retrieve users for
      * @return a ResponseEntity containing a list of UserDto objects associated with the comment ID
      */
-    List<UserDto> usersByCommentId(@PathVariable long commentId);
+    List<UserDto> usersByCommentId(long commentId);
 }
