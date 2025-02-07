@@ -46,5 +46,4 @@ payment-service:
 
 commenter-banner:
   cron: "0 0 12 * * ?"
-  thread-pool-size: 1
   comments-count-for-ban: 5

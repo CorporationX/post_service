@@ -9,6 +9,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.concurrent.Executor;
 
 @RequiredArgsConstructor
 @Component
@@ -20,7 +21,6 @@ public class CommenterBanner {
     @Value("${spring.data.redis.channels.ban-channel.name}")
     private String userBanChannelName;
 
-    @Async(value = "commenterBannerExecutor")
     @Scheduled(cron = "${commenter-banner.cron}")
     public void runBannerTask() {
         List<Long> authorIdsForBan = commentService.findAuthorIdsForBan();
