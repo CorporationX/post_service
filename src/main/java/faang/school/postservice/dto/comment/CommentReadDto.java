@@ -38,6 +38,12 @@ public record CommentReadDto(
         )
         long postId,
         @Schema(
+                description = "Идентификатор файлов комментария",
+                example = "1",
+                accessMode = Schema.AccessMode.READ_ONLY
+        )
+        List<Long> filesId,
+        @Schema(
                 description = "Дата создания комментария",
                 example = "2021-07-01T12:00:00",
                 accessMode = Schema.AccessMode.READ_ONLY
