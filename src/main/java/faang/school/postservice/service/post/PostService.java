@@ -15,7 +15,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -24,6 +27,9 @@ public class PostService {
     private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
+    private final PostHashtagCacheService postHashtagCacheService;
+
+    private static final String REGEX = "#\\w+";
 
     @Transactional
     public void createPostByUserId(Long userId, Post post) {
@@ -32,7 +38,9 @@ public class PostService {
         post.setCreatedAt(LocalDateTime.now());
         post.setUpdatedAt(LocalDateTime.now());
 
+        findHashtags(post);
         postRepository.save(post);
+        postHashtagCacheService.setPostsIntoCache(post);
     }
 
     @Transactional
@@ -42,7 +50,9 @@ public class PostService {
         post.setCreatedAt(LocalDateTime.now());
         post.setUpdatedAt(LocalDateTime.now());
 
+        findHashtags(post);
         postRepository.save(post);
+        postHashtagCacheService.setPostsIntoCache(post);
     }
 
     @Transactional
@@ -66,7 +76,9 @@ public class PostService {
         existingPost.setUpdatedAt(LocalDateTime.now());
         existingPost.setProjectId(post.getProjectId());
 
+        findHashtags(existingPost);
         postRepository.save(existingPost);
+        postHashtagCacheService.setPostsIntoCache(existingPost);
     }
 
     @Transactional
@@ -76,6 +88,7 @@ public class PostService {
         existingPost.setDeleted(true);
 
         postRepository.save(existingPost);
+        postHashtagCacheService.removePostFromCache(existingPost);
     }
 
     public Post getPostById(Long postId) {
@@ -102,7 +115,6 @@ public class PostService {
                 .findByProjectId(projectId).stream()
                 .filter(post -> !post.isPublished())
                 .collect(Collectors.toList());
-
     }
 
     public List<Post> getPublishedPostsByUser(Long userId) {
@@ -124,6 +136,18 @@ public class PostService {
     @Transactional
     public void savePost(Post post) {
         postRepository.save(post);
+    }
+
+    private void findHashtags(Post post) {
+        Pattern pattern = Pattern.compile(REGEX);
+        Matcher matcher = pattern.matcher(post.getContent());
+
+        List<String> hashtags = new ArrayList<>();
+
+        while (matcher.find()) {
+            hashtags.add(matcher.group());
+        }
+        post.setHashtags(hashtags);
     }
 
     private void doesUserExist(Long userId) {

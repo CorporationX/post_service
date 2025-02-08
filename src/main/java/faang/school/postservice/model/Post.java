@@ -1,8 +1,10 @@
 package faang.school.postservice.model;
 
+import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import faang.school.postservice.model.ad.Ad;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -18,7 +20,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -28,6 +32,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @Entity
+@Convert(attributeName = "jsonb", converter = JsonBinaryType.class)
 @Table(name = "post")
 public class Post {
 
@@ -83,19 +88,7 @@ public class Post {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @Override
-    public String toString() {
-        return "Post{" +
-            "id=" + id +
-            ", content='" + content + '\'' +
-            ", authorId=" + authorId +
-            ", projectId=" + projectId +
-            ", published=" + published +
-            ", publishedAt=" + publishedAt +
-            ", scheduledAt=" + scheduledAt +
-            ", deleted=" + deleted +
-            ", createdAt=" + createdAt +
-            ", updatedAt=" + updatedAt +
-            '}';
-    }
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "hashtags")
+    private List<String> hashtags;
 }

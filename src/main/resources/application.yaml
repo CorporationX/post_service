@@ -25,6 +25,9 @@ spring:
         calculations_channel:
           name: calculations_channel
 
+  cache:
+    type: redis
+
 server:
   port: 8081
 
@@ -47,3 +50,7 @@ springdoc:
     path: /v3/post-service-api-docs
   swagger-ui:
     path: /post-service-ui.html
+
+app:
+  number-posts-by-hashtags: 100
+  cache-live-time: 1800
