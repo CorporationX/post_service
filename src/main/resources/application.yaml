@@ -25,6 +25,26 @@ spring:
         calculations_channel:
           name: calculations_channel
 
+  cloud:
+    openfeign:
+      client:
+        config:
+          user-service:
+            url: ${USER_SERVICE_URL}
+            connect-timeout: 5000
+            read-timeout: 5000
+          project-service:
+            url: ${PROJECT_SERVICE_URL}
+            connect-timeout: 5000
+            read-timeout: 5000
+          payment-service:
+            url: ${PAYMENT_SERVICE_URL}
+            connect-timeout: 5000
+            read-timeout: 5000
+
+scheduling:
+  publishing-cron: "0 0 1 * * *"
+
 server:
   port: 8081
 
