@@ -4,6 +4,7 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeRequestDto;
 import faang.school.postservice.dto.like.LikeResponseDto;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.event_sender.LikeEventSender;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.like.LikeMapper;
 import faang.school.postservice.model.Comment;
@@ -36,6 +37,7 @@ public class LikeService {
     private final LikeValidator validator;
     private final UserServiceClient userServiceClient;
     private final CommentValidator commentValidator;
+    private final LikeEventSender likeEventSender;
 
     private static final int BATCH_SIZE = 100;
 
@@ -54,6 +56,9 @@ public class LikeService {
         post.getLikes().add(like);
         postRepository.save(post);
         log.info("The post {} was successfully saved in DB", post.getId());
+
+        likeEventSender.sendEvent(like);
+
         return likeMapper.toResponseLikeDto(like);
     }
 

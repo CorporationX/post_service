@@ -23,15 +23,29 @@ spring:
     change-log: classpath:db/changelog/db.changelog-master.yaml
 
   data:
+    kafka:
+      group-id: feed
+      bootstrap-server: localhost:9092
+      topics:
+        post_topic: posts
+        like_topic: likes
+        post_view_topic: post_views
+        comment_topic: comments
+
     redis:
       port: 6379
       host: localhost
+      cache:
+        ttl: 86400
       channels:
         comment-notification-channel: comment-topic
         ad-bought-channel: ad-bought-topic
         comment-channel: comment-topic
         ban-channel: user-ban
 
+feed:
+  max-post-size: 500
+  max-comment-size: 3
 
 server:
   port: 8081

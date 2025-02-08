@@ -5,7 +5,9 @@ import faang.school.postservice.dto.bought.AdBoughtEvent;
 import faang.school.postservice.publisher.EventPublisherAbstract;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Component;
 
+@Component
 public class AdBoughtEventPublisher extends EventPublisherAbstract<AdBoughtEvent> {
     @Value("${spring.data.redis.channels.ad-bought-channel}")
     private String channelName;

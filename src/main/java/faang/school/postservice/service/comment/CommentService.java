@@ -5,6 +5,7 @@ import faang.school.postservice.dto.comment.CommentResponseDto;
 import faang.school.postservice.dto.comment.CommentUpdateRequestDto;
 import faang.school.postservice.dto.events_dto.CommentEventDto;
 import faang.school.postservice.dto.user.UserForBanEventDto;
+import faang.school.postservice.event_sender.CommentEventSender;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.publisher.CommentEventPublisher;
@@ -18,19 +19,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class CommentService {
-
     private final CommentRepository commentRepository;
     private final CommentValidator commentValidator;
     private final CommentMapper commentMapper;
@@ -38,6 +36,7 @@ public class CommentService {
     private final UserBanEventPublisher banPublisher;
     private final PostRepository postRepository;
     private final ModerationDictionary moderationDictionary;
+    private final CommentEventSender commentEventSender;
 
     public CommentResponseDto createComment(CommentRequestDto commentRequestDto) {
         commentValidator.validateAuthorExists(commentRequestDto.getAuthorId());
@@ -57,6 +56,9 @@ public class CommentService {
         CommentEventDto commentEventDto = createCommentEventDto(commentResponseDto);
         commentEventPublisher.publish(commentEventDto);
         log.info("Notification about new comment sent to notification service {}", commentEventDto);
+
+        commentEventSender.sendEvent(comment);
+
         return commentResponseDto;
     }
 

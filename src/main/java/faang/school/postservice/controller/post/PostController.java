@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -46,30 +47,11 @@ import java.util.List;
 public class PostController {
     private final PostService postService;
 
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public PostResponseDto create(
-            @Valid @RequestPart("postDto") PostRequestDto postDto,
+    public PostResponseDto create(@RequestBody PostRequestDto postDto) {
 
-            @Size(max = 10, message = "You can only have 10 images in your post")
-            @ValidResourceFileSize(resourceType = "image", maxSizeInBytes = 5 * 1024 * 1024)
-            @ValidResourceFileType(resourceType = "image")
-            @RequestPart(name = "images", required = false)
-            List<MultipartFile> images,
-
-            @Size(max = 10, message = "You can only have 5 audio in your post")
-            @ValidResourceFileSize(resourceType = "audio", maxSizeInBytes = 10 * 1024 * 1024)
-            @ValidResourceFileType(resourceType = "audio")
-            @RequestPart(name = "audio", required = false)
-            List<MultipartFile> audio) {
-
-        log.info("Received request to create post. AuthorId is {}, ProjectId is {}, Images: {}, Audio: {}",
-                postDto.getAuthorId(),
-                postDto.getProjectId(),
-                images != null ? images.size() : 0,
-                audio != null ? audio.size() : 0);
-
-        return postService.create(postDto, images, audio);
+        return postService.create(postDto);
     }
 
     @PutMapping("{id}/publish")

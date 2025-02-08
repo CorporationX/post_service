@@ -8,4 +8,6 @@ databaseChangeLog:
   - include:
       file: db/changelog/changeset/post_V004_moderator.sql
   - include:
+      file: db/changelog/changeset/post_V005__update.sql
+  - include:
       file: db/changelog/changeset/post_V005_hashtag.sql

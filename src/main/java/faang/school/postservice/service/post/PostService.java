@@ -6,10 +6,15 @@ import faang.school.postservice.dto.post.PostRequestDto;
 import faang.school.postservice.dto.post.PostResponseDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
 import faang.school.postservice.dto.resource.ResourceResponseDto;
+import faang.school.postservice.event_sender.PostViewSender;
+import faang.school.postservice.mapper.post.PostEventMapper;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.mapper.resource.ResourceMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
+import faang.school.postservice.model.event.PostEvent;
+import faang.school.postservice.model.event.PostViewEvent;
+import faang.school.postservice.producer.KafkaPostProducer;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.post.filter.PostFilters;
 import faang.school.postservice.util.ModerationDictionary;
@@ -59,8 +64,12 @@ public class PostService {
     private final PostValidator postValidator;
     private final List<PostFilters> postFilters;
     private final ModerationDictionary moderationDictionary;
+    private final PostServiceRedis postServiceRedis;
+    private final PostViewSender postViewSender;
+    private final KafkaPostProducer kafkaPostProducer;
+    private final PostEventMapper postEventMapper;
 
-    public PostResponseDto create(PostRequestDto requestDto, List<MultipartFile> images, List<MultipartFile> audio) {
+    public PostResponseDto create(PostRequestDto requestDto) {
         postValidator.validateCreate(requestDto);
         Post post = postMapper.toEntity(requestDto);
 
@@ -71,13 +80,7 @@ public class PostService {
         post.setResources(new ArrayList<>());
         post.setHashtags(new ArrayList<>());
 
-        post = postRepository.save(post);
-
-        uploadResourcesToPost(images, "image", post);
-        uploadResourcesToPost(audio, "audio", post);
-
-        log.info("Post with id {} created", post.getId());
-        post = postRepository.save(post);
+        postRepository.save(post);
 
         PostResponseDto responseDto = postMapper.toDto(post);
         populateResourceUrls(responseDto, post);
@@ -159,7 +162,17 @@ public class PostService {
         post.setPublished(true);
         post.setDeleted(false);
 
-        return postMapper.toDto(postRepository.save(post));
+        postRepository.save(post);
+        log.debug("Post added to database");
+
+        PostEvent postEvent = postEventMapper.toEvent(post);
+
+        postServiceRedis.save(postEvent);
+
+        kafkaPostProducer.send(postEvent);
+        log.debug("Post with id {} added to Kafka topic", postEvent.getId());
+
+        return postMapper.toDto(post);
     }
 
     public void deletePost(Long id) {
@@ -174,9 +187,15 @@ public class PostService {
     }
 
     public PostResponseDto getPostById(Long id) {
-        return postRepository.findById(id)
+        PostResponseDto postDto = postRepository.findById(id)
                 .map(postMapper::toDto)
                 .orElseThrow(EntityNotFoundException::new);
+
+        PostViewEvent postViewEvent = new PostViewEvent();
+        postViewEvent.setPostId(postDto.getId());
+        postViewSender.sendEvent(postViewEvent);
+
+        return postDto;
     }
 
     public void checkSpelling() {
