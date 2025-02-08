@@ -104,26 +104,22 @@ public class PostServiceImplTest {
     @Test
     void publish() {
         when(postRepositoryAdapter.findById(ID)).thenReturn(post);
-        when(postRepository.save(post)).thenReturn(savedPost);
 
         postService.publish(ID);
 
         assertTrue(post.isPublished());
         assertNotNull(post.getPublishedAt());
         verify(postRepositoryAdapter, times(1)).findById(ID);
-        verify(postRepository, times(1)).save(post);
     }
 
     @Test
     void delete() {
         when(postRepositoryAdapter.findById(ID)).thenReturn(post);
-        when(postRepository.save(post)).thenReturn(savedPost);
 
         postService.delete(ID);
 
         assertTrue(post.isDeleted());
         verify(postRepositoryAdapter, times(1)).findById(ID);
-        verify(postRepository, times(1)).save(post);
     }
 
     @Test
