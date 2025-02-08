@@ -9,6 +9,7 @@ import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producers.KafkaLikesProducer;
 import faang.school.postservice.publisher.LikeEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
@@ -31,6 +32,7 @@ public class LikeServiceImpl implements LikeService {
     private final PostRepository postRepository;
     private final LikeMapper likeMapper;
     private final LikeEventPublisher likeEventPublisher;
+    private final KafkaLikesProducer kafkaLikeProducer;
 
     @Override
     public LikeDto createLikeComment(long id, LikeDto likeDto) {
@@ -81,7 +83,12 @@ public class LikeServiceImpl implements LikeService {
                         likeDto.userId(),
                         likeDto.idPost(),
                         LocalDateTime.now()));
-
+        kafkaLikeProducer.sendEvent(
+                new LikeEvent(
+                        likeDto.authorId(),
+                        likeDto.userId(),
+                        likeDto.idPost(),
+                        LocalDateTime.now()));
         return likeMapper.toDto(like);
     }
 

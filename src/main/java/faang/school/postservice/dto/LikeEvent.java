@@ -17,4 +17,14 @@ public class LikeEvent implements Event {
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt;
+
+    @Override
+    public String toString() {
+        return "LikeEvent{" +
+                "authorPostId=" + authorPostId +
+                ", authorLikeId=" + authorLikeId +
+                ", postId=" + postId +
+                ", createdAt=" + createdAt +
+                '}';
+    }
 }

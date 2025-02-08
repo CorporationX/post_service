@@ -35,6 +35,13 @@ spring:
           partitions: 3
           replicas: 3
           configs:
+            min.insync.replicas: 2
+        likes:
+          name: likes-events-topic
+          partitions: 2
+          replicas: 2
+          configs:
+            min.insync.replicas: 2
             min-insync-replicas: 2
 
   kafka:
@@ -64,6 +71,8 @@ spring:
     admin:
       properties:
         retries: 5
+        retry.backoff.ms: 500
+        metadata.fetch.timeout.ms: 15000
 
 server:
   port: 8081

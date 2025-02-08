@@ -9,6 +9,7 @@ import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producers.KafkaLikesProducer;
 import faang.school.postservice.publisher.LikeEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
@@ -42,6 +43,7 @@ public class LikeSeviceTest {
     PostRepository postRepository = Mockito.mock(PostRepository.class);
     LikeMapper likeMapper = Mockito.mock(LikeMapper.class);
     LikeEventPublisher likeEventPublisher = Mockito.mock(LikeEventPublisher.class);
+    KafkaLikesProducer kafkaLikeProducer= Mockito.mock(KafkaLikesProducer.class);
 
     long id;
     LikeDto likeDto;
@@ -62,7 +64,8 @@ public class LikeSeviceTest {
                 userServiceClient,
                 postRepository,
                 likeMapper,
-                likeEventPublisher);
+                likeEventPublisher,
+                kafkaLikeProducer);
         id = 1;
         likeDto = LikeDto.builder().userId(2L).authorId(6L).build();
         post = Post.builder().id(4L).build();
