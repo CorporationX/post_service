@@ -17,9 +17,10 @@ public interface PostMapper {
     @Mapping(source = "publishedAt", target = "publishedDate")
     PostDto toDto(Post post);
 
+    List<PostDto> toDto(List<Post> posts);
+
     @Mapping(target = "authorId", ignore = true)
     @Mapping(target = "projectId", ignore = true)
     void update(@MappingTarget Post post, PostSaveDto postSaveDto);
 
-    List<PostDto> toDto(List<Post> posts);
 }
