@@ -4,6 +4,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
+import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.model.File;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -48,7 +49,12 @@ public class S3Service {
     }
 
     public void deleteFile(String key) {
-        s3Client.deleteObject(bucketName, key);
+        if(s3Client.doesObjectExist(bucketName, key)) {
+            log.info("Файл {} удален", key);
+            s3Client.deleteObject(bucketName, key);
+        } else {
+            throw new EntityNotFoundException("Файл " + key + " не найден");
+        }
     }
 
     public InputStream downloadFile(String key) {
