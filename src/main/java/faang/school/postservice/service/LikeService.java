@@ -1,0 +1,126 @@
+package faang.school.postservice.service;
+
+import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.like.LikeRequestDto;
+import faang.school.postservice.dto.like.LikeResponseDto;
+import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.exception.BadRequestException;
+import faang.school.postservice.mapper.like.LikeRequestMapper;
+import faang.school.postservice.mapper.like.LikeResponseMapper;
+import faang.school.postservice.model.Comment;
+import faang.school.postservice.model.Like;
+import faang.school.postservice.model.Post;
+import faang.school.postservice.repository.LikeRepository;
+import faang.school.postservice.repository.adapter.CommentRepositoryAdapter;
+import faang.school.postservice.repository.adapter.PostRepositoryAdapter;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.Optional;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class LikeService {
+    private final UserServiceClient userServiceClient;
+
+    private final LikeRepository likeRepository;
+
+    private final PostRepositoryAdapter postRepositoryAdapter;
+    private final CommentRepositoryAdapter commentRepositoryAdapter;
+
+    private final LikeRequestMapper likeRequestMapper;
+    private final LikeResponseMapper likeResponseMapper;
+
+    @Transactional
+    public LikeResponseDto likePost(long postId, LikeRequestDto likeRequestDto) {
+        long userId = likeRequestDto.userId();
+
+        UserDto user = userServiceClient.getUser(userId);
+        Post post = postRepositoryAdapter.getById(postId);
+
+        if (likeRepository.findByPostIdAndUserId(postId, userId).isPresent()) {
+            log.error("The user with ID {} has already liked the post with ID {}", userId, postId);
+            throw new BadRequestException("The user with ID " + userId + " has already liked the post with ID " + postId);
+        }
+
+        Like like = likeRequestMapper.toEntity(likeRequestDto);
+        like.setUserId(user.id());
+        like.setPost(post);
+        like.setCreatedAt(LocalDateTime.now());
+        likeRepository.save(like);
+
+        log.info("The like with ID {} was given to the post with ID {}", like.getId(), postId);
+        return likeResponseMapper.toDto(like);
+    }
+
+    @Transactional
+    public LikeResponseDto removeLikeFromPost(long postId, LikeRequestDto likeRequestDto) {
+        long userId = likeRequestDto.userId();
+
+        userServiceClient.getUser(userId);
+        postRepositoryAdapter.getById(postId);
+
+        Optional<Like> optionalLike = likeRepository.findByPostIdAndUserId(postId, userId);
+
+        if (optionalLike.isEmpty()) {
+            log.error("There is no like for the user with ID {} on the post with ID {}", userId, postId);
+            throw new BadRequestException("There is no like for the user with ID " + userId + " on the post with ID "
+                    + postId);
+        }
+
+        Like like = optionalLike.get();
+        likeRepository.deleteByPostIdAndUserId(postId, userId);
+
+        log.info("The like with ID {} has been deleted from the post with ID {}", like.getId(), postId);
+        return likeResponseMapper.toDto(like);
+    }
+
+    @Transactional
+    public LikeResponseDto likeComment(long commentId, LikeRequestDto likeRequestDto) {
+        long userId = likeRequestDto.userId();
+
+        UserDto user = userServiceClient.getUser(userId);
+        Comment comment = commentRepositoryAdapter.getById(commentId);
+
+        if (likeRepository.findByCommentIdAndUserId(commentId, userId).isPresent()) {
+            log.error("The user with ID {} has already liked the comment with ID {}", userId, commentId);
+            throw new BadRequestException("The user with ID " + userId + " has already liked the comment with ID "
+                    + commentId);
+        }
+
+        Like like = likeRequestMapper.toEntity(likeRequestDto);
+        like.setUserId(user.id());
+        like.setComment(comment);
+        like.setCreatedAt(LocalDateTime.now());
+        likeRepository.save(like);
+
+        log.info("The like with ID {} was given to the comment with ID {}", like.getId(), commentId);
+        return likeResponseMapper.toDto(like);
+    }
+
+    @Transactional
+    public LikeResponseDto removeLikeFromComment(long commentId, LikeRequestDto likeRequestDto) {
+        long userId = likeRequestDto.userId();
+
+        userServiceClient.getUser(userId);
+        commentRepositoryAdapter.getById(commentId);
+
+        Optional<Like> optionalLike = likeRepository.findByCommentIdAndUserId(commentId, userId);
+
+        if (optionalLike.isEmpty()) {
+            log.error("There is no like for the user with ID {} on the comment with ID {}", userId, commentId);
+            throw new BadRequestException("There is no like for the user with ID " + userId + " on the comment with ID "
+                    + commentId);
+        }
+
+        Like like = optionalLike.get();
+        likeRepository.deleteByCommentIdAndUserId(commentId, userId);
+
+        log.info("The like with ID {} has been deleted from the comment with ID {}", like.getId(), commentId);
+        return likeResponseMapper.toDto(like);
+    }
+}
