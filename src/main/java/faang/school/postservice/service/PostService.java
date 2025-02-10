@@ -4,9 +4,9 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.ListUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +29,9 @@ public class PostService {
     private final InternalServices internalServices;
     @Value("${moderation.threadSize}")
     private int threadSize;
+
+    @Value("${scheduler.user_ban.posts-count-for-ban}")
+    private int unverifiedPostsCountForBan;
 
     @Transactional
     public Post createDraft(Post post) {
@@ -163,5 +166,9 @@ public class PostService {
         });
 
         postRepository.saveAll(postsToPublish);
+    }
+
+    public List<Long> getUsersForBanWithUnverifiedPosts() {
+        return postRepository.findUserIdsToBanWithUnverifiedPosts(unverifiedPostsCountForBan);
     }
 }
