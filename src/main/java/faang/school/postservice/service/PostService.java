@@ -1,10 +1,12 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.exception.PostNotFoundException;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.security.InvalidParameterException;
@@ -18,6 +20,9 @@ import java.util.Objects;
 public class PostService {
     private final PostRepository postRepository;
     private final ExternalService externalService;
+
+    @Value("${scheduler.user_ban.posts-count-for-ban}")
+    private int unverifiedPostsCountForBan;
 
     public Post createDraft(Post post) {
         if (post.getAuthorId() != null && !externalService.userExists(post.getAuthorId())) {
@@ -89,5 +94,9 @@ public class PostService {
                 .filter(post -> !post.isDeleted() && post.isPublished())
                 .sorted(Comparator.comparing(Post::getPublishedAt).reversed())
                 .toList();
+    }
+
+    public List<Long> getUsersForBanWithUnverifiedPosts() {
+        return postRepository.findUserIdsToBanWithUnverifiedPosts(unverifiedPostsCountForBan);
     }
 }

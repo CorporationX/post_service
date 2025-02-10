@@ -25,6 +25,22 @@ spring:
         calculations_channel:
           name: calculations_channel
 
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.LongSerializer
+
+
+kafka:
+  topic:
+    ban_user: "user_ban"
+
+scheduler:
+  user_ban:
+     cron: "0 0 0 * * *"
+     posts-count-for-ban: 5
+
 server:
   port: 8081
 
