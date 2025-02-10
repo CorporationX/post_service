@@ -29,7 +29,13 @@ public interface PostRepository extends CrudRepository<Post, Long> {
         nativeQuery = true)
     List<Long> findUserIdsToBanWithUnverifiedPosts(int maxPostsToBan);
 
-    List<Post> findByVerifiedDateIsNull();
+    @Query(value = "SELECT p.author_id " +
+            "FROM post p " +
+            "WHERE p.verified = false AND p.verified_date IS NOT NULL " +
+            "GROUP BY p.author_id " +
+            "HAVING COUNT(p.author_id) > :maxPostsToBan",
+        nativeQuery = true)
+    List<Long> findUserIdsToBanWithUnverifiedPosts(int maxPostsToBan);
 
     @Query("SELECT p FROM Post p JOIN p.resources r WHERE r.key IN :resourceKeys")
     List<Post> findPostsByResourceKeys(List<String> resourceKeys);
