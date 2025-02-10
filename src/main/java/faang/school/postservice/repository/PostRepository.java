@@ -3,6 +3,7 @@ package faang.school.postservice.repository;
 import faang.school.postservice.model.Post;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -33,5 +34,6 @@ public interface PostRepository extends CrudRepository<Post, Long> {
     @Query("SELECT p FROM Post p JOIN p.resources r WHERE r.key IN :resourceKeys")
     List<Post> findPostsByResourceKeys(List<String> resourceKeys);
 
+    @Transactional(readOnly = true)
     List<Post> findByVerifiedDateIsNull();
 }
