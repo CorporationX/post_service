@@ -6,6 +6,7 @@ import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.ExternalService;
 import faang.school.postservice.service.PostService;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -14,6 +15,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.security.InvalidParameterException;
 import java.time.LocalDateTime;
@@ -27,6 +29,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -46,6 +50,12 @@ public class PostServiceTest {
     private static Post originalPost;
     private static Post post1;
     private static Post post2;
+
+    @BeforeEach
+    void setUp() {
+        ReflectionTestUtils.setField(postService, "unverifiedPostsCountForBan", 5);
+    }
+
 
     @BeforeAll
     public static void SetUp() {
@@ -256,5 +266,17 @@ public class PostServiceTest {
         assertEquals(2, result.size());
         assertEquals(post2, result.get(0)); // post2 is more recent
         assertEquals(post1, result.get(1));
+    }
+
+    @Test
+    @Order(18)
+    public void getUsersForBanWithUnverifiedPosts_Valid() {
+        List<Long> mockUserIds = List.of(1L, 2L, 3L);
+        when(postRepository.findUserIdsToBanWithUnverifiedPosts(5)).thenReturn(mockUserIds);
+
+        List<Long> result = postService.getUsersForBanWithUnverifiedPosts();
+
+        verify(postRepository, times(1)).findUserIdsToBanWithUnverifiedPosts(5);
+        assertEquals(mockUserIds, result);
     }
 }

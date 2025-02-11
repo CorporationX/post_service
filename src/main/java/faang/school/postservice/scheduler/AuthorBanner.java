@@ -18,7 +18,6 @@ public class AuthorBanner {
     @Scheduled(cron = "${scheduler.user_ban.cron}")
     public void banUsersWithUnverifiedPosts() {
         List<Long> banUsers = postService.getUsersForBanWithUnverifiedPosts();
-        banUsers.forEach(System.out::println);
         banUsers.forEach(producer::sendUsersToBan);
     }
 }

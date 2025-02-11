@@ -1,7 +1,5 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.exception.PostNotFoundException;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
