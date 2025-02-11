@@ -21,6 +21,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -76,7 +77,7 @@ public class LikeService {
         post.getLikes().add(like);
         likeRepository.save(like);
         postRepository.save(post);
-        LikeEvent event = new LikeEvent(postId, currentUserId, post.getAuthorId());
+        LikeEvent event = new LikeEvent(postId, currentUserId, post.getAuthorId(), LocalDateTime.now());
         likeEventPublisher.publishLikeEvent(event);
     }
 
