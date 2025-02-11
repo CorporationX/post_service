@@ -17,6 +17,7 @@ import faang.school.postservice.service.LikeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -89,36 +90,22 @@ public class LikeServiceImpl implements LikeService {
         postRepositoryAdapter.findById(postId);
         Pageable pageable = PageRequest.of(filter.getPage(), filter.getCount());
 
-        List<Like> likes = likeRepository.findLikesByPostId(postId, pageable);
+        Slice<Like> likes = likeRepository.findLikesByPostId(postId, pageable);
         if (!likes.isEmpty()) {
-            return getUsersByUserIds(likes);
+            return getUsersByUserIds(likes.getContent());
         }
         return Collections.emptyList();
-
-
-//
-//        while (true) {
-//            List<Post> unverifiedPosts = postRepository.findAllByVerifiedDateIsNullOrderById(pageable);
-//            if (unverifiedPosts.isEmpty()) {
-//                break;
-//            }
-//
-//            executorService.submit(() -> moderatePostsBatch(unverifiedPosts));
-//
-//            if (unverifiedPosts.size() < batchSize) {
-//                break;
-//            }
-//            pageable = pageable.next();
-//        }
     }
 
     @Transactional(readOnly = true)
     @Override
     public List<UserDto> usersByCommentId(long commentId, BaseFilterDto filter) {
         commentRepositoryAdapter.findById(commentId);
-        List<Like> likes = likeRepository.findLikesByCommentId(commentId);
+        Pageable pageable = PageRequest.of(filter.getPage(), filter.getCount());
+
+        Slice<Like> likes = likeRepository.findLikesByCommentId(commentId, pageable);
         if (!likes.isEmpty()) {
-            return getUsersByUserIds(likes);
+            return getUsersByUserIds(likes.getContent());
         }
         return Collections.emptyList();
     }
