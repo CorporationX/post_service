@@ -1,6 +1,7 @@
 package faang.school.postservice.service.impl;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.likes.BaseFilterDto;
 import faang.school.postservice.dto.likes.LikeDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.CheckException;
@@ -82,7 +83,7 @@ public class LikeServiceImpl implements LikeService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<UserDto> usersByPostId(long postId) {
+    public List<UserDto> usersByPostId(long postId, BaseFilterDto filter) {
         postRepositoryAdapter.findById(postId);
         List<Like> likes = likeRepository.findLikesByPostId(postId);
         if (!likes.isEmpty()) {
@@ -93,7 +94,7 @@ public class LikeServiceImpl implements LikeService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<UserDto> usersByCommentId(long commentId) {
+    public List<UserDto> usersByCommentId(long commentId, BaseFilterDto filter) {
         commentRepositoryAdapter.findById(commentId);
         List<Like> likes = likeRepository.findLikesByCommentId(commentId);
         if (!likes.isEmpty()) {

@@ -1,5 +1,6 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.dto.likes.BaseFilterDto;
 import faang.school.postservice.dto.likes.LikeDto;
 import faang.school.postservice.dto.user.UserDto;
 
@@ -48,15 +49,17 @@ public interface LikeService {
      * Retrieves a list of users associated with a specific post ID.
      *
      * @param postId the ID of the post to retrieve users for
+     * @param filter the filter to retrieve users for
      * @return a ResponseEntity containing a list of UserDto objects associated with the post ID
      */
-    List<UserDto> usersByPostId(long postId);
+    List<UserDto> usersByPostId(long postId, BaseFilterDto filter);
 
     /**
      * Retrieves a list of users associated with a specific comment ID.
      *
      * @param commentId the ID of the comment to retrieve users for
+     * @param filter    the filter to retrieve users for
      * @return a ResponseEntity containing a list of UserDto objects associated with the comment ID
      */
-    List<UserDto> usersByCommentId(long commentId);
+    List<UserDto> usersByCommentId(long commentId, BaseFilterDto filter);
 }

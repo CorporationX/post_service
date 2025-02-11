@@ -1,5 +1,6 @@
 package faang.school.postservice.controller;
 
+import faang.school.postservice.dto.likes.BaseFilterDto;
 import faang.school.postservice.dto.likes.LikeDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
@@ -61,12 +62,12 @@ public class LikeController {
     }
 
     @GetMapping(USERS_BY_POST_ID)
-    public ResponseEntity<List<UserDto>> usersByPostId(@PathVariable long postId) {
-        return ResponseEntity.ok(likeService.usersByPostId(postId));
+    public ResponseEntity<List<UserDto>> usersByPostId(@PathVariable long postId, BaseFilterDto filter) {
+        return ResponseEntity.ok(likeService.usersByPostId(postId, filter));
     }
 
     @GetMapping(USERS_BY_COMMENT_ID)
-    public ResponseEntity<List<UserDto>> usersByCommentId(@PathVariable long commentId) {
-        return ResponseEntity.ok(likeService.usersByCommentId(commentId));
+    public ResponseEntity<List<UserDto>> usersByCommentId(@PathVariable long commentId, BaseFilterDto filter) {
+        return ResponseEntity.ok(likeService.usersByCommentId(commentId, filter));
     }
 }

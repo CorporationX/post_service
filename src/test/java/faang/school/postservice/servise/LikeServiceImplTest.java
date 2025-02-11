@@ -148,7 +148,7 @@ public class LikeServiceImplTest {
         when(likeRepository.findLikesByCommentId(COMMENT_ID)).thenReturn(likes);
         when(userServiceClient.getUsersByIds(anyList())).thenReturn(userDtos);
 
-        List<UserDto> result = likeService.usersByCommentId(COMMENT_ID);
+        List<UserDto> result = likeService.usersByCommentId(COMMENT_ID, );
 
         assertEquals(2, result.size());
         verify(likeRepository, times(1)).findLikesByCommentId(COMMENT_ID);
@@ -159,7 +159,7 @@ public class LikeServiceImplTest {
     void testUsersByCommentId_EmptyLikes() {
         when(likeRepository.findLikesByCommentId(COMMENT_ID)).thenReturn(Collections.emptyList());
 
-        List<UserDto> result = likeService.usersByCommentId(COMMENT_ID);
+        List<UserDto> result = likeService.usersByCommentId(COMMENT_ID, );
 
         assertTrue(result.isEmpty());
         verify(likeRepository, times(1)).findLikesByCommentId(COMMENT_ID);
