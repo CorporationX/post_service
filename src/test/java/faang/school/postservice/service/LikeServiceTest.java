@@ -2,6 +2,8 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.event.LikeEvent;
+import faang.school.postservice.event.LikeEventPublisher;
 import faang.school.postservice.exception.UserNotFoundException;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
@@ -13,6 +15,7 @@ import feign.FeignException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -55,7 +58,8 @@ public class LikeServiceTest {
     @Mock
     private CommentRepository commentRepository;
 
-
+    @Mock
+    private LikeEventPublisher likeEventPublisher;
 
     @Test
     public void addLikeToPostTest(){
@@ -70,6 +74,8 @@ public class LikeServiceTest {
         when(postRepository.findById(postId))
                         .thenReturn(Optional.of(post));
         likeService.addLikeToPost(postId, userId, commentId);
+        ArgumentCaptor<LikeEvent> captor = ArgumentCaptor.forClass(LikeEvent.class);
+        verify(likeEventPublisher, times(1)).publishLikeEvent(captor.capture());
         verify(postRepository, times(1)).save(post);
         verify(likeRepository, times(1)).save(like);
     }
