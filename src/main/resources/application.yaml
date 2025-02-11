@@ -43,7 +43,7 @@ spring:
             read-timeout: 5000
 
 scheduling:
-  publishing-cron: "0 0 1 * * *"
+  publishing-cron: "0 * * * * *"
 
 server:
   port: 8081
