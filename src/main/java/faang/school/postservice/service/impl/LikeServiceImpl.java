@@ -36,6 +36,8 @@ public class LikeServiceImpl implements LikeService {
     private final LikeMapper likeMapper;
     private final UserServiceClient userServiceClient;
 
+    private static final int BATCH_SIZE = 100;
+
     @Transactional
     @Override
     public LikeDto likePost(long userId, long postId) {
@@ -113,9 +115,8 @@ public class LikeServiceImpl implements LikeService {
     private List<UserDto> getUsersByUserIds(List<Like> likes) {
         List<Long> ids = likes.stream().map(Like::getUserId).collect(Collectors.toList());
         List<UserDto> users = new ArrayList<>();
-        int batchSize = 100;
-        while (ids.size() > batchSize) {
-            List<Long> batch = ids.stream().limit(batchSize).toList();
+        while (ids.size() > BATCH_SIZE) {
+            List<Long> batch = ids.stream().limit(BATCH_SIZE).toList();
             users.addAll(userServiceClient.getUsersByIds(batch));
             ids.removeAll(batch);
         }
