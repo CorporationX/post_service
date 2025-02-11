@@ -1,6 +1,7 @@
 package faang.school.postservice.mapper;
 
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.event.comment.CommentEvent;
 import faang.school.postservice.model.Comment;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -19,4 +20,8 @@ public interface CommentMapper {
     List<Comment> toEntityList(List<CommentDto> commentDtos);
 
     List<CommentDto> toDtoList(List<Comment> comments);
+
+    @Mapping(source = "id", target = "commentId")
+    @Mapping(source = "post.id", target = "postId")
+    CommentEvent toEvent(Comment comment);
 }
