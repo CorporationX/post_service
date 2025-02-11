@@ -5,6 +5,10 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validation.ModerationDictionaryValidator;
 import org.junit.jupiter.api.BeforeEach;
+import faang.school.postservice.service.InternalServices;
+import faang.school.postservice.service.PostService;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -68,7 +72,13 @@ public class PostServiceTest {
     private List<Post> postsToPublish;
 
     @BeforeEach
-    public void SetUp() {
+    void setUp() {
+        ReflectionTestUtils.setField(postService, "unverifiedPostsCountForBan", 5);
+    }
+
+
+    @BeforeAll
+    public static void SetUp() {
         post = new Post();
         post.setId(1L);
         post.setAuthorId(1L);
@@ -317,5 +327,17 @@ public class PostServiceTest {
 
         verify(postRepository).findReadyToPublish();
         verify(publishingThreadPool, times(1)).execute(any(Runnable.class));
+    }
+
+    @Test
+    @Order(18)
+    public void getUsersForBanWithUnverifiedPosts_Valid() {
+        List<Long> mockUserIds = List.of(1L, 2L, 3L);
+        when(postRepository.findUserIdsToBanWithUnverifiedPosts(5)).thenReturn(mockUserIds);
+
+        List<Long> result = postService.getUsersForBanWithUnverifiedPosts();
+
+        verify(postRepository, times(1)).findUserIdsToBanWithUnverifiedPosts(5);
+        assertEquals(mockUserIds, result);
     }
 }
