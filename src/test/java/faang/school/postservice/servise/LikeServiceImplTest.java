@@ -1,6 +1,7 @@
 package faang.school.postservice.servise;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.likes.BaseFilterDto;
 import faang.school.postservice.dto.likes.LikeDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.LikeMapper;
@@ -17,6 +18,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -45,6 +50,8 @@ public class LikeServiceImplTest {
     private static final long USER_ID = 1L;
     private static final long POST_ID = 1L;
     private static final long COMMENT_ID = 1L;
+    private static final int PAGE = 0;
+    private static final int COUNT = 10;
 
     @Test
     public void likePost_shouldSaveLike() {
@@ -112,57 +119,74 @@ public class LikeServiceImplTest {
 
     @Test
     void testUsersByPostId() {
+        BaseFilterDto filter = new BaseFilterDto(PAGE, COUNT);
         List<Like> likes = Arrays.asList(new Like(), new Like());
         List<UserDto> userDtos = Arrays.asList(
                 new UserDto(1L, "test", "test"),
                 new UserDto(2L, "test2", "test2"));
 
-        when(likeRepository.findLikesByPostId(POST_ID)).thenReturn(likes);
+        Pageable pageable = PageRequest.of(filter.getPage(), filter.getCount());
+        Slice<Like> likeSlice = new SliceImpl<>(likes, pageable, true);
+
+        when(likeRepository.findLikesByPostId(POST_ID, pageable)).thenReturn(likeSlice);
         when(userServiceClient.getUsersByIds(anyList())).thenReturn(userDtos);
 
-        List<UserDto> result = likeService.usersByPostId(POST_ID);
+        List<UserDto> result = likeService.usersByPostId(POST_ID, filter);
 
         assertEquals(2, result.size());
-        verify(likeRepository, times(1)).findLikesByPostId(POST_ID);
+        verify(likeRepository, times(1)).findLikesByPostId(POST_ID, pageable);
         verify(userServiceClient, times(1)).getUsersByIds(anyList());
     }
 
     @Test
     void testUsersByPostId_EmptyLikes() {
-        when(likeRepository.findLikesByPostId(POST_ID)).thenReturn(Collections.emptyList());
+        BaseFilterDto filter = new BaseFilterDto(PAGE, COUNT);
 
-        List<UserDto> result = likeService.usersByPostId(POST_ID);
+        Pageable pageable = PageRequest.of(filter.getPage(), filter.getCount());
+        Slice<Like> likeSlice = new SliceImpl<>(Collections.emptyList(), pageable, true);
+
+        when(likeRepository.findLikesByPostId(POST_ID, pageable)).thenReturn(likeSlice);
+
+        List<UserDto> result = likeService.usersByPostId(POST_ID, filter);
 
         assertTrue(result.isEmpty());
-        verify(likeRepository, times(1)).findLikesByPostId(POST_ID);
+        verify(likeRepository, times(1)).findLikesByPostId(POST_ID, pageable);
         verify(userServiceClient, never()).getUsersByIds(anyList());
     }
 
     @Test
     void testUsersByCommentId() {
+        BaseFilterDto filter = new BaseFilterDto(PAGE, COUNT);
         List<Like> likes = Arrays.asList(new Like(), new Like());
         List<UserDto> userDtos = Arrays.asList(
                 new UserDto(1L, "User1", "test1"),
                 new UserDto(2L, "User2", "test2"));
+        Pageable pageable = PageRequest.of(filter.getPage(), filter.getCount());
+        Slice<Like> likeSlice = new SliceImpl<>(likes, pageable, true);
 
-        when(likeRepository.findLikesByCommentId(COMMENT_ID)).thenReturn(likes);
+        when(likeRepository.findLikesByCommentId(COMMENT_ID, pageable)).thenReturn(likeSlice);
         when(userServiceClient.getUsersByIds(anyList())).thenReturn(userDtos);
 
-        List<UserDto> result = likeService.usersByCommentId(COMMENT_ID, );
+
+        List<UserDto> result = likeService.usersByCommentId(COMMENT_ID, filter);
 
         assertEquals(2, result.size());
-        verify(likeRepository, times(1)).findLikesByCommentId(COMMENT_ID);
+        verify(likeRepository, times(1)).findLikesByCommentId(COMMENT_ID, pageable);
         verify(userServiceClient, times(1)).getUsersByIds(anyList());
     }
 
     @Test
     void testUsersByCommentId_EmptyLikes() {
-        when(likeRepository.findLikesByCommentId(COMMENT_ID)).thenReturn(Collections.emptyList());
+        BaseFilterDto filter = new BaseFilterDto(PAGE, COUNT);
+        Pageable pageable = PageRequest.of(filter.getPage(), filter.getCount());
+        Slice<Like> likeSlice = new SliceImpl<>(Collections.emptyList(), pageable, true);
 
-        List<UserDto> result = likeService.usersByCommentId(COMMENT_ID, );
+        when(likeRepository.findLikesByCommentId(COMMENT_ID, pageable)).thenReturn(likeSlice);
+
+        List<UserDto> result = likeService.usersByCommentId(COMMENT_ID, filter);
 
         assertTrue(result.isEmpty());
-        verify(likeRepository, times(1)).findLikesByCommentId(COMMENT_ID);
+        verify(likeRepository, times(1)).findLikesByCommentId(COMMENT_ID, pageable);
         verify(userServiceClient, never()).getUsersByIds(anyList());
     }
 }
