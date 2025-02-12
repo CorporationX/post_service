@@ -58,6 +58,11 @@ payment-service:
   host: localhost
   port: 9080
 
+moderation:
+  schedule: "0 0 * * * ?" # каждый день в полночь
+  chunk-size: 500
+  banned-words-path: "src/main/resources/moderation/banned-words.json"
+
 api:
     title: "Post service API"
     version: "0.1.0.1"
