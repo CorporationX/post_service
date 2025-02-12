@@ -15,10 +15,12 @@ class ModerationDictionaryTest {
 
     @BeforeEach
     void setUp() throws IOException {
+        // Создаём временный JSON-файл с правильной структурой
         Path tempFile = Files.createTempFile("banned-words", ".json");
         tempFile.toFile().deleteOnExit();
 
-        String jsonContent = "[\"badword1\", \"badword2\", \"offensiveword\"]";
+        // Правильный JSON-формат с объектом-обёрткой
+        String jsonContent = "{ \"bannedWords\": [\"badword1\", \"badword2\", \"offensiveword\"] }";
         Files.writeString(tempFile, jsonContent);
 
         moderationDictionary = new ModerationDictionary(tempFile.toString());
@@ -26,31 +28,26 @@ class ModerationDictionaryTest {
 
     @Test
     void containsBannedWords_shouldReturnTrueWhenContentContainsBannedWord() {
-        boolean result = moderationDictionary.containsBannedWords("This is a badword1 in the text.");
-        assertThat(result).isTrue();
+        assertThat(moderationDictionary.containsBannedWords("This is a badword1 in the text.")).isTrue();
     }
 
     @Test
     void containsBannedWords_shouldReturnFalseWhenContentDoesNotContainBannedWord() {
-        boolean result = moderationDictionary.containsBannedWords("This is a clean text without bad words.");
-        assertThat(result).isFalse();
+        assertThat(moderationDictionary.containsBannedWords("This is a clean text without bad words.")).isFalse();
     }
 
     @Test
     void containsBannedWords_shouldHandleEmptyContentGracefully() {
-        boolean result = moderationDictionary.containsBannedWords("");
-        assertThat(result).isFalse();
+        assertThat(moderationDictionary.containsBannedWords("")).isFalse();
     }
 
     @Test
     void containsBannedWords_shouldBeCaseInsensitive() {
-        boolean result = moderationDictionary.containsBannedWords("This is a BADWORD1 in the text.");
-        assertThat(result).isTrue();
+        assertThat(moderationDictionary.containsBannedWords("This is a BADWORD1 in the text.")).isTrue();
     }
 
     @Test
     void containsBannedWords_shouldHandleSpecialCharacters() {
-        boolean result = moderationDictionary.containsBannedWords("This is a badword1! in the text.");
-        assertThat(result).isTrue();
+        assertThat(moderationDictionary.containsBannedWords("This is a badword1! in the text.")).isTrue();
     }
 }

@@ -29,4 +29,5 @@ public class CommentDto {
     private LocalDateTime updatedAt;
     private String largeImageFileKey;
     private String smallImageFileKey;
+    private Boolean verified = false;
 }
