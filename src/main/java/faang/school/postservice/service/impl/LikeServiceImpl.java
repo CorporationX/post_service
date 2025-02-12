@@ -41,11 +41,11 @@ public class LikeServiceImpl implements LikeService {
     @Transactional
     @Override
     public LikeDto likePost(long userId, long postId) {
-        Post post = postRepositoryAdapter.findById(postId);
         Like postLike = likeRepositoryAdapter.findLikeByPostIdAndUserId(userId, postId);
         if (postLike != null) {
             throw new CheckException("Вы уже поставили лайк на этот пост!");
         }
+        Post post = postRepositoryAdapter.findById(postId);
         postLike = new Like();
         postLike.setUserId(userId);
         postLike.setPost(post);
@@ -65,11 +65,11 @@ public class LikeServiceImpl implements LikeService {
     @Transactional
     @Override
     public LikeDto likeComment(long userId, long commentId) {
-        Comment comment = commentRepositoryAdapter.findById(commentId);
         Like commentLike = likeRepositoryAdapter.findLikeByCommentIdAndUserId(userId, commentId);
         if (commentLike != null) {
             throw new CheckException("Вы уже поставили лайк на этот комментарий!");
         }
+        Comment comment = commentRepositoryAdapter.findById(commentId);
         commentLike = new Like();
         commentLike.setUserId(userId);
         commentLike.setComment(comment);

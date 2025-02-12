@@ -12,6 +12,7 @@ public class CommentRepositoryAdapter {
 
     public Comment findById(long commentId) {
         return commentRepository.findById(commentId)
-                .orElseThrow(() -> new DataValidationException(String.format("Комментарий с id:%s не найден!", commentId)));
+                .orElseThrow(() -> new DataValidationException(String.format("Комментарий с id:%s не найден!",
+                        commentId)));
     }
 }
