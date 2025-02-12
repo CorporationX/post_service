@@ -22,4 +22,6 @@ public interface PostService {
     List<PostDto> getAllPublishedByAuthorId(Long id);
 
     List<PostDto> getAllPublishedByProjectId(Long id);
+
+    void postTextCorrection();
 }

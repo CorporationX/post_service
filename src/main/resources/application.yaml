@@ -58,3 +58,12 @@ services:
     accessKey: user
     secretKey: password
     bucketName: corpbucket
+
+redis:
+  pubsub:
+    topics:
+      like-event
+
+scheduler:
+  post-corrector:
+    cron: 0 * * * * *

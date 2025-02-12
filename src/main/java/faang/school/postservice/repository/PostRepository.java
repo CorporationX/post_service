@@ -22,4 +22,9 @@ public interface PostRepository extends CrudRepository<Post, Long> {
 
     @Query("SELECT p FROM Post p WHERE p.published = false AND p.deleted = false AND p.scheduledAt <= CURRENT_TIMESTAMP")
     List<Post> findReadyToPublish();
+
+    @Query(nativeQuery = true, value = """
+           SELECT p.* FROM post p
+            WHERE published_at IS NULL""")
+    List<Post> findUnpublishedPost();
 }

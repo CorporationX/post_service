@@ -1,25 +1,41 @@
 package faang.school.postservice.service.post;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.scheduler.SpellCheckResult;
 import faang.school.postservice.exception.PostException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
     private final PostMapper postMapper;
+    private final ObjectMapper objectMapper;
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
 
@@ -118,6 +134,61 @@ public class PostServiceImpl implements PostService {
         validateProjectExist(id);
 
         return filterPublishedPostsByTimeToDto(postRepository.findByProjectId(id));
+    }
+
+    @Override
+    @Retryable(retryFor = {RestClientException.class}, maxAttempts = 3, backoff = @Backoff(delay = 1000, multiplier = 2))
+    public void postTextCorrection() {
+        List<PostDto> unpublishedPost = postMapper.toListDto(postRepository.findUnpublishedPost());
+
+        RestTemplate restTemplate = new RestTemplate();
+
+        for (PostDto postDto : unpublishedPost) {
+            String content = postDto.getContent();
+            log.info("Words sent for review " + content);
+
+            MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+            params.add("text", content);
+
+            ResponseEntity<String> response = restTemplate.postForEntity(
+                    "https://speller.yandex.net/services/spellservice.json/checkTexts",
+                    params,
+                    String.class
+            );
+
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                String jsonResponse = response.getBody();
+                log.info("Reply from API " + jsonResponse);
+
+                try {
+                    List<List<SpellCheckResult>> results = objectMapper.readValue(jsonResponse,
+                            new TypeReference<List<List<SpellCheckResult>>>() {});
+
+                    Map<String, String> correctionsMap = new HashMap<>();
+
+                    for (List<SpellCheckResult> result : results) {
+                        for (SpellCheckResult spellCheckResult : result) {
+                            if (spellCheckResult.getCode() != 0) {
+                                correctionsMap.put(spellCheckResult.getWord(), spellCheckResult.getS().get(0));
+                            }
+                        }
+                    }
+
+                    for(Map.Entry<String, String> entry : correctionsMap.entrySet()) {
+                        content = content.replace(entry.getKey(), entry.getValue());
+                    }
+
+                    postDto.setContent(content);
+                    postRepository.save(postMapper.toEntity(postDto));
+
+                } catch (JsonProcessingException e) {
+                    log.error("JSON processing error: " + e);
+                    throw new RuntimeException(e);
+                }
+            } else {
+                log.debug("Error when requesting to API: " + response.getStatusCode());
+            }
+        }
     }
 
     private void validateUserExist(Long id) {
