@@ -38,7 +38,7 @@ spring:
 
 scheduler:
   user_ban:
-     cron: "0 0 0 * * *"
+     cron: "0/30 * * * * *"
      posts-count-for-ban: 5
 
 server:
