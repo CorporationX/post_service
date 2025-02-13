@@ -7,14 +7,14 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class KafkaProducer {
+public class BanProducer {
 
-    private final KafkaTemplate<String, Long> kafkaTemplate;
+    private final KafkaTemplate<String, String> kafkaTemplate;
 
-    @Value("${kafka.topic.ban_user}")
-    private String banUserTopic;
+    @Value("${spring.kafka.topics.user-ban-topic.name}")
+    private String banUserTopicName;
 
     public void sendUsersToBan(Long userId) {
-        kafkaTemplate.send(banUserTopic, userId);
+        kafkaTemplate.send(banUserTopicName, String.valueOf(userId));
     }
 }
