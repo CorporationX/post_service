@@ -40,7 +40,6 @@ spring:
         calculations_channel:
           name: calculations_channel
 
-
 scheduler:
   user_ban:
      cron: "0 0 0 * * *"
@@ -75,7 +74,6 @@ moderation:
   bad-words-path: "classpath:moderation/bad-words.json"
   chunk-size: 500
   banned-words-path: "src/main/resources/moderation/banned-words.json"
-
 
 api:
     title: "Post service API"
