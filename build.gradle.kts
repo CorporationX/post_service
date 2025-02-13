@@ -37,6 +37,11 @@ dependencies {
     runtimeOnly("org.postgresql:postgresql")
 
     /**
+     * Apache Kafka
+     */
+    implementation("org.springframework.kafka:spring-kafka:3.3.2")
+
+    /**
      * Utils & Logging
      */
     implementation("com.fasterxml.jackson.core:jackson-databind:2.14.2")
