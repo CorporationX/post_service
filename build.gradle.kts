@@ -20,6 +20,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
+    implementation("org.springframework.kafka:spring-kafka:2.9.9")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation ("org.springframework.retry:spring-retry")
@@ -114,6 +115,7 @@ tasks.withType<Test> {
 }
 
 val test by tasks.getting(Test::class) { testLogging.showStandardStreams = true }
+
 
 tasks.bootJar {
     archiveFileName.set("service.jar")

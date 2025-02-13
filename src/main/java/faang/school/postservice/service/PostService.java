@@ -4,10 +4,15 @@ import faang.school.postservice.dto.AuthorPostCount;
 import faang.school.postservice.dto.post.CreatePostDto;
 import faang.school.postservice.dto.post.ResponsePostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
+import faang.school.postservice.dto.user.UserCacheDto;
+import faang.school.postservice.event.PostEvent;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Hashtag;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.KafkaPostProducer;
+import faang.school.postservice.repository.PostCacheRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.UserCacheRepository;
 import faang.school.postservice.utils.PostSpecifications;
 import faang.school.postservice.validator.HashtagValidator;
 import faang.school.postservice.validator.PostValidator;
@@ -25,6 +30,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -35,6 +41,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class PostService {
+
     private final PostRepository postRepository;
     private final PostMapper postMapper;
     private final PostValidator postValidator;
@@ -42,6 +49,10 @@ public class PostService {
     private final HashtagValidator hashtagValidator;
     private final RedisTemplate<String, Object> redisTemplate;
     private final ExecutorService executorService;
+    private final PostCacheRepository postCacheRepository;
+    private final UserCacheRepository userCacheRepository;
+    private final KafkaPostProducer kafkaPostProducer;
+    private final UserFeignService userFeignService;
 
     @Value("${spring.data.redis.channel.user-bans-channel}")
     private String userBansChannelName;
@@ -49,6 +60,7 @@ public class PostService {
 
     @Value("${ad.batch.size}")
     private int batchSize;
+
 
     @Transactional
     public ResponsePostDto create(CreatePostDto createPostDto) {
@@ -73,7 +85,10 @@ public class PostService {
             entity.setHashtags(getAndCreateHashtags(createPostDto.getHashtags()));
         }
 
-        postRepository.save(entity);
+        Post savedPost = postRepository.save(entity);
+
+        sendPostEvent(savedPost);
+        postCacheRepository.savePostToCache(postMapper.toRedisPostDto(savedPost));
 
         return postMapper.toDto(entity);
     }
@@ -272,5 +287,24 @@ public class PostService {
 
     public List<Post> getReadyToPublishPosts() {
         return postRepository.findAll(PostSpecifications.isReadyToPublish());
+    }
+
+    private UserCacheDto findPostsAuthor(Long authorId) {
+        UserCacheDto cachedUser = userCacheRepository.getUserFromCache(authorId.toString());
+        if (cachedUser != null) {
+            return cachedUser;
+        } else {
+            UserCacheDto userFromDb = userFeignService.getCacheUser(authorId);
+            if (userFromDb != null) {
+                userCacheRepository.saveUserToCache(userFromDb);
+            }
+            return userFromDb;
+        }
+    }
+
+    private void sendPostEvent(Post post) {
+        UserCacheDto author = findPostsAuthor(post.getAuthorId());
+        PostEvent postEvent = PostEvent.create(post.getId(), post.getAuthorId(), author.followeesIds());
+        kafkaPostProducer.sendPostEvent(postEvent);
     }
 }

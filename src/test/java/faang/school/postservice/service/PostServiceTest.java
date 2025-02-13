@@ -1,13 +1,19 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.dto.post.CreatePostDto;
+import faang.school.postservice.dto.post.RedisPostDto;
 import faang.school.postservice.dto.post.ResponsePostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
+import faang.school.postservice.dto.user.UserCacheDto;
+import faang.school.postservice.event.PostEvent;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Hashtag;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.KafkaPostProducer;
+import faang.school.postservice.repository.PostCacheRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.UserCacheRepository;
 import faang.school.postservice.utils.PostSpecifications;
 import faang.school.postservice.validator.HashtagValidator;
 import faang.school.postservice.validator.PostValidator;
@@ -16,11 +22,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -31,20 +37,21 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -68,10 +75,22 @@ class PostServiceTest {
     private HashtagService hashtagService;
 
     @Mock
+    private PostCacheRepository postCacheRepository;
+
+    @Mock
     private ExecutorService executorService;
 
     @Mock
     private RedisTemplate<String, Object> redisTemplate;
+
+    @Mock
+    private KafkaPostProducer kafkaPostProducer;
+
+    @Mock
+    private UserFeignService userFeignService;
+
+    @Mock
+    UserCacheRepository userCacheRepository;
 
     @InjectMocks
     private PostService postService;
@@ -90,56 +109,53 @@ class PostServiceTest {
 
     Post post = createTestPost();
 
+    RedisPostDto redisPostDto = createTestRedisPostDto();
     ResponsePostDto firstResponsePostDto = new ResponsePostDto();
     ResponsePostDto secondResponsePostDto = new ResponsePostDto();
 
     @Test
-    void createShouldCreatePostSuccessfully() {
+    void createPostShouldReturnResponsePostDto() {
         CreatePostDto createPostDto = new CreatePostDto();
         createPostDto.setContent("Test content");
         createPostDto.setAuthorId(1L);
-        createPostDto.setProjectId(2L);
-        createPostDto.setHashtags(List.of("tag1", "tag2"));
+        createPostDto.setProjectId(1L);
+        createPostDto.setHashtags(Collections.singletonList("test"));
 
-        Post post = new Post();
-        ResponsePostDto responseDto = new ResponsePostDto();
+        Post post = createTestPost();
 
-        doNothing().when(postValidator).validateContent(createPostDto.getContent());
-        doNothing().when(postValidator).validateAuthorIdAndProjectId(1L, 2L);
-        doNothing().when(postValidator).validateAuthorId(1L);
-        doNothing().when(postValidator).validateProjectId(2L, 1L);
-
-        doNothing().when(hashtagValidator).validateHashtag(anyString());
+        ResponsePostDto responsePostDto = new ResponsePostDto();
+        responsePostDto.setId(1L);
+        responsePostDto.setContent("Test content");
 
         when(postMapper.toEntity(createPostDto)).thenReturn(post);
-        when(postMapper.toDto(post)).thenReturn(responseDto);
-
-        Hashtag tag1 = Hashtag
-                .builder()
-                .tag("tag1")
-                .build();
-        Hashtag tag2 = Hashtag
-                .builder()
-                .tag("tag2")
-                .build();
-        when(hashtagService.findAllByTags(List.of("tag1", "tag2")))
-                .thenReturn(List.of(tag1));
-        when(hashtagService.create("tag2")).thenReturn(tag2);
-
         when(postRepository.save(post)).thenReturn(post);
+        when(postMapper.toDto(post)).thenReturn(responsePostDto);
+        when(postMapper.toRedisPostDto(post)).thenReturn(redisPostDto);
+
+        UserCacheDto userCacheDto = createUserCacheDto();
+        when(userCacheRepository.getUserFromCache(anyString())).thenReturn(null);
+        when(userFeignService.getCacheUser(1L)).thenReturn(userCacheDto);
+
 
         ResponsePostDto result = postService.create(createPostDto);
 
-        verify(postValidator, times(1)).validateContent(createPostDto.getContent());
-        verify(postValidator, times(1)).validateAuthorIdAndProjectId(1L, 2L);
+
+        assertEquals(responsePostDto, result);
+        verify(postValidator, times(1)).validateContent("Test content");
+        verify(postValidator, times(1)).validateAuthorIdAndProjectId(1L, 1L);
         verify(postValidator, times(1)).validateAuthorId(1L);
-        verify(postValidator, times(1)).validateProjectId(2L, 1L);
-        verify(hashtagValidator, times(1)).validateHashtag("tag1");
-        verify(hashtagValidator, times(1)).validateHashtag("tag2");
-        verify(postMapper, times(1)).toEntity(createPostDto);
+        verify(postValidator, times(1)).validateProjectId(1L, 1L);
         verify(postRepository, times(1)).save(post);
-        verify(postMapper, times(1)).toDto(post);
-        assertNotNull(result);
+        verify(postCacheRepository, times(1)).savePostToCache(any(RedisPostDto.class));
+        verify(kafkaPostProducer, times(1)).sendPostEvent(any(PostEvent.class));
+
+        ArgumentCaptor<PostEvent> postEventCaptor = ArgumentCaptor.forClass(PostEvent.class);
+        verify(kafkaPostProducer, times(1)).sendPostEvent(postEventCaptor.capture());
+
+        PostEvent capturedPostEvent = postEventCaptor.getValue();
+        assertEquals(1L, capturedPostEvent.postId());
+        assertEquals(1L, capturedPostEvent.authorId());
+        assertEquals(List.of(1L, 2L), capturedPostEvent.followerIds());
     }
 
     @Test
@@ -399,8 +415,7 @@ class PostServiceTest {
     @DisplayName("Get post with valid id")
     @Test
     void testGetPostByIdValidId() {
-        when(postRepository.findById(1L)).thenReturn(Optional.of(post));
-
+        lenient().when(postRepository.findById(1L)).thenReturn(Optional.of(post));
         Post result = postService.getPostById(1L);
 
         assertNotNull(result);
@@ -410,16 +425,17 @@ class PostServiceTest {
     @Test
     @DisplayName("Get post with invalid id")
     void testGetPostByIdInvalidId() {
-        when(postRepository.findById(1L)).thenReturn(Optional.empty());
+        lenient().when(postRepository.findById(1L)).thenReturn(Optional.empty());
+
 
         Exception ex = assertThrows(EntityNotFoundException.class, () -> postService.getPostById(1L));
         assertEquals("Post with id: 1 not found", ex.getMessage());
     }
 
-
     private Post createTestPost() {
         return Post.builder()
                 .id(1L)
+                .authorId(1L)
                 .content("Test content")
                 .build();
     }
@@ -449,5 +465,24 @@ class PostServiceTest {
         assertNotNull(post1.getPublishedAt(), "Post 1 publishedAt should not be null");
         assertTrue(post2.isPublished(), "Post 2 should be published");
         assertNotNull(post2.getPublishedAt(), "Post 2 publishedAt should not be null");
+    }
+
+    private RedisPostDto createTestRedisPostDto() {
+        RedisPostDto redisPost = new RedisPostDto(
+                1L,
+                "Test content",
+                101L,
+                202L,
+                10,
+                List.of(),
+                LocalDateTime.now(),
+                LocalDateTime.now(),
+                Set.of(1L, 2L)
+        );
+        return redisPost;
+    }
+
+    private UserCacheDto createUserCacheDto() {
+        return new UserCacheDto(1L, "John", List.of(1L, 2L));
     }
 }

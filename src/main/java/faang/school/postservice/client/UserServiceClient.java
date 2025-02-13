@@ -1,5 +1,6 @@
 package faang.school.postservice.client;
 
+import faang.school.postservice.dto.user.UserCacheDto;
 import faang.school.postservice.dto.user.UserDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,4 +16,7 @@ public interface UserServiceClient {
 
     @GetMapping("/api/v1/users/ids")
     List<UserDto> getUsersByIds(@RequestParam List<Long> ids);
+
+    @GetMapping("/api/v1/users/{id}/cache")
+    UserCacheDto getCacheUser(@PathVariable long id);
 }
