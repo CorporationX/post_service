@@ -16,5 +16,6 @@ public class BanProducer {
 
     public void sendUsersToBan(Long userId) {
         kafkaTemplate.send(banUserTopicName, String.valueOf(userId));
+        System.out.println("Sended: " + userId);
     }
 }
