@@ -8,6 +8,15 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class KafkaTopicConfig {
 
+    @Value(value = "${spring.kafka.topics.user-ban-topic.name}")
+    private String userBanTopicName;
+
+    @Value(value = "${spring.kafka.topics.user-ban-topic.num-partitions}")
+    private int userBanTopicNumPartitions;
+
+    @Value(value = "${spring.kafka.topics.user-ban-topic.replication-factor}")
+    private short userBanTopicReplicationFactor;
+
     @Value("${spring.kafka.topics.notification-like-topic.name}")
     private String notificationLikeTopicName;
 
@@ -16,6 +25,11 @@ public class KafkaTopicConfig {
 
     @Value("${spring.kafka.topics.notification-like-topic.replication-factor}")
     private short notificationLikeTopicReplicationFactor;
+
+    @Bean
+    public NewTopic userBanTopic() {
+        return new NewTopic(userBanTopicName, userBanTopicNumPartitions, userBanTopicReplicationFactor);
+    }
 
     @Bean
     public NewTopic notificationLikeTopic() {

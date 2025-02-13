@@ -14,7 +14,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     @Query(nativeQuery = true, value = """
             SELECT author_id 
             FROM comment 
-            WHERE verified = false
+            WHERE verified = false AND verified_date IS NOT NULL
             GROUP BY author_id
             HAVING COUNT(*) >= :unverifiedCommentsCountForBan
             """
