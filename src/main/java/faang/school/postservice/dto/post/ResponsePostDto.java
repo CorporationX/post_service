@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -21,4 +22,5 @@ public class ResponsePostDto {
     private LocalDateTime updatedAt;
     private LocalDateTime scheduledAt;
     private Set<String> hashtags;
+    private List<String> filesKeys;
 }

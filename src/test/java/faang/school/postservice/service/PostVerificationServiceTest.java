@@ -55,7 +55,7 @@ public class    PostVerificationServiceTest {
 
         verify(postRepository, times(2)).save(any(Post.class));
 
-        assertTrue(post1.isVerified());
-        assertFalse(post2.isVerified());
+        assertTrue(post1.getVerified());
+        assertFalse(post2.getVerified());
     }
 }

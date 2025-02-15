@@ -10,6 +10,7 @@ import faang.school.postservice.docs.post.GetPublishedPostByAuthorDoc;
 import faang.school.postservice.docs.post.GetPublishedPostByProjectDoc;
 import faang.school.postservice.docs.post.PublishPostDoc;
 import faang.school.postservice.docs.post.UpdatePostDoc;
+import faang.school.postservice.docs.post.UpdatePostResourcesDoc;
 import faang.school.postservice.dto.post.CreatePostDto;
 import faang.school.postservice.dto.post.ResponsePostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
@@ -19,9 +20,11 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -32,7 +35,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -41,15 +46,35 @@ import java.util.List;
 @RestController
 @RequestMapping("/posts")
 @RequiredArgsConstructor
-@Tag(name = "Post", description = "This controller handles post operations")
+@Tag(name = "Post API", description = "This controller handles post operations")
 public class PostController {
     private final PostService postService;
 
-    @PostMapping
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @CreatePostDoc
-    public ResponseEntity<ResponsePostDto> create(@Valid @RequestBody CreatePostDto createPostDto) {
+    public ResponseEntity<ResponsePostDto> create(
+            @RequestPart("createPostDto") @Valid CreatePostDto createPostDto,
+            @RequestPart(value = "file", required = false) @Size(max = 10) List<MultipartFile> files
+    ) {
+        files.forEach(file -> log.info("Image File uploaded: {}", file.getOriginalFilename()));
         log.info("Request for new post from user: {}", createPostDto.getAuthorId());
-        return ResponseEntity.status(HttpStatus.CREATED).body(postService.create(createPostDto));
+        return ResponseEntity.status(HttpStatus.CREATED).body(postService.create(createPostDto, files));
+    }
+
+    @PutMapping("{postId}/resources")
+    @UpdatePostResourcesDoc
+    public ResponseEntity<ResponsePostDto> updateResources(@PathVariable
+                                                           @NotNull(message = "Post id is required")
+                                                           @Positive(message = "Post id must be positive number")
+                                                           Long postId,
+                                                           @RequestPart(value = "files", required = false)
+                                                           @Size(max = 10, message = "Post can have maximum 10 files")
+                                                           List<MultipartFile> files,
+                                                           @RequestParam(value = "resourceDeleteKeys", required = false)
+                                                           List<String> resourceDeleteKeys
+    ) {
+        log.info("Updating resources in post with id '{}'", postId);
+        return ResponseEntity.ok(postService.updatePostResources(postId, files, resourceDeleteKeys));
     }
 
     @PutMapping("{postId}/publish")

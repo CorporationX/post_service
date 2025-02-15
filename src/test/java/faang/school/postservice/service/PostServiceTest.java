@@ -7,7 +7,9 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Hashtag;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.utils.ImageResolutionConversionUtil;
 import faang.school.postservice.utils.PostSpecifications;
 import faang.school.postservice.validator.HashtagValidator;
 import faang.school.postservice.validator.PostValidator;
@@ -20,9 +22,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -41,13 +43,17 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -71,7 +77,16 @@ class PostServiceTest {
     private ExecutorService executorService;
 
     @Mock
+    private ImageResolutionConversionUtil imageResolutionConversionUtil;
+
+    @Mock
     private RedisTemplate<String, Object> redisTemplate;
+
+    @Mock
+    private MinioS3Service minioS3Service;
+
+    @Mock
+    private ResourceService resourceService;
 
     @InjectMocks
     private PostService postService;
@@ -100,6 +115,7 @@ class PostServiceTest {
         createPostDto.setAuthorId(1L);
         createPostDto.setProjectId(2L);
         createPostDto.setHashtags(List.of("tag1", "tag2"));
+        List<MultipartFile> files = Collections.emptyList();
 
         Post post = new Post();
         ResponsePostDto responseDto = new ResponsePostDto();
@@ -128,7 +144,7 @@ class PostServiceTest {
 
         when(postRepository.save(post)).thenReturn(post);
 
-        ResponsePostDto result = postService.create(createPostDto);
+        ResponsePostDto result = postService.create(createPostDto, files);
 
         verify(postValidator, times(1)).validateContent(createPostDto.getContent());
         verify(postValidator, times(1)).validateAuthorIdAndProjectId(1L, 2L);
@@ -148,10 +164,11 @@ class PostServiceTest {
         createPostDto.setContent("");
         createPostDto.setAuthorId(1L);
         createPostDto.setProjectId(2L);
+        List<MultipartFile> files = Collections.emptyList();
 
         doThrow(new DataValidationException("Content cannot be blank")).when(postValidator).validateContent(createPostDto.getContent());
 
-        assertThrows(DataValidationException.class, () -> postService.create(createPostDto));
+        assertThrows(DataValidationException.class, () -> postService.create(createPostDto, files));
 
         verify(postValidator, times(1)).validateContent(createPostDto.getContent());
     }
@@ -420,6 +437,8 @@ class PostServiceTest {
     private Post createTestPost() {
         return Post.builder()
                 .id(1L)
+                .authorId(2L)
+                .projectId(3L)
                 .content("Test content")
                 .build();
     }
@@ -449,5 +468,109 @@ class PostServiceTest {
         assertNotNull(post1.getPublishedAt(), "Post 1 publishedAt should not be null");
         assertTrue(post2.isPublished(), "Post 2 should be published");
         assertNotNull(post2.getPublishedAt(), "Post 2 publishedAt should not be null");
+    }
+
+    @Test
+    void updatePostResources_shouldUpdateSuccessfullyWithFilesAndDeleteKeys() {
+        List<MultipartFile> files = List.of(mock(MultipartFile.class), mock(MultipartFile.class));
+        List<String> resourceDeleteKeys = List.of("fileKey1", "fileKey2");
+
+        when(postRepository.findById(post.getId())).thenReturn(Optional.of(post));
+        doNothing().when(postValidator).validatePostFilesCount(post, files);
+
+        when(imageResolutionConversionUtil.compressImage(any(MultipartFile.class)))
+                .thenReturn(mock(MultipartFile.class));
+
+        Resource resource = Resource.builder()
+                        .id(3L)
+                        .build();
+        when(minioS3Service.uploadFile(any(MultipartFile.class), anyString())).thenReturn(resource);
+        doNothing().when(resourceService).saveResource(any(Resource.class));
+
+        doNothing().when(resourceService).deleteResource(anyLong());
+        doNothing().when(minioS3Service).deleteFile(anyString());
+
+        ResponsePostDto responsePostDto = new ResponsePostDto();
+        when(postMapper.toDto(post)).thenReturn(responsePostDto);
+
+        ResponsePostDto result = postService.updatePostResources(post.getId(), files, resourceDeleteKeys);
+
+        assertNotNull(result);
+        verify(postValidator, times(1)).validatePostFilesCount(post, files);
+        verify(imageResolutionConversionUtil, times(files.size())).compressImage(any(MultipartFile.class));
+        verify(minioS3Service, times(files.size())).uploadFile(any(MultipartFile.class), anyString());
+        verify(resourceService, times(resourceDeleteKeys.size())).deleteResource(anyLong());
+        verify(minioS3Service, times(resourceDeleteKeys.size())).deleteFile(anyString());
+    }
+
+    @Test
+    void updatePostResources_shouldSkipProcessingIfNoFilesOrDeleteKeys() {
+        when(postRepository.findById(post.getId())).thenReturn(Optional.of(post));
+
+        ResponsePostDto responsePostDto = new ResponsePostDto();
+        when(postMapper.toDto(post)).thenReturn(responsePostDto);
+
+        ResponsePostDto result = postService.updatePostResources(post.getId(), null, null);
+
+        assertNotNull(result);
+        verifyNoInteractions(postValidator, minioS3Service, resourceService, imageResolutionConversionUtil);
+    }
+
+    @Test
+    void updatePostResources_shouldDeleteFilesWhenDeleteKeysProvided() {
+        List<String> resourceDeleteKeys = List.of("fileKey1", "fileKey2");
+        when(postRepository.findById(post.getId())).thenReturn(Optional.of(post));
+        when(resourceService.findIdByKey(anyString())).thenReturn(42L);
+
+        postService.updatePostResources(post.getId(), null, resourceDeleteKeys);
+
+        verify(resourceService, times(resourceDeleteKeys.size())).findIdByKey(anyString());
+        verify(resourceService, times(resourceDeleteKeys.size())).deleteResource(anyLong());
+        verify(minioS3Service, times(resourceDeleteKeys.size())).deleteFile(anyString());
+    }
+
+    @Test
+    void updatePostResources_shouldCompressAndUploadFiles() {
+        List<MultipartFile> files = List.of(mock(MultipartFile.class), mock(MultipartFile.class));
+        MultipartFile compressedFile = mock(MultipartFile.class);
+
+        when(postRepository.findById(post.getId())).thenReturn(Optional.of(post));
+        when(imageResolutionConversionUtil.compressImage(any(MultipartFile.class))).thenReturn(compressedFile);
+
+        Resource resource = new Resource();
+        resource.setId(4L);
+        when(minioS3Service.uploadFile(any(MultipartFile.class), anyString())).thenReturn(resource);
+        doNothing().when(resourceService).saveResource(any(Resource.class));
+
+        postService.updatePostResources(post.getId(), files, null);
+
+        verify(imageResolutionConversionUtil, times(files.size())).compressImage(any(MultipartFile.class));
+        verify(minioS3Service, times(files.size())).uploadFile(any(MultipartFile.class), eq("ByAuthorize" + post.getProjectId()));
+        verify(resourceService, times(files.size())).saveResource(any(Resource.class));
+    }
+
+    @Test
+    void deleteImageFromPost_shouldDeleteImageSuccessfully() {
+        String fileKey = "test-key";
+        Long resourceId = 42L;
+
+        when(resourceService.findIdByKey(fileKey)).thenReturn(resourceId);
+        doNothing().when(resourceService).deleteResource(resourceId);
+        doNothing().when(minioS3Service).deleteFile(fileKey);
+
+        postService.deleteImageFromPost(fileKey);
+
+        verify(resourceService, times(1)).findIdByKey(fileKey);
+        verify(resourceService, times(1)).deleteResource(resourceId);
+        verify(minioS3Service, times(1)).deleteFile(fileKey);
+    }
+
+    @Test
+    void updatePostResources_shouldSkipProcessingIfNoFilesAndNoDeleteKeys() {
+        when(postRepository.findById(post.getId())).thenReturn(Optional.of(post));
+
+        postService.updatePostResources(post.getId(), null, null);
+
+        verifyNoInteractions(postValidator, imageResolutionConversionUtil, minioS3Service, resourceService);
     }
 }

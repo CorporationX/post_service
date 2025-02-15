@@ -1,6 +1,5 @@
 package faang.school.postservice.exception;
 
-
 import faang.school.postservice.exception.dto.ErrorResponse;
 import feign.FeignException;
 import jakarta.persistence.EntityNotFoundException;
@@ -141,6 +140,30 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AdNotFoundException.class)
     public ResponseEntity<String> handleAdNotFoundException(AdNotFoundException ex) {
         log.error("AdNotFoundException occurred while accessing ad: {}", ex.getMessage(), ex);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(FileDeletionException.class)
+    public ResponseEntity<String> handleFileDeletionException(FileDeletionException ex) {
+        log.error("FileDeletionException occurred while deleting file: {}", ex.getMessage(), ex);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(FileException.class)
+    public ResponseEntity<String> handleFileException(FileException ex) {
+        log.error("FileException occurred while accessing file: {}", ex.getMessage(), ex);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(ResizeFileException.class)
+    public ResponseEntity<String> handleResizeFileException(ResizeFileException ex) {
+        log.error("ResizeFileException occurred while resizing file: {}", ex.getMessage(), ex);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(UnsupportedResourceException.class)
+    public ResponseEntity<String> handleUnsupportedResourceException(UnsupportedResourceException ex) {
+        log.error("UnsupportedResourceException occurred while accessing resource: {}", ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
 }

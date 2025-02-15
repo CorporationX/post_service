@@ -11,12 +11,15 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -26,6 +29,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.IntStream;
 
 @ExtendWith(MockitoExtension.class)
 class PostControllerTest {
@@ -52,15 +56,30 @@ class PostControllerTest {
         ResponsePostDto responsePostDto = new ResponsePostDto();
         responsePostDto.setContent("Test content");
 
-        when(postService.create(any(CreatePostDto.class))).thenReturn(responsePostDto);
+        when(postService.create(any(CreatePostDto.class), anyList())).thenReturn(responsePostDto);
 
-        mockMvc.perform(post("/posts")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(new ObjectMapper().writeValueAsString(createPostDto)))
+        MockMultipartFile createPostDtoPart = new MockMultipartFile(
+                "createPostDto",
+                "",
+                MediaType.APPLICATION_JSON_VALUE,
+                new ObjectMapper().writeValueAsBytes(createPostDto)
+        );
+
+        MockMultipartFile filePart = new MockMultipartFile(
+                "file",
+                "test-image.jpg",
+                MediaType.IMAGE_JPEG_VALUE,
+                "Test Image Content".getBytes()
+        );
+
+        mockMvc.perform(multipart("/posts")
+                        .file(createPostDtoPart)
+                        .file(filePart)
+                        .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.content").value("Test content"));
 
-        verify(postService, times(1)).create(any(CreatePostDto.class));
+        verify(postService, times(1)).create(any(CreatePostDto.class), anyList());
     }
 
     @Test
@@ -252,5 +271,31 @@ class PostControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(mockPosts.size()));
+    }
+
+    @Test
+    void testUpdateResources_shouldReturnOk() throws Exception {
+        Long postId = 1L;
+
+        List<MockMultipartFile> tooManyFiles = IntStream.rangeClosed(1, 5)
+                .mapToObj(i -> new MockMultipartFile(
+                        "files",
+                        "test" + i + ".png",
+                        "image/png",
+                        ("some-test-data-" + i).getBytes()
+                ))
+                .toList();
+
+        MockMultipartHttpServletRequestBuilder requestBuilder =
+                (MockMultipartHttpServletRequestBuilder) MockMvcRequestBuilders.multipart("/posts/{postId}/resources", postId)
+                        .contentType(MediaType.MULTIPART_FORM_DATA_VALUE);
+
+        tooManyFiles.forEach(requestBuilder::file);
+
+        mockMvc.perform(requestBuilder.with(req -> {
+                            req.setMethod("PUT");
+                            return req;
+                        }))
+                .andExpect(status().isOk());
     }
 }

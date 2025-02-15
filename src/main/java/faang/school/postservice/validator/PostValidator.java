@@ -4,14 +4,23 @@ import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityWasRemovedException;
+import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class PostValidator {
+
+    private static final int MAX_FILES_COUNT = 10;
+
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
     private final PostRepository postRepository;
@@ -61,6 +70,12 @@ public class PostValidator {
     public void validatePostExistsById(Long postId) {
         if (!postRepository.existsById(postId)) {
             throw new EntityNotFoundException(String.format("Post with id: %s doesn't exist", postId));
+        }
+    }
+
+    public void validatePostFilesCount(Post post, List<MultipartFile> files) {
+        if (post.getResources().size() + files.size() > MAX_FILES_COUNT) {
+            throw new DataValidationException("Post can't have more than 10 resources");
         }
     }
 }

@@ -7,17 +7,20 @@ import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Hashtag;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.utils.PostSpecifications;
+import faang.school.postservice.utils.ImageResolutionConversionUtil;
 import faang.school.postservice.validator.HashtagValidator;
 import faang.school.postservice.validator.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -42,16 +45,21 @@ public class PostService {
     private final HashtagValidator hashtagValidator;
     private final RedisTemplate<String, Object> redisTemplate;
     private final ExecutorService executorService;
+    private final PostVerificationService postVerificationService;
+    private final MinioS3Service minioS3Service;
+    private final ResourceService resourceService;
+    private final ImageResolutionConversionUtil imageResolutionConversionUtil;
+
 
     @Value("${spring.data.redis.channel.user-bans-channel}")
     private String userBansChannelName;
-    private final PostVerificationService postVerificationService;
+
 
     @Value("${ad.batch.size}")
     private int batchSize;
 
     @Transactional
-    public ResponsePostDto create(CreatePostDto createPostDto) {
+    public ResponsePostDto create(CreatePostDto createPostDto, List<MultipartFile> files) {
         postValidator.validateContent(createPostDto.getContent());
         postValidator.validateAuthorIdAndProjectId(createPostDto.getAuthorId(), createPostDto.getProjectId());
         postValidator.validateAuthorId(createPostDto.getAuthorId());
@@ -74,6 +82,11 @@ public class PostService {
         }
 
         postRepository.save(entity);
+
+        if (isProcessingRequired(files)) {
+            compressAndUploadImage(entity, getPostCreatorId(createPostDto.getProjectId(), createPostDto.getAuthorId()), files);
+        }
+        log.info("Successfully created post with ID: {}", entity.getId());
 
         return postMapper.toDto(entity);
     }
@@ -102,7 +115,6 @@ public class PostService {
         validateHashtags(updatePostDto.getHashtags());
 
         Post post = postRepository.findById(postId).get();
-
 
         if (hasHashtags(updatePostDto.getHashtags())) {
             post.setHashtags(getAndCreateHashtags(updatePostDto.getHashtags()));
@@ -173,7 +185,6 @@ public class PostService {
     private void validateHashtags(List<String> hashtags) {
         if (hashtags != null) {
             for (String hashtag : hashtags) {
-                System.out.println(hashtag);
                 hashtagValidator.validateHashtag(hashtag);
             }
         }
@@ -217,7 +228,7 @@ public class PostService {
 
         return rawResults.stream()
                 .map(result -> new AuthorPostCount((Long) result[0], (Long) result[1]))
-                .collect(Collectors.toList());
+                .toList();
     }
 
 
@@ -272,5 +283,55 @@ public class PostService {
 
     public List<Post> getReadyToPublishPosts() {
         return postRepository.findAll(PostSpecifications.isReadyToPublish());
+    }
+
+    public Post findPostById(Long postId) {
+        return postRepository.findById(postId).orElseThrow(() -> new EntityNotFoundException("Post with id '" + postId + "' not found"));
+    }
+
+    @Transactional
+    public ResponsePostDto updatePostResources(Long postId, List<MultipartFile> files, List<String> resourceDeleteKeys) {
+        log.info("Updating post resources for post ID: {}", postId);
+        Post post = findPostById(postId);
+        if (isProcessingRequired(files)) {
+            postValidator.validatePostFilesCount(post, files);
+            compressAndUploadImage(post, getPostCreatorId(post.getProjectId(), post.getAuthorId()), files);
+        }
+        if (isProcessingRequired(resourceDeleteKeys)) {
+            resourceDeleteKeys.forEach(this::deleteImageFromPost);
+        }
+        log.info("Successfully updated post resources for post ID: {}", postId);
+        return postMapper.toDto(post);
+    }
+
+    @Transactional
+    public void deleteImageFromPost(String fileKey) {
+        Long resourceId = resourceService.findIdByKey(fileKey);
+        resourceService.deleteResource(resourceId);
+        minioS3Service.deleteFile(fileKey);
+        log.info("Successfully deleted image file '{}' (Resource ID: {}) from S3 and database.", fileKey, resourceId);
+    }
+
+    private Long getPostCreatorId(Long projectId, Long authorId) {
+        return projectId != null ? projectId : authorId;
+    }
+
+    private <T> boolean isProcessingRequired(List<T> data) {
+        return data != null && !data.isEmpty();
+    }
+
+    private void compressAndUploadImage(Post post, Long creatorId, List<MultipartFile> files) {
+        List<MultipartFile> compressedFiles = files.stream()
+                .map(imageResolutionConversionUtil::compressImage)
+                .toList();
+
+        compressedFiles.forEach(file -> {
+            String folder = "ByAuthorize" + creatorId;
+            Resource resource = minioS3Service.uploadFile(file, folder);
+            resource.setPost(post);
+            resourceService.saveResource(resource);
+            log.info("Successfully uploaded image file '{}' for post ID: {} into folder '{}'. Resource ID: {}",
+                    file.getOriginalFilename(), post.getId(), folder, resource.getId());
+        });
     }
 }
