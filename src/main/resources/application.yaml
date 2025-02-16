@@ -17,6 +17,14 @@ spring:
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
 
+  kafka:
+    bootstrap-servers: localhost:9092
+    topics:
+      analytics-comment-topic:
+        name: analytics_comment_topic
+        num-partitions: 1
+        replication-factor: 1
+
   data:
     redis:
       port: 6379
@@ -61,6 +69,11 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+moderation:
+  schedule: "0 0 * * * ?" # каждый день в полночь
+  chunk-size: 500
+  banned-words-path: "src/main/resources/moderation/banned-words.json"
 
 api:
     title: "Post service API"
