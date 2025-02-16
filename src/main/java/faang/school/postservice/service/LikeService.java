@@ -1,9 +1,9 @@
 package faang.school.postservice.service;
 
+import faang.school.event.AnalyticsLikeEvent;
+import faang.school.postservice.annotations.PublishLikeEvent;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.event.LikeEvent;
-import faang.school.postservice.event.LikeEventPublisher;
 import faang.school.postservice.exception.CommentNotFoundException;
 import faang.school.postservice.exception.PostNotFoundException;
 import faang.school.postservice.exception.UserNotFoundException;
@@ -21,7 +21,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -36,7 +35,6 @@ public class LikeService {
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final UserServiceClient userServiceClient;
-    private final LikeEventPublisher likeEventPublisher;
 
     @Transactional(readOnly = true)
     public List<UserDto> getUsersWhoLikedPost(Long postId) {
@@ -56,8 +54,9 @@ public class LikeService {
         return fetchUsersInBatches(userIds);
     }
 
+    @PublishLikeEvent(events = { AnalyticsLikeEvent.class })
     @Transactional
-    public void addLikeToPost(Long postId, Long commentId, Long currentUserId) {
+    public Like addLikeToPost(Long postId, Long commentId, Long currentUserId) {
         try {
             userServiceClient.getUser(currentUserId);
         } catch (FeignException.NotFound ex) {
@@ -75,10 +74,8 @@ public class LikeService {
                 .build();
 
         post.getLikes().add(like);
-        likeRepository.save(like);
         postRepository.save(post);
-        LikeEvent event = new LikeEvent(postId, currentUserId, post.getAuthorId(), LocalDateTime.now());
-        likeEventPublisher.publishLikeEvent(event);
+        return likeRepository.save(like);
     }
 
     @Transactional

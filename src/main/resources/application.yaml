@@ -24,6 +24,10 @@ spring:
         name: analytics_comment_topic
         num-partitions: 1
         replication-factor: 1
+      analytics-like-topic:
+        name: analytics-like-events
+        num-partitions: 1
+        replication-factor: 1
 
   data:
     redis:
@@ -33,20 +37,9 @@ spring:
         calculations_channel:
           name: calculations_channel
 
-  kafka:
-    bootstrap-servers: localhost:9092
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-    consumer:
-      group-id: post-group
-      auto-offset-reset: earliest
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      properties:
-        spring.json.trusted.packages: "faang.school.postservice.event"
-    config:
-      topic-name: "like-events"
+
+
+
 
 server:
   port: 8081
