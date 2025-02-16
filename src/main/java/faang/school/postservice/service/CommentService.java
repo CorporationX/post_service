@@ -1,16 +1,13 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.annotations.PublishEvent;
+import faang.school.event.AnalyticsCommentEvent;
+import faang.school.postservice.annotations.PublishCommentEvent;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.exception.CommentNotFoundException;
-import faang.school.postservice.exception.UserNotFoundException;
-import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
-import faang.school.postservice.publisher.comment.CommentEventPublisher;
 import faang.school.postservice.util.ModerationDictionary;
-import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -40,7 +37,7 @@ public class CommentService {
                 .toList();
     }
 
-    @PublishEvent(publisher = CommentEventPublisher.class, mapper = CommentMapper.class)
+    @PublishCommentEvent(events = { AnalyticsCommentEvent.class })
     @Transactional
     public Comment createComment(Comment comment, Long postId, Long authorId) {
         Post post = postService.get(postId);

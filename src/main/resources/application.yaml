@@ -19,12 +19,9 @@ spring:
 
   kafka:
     bootstrap-servers: localhost:9092
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.apache.kafka.common.serialization.StringSerializer
     topics:
-      comment-topic:
-        name: comment_topic
+      analytics-comment-topic:
+        name: analytics_comment_topic
         num-partitions: 1
         replication-factor: 1
 

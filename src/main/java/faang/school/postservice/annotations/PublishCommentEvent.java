@@ -1,6 +1,6 @@
 package faang.school.postservice.annotations;
 
-import faang.school.postservice.publisher.AbstractEventPublisher;
+import faang.school.event.Event;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -9,8 +9,6 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface PublishEvent {
-    Class<? extends AbstractEventPublisher> publisher();
-    Class<?> mapper();
-    String mappingMethod() default "toEvent";
+public @interface PublishCommentEvent {
+    Class<? extends Event>[] events();
 }

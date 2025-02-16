@@ -8,10 +8,17 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class KafkaTopicConfig {
 
+    @Value("${spring.kafka.topics.analytics-comment-topic.name}")
+    private String analyticsCommentTopicName;
+
+    @Value("${spring.kafka.topics.analytics-comment-topic.num-partitions}")
+    private int analyticsCommentTopicNumPartitions;
+
+    @Value("${spring.kafka.topics.analytics-comment-topic.replication-factor}")
+    private short analyticsCommentTopicReplicationFactor;
+
     @Bean
-    public NewTopic commentTopic(@Value("${spring.kafka.topics.comment-topic.name}") String name,
-                                 @Value("${spring.kafka.topics.comment-topic.num-partitions}") int partitions,
-                                 @Value("${spring.kafka.topics.comment-topic.replication-factor}") short replicationFactor) {
-        return new NewTopic(name, partitions, replicationFactor);
+    public NewTopic analyticsCommentTopic() {
+        return new NewTopic(analyticsCommentTopicName, analyticsCommentTopicNumPartitions, analyticsCommentTopicReplicationFactor);
     }
 }
