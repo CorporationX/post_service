@@ -66,4 +66,7 @@ public class Comment {
 
     @Column(name = "verified")
     private Boolean verified;
+
+    @Column(name = "verified_date")
+    private LocalDateTime verifiedDate;
 }

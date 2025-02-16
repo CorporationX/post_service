@@ -1,6 +1,7 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.UserNotFoundException;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
@@ -14,10 +15,24 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class LikeServiceTest {
@@ -40,6 +55,8 @@ public class LikeServiceTest {
     @Mock
     private CommentRepository commentRepository;
 
+
+
     @Test
     public void addLikeToPostTest(){
         Long postId = 1L;
@@ -50,11 +67,11 @@ public class LikeServiceTest {
                 .userId(userId)
                 .post(post)
                 .build();
-        Mockito.when(postRepository.findById(postId))
+        when(postRepository.findById(postId))
                         .thenReturn(Optional.of(post));
         likeService.addLikeToPost(postId, userId, commentId);
-        Mockito.verify(postRepository, Mockito.times(1)).save(post);
-        Mockito.verify(likeRepository, Mockito.times(1)).save(like);
+        verify(postRepository, times(1)).save(post);
+        verify(likeRepository, times(1)).save(like);
     }
 
     @Test
@@ -62,7 +79,7 @@ public class LikeServiceTest {
         Long postId = 1L;
         Long userId = 1L;
 
-        Mockito.when(userServiceClient.getUser(userId)).thenThrow(FeignException.NotFound.class);
+        when(userServiceClient.getUser(userId)).thenThrow(FeignException.NotFound.class);
 
         Assertions.assertThrows(UserNotFoundException.class, () -> {
             likeService.addLikeToPost(postId, null, userId);
@@ -74,7 +91,7 @@ public class LikeServiceTest {
         Long postId = 1L;
         Long userId = 1L;
         likeService.removeLikeFromPost(postId, userId);
-        Mockito.verify(likeRepository, Mockito.times(1)).deleteByUserIdAndPostId(postId,userId);
+        verify(likeRepository, times(1)).deleteByUserIdAndPostId(postId,userId);
     }
 
     @Test
@@ -87,11 +104,11 @@ public class LikeServiceTest {
                 .userId(userId)
                 .comment(comment)
                 .build();
-        Mockito.when(commentRepository.findById(postId))
+        when(commentRepository.findById(postId))
                 .thenReturn(Optional.of(comment));
         likeService.addLikeToComment(postId, userId, commentId);
-        Mockito.verify(commentRepository, Mockito.times(1)).save(comment);
-        Mockito.verify(likeRepository, Mockito.times(1)).save(like);
+        verify(commentRepository, times(1)).save(comment);
+        verify(likeRepository, times(1)).save(like);
     }
 
     @Test
@@ -99,7 +116,7 @@ public class LikeServiceTest {
         Long postId = 1L;
         Long userId = 1L;
 
-        Mockito.when(userServiceClient.getUser(userId)).thenThrow(FeignException.NotFound.class);
+        when(userServiceClient.getUser(userId)).thenThrow(FeignException.NotFound.class);
 
         Assertions.assertThrows(UserNotFoundException.class, () -> {
             likeService.addLikeToComment(postId, null, userId);
@@ -111,7 +128,96 @@ public class LikeServiceTest {
         Long commentId = 1L;
         Long userId = 1L;
         likeService.removeLikeFromComment(commentId, userId);
-        Mockito.verify(likeRepository, Mockito.times(1)).deleteByUserIdAndCommentId(commentId,userId);
+        verify(likeRepository, times(1)).deleteByUserIdAndCommentId(commentId,userId);
     }
 
+    @Test
+    void testGetUsersWhoLikedPost() {
+        Long postId = 1L;
+        List<Long> userIds = Arrays.asList(1L, 2L);
+        List<Like> likes = Arrays.asList(
+                Like.builder().userId(1L).build(),
+                Like.builder().userId(2L).build()
+        );
+
+        when(likeRepository.findByPostId(postId)).thenReturn(likes);
+
+        List<UserDto> users = Arrays.asList(
+                new UserDto(1L, "user1", "user1@example.com"),
+                new UserDto(2L, "user2", "user2@example.com")
+        );
+        Page<UserDto> userPage = new PageImpl<>(users);
+
+        when(userServiceClient.getUsersByIds(userIds, PageRequest.of(0, 100))).thenReturn(userPage);
+
+        List<UserDto> result = likeService.getUsersWhoLikedPost(postId);
+
+        assertEquals(2, result.size());
+        assertEquals(1L, result.get(0).id());
+        assertEquals("user1", result.get(0).username());
+        assertEquals(2L, result.get(1).id());
+        assertEquals("user2", result.get(1).username());
+
+        verify(likeRepository, times(1)).findByPostId(postId);
+        verify(userServiceClient, times(1))
+                .getUsersByIds(userIds, PageRequest.of(0, 100));
+    }
+
+    @Test
+    void testGetUsersWhoLikedPost_NoLikes() {
+        Long postId = 1L;
+        when(likeRepository.findByPostId(postId)).thenReturn(Collections.emptyList());
+
+        List<UserDto> result = likeService.getUsersWhoLikedPost(postId);
+
+        assertEquals(0, result.size());
+
+        verify(likeRepository, times(1)).findByPostId(postId);
+        verify(userServiceClient, never()).getUsersByIds(anyList(), any(Pageable.class));
+    }
+
+    @Test
+    void testGetUsersWhoLikedComment() {
+        Long commentId = 1L;
+        List<Long> userIds = Arrays.asList(1L, 2L);
+        List<Like> likes = Arrays.asList(
+                Like.builder().userId(1L).build(),
+                Like.builder().userId(2L).build()
+        );
+
+        when(likeRepository.findByCommentId(commentId)).thenReturn(likes);
+
+        List<UserDto> users = Arrays.asList(
+                new UserDto(1L, "user1", "user1@example.com"),
+                new UserDto(2L, "user2", "user2@example.com")
+        );
+        Page<UserDto> userPage = new PageImpl<>(users);
+
+        when(userServiceClient.getUsersByIds(userIds, PageRequest.of(0, 100))).thenReturn(userPage);
+
+        List<UserDto> result = likeService.getUsersWhoLikedComment(commentId);
+
+        assertEquals(2, result.size());
+        assertEquals(1L, result.get(0).id());
+        assertEquals("user1", result.get(0).username());
+        assertEquals(2L, result.get(1).id());
+        assertEquals("user2", result.get(1).username());
+
+        verify(likeRepository, times(1)).findByCommentId(commentId);
+        verify(userServiceClient, times(1))
+                .getUsersByIds(userIds, PageRequest.of(0, 100));
+    }
+
+    @Test
+    void testGetUsersWhoLikedComment_NoLikes() {
+        Long commentId = 1L;
+        when(likeRepository.findByCommentId(commentId)).thenReturn(Collections.emptyList());
+
+        List<UserDto> result = likeService.getUsersWhoLikedComment(commentId);
+
+        assertEquals(0, result.size());
+
+        verify(likeRepository, times(1)).findByCommentId(commentId);
+        verify(userServiceClient, never()).getUsersByIds(anyList(), any(Pageable.class));
+    }
 }

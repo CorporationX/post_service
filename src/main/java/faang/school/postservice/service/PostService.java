@@ -4,30 +4,42 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.collections4.ListUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.security.InvalidParameterException;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 
-@RequiredArgsConstructor
 @Service
+@RequiredArgsConstructor
 public class PostService {
     private final PostRepository postRepository;
-    private final ExternalService externalService;
 
+    private final AsyncModerationService asyncModerationService;
+    @Value("${moderation.threadSize}")
+    private int threadSize;
+
+    private final InternalServices internalServices;
+
+
+    @Transactional
     public Post createDraft(Post post) {
-        if (post.getAuthorId() != null && !externalService.userExists(post.getAuthorId())) {
+        if (post.getAuthorId() != null && !internalServices.userExists(post.getAuthorId())) {
             throw new InvalidParameterException("Post author does not exist! id:" + post.getAuthorId());
         }
-        if (post.getProjectId() != null && !externalService.projectExists(post.getProjectId())) {
+        if (post.getProjectId() != null && !internalServices.projectExists(post.getProjectId())) {
             throw new InvalidParameterException("Post project does not exist! id:" + post.getProjectId());
         }
         return postRepository.save(post);
     }
 
+    @Transactional
     public Post publish(Long postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new DataValidationException("Specified post not found. Id:" + postId));
@@ -39,6 +51,7 @@ public class PostService {
         return postRepository.save(post);
     }
 
+    @Transactional
     public Post update(Post post) {
         Post originalPost = postRepository.findById(post.getId())
                 .orElseThrow(() -> new DataValidationException("You are trying to update not existing post. Id:"
@@ -50,6 +63,7 @@ public class PostService {
         return postRepository.save(post);
     }
 
+    @Transactional
     public void delete(Long postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new DataValidationException("Specified post not found. Id:" + postId));
@@ -88,5 +102,25 @@ public class PostService {
                 .filter(post -> !post.isDeleted() && post.isPublished())
                 .sorted(Comparator.comparing(Post::getPublishedAt).reversed())
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public void moderatePosts() {
+        List<Post> posts = postRepository.findByVerifiedDateIsNull();
+        List<List<Post>> threads = splitIntoThreads(posts);
+
+        List<CompletableFuture<Void>> futures = threads.stream()
+                .map(asyncModerationService::moderateThreadAsync)
+                .toList();
+
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+    }
+
+    private List<List<Post>> splitIntoThreads(List<Post> posts) {
+        return ListUtils.partition(posts, threadSize);
+    }
+
+    public List<Post> findPostsByResourceKeys(List<String> resourceKeys) {
+        return postRepository.findPostsByResourceKeys(resourceKeys);
     }
 }

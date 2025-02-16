@@ -15,8 +15,9 @@ public class SwaggerConfig {
     public OpenAPI customOpenApi() {
         return new OpenAPI()
                 .info( new Info()
-                        .title(apiProperties.getTitle())
-                        .version(apiProperties.getVersion())
-                        .description(apiProperties.getDescription()));
+                        .title("Post service API")
+                        .version("0.1.0.1")
+                        .description("Post service gives the ability to write text posts to share your thoughts, " +
+                                "knowledge and information with other users."));
     }
 }

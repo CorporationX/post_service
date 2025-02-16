@@ -40,12 +40,17 @@ logging:
   level:
     root: info
 
+project-protocol: http
 user-service:
   host: localhost
   port: 8080
+  endpoints:
+    getById: /api/v1/users/{id}
 project-service:
   host: localhost
   port: 8082
+  endpoints:
+    getById: /api/v1/projects/{id}
 payment-service:
   host: localhost
   port: 9080
@@ -53,3 +58,44 @@ payment-service:
 commenter-banner:
   cron: "0 0 12 * * ?"
   comments-count-for-ban: 5
+
+moderation:
+  cron: "0 0 0 * * ?"
+  threadSize: 100
+  api-url: "https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze?key=AIzaSyCvYJUwADYD2pGzdhoY5QunJEgrvgPbbpg"
+  bad-words-path: "classpath:moderation/bad-words.json"
+  chunk-size: 500
+  banned-words-path: "src/main/resources/moderation/banned-words.json"
+
+
+api:
+    title: "Post service API"
+    version: "0.1.0.1"
+    description: "Post service gives the ability to write text posts to share your thoughts, knowledge and information with other users."
+
+aws:
+  s3:
+    endpoint: http://127.0.0.1:9000
+    accessKey: user
+    secretKey: password
+    bucket: corpbucket
+    region: us-east-1
+    maxConcurrency: 50
+    connectionTimeout: 60s
+    readTimeout: 60s
+    writeTimeout: 60s
+    apiCallTimeout: 2m
+    apiCallAttemptTimeout: 90s
+
+rest-template:
+  config:
+    connectTimeout: 5000
+    readTimeout: 5000
+
+file-controller:
+  upload:
+    max-files-per-post: 10
+    max-files-size-in-post-mb: 5
+  image:
+    max-width: 1080
+    max-height-rectangle: 566

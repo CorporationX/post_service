@@ -20,4 +20,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
             """
     )
     List<Long> findAuthorsForBanWithUnverifiedCommentsCount(int unverifiedCommentsCountForBan);
+
+    @Query("SELECT c FROM Comment c WHERE c.verified IS NULL")
+    List<Comment> findUnverifiedComments();
 }

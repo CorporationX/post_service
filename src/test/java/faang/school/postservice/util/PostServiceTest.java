@@ -3,8 +3,10 @@ package faang.school.postservice.util;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.ExternalService;
+import faang.school.postservice.service.AiModerationService;
+import faang.school.postservice.service.InternalServices;
 import faang.school.postservice.service.PostService;
+import faang.school.postservice.validation.ModerationDictionary;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -14,9 +16,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.security.InvalidParameterException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,7 +30,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -36,10 +43,16 @@ public class PostServiceTest {
     private PostRepository postRepository;
 
     @Mock
-    private ExternalService externalService;
+    private InternalServices internalServices;
 
     @InjectMocks
     private PostService postService;
+
+    @Mock
+    private ModerationDictionary moderationDictionary;
+
+    @Mock
+    private AiModerationService aiModerationService;
 
     private static Post post;
     private static Post projectPost;
@@ -81,7 +94,7 @@ public class PostServiceTest {
     @Test
     @Order(1)
     public void createDraft_ValidAuthor() {
-        when(externalService.userExists(1L)).thenReturn(true);
+        when(internalServices.userExists(1L)).thenReturn(true);
         when(postRepository.save(any(Post.class))).thenReturn(post);
 
         Post result = postService.createDraft(post);
@@ -92,7 +105,7 @@ public class PostServiceTest {
     @Test
     @Order(2)
     public void createDraft_InvalidAuthor() {
-        when(externalService.userExists(1L)).thenReturn(false);
+        when(internalServices.userExists(1L)).thenReturn(false);
 
         assertThrows(InvalidParameterException.class, () -> postService.createDraft(post));
     }
@@ -100,7 +113,7 @@ public class PostServiceTest {
     @Test
     @Order(3)
     public void createDraft_InvalidProject() {
-        when(externalService.projectExists(1L)).thenReturn(false);
+        when(internalServices.projectExists(1L)).thenReturn(false);
 
         assertThrows(InvalidParameterException.class, () -> postService.createDraft(projectPost));
     }
@@ -256,5 +269,24 @@ public class PostServiceTest {
         assertEquals(2, result.size());
         assertEquals(post2, result.get(0)); // post2 is more recent
         assertEquals(post1, result.get(1));
+    }
+
+    @Test
+    public void testModeratePosts_marksPostsAsVerified_whenContentIsClean() {
+        List<Post> posts = new ArrayList<>();
+        Post post = new Post();
+        ReflectionTestUtils.setField(postService, "threadSize", 4);
+        post.setContent("Clean content");
+        posts.add(post);
+
+        when(postRepository.findByVerifiedDateIsNull()).thenReturn(posts);
+        when(moderationDictionary.containsBadWord(anyString())).thenReturn(false);
+        when(aiModerationService.isToxic(anyString())).thenReturn(false);
+
+        postService.moderatePosts();
+
+        assertNotNull(post.getVerifiedDate());
+        assertTrue(post.isVerified());
+        verify(postRepository).saveAll(anyList());
     }
 }

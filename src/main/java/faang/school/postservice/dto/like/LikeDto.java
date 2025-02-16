@@ -10,7 +10,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class LikeDto {
     @Positive(message = "Comment ID must be positive")
-    Long commentId;
+    private Long commentId;
     @Positive(message = "Post ID must be positive")
-    Long postId;
+    private Long postId;
 }
