@@ -18,7 +18,6 @@ public class CommentService {
 
     @Transactional(readOnly = true)
     public List<Long> findAuthorIdsForBan() {
-        return commentRepository
-                .findAuthorsForBanWithUnverifiedCommentsCount(unverifiedCommentsCountForBan);
+        return commentRepository.findAuthorsForBanWithUnverifiedCommentsCount(unverifiedCommentsCountForBan);
     }
 }
