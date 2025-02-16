@@ -58,8 +58,10 @@ public class CommentService {
 
     @Transactional(readOnly = true)
     public List<Long> findAuthorIdsForBan() {
-        return commentRepository
-                .findAuthorsForBanWithUnverifiedCommentsCount(unverifiedCommentsCountForBan);
+        return commentRepository.findAuthorsForBanWithUnverifiedCommentsCount(unverifiedCommentsCountForBan);
+    }
+
+    @Transactional(readOnly = true)
     public List<Comment> getCommentsByPostId(Long postId) {
         postService.get(postId);
 
@@ -204,6 +206,7 @@ public class CommentService {
 
         comment.setSmallImageFileKey(null);
         comment.setLargeImageFileKey(null);
+    }
 
     public int moderateComments() {
         List<Comment> unverifiedComments = commentRepository.findUnverifiedComments();
