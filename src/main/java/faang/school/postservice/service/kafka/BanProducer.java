@@ -1,7 +1,7 @@
 package faang.school.postservice.service.kafka;
 
+import faang.school.event.UserBanEvent;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
@@ -9,13 +9,9 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class BanProducer {
 
-    private final KafkaTemplate<String, String> kafkaTemplate;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    @Value("${spring.kafka.topics.user-ban-topic.name}")
-    private String banUserTopicName;
-
-    public void sendUsersToBan(Long userId) {
-        kafkaTemplate.send(banUserTopicName, String.valueOf(userId));
-        System.out.println("Sended: " + userId);
+    public void sendUsersToBan(String topic, UserBanEvent event) {
+        kafkaTemplate.send(topic, event);
     }
 }

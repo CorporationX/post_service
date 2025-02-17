@@ -3,7 +3,6 @@ package faang.school.postservice.repository;
 import faang.school.postservice.model.Post;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
-import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -22,9 +21,12 @@ public interface PostRepository extends CrudRepository<Post, Long> {
     @Query("SELECT p FROM Post p WHERE p.published = false AND p.deleted = false AND p.scheduledAt <= CURRENT_TIMESTAMP")
     List<Post> findReadyToPublish();
 
-    @Query(value = "SELECT p.author_id FROM post p WHERE p.verified = false AND p.verified_date IS NOT NULL GROUP BY p.author_id HAVING COUNT(p.author_id) > :maxPosts",
+    @Query(value = "SELECT p.author_id " +
+            "FROM post p WHERE p.verified = false AND p.verified_date IS NOT NULL " +
+            "GROUP BY p.author_id " +
+            "HAVING COUNT(p.author_id) > :maxPostsToBan",
         nativeQuery = true)
-    List<Long> findUserIdsToBanWithUnverifiedPosts(@Param("maxPosts") int maxPostsToBan);
+    List<Long> findUserIdsToBanWithUnverifiedPosts(int maxPostsToBan);
 
     @Query("SELECT p FROM Post p JOIN p.resources r WHERE r.key IN :resourceKeys")
     List<Post> findPostsByResourceKeys(List<String> resourceKeys);

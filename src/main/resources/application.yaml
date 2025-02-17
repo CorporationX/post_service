@@ -21,12 +21,16 @@ spring:
     bootstrap-servers: localhost:9092
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      key-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
     topics:
       user-ban-topic:
         name: user_ban_topic
         num-partitions: 1
         replication-factor: 1
+
 
   data:
     redis:
@@ -38,7 +42,7 @@ spring:
 
 scheduler:
   user_ban:
-     cron: "0/30 * * * * *"
+     cron: "0 0 0 * * *"
      posts-count-for-ban: 5
 
 server:
