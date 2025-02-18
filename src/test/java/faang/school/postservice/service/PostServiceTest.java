@@ -63,13 +63,13 @@ public class PostServiceTest {
     @InjectMocks
     private PostService postService;
 
-    private Post post;
-    private Post projectPost;
-    private Post originalPost;
-    private Post post1;
-    private Post post2;
+    private static Post post;
+    private static Post projectPost;
+    private static Post originalPost;
+    private static Post post1;
+    private static Post post2;
 
-    private List<Post> postsToPublish;
+    private static List<Post> postsToPublish;
 
     @BeforeEach
     void setUp() {
