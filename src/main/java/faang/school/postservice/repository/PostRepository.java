@@ -23,13 +23,6 @@ public interface PostRepository extends CrudRepository<Post, Long> {
     List<Post> findReadyToPublish();
 
     @Query(value = "SELECT p.author_id " +
-            "FROM post p WHERE p.verified = false AND p.verified_date IS NOT NULL " +
-            "GROUP BY p.author_id " +
-            "HAVING COUNT(p.author_id) > :maxPostsToBan",
-        nativeQuery = true)
-    List<Long> findUserIdsToBanWithUnverifiedPosts(int maxPostsToBan);
-
-    @Query(value = "SELECT p.author_id " +
             "FROM post p " +
             "WHERE p.verified = false AND p.verified_date IS NOT NULL " +
             "GROUP BY p.author_id " +

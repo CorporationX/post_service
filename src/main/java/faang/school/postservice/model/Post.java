@@ -56,12 +56,6 @@ public class Post {
     @ManyToMany(mappedBy = "posts")
     private List<Album> albums;
 
-    @Column(name = "verified", nullable = false)
-    private boolean verified;
-
-    @Column(name = "verifiedDate")
-    private LocalDateTime verifiedDate;
-
     @OneToOne(mappedBy = "post", cascade = CascadeType.ALL)
     private Ad ad;
 
