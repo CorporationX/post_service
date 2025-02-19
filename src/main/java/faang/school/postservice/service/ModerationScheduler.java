@@ -1,5 +1,6 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.service.comment.CommentService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

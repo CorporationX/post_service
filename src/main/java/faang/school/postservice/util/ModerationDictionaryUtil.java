@@ -16,10 +16,10 @@ import java.util.Set;
 
 @Slf4j
 @Component
-public class ModerationDictionary {
+public class ModerationDictionaryUtil {
     private final Set<String> bannedWords;
 
-    public ModerationDictionary(@Value("${moderation.banned-words-path}") String filePath) {
+    public ModerationDictionaryUtil(@Value("${moderation.banned-words-path}") String filePath) {
         Set<String> words = new HashSet<>();
         try {
             String content = Files.readString(Path.of(filePath));

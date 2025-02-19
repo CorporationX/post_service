@@ -6,7 +6,7 @@ import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.AiModerationService;
 import faang.school.postservice.service.InternalServices;
 import faang.school.postservice.service.PostService;
-import faang.school.postservice.validation.ModerationDictionary;
+import faang.school.postservice.validation.ModerationDictionaryValidation;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -49,7 +49,7 @@ public class PostServiceTest {
     private PostService postService;
 
     @Mock
-    private ModerationDictionary moderationDictionary;
+    private ModerationDictionaryValidation moderationDictionaryValidation;
 
     @Mock
     private AiModerationService aiModerationService;
@@ -280,7 +280,7 @@ public class PostServiceTest {
         posts.add(post);
 
         when(postRepository.findByVerifiedDateIsNull()).thenReturn(posts);
-        when(moderationDictionary.containsBadWord(anyString())).thenReturn(false);
+        when(moderationDictionaryValidation.containsBadWord(anyString())).thenReturn(false);
         when(aiModerationService.isToxic(anyString())).thenReturn(false);
 
         postService.moderatePosts();

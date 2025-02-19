@@ -15,12 +15,12 @@ import java.util.List;
 import java.util.Set;
 
 @Component
-public class ModerationDictionary {
+public class ModerationDictionaryValidation {
 
-    private static final Logger log = LoggerFactory.getLogger(ModerationDictionary.class);
+    private static final Logger log = LoggerFactory.getLogger(ModerationDictionaryValidation.class);
     private final Set<String> badWords;
 
-    public ModerationDictionary(@Value("${moderation.bad-words-path}") Resource resource) {
+    public ModerationDictionaryValidation(@Value("${moderation.bad-words-path}") Resource resource) {
         try {
             try (InputStream is = resource.getInputStream()) {
                 ObjectMapper mapper = new ObjectMapper();

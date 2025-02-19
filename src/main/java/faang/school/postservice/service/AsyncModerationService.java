@@ -2,7 +2,7 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.validation.ModerationDictionary;
+import faang.school.postservice.validation.ModerationDictionaryValidation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -17,7 +17,7 @@ import java.util.concurrent.CompletableFuture;
 @Service
 public class AsyncModerationService {
     private final PostRepository postRepository;
-    private final ModerationDictionary moderationDictionary;
+    private final ModerationDictionaryValidation moderationDictionaryValidation;
     private final AiModerationService aiModerationService;
 
     @Async("commonTaskExecutor")
@@ -32,7 +32,7 @@ public class AsyncModerationService {
 
     private void moderateThread(List<Post> posts) {
         posts.forEach((post)->{
-            boolean hasBadWord = moderationDictionary.containsBadWord(post.getContent());
+            boolean hasBadWord = moderationDictionaryValidation.containsBadWord(post.getContent());
             boolean isToxic = !hasBadWord && aiModerationService.isToxic(post.getContent());
 
             post.setVerified(!(hasBadWord || isToxic));

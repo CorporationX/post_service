@@ -8,8 +8,12 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.CommentRepository;
 
+import faang.school.postservice.service.CommentValidator;
+import faang.school.postservice.service.ImageProcessor;
+import faang.school.postservice.service.PostService;
+import faang.school.postservice.service.ResourceService;
 import faang.school.postservice.service.s3.AwsService;
-import faang.school.postservice.util.ModerationDictionary;
+import faang.school.postservice.util.ModerationDictionaryUtil;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +25,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
@@ -35,8 +38,6 @@ import java.util.stream.Stream;
 public class CommentService {
     private final CommentRepository commentRepository;
 
-    @Value("${commenter-banner.comments-count-for-ban}")
-    private int unverifiedCommentsCountForBan;
     private final PostService postService;
     private final UserServiceClient userServiceClient;
     private final AwsService awsService;
@@ -44,6 +45,11 @@ public class CommentService {
 
     private final CommentValidator commentValidator;
     private final ImageProcessor imageProcessor;
+
+    private final ModerationDictionaryUtil moderationDictionaryUtil;
+
+    @Value("${commenter-banner.comments-count-for-ban}")
+    private int unverifiedCommentsCountForBan;
 
     @Value("${services.s3.bucketName}")
     private String bucketName;
@@ -53,8 +59,6 @@ public class CommentService {
 
     @Value("${comment.image.smallImageMaxSize}")
     private int SMALL_IMAGE_MAX_SIZE;
-
-    private final ModerationDictionary moderationDictionary;
 
     @Transactional(readOnly = true)
     public List<Long> findAuthorIdsForBan() {
@@ -219,7 +223,7 @@ public class CommentService {
         unverifiedComments.parallelStream()
                 .peek(comment -> log.info("Moderating comment ID: {}", comment.getId()))
                 .forEach(comment -> {
-                    boolean containsBannedWords = moderationDictionary.containsBannedWords(comment.getContent());
+                    boolean containsBannedWords = moderationDictionaryUtil.containsBannedWords(comment.getContent());
                     comment.setVerified(!containsBannedWords);
                     comment.setVerifiedDate(LocalDateTime.now());
                 });
