@@ -13,4 +13,3 @@ databaseChangeLog:
       file: db/changelog/changeset/post_V005_alter_comment_add_verified.sql
   - include:
       file: db/changelog/changeset/post_V006_alter_comment_add_verified_date.sql
-

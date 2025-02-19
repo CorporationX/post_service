@@ -76,6 +76,10 @@ payment-service:
   host: localhost
   port: 9080
 
+commenter-banner:
+  cron: "0 0 12 * * ?"
+  comments-count-for-ban: 5
+
 moderation:
   cron: "0 0 0 * * ?"
   threadSize: 100
@@ -116,7 +120,3 @@ file-controller:
   image:
     max-width: 1080
     max-height-rectangle: 566
-
-commenter-banner:
-  cron: "0 0 12 * * ?"
-  comments-count-for-ban: 5
