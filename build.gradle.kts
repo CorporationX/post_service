@@ -167,4 +167,3 @@ tasks.checkstyleTest {
 
     classpath = files()
 }
-

@@ -22,4 +22,5 @@ public class PostResponseDto {
     private LocalDateTime publishedAt;
     private LocalDateTime scheduledAt;
     public boolean deleted;
+    private int likesCount;
 }

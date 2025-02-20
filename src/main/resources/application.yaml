@@ -62,10 +62,3 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
-
-author:
-  banner:
-    kafka_topic: "user_ban"
-    rejected_posts_to_ban: 5
-    scheduler:
-      cron: "0 0 3 * * *" #every day at 03.00

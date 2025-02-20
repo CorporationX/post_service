@@ -38,7 +38,6 @@ public class CommentService {
         return commentMapper.toCreateResponse(savedComment);
     }
 
-
     @Transactional
     public UpdatedCommentResponse updateComment(UpdateCommentRequest updateCommentRequest) {
         Comment comment = getComment(updateCommentRequest.getId());
@@ -65,8 +64,6 @@ public class CommentService {
 
     public Comment getComment(Long commentId) {
         return commentRepository.findById(commentId)
-                .orElseThrow(() -> new EntityNotFoundException("Comment not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Comment not found with id: " + commentId));
     }
-
 }
-
