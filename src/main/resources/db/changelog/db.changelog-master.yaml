@@ -8,6 +8,9 @@ databaseChangeLog:
   - include:
       file: db/changelog/changeset/post_V004_alter_comment_add_image_keys.sql
   - include:
+      file: db/changelog/changeset/post_V009_add_verified_columns.sql
+  - include:
       file: db/changelog/changeset/post_V005_alter_comment_add_verified.sql
   - include:
       file: db/changelog/changeset/post_V006_alter_comment_add_verified_date.sql
+

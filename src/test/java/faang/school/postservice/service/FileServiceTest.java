@@ -4,16 +4,19 @@ import faang.school.postservice.config.AwsS3ApiConfig;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.service.aws.S3Service;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -26,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -33,6 +37,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class FileServiceTest {
+
     @Mock
     private AwsS3ApiConfig awsS3ApiConfig;
 
@@ -45,11 +50,19 @@ public class FileServiceTest {
     @InjectMocks
     private FileService fileService;
 
+    @BeforeEach
+    void setUp() {
+        ReflectionTestUtils.setField(fileService, "maxFileSizeMb", 5L);
+    }
+
     @Test
     void testUploadFiles() throws IOException {
         Long postId = 1L;
+
+        when(awsS3ApiConfig.getBucket()).thenReturn("test-bucket");
+
         MultipartFile file = mock(MultipartFile.class);
-        when(file.getSize()).thenReturn(1024L);
+        when(file.getSize()).thenReturn(1024L * 1024L);
         when(file.getContentType()).thenReturn("image/png");
         when(file.getOriginalFilename()).thenReturn("test.png");
         when(file.getBytes()).thenReturn(new byte[]{1, 2, 3});
@@ -58,24 +71,28 @@ public class FileServiceTest {
         PutObjectResponse putObjectResponse = PutObjectResponse.builder()
                 .eTag(UUID.randomUUID().toString())
                 .build();
+
         when(s3Service.uploadFileAsync(
-                anyString(),
+                eq("test-bucket"),
                 anyString(),
                 anyMap(),
                 any(byte[].class)
         )).thenReturn(CompletableFuture.completedFuture(putObjectResponse));
 
         Post post = mock(Post.class);
-        when(post.getResources()).thenReturn(Collections.emptyList());
+
+        List<Resource> resources = new ArrayList<>();
+        when(post.getResources()).thenReturn(resources);
+
         when(postService.get(postId)).thenReturn(post);
 
-        //cannot be verified because of random uuid generation
         List<String> result = fileService.uploadFiles(postId, Collections.singletonList(file));
 
         assertNotNull(result);
         assertEquals(1, result.size());
+
         verify(s3Service, times(1)).uploadFileAsync(
-                anyString(),
+                eq("test-bucket"),
                 anyString(),
                 anyMap(),
                 any(byte[].class)

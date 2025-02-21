@@ -2,7 +2,7 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.repository.CommentRepository;
-import faang.school.postservice.util.ModerationDictionary;
+import faang.school.postservice.util.ModerationDictionaryUtil;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -26,7 +26,7 @@ class CommentServiceModerationTest {
     private CommentRepository commentRepository;
 
     @Mock
-    private ModerationDictionary moderationDictionary;
+    private ModerationDictionaryUtil moderationDictionaryUtil;
 
     @InjectMocks
     private CommentService commentService;
@@ -46,8 +46,8 @@ class CommentServiceModerationTest {
         comment2.setVerifiedDate(null);
 
         when(commentRepository.findUnverifiedComments()).thenReturn(List.of(comment1, comment2));
-        when(moderationDictionary.containsBannedWords("This is a clean comment.")).thenReturn(false);
-        when(moderationDictionary.containsBannedWords("This contains badword.")).thenReturn(true);
+        when(moderationDictionaryUtil.containsBannedWords("This is a clean comment.")).thenReturn(false);
+        when(moderationDictionaryUtil.containsBannedWords("This contains badword.")).thenReturn(true);
 
         int moderatedCount = commentService.moderateComments();
 
@@ -89,7 +89,7 @@ class CommentServiceModerationTest {
         comment1.setVerifiedDate(null);
 
         when(commentRepository.findUnverifiedComments()).thenReturn(List.of(comment1));
-        when(moderationDictionary.containsBannedWords(null)).thenReturn(false);
+        when(moderationDictionaryUtil.containsBannedWords(null)).thenReturn(false);
 
         int moderatedCount = commentService.moderateComments();
 

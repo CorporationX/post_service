@@ -8,6 +8,9 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -19,7 +22,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @Validated
@@ -69,5 +74,38 @@ public class CommentController {
                                                  @Positive(message = "userId should be positive") Long userId) {
         Comment deleted = commentService.deleteComment(commentId, userId);
         return ResponseEntity.ok(commentMapper.toDto(deleted));
+    }
+
+    @GetMapping("/{commentId}/small")
+    public ResponseEntity<byte []> getSmallCommentImage(@PathVariable Long commentId) throws IOException {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.IMAGE_PNG);
+        return new ResponseEntity<>(commentService.getCommentImage(commentId, Comment::getSmallImageFileKey), headers, HttpStatus.OK);
+    }
+
+    @GetMapping("/{commentId}/large")
+    public ResponseEntity<byte []> getLargeCommentImage(@PathVariable Long commentId) throws IOException {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.IMAGE_PNG);
+        return new ResponseEntity<>(commentService.getCommentImage(commentId, Comment::getLargeImageFileKey), headers, HttpStatus.OK);
+    }
+
+    @PutMapping("/{commentId}/image")
+    public ResponseEntity<CommentDto> attachImageToComment(@PathVariable @Positive Long commentId,
+                                                           @RequestBody MultipartFile image,
+                                                           @RequestHeader("x-user-id")
+                                                           @NotNull
+                                                           @Positive Long userId) {
+        Comment comment = commentService.attachImageToComment(commentId, image, userId);
+        return ResponseEntity.ok(commentMapper.toDto(comment));
+    }
+
+    @DeleteMapping("/{commentId}/image")
+    public ResponseEntity<CommentDto> deleteCommentImage(@PathVariable @Positive Long commentId,
+                                                         @RequestHeader("x-user-id")
+                                                         @NotNull
+                                                         @Positive Long userId) {
+        Comment comment = commentService.deleteCommentImage(commentId, userId);
+        return ResponseEntity.ok(commentMapper.toDto(comment));
     }
 }

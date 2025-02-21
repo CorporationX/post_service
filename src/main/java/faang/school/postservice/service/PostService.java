@@ -1,24 +1,32 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.exception.PostNotFoundException;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.collections4.ListUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.security.InvalidParameterException;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
 public class PostService {
     private final PostRepository postRepository;
+
+    private final AsyncModerationService asyncModerationService;
+    @Value("${moderation.threadSize}")
+    private int threadSize;
+
     private final InternalServices internalServices;
+
 
     @Transactional
     public Post createDraft(Post post) {
@@ -94,6 +102,28 @@ public class PostService {
                 .filter(post -> !post.isDeleted() && post.isPublished())
                 .sorted(Comparator.comparing(Post::getPublishedAt).reversed())
                 .toList();
+    }
+
+
+    @Transactional(readOnly = true)
+    public void moderatePosts() {
+        List<Post> posts = postRepository.findByVerifiedDateIsNull();
+
+        if (posts == null || posts.isEmpty()) {
+            return;
+        }
+
+        List<List<Post>> threads = splitIntoThreads(posts);
+
+        List<CompletableFuture<Void>> futures = threads.stream()
+                .map(asyncModerationService::moderateThreadAsync)
+                .toList();
+
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+    }
+
+    private List<List<Post>> splitIntoThreads(List<Post> posts) {
+        return ListUtils.partition(posts, threadSize);
     }
 
     public List<Post> findPostsByResourceKeys(List<String> resourceKeys) {

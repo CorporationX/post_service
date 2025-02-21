@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @RequiredArgsConstructor
 public class SwaggerConfig {
-    private ApiProperties apiProperties;
+    private final ApiProperties apiProperties;
 
     @Bean
     public OpenAPI customOpenApi() {
