@@ -1,6 +1,7 @@
 package faang.school.postservice.service;
 
-import faang.school.event.AnalyticsLikeEvent;
+import faang.school.postservice.model.event.AnalyticsLikeEvent;
+import faang.school.postservice.model.event.NotificationLikeEvent;
 import faang.school.postservice.annotations.PublishLikeEvent;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.user.UserDto;
@@ -54,7 +55,7 @@ public class LikeService {
         return fetchUsersInBatches(userIds);
     }
 
-    @PublishLikeEvent(events = { AnalyticsLikeEvent.class })
+    @PublishLikeEvent(events = {AnalyticsLikeEvent.class, NotificationLikeEvent.class})
     @Transactional
     public Like addLikeToPost(Long postId, Long commentId, Long currentUserId) {
         try {

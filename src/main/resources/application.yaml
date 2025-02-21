@@ -22,12 +22,12 @@ spring:
     topics:
       analytics-comment-topic:
         name: analytics_comment_topic
-        num-partitions: 1
-        replication-factor: 1
       analytics-like-topic:
         name: analytics-like-events
-        num-partitions: 1
-        replication-factor: 1
+      notification-like-topic:
+        name: notification_like_topic
+      notification-comment-topic:
+        name: notification_comment_topic
 
   data:
     redis:

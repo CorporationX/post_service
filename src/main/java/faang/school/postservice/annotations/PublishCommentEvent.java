@@ -1,6 +1,6 @@
 package faang.school.postservice.annotations;
 
-import faang.school.event.Event;
+import faang.school.postservice.model.event.Event;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
