@@ -1,0 +1,31 @@
+{
+  "bannedWords": [
+    "abuse", "abusive", "annoying", "arrogant", "bigot", "bully", "curse", "cursing", "damn", "dirty",
+    "disrespect", "disrespectful", "dumb", "evil", "fake", "fool", "foul", "garbage", "greedy", "hate",
+    "hateful", "idiot", "ignorant", "inappropriate", "insult", "jerk", "liar", "loser", "lousy", "moron",
+    "nasty", "nonsense", "offensive", "outrage", "painful", "pathetic", "petty", "profanity", "racism",
+    "racist", "reckless", "ridiculous", "rude", "sarcasm", "sarcastic", "selfish", "shameful", "shameless",
+    "silly", "stupid", "swear", "swearing", "terrible", "toxic", "trash", "unacceptable", "unfair", "unjust",
+    "vile", "vulgar", "worthless", "wrath", "yell", "yelling", "abomination", "aggressive", "alcoholic",
+    "arrogance", "bad-mannered", "brat", "cheap", "coward", "creep", "damaged", "demeaning", "disgusting",
+    "drunk", "filthy", "greedy", "gross", "harsh", "harassment", "horrible", "hypocrite", "jealous",
+    "manipulative", "mean", "misleading", "obnoxious", "offender", "outraged", "overreacting", "perverted",
+    "reckless", "self-centered", "shady", "shocking", "sloppy", "spiteful", "unpleasant", "vindictive",
+    "vulgarity", "wicked", "wrong",
+
+    "злоупотребление", "оскорбительный", "раздражающий", "высокомерный", "фанатик", "задира", "проклятие",
+    "ругательство", "черт", "грязный", "неуважение", "неуважительный", "тупой", "злой", "фальшивый",
+    "дурак", "грубый", "мусор", "жадный", "ненависть", "ненавистный", "идиот", "невежественный",
+    "неприемлемый", "оскорбление", "грубиян", "лжец", "неудачник", "паршивый", "болван", "мерзкий",
+    "бессмыслица", "оскорбительный", "возмущение", "болезненный", "жалкий", "мелочный", "нецензурная лексика",
+    "расизм", "расист", "безрассудный", "смехотворный", "грубый", "сарказм", "саркастичный", "эгоистичный",
+    "позорный", "бесстыдный", "глупый", "тупица", "ругаться", "плохой", "токсичный", "мусор", "неприемлемый",
+    "несправедливый", "несправедливость", "мерзкий", "вульгарный", "бесполезный", "гнев", "кричать",
+    "крик", "мерзость", "агрессивный", "алкоголик", "высокомерие", "невоспитанный", "нахал", "дешевка",
+    "трус", "подонок", "поврежденный", "унизительный", "отвратительный", "пьяница", "грязный", "жадный",
+    "грубый", "жестокий", "домогательство", "ужасный", "лицемер", "завистливый", "манипулятивный", "злой",
+    "вводящий в заблуждение", "отвратительный", "правонарушитель", "возмущенный", "перегибающий",
+    "извращенный", "безрассудный", "эгоцентричный", "теневой", "шокирующий", "небрежный", "злобный",
+    "неприятный", "мстительный", "вульгарность", "гнусный", "неправильный"
+  ]
+}

@@ -55,17 +55,17 @@ public class LikeService {
         return fetchUsersInBatches(userIds);
     }
 
-    @PublishLikeEvent(events = {AnalyticsLikeEvent.class, NotificationLikeEvent.class})
+    @PublishLikeEvent(events = {AnalyticsLikeEvent.class, NotificationLikeEvent.class})//comment
     @Transactional
-    public void addLikeToPost(Long postId, Long commentId, Long currentUserId) {
+    public Like addLikeToPost(Long postId, Long commentId, Long currentUserId) {
         try {
             userServiceClient.getUser(currentUserId);
         } catch (FeignException.NotFound ex) {
             throw new UserNotFoundException("User not found with id: " + currentUserId);
         }
 
-        likeValidationService.validatePostAlreadyLiked(currentUserId,postId);
-        likeValidationService.validateLikeTarget(postId,commentId);
+        likeValidationService.validatePostAlreadyLiked(currentUserId, postId);
+        likeValidationService.validateLikeTarget(postId, commentId);
 
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new PostNotFoundException("Post not found"));
@@ -80,24 +80,24 @@ public class LikeService {
     }
 
     @Transactional
-    public void removeLikeFromPost(Long postId,Long currentUserId) {
-        likeValidationService.validatePostNotBeenLiked(currentUserId,postId);
+    public void removeLikeFromPost(Long postId, Long currentUserId) {
+        likeValidationService.validatePostNotBeenLiked(currentUserId, postId);
         likeRepository.deleteByUserIdAndPostId(currentUserId, postId);
     }
 
     @Transactional
-    public void addLikeToComment(Long commentId,Long postId, Long currentUserId) {
+    public void addLikeToComment(Long commentId, Long postId, Long currentUserId) {
         try {
             userServiceClient.getUser(currentUserId);
         } catch (FeignException.NotFound ex) {
             throw new UserNotFoundException("User not found with id: " + currentUserId);
         }
 
-        likeValidationService.validateCommentAlreadyLiked(currentUserId,commentId);
-        likeValidationService.validateLikeTarget(postId,commentId);
+        likeValidationService.validateCommentAlreadyLiked(currentUserId, commentId);
+        likeValidationService.validateLikeTarget(postId, commentId);
 
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(()-> new CommentNotFoundException("Comment not found"));
+                .orElseThrow(() -> new CommentNotFoundException("Comment not found"));
         Like like = Like.builder()
                 .userId(currentUserId)
                 .comment(comment)
@@ -109,8 +109,8 @@ public class LikeService {
     }
 
     @Transactional
-    public void removeLikeFromComment(Long commentId,Long currentUserId) {
-        likeValidationService.validateCommentNotBeenLiked(currentUserId,commentId);
+    public void removeLikeFromComment(Long commentId, Long currentUserId) {
+        likeValidationService.validateCommentNotBeenLiked(currentUserId, commentId);
         likeRepository.deleteByUserIdAndCommentId(currentUserId, commentId);
     }
 

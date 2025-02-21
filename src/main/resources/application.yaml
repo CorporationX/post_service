@@ -13,6 +13,9 @@ spring:
     properties:
       hibernate:
         format_sql: true
+  servlet:
+    multipart:
+      max-file-size: 10MB
 
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
@@ -37,16 +40,26 @@ spring:
         calculations_channel:
           name: calculations_channel
 
-
-
-
-
 server:
   port: 8081
 
 logging:
   level:
     root: info
+
+services:
+  s3:
+    endpoint: http://localhost:9000
+    accessKey: user
+    secretKey: password
+    bucketName: corpbucket
+
+comment:
+  image:
+    largeImageMaxSize: 1080
+    smallImageMaxSize: 170
+    max-file-size: 5MB
+
 
 project-protocol: http
 user-service:
@@ -64,9 +77,13 @@ payment-service:
   port: 9080
 
 moderation:
-  schedule: "0 0 * * * ?" # каждый день в полночь
+  cron: "0 0 0 * * ?"
+  threadSize: 100
+  api-url: "https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze?key=AIzaSyCvYJUwADYD2pGzdhoY5QunJEgrvgPbbpg"
+  bad-words-path: "classpath:moderation/bad-words.json"
   chunk-size: 500
   banned-words-path: "src/main/resources/moderation/banned-words.json"
+
 
 api:
     title: "Post service API"
