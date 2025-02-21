@@ -11,6 +11,8 @@ import faang.school.postservice.model.event.NotificationCommentEvent;
 import faang.school.postservice.repository.CommentRepository;
 
 
+import faang.school.postservice.service.s3.AwsService;
+import faang.school.postservice.util.ModerationDictionaryUtil;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
