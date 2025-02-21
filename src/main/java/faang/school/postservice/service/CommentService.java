@@ -1,4 +1,5 @@
 package faang.school.postservice.service;
+
 import faang.school.postservice.model.event.AnalyticsCommentEvent;
 import faang.school.postservice.annotations.PublishCommentEvent;
 import faang.school.postservice.client.UserServiceClient;
@@ -64,6 +65,7 @@ public class CommentService {
                 .sorted(Comparator.comparing(Comment::getCreatedAt))
                 .toList();
     }
+
 
     @PublishCommentEvent(events = { AnalyticsCommentEvent.class , NotificationCommentEvent.class })
     @Transactional

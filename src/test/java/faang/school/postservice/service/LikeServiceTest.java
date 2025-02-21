@@ -55,7 +55,7 @@ public class LikeServiceTest {
 
     @Mock
     private CommentRepository commentRepository;
-
+    
     @Mock
     private AnalyticsLikeEventPublisher analyticsLikeEventPublisher;
 
