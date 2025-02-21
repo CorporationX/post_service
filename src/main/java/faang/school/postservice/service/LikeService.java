@@ -55,7 +55,7 @@ public class LikeService {
         return fetchUsersInBatches(userIds);
     }
 
-    @PublishLikeEvent(events = {AnalyticsLikeEvent.class, NotificationLikeEvent.class})
+    @PublishLikeEvent(events = {AnalyticsLikeEvent.class, NotificationLikeEvent.class})//comment
     @Transactional
     public Like addLikeToPost(Long postId, Long commentId, Long currentUserId) {
         try {

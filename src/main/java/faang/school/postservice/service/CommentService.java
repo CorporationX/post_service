@@ -67,7 +67,7 @@ public class CommentService {
     }
 
 
-    @PublishCommentEvent(events = { AnalyticsCommentEvent.class , NotificationCommentEvent.class })
+    @PublishCommentEvent(events = { AnalyticsCommentEvent.class , NotificationCommentEvent.class })//comment
     @Transactional
     public Comment createComment(Comment comment, Long postId, Long authorId) {
         Post post = postService.get(postId);
