@@ -2,6 +2,7 @@ package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostMapper;
+import faang.school.postservice.model.Post;
 import faang.school.postservice.service.PostService;
 import faang.school.postservice.validation.PostDtoValidator;
 import io.swagger.v3.oas.annotations.Operation;
@@ -38,7 +39,9 @@ public class PostController {
     @PostMapping("/draft")
     public PostDto createDraft(@RequestBody @Valid PostDto postDto) {
         postDtoValidator.isValid(postDto, null);
-        return postMapper.toDto(postService.createDraft(postMapper.toEntity(postDto)));
+        Post receivedDraft = postMapper.toEntity(postDto);
+        Post createdDraft = postService.createDraft(receivedDraft);
+        return postMapper.toDto(createdDraft);
     }
 
     @Operation(
@@ -48,8 +51,9 @@ public class PostController {
     )
     @PostMapping("/publish/{postId}")
     public PostDto publish(@Parameter(description = "ID of the post to be published")
-                               @PathVariable Long postId) {
-        return postMapper.toDto(postService.publish(postId));
+                           @PathVariable Long postId) {
+        Post publishedPost = postService.publish(postId);
+        return postMapper.toDto(publishedPost);
     }
 
     @Operation(
@@ -58,7 +62,9 @@ public class PostController {
     )
     @PatchMapping
     public PostDto update(@RequestBody PostDto postDto) {
-        return postMapper.toDto(postService.update(postMapper.toEntity(postDto)));
+        Post receivedPostData = postMapper.toEntity(postDto);
+        Post updatedPost = postService.update(receivedPostData);
+        return postMapper.toDto(updatedPost);
     }
 
     @Operation(
@@ -68,7 +74,7 @@ public class PostController {
     )
     @DeleteMapping("/{postId}")
     public void delete(@Parameter(description = "ID of the post to be deleted")
-                           @PathVariable Long postId) {
+                       @PathVariable Long postId) {
         postService.delete(postId);
     }
 
@@ -78,8 +84,9 @@ public class PostController {
     )
     @GetMapping("/{postId}")
     public PostDto get(@Parameter(description = "ID of the post to be retrieved")
-                           @PathVariable Long postId) {
-        return postMapper.toDto(postService.get(postId));
+                       @PathVariable Long postId) {
+        Post currentPost = postService.get(postId);
+        return postMapper.toDto(currentPost);
     }
 
     @Operation(
@@ -89,8 +96,9 @@ public class PostController {
     )
     @GetMapping("/draft/user/{userId}")
     public List<PostDto> getDraftsByAuthorId(@Parameter(description = "ID of the author")
-                                                 @PathVariable Long userId) {
-        return postMapper.toDto(postService.getDraftsByAuthorId(userId));
+                                             @PathVariable Long userId) {
+        List<Post> draftsByAuthorId = postService.getDraftsByAuthorId(userId);
+        return postMapper.toDto(draftsByAuthorId);
     }
 
     @Operation(
@@ -100,8 +108,9 @@ public class PostController {
     )
     @GetMapping("/draft/project/{projectId}")
     public List<PostDto> getDraftsByProjectId(@Parameter(description = "ID of the project")
-                                                  @PathVariable Long projectId) {
-        return postMapper.toDto(postService.getDraftsByProjectId(projectId));
+                                              @PathVariable Long projectId) {
+        List<Post> draftsByProjectId = postService.getDraftsByProjectId(projectId);
+        return postMapper.toDto(draftsByProjectId);
     }
 
     @Operation(
@@ -111,8 +120,9 @@ public class PostController {
     )
     @GetMapping("/user/{userId}")
     public List<PostDto> getPostsByAuthorId(@Parameter(description = "ID of the author")
-                                                @PathVariable Long userId) {
-        return postMapper.toDto(postService.getPostsByAuthorId(userId));
+                                            @PathVariable Long userId) {
+        List<Post> postsByAuthorId = postService.getPostsByAuthorId(userId);
+        return postMapper.toDto(postsByAuthorId);
     }
 
     @Operation(
@@ -122,7 +132,8 @@ public class PostController {
     )
     @GetMapping("/project/{projectId}")
     public List<PostDto> getPostsByProjectId(@Parameter(description = "ID of the project")
-                                                 @PathVariable Long projectId) {
-        return postMapper.toDto(postService.getPostsByProjectId(projectId));
+                                             @PathVariable Long projectId) {
+        List<Post> postsByProjectId = postService.getPostsByProjectId(projectId);
+        return postMapper.toDto(postsByProjectId);
     }
 }

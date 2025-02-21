@@ -1,7 +1,7 @@
 package faang.school.postservice.util;
 
 import faang.school.postservice.exception.ExternalServiceException;
-import faang.school.postservice.service.ExternalService;
+import faang.school.postservice.service.InternalServices;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -19,19 +19,19 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class ExternalServiceTest {
+public class InternalServicesTest {
     @Mock
     private RestTemplate restTemplate;
 
     @InjectMocks
-    private ExternalService externalService;
+    private InternalServices internalServices;
 
     @Test
     public void userExists_True() {
-        when(restTemplate.getForEntity(anyString(), eq(Void.class)))
-                .thenReturn(new ResponseEntity<>(HttpStatus.OK));
+        when(restTemplate.getForEntity(anyString(), eq(String.class)))
+                .thenReturn(new ResponseEntity<>("Non-empty response", HttpStatus.OK));
 
-        boolean result = externalService.userExists(1L);
+        boolean result = internalServices.userExists(1L);
 
         assertTrue(result);
     }
@@ -39,47 +39,47 @@ public class ExternalServiceTest {
 
     @Test
     public void userExists_False() {
-        when(restTemplate.getForEntity(anyString(), eq(Void.class)))
+        when(restTemplate.getForEntity(anyString(), eq(String.class)))
                 .thenReturn(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
 
-        boolean result = externalService.userExists(1L);
+        boolean result = internalServices.userExists(1L);
 
         assertFalse(result);
     }
 
     @Test
     public void userExists_ThrowsExternalServiceException() {
-        when(restTemplate.getForEntity(anyString(), eq(Void.class)))
+        when(restTemplate.getForEntity(anyString(), eq(String.class)))
                 .thenThrow(new RuntimeException("Connection error"));
 
-        assertThrows(ExternalServiceException.class, () -> externalService.userExists(1L));
+        assertThrows(ExternalServiceException.class, () -> internalServices.userExists(1L));
     }
 
     @Test
     public void projectExists_True() {
-        when(restTemplate.getForEntity(anyString(), eq(Void.class)))
-                .thenReturn(new ResponseEntity<>(HttpStatus.OK));
+        when(restTemplate.getForEntity(anyString(), eq(String.class)))
+                .thenReturn(new ResponseEntity<>("Non-empty response", HttpStatus.OK));
 
-        boolean result = externalService.projectExists(1L);
+        boolean result = internalServices.projectExists(1L);
 
         assertTrue(result);
     }
 
     @Test
     public void projectExists_False() {
-        when(restTemplate.getForEntity(anyString(), eq(Void.class)))
+        when(restTemplate.getForEntity(anyString(), eq(String.class)))
                 .thenReturn(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
 
-        boolean result = externalService.projectExists(1L);
+        boolean result = internalServices.projectExists(1L);
 
         assertFalse(result);
     }
 
     @Test
     public void projectExists_ThrowsExternalServiceException() {
-        when(restTemplate.getForEntity(anyString(), eq(Void.class)))
+        when(restTemplate.getForEntity(anyString(), eq(String.class)))
                 .thenThrow(new RuntimeException("Connection error"));
 
-        assertThrows(ExternalServiceException.class, () -> externalService.projectExists(1L));
+        assertThrows(ExternalServiceException.class, () -> internalServices.projectExists(1L));
     }
 }

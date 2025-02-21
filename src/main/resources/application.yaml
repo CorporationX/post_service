@@ -13,9 +13,24 @@ spring:
     properties:
       hibernate:
         format_sql: true
+  servlet:
+    multipart:
+      max-file-size: 10MB
 
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    topics:
+      analytics-comment-topic:
+        name: analytics_comment_topic
+      analytics-like-topic:
+        name: analytics-like-events
+      notification-like-topic:
+        name: notification_like_topic
+      notification-comment-topic:
+        name: notification_comment_topic
 
   data:
     redis:
@@ -32,12 +47,71 @@ logging:
   level:
     root: info
 
+services:
+  s3:
+    endpoint: http://localhost:9000
+    accessKey: user
+    secretKey: password
+    bucketName: corpbucket
+
+comment:
+  image:
+    largeImageMaxSize: 1080
+    smallImageMaxSize: 170
+    max-file-size: 5MB
+
+
+project-protocol: http
 user-service:
   host: localhost
   port: 8080
+  endpoints:
+    getById: /api/v1/users/{id}
 project-service:
   host: localhost
   port: 8082
+  endpoints:
+    getById: /api/v1/projects/{id}
 payment-service:
   host: localhost
   port: 9080
+
+moderation:
+  cron: "0 0 0 * * ?"
+  threadSize: 100
+  api-url: "https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze?key=AIzaSyCvYJUwADYD2pGzdhoY5QunJEgrvgPbbpg"
+  bad-words-path: "classpath:moderation/bad-words.json"
+  chunk-size: 500
+  banned-words-path: "src/main/resources/moderation/banned-words.json"
+
+api:
+    title: "Post service API"
+    version: "0.1.0.1"
+    description: "Post service gives the ability to write text posts to share your thoughts, knowledge and information with other users."
+
+aws:
+  s3:
+    endpoint: http://127.0.0.1:9000
+    accessKey: user
+    secretKey: password
+    bucket: corpbucket
+    region: us-east-1
+    maxConcurrency: 50
+    connectionTimeout: 60s
+    readTimeout: 60s
+    writeTimeout: 60s
+    apiCallTimeout: 2m
+    apiCallAttemptTimeout: 90s
+
+rest-template:
+  config:
+    connectTimeout: 5000
+    readTimeout: 5000
+
+file-controller:
+  upload:
+    max-files-per-post: 10
+    max-files-size-in-post-mb: 5
+  image:
+    max-width: 1080
+    max-height-rectangle: 566
