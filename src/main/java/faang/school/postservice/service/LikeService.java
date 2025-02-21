@@ -85,6 +85,7 @@ public class LikeService {
         likeRepository.deleteByUserIdAndPostId(currentUserId, postId);
     }
 
+    @PublishLikeEvent(events = { NotificationLikeEvent.class })
     @Transactional
     public void addLikeToComment(Long commentId, Long postId, Long currentUserId) {
         try {

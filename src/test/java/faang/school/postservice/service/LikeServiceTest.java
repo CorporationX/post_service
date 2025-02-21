@@ -56,8 +56,10 @@ public class LikeServiceTest {
     @Mock
     private CommentRepository commentRepository;
 
+
     @Mock
     private AnalyticsLikeEventPublisher analyticsLikeEventPublisher;
+
 
     @Test
     public void addLikeToPostTest(){
