@@ -1,6 +1,5 @@
 package faang.school.postservice.events;
 
-import faang.school.event.Event;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
