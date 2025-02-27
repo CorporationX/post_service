@@ -14,13 +14,13 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 public class RedisConfig {
 
     @Value("${spring.data.redis.host}")
-    private String REDIS_HOST;
+    private String redisHost;
     @Value("${spring.data.redis.port}")
-    private int REDIS_PORT;
+    private int redisPort;
 
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
-        return new LettuceConnectionFactory(REDIS_HOST, REDIS_PORT);
+        return new LettuceConnectionFactory(redisHost, redisPort);
     }
 
     @Bean
@@ -30,7 +30,7 @@ public class RedisConfig {
 
         Jackson2JsonRedisSerializer<Object> serializer = new Jackson2JsonRedisSerializer<>(Object.class);
         template.setDefaultSerializer(serializer);
-        template.setKeySerializer(new StringRedisSerializer()); // Ключи - строковые
+        template.setKeySerializer(new StringRedisSerializer());
 
         return template;
     }

@@ -14,17 +14,20 @@ public class KafkaTopic {
     @Value("${spring.data.kafka.topics.feed-channel}")
     private String feedTopic;
 
+    @Value("${spring.partitionCount}")
+    private int partitionCount;
+
     @Bean
     public NewTopic postsTopic() {
         return TopicBuilder.name(postsTopic)
-                .partitions(3)
+                .partitions(partitionCount)
                 .build();
     }
 
     @Bean
     public NewTopic feedTopic() {
         return TopicBuilder.name(feedTopic)
-                .partitions(3)
+                .partitions(partitionCount)
                 .build();
     }
 }

@@ -27,6 +27,10 @@ spring:
         calculations_channel:
           name: calculations_channel
 
+  partitionCount: 3
+  max_feed_size: 100
+  ttl_seconds: 86400
+
 server:
   port: 8081
 
@@ -65,3 +69,4 @@ side-api:
     key: ${secrets.text-gears-api-key}
     base-url: https://api.textgears.com
     auto-correct: /correct
+

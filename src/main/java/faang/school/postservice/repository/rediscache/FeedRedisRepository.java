@@ -2,6 +2,7 @@ package faang.school.postservice.repository.rediscache;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -16,11 +17,15 @@ public class FeedRedisRepository {
 
     private final RedisTemplate<String, List<String>> redisTemplate;
 
-    private static final int MAX_FEED_SIZE = 100;
-    private static final long TTL_SECONDS = 86400;
+    @Value("${spring.max_feed_size}")
+    private int maxFeedSize;
 
-    public void save(String key, String postId) {
+    @Value("${spring.ttl_seconds}")
+    private int ttlSeconds;
+
+    public synchronized void save(String key, String postId) {
         log.info("Saving post with ID: {} to Redis", postId);
+
         List<String> postIds = redisTemplate.opsForValue().get(key);
 
         if (postIds == null) {
@@ -29,15 +34,16 @@ public class FeedRedisRepository {
 
         postIds.add(0, postId);
 
-        if (postIds.size() > MAX_FEED_SIZE) {
+        if (postIds.size() > maxFeedSize) {
             postIds.remove(postIds.size() - 1);
         }
 
-        redisTemplate.opsForValue().set(key, postIds, Duration.ofSeconds(TTL_SECONDS));
+        redisTemplate.opsForValue().set(key, postIds, Duration.ofSeconds(ttlSeconds));
     }
 
-    public List<String> getPostIdsFromCache(String userId, String postId) {
+    public synchronized List<String> getPostIdsFromCache(String userId, String postId) {
         log.info("Fetching posts from Redis for user with ID: {}", userId);
+
         List<String> postIds = redisTemplate.opsForValue().get(userId);
 
         if (postIds == null || postIds.isEmpty()) {
