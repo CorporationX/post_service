@@ -48,8 +48,13 @@ public class LikeService {
         boolean likeAlreadyExists = likes.stream().anyMatch(like -> like.getUserId() == userDto.id());
 
         if (likeAlreadyExists) {
-            post.setLikes(likes.stream().filter(like -> like.getUserId() != userDto.id()).toList());
-            likeRepository.deleteByPostIdAndUserId(post.getId(), userDto.id());
+            Like likeToRemove = post.getLikes().stream()
+                    .filter(like -> like.getUserId().equals(userDto.id()))
+                    .findFirst()
+                    .orElseThrow();
+            likeToRemove.setPost(null);
+            post.getLikes().remove(likeToRemove);
+            likeRepository.delete(likeToRemove);
         } else {
             Like newLike = Like.builder()
                     .userId(userDto.id())
