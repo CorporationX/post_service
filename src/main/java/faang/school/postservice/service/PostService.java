@@ -1,9 +1,12 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.AuthorPostCount;
+import faang.school.postservice.dto.page.PageDto;
 import faang.school.postservice.dto.post.CreatePostDto;
 import faang.school.postservice.dto.post.ResponsePostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
+import faang.school.postservice.event.PostCreateEvent;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Hashtag;
 import faang.school.postservice.model.Post;
@@ -16,7 +19,11 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -42,6 +49,8 @@ public class PostService {
     private final HashtagValidator hashtagValidator;
     private final RedisTemplate<String, Object> redisTemplate;
     private final ExecutorService executorService;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final UserServiceClient userServiceClient;
 
     @Value("${spring.data.redis.channel.user-bans-channel}")
     private String userBansChannelName;
@@ -73,9 +82,32 @@ public class PostService {
             entity.setHashtags(getAndCreateHashtags(createPostDto.getHashtags()));
         }
 
-        postRepository.save(entity);
+        Post post = postRepository.save(entity);
+
+        sendEventToKafka(post);
 
         return postMapper.toDto(entity);
+    }
+
+    public Page<Long> getUserFollowersIds(Long userId, int page, int size) {
+        PageDto<Long> pageDto = userServiceClient.getUserFollowersIds(userId, page, size);
+        return new PageImpl<>(pageDto.getContent(), PageRequest.of(pageDto.getNumber(), pageDto.getSize()), pageDto.getTotalElements());
+    }
+
+    public void sendEventToKafka(Post post) {
+        int page = 0;
+        int pageSize = 1000;
+        Page<Long> followersIds;
+        do {
+            followersIds = getUserFollowersIds(post.getAuthorId(), page, pageSize);
+            PostCreateEvent postCreateEvent = PostCreateEvent.builder()
+                    .postId(post.getId())
+                    .subscribersIds(followersIds.getContent())
+                    .build();
+            kafkaTemplate.send("post", postCreateEvent);
+            log.info("Sending event to Kafka: {}", postCreateEvent);
+            page++;
+        } while (!followersIds.isLast());
     }
 
     @Transactional
@@ -170,32 +202,7 @@ public class PostService {
                 new EntityNotFoundException(String.format("Post with id: %s not found", id)));
     }
 
-    private void validateHashtags(List<String> hashtags) {
-        if (hashtags != null) {
-            for (String hashtag : hashtags) {
-                System.out.println(hashtag);
-                hashtagValidator.validateHashtag(hashtag);
-            }
-        }
-    }
 
-    private boolean hasHashtags(List<String> hashtags) {
-        return hashtags != null && !hashtags.isEmpty();
-    }
-
-    private Set<Hashtag> getAndCreateHashtags(List<String> hashtags) {
-        Map<String, Hashtag> existingHashtags = hashtagService.findAllByTags(hashtags)
-                .stream()
-                .collect(Collectors.toMap(Hashtag::getTag, Function.identity()));
-
-        Set<Hashtag> result = new HashSet<>();
-
-        for (String tag : hashtags) {
-            Hashtag hashtag = existingHashtags.computeIfAbsent(tag, hashtagService::create);
-            result.add(hashtag);
-        }
-        return result;
-    }
 
     public void banOffensiveAuthors() {
         List<AuthorPostCount> unverifiedPostsByAuthor = getUnverifiedPostsGroupedByAuthor();
@@ -272,5 +279,37 @@ public class PostService {
 
     public List<Post> getReadyToPublishPosts() {
         return postRepository.findAll(PostSpecifications.isReadyToPublish());
+    }
+
+    public Post findPostById(Long id) {
+        return postRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Post with id: %s not found", id)));
+    }
+
+    private void validateHashtags(List<String> hashtags) {
+        if (hashtags != null) {
+            for (String hashtag : hashtags) {
+                System.out.println(hashtag);
+                hashtagValidator.validateHashtag(hashtag);
+            }
+        }
+    }
+
+    private boolean hasHashtags(List<String> hashtags) {
+        return hashtags != null && !hashtags.isEmpty();
+    }
+
+    private Set<Hashtag> getAndCreateHashtags(List<String> hashtags) {
+        Map<String, Hashtag> existingHashtags = hashtagService.findAllByTags(hashtags)
+                .stream()
+                .collect(Collectors.toMap(Hashtag::getTag, Function.identity()));
+
+        Set<Hashtag> result = new HashSet<>();
+
+        for (String tag : hashtags) {
+            Hashtag hashtag = existingHashtags.computeIfAbsent(tag, hashtagService::create);
+            result.add(hashtag);
+        }
+        return result;
     }
 }
