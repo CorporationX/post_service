@@ -31,6 +31,9 @@ server:
 logging:
   level:
     root: info
+    faang.school.postservice: debug
+    org.hibernate.SQL: debug
+    org.hibernate.type: trace
 
 user-service:
   host: localhost
@@ -41,3 +44,13 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+
+comment:
+  moderation:
+    cron: "0 0 0 * * ?"
+    batchSize: 50
+    pageSize: 20
+    maxThreadPoolSize: 10
+    coreThreadPoolSize: 5
+    queueCapacity: 100

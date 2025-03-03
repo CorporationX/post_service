@@ -1,0 +1,6 @@
+-- Добавление столбцов 'verified' и 'verified_date' в таблицу 'comment'
+ALTER TABLE comment
+    ADD COLUMN verified BOOLEAN DEFAULT FALSE;
+
+ALTER TABLE comment
+    ADD COLUMN verified_date TIMESTAMP DEFAULT NULL;
