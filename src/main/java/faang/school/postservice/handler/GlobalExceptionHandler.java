@@ -1,6 +1,7 @@
 package faang.school.postservice.handler;
 
 import faang.school.postservice.exception.FileException;
+import faang.school.postservice.exception.UserNotFoundException;
 import faang.school.postservice.exception.ValidationErrorResponse;
 import faang.school.postservice.exception.Violation;
 import jakarta.persistence.EntityNotFoundException;
@@ -15,8 +16,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-
-import javax.annotation.processing.FilerException;
 import java.io.IOException;
 import java.util.List;
 
@@ -85,5 +84,19 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> onEntityNotFoundException(@NotNull EntityNotFoundException ex) {
         log.error("EntityNotFoundException occurred: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ResponseEntity<Object> handleUserNotFoundException(UserNotFoundException e) {
+        log.error("User not found while getting feed", e);
+        return ResponseEntity.notFound().build();
+    }
+
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ResponseEntity<Object> handleGeneralException(Exception e) {
+        log.error("Error while getting feed", e);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
 }

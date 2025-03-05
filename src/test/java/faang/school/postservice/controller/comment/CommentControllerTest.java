@@ -16,18 +16,20 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest
 @ContextConfiguration(classes = {CommentController.class})
 class CommentControllerTest {
-    private static final String URL = "/comments";
     private static final String COMMENT_URL_ADD = "/comments/{postId}";
     private static final String COMMENT_URL_UPDATE = "/comments/update";
     private static final String COMMENT_URL_GET = "/comments/get/{postId}";
@@ -50,16 +52,20 @@ class CommentControllerTest {
                 .authorId(1L)
                 .postId(2L)
                 .content("content")
+                .likeIds(Collections.emptyList())
+                .createdAt(LocalDateTime.of(2011, 10, 11, 11, 11))
                 .build();
         ResponseCommentDto responseCommentDto = ResponseCommentDto.builder()
                 .id(1L)
                 .authorId(1L)
                 .postId(2L)
                 .content("content")
-                .likeIds(List.of(1L, 2L))
+                .likeIds(Collections.emptyList())
                 .createdAt(LocalDateTime.of(2011, 10, 11, 11, 11))
                 .build();
+
         when(commentService.addComment(1L, commentDto)).thenReturn(responseCommentDto);
+
         mockMvc.perform(post(COMMENT_URL_ADD, "1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(MAPPER.writeValueAsString(commentDto)))
@@ -77,6 +83,7 @@ class CommentControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
+
     @Test
     @DisplayName("Тест метода updateComment")
     void testUpdateComment() throws Exception {
@@ -85,13 +92,15 @@ class CommentControllerTest {
                 .authorId(1L)
                 .postId(2L)
                 .content("content")
+                .likeIds(Collections.emptyList())
+                .createdAt(LocalDateTime.of(2011, 10, 11, 11, 11))
                 .build();
         ResponseCommentDto responseCommentDto = ResponseCommentDto.builder()
                 .id(1L)
                 .authorId(1L)
                 .postId(2L)
                 .content("content")
-                .likeIds(List.of(1L, 2L))
+                .likeIds(Collections.emptyList())
                 .createdAt(LocalDateTime.of(2011, 10, 11, 11, 11))
                 .updatedAt(LocalDateTime.of(2011, 12, 11, 11, 11))
                 .build();

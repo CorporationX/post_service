@@ -1,10 +1,14 @@
 package faang.school.postservice.repository;
 
 import faang.school.postservice.model.Post;
+import feign.Param;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -50,4 +54,24 @@ public interface PostRepository extends CrudRepository<Post, Long> {
     @Query("SELECT p FROM Post p " +
             "WHERE p.verified = false")
     List<Post> findByNotVerified();
+
+    @Query(value = "SELECT * FROM post WHERE author_id = :userId ORDER BY created_at DESC",
+            nativeQuery = true)
+    List<Post> findLatestPostsForUser(@Param("userId") Long userId, Pageable pageable);
+
+    @Modifying
+    @Query("UPDATE Post p SET p.likesCount = COALESCE(p.likesCount, 0) + 1 WHERE p.id = :postId")
+    void incrementLikesCount(@Param("postId") Long postId);
+
+    @Modifying
+    @Query("UPDATE Post p SET p.likesCount = p.likesCount - 1 WHERE p.id = :postId")
+    void decrementLikesCount(@Param("postId") Long postId);
+
+    @Modifying
+    @Query("UPDATE Post p SET p.commentsCount = COALESCE(p.commentsCount, 0) + 1 WHERE p.id = :postId")
+    void incrementCommentsCount(@Param("postId") Long postId);
+
+    List<Post> findByAuthorIdIsNotNullAndCreatedAtAfterAndPublishedTrue(LocalDateTime cutoffDate);
+
+    List<Post> findByProjectIdIsNotNullAndCreatedAtAfterAndPublishedTrue(LocalDateTime cutoffDate);
 }

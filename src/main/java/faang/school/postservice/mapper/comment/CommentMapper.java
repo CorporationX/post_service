@@ -11,7 +11,9 @@ import org.mapstruct.ReportingPolicy;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface CommentMapper {
@@ -27,9 +29,11 @@ public interface CommentMapper {
 
     @Named("mapIds")
     default List<Long> getLikeIds(List<Like> likes) {
-        if (likes == null) {
-            return new ArrayList<>();
+        if (likes == null || likes.isEmpty()) {
+            return Collections.emptyList();
         }
-        return Arrays.asList(likes.stream().map(Like::getId).toArray(Long[]::new));
+        return likes.stream()
+                .map(Like::getId)
+                .toList();
     }
 }

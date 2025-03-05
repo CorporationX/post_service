@@ -46,11 +46,16 @@ public class Comment {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-
     @Column(name = "verified")
     private Boolean verified;
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "verified_at")
     private LocalDateTime verifiedAt;
+
+    public boolean isVerified() {
+        return verified &&
+                content != null &&
+                authorId != null;
+    }
 }

@@ -217,7 +217,7 @@ public class AlbumServiceImpl implements AlbumService {
   }
 
   private boolean isUserSubscriber(long authorId, long userId) {
-    return userServiceClient.getUserSubscribers(authorId).stream()
+    return userServiceClient.getUserSubscribersDto(authorId).stream()
         .map(UserDto::getId)
         .anyMatch(f -> f == userId);
   }

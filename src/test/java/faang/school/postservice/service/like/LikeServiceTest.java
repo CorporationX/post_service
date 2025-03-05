@@ -2,6 +2,7 @@ package faang.school.postservice.service.like;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.kafka.producer.KafkaLikeProducer;
 import faang.school.postservice.publisher.MessageSenderForLikeAnalyticsImpl;
 import faang.school.postservice.dto.like.AnalyticsEventDto;
 import faang.school.postservice.dto.like.LikeDtoForComment;
@@ -67,6 +68,9 @@ public class LikeServiceTest {
 
     @InjectMocks
     LikeService likeService;
+
+    @Mock
+    private KafkaLikeProducer kafkaLikeProducer;
 
 
     @Test

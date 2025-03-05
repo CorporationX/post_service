@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.json.student.DtoBanShema;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.kafka.producer.KafkaPostProducer;
 import faang.school.postservice.publisher.MessageSenderForUserBanImpl;
 import faang.school.postservice.dto.post.*;
 import faang.school.postservice.dto.project.ProjectDto;
@@ -76,10 +77,6 @@ class PostServiceTest {
     @Mock
     private PostIdValidator postIdValidator;
     @Mock
-    private Amazons3ServiceImpl amazonS3;
-    @Mock
-    private FileValidator fileValidator;
-    @Mock
     private KeyKeeper keyKeeper;
     @Mock
     private GingerCorrector gingerCorrector;
@@ -87,7 +84,12 @@ class PostServiceTest {
     private MessageSenderForUserBanImpl messageSenderForUserBan;
     @Mock
     private ObjectMapper objectMapper;
-
+    @Mock
+    private KafkaPostProducer kafkaPostProducer;
+    @Mock
+    private Amazons3ServiceImpl amazonS3;
+    @Mock
+    private FileValidator fileValidator;
     private Validator validator;
 
     @BeforeEach

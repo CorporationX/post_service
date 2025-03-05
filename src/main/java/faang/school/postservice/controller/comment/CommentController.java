@@ -44,4 +44,9 @@ public class CommentController {
     public void deleteComment(@PathVariable @Min(1) @NotNull Long id) {
         commentService.deleteComment(id);
     }
+
+    @GetMapping("/get/{postId}/ids")
+    public List<Long> getVerifiedCommentIdsByPostId(@PathVariable @Min(1) @NotNull Long postId) {
+        return commentService.getCommentIdsByPostId(postId);
+    }
 }

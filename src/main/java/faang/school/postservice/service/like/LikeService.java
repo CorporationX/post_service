@@ -3,6 +3,9 @@ package faang.school.postservice.service.like;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.kafka.event.NewLikeEvent;
+import faang.school.postservice.kafka.producer.KafkaLikeProducer;
+import faang.school.postservice.model.LikeType;
 import faang.school.postservice.publisher.MessageSenderForLikeAnalyticsImpl;
 import faang.school.postservice.dto.like.AnalyticsEventDto;
 import faang.school.postservice.dto.like.LikeDto;
@@ -20,11 +23,14 @@ import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.validator.dto.user.UserDtoValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class LikeService {
@@ -36,6 +42,7 @@ public class LikeService {
     private final UserDtoValidator userDtoValidator;
     private final MessageSenderForLikeAnalyticsImpl likeEventPublisher;
     private final ObjectMapper objectMapper;
+    private final KafkaLikeProducer kafkaLikeProducer;
 
     @Transactional
     public ResponseLikeDto addLikeByPost(LikeDtoForPost likeDtoForPost) {
@@ -54,6 +61,12 @@ public class LikeService {
                 .post(post)
                 .build();
         likeRepository.save(likeForPost);
+
+        kafkaLikeProducer.sendLikeEvent(NewLikeEvent.builder()
+                .postId(post.getId())
+                .userId(userId)
+                .type(LikeType.LIKE)
+                .build());
 
         publishLikeEvent(userId, post.getAuthorId());
 
@@ -81,6 +94,12 @@ public class LikeService {
         }
         likeRepository.deleteByPostIdAndUserId(likeDtoForPost.getPostId(),
                 likeDtoForPost.getUserId());
+
+        kafkaLikeProducer.sendLikeEvent(NewLikeEvent.builder()
+                .postId(likeDtoForPost.getPostId())
+                .userId(likeDtoForPost.getUserId())
+                .type(LikeType.UNLIKE)
+                .build());
     }
 
     @Transactional
@@ -101,6 +120,15 @@ public class LikeService {
 
         likeRepository.save(likeForComment);
         return likeMapper.toLikeDtoFromEntity(likeForComment);
+    }
+
+    public List<Long> getAllPostLikeIds() {
+        List<Like> likes = likeRepository.findAll();
+        log.info("Found {} posts with likes", likes.size());
+        return likes.stream()
+                .filter(like -> like.getPost() != null)
+                .map(like -> like.getPost().getId())
+                .toList();
     }
 
     @Transactional

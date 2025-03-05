@@ -71,6 +71,16 @@ public class PostController {
         return postService.getPublishPostsByProjectIdSortedCreatedAtDesc(projectId);
     }
 
+    @GetMapping("/user/{userId}/publishes/ids")
+    public List<Long> getAllPublishPostsIdsByUserId(@PathVariable @Positive long userId) {
+        return postService.getPublishPostsIdsByUserIdSortedCreatedAtDesc(userId);
+    }
+
+    @GetMapping("/project/{projectId}/publishes/ids")
+    public List<Long> getAllPublishPostsIdsByProjectId(@PathVariable @Positive long projectId) {
+        return postService.getPublishPostsIdsByProjectIdSortedCreatedAtDesc(projectId);
+    }
+
     @PostMapping(value = "/draft/files", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<PostDraftResponseDto> createDraftPostWithFiles(
             @RequestPart("dto") @Valid PostDraftWithFilesCreateDto dto,

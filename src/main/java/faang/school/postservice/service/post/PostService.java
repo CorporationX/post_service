@@ -4,17 +4,23 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.json.student.DtoBanShema;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.publisher.MessageSenderForUserBanImpl;
-import faang.school.postservice.dto.post.*;
+import faang.school.postservice.dto.post.PostDraftCreateDto;
+import faang.school.postservice.dto.post.PostDraftResponseDto;
+import faang.school.postservice.dto.post.PostDraftWithFilesCreateDto;
+import faang.school.postservice.dto.post.PostResponseDto;
+import faang.school.postservice.dto.post.PostUpdateDto;
+import faang.school.postservice.kafka.event.NewPostEvent;
+import faang.school.postservice.kafka.producer.KafkaPostProducer;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
+import faang.school.postservice.publisher.MessageSenderForUserBanImpl;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.album.AlbumService;
 import faang.school.postservice.service.amazons3.Amazons3ServiceImpl;
 import faang.school.postservice.service.amazons3.processing.KeyKeeper;
-import faang.school.postservice.sheduler.postcorrector.ginger.GingerCorrector;
 import faang.school.postservice.service.resource.ResourceServiceImpl;
+import faang.school.postservice.sheduler.postcorrector.ginger.GingerCorrector;
 import faang.school.postservice.validator.dto.project.ProjectDtoValidator;
 import faang.school.postservice.validator.dto.user.UserDtoValidator;
 import faang.school.postservice.validator.file.FileValidator;
@@ -26,8 +32,8 @@ import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.apache.commons.collections4.ListUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,8 +45,9 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 @Setter
 @Slf4j
@@ -63,6 +70,7 @@ public class PostService {
     private final GingerCorrector gingerCorrector;
     private final MessageSenderForUserBanImpl messageSenderForUserBan;
     private final ObjectMapper objectMapper;
+    private final KafkaPostProducer kafkaPostProducer;
 
     @Value("${size.not-verified-posts-for-users}")
     private int sizeNotVerifiedPostsForUsers;
@@ -104,7 +112,14 @@ public class PostService {
         }
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
-        return postMapper.toDtoFromPost(postRepository.save(post));
+        Post savedPost = postRepository.save(post);
+
+        kafkaPostProducer.sendPostCreatedEvent(NewPostEvent.builder()
+                .postId(savedPost.getId())
+                .authorId(savedPost.getAuthorId())
+                .content(savedPost.getContent())
+                .build());
+        return postMapper.toDtoFromPost(savedPost);
     }
 
     public PostResponseDto updatePost(@Positive long postId, @NotNull @Valid PostUpdateDto dto) {
@@ -176,6 +191,18 @@ public class PostService {
                 .toList();
     }
 
+    public List<Long> getPublishPostsIdsByUserIdSortedCreatedAtDesc(long userId) {
+        return postRepository.findByPublishedAndNotDeletedAndAuthorIdOrderCreatedAtDesc(userId).stream()
+                .map(Post::getId)
+                .toList();
+    }
+
+    public List<Long> getPublishPostsIdsByProjectIdSortedCreatedAtDesc(long projectId) {
+        return postRepository.findByPublishedAndNotDeletedAndProjectIdOrderCreatedAtDesc(projectId).stream()
+                .map(Post::getId)
+                .toList();
+    }
+
     @Async("workerPool")
     public void checkingPostForErrors() throws IOException, InterruptedException {
         List<Post> posts = postRepository.findByNotPublished();
@@ -193,16 +220,25 @@ public class PostService {
     @Async("workerPool")
     public void checkPostsForVerification() throws IOException {
         List<Post> posts = postRepository.findByNotVerified();
-
-        List<Long> userIds = getBannedUsers(posts);
-        if (userIds == null || userIds.isEmpty()) {
-            log.info("Users' posts are in good shape");
+        if (posts.isEmpty()) {
+            log.info("No posts for verification found");
             return;
         }
-        DtoBanShema dtoBanShema = new DtoBanShema();
-        dtoBanShema.setIds(userIds);
-        messageSenderForUserBan.send(objectMapper.writeValueAsString(dtoBanShema));
-        log.info("users sent to block");
+        try {
+            List<Long> userIds = getBannedUsers(posts);
+            if (userIds == null || userIds.isEmpty()) {
+                log.info("Users' posts are in good shape");
+                return;
+            }
+            DtoBanShema dtoBanShema = new DtoBanShema();
+            dtoBanShema.setIds(userIds);
+            messageSenderForUserBan.send(objectMapper.writeValueAsString(dtoBanShema));
+            log.info("Sent {} users for blocking", userIds.size());
+
+        } catch (Exception e) {
+            log.error("Error during posts verification process", e);
+            throw e;
+        }
     }
 
     private void checkingGroupPost(List<Post> batchPosts) throws IOException, InterruptedException {
@@ -211,12 +247,15 @@ public class PostService {
     }
 
     private List<Long> getBannedUsers(List<Post> posts) {
-        System.out.println(sizeNotVerifiedPostsForUsers);
+        log.info("Checking users with not verified posts. Threshold: {}", sizeNotVerifiedPostsForUsers);
+
         return posts.stream()
+                .filter(post -> post != null && post.getAuthorId() != null)
                 .collect(Collectors.groupingBy(Post::getAuthorId, Collectors.counting()))
                 .entrySet().stream()
-                .filter(user -> user.getValue() >= sizeNotVerifiedPostsForUsers)
+                .filter(entry -> entry.getValue() >= sizeNotVerifiedPostsForUsers)
                 .map(Map.Entry::getKey)
+                .filter(Objects::nonNull)
                 .toList();
     }
 
@@ -269,7 +308,7 @@ public class PostService {
     @Transactional
     public void publishScheduledPosts(@Positive int subListSize) {
         List<Post> posts = postRepository.findReadyToPublish();
-        if (posts.isEmpty()){
+        if (posts.isEmpty()) {
             log.info("No posts to publish");
             return;
         }

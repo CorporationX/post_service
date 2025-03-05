@@ -1,6 +1,24 @@
 package faang.school.postservice.model;
 
-import jakarta.persistence.*;
+import faang.school.postservice.dto.post.PostVisibility;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
+import jakarta.persistence.Transient;
+import jakarta.persistence.Version;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,6 +27,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -50,6 +69,11 @@ public class Post {
     @Column(name = "published", nullable = false)
     private boolean published;
 
+    @Column(name = "visibility", nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private PostVisibility visibility = PostVisibility.PUBLIC;
+
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "published_at")
     private LocalDateTime publishedAt;
@@ -63,7 +87,7 @@ public class Post {
 
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "created_at")
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
@@ -71,6 +95,39 @@ public class Post {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Version
+    @Column(name = "version")
+    private Long version;
+
     @Column(name = "verified", nullable = false, columnDefinition = "boolean default false")
     private boolean verified;
+
+    @Column(name = "comments_count")
+    private Long commentsCount;
+
+    @Column(name = "likes_count")
+    private Long likesCount;
+
+    @Transient
+    @Builder.Default
+    private boolean needsReindex = false;
+
+    @PrePersist
+    @PreUpdate
+    private void prePersist() {
+        if (likes == null) likes = new ArrayList<>();
+        if (comments == null) comments = new ArrayList<>();
+        if (albums == null) albums = new ArrayList<>();
+        if (resources == null) resources = new ArrayList<>();
+    }
+
+    public boolean isVisible() {
+        return published && !deleted &&
+                (scheduledAt == null || scheduledAt.isBefore(LocalDateTime.now())) &&
+                visibility == PostVisibility.PUBLIC;
+    }
+
+    public boolean canBeAddedToFeed() {
+        return verified;
+    }
 }

@@ -14,11 +14,10 @@ file:
 
 auto-start-syntax:
   # проверка постов на ошибки
-  # запускать каждый день в 00:00
-  cron: 0 0 0 * * *
+  cron: 0 0 0 * * * # every day at 00:00
 
 auto-checking-posts-by-verification:
-  cron: 0 0 12 * * *
+  cron: 0 * * * * * # every minute
 
 size:
   # тут можно настроить кол-во не верифицированных постов до отправки юзера в бан

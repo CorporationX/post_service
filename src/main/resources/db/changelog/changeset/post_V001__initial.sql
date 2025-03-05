@@ -8,7 +8,9 @@ CREATE TABLE post (
     scheduled_at timestamptz,
     deleted boolean DEFAULT false NOT NULL,
     created_at timestamptz DEFAULT current_timestamp,
-    updated_at timestamptz DEFAULT current_timestamp
+    updated_at timestamptz DEFAULT current_timestamp,
+    comments_count bigint,
+    likes_count bigint
 );
 
 CREATE TABLE comment (

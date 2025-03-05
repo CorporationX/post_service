@@ -331,7 +331,7 @@ class AlbumServiceTest {
     AlbumDto expected = albumMapper.toDto(album);
 
     when(userServiceClient.getUser(userId)).thenReturn(new UserDto());
-    when(userServiceClient.getUserSubscribers(album.getAuthorId())).thenReturn(subscribers);
+    when(userServiceClient.getUserSubscribersDto(album.getAuthorId())).thenReturn(subscribers);
     when(albumRepository.findById(id)).thenReturn(Optional.of(album));
 
     AlbumDto result = albumService.getAlbumById(userId, id);
@@ -354,7 +354,7 @@ class AlbumServiceTest {
     AlbumDto expected = albumMapper.toDto(album);
 
     when(userServiceClient.getUser(userId)).thenReturn(new UserDto());
-    when(userServiceClient.getUserSubscribers(album.getAuthorId())).thenReturn(subscribers);
+    when(userServiceClient.getUserSubscribersDto(album.getAuthorId())).thenReturn(subscribers);
     when(albumRepository.findById(id)).thenReturn(Optional.of(album));
 
     AlbumDto result = albumService.getAlbumById(userId, id);
@@ -376,7 +376,7 @@ class AlbumServiceTest {
     List<UserDto> subscribers = getSubscribers();
 
     when(userServiceClient.getUser(userId)).thenReturn(new UserDto());
-    when(userServiceClient.getUserSubscribers(album.getAuthorId())).thenReturn(subscribers);
+    when(userServiceClient.getUserSubscribersDto(album.getAuthorId())).thenReturn(subscribers);
     when(albumRepository.findById(id)).thenReturn(Optional.of(album));
 
     var exception = assertThrows(DataValidationException.class,
