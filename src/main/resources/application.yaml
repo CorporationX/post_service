@@ -105,3 +105,13 @@ post-service:
       cron: "0 * * * * *"
     batch-size: 1000
     thread-amount: 10
+
+post-corrector:
+  cron-expression: "0 * * * * ?"
+
+yandex-speller:
+  url: https://speller.yandex.net/services/spellservice.json/checkText
+
+post-processing:
+  max-batches-amount: 50
+  posts-batch-size: 20
