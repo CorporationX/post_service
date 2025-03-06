@@ -9,32 +9,39 @@ import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
+import faang.school.postservice.service.moderation.ModerationDictionary;
 import faang.school.postservice.utils.ImageService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import static faang.school.postservice.config.MinioBuckets.COMMENT_IMAGE_BUCKET_NAME;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CommentService {
 
+    private static final int SMALL_IMAGE_SIZE = 170;
+    private static final int LARGE_IMAGE_SIZE = 1080;
     private final ValidateService validateService;
     private final CommentMapper commentMapper;
     private final CommentRepository commentRepository;
-    private static final int SMALL_IMAGE_SIZE = 170;
-    private static final int LARGE_IMAGE_SIZE = 1080;
     private final ImageService imageService;
     private final KafkaService kafkaService;
     private final PostService postService;
+    private final ModerationDictionary moderationDictionary;
 
     @Transactional
     public CommentResponse create(@Valid CreateCommentRequest createCommentRequest) {
@@ -82,7 +89,6 @@ public class CommentService {
         return commentRepository.existsById(commentId);
     }
 
-
     @Transactional
     public void uploadImage(@Valid @Positive Long commentId, MultipartFile file) {
         Comment comment = getComment(commentId);
@@ -105,5 +111,19 @@ public class CommentService {
 
         return commentRepository.findById(commentId)
                 .orElseThrow(() -> new EntityNotFoundException("Comment with id " + commentId + " not found"));
+    }
+
+    @Async("moderateTaskExecutor")
+    @Transactional
+    public CompletableFuture<Void> moderateComments(List<Comment> comments) {
+        return CompletableFuture.runAsync(() -> {
+            for (Comment comment : comments) {
+                boolean hasBadWords = moderationDictionary.containsBadWord(comment.getContent());
+                comment.setVerified(!hasBadWords);
+                comment.setVerifiedAt(LocalDateTime.now());
+            }
+            commentRepository.saveAll(comments);
+            log.info("{} - {} comment checked", Thread.currentThread().getName(), comments.size());
+        });
     }
 }

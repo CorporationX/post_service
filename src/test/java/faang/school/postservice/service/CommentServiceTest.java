@@ -8,6 +8,7 @@ import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
+import faang.school.postservice.service.moderation.ModerationDictionary;
 import faang.school.postservice.utils.ImageService;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.DisplayName;
@@ -23,11 +24,14 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -62,6 +66,10 @@ class CommentServiceTest {
 
     @InjectMocks
     private CommentService commentService;
+
+    @Mock
+    private ModerationDictionary moderationDictionary;
+
 
     @Test
     void create_Success() {
@@ -228,4 +236,27 @@ class CommentServiceTest {
         verify(imageService, times(1)).saveImage(eq(mockFile), eq(170), anyString());
         verify(imageService, never()).saveImage(any(MultipartFile.class), eq(1080), anyString());
     }
+
+    @Test
+    void shouldModerateCommentsCorrectly() {
+        List<Comment> comments = List.of(
+                Comment.builder().id(1L).content("Good comment").verified(false).verifiedAt(null).build(),
+                Comment.builder().id(2L).content("Bad word here").verified(false).verifiedAt(null).build()
+        );
+
+        when(moderationDictionary.containsBadWord("Good comment")).thenReturn(false);
+        when(moderationDictionary.containsBadWord("Bad word here")).thenReturn(true);
+
+        CompletableFuture<Void> future = commentService.moderateComments(comments);
+        future.join();
+
+        assertTrue(comments.get(0).getVerified());
+        assertFalse(comments.get(1).getVerified());
+
+        assertNotNull(comments.get(0).getVerifiedAt());
+        assertNotNull(comments.get(1).getVerifiedAt());
+
+        verify(commentRepository).saveAll(comments);
+    }
+
 }

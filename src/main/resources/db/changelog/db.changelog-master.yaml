@@ -13,3 +13,5 @@ databaseChangeLog:
       file: db/changelog/changeset/post_V006_album_allowed_users.sql
   - include:
       file: db/changelog/changeset/post_V007_alter_album_add_visibility.sql
+  - include:
+      file: db/changelog/changeset/post_V008__add_verified_columns_to_comment.sql

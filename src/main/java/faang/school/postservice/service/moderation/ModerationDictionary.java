@@ -40,4 +40,12 @@ public class ModerationDictionary {
             throw new RuntimeException("Error reading moderation dictionary");
         }
     }
+
+    public boolean containsBadWord(String text) {
+        if (text != null) {
+            String lowerCaseText = text.toLowerCase();
+            return moderationSet.stream().anyMatch(lowerCaseText::contains);
+        }
+        return false;
+    }
 }

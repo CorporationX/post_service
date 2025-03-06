@@ -59,6 +59,12 @@ logging:
 
 moderation:
   dictionary: classpath:obscene_words.txt
+  thread-pool-size: 5
+  thread-pool-max-size: 10
+  thread-pool-queue-capacity: 10
+  comment-limit: 500
+  batch-size: 100
+  cron: "0 0 3 * * ?"
 
 user-service:
   host: localhost
