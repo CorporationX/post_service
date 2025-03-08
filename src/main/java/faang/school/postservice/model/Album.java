@@ -19,6 +19,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -57,10 +58,17 @@ public class Album {
     private LocalDateTime updatedAt;
 
     public void addPost(Post post) {
-        posts.add(post);
+        if(posts != null) {
+            posts.add(post);
+        } else {
+            posts = new ArrayList<>();
+            posts.add(post);
+        }
     }
 
     public void removePost(long postId) {
-        posts.removeIf(post -> post.getId() == postId);
+        if(posts != null) {
+            posts.removeIf(post -> post.getId() == postId);
+        }
     }
 }
