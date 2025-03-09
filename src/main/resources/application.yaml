@@ -44,6 +44,7 @@ payment-service:
 
 scheduling:
   cron: "0 0 0 * * ?"
+  cronExpression: "0 0 12 * * ?"
   initialDelay: 30000
   fixedRate: 30000
 thread-pool:
