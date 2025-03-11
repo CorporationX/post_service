@@ -12,7 +12,6 @@ public interface PostMapper {
         return post.getLikes() == null ? 0 : post.getLikes().size();
     }
 
-    Post toEntity(PostResultResponse postResultDto);
 
     @Mapping(expression = "java(getLikesCount(post))", target = "likeCount")
     PostResultResponse toDto(Post post);

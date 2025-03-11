@@ -77,3 +77,4 @@ minio:
   url: "${MINIO_URL:http://localhost:9000}"
   user: ${MINIO_USER:user}
   password: ${MINIO_PASSWORD:password}
+  bucket-name: "${MINIO_BUCKET_NAME:img-bucket}"
