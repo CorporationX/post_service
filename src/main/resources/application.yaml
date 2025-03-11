@@ -36,6 +36,7 @@ spring:
       batch-size: 1000
       properties:
         linger-ms: 30000
+        spring.json.add.type.headers: false
 
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
@@ -87,3 +88,7 @@ author:
     rejected_posts_to_ban: 5
     scheduler:
       cron: "0 0 3 * * *" #every day at 03.00
+
+user:
+  comment:
+    kafka_topic: "comment-create"

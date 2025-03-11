@@ -6,6 +6,7 @@ import faang.school.postservice.dto.comment.CreateCommentResponse;
 import faang.school.postservice.dto.comment.UpdateCommentRequest;
 import faang.school.postservice.dto.comment.UpdatedCommentResponse;
 import faang.school.postservice.model.Comment;
+import faang.school.postservice.model.event.CommentEvent;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
@@ -24,6 +25,10 @@ public interface CommentMapper {
 
     @Mapping(source = "post.id", target = "postId")
     UpdatedCommentResponse toUpdateResponse(Comment comment);
+
+    @Mapping(source = "authorId", target = "authorCommentId")
+    @Mapping(source = "id", target = "commentId")
+    CommentEvent toEvent(Comment comment);
 
 
     void updateComment(@MappingTarget Comment comment, UpdateCommentRequest updateCommentRequest);

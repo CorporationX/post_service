@@ -5,6 +5,7 @@ import faang.school.postservice.dto.comment.UpdateCommentRequest;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.event.CommentEvent;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.service.CommentService;
 import faang.school.postservice.service.PostService;
@@ -19,6 +20,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.kafka.core.KafkaTemplate;
 
 import java.util.List;
 import java.util.Optional;
@@ -45,6 +47,9 @@ public class CommentServiceTest {
 
     @Mock
     private CommentValidator commentValidator;
+
+    @Mock
+    private KafkaTemplate<String, CommentEvent> kafkaTemplate;
 
     @Spy
     private CommentMapper commentMapper = Mappers.getMapper(CommentMapper.class);
@@ -77,22 +82,27 @@ public class CommentServiceTest {
 
     @Test
     public void testCreateComment() {
+        String topic = "comment-event";
         CreateCommentRequest request = new CreateCommentRequest();
         request.setAuthorId(1L);
         request.setPostId(1L);
         request.setContent("Text");
         Post post = new Post();
+        post.setId(1L);
+        post.setAuthorId(1L);
         Comment comment = new Comment();
         comment.setAuthorId(request.getAuthorId());
         comment.setPost(post);
         comment.setContent("Title");
+        comment.setContent(request.getContent());
         when(postService.getPost(request.getPostId())).thenReturn(post);
         when(commentRepository.save(any(Comment.class))).thenReturn(comment);
+
+
 
         commentService.createComment(request);
 
         verify(commentRepository, times(1)).save(commentCaptor.capture());
-
     }
 
     @Test
