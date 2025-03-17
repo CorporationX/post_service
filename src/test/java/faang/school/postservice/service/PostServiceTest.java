@@ -1,11 +1,12 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.dto.post.PostDTO;
+import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.DataAlreadyDeletedException;
 import faang.school.postservice.exception.DataAlreadyExistException;
 import faang.school.postservice.exception.UnpublishedPostException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.adapter.PostRepositoryAdapter;
 import faang.school.postservice.validator.PostValidator;
 import org.junit.jupiter.api.Assertions;
@@ -36,13 +37,15 @@ class PostServiceTest {
     @Mock
     private PostRepositoryAdapter postRepositoryAdapter;
 
-    private final Post post = new Post();
-    private PostDTO postDTO = new PostDTO();
+    @Mock
+    private PostRepository postRepository;
 
+    private final Post post = new Post();
+    private PostDto postDTO = new PostDto();
 
     @BeforeEach
     void setUp() {
-        postDTO = PostDTO.builder()
+        postDTO = PostDto.builder()
                 .id(1L)
                 .content("some content")
                 .authorId(2L)
@@ -53,15 +56,15 @@ class PostServiceTest {
     @DisplayName("Test successful create draft")
     void testCreatingDraft() {
         Mockito.when(postMapper.toEntity(postDTO)).thenReturn(post);
-        Mockito.when(postRepositoryAdapter.save(post)).thenReturn(post);
+        Mockito.when(postRepository.save(post)).thenReturn(post);
         Mockito.when(postMapper.toDto(post)).thenReturn(postDTO);
 
-        PostDTO result = postService.createDraft(postDTO);
+        PostDto result = postService.createDraft(postDTO);
 
         Mockito.verify(postValidator, Mockito.times(1)).validatedOwnerPost(postDTO);
 
         Mockito.verify(postMapper, Mockito.times(1)).toEntity(postDTO);
-        Mockito.verify(postRepositoryAdapter, Mockito.times(1)).save(post);
+        Mockito.verify(postRepository, Mockito.times(1)).save(post);
         Mockito.verify(postMapper, Mockito.times(1)).toDto(post);
 
         Assertions.assertNotNull(result);
@@ -73,11 +76,11 @@ class PostServiceTest {
     void testCreateAlreadyPublishedPost() {
         post.setPublished(true);
 
-        Mockito.when(postValidator.findPostWithId(1L)).thenReturn(post);
+        Mockito.when(postRepositoryAdapter.getByIdWithLikes(1L)).thenReturn(post);
 
         Assertions.assertThrows(DataAlreadyExistException.class, () -> postService.publishPost(1L));
 
-        Mockito.verify(postValidator, Mockito.times(1)).findPostWithId(1L);
+        Mockito.verify(postRepositoryAdapter, Mockito.times(1)).getByIdWithLikes(1L);
     }
 
     @Test
@@ -85,11 +88,11 @@ class PostServiceTest {
     void testCreateScheduledForPublicationPost() {
         post.setScheduledAt(LocalDateTime.now().plusSeconds(1));
 
-        Mockito.when(postValidator.findPostWithId(2L)).thenReturn(post);
+        Mockito.when(postRepositoryAdapter.getByIdWithLikes(2L)).thenReturn(post);
 
         Assertions.assertThrows(DataAlreadyExistException.class, () -> postService.publishPost(2L));
 
-        Mockito.verify(postValidator, Mockito.times(1)).findPostWithId(2L);
+        Mockito.verify(postRepositoryAdapter, Mockito.times(1)).getByIdWithLikes(2L);
     }
 
     @Test
@@ -97,41 +100,41 @@ class PostServiceTest {
     void testCreateAlreadyDeletedPost() {
         post.setDeleted(true);
 
-        Mockito.when(postValidator.findPostWithId(3L)).thenReturn(post);
+        Mockito.when(postRepositoryAdapter.getByIdWithLikes(3L)).thenReturn(post);
 
         Assertions.assertThrows(DataAlreadyDeletedException.class, () -> postService.publishPost(3L));
 
-        Mockito.verify(postValidator, Mockito.times(1)).findPostWithId(3L);
+        Mockito.verify(postRepositoryAdapter, Mockito.times(1)).getByIdWithLikes(3L);
     }
 
     @Test
     @DisplayName("Test successful publication of a post")
     void testPublishingPost() {
-        Mockito.when(postValidator.findPostWithId(1L)).thenReturn(post);
+        Mockito.when(postRepositoryAdapter.getByIdWithLikes(1L)).thenReturn(post);
         Mockito.when(postMapper.toDto(post)).thenReturn(postDTO);
 
-        PostDTO result = postService.publishPost(1L);
+        PostDto result = postService.publishPost(1L);
 
         Assertions.assertEquals(postDTO, result);
 
-        Mockito.verify(postValidator, Mockito.times(1)).findPostWithId(1L);
+        Mockito.verify(postRepositoryAdapter, Mockito.times(1)).getByIdWithLikes(1L);
         Mockito.verify(postMapper, Mockito.times(1)).toDto(post);
     }
 
     @Test
     @DisplayName("Test successful update post")
     void testUpdatingPost() {
-        Mockito.when(postValidator.findPostWithId(1L)).thenReturn(post);
+        Mockito.when(postRepositoryAdapter.getByIdWithLikes(1L)).thenReturn(post);
         Mockito.when(postMapper.toDto(post)).thenReturn(postDTO);
 
-        PostDTO result = postService.updatePost(postDTO);
+        PostDto result = postService.updatePost(postDTO);
 
         Mockito.verify(postValidator, Mockito.times(1))
                 .validateAuthorForUpdate(post, postDTO);
 
         Assertions.assertEquals(postDTO, result);
 
-        Mockito.verify(postValidator, Mockito.times(1)).findPostWithId(1L);
+        Mockito.verify(postRepositoryAdapter, Mockito.times(1)).getByIdWithLikes(1L);
         Mockito.verify(postMapper, Mockito.times(1)).toDto(post);
     }
 
@@ -140,28 +143,28 @@ class PostServiceTest {
     void deletingAnAlreadyDeletedPost() {
         post.setDeleted(true);
 
-        Mockito.when(postValidator.findPostWithId(1L)).thenReturn(post);
+        Mockito.when(postRepositoryAdapter.getByIdWithLikes(1L)).thenReturn(post);
 
         Assertions.assertThrows(DataAlreadyDeletedException.class, () -> postService.deletePost(1L));
 
-        Mockito.verify(postValidator, Mockito.times(1)).findPostWithId(1L);
+        Mockito.verify(postRepositoryAdapter, Mockito.times(1)).getByIdWithLikes(1L);
     }
 
     @Test
     @DisplayName("Test successful delete post")
     void deletingPost() {
-        postDTO = PostDTO.builder()
+        postDTO = PostDto.builder()
                 .deleted(true)
                 .build();
 
-        Mockito.when(postValidator.findPostWithId(1L)).thenReturn(post);
+        Mockito.when(postRepositoryAdapter.getByIdWithLikes(1L)).thenReturn(post);
         Mockito.when(postMapper.toDto(post)).thenReturn(postDTO);
 
-        PostDTO result = postService.deletePost(1L);
+        PostDto result = postService.deletePost(1L);
 
         Assertions.assertEquals(postDTO, result);
 
-        Mockito.verify(postValidator, Mockito.times(1)).findPostWithId(1L);
+        Mockito.verify(postRepositoryAdapter, Mockito.times(1)).getByIdWithLikes(1L);
         Mockito.verify(postMapper, Mockito.times(1)).toDto(post);
     }
 
@@ -170,11 +173,11 @@ class PostServiceTest {
     void getAlreadyDeletedPost() {
         post.setDeleted(true);
 
-        Mockito.when(postValidator.findPostWithId(1L)).thenReturn(post);
+        Mockito.when(postRepositoryAdapter.getByIdWithLikes(1L)).thenReturn(post);
 
         Assertions.assertThrows(DataAlreadyDeletedException.class, () -> postService.getPostById(1L));
 
-        Mockito.verify(postValidator, Mockito.times(1)).findPostWithId(1L);
+        Mockito.verify(postRepositoryAdapter, Mockito.times(1)).getByIdWithLikes(1L);
     }
 
     @Test
@@ -182,100 +185,91 @@ class PostServiceTest {
     void testUnpublishedPost() {
         post.setScheduledAt(LocalDateTime.now().plusMinutes(10));
 
-        Mockito.when(postValidator.findPostWithId(1L)).thenReturn(post);
+        Mockito.when(postRepositoryAdapter.getByIdWithLikes(1L)).thenReturn(post);
 
         Assertions.assertThrows(UnpublishedPostException.class, () -> postService.getPostById(1L));
 
-        Mockito.verify(postValidator, Mockito.times(1)).findPostWithId(1L);
+        Mockito.verify(postRepositoryAdapter, Mockito.times(1)).getByIdWithLikes(1L);
     }
 
     @Test
     @DisplayName("Test successful getting post")
     void testGettingPostWithId() {
-        Mockito.when(postValidator.findPostWithId(1L)).thenReturn(post);
+        Mockito.when(postRepositoryAdapter.getByIdWithLikes(1L)).thenReturn(post);
         Mockito.when(postMapper.toDto(post)).thenReturn(postDTO);
 
-        PostDTO result = postService.getPostById(1L);
+        PostDto result = postService.getPostById(1L);
 
         Assertions.assertEquals(postDTO, result);
 
-        Mockito.verify(postValidator, Mockito.times(1)).findPostWithId(1L);
+        Mockito.verify(postRepositoryAdapter, Mockito.times(1)).getByIdWithLikes(1L);
         Mockito.verify(postMapper, Mockito.times(1)).toDto(post);
     }
 
     @Test
     @DisplayName("Test successful getting all drafts")
     void testGettingAllDrafts() {
+        LocalDateTime localDateTime1 = LocalDateTime.of(2024, 10, 10, 10, 30);
+        LocalDateTime localDateTime2 = LocalDateTime.of(2024, 10, 20, 10, 30);
+
         Post draft1 = new Post();
-        draft1.setCreatedAt(LocalDateTime.of(2024, 10, 10, 10, 30));
+        draft1.setCreatedAt(localDateTime1);
 
         Post draft2 = new Post();
-        draft2.setCreatedAt(LocalDateTime.of(2024, 10, 20, 10, 30));
+        draft2.setCreatedAt(localDateTime2);
 
-        Post publishedPost = new Post();
-        publishedPost.setPublished(true);
+        List<Post> allPosts = List.of(draft1, draft2);
 
-        Post deletedPost = new Post();
-        deletedPost.setDeleted(true);
-
-
-        List<Post> allPosts = List.of(draft1, draft2, publishedPost, deletedPost);
-
-        Mockito.when(postRepositoryAdapter.findByAuthorId(1L)).thenReturn(allPosts);
-        Mockito.when(postMapper.toDto(Mockito.any(Post.class))).thenAnswer(invocation -> {
-            Post currentPost = invocation.getArgument(0);
-            return PostDTO.builder()
+        Mockito.when(postRepository.findDraftsByAuthorIdWithLikesOrderByCreationDateDesc(1L)).thenReturn(allPosts);
+        Mockito.when(postMapper.toDtoList(allPosts)).thenAnswer(invocation -> {
+            List<Post> posts = invocation.getArgument(0);
+            return posts.stream().map(currentPost -> PostDto.builder()
                     .createdAt(currentPost.getCreatedAt())
-                    .build();
+                    .build()).toList();
         });
 
-        List<PostDTO> result = postService.getAllDraftsByAuthorId(1L);
+        List<PostDto> result = postService.getAllDraftsByAuthorId(1L);
 
         Assertions.assertEquals(2, result.size());
-        Assertions.assertEquals(LocalDateTime.of(2024, 10, 20, 10, 30),
-                result.get(0).createdAt());
-        Assertions.assertEquals(LocalDateTime.of(2024, 10, 10, 10, 30),
-                result.get(1).createdAt());
+        Assertions.assertEquals(localDateTime1, result.get(0).createdAt());
+        Assertions.assertEquals(localDateTime2, result.get(1).createdAt());
 
-        Mockito.verify(postValidator, Mockito.times(1)).userOwnerOfThePost(1L);
-        Mockito.verify(postMapper, Mockito.times(2)).toDto(Mockito.any(Post.class));
+        Mockito.verify(postRepository, Mockito.times(1))
+                .findDraftsByAuthorIdWithLikesOrderByCreationDateDesc(1L);
+        Mockito.verify(postMapper, Mockito.times(1)).toDtoList(allPosts);
     }
 
     @Test
     @DisplayName("Test successful getting all posts")
     void testGettingAllPosts() {
-        Post unpublishedPost = new Post();
-
-        Post deletedPost = new Post();
-        deletedPost.setDeleted(true);
+        LocalDateTime localDateTime1 = LocalDateTime.of(2024, 10, 10, 10, 30);
+        LocalDateTime localDateTime2 = LocalDateTime.of(2024, 10, 20, 10, 30);
 
         Post publishedPost1 = new Post();
         publishedPost1.setPublished(true);
-        publishedPost1.setCreatedAt(LocalDateTime.of(2024, 10, 10, 10, 30));
+        publishedPost1.setCreatedAt(localDateTime1);
 
         Post publishedPost2 = new Post();
         publishedPost2.setPublished(true);
-        publishedPost2.setCreatedAt(LocalDateTime.of(2024, 10, 20, 10, 30));
+        publishedPost2.setCreatedAt(localDateTime2);
 
-        List<Post> allPosts = List.of(unpublishedPost, deletedPost, publishedPost1, publishedPost2);
+        List<Post> allPosts = List.of(publishedPost1, publishedPost2);
 
-        Mockito.when(postRepositoryAdapter.findByAuthorId(1L)).thenReturn(allPosts);
-        Mockito.when(postMapper.toDto(Mockito.any(Post.class))).thenAnswer(invocation -> {
-            Post currentPost = invocation.getArgument(0);
-            return PostDTO.builder()
+        Mockito.when(postRepository.findByAuthorIdWithLikesOrderByPublishDateDesc(1L)).thenReturn(allPosts);
+        Mockito.when(postMapper.toDtoList(allPosts)).thenAnswer(invocation -> {
+            List<Post> posts = invocation.getArgument(0);
+            return posts.stream().map(currentPost -> PostDto.builder()
                     .createdAt(currentPost.getCreatedAt())
-                    .build();
+                    .build()).toList();
         });
 
-        List<PostDTO> result = postService.getAllPostsByAuthorId(1L);
+        List<PostDto> result = postService.getAllPostsByAuthorId(1L);
 
         Assertions.assertEquals(2, result.size());
-        Assertions.assertEquals(LocalDateTime.of(2024, 10, 20, 10, 30),
-                result.get(0).createdAt());
-        Assertions.assertEquals(LocalDateTime.of(2024, 10, 10, 10, 30),
-                result.get(1).createdAt());
+        Assertions.assertEquals(localDateTime1, result.get(0).createdAt());
+        Assertions.assertEquals(localDateTime2, result.get(1).createdAt());
 
-        Mockito.verify(postValidator, Mockito.times(1)).userOwnerOfThePost(1L);
-        Mockito.verify(postMapper, Mockito.times(2)).toDto(Mockito.any(Post.class));
+        Mockito.verify(postRepository, Mockito.times(1)).findByAuthorIdWithLikesOrderByPublishDateDesc(1L);
+        Mockito.verify(postMapper, Mockito.times(1)).toDtoList(allPosts);
     }
 }

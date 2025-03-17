@@ -2,13 +2,11 @@ package faang.school.postservice.validator;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.dto.post.PostDTO;
+import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.DataUpdateException;
 import faang.school.postservice.exception.RequiredOwnerException;
 import faang.school.postservice.exception.SinglePostAuthorException;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.repository.adapter.PostRepositoryAdapter;
-import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,8 +15,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
 class PostValidatorTest {
@@ -32,12 +28,8 @@ class PostValidatorTest {
     @Mock
     ProjectServiceClient projectServiceClient;
 
-    @Mock
-    PostRepositoryAdapter postRepositoryAdapter;
-
     private final Post post = new Post();
-    private PostDTO postDto = new PostDTO();
-
+    private PostDto postDto = new PostDto();
 
     @Test
     @DisplayName("Test must return exception when a post has not owner")
@@ -48,7 +40,7 @@ class PostValidatorTest {
     @Test
     @DisplayName("Test must return exception when post has owner project and user")
     void testShouldBeSingleOwnerPost() {
-        postDto = PostDTO.builder()
+        postDto = PostDto.builder()
                 .authorId(1L)
                 .projectId(2L)
                 .build();
@@ -59,7 +51,7 @@ class PostValidatorTest {
     @Test
     @DisplayName("Test must call the method getUser(userId)")
     void testValidatedOwnerUser() {
-        postDto = PostDTO.builder()
+        postDto = PostDto.builder()
                 .authorId(1L)
                 .build();
 
@@ -71,31 +63,13 @@ class PostValidatorTest {
     @Test
     @DisplayName("Test must call the method getProject(projectId)")
     void testValidatedOwnerProject() {
-        postDto = PostDTO.builder()
+        postDto = PostDto.builder()
                 .projectId(1L)
                 .build();
 
         postValidator.validatedOwnerPost(postDto);
 
         Mockito.verify(projectServiceClient, Mockito.times(1)).getProjectById(1L);
-    }
-
-    @Test
-    @DisplayName("Test successful find post by id")
-    void testFindPostById() {
-        Mockito.when(postRepositoryAdapter.findById(1L)).thenReturn(Optional.of(post));
-
-        postValidator.findPostWithId(1L);
-
-        Mockito.verify(postRepositoryAdapter, Mockito.times(1)).findById(1L);
-    }
-
-    @Test
-    @DisplayName("Test must return exception when post not found")
-    void testNotFoundPostById() {
-        Mockito.when(postRepositoryAdapter.findById(10L)).thenReturn(Optional.empty());
-
-        Assertions.assertThrows(EntityNotFoundException.class, () -> postValidator.findPostWithId(10L));
     }
 
     @Test

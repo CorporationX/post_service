@@ -9,19 +9,19 @@ import java.time.LocalDateTime;
 
 @Builder
 @JsonSerialize
-public record PostDTO(
+public record PostDto(
         @JsonProperty("id") Long id,
-        @NotBlank(message = "Post must be contain content") @JsonProperty("content") String content,
+        @NotBlank(message = "Post must contain content") @JsonProperty("content") String content,
         @JsonProperty("authorId") Long authorId,
         @JsonProperty("projectId") Long projectId,
+        @JsonProperty("numberOfLikes") long numberOfLikes,
         @JsonProperty("published") boolean published,
         @JsonProperty("deleted") boolean deleted,
         @JsonProperty("publishedAt") LocalDateTime publishedAt,
         @JsonProperty("createdAt") LocalDateTime createdAt,
         @JsonProperty("updatedAt") LocalDateTime updatedAt) {
 
-    public PostDTO() {
-        this(null, "", null, null, false,
-                false, null, null, null);
+    public PostDto() {
+        this(null, "", null, null, 0L, false, false, null, null, null);
     }
 }

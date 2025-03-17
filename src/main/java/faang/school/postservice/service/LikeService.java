@@ -1,6 +1,5 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeRequestDto;
 import faang.school.postservice.dto.like.LikeResponseDto;
 import faang.school.postservice.dto.user.UserDto;
@@ -13,6 +12,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.adapter.CommentRepositoryAdapter;
 import faang.school.postservice.repository.adapter.PostRepositoryAdapter;
+import faang.school.postservice.validator.PostValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,25 +25,21 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class LikeService {
-    private final UserServiceClient userServiceClient;
-
     private final LikeRepository likeRepository;
-
     private final PostRepositoryAdapter postRepositoryAdapter;
     private final CommentRepositoryAdapter commentRepositoryAdapter;
-
     private final LikeRequestMapper likeRequestMapper;
     private final LikeResponseMapper likeResponseMapper;
+    private final PostValidator postValidator;
 
     @Transactional
     public LikeResponseDto likePost(long postId, LikeRequestDto likeRequestDto) {
         long userId = likeRequestDto.userId();
 
-        UserDto user = userServiceClient.getUser(userId);
-        Post post = postRepositoryAdapter.getById(postId);
+        UserDto user = postValidator.getUserById(userId);
+        Post post = postRepositoryAdapter.getByIdWithLikes(postId);
 
         if (likeRepository.findByPostIdAndUserId(postId, userId).isPresent()) {
-            log.error("The user with ID {} has already liked the post with ID {}", userId, postId);
             throw new BadRequestException("The user with ID " + userId + " has already liked the post with ID " + postId);
         }
 
@@ -61,13 +57,12 @@ public class LikeService {
     public LikeResponseDto removeLikeFromPost(long postId, LikeRequestDto likeRequestDto) {
         long userId = likeRequestDto.userId();
 
-        userServiceClient.getUser(userId);
-        postRepositoryAdapter.getById(postId);
+        postValidator.getUserById(userId);
+        postRepositoryAdapter.getByIdWithLikes(postId);
 
         Optional<Like> optionalLike = likeRepository.findByPostIdAndUserId(postId, userId);
 
         if (optionalLike.isEmpty()) {
-            log.error("There is no like for the user with ID {} on the post with ID {}", userId, postId);
             throw new BadRequestException("There is no like for the user with ID " + userId + " on the post with ID "
                     + postId);
         }
@@ -83,11 +78,10 @@ public class LikeService {
     public LikeResponseDto likeComment(long commentId, LikeRequestDto likeRequestDto) {
         long userId = likeRequestDto.userId();
 
-        UserDto user = userServiceClient.getUser(userId);
+        UserDto user = postValidator.getUserById(userId);
         Comment comment = commentRepositoryAdapter.getById(commentId);
 
         if (likeRepository.findByCommentIdAndUserId(commentId, userId).isPresent()) {
-            log.error("The user with ID {} has already liked the comment with ID {}", userId, commentId);
             throw new BadRequestException("The user with ID " + userId + " has already liked the comment with ID "
                     + commentId);
         }
@@ -106,13 +100,12 @@ public class LikeService {
     public LikeResponseDto removeLikeFromComment(long commentId, LikeRequestDto likeRequestDto) {
         long userId = likeRequestDto.userId();
 
-        userServiceClient.getUser(userId);
+        postValidator.getUserById(userId);
         commentRepositoryAdapter.getById(commentId);
 
         Optional<Like> optionalLike = likeRepository.findByCommentIdAndUserId(commentId, userId);
 
         if (optionalLike.isEmpty()) {
-            log.error("There is no like for the user with ID {} on the comment with ID {}", userId, commentId);
             throw new BadRequestException("There is no like for the user with ID " + userId + " on the comment with ID "
                     + commentId);
         }

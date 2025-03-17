@@ -1,6 +1,6 @@
 package faang.school.postservice.controller;
 
-import faang.school.postservice.dto.post.PostDTO;
+import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.service.PostService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,11 +33,11 @@ class PostControllerTest {
     @Mock
     private PostService postService;
 
-    private PostDTO draftAuthorUser;
-    private PostDTO draftAuthorProject;
+    private PostDto draftAuthorUser;
+    private PostDto draftAuthorProject;
 
-    private PostDTO postAuthorUser;
-    private PostDTO postAuthorProject;
+    private PostDto postAuthorUser;
+    private PostDto postAuthorProject;
 
     @BeforeEach
     void setUp() {
@@ -46,26 +46,26 @@ class PostControllerTest {
 
         objectMapper = new ObjectMapper();
 
-        draftAuthorUser = PostDTO.builder()
+        draftAuthorUser = PostDto.builder()
                 .id(1L)
                 .content("Lose yourself")
                 .authorId(1L)
                 .build();
 
-        draftAuthorProject = PostDTO.builder()
+        draftAuthorProject = PostDto.builder()
                 .id(1L)
                 .content("Hakuna matata")
                 .projectId(1L)
                 .build();
 
-        postAuthorUser = PostDTO.builder()
+        postAuthorUser = PostDto.builder()
                 .id(1L)
                 .content("Lose yourself")
                 .authorId(1L)
                 .published(true)
                 .build();
 
-        postAuthorProject = PostDTO.builder()
+        postAuthorProject = PostDto.builder()
                 .id(1L)
                 .content("Hakuna matata")
                 .projectId(1L)
@@ -75,7 +75,7 @@ class PostControllerTest {
 
     @Test
     void createDraft() throws Exception {
-        Mockito.when(postService.createDraft(any(PostDTO.class))).thenReturn(draftAuthorUser);
+        Mockito.when(postService.createDraft(any(PostDto.class))).thenReturn(draftAuthorUser);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/posts/drafts")
                         .contentType(MediaType.APPLICATION_JSON)

@@ -11,9 +11,9 @@ import java.util.List;
 
 @FeignClient(name = "project-service", url = "${project-service.host}:${project-service.port}")
 public interface ProjectServiceClient {
-    @GetMapping("/api/project/{projectId}")
-    ProjectDto getProjectById(@PathVariable long projectId);
+    @GetMapping("/api/v1/projects/{id}")
+    ProjectDto getProjectById(@PathVariable long id);
 
-    @PostMapping("/api/projects")
+    @PostMapping("/api/v1/projects/by-ids")
     List<ProjectDto> getProjectsByIds(@RequestBody List<Long> ids);
 }
