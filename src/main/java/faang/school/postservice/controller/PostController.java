@@ -63,7 +63,7 @@ public class PostController {
         return response;
     }
 
-    @GetMapping("/users/{userId}/drafts")
+    @GetMapping("/user/{userId}/drafts")
     public List<PostResponseDto> getUserDraftPosts(@PathVariable Long userId) {
         log.info("Starting to fetch draft posts for user ID: {}", userId);
         List<PostResponseDto> response = postService.getUserDraftPosts(userId);
@@ -79,7 +79,7 @@ public class PostController {
         return response;
     }
 
-    @GetMapping("/users/{userId}/published")
+    @GetMapping("/user/{userId}/published")
     public List<PostResponseDto> getUserPublishedPosts(@PathVariable Long userId) {
         log.info("Starting to fetch published posts for user ID: {}", userId);
         List<PostResponseDto> response = postService.getUserPublishedPosts(userId);
