@@ -39,9 +39,9 @@ public class PostService {
         return postMapper.toPostResponseDto(post);
     }
 
-    public PostResponseDto publishPost(PostRequestDto postRequestDto) {
-        Optional<Post> postDraftOptional = postRepository.findById(postRequestDto.getId());
-        validatePostOptional(postDraftOptional, postRequestDto.getId());
+    public PostResponseDto publishPost(Long postId) {
+        Optional<Post> postDraftOptional = postRepository.findById(postId);
+        validatePostOptional(postDraftOptional, postId);
 
         Post post = postDraftOptional.get();
         PostValidation.validatePostInPublishing(post);
@@ -72,9 +72,9 @@ public class PostService {
         return postMapper.toPostResponseDto(post);
     }
 
-    public PostResponseDto deletePost(PostRequestDto postRequestDto) {
-        Optional<Post> postOptional = postRepository.findById(postRequestDto.getId());
-        validatePostOptional(postOptional, postRequestDto.getId());
+    public PostResponseDto deletePost(Long postId) {
+        Optional<Post> postOptional = postRepository.findById(postId);
+        validatePostOptional(postOptional, postId);
 
         Post post = postOptional.get();
         if (post.isDeleted()) {

@@ -48,6 +48,7 @@ public class PostServiceTest {
 
     private PostRequestDto postRequestDto;
     private Post post;
+    private Long id = 1L;
 
     @BeforeEach
     public void startUp() {
@@ -114,7 +115,7 @@ public class PostServiceTest {
     public void testPublishPost_noDraft() {
         when(postRepository.findById(postRequestDto.getId())).thenReturn(Optional.empty());
         PostNotFoundException exception = assertThrows(PostNotFoundException.class,
-                () -> postService.publishPost(postRequestDto)
+                () -> postService.publishPost(id)
         );
         assertEquals(String.format(NO_POST_FOUND, postRequestDto.getId()), exception.getMessage());
     }
@@ -124,7 +125,7 @@ public class PostServiceTest {
         when(postRepository.findById(postRequestDto.getId())).thenReturn(Optional.of(post));
         post.setPublished(true);
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> postService.publishPost(postRequestDto)
+                () -> postService.publishPost(id)
         );
         assertEquals(String.format(POST_ALREADY_PUBLISHED, post.getId()), exception.getMessage());
     }
@@ -134,17 +135,17 @@ public class PostServiceTest {
         when(postRepository.findById(postRequestDto.getId())).thenReturn(Optional.of(post));
         post.setDeleted(true);
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> postService.publishPost(postRequestDto)
+                () -> postService.publishPost(id)
         );
         assertEquals(String.format(POST_DELETED, post.getId()), exception.getMessage());
     }
 
     @Test
     public void testPublishPost_postPublished() {
+        post.setPublished(true);
         when(postRepository.findById(postRequestDto.getId())).thenReturn(Optional.of(post));
-        postService.publishPost(postRequestDto);
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> postService.publishPost(postRequestDto)
+                () -> postService.publishPost(id)
         );
         assertEquals(String.format(POST_ALREADY_PUBLISHED, post.getId()), exception.getMessage());
 
@@ -183,7 +184,7 @@ public class PostServiceTest {
     public void testDeletePost_noPost() {
         when(postRepository.findById(postRequestDto.getId())).thenReturn(Optional.empty());
         PostNotFoundException exception = assertThrows(PostNotFoundException.class,
-                () -> postService.deletePost(postRequestDto)
+                () -> postService.deletePost(id)
         );
         assertEquals(String.format(NO_POST_FOUND, postRequestDto.getId()), exception.getMessage());
     }
@@ -193,7 +194,7 @@ public class PostServiceTest {
         post.setDeleted(true);
         when(postRepository.findById(postRequestDto.getId())).thenReturn(Optional.of(post));
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> postService.deletePost(postRequestDto)
+                () -> postService.deletePost(id)
         );
         assertEquals(POST_HAS_ALREADY_BEEN_DELETED, exception.getMessage());
     }
@@ -201,7 +202,7 @@ public class PostServiceTest {
     @Test
     public void testDeletePost_deletePost() {
         when(postRepository.findById(postRequestDto.getId())).thenReturn(Optional.of(post));
-        postService.deletePost(postRequestDto);
+        postService.deletePost(id);
         post.setDeleted(true);
         verify(postRepository, times(1))
                 .save(post);

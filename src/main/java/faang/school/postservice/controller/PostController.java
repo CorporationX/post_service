@@ -5,68 +5,93 @@ import faang.school.postservice.dto.post.PostResponseDto;
 import faang.school.postservice.service.PostService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/posts")
+@RequestMapping("/post")
 public class PostController {
     private final PostService postService;
 
-    @PostMapping("/draft")
+    @PostMapping
     public PostResponseDto createDraftPost(@RequestBody PostRequestDto postRequestDto) {
-        log.info("Creating draft post: {}", postRequestDto);
-        return postService.createDraftPost(postRequestDto);
+        log.info("Starting to create draft post: {}", postRequestDto);
+        PostResponseDto response = postService.createDraftPost(postRequestDto);
+        log.info("Finished creating draft post: {}", postRequestDto);
+        return response;
     }
 
-    @PostMapping("/publish")
-    public PostResponseDto publishPost(@RequestBody PostRequestDto postRequestDto) {
-        log.info("Publishing post: {}", postRequestDto);
-        return postService.publishPost(postRequestDto);
+    @PostMapping("/{postId}/publish")
+    public PostResponseDto publishPost(@PathVariable Long postId) {
+        log.info("Starting to publish post with ID: {}", postId);
+        PostResponseDto response = postService.publishPost(postId);
+        log.info("Finished publishing post with ID: {}", postId);
+        return response;
     }
 
     @PutMapping("/update")
     public PostResponseDto updatePost(@RequestBody PostRequestDto postRequestDto) {
-        log.info("Updating post: {}", postRequestDto);
-        return postService.updatePost(postRequestDto);
+        log.info("Starting to update post: {}", postRequestDto);
+        PostResponseDto response = postService.updatePost(postRequestDto);
+        log.info("Finished updating post: {}", postRequestDto);
+        return response;
     }
 
-    @DeleteMapping("/delete")
-    public PostResponseDto deletePost(@RequestBody PostRequestDto postRequestDto) {
-        log.info("Deleting post: {}", postRequestDto);
-        return postService.deletePost(postRequestDto);
+    @DeleteMapping("/{postId}")
+    public PostResponseDto deletePost(@PathVariable Long postId) {
+        log.info("Starting to delete post with ID: {}", postId);
+        PostResponseDto response = postService.deletePost(postId);
+        log.info("Finished deleting post with ID: {}", postId);
+        return response;
     }
 
-    @GetMapping("/get/{postId}")
+    @GetMapping("/{postId}")
     public PostResponseDto getPostById(@PathVariable Long postId) {
-        log.info("Fetching post by ID: {}", postId);
-        return postService.getPostById(postId);
+        log.info("Starting to fetch post by ID: {}", postId);
+        PostResponseDto response = postService.getPostById(postId);
+        log.info("Finished fetching post by ID: {}", postId);
+        return response;
     }
 
-    @GetMapping("/drafts/user/{userId}")
+    @GetMapping("/users/{userId}/drafts")
     public List<PostResponseDto> getUserDraftPosts(@PathVariable Long userId) {
-        log.info("Fetching draft posts for user ID: {}", userId);
-        return postService.getUserDraftPosts(userId);
+        log.info("Starting to fetch draft posts for user ID: {}", userId);
+        List<PostResponseDto> response = postService.getUserDraftPosts(userId);
+        log.info("Finished fetching draft posts for user ID: {}", userId);
+        return response;
     }
 
-    @GetMapping("/drafts/project/{projectId}")
+    @GetMapping("/project/{projectId}/drafts")
     public List<PostResponseDto> getProjectDraftPosts(@PathVariable Long projectId) {
-        log.info("Fetching draft posts for project ID: {}", projectId);
-        return postService.getProjectDraftPosts(projectId);
+        log.info("Starting to fetch draft posts for project ID: {}", projectId);
+        List<PostResponseDto> response = postService.getProjectDraftPosts(projectId);
+        log.info("Finished fetching draft posts for project ID: {}", projectId);
+        return response;
     }
 
-    @GetMapping("/published/user/{userId}")
+    @GetMapping("/users/{userId}/published")
     public List<PostResponseDto> getUserPublishedPosts(@PathVariable Long userId) {
-        log.info("Fetching published posts for user ID: {}", userId);
-        return postService.getUserPublishedPosts(userId);
+        log.info("Starting to fetch published posts for user ID: {}", userId);
+        List<PostResponseDto> response = postService.getUserPublishedPosts(userId);
+        log.info("Finished fetching published posts for user ID: {}", userId);
+        return response;
     }
 
-    @GetMapping("/published/project/{projectId}")
+    @GetMapping("/project/{projectId}/published")
     public List<PostResponseDto> getProjectPublishedPosts(@PathVariable Long projectId) {
-        log.info("Fetching published posts for project ID: {}", projectId);
-        return postService.getProjectPublishedPosts(projectId);
+        log.info("Starting to fetch published posts for project ID: {}", projectId);
+        List<PostResponseDto> response = postService.getProjectPublishedPosts(projectId);
+        log.info("Finished fetching published posts for project ID: {}", projectId);
+        return response;
     }
 }
