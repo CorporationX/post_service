@@ -1,4 +1,7 @@
 spring:
+  mvc:
+    servlet:
+      path: /api/v1
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://localhost:5432/postgres
@@ -41,3 +44,6 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+post-service:
+  tag:
+    count-of-most-popular-tags: 2
