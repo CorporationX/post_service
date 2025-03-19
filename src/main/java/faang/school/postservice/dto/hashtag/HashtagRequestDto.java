@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class HashtagRequestDto {
-    private String hashtag;
+    private String tag;
     private int page;
     private int size;
 }

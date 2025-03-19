@@ -1,3 +1,7 @@
+app:
+  hashtags:
+    max-cached-posts-per-hashtag: 10
+
 spring:
   datasource:
     driver-class-name: org.postgresql.Driver
@@ -9,7 +13,7 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: none
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         format_sql: true

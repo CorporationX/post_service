@@ -1,8 +1,11 @@
 package faang.school.postservice.repository;
 
 import faang.school.postservice.model.Post;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -21,4 +24,6 @@ public interface PostRepository extends CrudRepository<Post, Long> {
     @Query("SELECT p FROM Post p WHERE p.published = false AND p.deleted = false AND p.scheduledAt <= CURRENT_TIMESTAMP")
     List<Post> findReadyToPublish();
 
+    @Query("SELECT p FROM Post p JOIN p.hashtags h WHERE h.tag = :tag AND p.deleted = false ORDER BY p.publishedAt DESC")
+    Page<Post> findPostsByHashtag(Pageable pageable, String tag);
 }

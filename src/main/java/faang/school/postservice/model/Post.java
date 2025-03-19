@@ -7,6 +7,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
@@ -22,6 +24,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -38,7 +41,7 @@ public class Post {
     @Column(name = "content", nullable = false, length = 4096)
     private String content;
 
-    @Column(name = "author_id", nullable = false)
+    @Column(name = "author_id")
     private Long authorId;
 
     @Column(name = "project_id")
@@ -82,4 +85,12 @@ public class Post {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @ManyToMany
+    @JoinTable(
+            name = "post_to_hashtags",
+            joinColumns = @JoinColumn(name = "post_id"),
+            inverseJoinColumns = @JoinColumn(name = "hashtag_id")
+    )
+    private Set<Hashtag> hashtags;
 }
