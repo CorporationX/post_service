@@ -14,6 +14,7 @@ public class PostValidation {
     public static final String POST_ALREADY_PUBLISHED = "Post with ID %d has already been published";
     public static final String POST_DELETED = "Post with ID %d has been deleted";
     public static final String POST_ID_CANT_BE_NULL = "Post ID can't be null";
+    public static final String CONTENT_CANT_BE_NULL = "Content of post can't be null";
 
     public static void validatePostAuthors(PostRequestDto postRequestDto) {
         if ((postRequestDto.getAuthorId() != null && postRequestDto.getProjectId() != null)
@@ -44,6 +45,9 @@ public class PostValidation {
         } else if (postRequestDto.isPublished()) {
             log.error(POST_DRAFT_CANT_BE_PUBLISHED);
             throw new IllegalArgumentException(POST_DRAFT_CANT_BE_PUBLISHED);
+        } else if (postRequestDto.getContent() == null) {
+            log.error(CONTENT_CANT_BE_NULL);
+            throw new IllegalArgumentException(CONTENT_CANT_BE_NULL);
         }
     }
 

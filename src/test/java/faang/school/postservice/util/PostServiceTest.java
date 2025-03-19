@@ -22,6 +22,7 @@ import static faang.school.postservice.service.PostService.CANT_UPDATE_DELETED_P
 import static faang.school.postservice.service.PostService.NO_POST_FOUND;
 import static faang.school.postservice.service.PostService.POST_HAS_ALREADY_BEEN_DELETED;
 import static faang.school.postservice.service.PostService.POST_WITH_HAS_ALREADY_BEEN_CREATED;
+import static faang.school.postservice.utils.validationUtils.PostValidation.CONTENT_CANT_BE_NULL;
 import static faang.school.postservice.utils.validationUtils.PostValidation.POST_ALREADY_PUBLISHED;
 import static faang.school.postservice.utils.validationUtils.PostValidation.POST_AUTHORS_ERROR;
 import static faang.school.postservice.utils.validationUtils.PostValidation.POST_DELETED;
@@ -48,7 +49,7 @@ public class PostServiceTest {
 
     private PostRequestDto postRequestDto;
     private Post post;
-    private Long id = 1L;
+    private final Long id = 1L;
 
     @BeforeEach
     public void startUp() {
@@ -73,6 +74,15 @@ public class PostServiceTest {
                 () -> postService.createDraftPost(postRequestDto)
         );
         assertEquals(POST_AUTHORS_ERROR, exception.getMessage());
+    }
+
+    @Test
+    public void testCreateDraftPost_nullContent() {
+        postRequestDto.setContent(null);
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> postService.createDraftPost(postRequestDto)
+        );
+        assertEquals(CONTENT_CANT_BE_NULL, exception.getMessage());
     }
 
     @Test
