@@ -7,7 +7,7 @@ import faang.school.postservice.model.Hashtag;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.HashtagRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.utils.validation.HashtagValidation;
+import faang.school.postservice.utils.validationUtils.HashtagValidation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,10 +16,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -30,11 +27,11 @@ import java.util.regex.Pattern;
 public class HashtagService {
     @Value("${app.hashtags.max-cached-posts-per-hashtag}")
     private int maxCachedPosts;
+
     private final HashtagRepository hashtagRepository;
     private final PostRepository postRepository;
     private final HashtagRedisService hashtagRedisService;
     private final PostMapper postMapper;
-    private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
 
     public Page<PostResponseDto> getPostsByHashtag(HashtagRequestDto hashtagRequestDto) {
         HashtagValidation.validateHashtagRequestDto(hashtagRequestDto);
@@ -54,8 +51,12 @@ public class HashtagService {
         while (matcher.find()) {
             String tag = matcher.group().substring(1);
             Hashtag foundHashtag = hashtagRepository.findByTag(tag);
-            hashtags.add(Objects.requireNonNullElseGet(foundHashtag,
-                    () -> hashtagRepository.save(Hashtag.builder().tag(tag).build())));
+            if (foundHashtag == null) {
+                foundHashtag = hashtagRepository.save(Hashtag.builder().tag(tag).count(0L).build());
+            } else {
+                foundHashtag.setCount(foundHashtag.getCount() + 1);
+            }
+            hashtags.add(foundHashtag);
             hashtagRedisService.saveHashtag(tag, post);
             log.info(tag);
         }
@@ -69,17 +70,5 @@ public class HashtagService {
         Pageable pageable = PageRequest.of(page, size);
         Page<Post> postPage = postRepository.findPostsByHashtag(pageable, hashtagRequestDto.getTag());
         return postPage.map(postMapper::toPostResponseDto);
-    }
-
-    public void test() {
-        Post post = Post.builder()
-                .content("YO #java # #codeWithMe234 #programming #redis #.")
-                .projectId(1L)
-                .published(true)
-                .publishedAt(LocalDateTime.now())
-                .build();
-
-        postRepository.save(post);
-        extractHashtagsFromContent(post);
     }
 }

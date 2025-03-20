@@ -1,4 +1,4 @@
-package faang.school.postservice.util.hashtags;
+package faang.school.postservice.hashtags;
 
 import faang.school.postservice.dto.hashtag.PostResponseDto;
 import faang.school.postservice.mapper.PostMapper;

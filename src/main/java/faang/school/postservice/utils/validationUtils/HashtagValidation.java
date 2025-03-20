@@ -1,4 +1,4 @@
-package faang.school.postservice.utils.validation;
+package faang.school.postservice.utils.validationUtils;
 
 import faang.school.postservice.dto.hashtag.HashtagRequestDto;
 import lombok.extern.slf4j.Slf4j;

@@ -59,7 +59,6 @@ public class HashtagRedisService {
                 .atZone(java.time.ZoneId.systemDefault())
                 .toEpochSecond());
 
-        log.info("{} saved to redis", post);
         redisTemplate.expire(hashtagKey, ONE_DAY_TTL);
         redisTemplate.expire(postIdKey, ONE_DAY_TTL);
         try {
@@ -91,7 +90,6 @@ public class HashtagRedisService {
             return null;
         }
 
-        log.info("Getting {} from redis", hashtagRequestDto);
         List<Object> pipelineResults = redisTemplate.executePipelined((RedisCallback<?>) connection -> {
             List<Object> results = new ArrayList<>();
             for (String postIdStr : lastPostIds) {

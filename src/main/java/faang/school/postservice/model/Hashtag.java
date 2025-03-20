@@ -25,4 +25,7 @@ public class Hashtag {
 
     @Column(name = "tag", nullable = false, unique = true, length = 64)
     private String tag;
+
+    @Column(name = "count")
+    private long count;
 }

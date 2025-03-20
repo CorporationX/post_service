@@ -1,4 +1,4 @@
-package faang.school.postservice.util.hashtags;
+package faang.school.postservice.hashtags;
 
 import faang.school.postservice.model.Post;
 import faang.school.postservice.service.hashtags.HashtagRedisService;
