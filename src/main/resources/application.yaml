@@ -1,6 +1,7 @@
 app:
   hashtags:
-    max-cached-posts-per-hashtag: 10
+    max-cached-posts-per-hashtag: 100
+  thread-pool-size: 8
 
 spring:
   datasource:

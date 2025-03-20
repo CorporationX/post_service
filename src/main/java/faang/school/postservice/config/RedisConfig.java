@@ -1,5 +1,7 @@
-package faang.school.postservice.config.hashtags;
+package faang.school.postservice.config;
 
+import faang.school.postservice.service.hashtags.HashtagRedisWarmUpService;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -30,5 +32,10 @@ public class RedisConfig {
     @Bean
     public HashOperations<String, String, String> hashOperations(RedisTemplate<String, String> redisTemplate) {
         return redisTemplate.opsForHash();
+    }
+
+    @Bean
+    CommandLineRunner warmUp(HashtagRedisWarmUpService redisWarmUpService) {
+        return args -> redisWarmUpService.warmUpCache();
     }
 }

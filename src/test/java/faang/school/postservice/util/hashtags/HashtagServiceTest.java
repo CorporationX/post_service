@@ -147,11 +147,22 @@ public class HashtagServiceTest {
         hashtagService.extractHashtagsFromContent(post);
 
         verify(hashtagRedisService, times(1))
-                .saveHashtag("hashtag1", post);
+                .saveHashtag("hashtag_1", post);
         verify(hashtagRedisService, times(1))
                 .saveHashtag("h2", post);
         verify(hashtagRedisService, times(1))
-                .saveHashtag("who", post);
+                .saveHashtag("who?", post);
+        verify(postRepository, times(1)).save(post);
+    }
+
+    @Test
+    public void testExtractHashtagsFromContent_noHashtags() {
+        post.setContent("Just text without hashtags");
+
+        hashtagService.extractHashtagsFromContent(post);
+
+        verify(hashtagRedisService, never())
+                .saveHashtag(anyString(), any());
         verify(postRepository, times(1)).save(post);
     }
 }

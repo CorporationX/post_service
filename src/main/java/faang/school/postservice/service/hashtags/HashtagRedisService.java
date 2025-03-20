@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,12 +27,6 @@ import java.util.concurrent.locks.ReentrantLock;
 @Service
 @RequiredArgsConstructor
 public class HashtagRedisService {
-    private final RedisTemplate<String, String> redisTemplate;
-    private final ZSetOperations<String, String> zSetOps;
-    private final HashOperations<String, String, String> hashOps;
-    private final ReentrantLock lock = new ReentrantLock();
-    private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
-
     private static final String HASHTAG_KEY = "post#";
     private static final String POST_ID_KEY = "postId:";
     private static final String CONTENT_HASH_KEY = "content:";
@@ -41,6 +34,12 @@ public class HashtagRedisService {
     private static final String PROJECT_HASH_KEY = "projectId:";
     private static final String PUBLISHED_DATE_HASH_KEY = "publishedAt:";
     private static final Duration ONE_DAY_TTL = Duration.ofDays(1);
+    private static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+
+    private final RedisTemplate<String, String> redisTemplate;
+    private final ZSetOperations<String, String> zSetOps;
+    private final HashOperations<String, String, String> hashOps;
+    private final ReentrantLock lock = new ReentrantLock();
 
     @Value("${app.hashtags.max-cached-posts-per-hashtag}")
     private int maxCachedPosts;
@@ -55,8 +54,7 @@ public class HashtagRedisService {
         } else {
             hashOps.put(postIdKey, AUTHOR_HASH_KEY, String.valueOf(post.getAuthorId()));
         }
-        log.info(String.valueOf(post.getPublishedAt()));
-        hashOps.put(postIdKey, PUBLISHED_DATE_HASH_KEY, String.valueOf(post.getPublishedAt()));
+        hashOps.put(postIdKey, PUBLISHED_DATE_HASH_KEY, post.getPublishedAt().format(dateFormatter));
         zSetOps.add(hashtagKey, postIdStr, post.getPublishedAt()
                 .atZone(java.time.ZoneId.systemDefault())
                 .toEpochSecond());
@@ -90,9 +88,10 @@ public class HashtagRedisService {
         }
         Set<String> lastPostIds = zSetOps.reverseRange(hashtagKey, page, page + size - 1);
         if (lastPostIds == null) {
-            return  null;
+            return null;
         }
 
+        log.info("Getting {} from redis", hashtagRequestDto);
         List<Object> pipelineResults = redisTemplate.executePipelined((RedisCallback<?>) connection -> {
             List<Object> results = new ArrayList<>();
             for (String postIdStr : lastPostIds) {
@@ -131,10 +130,6 @@ public class HashtagRedisService {
             long id = Long.parseLong(postIdStr);
             Long projectId = (projectIdStr != null) ? Long.valueOf(projectIdStr) : null;
             Long authorId = (authorIdStr != null) ? Long.valueOf(authorIdStr) : null;
-            LocalDateTime publishedAt = (publishedAtStr != null) ? LocalDateTime.parse(publishedAtStr) : null;
-            if (publishedAt != null) {
-                publishedAtStr = publishedAt.format(dateFormatter);
-            }
             result.add(new PostResponseDto(id, content, authorId, projectId, publishedAtStr));
         }
         return new PageImpl<>(result, PageRequest.of(page, size), result.size());
