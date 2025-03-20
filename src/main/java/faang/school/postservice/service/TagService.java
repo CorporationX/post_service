@@ -54,7 +54,7 @@ public class TagService {
                 log.debug("Existing tag: {} will be added to post: {}", tagDto.name(), postId);
             } else {
                 tag = tagMapper.toEntity(tagDto, tagAddDto.userId());
-                tag.getPosts().add(post);
+                tag.setPosts(new HashSet<>(Set.of(post)));
                 log.debug("Tag with name: {} will be created and add to post: {}", tagDto.name(), postId);
             }
 

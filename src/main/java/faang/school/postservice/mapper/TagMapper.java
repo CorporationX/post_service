@@ -11,6 +11,9 @@ public interface TagMapper {
     TagSearchDto mapToTagSearchDto(Tag tag);
 
     @Mapping(target = "creatorId", source = "userId")
+    @Mapping(target = "posts", ignore = true)
+    @Mapping(target = "rating", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
     Tag toEntity(TagDto tagDto, Long userId);
 
     TagDto mapToTagDto(Tag tag);
