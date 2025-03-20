@@ -61,7 +61,7 @@ public class HashtagRedisService {
                 .atZone(java.time.ZoneId.systemDefault())
                 .toEpochSecond());
 
-        log.info("saved to redis");
+        log.info("{} saved to redis", post);
         redisTemplate.expire(hashtagKey, ONE_DAY_TTL);
         redisTemplate.expire(postIdKey, ONE_DAY_TTL);
         try {

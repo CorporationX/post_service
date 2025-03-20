@@ -7,6 +7,7 @@ import faang.school.postservice.model.Hashtag;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.HashtagRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.utils.validation.HashtagValidation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,13 +37,14 @@ public class HashtagService {
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
 
     public Page<PostResponseDto> getPostsByHashtag(HashtagRequestDto hashtagRequestDto) {
+        HashtagValidation.validateHashtagRequestDto(hashtagRequestDto);
         int page = hashtagRequestDto.getPage();
         int size = hashtagRequestDto.getSize();
-        if (page + size - 1 <= maxCachedPosts) {
-            Page<PostResponseDto> postPageFromRedis = hashtagRedisService.getPostsByHashtag(hashtagRequestDto);
-            return postPageFromRedis != null ? postPageFromRedis : getPostsFromDB(hashtagRequestDto);
+        Page<PostResponseDto> postPageFromRedis = null;
+        if (page + size <= maxCachedPosts) {
+            postPageFromRedis = hashtagRedisService.getPostsByHashtag(hashtagRequestDto);
         }
-        return getPostsFromDB(hashtagRequestDto);
+        return postPageFromRedis != null ? postPageFromRedis : getPostsFromDB(hashtagRequestDto);
     }
 
     public void extractHashtagsFromContent(Post post) {
@@ -55,6 +57,7 @@ public class HashtagService {
             hashtags.add(Objects.requireNonNullElseGet(foundHashtag,
                     () -> hashtagRepository.save(Hashtag.builder().tag(tag).build())));
             hashtagRedisService.saveHashtag(tag, post);
+            log.info(tag);
         }
         post.setHashtags(hashtags);
         postRepository.save(post);
