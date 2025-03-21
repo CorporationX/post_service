@@ -30,6 +30,11 @@ public class LikeServiceImpl implements LikeService {
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
 
+    /**
+     * @param postId
+     * @param likeDto
+     * @return
+     */
     @Override
     public LikeDto likePost(long postId, LikeDto likeDto) {
         Post post = checkLikeDToWithPostId(postId, likeDto);
@@ -39,6 +44,10 @@ public class LikeServiceImpl implements LikeService {
         return likeMapper.toDto(likeRepository.save(like));
     }
 
+    /**
+     * @param postId
+     * @param likeDto
+     */
     private Post checkLikeDToWithPostId(long postId, LikeDto likeDto) {
         if (postId != likeDto.getPostId()) {
             log.error("Post ID mismatch: path={}, dto={}", postId, likeDto.getPostId());
@@ -57,6 +66,11 @@ public class LikeServiceImpl implements LikeService {
         }
     }
 
+    /**
+     * @param commentId
+     * @param likeDto
+     * @return
+     */
     @Override
     public LikeDto likeComment(long commentId, LikeDto likeDto) {
         Comment comment = checkLikeDtoWithCommentId(commentId, likeDto);
@@ -76,6 +90,11 @@ public class LikeServiceImpl implements LikeService {
                 .orElseThrow(() -> new CommentNotFoundException("Comment not found"));
     }
 
+    /**
+     * param commentId
+     *
+     * @param likeDto
+     */
     @Override
     public void unlikeComment(long commentId, LikeDto likeDto) {
         checkLikeDtoWithCommentId(commentId, likeDto);
@@ -92,5 +111,4 @@ public class LikeServiceImpl implements LikeService {
             throw new AuthorNotFoundException("Author with id " + authorId + " not found");
         }
     }
-
 }
