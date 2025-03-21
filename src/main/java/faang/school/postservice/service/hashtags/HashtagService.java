@@ -58,7 +58,6 @@ public class HashtagService {
             }
             hashtags.add(foundHashtag);
             hashtagRedisService.saveHashtag(tag, post);
-            log.info(tag);
         }
         post.setHashtags(hashtags);
         postRepository.save(post);
