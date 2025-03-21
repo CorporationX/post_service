@@ -6,14 +6,12 @@ import faang.school.postservice.model.Post;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
-import org.springframework.boot.test.context.SpringBootTest;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@SpringBootTest
 public class PostMapperTest {
     private final PostMapper postMapper = Mappers.getMapper(PostMapper.class);
     private final LocalDateTime publishedAt = LocalDateTime.now();
