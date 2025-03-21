@@ -61,9 +61,7 @@ public class HashtagRedisWarmUpService {
         }
         Pageable pageable = PageRequest.of(0, Math.min(size, topHashtagsCache));
         List<Hashtag> hashtagsToWarmUp = hashtagRepository.getTopHashtags(pageable);
-        log.info("2");
         for (Hashtag hashtag : hashtagsToWarmUp) {
-            log.info("3");
             CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
                 Pageable postPageable = PageRequest.of(0, maxCachedPosts);
                 List<Post> posts = postRepository.findPostsByHashtag(postPageable, hashtag.getTag()).getContent();
