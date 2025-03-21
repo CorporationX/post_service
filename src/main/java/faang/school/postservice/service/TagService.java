@@ -50,7 +50,7 @@ public class TagService {
 
             if (tagId != null) {
                 tag = getTagById(tagId);
-                tag.setPosts(Set.of(post));
+                tag.getPosts().add(post);
                 log.debug("Existing tag: {} will be added to post: {}", tagDto.name(), postId);
             } else {
                 tag = tagMapper.toEntity(tagDto, tagAddDto.userId());
@@ -87,7 +87,11 @@ public class TagService {
     }
 
     public void removeTagsFromPost(TagRemoveDto tagRemoveDto) {
-        postService.deleteTagsFromPost(tagRemoveDto.postId(), tagRemoveDto.tagsId());
+        Long postId = tagRemoveDto.postId();
+        List<Long> tagsId = tagRemoveDto.tagsId();
+
+        log.debug("Remove tags: {} from the post: {}", tagsId, postId);
+        postService.deleteTagsFromPost(postId, tagsId);
     }
 
     private Post getPostById(Long id) {

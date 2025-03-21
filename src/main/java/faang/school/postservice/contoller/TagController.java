@@ -41,7 +41,7 @@ public class TagController {
     }
 
     @PostMapping(value = "/remove")
-    public void removeTagsFromPost(@NotNull @Valid TagRemoveDto tagRemoveDto) {
+    public void removeTagsFromPost(@NotNull @Valid @RequestBody TagRemoveDto tagRemoveDto) {
         tagService.removeTagsFromPost(tagRemoveDto);
     }
 }
