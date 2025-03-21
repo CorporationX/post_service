@@ -18,7 +18,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
@@ -52,6 +51,7 @@ public class TagServiceTest {
 
     private Post post;
     private Tag tag;
+
     @BeforeEach
     public void setUp() {
         post = Post.builder().id(1L).content("Some content").build();
@@ -156,7 +156,7 @@ public class TagServiceTest {
     public void removeTagsFromPostTest() {
         tagService.removeTagsFromPost(new TagRemoveDto(List.of(1L, 2L), 1L, 1L));
 
-        Mockito.verify(postService, times(1)).deleteTagsFromPost(1L, List.of(1L, 2L));
+        verify(postService, times(1)).deleteTagsFromPost(1L, List.of(1L, 2L));
     }
 
 
