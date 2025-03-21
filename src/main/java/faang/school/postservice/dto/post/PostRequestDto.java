@@ -6,7 +6,7 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class PostRequestDto {
-    private long id;
+    private Long id;
     private String content;
     private Long authorId;
     private Long projectId;

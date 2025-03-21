@@ -19,7 +19,6 @@ import java.util.Optional;
 @Slf4j
 @RequiredArgsConstructor
 public class PostService {
-    public static final String POST_WITH_HAS_ALREADY_BEEN_CREATED = "Post with ID %d has already been created";
     public static final String CANT_UPDATE_DELETED_POST = "Can't update deleted post";
     public static final String NO_POST_FOUND = "No post found with ID %d";
     public static final String POST_HAS_ALREADY_BEEN_DELETED = "Post has already been deleted";
@@ -30,11 +29,6 @@ public class PostService {
     public PostResponseDto createDraftPost(PostRequestDto postRequestDto) {
         PostValidation.validatePostAuthors(postRequestDto);
         PostValidation.validatePostDraftCreation(postRequestDto);
-        if (postRepository.findById(postRequestDto.getId()).isPresent()) {
-            String message = String.format(POST_WITH_HAS_ALREADY_BEEN_CREATED, postRequestDto.getId());
-            log.error(message);
-            throw new IllegalArgumentException(message);
-        }
         Post post = postRepository.save(postMapper.ToPost(postRequestDto));
         return postMapper.toPostResponseDto(post);
     }
@@ -42,9 +36,9 @@ public class PostService {
     public PostResponseDto publishPost(Long postId) {
         Optional<Post> postDraftOptional = postRepository.findById(postId);
         validatePostOptional(postDraftOptional, postId);
-
         Post post = postDraftOptional.get();
         PostValidation.validatePostInPublishing(post);
+
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
         postRepository.save(post);
@@ -52,16 +46,17 @@ public class PostService {
     }
 
     public PostResponseDto updatePost(PostRequestDto postRequestDto) {
+        PostValidation.validatePostUpdate(postRequestDto);
         Optional<Post> postOptional = postRepository.findById(postRequestDto.getId());
         validatePostOptional(postOptional, postRequestDto.getId());
         Post post = postOptional.get();
+
         if (post.isDeleted()) {
             log.error(CANT_UPDATE_DELETED_POST);
             throw new IllegalArgumentException(CANT_UPDATE_DELETED_POST);
         }
-
         int updateCounter = 0;
-        if (postRequestDto.getContent() != null && !postRequestDto.getContent().equals(post.getContent())) {
+        if (!postRequestDto.getContent().equals(post.getContent())) {
             updateCounter++;
             post.setContent(postRequestDto.getContent());
         }

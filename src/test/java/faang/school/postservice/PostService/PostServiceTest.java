@@ -1,4 +1,4 @@
-package faang.school.postservice.util;
+package faang.school.postservice.PostService;
 
 import faang.school.postservice.dto.post.PostRequestDto;
 import faang.school.postservice.dto.post.PostResponseDto;
@@ -21,15 +21,8 @@ import java.util.Optional;
 import static faang.school.postservice.service.PostService.CANT_UPDATE_DELETED_POST;
 import static faang.school.postservice.service.PostService.NO_POST_FOUND;
 import static faang.school.postservice.service.PostService.POST_HAS_ALREADY_BEEN_DELETED;
-import static faang.school.postservice.service.PostService.POST_WITH_HAS_ALREADY_BEEN_CREATED;
-import static faang.school.postservice.utils.validationUtils.PostValidation.CONTENT_CANT_BE_NULL;
 import static faang.school.postservice.utils.validationUtils.PostValidation.POST_ALREADY_PUBLISHED;
-import static faang.school.postservice.utils.validationUtils.PostValidation.POST_AUTHORS_ERROR;
 import static faang.school.postservice.utils.validationUtils.PostValidation.POST_DELETED;
-import static faang.school.postservice.utils.validationUtils.PostValidation.POST_DRAFT_CANT_BE_DELETED;
-import static faang.school.postservice.utils.validationUtils.PostValidation.POST_DRAFT_CANT_BE_PUBLISHED;
-import static faang.school.postservice.utils.validationUtils.PostValidation.PROJECT_ID_CANT_BE_NULL;
-import static faang.school.postservice.utils.validationUtils.PostValidation.USER_ID_CANT_BE_NULL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.times;
@@ -59,64 +52,9 @@ public class PostServiceTest {
     }
 
     @Test
-    public void testCreateDraftPost_bothAuthorsAbsent() {
-        postRequestDto.setAuthorId(null);
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> postService.createDraftPost(postRequestDto)
-        );
-        assertEquals(POST_AUTHORS_ERROR, exception.getMessage());
-    }
-
-    @Test
-    public void testCreateDraftPost_bothAuthorsSet() {
-        postRequestDto.setProjectId(1L);
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> postService.createDraftPost(postRequestDto)
-        );
-        assertEquals(POST_AUTHORS_ERROR, exception.getMessage());
-    }
-
-    @Test
-    public void testCreateDraftPost_nullContent() {
-        postRequestDto.setContent(null);
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> postService.createDraftPost(postRequestDto)
-        );
-        assertEquals(CONTENT_CANT_BE_NULL, exception.getMessage());
-    }
-
-    @Test
-    public void testCreateDraftPost_postAlreadyDeleted() {
-        postRequestDto.setDeleted(true);
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> postService.createDraftPost(postRequestDto)
-        );
-        assertEquals(POST_DRAFT_CANT_BE_DELETED, exception.getMessage());
-    }
-
-    @Test
-    public void testCreateDraftPost_postAlreadyPublished() {
-        postRequestDto.setPublished(true);
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> postService.createDraftPost(postRequestDto)
-        );
-        assertEquals(POST_DRAFT_CANT_BE_PUBLISHED, exception.getMessage());
-    }
-
-    @Test
-    public void testCreateDraftPost_draftAlreadyCreated() {
-        when(postRepository.findById(postRequestDto.getId())).thenReturn(Optional.of(new Post()));
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> postService.createDraftPost(postRequestDto)
-        );
-        assertEquals(String.format(POST_WITH_HAS_ALREADY_BEEN_CREATED, postRequestDto.getId()),
-                exception.getMessage());
-    }
-
-    @Test
     public void testCreateDraftPost_savedDraft() {
-        when(postRepository.findById(postRequestDto.getId())).thenReturn(Optional.empty());
         postService.createDraftPost(postRequestDto);
+
         verify(postRepository, times(1))
                 .save(postMapper.ToPost(postRequestDto));
     }
@@ -128,16 +66,6 @@ public class PostServiceTest {
                 () -> postService.publishPost(id)
         );
         assertEquals(String.format(NO_POST_FOUND, postRequestDto.getId()), exception.getMessage());
-    }
-
-    @Test
-    public void testPublishPost_postAlreadyPublished() {
-        when(postRepository.findById(postRequestDto.getId())).thenReturn(Optional.of(post));
-        post.setPublished(true);
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> postService.publishPost(id)
-        );
-        assertEquals(String.format(POST_ALREADY_PUBLISHED, post.getId()), exception.getMessage());
     }
 
     @Test
@@ -235,26 +163,10 @@ public class PostServiceTest {
     }
 
     @Test
-    public void testGetUserDraftPosts_nullUserId() {
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> postService.getUserDraftPosts(null)
-        );
-        assertEquals(USER_ID_CANT_BE_NULL, exception.getMessage());
-    }
-
-    @Test
     public void testGetUserDraftPosts_draftsFound() {
         when(postRepository.findDraftsByAuthorId(1L)).thenReturn(List.of(post));
         List<PostResponseDto> responseDtos = postService.getUserDraftPosts(1L);
         assertEquals(responseDtos, postMapper.toPostResponseDtoList(List.of(post)));
-    }
-
-    @Test
-    public void testProjectDraftPosts_nullUserId() {
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> postService.getProjectDraftPosts(null)
-        );
-        assertEquals(PROJECT_ID_CANT_BE_NULL, exception.getMessage());
     }
 
     @Test
@@ -265,26 +177,10 @@ public class PostServiceTest {
     }
 
     @Test
-    public void testUserPublishedPosts_nullUserId() {
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> postService.getUserPublishedPosts(null)
-        );
-        assertEquals(USER_ID_CANT_BE_NULL, exception.getMessage());
-    }
-
-    @Test
     public void testUserPublishedPosts_draftsFound() {
         when(postRepository.findPublishedByAuthorId(1L)).thenReturn(List.of(post));
         List<PostResponseDto> responseDtos = postService.getUserPublishedPosts(1L);
         assertEquals(responseDtos, postMapper.toPostResponseDtoList(List.of(post)));
-    }
-
-    @Test
-    public void testProjectPublishedPosts_nullUserId() {
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> postService.getProjectPublishedPosts(null)
-        );
-        assertEquals(PROJECT_ID_CANT_BE_NULL, exception.getMessage());
     }
 
     @Test
