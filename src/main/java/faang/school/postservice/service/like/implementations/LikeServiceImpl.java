@@ -39,11 +39,6 @@ public class LikeServiceImpl implements LikeService {
     private final CommentRepository commentRepository;
     private final UserContext userContext;
 
-    /**
-     * @param postId
-     * @param userId
-     * @return
-     */
     private void checkLikeExistence(long entityId, long userId,
                                     BiFunction<Long, Long, Optional<Like>> findLikeEntityFunction,
                                     String entityName) {
@@ -75,41 +70,12 @@ public class LikeServiceImpl implements LikeService {
         return likeMapper.toDto(likeRepository.save(like));
     }
 
-    private Post checkLikeDToWithPostId(long postId, LikeDto likeDto) {
-        if (postId != likeDto.getPostId()) {
-            log.error("Post ID mismatch: path={}, dto={}", postId, likeDto.getPostId());
-            throw new PostIdMismatchException("Post ID in path and DTO must match");
-        }
-        checkAuthor(likeDto.getUserId());
-        return postRepository.findById(postId)
-                .orElseThrow(() -> new PostNotFoundException("Post not found"));
-    }
-
-    /**
-     * @param postId
-     * @param likeDto
-     */
-    private Post checkLikeDToWithPostId(long postId, LikeDto likeDto) {
-        if (postId != likeDto.getPostId()) {
-            log.error("Post ID mismatch: path={}, dto={}", postId, likeDto.getPostId());
-            throw new PostIdMismatchException("Post ID in path and DTO must match");
-        }
-        checkAuthor(likeDto.getUserId());
-        return postRepository.findById(postId)
-                .orElseThrow(() -> new PostNotFoundException("Post not found"));
-    }
-
     @Override
     @Transactional
     public void unlikePost(long postId) {
         removeLike(postId, userContext.getUserId(), likeRepository::findByPostIdAndUserId, "post");
     }
 
-    /**
-     * @param commentId
-     * @param userId
-     * @return
-     */
     @Override
     @Transactional
     public LikeDto likeComment(long commentId) {
@@ -122,21 +88,6 @@ public class LikeServiceImpl implements LikeService {
         return likeMapper.toDto(likeRepository.save(like));
     }
 
-    private Comment checkLikeDtoWithCommentId(long commentId, LikeDto likeDto) {
-        if (commentId != likeDto.getCommentId()) {
-            log.error("Comment ID mismatch: path={}, dto={}", commentId, likeDto.getCommentId());
-            throw new CommentIdMismatchException("Comment ID in path and DTO must match");
-        }
-        checkAuthor(likeDto.getUserId());
-        return commentRepository.findById(commentId)
-                .orElseThrow(() -> new CommentNotFoundException("Comment not found"));
-    }
-
-    /**
-     * param commentId
-     *
-     * @param userId
-     */
     @Override
     @Transactional
     public void unlikeComment(long commentId) {
