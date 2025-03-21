@@ -5,6 +5,7 @@ import faang.school.postservice.dto.tag.TagDto;
 import faang.school.postservice.dto.tag.TagRemoveDto;
 import faang.school.postservice.dto.tag.TagSearchDto;
 import faang.school.postservice.service.TagService;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -30,7 +31,7 @@ public class TagController {
     }
 
     @PostMapping(value = "/add")
-    public ResponseEntity<List<TagSearchDto>> addToPost(@NotNull @RequestBody TagAddDto tagAddDto) {
+    public ResponseEntity<List<TagSearchDto>> addToPost(@NotNull @Valid @RequestBody TagAddDto tagAddDto) {
         return tagService.addToPost(tagAddDto);
     }
 
@@ -40,7 +41,7 @@ public class TagController {
     }
 
     @PostMapping(value = "/remove")
-    public void removeTagsFromPost(@NotNull TagRemoveDto tagRemoveDto) {
+    public void removeTagsFromPost(@NotNull @Valid TagRemoveDto tagRemoveDto) {
         tagService.removeTagsFromPost(tagRemoveDto);
     }
 }
