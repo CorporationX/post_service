@@ -12,7 +12,6 @@ import faang.school.postservice.model.Tag;
 import faang.school.postservice.repository.TagRepository;
 import faang.school.postservice.service.PostService;
 import faang.school.postservice.service.TagService;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,6 +28,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -76,7 +76,7 @@ public class TagServiceTest {
 
         List<TagDto> actualTags = actualTagsResponseEntity.getBody();
         assertEquals(HttpStatus.OK, actualTagsResponseEntity.getStatusCode());
-        Assertions.assertNotNull(actualTags);
+        assertNotNull(actualTags);
         assertEquals(1, actualTags.size());
         assertEquals("Tag1", actualTags.get(0).name());
     }
@@ -109,7 +109,7 @@ public class TagServiceTest {
         verify(tagRepository, times(1)).saveAll(anyIterable());
         List<TagSearchDto> actualTags = actualTagsResponseEntity.getBody();
         assertEquals(HttpStatus.OK, actualTagsResponseEntity.getStatusCode());
-        Assertions.assertNotNull(actualTags);
+        assertNotNull(actualTags);
         assertEquals(2, actualTags.size());
         assertEquals(2, post.getTags().size());
     }
@@ -129,7 +129,7 @@ public class TagServiceTest {
 
         List<TagSearchDto> actualTags = actualTagsResponseEntity.getBody();
         assertEquals(HttpStatus.OK, actualTagsResponseEntity.getStatusCode());
-        Assertions.assertNotNull(actualTags);
+        assertNotNull(actualTags);
         assertEquals(3, actualTags.size());
     }
 
@@ -148,7 +148,7 @@ public class TagServiceTest {
 
         List<TagSearchDto> actualTags = actualTagsResponseEntity.getBody();
         assertEquals(HttpStatus.OK, actualTagsResponseEntity.getStatusCode());
-        Assertions.assertNotNull(actualTags);
+        assertNotNull(actualTags);
         assertEquals(3, actualTags.size());
     }
 
