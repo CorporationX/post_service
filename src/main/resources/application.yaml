@@ -92,3 +92,6 @@ author:
     rejected_posts_to_ban: 5
     scheduler:
       cron: "0 0 3 * * *" #every day at 03.00
+
+scheduler:
+  post-correction-cron: "0 0 1 * * *" #every day at 01.00

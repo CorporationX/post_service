@@ -1,13 +1,16 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.client.SpellingCheckClient;
 import faang.school.postservice.dto.Post.CreatePostDraftDto;
 import faang.school.postservice.dto.Post.PostResponseDto;
 import faang.school.postservice.dto.Post.UpdatePostDto;
+import faang.school.postservice.dto.spellcheck.AiTextResponseDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.validator.PostCorrectionValidator;
 import faang.school.postservice.validator.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.Assertions;
@@ -31,6 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -47,6 +51,9 @@ public class PostServiceTest {
     private PostService postService;
     private ResourseService resourseService;
     private KafkaTemplate<String, Long> kafkaTemplate;
+    private SpellingCheckClient spellingCheckClient;
+    private PostCorrectionValidator postCorrectionValidator;
+
     @Captor
     private ArgumentCaptor<List<MultipartFile>> captor;
 
@@ -57,7 +64,17 @@ public class PostServiceTest {
         postMapper = Mappers.getMapper(PostMapper.class);
         postValidator = mock(PostValidator.class);
         resourseService = mock(ResourseService.class);
-        postService = new PostService(postRepository, kafkaTemplate, postMapper, postValidator, resourseService);
+        spellingCheckClient = mock(SpellingCheckClient.class);
+        postCorrectionValidator = mock(PostCorrectionValidator.class);
+        postService = new PostService(
+                postRepository,
+                kafkaTemplate,
+                postMapper,
+                postValidator,
+                resourseService,
+                spellingCheckClient,
+                postCorrectionValidator
+        );
     }
 
     @Test
@@ -341,5 +358,78 @@ public class PostServiceTest {
         when(postRepository.findById(postId)).thenReturn(Optional.of(post));
 
         postService.uploadImages(postId, files);
+    }
+
+    @Test
+    public void correctUnpublishedPosts_ShouldCorrectAndSave() {
+        Post post = new Post();
+        post.setId(1L);
+        post.setContent("Thiss is wrong");
+        post.setPublished(false);
+
+        when(postRepository.findAllByPublishedFalse()).thenReturn(List.of(post));
+        when(postCorrectionValidator.isTextValid(post.getContent())).thenReturn(true);
+
+        AiTextResponseDto response = new AiTextResponseDto();
+        AiTextResponseDto.InnerResponse inner = new AiTextResponseDto.InnerResponse();
+        inner.setCorrected("This is correct");
+        response.setResponse(inner);
+
+        when(spellingCheckClient.checkText(any())).thenReturn(response);
+        when(postCorrectionValidator.isCorrectionValid("This is correct")).thenReturn(true);
+        when(postCorrectionValidator.isCorrectionDifferent(post.getContent(), "This is correct")).thenReturn(true);
+
+        postService.correctUnpublishedPosts();
+
+        verify(postRepository).save(post);
+        assertEquals("This is correct", post.getContent());
+    }
+
+    @Test
+    public void correctUnpublishedPosts_ShouldDoNothingIfNoPosts() {
+        when(postRepository.findAllByPublishedFalse()).thenReturn(List.of());
+
+        postService.correctUnpublishedPosts();
+
+        verify(postRepository, never()).save(any());
+    }
+
+    @Test
+    public void correctUnpublishedPosts_ShouldSkipIfContentInvalid() {
+        Post post = new Post();
+        post.setId(2L);
+        post.setContent("");
+        post.setPublished(false);
+
+        when(postRepository.findAllByPublishedFalse()).thenReturn(List.of(post));
+        when(postCorrectionValidator.isTextValid(post.getContent())).thenReturn(false);
+
+        postService.correctUnpublishedPosts();
+
+        verify(postRepository, never()).save(any());
+    }
+
+    @Test
+    public void correctUnpublishedPosts_ShouldSkipIfCorrectionSameAsOriginal() {
+        Post post = new Post();
+        post.setId(3L);
+        post.setContent("Correct text");
+        post.setPublished(false);
+
+        when(postRepository.findAllByPublishedFalse()).thenReturn(List.of(post));
+        when(postCorrectionValidator.isTextValid(post.getContent())).thenReturn(true);
+
+        AiTextResponseDto response = new AiTextResponseDto();
+        AiTextResponseDto.InnerResponse inner = new AiTextResponseDto.InnerResponse();
+        inner.setCorrected("Correct text");
+        response.setResponse(inner);
+
+        when(spellingCheckClient.checkText(any())).thenReturn(response);
+        when(postCorrectionValidator.isCorrectionValid("Correct text")).thenReturn(true);
+        when(postCorrectionValidator.isCorrectionDifferent(post.getContent(), "Correct text")).thenReturn(false);
+
+        postService.correctUnpublishedPosts();
+
+        verify(postRepository, never()).save(any());
     }
 }

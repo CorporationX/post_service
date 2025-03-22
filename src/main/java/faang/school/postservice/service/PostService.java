@@ -1,17 +1,24 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.client.SpellingCheckClient;
 import faang.school.postservice.dto.Post.CreatePostDraftDto;
 import faang.school.postservice.dto.Post.PostResponseDto;
 import faang.school.postservice.dto.Post.UpdatePostDto;
+import faang.school.postservice.dto.spellcheck.AiTextRequestDto;
+import faang.school.postservice.dto.spellcheck.AiTextResponseDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.validator.PostCorrectionValidator;
 import faang.school.postservice.validator.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -31,6 +38,8 @@ public class PostService {
     private final PostMapper postMapper;
     private final PostValidator postValidator;
     private final ResourseService resourseService;
+    private final SpellingCheckClient spellingCheckClient;
+    private final PostCorrectionValidator postCorrectionValidator;
 
     @Value("${author.banner.rejected_posts_to_ban}")
     private int rejectedPostsToBan;
@@ -152,5 +161,65 @@ public class PostService {
                 .sorted(Comparator.comparing(fieldToSortBy).reversed())
                 .map(postMapper::toResponseDto)
                 .toList();
+    }
+
+    @Transactional
+    public void correctUnpublishedPosts() {
+        List<Post> posts = postRepository.findAllByPublishedFalse();
+
+        if (posts.isEmpty()) {
+            log.info("No unpublished posts found for correction.");
+            return;
+        }
+
+        log.info("Found {} unpublished posts for spell check.", posts.size());
+
+        for (Post post : posts) {
+            if (!postCorrectionValidator.isTextValid(post.getContent())) {
+                log.warn("Skipping post with ID {}: invalid or empty content.", post.getId());
+                continue;
+            }
+
+            String correctedContent;
+            try {
+                correctedContent = getCorrectedContentWithRetry(post.getContent());
+            } catch (Exception ex) {
+                log.error("Spell check failed for post ID {} after retries. Reason: {}", post.getId(), ex.getMessage());
+                continue;
+            }
+
+            if (!postCorrectionValidator.isCorrectionValid(correctedContent)) {
+                log.warn("Skipping post with ID {}: corrected content is invalid.", post.getId());
+                continue;
+            }
+
+            if (!postCorrectionValidator.isCorrectionDifferent(post.getContent(), correctedContent)) {
+                log.debug("Skipping post with ID {}: no correction needed.", post.getId());
+                continue;
+            }
+
+            post.setContent(correctedContent);
+            postRepository.save(post);
+            log.info("Post with ID {} successfully updated with corrected content.", post.getId());
+        }
+
+        log.info("Spell correction process finished.");
+    }
+
+    @Retryable(
+            value = {Exception.class},
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 2000)
+    )
+    public String getCorrectedContentWithRetry(String content) {
+        AiTextRequestDto request = new AiTextRequestDto(content);
+        AiTextResponseDto response = spellingCheckClient.checkText(request);
+        return response.getCorrected();
+    }
+
+    @Recover
+    public String recoverFromSpellCheckFailure(Exception ex, String content) {
+        log.error("All retries failed for content '{}'. Returning original content.", content);
+        return content;
     }
 }
