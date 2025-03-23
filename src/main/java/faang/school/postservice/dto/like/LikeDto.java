@@ -1,5 +1,6 @@
 package faang.school.postservice.dto.like;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,6 +13,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class LikeDto {
+    @NotNull
     long userId;
     long commentId;
     long postId;
