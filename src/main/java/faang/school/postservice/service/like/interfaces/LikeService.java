@@ -4,12 +4,12 @@ import faang.school.postservice.dto.like.LikeDto;
 
 public interface LikeService {
 
-    LikeDto likePost(long postId, LikeDto likeDto);
+    LikeDto likePost(long postId, long userId);
 
-    void unlikePost(long postId, LikeDto likeDto);
+    void unlikePost(long postId, long userId);
 
-    LikeDto likeComment(long commentId, LikeDto likeDto);
+    LikeDto likeComment(long commentId, long userId);
 
-    void unlikeComment(long commentId, LikeDto likeDto);
+    void unlikeComment(long commentId, long userId);
 
 }

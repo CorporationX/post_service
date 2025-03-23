@@ -3,9 +3,9 @@ package faang.school.postservice.service.like.implementations;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.exception.AuthorNotFoundException;
-import faang.school.postservice.exception.CommentIdMismatchException;
 import faang.school.postservice.exception.CommentNotFoundException;
-import faang.school.postservice.exception.PostIdMismatchException;
+import faang.school.postservice.exception.LikeAlreadyExistException;
+import faang.school.postservice.exception.LikeNotFoundException;
 import faang.school.postservice.exception.PostNotFoundException;
 import faang.school.postservice.mapper.like.LikeMapper;
 import faang.school.postservice.model.Comment;
@@ -18,6 +18,7 @@ import faang.school.postservice.service.like.interfaces.LikeService;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -32,15 +33,19 @@ public class LikeServiceImpl implements LikeService {
 
     /**
      * @param postId
-     * @param likeDto
+     * @param userId
      * @return
      */
     @Override
-    public LikeDto likePost(long postId, LikeDto likeDto) {
-        Post post = checkLikeDToWithPostId(postId, likeDto);
-
-        Like like = likeMapper.toEntity(likeDto);
-        like.setPost(post);
+    public LikeDto likePost(long postId, long userId) {
+        Post post = checkPostId(postId);
+        checkAuthor(userId);
+        likeRepository.findByPostIdAndUserId(postId, userId)
+                .ifPresent(like -> {
+                    throw new LikeAlreadyExistException(String.format("Like already exist: postId=%d, userId=%d",
+                            postId, userId));
+                });
+        Like like = Like.builder().userId(userId).post(post).build();
         return likeMapper.toDto(likeRepository.save(like));
     }
 
@@ -69,24 +74,29 @@ public class LikeServiceImpl implements LikeService {
     }
 
     @Override
-    public void unlikePost(long postId, LikeDto likeDto) {
-        checkLikeDToWithPostId(postId, likeDto);
-        if (likeRepository.findByPostIdAndUserId(postId, likeDto.getUserId()).isPresent()) {
-            likeRepository.deleteByPostIdAndUserId(postId, likeDto.getUserId());
-        }
+    public void unlikePost(long postId, long userId) {
+        Like like = likeRepository.findByPostIdAndUserId(postId, userId)
+                .orElseThrow(() ->
+                        new LikeNotFoundException(String.format("Like not found: postId=%d, userId=%d",
+                                postId, userId)));
+        likeRepository.delete(like);
     }
 
     /**
      * @param commentId
-     * @param likeDto
+     * @param userId
      * @return
      */
     @Override
-    public LikeDto likeComment(long commentId, LikeDto likeDto) {
-        Comment comment = checkLikeDtoWithCommentId(commentId, likeDto);
+    public LikeDto likeComment(long commentId, long userId) {
+        Comment comment = checkCommentId(commentId);
+        checkAuthor(userId);
+        likeRepository.findByCommentIdAndUserId(commentId, userId).ifPresent(like -> {
+            throw new LikeAlreadyExistException(String.format("Like already exist: commentId=%d, userId=%d",
+                    commentId, userId));
+        });
 
-        Like like = likeMapper.toEntity(likeDto);
-        like.setComment(comment);
+        Like like = Like.builder().userId(userId).comment(comment).build();
         return likeMapper.toDto(likeRepository.save(like));
     }
 
@@ -103,23 +113,38 @@ public class LikeServiceImpl implements LikeService {
     /**
      * param commentId
      *
-     * @param likeDto
+     * @param userId
      */
     @Override
-    public void unlikeComment(long commentId, LikeDto likeDto) {
-        checkLikeDtoWithCommentId(commentId, likeDto);
-        if (likeRepository.findByCommentIdAndUserId(commentId, likeDto.getUserId()).isPresent()) {
-            likeRepository.deleteByCommentIdAndUserId(commentId, likeDto.getUserId());
-        }
+    public void unlikeComment(long commentId, long userId) {
+        Like like = likeRepository.findByCommentIdAndUserId(commentId, userId)
+                .orElseThrow(() ->
+                        new LikeNotFoundException(String.format("Like not found: commentId=%d, userId=%d",
+                                commentId, userId)));
+        likeRepository.delete(like);
     }
 
-    private void checkAuthor(Long authorId) {
+    private <T> T checkEntityId(long entityId, CrudRepository<T, Long> repository, RuntimeException exception) {
+        return repository.findById(entityId)
+                .orElseThrow(() -> exception);
+    }
+
+    private Post checkPostId(long postId) {
+        return checkEntityId(postId, postRepository,
+                new PostNotFoundException(String.format("Post not found: postId=%d", postId)));
+    }
+
+    private Comment checkCommentId(long commentId) {
+        return checkEntityId(commentId, commentRepository,
+                new CommentNotFoundException(String.format("Comment not found: commentId=%d", commentId)));
+    }
+
+    private void checkAuthor(long userId) {
         try {
-            userServiceClient.getUser(authorId);
+            userServiceClient.getUser(userId);
         } catch (FeignException e) {
-            log.error("Author not found: id={}", authorId, e);
-            throw new AuthorNotFoundException("Author with id " + authorId + " not found");
+            log.error("Author not found: id={}", userId, e);
+            throw new AuthorNotFoundException("Author with id " + userId + " not found");
         }
     }
-
 }

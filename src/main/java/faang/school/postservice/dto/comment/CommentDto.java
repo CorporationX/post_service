@@ -18,4 +18,5 @@ public class CommentDto {
     @NotNull
     Long postId;
     LocalDateTime createdAt;
+    Long likes;
 }

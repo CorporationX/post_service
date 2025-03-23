@@ -11,13 +11,13 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionHandler {
     @ExceptionHandler(PostNotFoundException.class)
     public ResponseEntity<String> handlePostNotFoundException(PostNotFoundException e) {
-        log.warn("Find error: {}", e.getMessage());
+        log.warn("Find post error: {}", e.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
     }
 
     @ExceptionHandler(PostIdMismatchException.class)
     public ResponseEntity<String> handlePostIdMismatchException(PostIdMismatchException e) {
-        log.warn("Validation error: {}", e.getMessage());
+        log.warn("Validation post error: {}", e.getMessage());
         return ResponseEntity.badRequest().body(e.getMessage());
     }
 
@@ -29,13 +29,25 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(CommentNotFoundException.class)
     public ResponseEntity<String> handleCommentNotFoundException(CommentNotFoundException e) {
-        log.warn("Comment error: {}", e.getMessage());
+        log.warn("Find comment error: {}", e.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
     }
 
     @ExceptionHandler(CommentIdMismatchException.class)
     public ResponseEntity<String> handleCommentIdMismatchException(CommentIdMismatchException e) {
-        log.warn("Validation error: {}", e.getMessage());
+        log.warn("Validation comment error: {}", e.getMessage());
         return ResponseEntity.badRequest().body(e.getMessage());
+    }
+
+    @ExceptionHandler(LikeAlreadyExistException.class)
+    public ResponseEntity<String> handleLikeAlreadyExistException(LikeAlreadyExistException e) {
+        log.warn("Like conflict error: {}", e.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+    }
+
+    @ExceptionHandler(LikeNotFoundException.class)
+    public ResponseEntity<String> handleLikeNotFoundException(LikeNotFoundException e) {
+        log.warn("Find like error: {}", e.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
     }
 }
