@@ -44,6 +44,16 @@ public class LikeServiceImpl implements LikeService {
         return likeMapper.toDto(likeRepository.save(like));
     }
 
+    private Post checkLikeDToWithPostId(long postId, LikeDto likeDto) {
+        if (postId != likeDto.getPostId()) {
+            log.error("Post ID mismatch: path={}, dto={}", postId, likeDto.getPostId());
+            throw new PostIdMismatchException("Post ID in path and DTO must match");
+        }
+        checkAuthor(likeDto.getUserId());
+        return postRepository.findById(postId)
+                .orElseThrow(() -> new PostNotFoundException("Post not found"));
+    }
+
     /**
      * @param postId
      * @param likeDto
@@ -111,4 +121,5 @@ public class LikeServiceImpl implements LikeService {
             throw new AuthorNotFoundException("Author with id " + authorId + " not found");
         }
     }
+
 }
