@@ -31,6 +31,7 @@ server:
 logging:
   level:
     root: info
+    org.zalando.logbook: TRACE
 
 like:
   batch: 100
@@ -44,3 +45,15 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+scheduling:
+  cron: "0 0 0 * * ?"
+  cronExpression: "0 0 12 * * ?"
+  initialDelay: 30000
+  fixedRate: 30000
+thread-pool:
+  core-size: 3
+  max-size: 5
+  queue-capacity: 10
+batch:
+  size: 2

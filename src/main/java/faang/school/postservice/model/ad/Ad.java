@@ -1,24 +1,19 @@
 package faang.school.postservice.model.ad;
 
 import faang.school.postservice.model.Post;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Data
-@Builder
 @Entity
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "post_ad")
 public class Ad {
 
@@ -43,4 +38,5 @@ public class Ad {
     @Column(name = "end_date", nullable = false)
     @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime endDate;
+
 }
