@@ -9,7 +9,7 @@ import java.io.Serializable;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class TagDto implements Serializable {
+public class TagAddedToPostDto implements Serializable {
     private Long id;
     private String name;
 }

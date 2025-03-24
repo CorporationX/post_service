@@ -5,9 +5,8 @@ import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
 
-public record TagAddDto(
-        @NotNull List<TagDto> tagDtos,
-        @NotNull @Min(1) Long postId,
+public record TagAddToPostDto(
+        @NotNull List<Long> tagsId,
         @NotNull @Min(1) Long userId
 ) {
 }

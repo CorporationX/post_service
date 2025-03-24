@@ -1,9 +1,9 @@
 package faang.school.postservice.contoller;
 
-import faang.school.postservice.dto.tag.TagAddDto;
+import faang.school.postservice.dto.tag.TagAddToPostDto;
+import faang.school.postservice.dto.tag.TagAddedToPostDto;
+import faang.school.postservice.dto.tag.TagCreateDto;
 import faang.school.postservice.dto.tag.TagDto;
-import faang.school.postservice.dto.tag.TagRemoveDto;
-import faang.school.postservice.dto.tag.TagSearchDto;
 import faang.school.postservice.service.TagService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -26,22 +26,24 @@ public class TagController {
     private final TagService tagService;
 
     @GetMapping("/post/{id}")
-    public ResponseEntity<List<TagDto>> getTagsForPost(@PathVariable Long id) {
+    public ResponseEntity<List<TagDto>> getTagsForPost(@NotNull @PathVariable Long id) {
         return tagService.getTagsForPost(id);
     }
 
-    @PostMapping(value = "/add")
-    public ResponseEntity<List<TagSearchDto>> addToPost(@NotNull @Valid @RequestBody TagAddDto tagAddDto) {
-        return tagService.addToPost(tagAddDto);
+    @PostMapping("/create")
+    public ResponseEntity<TagDto> createTag(@NotNull @RequestBody @Valid TagCreateDto tagCreateDto) {
+        return tagService.createTag(tagCreateDto);
     }
 
-    @GetMapping(value = "/search")
-    public ResponseEntity<List<TagSearchDto>> searchTagsLikeName(@RequestParam("name") String tagName) {
+    @PostMapping("/post/{postId}/add")
+    public ResponseEntity<List<TagAddedToPostDto>> addToPost(@NotNull  @PathVariable Long postId,
+                                                             @NotNull @Valid @RequestBody
+                                                             TagAddToPostDto tagAddToPostDto) {
+        return tagService.addToPost(postId, tagAddToPostDto);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<TagDto>> searchTagsLikeName(@NotNull @RequestParam("name") String tagName) {
         return tagService.searchTagsLikeName(tagName);
-    }
-
-    @PostMapping(value = "/remove")
-    public void removeTagsFromPost(@NotNull @Valid @RequestBody TagRemoveDto tagRemoveDto) {
-        tagService.removeTagsFromPost(tagRemoveDto);
     }
 }
