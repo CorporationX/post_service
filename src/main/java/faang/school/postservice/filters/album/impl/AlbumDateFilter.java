@@ -17,7 +17,7 @@ public class AlbumDateFilter implements AlbumFilter {
     @Override
     public boolean filterEntity(Album album, AlbumFilterDto filters) {
         LocalDateTime createAt = album.getCreatedAt();
-        if (filters.getFromDatePattern() != null && createAt.isBefore(filters.getFromDatePattern())){
+        if (filters.getFromDatePattern() != null && createAt.isBefore(filters.getFromDatePattern())) {
             return false;
         }
         return filters.getToDatePattern() == null || !createAt.isAfter(filters.getToDatePattern());

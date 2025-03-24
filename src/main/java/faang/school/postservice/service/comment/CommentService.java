@@ -28,8 +28,6 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class CommentService {
-    @Value("${services.s3.max_image_size}")
-    private int maxImageSize;
     private static final long MB_TO_BYTES = 1048576;
     private final CommentMapper commentMapper;
     private final CommentRepository commentRepository;
@@ -38,6 +36,8 @@ public class CommentService {
     private final S3Service s3Service;
     private final FileRepository fileRepository;
     private final CommentCreateMessagePublisher commentCreateMessagePublisher;
+    @Value("${services.s3.max_image_size}")
+    private int maxImageSize;
 
     public CommentReadDto create(CommentCreateDto createDto) {
         validateCommentCreation(createDto);

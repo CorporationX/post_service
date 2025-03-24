@@ -3,8 +3,6 @@ package faang.school.postservice.dto.hashtag;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
 
-import java.util.List;
-
 @Builder
 public record HashtagUpdateDto(
         long id,

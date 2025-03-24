@@ -4,7 +4,6 @@ import faang.school.postservice.dto.hashtag.HashtagCreateDto;
 import faang.school.postservice.dto.hashtag.HashtagReadDto;
 import faang.school.postservice.dto.hashtag.HashtagUpdateDto;
 import faang.school.postservice.service.HashtagService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;

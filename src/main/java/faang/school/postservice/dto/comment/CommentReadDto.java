@@ -49,4 +49,5 @@ public record CommentReadDto(
                 accessMode = Schema.AccessMode.READ_ONLY
         )
         LocalDateTime updatedAt
-) {}
+) {
+}

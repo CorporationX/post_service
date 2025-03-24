@@ -1,7 +1,7 @@
 package faang.school.postservice.mapper;
 
-import faang.school.postservice.dto.comment.CommentReadDto;
 import faang.school.postservice.dto.comment.CommentCreateDto;
+import faang.school.postservice.dto.comment.CommentReadDto;
 import faang.school.postservice.dto.comment.CommentUpdateDto;
 import faang.school.postservice.event.comment.CommentEvent;
 import faang.school.postservice.event.comment.CommentEventType;

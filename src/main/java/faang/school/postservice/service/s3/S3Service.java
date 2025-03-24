@@ -27,9 +27,6 @@ public class S3Service {
     @Value("${services.s3.bucketName}")
     private String bucketName;
 
-    private record UploadedFileInfo(long fileSize, String fileType, String key) {
-    }
-
     public File uploadFile(MultipartFile file, String folder) {
         UploadedFileInfo uploadFile = uploadToS3(file, folder);
 
@@ -59,7 +56,7 @@ public class S3Service {
             log.info("Файл {} удален", key);
         } catch (AmazonServiceException e) {
             log.error("Ошибка сервиса AWS при удалении файла {}: {}", key, e.getMessage());
-        } catch (SdkClientException  e) {
+        } catch (SdkClientException e) {
             log.error("Ошибка клиента при удалении файла {}: {}", key, e.getMessage());
         }
     }
@@ -91,5 +88,8 @@ public class S3Service {
             throw new RuntimeException(e);
         }
         return new UploadedFileInfo(fileSize, fileType, key);
+    }
+
+    private record UploadedFileInfo(long fileSize, String fileType, String key) {
     }
 }

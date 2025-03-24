@@ -61,7 +61,7 @@ public class HashtagService {
     }
 
     public void validateHashtagNameExists(String name) {
-        if(hashtagRepository.findByName(name).isPresent()) {
+        if (hashtagRepository.findByName(name).isPresent()) {
             throw new DataValidationException("Хэштег с названием " + name + " уже существует");
         }
     }

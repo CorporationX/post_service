@@ -2,8 +2,8 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
-import faang.school.postservice.event.LikeEvent;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.event.LikeEvent;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.publisher.like.LikeEventPublisher;

@@ -23,24 +23,24 @@ public class PostImageService {
     protected int maxHeightHorizontal;
 
     public MultipartFile getResizedCover(MultipartFile cover) {
-            try {
-                BufferedImage image = ImageIO.read(cover.getInputStream());
-                BufferedImage resizedCover = Scalr.resize(
-                        image,
-                        Scalr.Method.QUALITY,
-                        Scalr.Mode.AUTOMATIC,
-                        maxWidth,
-                        calculateNewHeight(image));
+        try {
+            BufferedImage image = ImageIO.read(cover.getInputStream());
+            BufferedImage resizedCover = Scalr.resize(
+                    image,
+                    Scalr.Method.QUALITY,
+                    Scalr.Mode.AUTOMATIC,
+                    maxWidth,
+                    calculateNewHeight(image));
 
-                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                ImageIO.write(resizedCover, "jpg", outputStream);
-                byte[] imageBytes = outputStream.toByteArray();
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            ImageIO.write(resizedCover, "jpg", outputStream);
+            byte[] imageBytes = outputStream.toByteArray();
 
-                return new ByteArrayMultipartFile(imageBytes, cover.getOriginalFilename(), cover.getContentType());
-            } catch (IOException e) {
-                log.error("Ошибка форматирования изображения: {}", cover.getName());
-                throw new RuntimeException(e);
-            }
+            return new ByteArrayMultipartFile(imageBytes, cover.getOriginalFilename(), cover.getContentType());
+        } catch (IOException e) {
+            log.error("Ошибка форматирования изображения: {}", cover.getName());
+            throw new RuntimeException(e);
+        }
 
     }
 
