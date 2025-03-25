@@ -74,8 +74,7 @@ public class PostService {
     }
 
     public List<PostDto> getAllDraftsByAuthorId(Long authorId) {
-        List<Post> posts = postRepository.findByAuthorId(authorId);
-        return posts.stream()
+        return postRepository.findByAuthorId(authorId).stream()
                 .filter(post -> !post.isPublished() && !post.isDeleted())
                 .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
                 .map(postMapper::toDto)
