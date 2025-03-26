@@ -17,7 +17,6 @@ import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 
-
 @Service
 @RequiredArgsConstructor
 public class PostService {
@@ -125,7 +124,7 @@ public class PostService {
             }
         }
     }
-
+    
     public Post findPostById(Long id) {
         return postRepository.findById(id)
                 .orElseThrow(() -> new PostNotFoundException("Post with id: " + id + " not found"));
