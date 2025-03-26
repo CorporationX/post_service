@@ -1,0 +1,330 @@
+package faang.school.postservice.service.comment;
+
+import static faang.school.postservice.contants.ErrorMessage.*;
+import static faang.school.postservice.contants.ErrorMessage.getErrorNotFoundUser;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.comment.CommentUpdateDto;
+import faang.school.postservice.mapper.CommentMapper;
+import faang.school.postservice.model.Comment;
+import faang.school.postservice.model.Post;
+import faang.school.postservice.repository.CommentRepository;
+import faang.school.postservice.repository.PostRepository;
+import feign.FeignException;
+import feign.Request;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mapstruct.factory.Mappers;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
+
+@ExtendWith(MockitoExtension.class)
+class CommentServiceTest {
+    private static final Long POST_ID = 1L;
+    private static final Long COMMENT_ID = 2L;
+    private static final Long AUTHOR_ID = 3L;
+
+    private static final String CONTENT = "Content";
+    private static final String UPDATE_CONTENT = "Update content";
+
+
+    @InjectMocks
+    private CommentService commentService;
+
+    @Mock
+    private CommentRepository commentRepository;
+    @Mock
+    private PostRepository postRepository;
+    @Mock
+    private UserServiceClient userServiceClient;
+
+    @Spy
+    private CommentMapper commentMapper = Mappers.getMapper(CommentMapper.class);
+
+    @Captor
+    private ArgumentCaptor<Comment> commentCaptor;
+
+
+    private CommentDto commentDto;
+    private CommentUpdateDto commentUpdateDto;
+    private Comment comment;
+    private Post post;
+
+    @BeforeEach
+    void setUp() {
+        post = new Post();
+        post.setId(POST_ID);
+
+        comment = new Comment();
+        comment.setId(COMMENT_ID);
+        comment.setPost(post);
+        comment.setAuthorId(AUTHOR_ID);
+
+        commentDto = new CommentDto();
+        commentDto.setPostId(POST_ID);
+        commentDto.setAuthorId(AUTHOR_ID);
+        commentDto.setContent(CONTENT);
+
+        commentUpdateDto = new CommentUpdateDto();
+        commentUpdateDto.setAuthorId(AUTHOR_ID);
+        commentUpdateDto.setContent(UPDATE_CONTENT);
+    }
+
+    //Positive
+    @Test
+    @DisplayName("Test should create comment")
+    void createComment() {
+        when(postRepository.findById(POST_ID)).thenReturn(Optional.of(post));
+        when(commentMapper.toEntity(commentDto)).thenReturn(comment);
+
+        commentService.createComment(commentDto);
+
+        verify(commentRepository, times(1)).save(commentCaptor.capture());
+        assertEquals(comment, commentCaptor.getValue());
+    }
+
+    @Test
+    @DisplayName("Test should update comment")
+    void updateComment() {
+        comment.setContent(CONTENT);
+        when(commentRepository.findById(COMMENT_ID)).thenReturn(Optional.of(comment));
+
+        commentService.updateComment(COMMENT_ID, commentUpdateDto);
+
+        verify(commentRepository, times(1)).save(commentCaptor.capture());
+        assertEquals(UPDATE_CONTENT, comment.getContent());
+    }
+
+    @Test
+    @DisplayName("Test should get List CommentDto")
+    void getCommentsByPostId() {
+        when(postRepository.findById(POST_ID)).thenReturn(Optional.of(post));
+        when(commentRepository.findAllByPostId(POST_ID)).thenReturn(List.of(comment));
+        when(commentMapper.toDto(any(Comment.class))).thenReturn(commentDto);
+
+        List<CommentDto> result = commentService.getCommentsByPostId(POST_ID);
+
+        assertFalse(result.isEmpty());
+        assertEquals(1, result.size());
+        assertEquals(List.of(commentDto), result);
+    }
+
+    @Test
+    @DisplayName("Test should delete comment")
+    void deleteComment() {
+        when(commentRepository.findById(COMMENT_ID)).thenReturn(Optional.of(comment));
+        doNothing().when(commentRepository).deleteById(COMMENT_ID);
+
+        commentService.deleteComment(COMMENT_ID);
+
+        verify(commentRepository, times(1)).deleteById(COMMENT_ID);
+    }
+
+    //Negative
+    @Test
+    @DisplayName("Test Should ThrowException when CommentDto is Null")
+    void createComment_NullDto() {
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> commentService.createComment(null));
+
+        assertEquals(ERROR_NULL_DTO_COMMENT, exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Test Should ThrowException when fields are")
+    void createComment_NullFieldsAre() {
+        commentDto = new CommentDto();
+
+        assertThrows(IllegalArgumentException.class,
+                () -> commentService.createComment(commentDto));
+    }
+
+    @Test
+    @DisplayName("Test Should ThrowException when Content is Null")
+    void createComment_NullContent() {
+        commentDto.setContent(null);
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> commentService.createComment(commentDto));
+
+        assertEquals(ERROR_NULL_CONTENT, exception.getMessage());
+
+    }
+
+    @Test
+    @DisplayName("Test Should ThrowException when AuthorId is Null")
+    void createComment_NullAuthorId() {
+        commentDto.setAuthorId(null);
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> commentService.createComment(commentDto));
+
+        assertEquals(ERROR_NULL_AUTHOR_ID, exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Test Should ThrowException when PostId is Null")
+    void createComment_NullPostId() {
+        commentDto.setPostId(null);
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> commentService.createComment(commentDto));
+
+        assertEquals(ERROR_NULL_POST_ID, exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Test Should ThrowException when not found post")
+    void createComment_NotFoundPostId() {
+        when(postRepository.findById(POST_ID))
+                .thenThrow(new IllegalArgumentException(getErrorNotFoundPost(POST_ID)));
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> commentService.createComment(commentDto));
+
+        assertEquals(getErrorNotFoundPost(POST_ID), exception.getMessage());
+        verify(postRepository, times(1)).findById(POST_ID);
+    }
+
+    @Test
+    @DisplayName("Test Should ThrowException when not found user.")
+    void createComment_NotFoundUser() {
+        Request mockRequest = Request.create(Request.HttpMethod.GET, "/user/" + AUTHOR_ID, new HashMap<>(), null, StandardCharsets.UTF_8);
+        when(userServiceClient.getUser(AUTHOR_ID))
+                .thenThrow(new FeignException.NotFound(getErrorNotFoundUser(AUTHOR_ID), mockRequest,
+                        null, null));
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> commentService.createComment(commentDto));
+        assertTrue(exception.getMessage().contains(getErrorNotFoundUser(AUTHOR_ID)));
+        verify(userServiceClient, times(1)).getUser(AUTHOR_ID);
+    }
+
+    @Test
+    @DisplayName("Test Should ThrowException when CommentUpdateDto is Null")
+    void updateComment_NullDto() {
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> commentService.updateComment(COMMENT_ID, null));
+
+        assertEquals(ERROR_NULL_DTO_UPDATE_COMMENT, exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Test Should ThrowException when fields are")
+    void updateComment_NullFieldsAre() {
+        commentUpdateDto = new CommentUpdateDto();
+
+        assertThrows(IllegalArgumentException.class,
+                () -> commentService.updateComment(COMMENT_ID, commentUpdateDto));
+    }
+
+    @Test
+    @DisplayName("Test Should ThrowException when Content is Null")
+    void updateComment_NullContent() {
+        commentUpdateDto.setContent(null);
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> commentService.updateComment(COMMENT_ID, commentUpdateDto));
+
+        assertEquals(ERROR_NULL_CONTENT, exception.getMessage());
+
+    }
+
+    @Test
+    @DisplayName("Test Should ThrowException when AuthorId is Null")
+    void updateComment_NullAuthorId() {
+        commentUpdateDto.setAuthorId(null);
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> commentService.updateComment(COMMENT_ID, commentUpdateDto));
+
+        assertEquals(ERROR_NULL_AUTHOR_ID, exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Test Should ThrowException when not found comment")
+    void updateComment_NotFoundCommentId() {
+        when(commentRepository.findById(COMMENT_ID))
+                .thenThrow(new IllegalArgumentException(getErrorNotFoundComment(COMMENT_ID)));
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> commentService.updateComment(COMMENT_ID, commentUpdateDto));
+
+        assertEquals(getErrorNotFoundComment(COMMENT_ID), exception.getMessage());
+        verify(commentRepository, times(1)).findById(COMMENT_ID);
+    }
+
+    @Test
+    @DisplayName("Test Should ThrowException when not author comment")
+    void updateComment_NotAuthorComment() {
+        commentUpdateDto.setAuthorId(0L);
+        when(commentRepository.findById(COMMENT_ID)).thenReturn(Optional.of(comment));
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> commentService.updateComment(COMMENT_ID, commentUpdateDto));
+
+        assertEquals(ERROR_NOT_AUTHOR_COMMENT, exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Test Should ThrowException when not found post")
+    void getCommentsByPostId_NotFoundPostId() {
+        when(postRepository.findById(POST_ID))
+                .thenThrow(new IllegalArgumentException(getErrorNotFoundPost(POST_ID)));
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> commentService.getCommentsByPostId(POST_ID));
+
+        assertEquals(getErrorNotFoundPost(POST_ID), exception.getMessage());
+        verify(postRepository, times(1)).findById(POST_ID);
+    }
+
+    @Test
+    @DisplayName("Test Should ThrowException when no comments found")
+    void getCommentsByPostId_NoCommentsFound() {
+        when(postRepository.findById(POST_ID)).thenReturn(Optional.of(post));
+        when(commentRepository.findAllByPostId(POST_ID)).thenReturn(Collections.emptyList());
+
+        List<CommentDto> comments = commentService.getCommentsByPostId(POST_ID);
+
+        assertTrue(comments.isEmpty());
+        verify(commentRepository, times(1)).findAllByPostId(POST_ID);
+    }
+
+    @Test
+    @DisplayName("Test Should ThrowException when NULL comment id")
+    void deleteComment_NullCommentId() {
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> commentService.deleteComment(null));
+
+        assertEquals(ERROR_NULL_COMMENT_ID, exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Test Should ThrowException when not found comment")
+    void deleteComment_NotFoundCommentId() {
+        when(commentRepository.findById(COMMENT_ID))
+                .thenThrow(new IllegalArgumentException(getErrorNotFoundComment(COMMENT_ID)));
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> commentService.deleteComment(COMMENT_ID));
+
+        assertEquals(getErrorNotFoundComment(COMMENT_ID), exception.getMessage());
+        verify(commentRepository, times(1)).findById(COMMENT_ID);
+    }
+}
