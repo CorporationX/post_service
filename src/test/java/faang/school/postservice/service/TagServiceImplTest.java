@@ -6,7 +6,6 @@ import faang.school.postservice.dto.tag.TagCreateDto;
 import faang.school.postservice.dto.tag.TagDto;
 import faang.school.postservice.dto.tag.TagRemoveDto;
 import faang.school.postservice.exception.PostNotFoundException;
-import faang.school.postservice.exception.TagNotFoundException;
 import faang.school.postservice.mapper.TagMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Tag;
@@ -105,22 +104,14 @@ public class TagServiceImplTest {
     }
 
     @Test
-    public void addToPostThrowTagNotFoundExceptionTest() {
-        when(tagRepository.findById(1L)).thenReturn(Optional.empty());
-
-        assertThrows(TagNotFoundException.class,
-                () -> tagServiceImpl.addToPost(1L, new TagAddToPostDto(List.of(1L, 2L), 1L)));
-    }
-
-    @Test
     public void addToPostTest() {
-        Tag firstTag = Tag.builder().id(1L).name("Tag1").posts(new HashSet<>()).build();
-        Tag secondTag = Tag.builder().id(2L).name("Tag2").posts(new HashSet<>()).build();
+        List<Tag> tags = List.of(
+                Tag.builder().id(1L).name("Tag1").posts(new HashSet<>()).build(),
+                Tag.builder().id(2L).name("Tag2").posts(new HashSet<>()).build()
+        );
 
-        when(tagRepository.findById(1L)).thenReturn(Optional.of(firstTag));
-        when(tagRepository.findById(2L)).thenReturn(Optional.of(secondTag));
-        when(tagRepository.save(firstTag)).thenReturn(firstTag);
-        when(tagRepository.save(secondTag)).thenReturn(secondTag);
+        when(tagRepository.findAllById(any())).thenReturn(tags);
+        when(tagRepository.saveAll(any())).thenReturn(tags);
         when(postService.findPostById(1L)).thenReturn(Post.builder().id(1L).content("Some content").build());
 
         ResponseEntity<List<TagAddedToPostDto>> actualResult =
@@ -147,7 +138,7 @@ public class TagServiceImplTest {
     }
 
     @Test
-    public void removeTagsFromPostTest(){
+    public void removeTagsFromPostTest() {
         TagRemoveDto tagRemoveDto = new TagRemoveDto(List.of(1L, 2L), 1L);
         ResponseEntity<Void> actualResult = tagServiceImpl.removeTagsFromPost(1L, tagRemoveDto);
         assertEquals(HttpStatus.OK, actualResult.getStatusCode());

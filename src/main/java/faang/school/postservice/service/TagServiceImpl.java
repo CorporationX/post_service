@@ -5,7 +5,6 @@ import faang.school.postservice.dto.tag.TagAddedToPostDto;
 import faang.school.postservice.dto.tag.TagCreateDto;
 import faang.school.postservice.dto.tag.TagDto;
 import faang.school.postservice.dto.tag.TagRemoveDto;
-import faang.school.postservice.exception.TagNotFoundException;
 import faang.school.postservice.mapper.TagMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Tag;
@@ -17,9 +16,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -54,21 +53,20 @@ public class TagServiceImpl implements TagService {
     @Override
     @Transactional
     public ResponseEntity<List<TagAddedToPostDto>> addToPost(Long postId, TagAddToPostDto tagAddToPostDto) {
-        log.debug("Adding to post with id: tags: {} {}", postId, tagAddToPostDto.tagsId());
+        List<Long> tagIds = tagAddToPostDto.tagsId();
         Post post = getPostById(postId);
 
-        Set<Tag> tags = tagAddToPostDto.tagsId().stream()
-                .map(this::getTagById)
-                .map(tag -> {
-                    tag.getPosts().add(post);
-                    return tagRepository.save(tag);
-                })
-                .collect(Collectors.toSet());
+        log.debug("Adding to post with id: tags: {} {}", postId, tagIds);
 
-        post.setTags(tags);
+        Set<Tag> tagsByIds = new HashSet<>();
+        tagRepository.findAllById(tagIds).forEach(tagsByIds::add);
+        tagsByIds.forEach(tag -> tag.getPosts().add(post));
+        tagRepository.saveAll(tagsByIds);
+
+        post.setTags(tagsByIds);
 
         log.debug("All tags saved");
-        return ResponseEntity.ok(tags.stream().map(tagMapper::mapToTagAddedDto).toList());
+        return ResponseEntity.ok(tagsByIds.stream().map(tagMapper::mapToTagAddedDto).toList());
     }
 
     @Override
@@ -88,11 +86,6 @@ public class TagServiceImpl implements TagService {
 
     private Post getPostById(Long id) {
         return postService.findPostById(id);
-    }
-
-    private Tag getTagById(Long id) {
-        return tagRepository.findById(id)
-                .orElseThrow(() -> new TagNotFoundException("Tag with id: " + id + " not found"));
     }
 
     private void validateTagExistByName(String tagName) {

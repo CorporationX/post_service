@@ -1,4 +1,4 @@
-package faang.school.postservice.contoller.handler;
+package faang.school.postservice.controller.handler;
 
 import faang.school.postservice.exception.PostNotFoundException;
 import faang.school.postservice.exception.TagNotFoundException;
