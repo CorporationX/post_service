@@ -4,10 +4,10 @@ import faang.school.postservice.dto.tag.TagAddToPostDto;
 import faang.school.postservice.dto.tag.TagAddedToPostDto;
 import faang.school.postservice.dto.tag.TagCreateDto;
 import faang.school.postservice.dto.tag.TagDto;
+import faang.school.postservice.service.TagService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
-import faang.school.postservice.service.TagService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -45,5 +45,11 @@ public class TagController {
     @GetMapping("/search")
     public ResponseEntity<List<TagDto>> searchTagsLikeName(@NotNull @RequestParam("name") String tagName) {
         return tagService.searchTagsLikeName(tagName);
+    }
+
+    @PostMapping("post/{postId}/remove")
+    public ResponseEntity<Void> removeTagsFromPost(@NotNull @PathVariable Long postId,
+                                                   @NotNull @RequestBody List<Long> tagsId) {
+        return tagService.removeTagsFromPost(postId, tagsId);
     }
 }

@@ -12,7 +12,7 @@ import faang.school.postservice.model.Tag;
 import faang.school.postservice.repository.TagRepository;
 import faang.school.postservice.service.CacheableTagSearchService;
 import faang.school.postservice.service.PostService;
-import faang.school.postservice.service.TagService;
+import faang.school.postservice.service.TagServiceImpl;
 import jakarta.persistence.EntityExistsException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,7 +39,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class TagServiceTest {
+public class TagServiceImplTest {
     @Mock
     private CacheableTagSearchService cacheableTagSearchService;
     @Mock
@@ -49,14 +49,14 @@ public class TagServiceTest {
     @Spy
     private TagMapper tagMapper = Mappers.getMapper(TagMapper.class);
     @InjectMocks
-    private TagService tagService;
+    private TagServiceImpl tagServiceImpl;
 
 
     @Test
     public void getTagsForPostThrowPostNotFoundExceptionTest() {
         when(postService.findPostById(1L)).thenThrow(new PostNotFoundException("Post with id: " + 1L + " not found"));
 
-        assertThrows(PostNotFoundException.class, () -> tagService.getTagsForPost(1L));
+        assertThrows(PostNotFoundException.class, () -> tagServiceImpl.getTagsForPost(1L));
     }
 
     @Test
@@ -69,7 +69,7 @@ public class TagServiceTest {
                                 .build()
                 );
 
-        ResponseEntity<List<TagDto>> actualTagsResponseEntity = tagService.getTagsForPost(1L);
+        ResponseEntity<List<TagDto>> actualTagsResponseEntity = tagServiceImpl.getTagsForPost(1L);
 
         List<TagDto> actualTags = actualTagsResponseEntity.getBody();
         assertEquals(HttpStatus.OK, actualTagsResponseEntity.getStatusCode());
@@ -84,14 +84,14 @@ public class TagServiceTest {
         when(tagRepository.findTagByName("Tag1")).thenReturn(Optional.of(Tag.builder().build()));
 
         assertThrows(EntityExistsException.class,
-                () -> tagService.createTag(new TagCreateDto("Tag1", 1L)));
+                () -> tagServiceImpl.createTag(new TagCreateDto("Tag1", 1L)));
     }
 
     @Test
     public void createTagTest() {
         when(cacheableTagSearchService.createTag(any())).thenReturn(new TagDto(1L, "Tag1"));
 
-        ResponseEntity<TagDto> actualResult = tagService.createTag(new TagCreateDto("Tag1", 1L));
+        ResponseEntity<TagDto> actualResult = tagServiceImpl.createTag(new TagCreateDto("Tag1", 1L));
 
         TagDto actualTagDto = actualResult.getBody();
         assertEquals(HttpStatus.OK, actualResult.getStatusCode());
@@ -103,7 +103,7 @@ public class TagServiceTest {
     public void addToPostThrowPostNotFoundExceptionTest() {
         when(postService.findPostById(1L)).thenThrow(new PostNotFoundException("Post with id: " + 1L + " not found"));
 
-        assertThrows(PostNotFoundException.class, () -> tagService.getTagsForPost(1L));
+        assertThrows(PostNotFoundException.class, () -> tagServiceImpl.getTagsForPost(1L));
     }
 
     @Test
@@ -111,7 +111,7 @@ public class TagServiceTest {
         when(tagRepository.findById(1L)).thenReturn(Optional.empty());
 
         assertThrows(TagNotFoundException.class,
-                () -> tagService.addToPost(1L, new TagAddToPostDto(List.of(1L, 2L), 1L)));
+                () -> tagServiceImpl.addToPost(1L, new TagAddToPostDto(List.of(1L, 2L), 1L)));
     }
 
     @Test
@@ -126,7 +126,7 @@ public class TagServiceTest {
         when(postService.findPostById(1L)).thenReturn(Post.builder().id(1L).content("Some content").build());
 
         ResponseEntity<List<TagAddedToPostDto>> actualResult =
-                tagService.addToPost(1L, new TagAddToPostDto(List.of(1L, 2L), 1L));
+                tagServiceImpl.addToPost(1L, new TagAddToPostDto(List.of(1L, 2L), 1L));
 
         List<TagAddedToPostDto> actualTags = actualResult.getBody();
         assertNotNull(actualTags);
@@ -140,7 +140,7 @@ public class TagServiceTest {
         when(cacheableTagSearchService.searchCachedTags(anyString()))
                 .thenReturn(List.of(new TagDto(1L, "Tag1"), new TagDto(2L, "Tag2")));
 
-        ResponseEntity<List<TagDto>> actualResult = tagService.searchTagsLikeName("t");
+        ResponseEntity<List<TagDto>> actualResult = tagServiceImpl.searchTagsLikeName("t");
         List<TagDto> actualTags = actualResult.getBody();
         assertNotNull(actualTags);
         assertEquals(HttpStatus.OK, actualResult.getStatusCode());
