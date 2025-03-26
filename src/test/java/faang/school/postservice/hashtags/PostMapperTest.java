@@ -1,7 +1,7 @@
 package faang.school.postservice.hashtags;
 
 import faang.school.postservice.dto.hashtag.PostResponseDto;
-import faang.school.postservice.mapper.PostMapper;
+import faang.school.postservice.mapper.hashtags.PostMapper;
 import faang.school.postservice.model.Post;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

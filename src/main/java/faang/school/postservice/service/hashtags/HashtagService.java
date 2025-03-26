@@ -2,7 +2,7 @@ package faang.school.postservice.service.hashtags;
 
 import faang.school.postservice.dto.hashtag.HashtagRequestDto;
 import faang.school.postservice.dto.hashtag.PostResponseDto;
-import faang.school.postservice.mapper.PostMapper;
+import faang.school.postservice.mapper.hashtags.PostMapper;
 import faang.school.postservice.model.Hashtag;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.HashtagRepository;

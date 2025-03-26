@@ -1,4 +1,4 @@
-package faang.school.postservice.mapper;
+package faang.school.postservice.mapper.hashtags;
 
 import faang.school.postservice.dto.hashtag.PostResponseDto;
 import faang.school.postservice.model.Post;
@@ -20,3 +20,4 @@ public interface PostMapper {
         return null;
     }
 }
+
