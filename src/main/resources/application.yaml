@@ -35,6 +35,9 @@ logging:
 user-service:
   host: localhost
   port: 8080
+  maxNumberUsersInRequest: 100
+   #maximum number of users in one request
+
 project-service:
   host: localhost
   port: 8082
