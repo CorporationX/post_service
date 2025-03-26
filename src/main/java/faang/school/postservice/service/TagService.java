@@ -4,6 +4,7 @@ import faang.school.postservice.dto.tag.TagAddToPostDto;
 import faang.school.postservice.dto.tag.TagAddedToPostDto;
 import faang.school.postservice.dto.tag.TagCreateDto;
 import faang.school.postservice.dto.tag.TagDto;
+import faang.school.postservice.dto.tag.TagRemoveDto;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
@@ -17,5 +18,5 @@ public interface TagService {
 
     ResponseEntity<List<TagDto>> searchTagsLikeName(String tagName);
 
-    ResponseEntity<Void> removeTagsFromPost(Long postId, List<Long> tagsId);
+    ResponseEntity<Void> removeTagsFromPost(Long postId, TagRemoveDto tagRemoveDto);
 }

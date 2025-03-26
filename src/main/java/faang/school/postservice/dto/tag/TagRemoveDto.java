@@ -6,7 +6,6 @@ import java.util.List;
 
 public record TagRemoveDto(
         @NotNull List<Long> tagsId,
-        @NotNull Long postId,
         @NotNull Long userId
 ) {
 }

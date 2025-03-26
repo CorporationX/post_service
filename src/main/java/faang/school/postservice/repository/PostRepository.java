@@ -26,6 +26,6 @@ public interface PostRepository extends CrudRepository<Post, Long> {
     @Modifying
     @Transactional
     @Query(nativeQuery = true,
-            value = "DELETE from post_tag WHERE post_tag.post_id = :postId AND post_tag.tag_id not in(:tagsId)")
+            value = "DELETE from post_tag WHERE post_tag.post_id = :postId AND post_tag.tag_id in(:tagsId)")
     void deleteTagsFromPost(Long postId, List<Long> tagsId);
 }

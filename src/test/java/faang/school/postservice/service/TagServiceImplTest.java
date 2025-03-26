@@ -1,18 +1,16 @@
-package faang.school.postservice.util.service;
+package faang.school.postservice.service;
 
 import faang.school.postservice.dto.tag.TagAddToPostDto;
 import faang.school.postservice.dto.tag.TagAddedToPostDto;
 import faang.school.postservice.dto.tag.TagCreateDto;
 import faang.school.postservice.dto.tag.TagDto;
+import faang.school.postservice.dto.tag.TagRemoveDto;
 import faang.school.postservice.exception.PostNotFoundException;
 import faang.school.postservice.exception.TagNotFoundException;
 import faang.school.postservice.mapper.TagMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Tag;
 import faang.school.postservice.repository.TagRepository;
-import faang.school.postservice.service.CacheableTagSearchService;
-import faang.school.postservice.service.PostService;
-import faang.school.postservice.service.TagServiceImpl;
 import jakarta.persistence.EntityExistsException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -146,5 +144,13 @@ public class TagServiceImplTest {
         assertEquals(HttpStatus.OK, actualResult.getStatusCode());
         assertEquals(2, actualTags.size());
         assertEquals("Tag1", actualTags.get(0).getName());
+    }
+
+    @Test
+    public void removeTagsFromPostTest(){
+        TagRemoveDto tagRemoveDto = new TagRemoveDto(List.of(1L, 2L), 1L);
+        ResponseEntity<Void> actualResult = tagServiceImpl.removeTagsFromPost(1L, tagRemoveDto);
+        assertEquals(HttpStatus.OK, actualResult.getStatusCode());
+        verify(postService, times(1)).removeTagsFromPost(1L, List.of(1L, 2L));
     }
 }

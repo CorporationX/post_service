@@ -4,6 +4,7 @@ import faang.school.postservice.dto.tag.TagAddToPostDto;
 import faang.school.postservice.dto.tag.TagAddedToPostDto;
 import faang.school.postservice.dto.tag.TagCreateDto;
 import faang.school.postservice.dto.tag.TagDto;
+import faang.school.postservice.dto.tag.TagRemoveDto;
 import faang.school.postservice.exception.TagNotFoundException;
 import faang.school.postservice.mapper.TagMapper;
 import faang.school.postservice.model.Post;
@@ -23,12 +24,13 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class TagServiceImpl {
+public class TagServiceImpl implements TagService {
     private final PostService postService;
     private final TagRepository tagRepository;
     private final TagMapper tagMapper;
     private final CacheableTagSearchService cacheableTagSearchService;
 
+    @Override
     public ResponseEntity<List<TagDto>> getTagsForPost(Long postId) {
         return ResponseEntity.ok(
                 getPostById(postId).getTags().stream()
@@ -36,6 +38,7 @@ public class TagServiceImpl {
                         .toList());
     }
 
+    @Override
     public ResponseEntity<TagDto> createTag(TagCreateDto tagCreateDto) {
         log.debug("Creating new tag: {}", tagCreateDto.name());
         String tagName = tagCreateDto.name();
@@ -48,6 +51,7 @@ public class TagServiceImpl {
         );
     }
 
+    @Override
     @Transactional
     public ResponseEntity<List<TagAddedToPostDto>> addToPost(Long postId, TagAddToPostDto tagAddToPostDto) {
         log.debug("Adding to post with id: tags: {} {}", postId, tagAddToPostDto.tagsId());
@@ -67,15 +71,18 @@ public class TagServiceImpl {
         return ResponseEntity.ok(tags.stream().map(tagMapper::mapToTagAddedDto).toList());
     }
 
+    @Override
     public ResponseEntity<List<TagDto>> searchTagsLikeName(String tagName) {
         log.debug("Searching tags like name {}", tagName);
         return ResponseEntity.ok(cacheableTagSearchService.searchCachedTags(tagName));
     }
 
-    public ResponseEntity<Void> removeTagsFromPost(Long postId, List<Long> tagsId) {
+    @Override
+    public ResponseEntity<Void> removeTagsFromPost(Long postId, TagRemoveDto tagRemoveDto) {
+        List<Long> tagsId = tagRemoveDto.tagsId();
+
         log.debug("Removing tags from post with id: {} {}", postId, tagsId);
         postService.removeTagsFromPost(postId, tagsId);
-
         return ResponseEntity.ok().build();
     }
 

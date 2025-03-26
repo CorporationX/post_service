@@ -2,10 +2,18 @@ package faang.school.postservice.dto.tag;
 
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-public record TagDto(
-        @Nullable Long id,
-        @NotNull @NotBlank String name
-) {
+import java.io.Serializable;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class TagDto implements Serializable {
+    @Nullable
+    private Long id;
+    @NotBlank
+    private String name;
 }

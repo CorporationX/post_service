@@ -1,10 +1,9 @@
-package faang.school.postservice.util.service;
+package faang.school.postservice.service;
 
 import faang.school.postservice.dto.tag.TagDto;
 import faang.school.postservice.mapper.TagMapper;
 import faang.school.postservice.model.Tag;
 import faang.school.postservice.repository.TagRepository;
-import faang.school.postservice.service.CacheableTagSearchService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

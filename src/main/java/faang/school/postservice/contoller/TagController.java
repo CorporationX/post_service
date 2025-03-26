@@ -4,7 +4,8 @@ import faang.school.postservice.dto.tag.TagAddToPostDto;
 import faang.school.postservice.dto.tag.TagAddedToPostDto;
 import faang.school.postservice.dto.tag.TagCreateDto;
 import faang.school.postservice.dto.tag.TagDto;
-import faang.school.postservice.service.TagService;
+import faang.school.postservice.dto.tag.TagRemoveDto;
+import faang.school.postservice.service.TagServiceImpl;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -20,10 +21,10 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/tag")
+@RequestMapping("/tags")
 @RequiredArgsConstructor
 public class TagController {
-    private final TagService tagService;
+    private final TagServiceImpl tagService;
 
     @GetMapping("/post/{id}")
     public ResponseEntity<List<TagDto>> getTagsForPost(@NotNull @PathVariable Long id) {
@@ -36,7 +37,7 @@ public class TagController {
     }
 
     @PostMapping("/post/{postId}/add")
-    public ResponseEntity<List<TagAddedToPostDto>> addToPost(@NotNull  @PathVariable Long postId,
+    public ResponseEntity<List<TagAddedToPostDto>> addToPost(@NotNull @PathVariable Long postId,
                                                              @NotNull @Valid @RequestBody
                                                              TagAddToPostDto tagAddToPostDto) {
         return tagService.addToPost(postId, tagAddToPostDto);
@@ -49,7 +50,7 @@ public class TagController {
 
     @PostMapping("post/{postId}/remove")
     public ResponseEntity<Void> removeTagsFromPost(@NotNull @PathVariable Long postId,
-                                                   @NotNull @RequestBody List<Long> tagsId) {
-        return tagService.removeTagsFromPost(postId, tagsId);
+                                                   @NotNull @RequestBody TagRemoveDto tagRemoveDto) {
+        return tagService.removeTagsFromPost(postId, tagRemoveDto);
     }
 }
