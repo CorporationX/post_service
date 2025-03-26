@@ -2,7 +2,7 @@ package faang.school.postservice.hashtags;
 
 import faang.school.postservice.dto.hashtag.HashtagRequestDto;
 import faang.school.postservice.dto.hashtag.PostResponseDto;
-import faang.school.postservice.mapper.hashtags.PostMapper;
+import faang.school.postservice.mapper.HashtagsPostMapper;
 import faang.school.postservice.model.Hashtag;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.HashtagRepository;
@@ -48,7 +48,7 @@ public class HashtagServiceTest {
     private HashtagRedisService hashtagRedisService;
 
     @Spy
-    private PostMapper postMapper;
+    private HashtagsPostMapper postMapper;
 
     private final int maxCachedPosts = 100;
     private HashtagRequestDto hashtagRequestDto;

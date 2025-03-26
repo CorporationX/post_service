@@ -1,7 +1,7 @@
 package faang.school.postservice.hashtags;
 
 import faang.school.postservice.dto.hashtag.PostResponseDto;
-import faang.school.postservice.mapper.hashtags.PostMapper;
+import faang.school.postservice.mapper.HashtagsPostMapper;
 import faang.school.postservice.model.Post;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,7 +13,7 @@ import java.time.format.DateTimeFormatter;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class PostMapperTest {
-    private final PostMapper postMapper = Mappers.getMapper(PostMapper.class);
+    private final HashtagsPostMapper postMapper = Mappers.getMapper(HashtagsPostMapper.class);
     private final LocalDateTime publishedAt = LocalDateTime.now();
     private Post post;
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");

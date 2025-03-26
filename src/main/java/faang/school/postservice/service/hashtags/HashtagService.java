@@ -2,7 +2,7 @@ package faang.school.postservice.service.hashtags;
 
 import faang.school.postservice.dto.hashtag.HashtagRequestDto;
 import faang.school.postservice.dto.hashtag.PostResponseDto;
-import faang.school.postservice.mapper.hashtags.PostMapper;
+import faang.school.postservice.mapper.HashtagsPostMapper;
 import faang.school.postservice.model.Hashtag;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.HashtagRepository;
@@ -31,7 +31,7 @@ public class HashtagService {
     private final HashtagRepository hashtagRepository;
     private final PostRepository postRepository;
     private final HashtagRedisService hashtagRedisService;
-    private final PostMapper postMapper;
+    private final HashtagsPostMapper postMapper;
 
     public Page<PostResponseDto> getPostsByHashtag(HashtagRequestDto hashtagRequestDto) {
         HashtagValidation.validateHashtagRequestDto(hashtagRequestDto);

@@ -1,4 +1,4 @@
-package faang.school.postservice.mapper.hashtags;
+package faang.school.postservice.mapper;
 
 import faang.school.postservice.dto.hashtag.PostResponseDto;
 import faang.school.postservice.model.Post;
@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 @Mapper(componentModel = "spring")
-public interface PostMapper {
+public interface HashtagsPostMapper {
     DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
 
     PostResponseDto toPostResponseDto(Post post);
