@@ -2,9 +2,11 @@ package faang.school.postservice.controller.comment;
 
 import static faang.school.postservice.contants.InfoMessage.*;
 
-import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.comment.CommentRequestDto;
+import faang.school.postservice.dto.comment.CommentResponseDto;
 import faang.school.postservice.dto.comment.CommentUpdateDto;
 import faang.school.postservice.service.comment.CommentService;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -21,25 +23,25 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping("/v1/comments")
+@RequestMapping("/api/v1/comments")
 @RequiredArgsConstructor
 public class CommentController {
     private final CommentService commentService;
 
     @PostMapping
-    public void createComment(@RequestBody CommentDto commentDto) {
-        log.info(INFO_START_CONTROLLER_CREATE_COMMENT, commentDto.getAuthorId(), commentDto.getPostId());
-        commentService.createComment(commentDto);
+    public void createComment(@NonNull @RequestBody CommentRequestDto commentRequestDto) {
+        log.info(INFO_START_CONTROLLER_CREATE_COMMENT, commentRequestDto.getAuthorId(), commentRequestDto.getPostId());
+        commentService.createComment(commentRequestDto);
     }
 
     @PutMapping("/{id}")
-    public void updateComment(@PathVariable Long id, @RequestBody CommentUpdateDto commentUpdateDto) {
+    public void updateComment(@PathVariable Long id, @NonNull @RequestBody CommentUpdateDto commentUpdateDto) {
         log.info(INFO_START_CONTROLLER_UPDATE_COMMENT, id, commentUpdateDto.getAuthorId());
         commentService.updateComment(id, commentUpdateDto);
     }
 
-    @GetMapping
-    public List<CommentDto> getComments(@RequestParam Long postId) {
+    @GetMapping("/by-post")
+    public List<CommentResponseDto> getComments(@RequestParam Long postId) {
         log.info(INFO_START_CONTROLLER_GET_COMMENT, postId);
         return commentService.getCommentsByPostId(postId);
     }

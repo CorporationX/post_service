@@ -4,10 +4,10 @@ import faang.school.postservice.dto.comment.CommentUpdateDto;
 import faang.school.postservice.model.Comment;
 import org.mapstruct.Mapper;
 
-@Mapper
+@Mapper(componentModel = "spring")
 public interface CommentUpdateMapper {
-    Comment toEntity(CommentUpdateDto commentUpdateDto);
+    Comment toComment(CommentUpdateDto commentUpdateDto);
 
-    CommentUpdateDto toDto(Comment comment);
+    CommentUpdateDto toCommentDto(Comment comment);
 }
 

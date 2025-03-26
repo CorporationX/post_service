@@ -4,9 +4,11 @@ import static faang.school.postservice.contants.ErrorMessage.*;
 import static faang.school.postservice.contants.InfoMessage.*;
 
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.comment.CommentRequestDto;
+import faang.school.postservice.dto.comment.CommentResponseDto;
 import faang.school.postservice.dto.comment.CommentUpdateDto;
-import faang.school.postservice.mapper.CommentMapper;
+import faang.school.postservice.mapper.CommentRequestMapper;
+import faang.school.postservice.mapper.CommentResponseMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
@@ -29,21 +31,21 @@ public class CommentService {
 
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
-    private final CommentMapper commentMapper;
+    private final CommentRequestMapper commentRequestMapper;
+    private final CommentResponseMapper commentResponseMapper;
     private final UserServiceClient userServiceClient;
 
-    public void createComment(CommentDto commentDto) {
-        validateCreateComment(commentDto);
-        Post post = getPost(commentDto.getPostId());
-        Comment comment = commentMapper.toEntity(commentDto);
+    public void createComment(CommentRequestDto commentRequestDto) {
+        validateCreateComment(commentRequestDto);
+        Post post = getPost(commentRequestDto.getPostId());
+        Comment comment = commentRequestMapper.toComment(commentRequestDto);
         comment.setPost(post);
-        comment.setAuthorId(commentDto.getAuthorId());
+        comment.setAuthorId(commentRequestDto.getAuthorId());
         commentRepository.save(comment);
-        log.info(INFO_CREATE_COMMENT, comment.getId(), commentDto.getAuthorId(), commentDto.getPostId());
+        log.info(INFO_CREATE_COMMENT, comment.getId(), commentRequestDto.getAuthorId(), commentRequestDto.getPostId());
     }
 
     public void updateComment(Long id, CommentUpdateDto commentUpdateDto) {
-        validateDto(commentUpdateDto, ERROR_NULL_DTO_UPDATE_COMMENT);
         validateContent(commentUpdateDto.getContent());
         validateId(commentUpdateDto.getAuthorId(), ERROR_NULL_AUTHOR_ID);
         Comment comment = getComment(id);
@@ -53,14 +55,14 @@ public class CommentService {
         log.info(INFO_UPDATE_COMMENT, id, commentUpdateDto.getAuthorId());
     }
 
-    public List<CommentDto> getCommentsByPostId(Long postId) {
+    public List<CommentResponseDto> getCommentsByPostId(Long postId) {
         getPost(postId);
-        List<CommentDto> commentDto = commentRepository.findAllByPostId(postId).stream()
+        List<CommentResponseDto> commentResponseDto = commentRepository.findAllByPostId(postId).stream()
                 .sorted(Comparator.comparing(Comment::getCreatedAt).reversed())
-                .map(commentMapper::toDto)
+                .map(commentResponseMapper::toCommentDto)
                 .toList();
-        log.info(INFO_GET_COMMENTS, commentDto.size(), postId);
-        return commentDto;
+        log.info(INFO_GET_COMMENTS, commentResponseDto.size(), postId);
+        return commentResponseDto;
     }
 
     public void deleteComment(Long id) {
@@ -79,15 +81,7 @@ public class CommentService {
         return getEntity(() -> postRepository.findById(id), getErrorNotFoundPost(id));
     }
 
-    private <T> void validateDto(T dto, String errorMessage) {
-        if (dto == null) {
-            log.error(errorMessage);
-            throw new IllegalArgumentException(errorMessage);
-        }
-    }
-
-    private void validateCreateComment(CommentDto commentDto) {
-        validateDto(commentDto, ERROR_NULL_DTO_COMMENT);
+    private void validateCreateComment(CommentRequestDto commentDto) {
         validateContent(commentDto.getContent());
         validateId(commentDto.getAuthorId(), ERROR_NULL_AUTHOR_ID);
         validateId(commentDto.getPostId(), ERROR_NULL_POST_ID);
