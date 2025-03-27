@@ -17,6 +17,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ResourceRepository;
+import faang.school.postservice.repository.redis.RedisPostRepository;
 import faang.school.postservice.service.GrammarService;
 import faang.school.postservice.service.HashtagService;
 import faang.school.postservice.service.PaginationService;
@@ -81,6 +82,8 @@ public class PostServiceTest {
     private S3Service s3Service;
     @Mock
     private ResourceRepository resourceRepository;
+    @Mock
+    private RedisPostRepository redisPostRepository;
     @Mock
     private PostImageService postImageService;
     private Post post;
@@ -165,6 +168,7 @@ public class PostServiceTest {
 
         postService.publishPost(postId);
 
+        verify(redisPostRepository).save(any());
         verify(postRepository, atLeastOnce()).save(postArgumentCaptor.capture());
         Post capturedPost = postArgumentCaptor.getValue();
         assertTrue(capturedPost.isPublished());

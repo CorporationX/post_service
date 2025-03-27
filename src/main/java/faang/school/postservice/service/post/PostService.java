@@ -15,18 +15,22 @@ import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Hashtag;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
+import faang.school.postservice.model.redis.RedisPost;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ResourceRepository;
+import faang.school.postservice.repository.redis.RedisPostRepository;
 import faang.school.postservice.service.HashtagService;
 import faang.school.postservice.service.s3.S3Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.function.Supplier;
@@ -46,9 +50,13 @@ public class PostService {
     private final S3Service s3Service;
     private final ResourceRepository resourceRepository;
     private final PostImageService postImageService;
+    private final RedisPostRepository redisPostRepository;
 
     @Value("${post.schedule.batch-size}")
     private int batchSize;
+
+    @Value("${spring.data.redis.ttl.post}")
+    private Duration postTTL;
 
     @Value("${post.upload.max-files}")
     private int maxFiles;
@@ -72,6 +80,7 @@ public class PostService {
         return postMapper.toDto(post);
     }
 
+    @Transactional
     public PostReadDto publishPost(long id) {
         Post post = getPostById(id);
         if (post.isPublished()) {
@@ -79,7 +88,12 @@ public class PostService {
         }
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
-        return postMapper.toDto(postRepository.save(post));
+        Post savedPost = postRepository.save(post);
+        RedisPost redisPost = postMapper.toRedis(savedPost);
+        redisPost.setTimeToLeave(postTTL.toMillis());
+
+        redisPostRepository.save(redisPost);
+        return postMapper.toDto(savedPost);
     }
 
     public PostReadDto updatePost(long id, PostUpdateDto dto) {

@@ -5,6 +5,7 @@ import faang.school.postservice.dto.post.PostReadDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
 import faang.school.postservice.model.Hashtag;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.redis.RedisPost;
 import faang.school.postservice.utils.StringUtils;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Condition;
@@ -29,6 +30,11 @@ public interface PostMapper {
     @Mapping(target = "likesCount",
             expression = "java(entity.getLikes().size())")
     PostReadDto toDto(Post entity);
+
+    @Mapping(target = "timeToLeave", ignore = true)
+    @Mapping(target = "comments", ignore = true)
+    @Mapping(target = "likes", expression = "java(entity.getLikes().size())")
+    RedisPost toRedis(Post entity);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "content", conditionQualifiedByName = "isNotBlank")
