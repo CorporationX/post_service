@@ -7,7 +7,7 @@ import org.springframework.data.redis.core.TimeToLive;
 
 import java.util.List;
 
-@RedisHash("post")
+@RedisHash("posts")
 @Data
 public class RedisPost {
     @Id
