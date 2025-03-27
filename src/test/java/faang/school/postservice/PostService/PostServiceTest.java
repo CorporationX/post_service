@@ -3,8 +3,9 @@ package faang.school.postservice.PostService;
 import faang.school.postservice.dto.post.PostRequestDto;
 import faang.school.postservice.dto.post.PostResponseDto;
 import faang.school.postservice.exception.PostNotFoundException;
-import faang.school.postservice.mapper.PostMapper;
+import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.PostService;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,9 +37,11 @@ public class PostServiceTest {
 
     @Mock
     private PostRepository postRepository;
+    @Mock
+    private LikeRepository likeRepository;
 
     @Spy
-    private PostMapper postMapper;
+    private PostMapperImpl postMapper;
 
     private PostRequestDto postRequestDto;
     private Post post;
@@ -158,35 +161,65 @@ public class PostServiceTest {
     @Test
     public void testGetPostById_postFound() {
         when(postRepository.findById(postRequestDto.getId())).thenReturn(Optional.of(post));
+        when(likeRepository.countByPostId(post.getId())).thenReturn(5L);
+
         PostResponseDto responseDto = postService.getPostById(1L);
-        assertEquals(postMapper.toPostResponseDto(post), responseDto);
+
+        PostResponseDto expected = postMapper.toPostResponseDto(post);
+        expected.setLikesCount(5L);
+
+        assertEquals(expected, responseDto);
     }
 
     @Test
     public void testGetUserDraftPosts_draftsFound() {
         when(postRepository.findDraftsByAuthorId(1L)).thenReturn(List.of(post));
+        when(likeRepository.countByPostId(post.getId())).thenReturn(3L);
+
         List<PostResponseDto> responseDtos = postService.getUserDraftPosts(1L);
-        assertEquals(responseDtos, postMapper.toPostResponseDtoList(List.of(post)));
+
+        PostResponseDto expected = postMapper.toPostResponseDto(post);
+        expected.setLikesCount(3L);
+
+        assertEquals(List.of(expected), responseDtos);
     }
 
     @Test
     public void testProjectDraftPosts_draftsFound() {
         when(postRepository.findDraftsByProjectId(1L)).thenReturn(List.of(post));
+        when(likeRepository.countByPostId(post.getId())).thenReturn(2L);
+
         List<PostResponseDto> responseDtos = postService.getProjectDraftPosts(1L);
-        assertEquals(responseDtos, postMapper.toPostResponseDtoList(List.of(post)));
+
+        PostResponseDto expected = postMapper.toPostResponseDto(post);
+        expected.setLikesCount(2L);
+
+        assertEquals(List.of(expected), responseDtos);
     }
 
     @Test
     public void testUserPublishedPosts_draftsFound() {
         when(postRepository.findPublishedByAuthorId(1L)).thenReturn(List.of(post));
+        when(likeRepository.countByPostId(post.getId())).thenReturn(7L);
+
         List<PostResponseDto> responseDtos = postService.getUserPublishedPosts(1L);
-        assertEquals(responseDtos, postMapper.toPostResponseDtoList(List.of(post)));
+
+        PostResponseDto expected = postMapper.toPostResponseDto(post);
+        expected.setLikesCount(7L);
+
+        assertEquals(List.of(expected), responseDtos);
     }
 
     @Test
     public void testProjectPublishedPosts_draftsFound() {
         when(postRepository.findPublishedByProjectId(1L)).thenReturn(List.of(post));
+        when(likeRepository.countByPostId(post.getId())).thenReturn(4L);
+
         List<PostResponseDto> responseDtos = postService.getProjectPublishedPosts(1L);
-        assertEquals(responseDtos, postMapper.toPostResponseDtoList(List.of(post)));
+
+        PostResponseDto expected = postMapper.toPostResponseDto(post);
+        expected.setLikesCount(4L);
+
+        assertEquals(List.of(expected), responseDtos);
     }
 }
