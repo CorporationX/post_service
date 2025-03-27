@@ -5,6 +5,7 @@ import faang.school.postservice.dto.post.PostResponseDto;
 import faang.school.postservice.exception.PostNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.utils.validationUtils.PostValidation;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -25,6 +27,7 @@ public class PostService {
 
     private final PostMapper postMapper;
     private final PostRepository postRepository;
+    private final LikeRepository likeRepository;
 
     public PostResponseDto createDraftPost(PostRequestDto postRequestDto) {
         PostValidation.validatePostAuthors(postRequestDto);
@@ -85,27 +88,40 @@ public class PostService {
         PostValidation.validatePostId(postId);
         Optional<Post> optionalPost = postRepository.findById(postId);
         validatePostOptional(optionalPost, postId);
-        return postMapper.toPostResponseDto(optionalPost.get());
+
+        PostResponseDto postResponseDto = postMapper.toPostResponseDto(optionalPost.get());
+        postResponseDto.setLikesCount(likeRepository.countByPostId(postId));
+        return postResponseDto;
     }
 
     public List<PostResponseDto> getUserDraftPosts(Long userId) {
         PostValidation.validateUserId(userId);
-        return postMapper.toPostResponseDtoList(postRepository.findDraftsByAuthorId(userId));
+        return mapToDtoWithLikes(postRepository.findDraftsByAuthorId(userId));
     }
 
     public List<PostResponseDto> getProjectDraftPosts(Long projectId) {
         PostValidation.validateProjectId(projectId);
-        return postMapper.toPostResponseDtoList(postRepository.findDraftsByProjectId(projectId));
+        return mapToDtoWithLikes(postRepository.findDraftsByProjectId(projectId));
     }
 
     public List<PostResponseDto> getUserPublishedPosts(Long userId) {
         PostValidation.validateUserId(userId);
-        return postMapper.toPostResponseDtoList(postRepository.findPublishedByAuthorId(userId));
+        return mapToDtoWithLikes(postRepository.findPublishedByAuthorId(userId));
     }
 
     public List<PostResponseDto> getProjectPublishedPosts(Long projectId) {
         PostValidation.validateProjectId(projectId);
-        return postMapper.toPostResponseDtoList(postRepository.findPublishedByProjectId(projectId));
+        return mapToDtoWithLikes(postRepository.findPublishedByProjectId(projectId));
+    }
+
+    private List<PostResponseDto> mapToDtoWithLikes(List<Post> posts) {
+        return posts.stream()
+                .map(post -> {
+                    PostResponseDto postResponseDto = postMapper.toPostResponseDto(post);
+                    postResponseDto.setLikesCount(likeRepository.countByPostId(post.getId()));
+                    return postResponseDto;
+                })
+                .collect(Collectors.toList());
     }
 
     private void validatePostOptional(Optional<Post> postOptional, Long id) {
