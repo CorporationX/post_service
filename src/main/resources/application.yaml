@@ -77,3 +77,12 @@ minio:
   url: "${MINIO_URL:http://localhost:9000}"
   user: ${MINIO_USER:user}
   password: ${MINIO_PASSWORD:password}
+
+cache:
+  authors:
+    collection: comment_authors
+    ttl: 86400
+    corePoolSize: 5
+    maxPoolSize: 10
+    queueCapacity: 500
+    threadNamePrefix: "post-author-cache-"

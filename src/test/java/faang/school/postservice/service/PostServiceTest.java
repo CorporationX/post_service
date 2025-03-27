@@ -6,6 +6,7 @@ import faang.school.postservice.dto.posts.PostUpdatingDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.cache.PostAuthorCacheService;
 import faang.school.postservice.utils.PostUtil;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,6 +28,9 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class PostServiceTest {
+    private static PostCreatingRequest postCreatingRequest;
+    private static PostResultResponse postResultResponse;
+    private static Post post;
     @InjectMocks
     private PostService postService;
     @Mock
@@ -37,12 +41,10 @@ public class PostServiceTest {
     private RewriterService rewriterService;
     @Mock
     private ExecutorService scheduledPublishPostThreadPool;
+    @Mock
+    private PostAuthorCacheService postAuthorCacheService;
     @Spy
     private PostMapper postMapper = Mappers.getMapper(PostMapper.class);
-
-    private static PostCreatingRequest postCreatingRequest;
-    private static PostResultResponse postResultResponse;
-    private static Post post;
 
     @BeforeEach
     public void setUp() {
@@ -85,7 +87,11 @@ public class PostServiceTest {
 
         PostResultResponse result = postService.publishPost(post.getId());
 
+        Assertions.assertTrue(post.isPublished(), "Post should be published");
+        Assertions.assertNotNull(post.getPublishedAt(), "PublishedAt should be set");
+
         assertEquals(postResultResponse, result);
+        verify(postAuthorCacheService, timeout(1000).times(1)).cachePostAuthor(post.getAuthorId());
     }
 
     @Test
@@ -212,6 +218,7 @@ public class PostServiceTest {
 
         verify(scheduledPublishPostThreadPool, times(6)).submit(any(Runnable.class));
     }
+
     @Test
     public void publishScheduledPost_success1ThreadsRun() {
         List<Post> posts = new ArrayList<>();
@@ -229,6 +236,7 @@ public class PostServiceTest {
 
         verify(scheduledPublishPostThreadPool, times(1)).submit(any(Runnable.class));
     }
+
     @Test
     public void publishScheduledPost_zeroPostsToPublish() {
         when(postRepository.findReadyToPublish()).thenReturn(Collections.emptyList());

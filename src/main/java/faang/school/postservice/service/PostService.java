@@ -7,6 +7,7 @@ import faang.school.postservice.exceptions.PostWasNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.cache.PostAuthorCacheService;
 import faang.school.postservice.service.moderation.ModerationDictionary;
 import faang.school.postservice.utils.PostUtil;
 import lombok.RequiredArgsConstructor;
@@ -31,14 +32,15 @@ import java.util.function.Predicate;
 @RequiredArgsConstructor
 @Slf4j
 public class PostService {
+    private static final int MAX_POST_COUNT_PUBLISH_ON_THREAD = 1000;
+    private static final int MODERATION_PER_PAGE = 100;
     private final PostMapper postMapper;
     private final PostRepository postRepository;
     private final PostUtil postUtil;
     private final RewriterService rewriterService;
     private final ExecutorService scheduledPublishPostThreadPool;
-    private static final int MAX_POST_COUNT_PUBLISH_ON_THREAD = 1000;
     private final ObjectFactory<ModerationDictionary> moderationDictionaryObjectFactory;
-    private static final int MODERATION_PER_PAGE = 100;
+    private final PostAuthorCacheService postAuthorCacheService;
 
     @Transactional
     public PostResultResponse createPost(PostCreatingRequest postCreatingDto) {
@@ -79,6 +81,10 @@ public class PostService {
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
         log.info("Successfully published post with id : {}", postId);
+
+        postAuthorCacheService.cachePostAuthor(post.getAuthorId());
+        log.info("Successfully published and cached author for post id: {}", postId);
+
         return postMapper.toDto(post);
     }
 
