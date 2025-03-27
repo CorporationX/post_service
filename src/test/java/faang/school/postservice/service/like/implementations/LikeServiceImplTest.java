@@ -49,8 +49,6 @@ class LikeServiceImplTest {
     @Spy
     private LikeMapper likeMapper = Mappers.getMapper(LikeMapper.class);
 
-    private LikeDto postLikeDto;
-    private LikeDto commentLikeDto;
     private Like postLike;
     private Like commentLike;
     private Post post;
@@ -66,7 +64,7 @@ class LikeServiceImplTest {
         commentId = 3L;
         post = Post.builder().id(postId).build();
         postLike = Like.builder().userId(userId).post(post).build();
-        comment = Comment.builder().id(commentId).build();
+        comment = Comment.builder().id(commentId).post(post).build();
         commentLike = Like.builder().userId(userId).comment(comment).build();
     }
 
@@ -132,7 +130,8 @@ class LikeServiceImplTest {
     @Test
     void testLikeCommentWhenLikeCreated() {
         when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
-        when(likeRepository.findByCommentIdAndUserId(commentId, userId)).thenReturn(Optional.empty());
+        when(likeRepository.findByCommentIdAndUserId(commentId, userId))
+                .thenReturn(Optional.empty());
         when(likeRepository.save(commentLike)).thenReturn(commentLike);
 
         LikeDto result = likeService.likeComment(commentId, userId);

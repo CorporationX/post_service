@@ -20,6 +20,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
+import java.util.function.BiFunction;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 @Service
 @RequiredArgsConstructor
@@ -36,15 +42,32 @@ public class LikeServiceImpl implements LikeService {
      * @param userId
      * @return
      */
+    private void checkLikeExistence(long entityId, long userId,
+                                    BiFunction<Long, Long, Optional<Like>> findLikeEntityFunction,
+                                    String entityName) {
+        findLikeEntityFunction.apply(entityId, userId)
+                .ifPresent(like -> {
+                    throw new LikeAlreadyExistException(String.format("Like already exist: %sId=%d, userId=%d",
+                            entityName, entityId, userId));
+                });
+    }
+
+    private void removeLike(long entityId, long userId,
+                            BiFunction<Long, Long, Optional<Like>> findLikeEntityFunction,
+                            String entityName) {
+        Like like = findLikeEntityFunction.apply(entityId, userId)
+                .orElseThrow(() ->
+                        new LikeNotFoundException(String.format("Like not found: %sId=%d, userId=%d",
+                                entityName, entityId, userId)));
+        likeRepository.delete(like);
+    }
+
     @Override
+    @Transactional
     public LikeDto likePost(long postId, long userId) {
         Post post = checkPostId(postId);
         checkAuthor(userId);
-        likeRepository.findByPostIdAndUserId(postId, userId)
-                .ifPresent(like -> {
-                    throw new LikeAlreadyExistException(String.format("Like already exist: postId=%d, userId=%d",
-                            postId, userId));
-                });
+        checkLikeExistence(postId, userId, likeRepository::findByPostIdAndUserId, "post");
         Like like = Like.builder().userId(userId).post(post).build();
         return likeMapper.toDto(likeRepository.save(like));
     }
@@ -74,12 +97,9 @@ public class LikeServiceImpl implements LikeService {
     }
 
     @Override
+    @Transactional
     public void unlikePost(long postId, long userId) {
-        Like like = likeRepository.findByPostIdAndUserId(postId, userId)
-                .orElseThrow(() ->
-                        new LikeNotFoundException(String.format("Like not found: postId=%d, userId=%d",
-                                postId, userId)));
-        likeRepository.delete(like);
+        removeLike(postId, userId, likeRepository::findByPostIdAndUserId, "post");
     }
 
     /**
@@ -88,13 +108,11 @@ public class LikeServiceImpl implements LikeService {
      * @return
      */
     @Override
+    @Transactional
     public LikeDto likeComment(long commentId, long userId) {
         Comment comment = checkCommentId(commentId);
         checkAuthor(userId);
-        likeRepository.findByCommentIdAndUserId(commentId, userId).ifPresent(like -> {
-            throw new LikeAlreadyExistException(String.format("Like already exist: commentId=%d, userId=%d",
-                    commentId, userId));
-        });
+        checkLikeExistence(commentId, userId, likeRepository::findByCommentIdAndUserId, "comment");
 
         Like like = Like.builder().userId(userId).comment(comment).build();
         return likeMapper.toDto(likeRepository.save(like));
@@ -116,35 +134,46 @@ public class LikeServiceImpl implements LikeService {
      * @param userId
      */
     @Override
+    @Transactional
     public void unlikeComment(long commentId, long userId) {
-        Like like = likeRepository.findByCommentIdAndUserId(commentId, userId)
-                .orElseThrow(() ->
-                        new LikeNotFoundException(String.format("Like not found: commentId=%d, userId=%d",
-                                commentId, userId)));
-        likeRepository.delete(like);
+        removeLike(commentId, userId, likeRepository::findByCommentIdAndUserId, "comment");
     }
 
-    private <T> T checkEntityId(long entityId, CrudRepository<T, Long> repository, RuntimeException exception) {
-        return repository.findById(entityId)
-                .orElseThrow(() -> exception);
+    private <T> T checkEntityId(long entityId,
+                                CrudRepository<T, Long> repository,
+                                Predicate<T> isNotDeleted,
+                                Supplier<RuntimeException> exceptionSupplier) {
+        return repository.findById(entityId).filter(isNotDeleted)
+                .orElseThrow(exceptionSupplier);
     }
 
     private Post checkPostId(long postId) {
-        return checkEntityId(postId, postRepository,
-                new PostNotFoundException(String.format("Post not found: postId=%d", postId)));
+        return checkEntityId(postId, postRepository, p -> !p.isDeleted(),
+                () -> new PostNotFoundException(String.format("Post not found: postId=%d", postId)));
     }
 
     private Comment checkCommentId(long commentId) {
-        return checkEntityId(commentId, commentRepository,
-                new CommentNotFoundException(String.format("Comment not found: commentId=%d", commentId)));
+        return checkEntityId(commentId, commentRepository, c -> !c.getPost().isDeleted(),
+                () -> new CommentNotFoundException(String.format("Comment not found: commentId=%d", commentId)));
     }
 
     private void checkAuthor(long userId) {
         try {
             userServiceClient.getUser(userId);
         } catch (FeignException e) {
-            log.error("Author not found: id={}", userId, e);
-            throw new AuthorNotFoundException("Author with id " + userId + " not found");
+            int statusCode = e.status();
+            log.error("Error while fetching author: id={}, status={}, message={}",
+                    userId, statusCode, e.getMessage(), e);
+            switch (statusCode) {
+                case 404:
+                    throw new AuthorNotFoundException("Author with id " + userId + " not found");
+                case 400:
+                    throw new IllegalArgumentException("Invalid author id: " + userId);
+                case 500:
+                    throw new RuntimeException("User service is unavailable. Try again later.");
+                default:
+                    throw new RuntimeException("Failed to fetch author: id=" + userId);
+            }
         }
     }
 }

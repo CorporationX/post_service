@@ -13,6 +13,8 @@ public interface LikeMapper {
     @Mapping(target = "postId", source = "like.post.id")
     LikeDto toDto(Like like);
 
+    @Mapping(target = "comment.id", source = "commentId")
+    @Mapping(target = "post.id", source = "postId")
     Like toEntity(LikeDto likeDto);
 
 }
