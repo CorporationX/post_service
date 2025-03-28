@@ -16,6 +16,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+import java.util.function.Supplier;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -24,8 +27,9 @@ public class LikeService {
     public static final String POST_NOT_FOUND = "Post not found with id: %d";
     public static final String COMMENT_NOT_FOUND = "Comment not found with id: %d";
     public static final String USER_NOT_FOUND = "User not found with id: %d";
+    public static final String LIKE_NOT_FOUND = "No likes found for a comment or post %d from a user with id: %d";
     public static final String BOTH_LIKE = "You cannot like a post and comment at the same time.";
-
+    public static final String ERROR_VALIDATING_USER = "Error occurred when validating a user with id: %d.";
 
     private final LikeRepository likeRepository;
     private final PostRepository postRepository;
@@ -35,40 +39,51 @@ public class LikeService {
 
     @Transactional
     public LikeDto likePost(long postId, long userId) {
-        log.info("User {} liked post {} !", userId, postId);
         validateUser(userId);
-        Post post = getPost(postId);
-        validateLikesRepeat(post, null);
+        Post post = getEntity(() -> postRepository.findById(postId), postId, POST_NOT_FOUND);
         validateNotLiked(postId, userId, true);
 
         Like like = buildLike(userId, post, null);
-        return likeMapper.toDto(likeRepository.save(like));
+        LikeDto result = likeMapper.toLikeDto(likeRepository.save(like));
+        log.info("User {} liked post {} !", userId, postId);
+        return result;
     }
 
     @Transactional
     public void unlikePost(long postId, long userId) {
-        log.info("User {} removed a like from a post {}", userId, postId);
         validateUser(userId);
+        if (!likeRepository.existsByPostIdAndUserId(postId, userId)) {
+            String error = (String.format(LIKE_NOT_FOUND, postId, userId));
+            log.error(error);
+            throw new LikeException(error);
+        }
         likeRepository.deleteByPostIdAndUserId(postId, userId);
+        log.info("User {} removed a like from a post {}", userId, postId);
     }
 
     @Transactional
     public LikeDto likeComment(long commentId, long userId) {
-        log.info("User {} liked comment {} !", userId, commentId);
         validateUser(userId);
-        Comment comment = getComment(commentId);
+        Comment comment = getEntity(() -> commentRepository.findById(commentId), commentId, COMMENT_NOT_FOUND);
         validateLikesRepeat(null, comment);
         validateNotLiked(commentId, userId, false);
 
         Like like = buildLike(userId, null, comment);
-        return likeMapper.toDto(likeRepository.save(like));
+        LikeDto result = likeMapper.toLikeDto(likeRepository.save(like));
+        log.info("User {} liked comment {} !", userId, commentId);
+        return result;
     }
 
     @Transactional
     public void unlikeComment(long commentId, long userId) {
         validateUser(userId);
-        log.info("User {} removed a like from a comment {}", userId, commentId);
+        if (!likeRepository.existsByCommentIdAndUserId(commentId, userId)) {
+            String error = (String.format(LIKE_NOT_FOUND, commentId, userId));
+            log.error(error);
+            throw new LikeException(error);
+        }
         likeRepository.deleteByCommentIdAndUserId(commentId, userId);
+        log.info("User {} removed a like from a comment {}", userId, commentId);
     }
 
     public Like buildLike(long userId, Post post, Comment comment) {
@@ -80,18 +95,9 @@ public class LikeService {
                 .build();
     }
 
-    private Post getPost(long postId) {
-        String error = String.format(POST_NOT_FOUND, postId);
-        return postRepository.findById(postId)
-                .orElseThrow(() -> {
-                    log.error(error);
-                    return new LikeException(error);
-                });
-    }
-
-    private Comment getComment(long commentId) {
-        String error = String.format(COMMENT_NOT_FOUND, commentId);
-        return commentRepository.findById(commentId)
+    private <T> T getEntity(Supplier<Optional<T>> finder, long id, String errorMessage) {
+        String error = String.format(errorMessage, id);
+        return finder.get()
                 .orElseThrow(() -> {
                     log.error(error);
                     return new LikeException(error);
@@ -110,18 +116,24 @@ public class LikeService {
     }
 
     private void validateUser(long userId) {
-        String error = String.format(USER_NOT_FOUND, userId);
-
         try {
             userServiceClient.getUser(userId);
         } catch (FeignException.NotFound e) {
+            String error = String.format(USER_NOT_FOUND, userId);
             log.error(error);
+            throw new LikeException(error);
+        } catch (FeignException e) {
+            String error = String.format(ERROR_VALIDATING_USER, userId);
+            log.error(error, e);
             throw new LikeException(error);
         }
     }
 
     private void validateLikesRepeat(Post post, Comment comment) {
         if (post != null && comment != null) {
+            throw new LikeException(BOTH_LIKE);
+        }
+        if (post != null && commentRepository.existsById(post.getId())) {
             throw new LikeException(BOTH_LIKE);
         }
     }
