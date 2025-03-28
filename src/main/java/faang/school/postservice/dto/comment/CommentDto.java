@@ -9,14 +9,14 @@ import java.time.LocalDateTime;
 
 @Data
 public class CommentDto {
-    Long id;
+    private Long id;
     @NotEmpty
     @Size(max = 4096)
-    String content;
+    private String content;
     @NotNull
-    Long authorId;
+    private Long authorId;
     @NotNull
-    Long postId;
-    LocalDateTime createdAt;
-    Long likes;
+    private Long postId;
+    private LocalDateTime createdAt;
+    private Long likes;
 }

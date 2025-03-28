@@ -12,8 +12,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class LikeDto {
-    long userId;
-    long commentId;
-    long postId;
-    LocalDateTime createdAt;
+    private long userId;
+    private long commentId;
+    private long postId;
+    private LocalDateTime createdAt;
 }

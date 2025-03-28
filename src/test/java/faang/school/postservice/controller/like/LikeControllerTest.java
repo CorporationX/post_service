@@ -49,7 +49,7 @@ class LikeControllerTest {
 
     @Test
     void testLikePostWhenLikeCreated() throws Exception {
-        when(likeService.likePost(postLikeDto.getPostId(), postLikeDto.getUserId())).thenReturn(postLikeDto);
+        when(likeService.likePost(postLikeDto.getPostId())).thenReturn(postLikeDto);
 
         mockMvc.perform(post("/posts/" + postLikeDto.getPostId() + "/like")
                         .header("x-user-id", postLikeDto.getUserId()))
@@ -58,12 +58,12 @@ class LikeControllerTest {
                 .andExpect(jsonPath("$.userId").value(postLikeDto.getUserId()));
 
         verify(likeService, times(1))
-                .likePost(postLikeDto.getPostId(), postLikeDto.getUserId());
+                .likePost(postLikeDto.getPostId());
     }
 
     @Test
     void testLikePostWhenPostNotFound() throws Exception {
-        when(likeService.likePost(postLikeDto.getPostId(), postLikeDto.getUserId()))
+        when(likeService.likePost(postLikeDto.getPostId()))
                 .thenThrow(new PostNotFoundException("Post not found"));
 
         mockMvc.perform(post("/posts/" + postLikeDto.getPostId() + "/like")
@@ -72,12 +72,12 @@ class LikeControllerTest {
                 .andExpect(content().string("Post not found"));
 
         verify(likeService, times(1))
-                .likePost(postLikeDto.getPostId(), postLikeDto.getUserId());
+                .likePost(postLikeDto.getPostId());
     }
 
     @Test
     void testLikePostWhenLikeAlreadyExist() throws Exception {
-        when(likeService.likePost(postLikeDto.getPostId(), postLikeDto.getUserId()))
+        when(likeService.likePost(postLikeDto.getPostId()))
                 .thenThrow(new LikeAlreadyExistException("Like already exist"));
 
         mockMvc.perform(post("/posts/" + postLikeDto.getPostId() + "/like")
@@ -86,7 +86,7 @@ class LikeControllerTest {
                 .andExpect(content().string("Like already exist"));
 
         verify(likeService, times(1))
-                .likePost(postLikeDto.getPostId(), postLikeDto.getUserId());
+                .likePost(postLikeDto.getPostId());
     }
 
     @Test
@@ -97,13 +97,13 @@ class LikeControllerTest {
                 .andExpect(status().isNoContent());
 
         verify(likeService, times(1))
-                .unlikePost(postLikeDto.getPostId(), postLikeDto.getUserId());
+                .unlikePost(postLikeDto.getPostId());
     }
 
     @Test
     void testUnlikePostWhenLikeNotFound() throws Exception {
         doThrow(new LikeNotFoundException("Like not found"))
-                .when(likeService).unlikePost(postLikeDto.getPostId(), postLikeDto.getUserId());
+                .when(likeService).unlikePost(postLikeDto.getPostId());
 
         mockMvc.perform(delete("/posts/" + postLikeDto.getPostId() + "/like")
                         .header("x-user-id", postLikeDto.getUserId()))
@@ -111,12 +111,12 @@ class LikeControllerTest {
                 .andExpect(content().string("Like not found"));
 
         verify(likeService, times(1))
-                .unlikePost(postLikeDto.getPostId(), postLikeDto.getUserId());
+                .unlikePost(postLikeDto.getPostId());
     }
 
     @Test
     void testLikeCommentWhenLikeCreated() throws Exception {
-        when(likeService.likeComment(commentLikeDto.getCommentId(), commentLikeDto.getUserId()))
+        when(likeService.likeComment(commentLikeDto.getCommentId()))
                 .thenReturn(commentLikeDto);
 
         mockMvc.perform(post("/comments/" + commentLikeDto.getCommentId() + "/like")
@@ -126,12 +126,12 @@ class LikeControllerTest {
                 .andExpect(jsonPath("$.userId").value(commentLikeDto.getUserId()));
 
         verify(likeService, times(1))
-                .likeComment(commentLikeDto.getCommentId(), commentLikeDto.getUserId());
+                .likeComment(commentLikeDto.getCommentId());
     }
 
     @Test
     void testLikeCommentWhenCommentNotFound() throws Exception {
-        when(likeService.likeComment(commentLikeDto.getCommentId(), commentLikeDto.getUserId()))
+        when(likeService.likeComment(commentLikeDto.getCommentId()))
                 .thenThrow(new PostNotFoundException("Comment not found"));
 
         mockMvc.perform(post("/comments/" + commentLikeDto.getCommentId() + "/like")
@@ -140,12 +140,12 @@ class LikeControllerTest {
                 .andExpect(content().string("Comment not found"));
 
         verify(likeService, times(1))
-                .likeComment(commentLikeDto.getCommentId(), commentLikeDto.getUserId());
+                .likeComment(commentLikeDto.getCommentId());
     }
 
     @Test
     void testLikeCommentWhenLikeAlreadyExist() throws Exception {
-        when(likeService.likeComment(commentLikeDto.getCommentId(), commentLikeDto.getUserId()))
+        when(likeService.likeComment(commentLikeDto.getCommentId()))
                 .thenThrow(new LikeAlreadyExistException("Like already exist"));
 
         mockMvc.perform(post("/comments/" + commentLikeDto.getCommentId() + "/like")
@@ -154,7 +154,7 @@ class LikeControllerTest {
                 .andExpect(content().string("Like already exist"));
 
         verify(likeService, times(1))
-                .likeComment(commentLikeDto.getCommentId(), commentLikeDto.getUserId());
+                .likeComment(commentLikeDto.getCommentId());
     }
 
     @Test
@@ -164,13 +164,13 @@ class LikeControllerTest {
                 .andExpect(status().isNoContent());
 
         verify(likeService, times(1))
-                .unlikeComment(commentLikeDto.getCommentId(), commentLikeDto.getUserId());
+                .unlikeComment(commentLikeDto.getCommentId());
     }
 
     @Test
     void testUnlikeCommentWhenLikeNotFound() throws Exception {
         doThrow(new LikeNotFoundException("Like not found"))
-                .when(likeService).unlikeComment(commentLikeDto.getCommentId(), commentLikeDto.getUserId());
+                .when(likeService).unlikeComment(commentLikeDto.getCommentId());
 
         mockMvc.perform(delete("/comments/" + commentLikeDto.getCommentId() + "/like")
                         .header("x-user-id", commentLikeDto.getUserId()))
@@ -178,6 +178,6 @@ class LikeControllerTest {
                 .andExpect(content().string("Like not found"));
 
         verify(likeService, times(1))
-                .unlikeComment(commentLikeDto.getCommentId(), commentLikeDto.getUserId());
+                .unlikeComment(commentLikeDto.getCommentId());
     }
 }

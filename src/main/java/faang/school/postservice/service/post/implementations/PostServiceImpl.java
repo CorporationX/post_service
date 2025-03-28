@@ -6,6 +6,7 @@ import faang.school.postservice.config.post.PostServiceConstants;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.PostDtoValidationException;
 import faang.school.postservice.exception.PostNotFoundException;
 import faang.school.postservice.mapper.post.PostMapper;
@@ -36,6 +37,12 @@ public class PostServiceImpl implements PostService {
     private final PostCorrectService postCorrectService;
     private final PostRepository postRepository;
     private final PostMapper postMapper;
+
+    @Override
+    public Post getPost(Long postId) {
+        return postRepository.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException(postId));
+    }
 
     @Override
     public Post getPostById(Long postId) {

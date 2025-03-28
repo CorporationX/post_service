@@ -3,7 +3,6 @@ package faang.school.postservice.controller.like;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.service.like.interfaces.LikeService;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,29 +19,29 @@ public class LikeController {
 
     @PostMapping("/posts/{postId}/like")
     public ResponseEntity<LikeDto> likePost(@PathVariable("postId") @Min(1) long postId,
-                                            @RequestHeader("x-user-id") @NotNull @Min(1) Long headerUserId) {
-        LikeDto createdLike = likeService.likePost(postId, headerUserId);
+                                            @RequestHeader("x-user-id") @Min(1) long userId) {
+        LikeDto createdLike = likeService.likePost(postId);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdLike);
     }
 
     @DeleteMapping("/posts/{postId}/like")
     public ResponseEntity<Void> unlikePost(@PathVariable("postId") @Min(1) long postId,
-                                           @RequestHeader("x-user-id") @NotNull @Min(1) Long headerUserId) {
-        likeService.unlikePost(postId, headerUserId);
+                                           @RequestHeader("x-user-id") @Min(1) long userId) {
+        likeService.unlikePost(postId);
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/comments/{commentId}/like")
     public ResponseEntity<LikeDto> likeComment(@PathVariable("commentId") @Min(1) long commentId,
-                                               @RequestHeader("x-user-id") @NotNull @Min(1) Long headerUserId) {
-        LikeDto createdLike = likeService.likeComment(commentId, headerUserId);
+                                               @RequestHeader("x-user-id") @Min(1) long userId) {
+        LikeDto createdLike = likeService.likeComment(commentId);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdLike);
     }
 
     @DeleteMapping("/comments/{commentId}/like")
     public ResponseEntity<Void> unlikeComment(@PathVariable("commentId") @Min(1) long commentId,
-                                              @RequestHeader("x-user-id") @NotNull @Min(1) Long headerUserId) {
-        likeService.unlikeComment(commentId, headerUserId);
+                                              @RequestHeader("x-user-id") @Min(1) long userId) {
+        likeService.unlikeComment(commentId);
         return ResponseEntity.noContent().build();
     }
 }

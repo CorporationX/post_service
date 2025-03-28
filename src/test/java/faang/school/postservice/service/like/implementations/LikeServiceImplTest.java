@@ -1,6 +1,7 @@
 package faang.school.postservice.service.like.implementations;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.exception.AuthorNotFoundException;
 import faang.school.postservice.exception.CommentNotFoundException;
@@ -42,6 +43,8 @@ class LikeServiceImplTest {
     private CommentRepository commentRepository;
     @Mock
     private UserServiceClient userServiceClient;
+    @Mock
+    private UserContext userContext;
 
     @InjectMocks
     private LikeServiceImpl likeService;
@@ -70,11 +73,12 @@ class LikeServiceImplTest {
 
     @Test
     void testLikePostWhenLikeCreated() {
+        when(userContext.getUserId()).thenReturn(userId);
         when(postRepository.findById(postId)).thenReturn(Optional.of(post));
         when(likeRepository.findByPostIdAndUserId(postId, userId)).thenReturn(Optional.empty());
         when(likeRepository.save(postLike)).thenReturn(postLike);
 
-        LikeDto result = likeService.likePost(postId, userId);
+        LikeDto result = likeService.likePost(postId);
 
         assertNotNull(result);
         assertEquals(postId, result.getPostId());
@@ -88,53 +92,58 @@ class LikeServiceImplTest {
     void testLikePostWhenPostNotFound() {
         when(postRepository.findById(postId)).thenReturn(Optional.empty());
 
-        assertThrows(PostNotFoundException.class, () -> likeService.likePost(postId, userId),
+        assertThrows(PostNotFoundException.class, () -> likeService.likePost(postId),
                 "Post not found: postId=" + postId);
     }
 
     @Test
     void testLikePostWhenAuthorNotFound() {
+        when(userContext.getUserId()).thenReturn(userId);
         when(postRepository.findById(postId)).thenReturn(Optional.of(post));
         doThrow(AuthorNotFoundException.class).when(userServiceClient).getUser(userId);
 
-        assertThrows(AuthorNotFoundException.class, () -> likeService.likePost(postId, userId),
+        assertThrows(AuthorNotFoundException.class, () -> likeService.likePost(postId),
                 "Author with id " + userId + " not found");
     }
 
     @Test
     void testLikePostWhenLikeAlreadyExists() {
+        when(userContext.getUserId()).thenReturn(userId);
         when(postRepository.findById(postId)).thenReturn(Optional.of(post));
         when(likeRepository.findByPostIdAndUserId(postId, userId)).thenReturn(Optional.of(postLike));
 
-        assertThrows(LikeAlreadyExistException.class, () -> likeService.likePost(postId, userId),
+        assertThrows(LikeAlreadyExistException.class, () -> likeService.likePost(postId),
                 String.format("Like already exist: postId=%d, userId=%d", postId, userId));
     }
 
     @Test
     void testUnlikePostWhenUnliked() {
+        when(userContext.getUserId()).thenReturn(userId);
         when(likeRepository.findByPostIdAndUserId(postId, userId)).thenReturn(Optional.of(postLike));
 
-        likeService.unlikePost(postId, userId);
+        likeService.unlikePost(postId);
 
         verify(likeRepository).delete(postLike);
     }
 
     @Test
     void testUnlikePostWhenLikeNotFound() {
+        when(userContext.getUserId()).thenReturn(userId);
         when(likeRepository.findByPostIdAndUserId(postId, userId)).thenReturn(Optional.empty());
 
-        assertThrows(LikeNotFoundException.class, () -> likeService.unlikePost(postId, userId),
+        assertThrows(LikeNotFoundException.class, () -> likeService.unlikePost(postId),
                 String.format("Like not found: postId=%d, userId=%d", postId, userId));
     }
 
     @Test
     void testLikeCommentWhenLikeCreated() {
+        when(userContext.getUserId()).thenReturn(userId);
         when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
         when(likeRepository.findByCommentIdAndUserId(commentId, userId))
                 .thenReturn(Optional.empty());
         when(likeRepository.save(commentLike)).thenReturn(commentLike);
 
-        LikeDto result = likeService.likeComment(commentId, userId);
+        LikeDto result = likeService.likeComment(commentId);
 
         assertNotNull(result);
         assertEquals(commentId, result.getCommentId());
@@ -148,42 +157,46 @@ class LikeServiceImplTest {
     void testLikeCommentWhenCommentNotFound() {
         when(commentRepository.findById(commentId)).thenReturn(Optional.empty());
 
-        assertThrows(CommentNotFoundException.class, () -> likeService.likeComment(commentId, userId),
+        assertThrows(CommentNotFoundException.class, () -> likeService.likeComment(commentId),
                 "Comment not found: commentId=" + commentId);
     }
 
     @Test
     void testLikeCommentWhenAuthorNotFound() {
+        when(userContext.getUserId()).thenReturn(userId);
         when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
         doThrow(AuthorNotFoundException.class).when(userServiceClient).getUser(userId);
 
-        assertThrows(AuthorNotFoundException.class, () -> likeService.likeComment(commentId, userId),
+        assertThrows(AuthorNotFoundException.class, () -> likeService.likeComment(commentId),
                 "Author with id " + userId + " not found");
     }
 
     @Test
     void testLikeCommentWhenLikeAlreadyExists() {
+        when(userContext.getUserId()).thenReturn(userId);
         when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
         when(likeRepository.findByCommentIdAndUserId(commentId, userId)).thenReturn(Optional.of(commentLike));
 
-        assertThrows(LikeAlreadyExistException.class, () -> likeService.likeComment(commentId, userId),
+        assertThrows(LikeAlreadyExistException.class, () -> likeService.likeComment(commentId),
                 String.format("Like already exist: commentId=%d, userId=%d", commentId, userId));
     }
 
     @Test
     void testUnlikeCommentWhenUnliked() {
+        when(userContext.getUserId()).thenReturn(userId);
         when(likeRepository.findByCommentIdAndUserId(commentId, userId)).thenReturn(Optional.of(commentLike));
 
-        likeService.unlikeComment(commentId, userId);
+        likeService.unlikeComment(commentId);
 
         verify(likeRepository).delete(commentLike);
     }
 
     @Test
     void testUnlikeCommentWhenLikeNotFound() {
+        when(userContext.getUserId()).thenReturn(userId);
         when(likeRepository.findByCommentIdAndUserId(commentId, userId)).thenReturn(Optional.empty());
 
-        assertThrows(LikeNotFoundException.class, () -> likeService.unlikeComment(commentId, userId),
+        assertThrows(LikeNotFoundException.class, () -> likeService.unlikeComment(commentId),
                 String.format("Like not found: commentId=%d, userId=%d", commentId, userId));
     }
 }
