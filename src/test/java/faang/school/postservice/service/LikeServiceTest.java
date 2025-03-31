@@ -1,6 +1,5 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.LikeTestConstants;
 import faang.school.postservice.dto.like.LikeResponseDto;
 import faang.school.postservice.exception.BadRequestException;
 import faang.school.postservice.mapper.like.LikeRequestMapper;
@@ -23,21 +22,21 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Optional;
 
+import static faang.school.postservice.LikeTestConstants.COMMENT;
+import static faang.school.postservice.LikeTestConstants.COMMENT_ID;
+import static faang.school.postservice.LikeTestConstants.LIKE_COMMENT;
+import static faang.school.postservice.LikeTestConstants.LIKE_COMMENT_RESPONSE_DTO;
+import static faang.school.postservice.LikeTestConstants.LIKE_POST;
+import static faang.school.postservice.LikeTestConstants.LIKE_POST_RESPONSE_DTO;
+import static faang.school.postservice.LikeTestConstants.LIKE_REQUEST_DTO;
+import static faang.school.postservice.LikeTestConstants.POST;
+import static faang.school.postservice.LikeTestConstants.POST_ID;
 import static faang.school.postservice.LikeTestConstants.USERS_IDS_WHO_LIKED_THE_COMMENT;
 import static faang.school.postservice.LikeTestConstants.USERS_IDS_WHO_LIKED_THE_POST;
 import static faang.school.postservice.LikeTestConstants.USERS_WHO_LIKED_THE_COMMENT;
 import static faang.school.postservice.LikeTestConstants.USERS_WHO_LIKED_THE_POST;
-import static faang.school.postservice.service.LikeServiceTestConstants.COMMENT;
-import static faang.school.postservice.service.LikeServiceTestConstants.COMMENT_ID;
-import static faang.school.postservice.service.LikeServiceTestConstants.LIKE_COMMENT;
-import static faang.school.postservice.service.LikeServiceTestConstants.LIKE_COMMENT_RESPONSE_DTO;
-import static faang.school.postservice.service.LikeServiceTestConstants.LIKE_POST;
-import static faang.school.postservice.service.LikeServiceTestConstants.LIKE_POST_RESPONSE_DTO;
-import static faang.school.postservice.service.LikeServiceTestConstants.LIKE_REQUEST_DTO;
-import static faang.school.postservice.service.LikeServiceTestConstants.POST;
-import static faang.school.postservice.service.LikeServiceTestConstants.POST_ID;
-import static faang.school.postservice.service.LikeServiceTestConstants.USER_DTO;
-import static faang.school.postservice.service.LikeServiceTestConstants.USER_ID;
+import static faang.school.postservice.LikeTestConstants.USER_DTO;
+import static faang.school.postservice.LikeTestConstants.USER_ID;
 
 @ExtendWith(MockitoExtension.class)
 public class LikeServiceTest {
@@ -225,15 +224,15 @@ public class LikeServiceTest {
     @Test
     @DisplayName("The test should return a list of UserDto's when a post exists")
     void testGetUsersWhoLikedPostSuccessful() {
-        Mockito.when(postRepositoryAdapter.getById(LikeTestConstants.POST_ID)).thenReturn(LikeTestConstants.POST);
-        Mockito.when(likeRepository.findUserIdsByPostId(LikeTestConstants.POST_ID)).thenReturn(USERS_IDS_WHO_LIKED_THE_POST);
+        Mockito.when(postRepositoryAdapter.getById(POST_ID)).thenReturn(POST);
+        Mockito.when(likeRepository.findUserIdsByPostId(POST_ID)).thenReturn(USERS_IDS_WHO_LIKED_THE_POST);
         Mockito.when(userServiceClient.getUsersByIds(USERS_IDS_WHO_LIKED_THE_POST))
                 .thenReturn(USERS_WHO_LIKED_THE_POST);
 
-        Assertions.assertEquals(USERS_WHO_LIKED_THE_POST, likeService.getUsersWhoLikedPost(LikeTestConstants.POST_ID));
+        Assertions.assertEquals(USERS_WHO_LIKED_THE_POST, likeService.getUsersWhoLikedPost(POST_ID));
 
-        Mockito.verify(postRepositoryAdapter, Mockito.times(1)).getById(LikeTestConstants.POST_ID);
-        Mockito.verify(likeRepository, Mockito.times(1)).findUserIdsByPostId(LikeTestConstants.POST_ID);
+        Mockito.verify(postRepositoryAdapter, Mockito.times(1)).getById(POST_ID);
+        Mockito.verify(likeRepository, Mockito.times(1)).findUserIdsByPostId(POST_ID);
         Mockito.verify(userServiceClient, Mockito.times(1))
                 .getUsersByIds(USERS_IDS_WHO_LIKED_THE_POST);
     }
@@ -241,15 +240,15 @@ public class LikeServiceTest {
     @Test
     @DisplayName("The test should return a list of UserDto's when a comment exists")
     void testGetUsersWhoLikedCommentSuccessful() {
-        Mockito.when(commentRepositoryAdapter.getById(LikeTestConstants.COMMENT_ID)).thenReturn(LikeTestConstants.COMMENT);
-        Mockito.when(likeRepository.findUserIdsByCommentId(LikeTestConstants.COMMENT_ID)).thenReturn(USERS_IDS_WHO_LIKED_THE_COMMENT);
+        Mockito.when(commentRepositoryAdapter.getById(COMMENT_ID)).thenReturn(COMMENT);
+        Mockito.when(likeRepository.findUserIdsByCommentId(COMMENT_ID)).thenReturn(USERS_IDS_WHO_LIKED_THE_COMMENT);
         Mockito.when(userServiceClient.getUsersByIds(USERS_IDS_WHO_LIKED_THE_COMMENT))
                 .thenReturn(USERS_WHO_LIKED_THE_COMMENT);
 
-        Assertions.assertEquals(USERS_WHO_LIKED_THE_COMMENT, likeService.getUsersWhoLikedComment(LikeTestConstants.COMMENT_ID));
+        Assertions.assertEquals(USERS_WHO_LIKED_THE_COMMENT, likeService.getUsersWhoLikedComment(COMMENT_ID));
 
-        Mockito.verify(commentRepositoryAdapter, Mockito.times(1)).getById(LikeTestConstants.COMMENT_ID);
-        Mockito.verify(likeRepository, Mockito.times(1)).findUserIdsByCommentId(LikeTestConstants.COMMENT_ID);
+        Mockito.verify(commentRepositoryAdapter, Mockito.times(1)).getById(COMMENT_ID);
+        Mockito.verify(likeRepository, Mockito.times(1)).findUserIdsByCommentId(COMMENT_ID);
         Mockito.verify(userServiceClient, Mockito.times(1))
                 .getUsersByIds(USERS_IDS_WHO_LIKED_THE_COMMENT);
     }

@@ -22,9 +22,11 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import static faang.school.postservice.LikeTestConstants.COMMENT_ID;
+import static faang.school.postservice.LikeTestConstants.LIKE_ID;
 import static faang.school.postservice.LikeTestConstants.POST_ID;
 import static faang.school.postservice.LikeTestConstants.USERS_WHO_LIKED_THE_COMMENT;
 import static faang.school.postservice.LikeTestConstants.USERS_WHO_LIKED_THE_POST;
+import static faang.school.postservice.LikeTestConstants.USER_ID;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -34,11 +36,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 @ExtendWith(MockitoExtension.class)
 public class LikeControllerTest {
-
-    private static final long LIKE_ID = 1L;
-    private static final long USER_ID = 2L;
-    private static final long POST_ID = 3L;
-    private static final long COMMENT_ID = 4L;
 
     private static final String DATE_TIME_STRING = "2025-02-01 12:00:00";
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -51,14 +48,13 @@ public class LikeControllerTest {
     @InjectMocks
     private LikeController likeController;
 
-    private MockMvc mockMvc;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
-    private ObjectMapper objectMapper;
+    private MockMvc mockMvc;
 
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(likeController).build();
-        objectMapper = new ObjectMapper();
     }
 
     @Test
@@ -71,16 +67,16 @@ public class LikeControllerTest {
 
         Mockito.when(likeService.likePost(POST_ID, likeRequestDto)).thenReturn(likeResponseDto);
 
-        mockMvc.perform(post("/api/v1/likes/{postId}/post", POST_ID)
+        mockMvc.perform(post("/api/v1/likes/post/{postId}", POST_ID)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(likeResponseDto)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(likeResponseDto.getId()))
-                .andExpect(jsonPath("$.userId").value(likeResponseDto.getUserId()))
-                .andExpect(jsonPath("$.commentId").value(likeResponseDto.getCommentId()))
-                .andExpect(jsonPath("$.postId").value(likeResponseDto.getPostId()))
+                .andExpect(jsonPath("$.id").value(likeResponseDto.id()))
+                .andExpect(jsonPath("$.userId").value(likeResponseDto.userId()))
+                .andExpect(jsonPath("$.commentId").value(likeResponseDto.commentId()))
+                .andExpect(jsonPath("$.postId").value(likeResponseDto.postId()))
                 .andExpect(jsonPath("$.createdAt")
-                        .value(likeResponseDto.getCreatedAt().format(DATE_TIME_FORMATTER)));
+                        .value(likeResponseDto.createdAt().format(DATE_TIME_FORMATTER)));
 
         ArgumentCaptor<Long> postIdCaptor = ArgumentCaptor.forClass(Long.class);
         ArgumentCaptor<LikeRequestDto> likeRequestDtoCaptor = ArgumentCaptor.forClass(LikeRequestDto.class);
@@ -102,16 +98,16 @@ public class LikeControllerTest {
 
         Mockito.when(likeService.likeComment(COMMENT_ID, likeRequestDto)).thenReturn(likeResponseDto);
 
-        mockMvc.perform(post("/api/v1/likes/{commentId}/comment", COMMENT_ID)
+        mockMvc.perform(post("/api/v1/likes/comment/{commentId}", COMMENT_ID)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(likeResponseDto)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(likeResponseDto.getId()))
-                .andExpect(jsonPath("$.userId").value(likeResponseDto.getUserId()))
-                .andExpect(jsonPath("$.commentId").value(likeResponseDto.getCommentId()))
-                .andExpect(jsonPath("$.postId").value(likeResponseDto.getPostId()))
+                .andExpect(jsonPath("$.id").value(likeResponseDto.id()))
+                .andExpect(jsonPath("$.userId").value(likeResponseDto.userId()))
+                .andExpect(jsonPath("$.commentId").value(likeResponseDto.commentId()))
+                .andExpect(jsonPath("$.postId").value(likeResponseDto.postId()))
                 .andExpect(jsonPath("$.createdAt")
-                        .value(likeResponseDto.getCreatedAt().format(DATE_TIME_FORMATTER)));
+                        .value(likeResponseDto.createdAt().format(DATE_TIME_FORMATTER)));
 
         ArgumentCaptor<Long> commentIdCaptor = ArgumentCaptor.forClass(Long.class);
         ArgumentCaptor<LikeRequestDto> likeRequestDtoCaptor = ArgumentCaptor.forClass(LikeRequestDto.class);
@@ -133,16 +129,16 @@ public class LikeControllerTest {
 
         Mockito.when(likeService.removeLikeFromPost(POST_ID, likeRequestDto)).thenReturn(likeResponseDto);
 
-        mockMvc.perform(delete("/api/v1/likes/{postId}/post/remove", POST_ID)
+        mockMvc.perform(delete("/api/v1/likes/post/{postId}", POST_ID)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(likeResponseDto)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(likeResponseDto.getId()))
-                .andExpect(jsonPath("$.userId").value(likeResponseDto.getUserId()))
-                .andExpect(jsonPath("$.commentId").value(likeResponseDto.getCommentId()))
-                .andExpect(jsonPath("$.postId").value(likeResponseDto.getPostId()))
+                .andExpect(jsonPath("$.id").value(likeResponseDto.id()))
+                .andExpect(jsonPath("$.userId").value(likeResponseDto.userId()))
+                .andExpect(jsonPath("$.commentId").value(likeResponseDto.commentId()))
+                .andExpect(jsonPath("$.postId").value(likeResponseDto.postId()))
                 .andExpect(jsonPath("$.createdAt")
-                        .value(likeResponseDto.getCreatedAt().format(DATE_TIME_FORMATTER)));
+                        .value(likeResponseDto.createdAt().format(DATE_TIME_FORMATTER)));
 
         ArgumentCaptor<Long> postIdCaptor = ArgumentCaptor.forClass(Long.class);
         ArgumentCaptor<LikeRequestDto> likeRequestDtoCaptor = ArgumentCaptor.forClass(LikeRequestDto.class);
@@ -164,16 +160,16 @@ public class LikeControllerTest {
 
         Mockito.when(likeService.removeLikeFromComment(COMMENT_ID, likeRequestDto)).thenReturn(likeResponseDto);
 
-        mockMvc.perform(delete("/api/v1/likes/{commentId}/comment/remove", COMMENT_ID)
+        mockMvc.perform(delete("/api/v1/likes/comment/{commentId}", COMMENT_ID)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(likeResponseDto)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(likeResponseDto.getId()))
-                .andExpect(jsonPath("$.userId").value(likeResponseDto.getUserId()))
-                .andExpect(jsonPath("$.commentId").value(likeResponseDto.getCommentId()))
-                .andExpect(jsonPath("$.postId").value(likeResponseDto.getPostId()))
+                .andExpect(jsonPath("$.id").value(likeResponseDto.id()))
+                .andExpect(jsonPath("$.userId").value(likeResponseDto.userId()))
+                .andExpect(jsonPath("$.commentId").value(likeResponseDto.commentId()))
+                .andExpect(jsonPath("$.postId").value(likeResponseDto.postId()))
                 .andExpect(jsonPath("$.createdAt")
-                        .value(likeResponseDto.getCreatedAt().format(DATE_TIME_FORMATTER)));
+                        .value(likeResponseDto.createdAt().format(DATE_TIME_FORMATTER)));
 
         ArgumentCaptor<Long> postIdCaptor = ArgumentCaptor.forClass(Long.class);
         ArgumentCaptor<LikeRequestDto> likeRequestDtoCaptor = ArgumentCaptor.forClass(LikeRequestDto.class);
@@ -190,7 +186,7 @@ public class LikeControllerTest {
     void testGetUsersWhoLikedPostSuccessful() throws Exception {
         Mockito.when(likeService.getUsersWhoLikedPost(POST_ID)).thenReturn(USERS_WHO_LIKED_THE_POST);
 
-        mockMvc.perform(get("/api/v1/likes/{postId}/post/users", POST_ID)
+        mockMvc.perform(get("/api/v1/likes/post/{postId}/users", POST_ID)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(USERS_WHO_LIKED_THE_POST)))
                 .andExpect(status().isOk())
@@ -226,7 +222,7 @@ public class LikeControllerTest {
     void testGetUsersWhoLikedCommentSuccessful() throws Exception {
         Mockito.when(likeService.getUsersWhoLikedComment(COMMENT_ID)).thenReturn(USERS_WHO_LIKED_THE_COMMENT);
 
-        mockMvc.perform(get("/api/v1/likes/{commentId}/comment/users", COMMENT_ID)
+        mockMvc.perform(get("/api/v1/likes/comment/{commentId}/users", COMMENT_ID)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(USERS_WHO_LIKED_THE_COMMENT)))
                 .andExpect(status().isOk())

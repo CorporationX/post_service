@@ -22,36 +22,36 @@ import java.util.List;
 public class LikeController {
     private final LikeService likeService;
 
-    @PostMapping("/{postId}/post")
+    @PostMapping("/post/{postId}")
     public ResponseEntity<LikeResponseDto> likePost(@PathVariable long postId,
                                                     @RequestBody LikeRequestDto likeRequestDto) {
         return ResponseEntity.ok(likeService.likePost(postId, likeRequestDto));
     }
 
-    @DeleteMapping("/{postId}/post/remove")
+    @DeleteMapping("/post/{postId}")
     public ResponseEntity<LikeResponseDto> removeLikeFromPost(@PathVariable long postId,
                                                               @RequestBody LikeRequestDto likeRequestDto) {
         return ResponseEntity.ok(likeService.removeLikeFromPost(postId, likeRequestDto));
     }
 
-    @PostMapping("/{commentId}/comment")
+    @PostMapping("/comment/{commentId}")
     public ResponseEntity<LikeResponseDto> likeComment(@PathVariable long commentId,
                                                        @RequestBody LikeRequestDto likeRequestDto) {
         return ResponseEntity.ok(likeService.likeComment(commentId, likeRequestDto));
     }
 
-    @DeleteMapping("/{commentId}/comment/remove")
+    @DeleteMapping("/comment/{commentId}")
     public ResponseEntity<LikeResponseDto> removeLikeFromComment(@PathVariable long commentId,
                                                                  @RequestBody LikeRequestDto likeRequestDto) {
         return ResponseEntity.ok(likeService.removeLikeFromComment(commentId, likeRequestDto));
     }
 
-    @GetMapping("/{postId}/post/users")
+    @GetMapping("/post/{postId}/users")
     public ResponseEntity<List<UserDto>> getUsersWhoLikedAPost(@PathVariable long postId) {
         return ResponseEntity.ok(likeService.getUsersWhoLikedPost(postId));
     }
 
-    @GetMapping("/{commentId}/comment/users")
+    @GetMapping("/comment/{commentId}/users")
     public ResponseEntity<List<UserDto>> getUsersWhoLikedAComment(@PathVariable long commentId) {
         return ResponseEntity.ok(likeService.getUsersWhoLikedComment(commentId));
     }

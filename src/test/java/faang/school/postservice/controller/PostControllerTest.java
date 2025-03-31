@@ -24,8 +24,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @ExtendWith(MockitoExtension.class)
 class PostControllerTest {
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
     private MockMvc mockMvc;
-    private ObjectMapper objectMapper;
 
     @InjectMocks
     private PostController postController;
@@ -43,8 +45,6 @@ class PostControllerTest {
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(postController)
                 .build();
-
-        objectMapper = new ObjectMapper();
 
         draftAuthorUser = PostDto.builder()
                 .id(1L)

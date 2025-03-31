@@ -11,6 +11,11 @@ import org.springframework.stereotype.Component;
 public class PostRepositoryAdapter {
     private final PostRepository postRepository;
 
+    public Post getById(long id) {
+        return postRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Post with ID " + id + " not found"));
+    }
+
     public Post getByIdWithLikes(long id) {
         return postRepository.findByIdWithLikes(id)
                 .orElseThrow(() -> new EntityNotFoundException("Post with ID " + id + " not found"));
