@@ -2,7 +2,6 @@ package faang.school.postservice.mapper;
 
 import faang.school.postservice.dto.album.AlbumDto;
 import faang.school.postservice.dto.album.AlbumResponseDto;
-import faang.school.postservice.dto.album.AlbumDto;
 import faang.school.postservice.model.Album;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
@@ -15,8 +14,4 @@ public interface AlbumMapper {
     AlbumDto toAlbumDto(Album album);
 
     AlbumResponseDto toDto(Album album);
-
-    Album toAlbum(AlbumDto albumDto);
-
-    AlbumDto toAlbumDto(Album album);
 }
