@@ -62,7 +62,7 @@ public class LikeServiceTest {
     private LikeDto likeDto;
 
     @BeforeEach
-    public void SetUp() {
+    public void setUp() {
         post = Post.builder().id(postId).build();
         comment = Comment.builder().id(commentId).build();
 

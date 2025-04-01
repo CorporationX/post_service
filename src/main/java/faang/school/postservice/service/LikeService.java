@@ -3,6 +3,7 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.exception.LikeException;
 import faang.school.postservice.like.LikeDto;
+import faang.school.postservice.like.TargetLike;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
@@ -36,12 +37,15 @@ public class LikeService {
     private final CommentRepository commentRepository;
     private final UserServiceClient userServiceClient;
     private final LikeMapper likeMapper;
+    private final TargetLike targetLike;
 
     @Transactional
     public LikeDto likePost(long postId, long userId) {
         validateUser(userId);
-        Post post = getEntity(() -> postRepository.findById(postId), postId, POST_NOT_FOUND);
-        validateNotLiked(postId, userId, true);
+
+        Post post = getEntity(() -> postRepository.findById(postId), () -> String.format(POST_NOT_FOUND, postId));
+
+        validateNotLiked(postId, userId, targetLike.POST);
 
         Like like = buildLike(userId, post, null);
         LikeDto result = likeMapper.toLikeDto(likeRepository.save(like));
@@ -64,9 +68,12 @@ public class LikeService {
     @Transactional
     public LikeDto likeComment(long commentId, long userId) {
         validateUser(userId);
-        Comment comment = getEntity(() -> commentRepository.findById(commentId), commentId, COMMENT_NOT_FOUND);
+
+        Comment comment = getEntity(() -> commentRepository.findById(commentId), () ->
+                String.format(COMMENT_NOT_FOUND, commentId));
+
         validateLikesRepeat(null, comment);
-        validateNotLiked(commentId, userId, false);
+        validateNotLiked(commentId, userId, targetLike.COMMENT);
 
         Like like = buildLike(userId, null, comment);
         LikeDto result = likeMapper.toLikeDto(likeRepository.save(like));
@@ -95,19 +102,20 @@ public class LikeService {
                 .build();
     }
 
-    private <T> T getEntity(Supplier<Optional<T>> finder, long id, String errorMessage) {
-        String error = String.format(errorMessage, id);
+    private <T> T getEntity(Supplier<Optional<T>> finder, Supplier<String> errorMessage) {
         return finder.get()
                 .orElseThrow(() -> {
+                    String error = errorMessage.get();
                     log.error(error);
                     return new LikeException(error);
                 });
     }
 
-    private void validateNotLiked(long targetId, long userId, boolean isPost) {
-        boolean exist = isPost
-                ? likeRepository.findByPostIdAndUserId(targetId, userId).isPresent()
-                : likeRepository.findByCommentIdAndUserId(targetId, userId).isPresent();
+    private void validateNotLiked(long targetId, long userId, TargetLike targetLike) {
+        boolean exist = switch (targetLike) {
+            case POST -> likeRepository.findByPostIdAndUserId(targetId, userId).isPresent();
+            case COMMENT -> likeRepository.findByCommentIdAndUserId(targetId, userId).isPresent();
+        };
 
         if (exist) {
             log.error(ALREADY_LIKED);

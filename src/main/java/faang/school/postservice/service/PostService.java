@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -32,7 +31,7 @@ public class PostService {
     public PostResponseDto createDraftPost(PostRequestDto postRequestDto) {
         PostValidation.validatePostAuthors(postRequestDto);
         PostValidation.validatePostDraftCreation(postRequestDto);
-        Post post = postRepository.save(postMapper.ToPost(postRequestDto));
+        Post post = postRepository.save(postMapper.toPost(postRequestDto));
         return postMapper.toPostResponseDto(post);
     }
 
@@ -89,9 +88,7 @@ public class PostService {
         Optional<Post> optionalPost = postRepository.findById(postId);
         validatePostOptional(optionalPost, postId);
 
-        PostResponseDto postResponseDto = postMapper.toPostResponseDto(optionalPost.get());
-        postResponseDto.setLikesCount(likeRepository.countByPostId(postId));
-        return postResponseDto;
+        return postMapper.toDtoWithLikes(optionalPost.get(), likeRepository);
     }
 
     public List<PostResponseDto> getUserDraftPosts(Long userId) {
@@ -115,13 +112,7 @@ public class PostService {
     }
 
     private List<PostResponseDto> mapToDtoWithLikes(List<Post> posts) {
-        return posts.stream()
-                .map(post -> {
-                    PostResponseDto postResponseDto = postMapper.toPostResponseDto(post);
-                    postResponseDto.setLikesCount(likeRepository.countByPostId(post.getId()));
-                    return postResponseDto;
-                })
-                .collect(Collectors.toList());
+        return postMapper.toPostResponseDtoList(posts, likeRepository);
     }
 
     private void validatePostOptional(Optional<Post> postOptional, Long id) {

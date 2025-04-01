@@ -59,7 +59,7 @@ public class PostServiceTest {
         postService.createDraftPost(postRequestDto);
 
         verify(postRepository, times(1))
-                .save(postMapper.ToPost(postRequestDto));
+                .save(postMapper.toPost(postRequestDto));
     }
 
     @Test
