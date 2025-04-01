@@ -109,3 +109,9 @@ task-executor:
     core-pool-size: 10
     max-pool-size: 20
     queue-capacity: 50
+
+ad:
+  expired:
+    cron: "0 0 1 * * ?"
+  deletion:
+    batchsize: 100
