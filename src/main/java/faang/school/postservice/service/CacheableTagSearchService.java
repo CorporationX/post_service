@@ -17,7 +17,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class CacheableTagSearchService {
+public class CacheableTagSearchService implements TagSearchService {
     private final TagRepository tagRepository;
     private final TagMapper tagMapper;
 
