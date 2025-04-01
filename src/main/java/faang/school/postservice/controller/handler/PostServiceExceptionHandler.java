@@ -16,27 +16,21 @@ public class PostServiceExceptionHandler {
     @ExceptionHandler(PostNotFoundException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<String> handlePostNotFoundException(PostNotFoundException e) {
-        String message = e.getMessage();
-
-        log.error("PostNotFoundException caught: {}", message);
-        return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
+        log.error("PostNotFoundException caught: ", e);
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(TagNotFoundException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<String> handleTagNotFoundException(TagNotFoundException e) {
-        String message = e.getMessage();
-
-        log.error("TagNotFoundException caught: {}", message);
-        return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
+        log.error("TagNotFoundException caught: ", e);
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(RuntimeException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public String handleRuntimeException(RuntimeException e) {
-        String message = e.getMessage();
-
-        log.error("RuntimeException caught: {}", message);
-        return message;
+    public ResponseEntity<String> handleRuntimeException(RuntimeException e) {
+        log.error("RuntimeException caught: ", e);
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

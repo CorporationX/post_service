@@ -32,7 +32,7 @@ public class TagController {
         return tagService.getTagsForPost(id);
     }
 
-    @PostMapping("/new")
+    @PostMapping()
     public ResponseEntity<TagDto> createTag(@NotNull @RequestBody @Valid TagCreateDto tagCreateDto) {
         return tagService.createTag(tagCreateDto);
     }

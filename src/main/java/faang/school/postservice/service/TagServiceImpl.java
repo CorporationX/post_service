@@ -16,9 +16,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @Service
 @RequiredArgsConstructor
@@ -31,10 +32,7 @@ public class TagServiceImpl implements TagService {
 
     @Override
     public ResponseEntity<List<TagDto>> getTagsForPost(Long postId) {
-        return ResponseEntity.ok(
-                getPostById(postId).getTags().stream()
-                        .map(tagMapper::mapToTagDto)
-                        .toList());
+        return ResponseEntity.ok(tagMapper.mapToTagDtoList(getPostById(postId).getTags()));
     }
 
     @Override
@@ -58,8 +56,9 @@ public class TagServiceImpl implements TagService {
 
         log.debug("Adding to post with id: tags: {} {}", postId, tagIds);
 
-        Set<Tag> tagsByIds = new HashSet<>();
-        tagRepository.findAllById(tagIds).forEach(tagsByIds::add);
+        Set<Tag> tagsByIds = StreamSupport.stream(tagRepository.findAllById(tagIds).spliterator(), false)
+                .collect(Collectors.toSet());
+
         tagsByIds.forEach(tag -> tag.getPosts().add(post));
         tagRepository.saveAll(tagsByIds);
 
