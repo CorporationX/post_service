@@ -88,31 +88,31 @@ public class PostService {
         Optional<Post> optionalPost = postRepository.findById(postId);
         validatePostOptional(optionalPost, postId);
 
-        return postMapper.toDtoWithLikes(optionalPost.get(), likeRepository);
+        return postMapper.toPostResponseDto(optionalPost.get());
     }
 
     public List<PostResponseDto> getUserDraftPosts(Long userId) {
         PostValidation.validateUserId(userId);
-        return mapToDtoWithLikes(postRepository.findDraftsByAuthorId(userId));
+        List<Post> drafts = postRepository.findDraftsByAuthorId(userId);
+        return postMapper.toPostResponseDtoList(drafts);
     }
 
     public List<PostResponseDto> getProjectDraftPosts(Long projectId) {
         PostValidation.validateProjectId(projectId);
-        return mapToDtoWithLikes(postRepository.findDraftsByProjectId(projectId));
+        List<Post> drafts = postRepository.findDraftsByProjectId(projectId);
+        return postMapper.toPostResponseDtoList(drafts);
     }
 
     public List<PostResponseDto> getUserPublishedPosts(Long userId) {
         PostValidation.validateUserId(userId);
-        return mapToDtoWithLikes(postRepository.findPublishedByAuthorId(userId));
+        List<Post> posts = postRepository.findPublishedByAuthorId(userId);
+        return postMapper.toPostResponseDtoList(posts);
     }
 
     public List<PostResponseDto> getProjectPublishedPosts(Long projectId) {
         PostValidation.validateProjectId(projectId);
-        return mapToDtoWithLikes(postRepository.findPublishedByProjectId(projectId));
-    }
-
-    private List<PostResponseDto> mapToDtoWithLikes(List<Post> posts) {
-        return postMapper.toPostResponseDtoList(posts, likeRepository);
+        List<Post> posts = postRepository.findPublishedByProjectId(projectId);
+        return postMapper.toPostResponseDtoList(posts);
     }
 
     private void validatePostOptional(Optional<Post> postOptional, Long id) {
