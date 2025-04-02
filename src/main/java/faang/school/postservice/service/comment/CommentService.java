@@ -1,12 +1,24 @@
 package faang.school.postservice.service.comment;
 
-import static faang.school.postservice.contants.ErrorMessage.*;
-import static faang.school.postservice.contants.InfoMessage.*;
+import static faang.school.postservice.contants.ErrorMessage.ERROR_NOT_AUTHOR_COMMENT;
+import static faang.school.postservice.contants.ErrorMessage.ERROR_NULL_AUTHOR_ID;
+import static faang.school.postservice.contants.ErrorMessage.ERROR_NULL_COMMENT_ID;
+import static faang.school.postservice.contants.ErrorMessage.ERROR_NULL_CONTENT;
+import static faang.school.postservice.contants.ErrorMessage.ERROR_NULL_POST_ID;
+import static faang.school.postservice.contants.InfoMessage.INFO_CREATE_COMMENT;
+import static faang.school.postservice.contants.InfoMessage.INFO_DELETE_COMMENT;
+import static faang.school.postservice.contants.InfoMessage.INFO_GET_COMMENTS;
+import static faang.school.postservice.contants.InfoMessage.INFO_UPDATE_COMMENT;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.contants.ErrorMessage;
 import faang.school.postservice.dto.comment.CommentRequestDto;
 import faang.school.postservice.dto.comment.CommentResponseDto;
 import faang.school.postservice.dto.comment.CommentUpdateDto;
+import faang.school.postservice.exception.EntityNotFoundException;
+import faang.school.postservice.exception.InvalidCommentContentException;
+import faang.school.postservice.exception.NotAuthorException;
+import faang.school.postservice.exception.NullEntityException;
 import faang.school.postservice.mapper.CommentRequestMapper;
 import faang.school.postservice.mapper.CommentResponseMapper;
 import faang.school.postservice.model.Comment;
@@ -49,7 +61,7 @@ public class CommentService {
         validateContent(commentUpdateDto.getContent());
         validateId(commentUpdateDto.getAuthorId(), ERROR_NULL_AUTHOR_ID);
         Comment comment = getComment(id);
-        checkAuthorComment(comment, commentUpdateDto);
+        isAuthorComment(comment, commentUpdateDto);
         comment.setContent(commentUpdateDto.getContent());
         commentRepository.save(comment);
         log.info(INFO_UPDATE_COMMENT, id, commentUpdateDto.getAuthorId());
@@ -73,64 +85,63 @@ public class CommentService {
 
     private Comment getComment(Long id) {
         validateId(id, ERROR_NULL_COMMENT_ID);
-        return getEntity(() -> commentRepository.findById(id), getErrorNotFoundComment(id));
+        return getEntity(() -> commentRepository.findById(id), ErrorMessage.getErrorNotFoundComment(id));
     }
 
     private Post getPost(Long id) {
         validateId(id, ERROR_NULL_POST_ID);
-        return getEntity(() -> postRepository.findById(id), getErrorNotFoundPost(id));
+        return getEntity(() -> postRepository.findById(id), ErrorMessage.getErrorNotFoundPost(id));
     }
 
     private void validateCreateComment(CommentRequestDto commentDto) {
         validateContent(commentDto.getContent());
         validateId(commentDto.getAuthorId(), ERROR_NULL_AUTHOR_ID);
         validateId(commentDto.getPostId(), ERROR_NULL_POST_ID);
-        validateUserService(commentDto.getAuthorId());
+        validateUserFromClient(commentDto.getAuthorId());
     }
 
     private void validateContent(String content) {
         if (content == null) {
             log.error(ERROR_NULL_CONTENT);
-            throw new IllegalArgumentException(ERROR_NULL_CONTENT);
+            throw new NullEntityException(ERROR_NULL_CONTENT);
         }
         if (content.isBlank() || content.length() > MAX_LENGTH_CHARACTER) {
-            String errorMessage = getErrorWrongFormatContent(MAX_LENGTH_CHARACTER);
+            String errorMessage = ErrorMessage.getErrorWrongFormatContent(MAX_LENGTH_CHARACTER);
             log.error(errorMessage);
-            throw new IllegalArgumentException(errorMessage);
+            throw new InvalidCommentContentException(errorMessage);
         }
     }
 
     private void validateId(Long id, String errorMessage) {
         if (id == null) {
             log.error(errorMessage);
-            throw new IllegalArgumentException(errorMessage);
+            throw new NullEntityException(errorMessage);
         }
     }
 
-    private void validateUserService(Long id) {
-        validateId(id, ERROR_NULL_AUTHOR_ID);
+    private void validateUserFromClient(Long id) {
         try {
             userServiceClient.getUser(id);
         } catch (FeignException.NotFound e) {
-            log.error(getErrorNotFoundUser(id), e);
-            throw new IllegalArgumentException(getErrorNotFoundUser(id), e);
+            log.error(ErrorMessage.getErrorNotFoundUser(id), e);
+            throw new IllegalArgumentException(ErrorMessage.getErrorNotFoundUser(id), e);
         } catch (FeignException e) {
-            log.error(getErrorOccurredValidatingUser(id), e);
-            throw new RuntimeException(getErrorOccurredValidatingUser(id), e);
+            log.error(ErrorMessage.getErrorOccurredValidatingUser(id), e);
+            throw new RuntimeException(ErrorMessage.getErrorOccurredValidatingUser(id), e);
         }
     }
 
-    private void checkAuthorComment(Comment comment, CommentUpdateDto dto) {
+    private void isAuthorComment(Comment comment, CommentUpdateDto dto) {
         if (!comment.getAuthorId().equals(dto.getAuthorId())) {
             log.error(ERROR_NOT_AUTHOR_COMMENT);
-            throw new IllegalArgumentException(ERROR_NOT_AUTHOR_COMMENT);
+            throw new NotAuthorException(ERROR_NOT_AUTHOR_COMMENT);
         }
     }
 
     private <T> T getEntity(Supplier<Optional<T>> finder, String errorMessage) {
         return finder.get().orElseThrow(() -> {
             log.error(errorMessage);
-            return new IllegalArgumentException(errorMessage);
+            return new EntityNotFoundException(errorMessage);
         });
     }
 }
