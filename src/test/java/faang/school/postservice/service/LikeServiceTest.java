@@ -3,9 +3,11 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.mapper.EventMapperImpl;
 import faang.school.postservice.mapper.LikeMapperImpl;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.KafkaLikeProducer;
 import faang.school.postservice.publisher.like.LikeEventPublisher;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.service.post.PostService;
@@ -23,6 +25,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.times;
@@ -45,6 +48,10 @@ public class LikeServiceTest {
     private LikeValidator likeValidator;
     @Mock
     private LikeMapperImpl likeMapperImpl;
+    @Mock
+    private KafkaLikeProducer kafkaLikeProducer;
+    @Mock
+    private EventMapperImpl eventMapperImpl;
     @InjectMocks
     private LikeService likeService;
 
@@ -80,6 +87,7 @@ public class LikeServiceTest {
         likeService.createPostLike(likeDtoPost);
         verify(likeValidator, times(1)).validateLikeCreationParams(likeDtoPost);
         verify(likeRepository, times(1)).save(like);
+        verify(kafkaLikeProducer).publish(any());
     }
 
     @Test

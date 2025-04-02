@@ -4,8 +4,10 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.event.LikeEvent;
+import faang.school.postservice.mapper.EventMapper;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Like;
+import faang.school.postservice.producer.KafkaLikeProducer;
 import faang.school.postservice.publisher.like.LikeEventPublisher;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.service.post.PostService;
@@ -31,12 +33,17 @@ public class LikeService {
     private final LikeMapper likeMapper;
     private final LikeEventPublisher likeEventPublisher;
     private final PostService postService;
+    private final KafkaLikeProducer kafkaLikeProducer;
+    private final EventMapper eventMapper;
 
     @Transactional
     public LikeDto createPostLike(LikeDto dto) {
         likeValidator.validateLikeCreationParams(dto);
         Like entity = likeMapper.toEntity(dto);
         likeRepository.save(entity);
+
+        var event = eventMapper.toPostLikeKafkaEvent(dto);
+        kafkaLikeProducer.publish(event);
 
         LikeEvent likeEvent = LikeEvent.builder()
                 .postId(dto.postId())
