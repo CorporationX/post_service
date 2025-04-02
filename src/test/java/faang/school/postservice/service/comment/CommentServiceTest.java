@@ -16,6 +16,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mock.web.MockMultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -29,7 +30,6 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class CommentServiceTest {
-
 
     @Mock
     private CommentRepository commentRepository;
@@ -46,6 +46,9 @@ public class CommentServiceTest {
     @Mock
     private CommentValidator commentValidator;
 
+    @Mock
+    private ImageService imageService;
+
     @InjectMocks
     private CommentService commentService;
 
@@ -54,13 +57,17 @@ public class CommentServiceTest {
     private Post post;
     private UserDto userDto;
 
+    byte[] content = "fake image content".getBytes();
+
+    MockMultipartFile mockFile;
+
     @BeforeEach
     void setUp() {
         Long POST_ID = 1L;
         Long AUTHOR_ID = 1L;
         Long COMMENT_ID = 1L;
         commentDto = CommentDto.builder()
-                .postId(POST_ID)  // Добавляем postId
+                .postId(POST_ID)
                 .content("Test comment")
                 .authorId(AUTHOR_ID)
                 .build();
@@ -80,13 +87,22 @@ public class CommentServiceTest {
         userDto = UserDto.builder()
                 .id(AUTHOR_ID)
                 .build();
+
+        mockFile = new MockMultipartFile(
+                "image",
+                "test.jpg",
+                "image/jpeg",
+                content
+        );
     }
 
     @Test
     void testCreateComment_Success() {
         when(postValidator.getPostById(1L)).thenReturn(post);
         when(userServiceClient.getUser(1L)).thenReturn(userDto);
-        when(commentMapper.toCommentDto(any(Comment.class))).thenReturn(commentDto);
+        when(commentMapper.toComment(commentDto)).thenReturn(comment);
+        when(commentMapper.toCommentDto(comment)).thenReturn(commentDto);
+
         when(commentRepository.save(any(Comment.class))).thenReturn(comment);
 
         CommentDto result = commentService.createComment(1L, commentDto);
@@ -94,6 +110,27 @@ public class CommentServiceTest {
         assertNotNull(result);
         assertEquals(commentDto.getContent(), result.getContent());
         verify(commentRepository, times(1)).save(any(Comment.class));
+    }
+
+    @Test
+    void testCreateCommentWithImgSuccess() {
+        commentDto.setImage(mockFile);
+        when(postValidator.getPostById(1L)).thenReturn(post);
+        when(userServiceClient.getUser(1L)).thenReturn(userDto);
+        when(commentMapper.toComment(commentDto)).thenReturn(comment);
+        when(commentMapper.toCommentDto(comment)).thenReturn(commentDto);
+
+        when(commentRepository.save(any(Comment.class))).thenReturn(comment);
+        when(imageService.uploadResizedImages(mockFile, 1L))
+                .thenReturn(new ImageService.ImageKeys("comments/1_large.jpg", "comments/1_small.jpg"));
+
+
+        CommentDto result = commentService.createComment(1L, commentDto);
+
+        assertNotNull(result);
+        assertEquals(commentDto.getContent(), result.getContent());
+        verify(imageService, times(1)).uploadResizedImages(mockFile,1L);
+        verify(commentRepository, times(2)).save(any(Comment.class));
     }
 
     @Test
@@ -162,6 +199,19 @@ public class CommentServiceTest {
         commentService.deleteComment(1L);
 
         verify(commentRepository, times(1)).deleteById(1L);
+    }
+
+    @Test
+    void testDeleteCommentWithImgSuccess() {
+        comment.setLargeImageFileKey("comments/1_large.jpg");
+        comment.setSmallImageFileKey("comments/1_small.jpg");
+
+        when(commentRepository.findById(1L)).thenReturn(Optional.of(comment));
+
+        commentService.deleteComment(1L);
+
+        verify(commentRepository, times(1)).deleteById(1L);
+        verify(imageService, times(2)).deleteImageIfExists(any());
     }
 
     @Test

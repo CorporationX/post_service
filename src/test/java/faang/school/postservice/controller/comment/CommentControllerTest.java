@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -80,7 +81,7 @@ import static org.mockito.Mockito.*;
         void testDeleteComment() {
             doNothing().when(commentService).deleteComment(commentId);
 
-            ResponseEntity<Void> response = commentController.deleteComment(commentId);
+            ResponseEntity<Map<String, String>> response = commentController.deleteComment(commentId);
 
             assertNotNull(response);
             assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
