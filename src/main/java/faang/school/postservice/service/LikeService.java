@@ -1,11 +1,13 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.like.LikePostEvent;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.LikeEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.like.LikeRepository;
@@ -24,6 +26,7 @@ public class LikeService {
     private LikeRepository likeRepository;
     private CommentRepository commentRepository;
     private UserServiceClient userServiceClient;
+    private final LikeEventPublisher likeEventPublisher;
 
     private static final String ERROR_POST_DOES_NOT_EXIST = "Post doesn't exist: postId={}";
     private static final String ERROR_COMMENT_DOES_NOT_EXIST = "Comment doesn't exist: commentId={} ";
@@ -43,6 +46,7 @@ public class LikeService {
             like.setComment(null);
             Like likeFromDataBase = likeRepository.save(like);
             log.info(USER_LIKES_POST, like.getUserId(), like.getPost().getId());
+            likeEventPublisher.publish(new LikePostEvent(post.getId(), post.getAuthorId(), like.getUserId()), "like_topic");
             return likeFromDataBase;
         } else {
             logWarningSameLikeStatus(like);

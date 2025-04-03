@@ -2,10 +2,12 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.like.LikePostEvent;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.LikeEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.like.LikeRepository;
@@ -32,6 +34,8 @@ public class LikeServiceTest {
     private UserContext userContext;
     @Mock
     private UserServiceClient userServiceClient;
+    @Mock
+    private LikeEventPublisher likeEventPublisher;
     @InjectMocks
     private LikeService likeService;
 
@@ -52,6 +56,7 @@ public class LikeServiceTest {
 
         post = new Post();
         post.setId(1L);
+        post.setAuthorId(5L);
         post.setLikes(List.of(like1));
 
         comment = new Comment();
@@ -103,5 +108,16 @@ public class LikeServiceTest {
         likeService.unsetLikeToComment(like);
 
         Mockito.verify(likeRepository, Mockito.times(1)).deleteById(like.getId());
+    }
+
+    @Test
+    public void testSetLikeToPostNotificationIssent() {
+        Mockito.when(postRepository.findById(post.getId())).thenReturn(Optional.of(post));
+        Mockito.when(userServiceClient.getUser(like.getUserId())).thenReturn(new UserDto(like.getUserId(), "testUser", "t@mail.com"));
+        post.setLikes(List.of(like2));
+        likeService.setLikeToPost(like);
+
+        Mockito.verify(likeEventPublisher, Mockito.times(1))
+                .publish(new LikePostEvent(post.getId(), post.getAuthorId(), like.getUserId()), "like_topic");
     }
 }

@@ -32,6 +32,10 @@ logging:
   level:
     root: info
 
+notification:
+  post:
+    like: like_topic
+
 user-service:
   host: localhost
   port: 8080
