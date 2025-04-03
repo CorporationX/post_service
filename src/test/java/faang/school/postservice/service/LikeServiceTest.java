@@ -5,6 +5,7 @@ import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.LikeMapperImpl;
 import faang.school.postservice.model.Like;
+import faang.school.postservice.publisher.LikeProducer;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.service.validator.LikeValidator;
@@ -14,6 +15,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
@@ -21,6 +23,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.times;
@@ -39,8 +42,10 @@ public class LikeServiceTest {
     private LikeRepository likeRepository;
     @Mock
     private LikeValidator likeValidator;
-    @Mock
+    @Spy
     private LikeMapperImpl likeMapperImpl;
+    @Mock
+    private LikeProducer likeProducer;
     @InjectMocks
     private LikeService likeService;
 
@@ -74,7 +79,8 @@ public class LikeServiceTest {
         Like like = likeMapperImpl.toEntity(likeDtoPost);
         likeService.createPostLike(likeDtoPost);
         verify(likeValidator, times(1)).validateLikeCreationParams(likeDtoPost);
-        verify(likeRepository, times(1)).save(like);
+        verify(likeRepository, times(1)).save(any());
+        verify(likeProducer).publish(any());
     }
 
     @Test
@@ -82,7 +88,7 @@ public class LikeServiceTest {
         Like like = likeMapperImpl.toEntity(likeDtoComment);
         likeService.createCommentLike(likeDtoComment);
         verify(likeValidator, times(1)).validateLikeCreationParams(likeDtoComment);
-        verify(likeRepository, times(1)).save(like);
+        verify(likeRepository, times(1)).save(any());
     }
 
     @Test

@@ -43,6 +43,12 @@ spring:
         news-feed-subs:
           name: news-feed-subs
           partitions: 1
+        comment:
+          name: comment-topic
+          partitions: 1
+        like:
+          name: like-topic
+          partitions: 1
 
 
 resilience4j:

@@ -27,7 +27,8 @@ public class LikeController {
     @PostMapping("/post/{postId}")
     @ResponseStatus(HttpStatus.CREATED)
     public LikeDto createPostLike(@PathVariable Long postId, @Validated @RequestBody LikeDto dto) {
-        return likeService.createPostLike(dto);
+        var likeDto = new LikeDto(dto.userId(), null, postId);
+        return likeService.createPostLike(likeDto);
     }
 
     @DeleteMapping("/post/{postId}")

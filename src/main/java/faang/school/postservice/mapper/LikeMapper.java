@@ -1,6 +1,7 @@
 package faang.school.postservice.mapper;
 
 import faang.school.postservice.dto.like.LikeDto;
+import faang.school.postservice.event.LikeEvent;
 import faang.school.postservice.model.Like;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -13,7 +14,13 @@ public interface LikeMapper {
     @Mapping(source = "commentId", target = "comment.id")
     Like toEntity(LikeDto dto);
 
-    @Mapping(source = "post.id", target = "postId")
-    @Mapping(source = "comment.id", target = "commentId")
+    @Mapping(target = "postId", ignore = true)
+    @Mapping(target = "userId", ignore = true)
     LikeDto toDto(Like like);
+
+    @Mapping(target = "authorId", source = "post.authorId")
+    @Mapping(target = "postId", source = "post.id")
+    @Mapping(target = "timeStamp", source = "createdAt")
+    @Mapping(target = "userId", source = "userId")
+    LikeEvent toEvent(Like like);
 }

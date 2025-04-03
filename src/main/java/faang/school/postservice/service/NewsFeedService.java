@@ -31,6 +31,7 @@ public class NewsFeedService {
     private static final String FEED_PREFIX = "user_feed:";
     private static final int NEWS_FEED_RANGE_START = 0;
     private static final int FEED_END_INDEX = 1;
+    private static final String LIKE_PREFIX = "post_likes:";
 
     private final CachePostRepository cachePostRepository;
     private final NewsFeedMapper newsFeedMapper;
@@ -115,6 +116,11 @@ public class NewsFeedService {
                             cacheKey, NEWS_FEED_RANGE_START, -maxPostsInFeed - FEED_END_INDEX
                     );
                 });
+    }
+
+    public void addLikeToPost(long postId) {
+        redisTemplate.opsForValue()
+                .increment(LIKE_PREFIX + postId, 1);
     }
 
     private CacheAuthor cacheAuthor(String cacheAuthorId, Supplier<CacheAuthor> cacheAuthorSupplier) {

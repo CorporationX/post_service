@@ -12,5 +12,6 @@ public record LikeDto(
         @Positive
         Long userId,
         Long commentId,
-        Long postId) {
+        Long postId
+) {
 }

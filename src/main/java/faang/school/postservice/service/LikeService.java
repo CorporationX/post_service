@@ -5,8 +5,8 @@ import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Like;
+import faang.school.postservice.publisher.LikeProducer;
 import faang.school.postservice.repository.LikeRepository;
-import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.service.validator.LikeValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,13 +26,16 @@ public class LikeService {
     private final LikeRepository likeRepository;
     private final LikeValidator likeValidator;
     private final LikeMapper likeMapper;
-    private final PostService postService;
+    private final LikeProducer likeProducer;
 
     @Transactional
     public LikeDto createPostLike(LikeDto dto) {
         likeValidator.validateLikeCreationParams(dto);
         Like entity = likeMapper.toEntity(dto);
-        likeRepository.save(entity);
+        entity.setComment(null);
+        likeProducer.publish(
+                likeMapper.toEvent(likeRepository.save(entity))
+        );
 
         return likeMapper.toDto(entity);
     }
