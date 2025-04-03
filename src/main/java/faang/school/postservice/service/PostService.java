@@ -8,6 +8,8 @@ import faang.school.postservice.service.moderation.AsyncModerationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.ListUtils;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,14 +17,16 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+import java.util.List;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
-
 public class PostService {
 
     private static final String POST = "Post";
 
+    private final GrammarBotService grammarBotService;
     private final PostRepository postRepository;
     private final AsyncModerationService asyncModerationService;
     private final ModerationProperties moderationProperties;
@@ -59,5 +63,20 @@ public class PostService {
 
         log.info("Get post with id {}", postId);
         return post;
+    }
+
+    @Retryable(value = Exception.class, maxAttempts = 3, backoff = @Backoff(delay = 2000, multiplier = 2))
+    public void correctUnpublishedPosts() {
+        List<Post> posts = postRepository.findReadyToPublish();
+
+        for (Post post : posts) {
+            try {
+                String correctedText = grammarBotService.checkGrammar(post.getContent());
+                post.setContent(correctedText);
+                postRepository.save(post);
+            } catch (Exception e) {
+                log.error("Error checking post {}: {}", post.getId(), e.getMessage());
+            }
+        }
     }
 }
