@@ -6,6 +6,8 @@ import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.CommentNotFoundException;
 import faang.school.postservice.exception.PostNotFoundException;
 import faang.school.postservice.exception.UserNotFoundException;
+import faang.school.postservice.kafka.events.PostLikeEvent;
+import faang.school.postservice.kafka.producer.KafkaEventProducer;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
@@ -16,6 +18,7 @@ import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -28,6 +31,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
+@Slf4j
 @Service
 public class LikeService {
 
@@ -36,6 +40,7 @@ public class LikeService {
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final UserServiceClient userServiceClient;
+    private final KafkaEventProducer kafkaEventProducer;
 
     @Transactional(readOnly = true)
     public List<UserDto> getUsersWhoLikedPost(Long postId) {
@@ -69,6 +74,7 @@ public class LikeService {
 
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new PostNotFoundException("Post not found"));
+
         Like like = Like.builder()
                 .userId(currentUserId)
                 .post(post)
@@ -76,7 +82,18 @@ public class LikeService {
 
         post.getLikes().add(like);
         postRepository.save(post);
-        return likeRepository.save(like);
+        Like savedLike = likeRepository.save(like);
+
+        PostLikeEvent likeEvent = PostLikeEvent.builder()
+                .id(post.getId())
+                .authorId(currentUserId)
+                .likes(post.getLikes().size())
+                .content("User " + currentUserId + " liked post " + post.getId())
+                .build();
+
+        kafkaEventProducer.sendLikeEvent(likeEvent);
+        log.info("Sent PostLikeEvent to Kafka: {}", likeEvent);
+        return savedLike;
     }
 
     @Transactional

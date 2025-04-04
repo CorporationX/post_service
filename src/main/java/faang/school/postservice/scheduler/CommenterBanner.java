@@ -17,7 +17,7 @@ import java.util.List;
 public class CommenterBanner {
 
     private final CommentService commentService;
-    private final KafkaTemplate<String, String> kafkaTemplate;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
     private final ObjectMapper objectMapper;
 
     @Value("${spring.kafka.topics.user-ban-topic.name}")

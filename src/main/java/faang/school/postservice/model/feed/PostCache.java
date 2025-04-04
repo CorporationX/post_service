@@ -1,44 +1,37 @@
-package faang.school.postservice.dto.post;
+package faang.school.postservice.model.feed;
 
 import faang.school.postservice.dto.comment.CommentDto;
-import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.redis.core.RedisHash;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PostDto {
-
-    @Schema(description = "Unique identifier of the post", example = "1")
-    private long id;
-
-    @NotBlank(message = "Not blank")
-    @Schema(description = "Content of the post", example = "This is a sample post content")
+@RedisHash("posts")
+public class PostCache implements Serializable {
+    @Id
+    private Long id;
     private String content;
-
-    @Schema(description = "Author ID", example = "42")
     private Long authorId;
-
-    @Schema(description = "Project ID", example = "12")
     private Long projectId;
-
     private boolean published;
 
     private Long likes;
     private Long views;
 
-    private List<CommentDto> comments;
-
     private LocalDateTime publishedAt;
     private LocalDateTime scheduledAt;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    private CopyOnWriteArraySet<CommentDto> comments;
 }

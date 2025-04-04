@@ -2,8 +2,11 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.annotations.PublishCommentEvent;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.exception.CommentNotFoundException;
 import faang.school.postservice.exception.UserNotFoundException;
+import faang.school.postservice.kafka.events.CommentEvent;
+import faang.school.postservice.kafka.producer.KafkaEventProducer;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
@@ -41,6 +44,7 @@ public class CommentService {
     private final UserServiceClient userServiceClient;
     private final AwsService awsService;
     private final ResourceService resourceService;
+    private final KafkaEventProducer kafkaEventProducer;
 
     private final CommentValidator commentValidator;
     private final ImageProcessor imageProcessor;
@@ -81,7 +85,21 @@ public class CommentService {
         comment.setPost(post);
         comment.setAuthorId(authorId);
 
-        return commentRepository.save(comment);
+        Comment saved = commentRepository.save(comment);
+
+        CommentEvent commentEvent = CommentEvent.builder()
+                .commentDto(CommentDto.builder()
+                        .id(saved.getId())
+                        .content(saved.getContent())
+                        .build())
+                .authorId(saved.getAuthorId())
+                .postId(postId)
+                .content(saved.getContent())
+                .build();
+
+        kafkaEventProducer.sendCommentEvent(commentEvent);
+        log.info("Sent CommentEvent to Kafka: {}", commentEvent);
+        return saved;
     }
 
     @Transactional

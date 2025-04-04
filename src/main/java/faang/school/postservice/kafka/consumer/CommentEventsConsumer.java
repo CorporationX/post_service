@@ -1,0 +1,28 @@
+package faang.school.postservice.kafka.consumer;
+
+import faang.school.postservice.kafka.events.CommentEvent;
+import faang.school.postservice.service.feed.PostCacheService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.support.Acknowledgment;
+import org.springframework.stereotype.Component;
+
+@RequiredArgsConstructor
+@Slf4j
+@Component
+public class CommentEventsConsumer {
+    private final PostCacheService postCacheService;
+
+    @KafkaListener(topics = "${spring.kafka.topic-name.comments:comments}")
+    void listener(CommentEvent event, Acknowledgment acknowledgment){
+        try {
+            postCacheService.addCommentToCachedPost(event.getPostId(), event.getCommentDto());
+            acknowledgment.acknowledge();
+            log.info("Comment with id:{} is successfully added to post.", event.getCommentDto().getId());
+        } catch (Exception e) {
+            log.error("Comment with id:{} is not added to post.", event.getCommentDto().getId());
+            throw e;
+        }
+    }
+}

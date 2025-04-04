@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class BanProducer {
 
-    private final KafkaTemplate<String, String> kafkaTemplate;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
     private final ObjectMapper objectMapper;
 
     public void sendUserToBan(String topic, UserBanEvent event) {

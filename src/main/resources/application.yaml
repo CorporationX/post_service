@@ -22,6 +22,21 @@ spring:
 
   kafka:
     bootstrap-servers: localhost:9092
+    producer:
+      acks: all
+      retries: 10
+    consumer:
+      group-id: post-service-consumer
+      backoff:
+        delay: 3000
+        max-attempts: 5
+    topic-name:
+      comments: comments
+      likes: likes
+      posts: posts
+      post-views: post_views
+      heat-posts: heat_posts
+      heat-feed: heat_feed
     topics:
       analytics-comment-topic:
         name: analytics_comment_topic
@@ -36,6 +51,26 @@ spring:
 
   data:
     redis:
+      heat:
+        max-posts-in-feed: 500
+      post-cache:
+        ttl-days: 1
+        key-prefix: "post:"
+        views: "views"
+        likes: "likes"
+        comments-in-post: 3
+      feed-cache:
+        key-prefix: "feed:"
+        size: 500            # макс. постов в фиде
+        batch-size: 20       # сколько постов за раз
+        start-index: 0       # начало диапазона (по умолчанию 0)
+        rank-offset: 1       # смещение для "после postId"
+      post:
+        ttl-days: 1
+        author:
+          ttl-days: 1
+        comment:
+          max-size: 3
       port: 6379
       host: localhost
       channels:
@@ -143,6 +178,19 @@ commenter-banner:
   comments-count-for-ban: 5
 
 app:
+  async:
+    executor_service:
+      pool_size: 10
+    common:
+      core_pool_size: 5
+      max_pool_size: 10
+      queue_capacity: 100
+      thread_name_prefix: "moderation-"
+    hash_generator:
+      core_pool_size: 5
+      max_pool_size: 10
+      queue_capacity: 100
+      thread_name_prefix: "hash-"
   speller:
     url: "https://speller.yandex.net/services/spellservice.json"
     max-request-uri-length: 10000

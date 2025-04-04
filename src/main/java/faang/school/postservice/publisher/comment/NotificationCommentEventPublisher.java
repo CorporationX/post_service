@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class NotificationCommentEventPublisher implements EventPublisher {
 
-    private final KafkaTemplate<String, String> kafkaTemplate;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
     private final CommentMapper commentMapper;
     private final ObjectMapper objectMapper;
 

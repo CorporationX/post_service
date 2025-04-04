@@ -26,7 +26,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 class NotificationCommentEventPublisherTest {
 
     @Mock
-    private KafkaTemplate<String, String> kafkaTemplate;
+    private KafkaTemplate<String, Object> kafkaTemplate;
 
     @Mock
     private CommentMapper commentMapper;

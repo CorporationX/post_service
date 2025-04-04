@@ -20,7 +20,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 @Component
 public class AnalyticsCommentEventPublisher implements EventPublisher {
-    private final KafkaTemplate<String, String> kafkaTemplate;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
     private final CommentMapper commentMapper;
     private final ObjectMapper objectMapper;
 
