@@ -137,3 +137,5 @@ moderation:
   core-pool-size: 10
   max-pool-size: 20
   queue-capacity: 50
+  cron: "0 */1 * * * *"  # каждый день в 03:00   0 0 3 * * *
+  chunk-size: 100     # количество комментов в одном потоке
