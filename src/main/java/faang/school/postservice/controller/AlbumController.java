@@ -1,56 +1,91 @@
 package faang.school.postservice.controller;
 
-import faang.school.postservice.dto.posts.AlbumDto;
-import faang.school.postservice.model.Album;
+import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.albums.AlbumDto;
+import faang.school.postservice.dto.albums.AlbumFilterDto;
 import faang.school.postservice.service.AlbumService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/api/v1/albums")
+@Validated
 public class AlbumController {
 
     private final AlbumService albumService;
+    private final UserContext userContext;
 
-    public void createAlbum(String title, String description) {
-
+    @PostMapping()
+    public AlbumDto createAlbum(@Valid @RequestBody AlbumDto albumDto) {
+        return albumService.createAlbum(albumDto);
     }
 
-    public void addPost(long id, String title) {
-
+    @PostMapping("{albumId}/posts/{postId}")
+    public AlbumDto addPostToAlbum(@PathVariable long albumId, @PathVariable long postId) {
+        long userId = userContext.getUserId();
+        return albumService.addPostToAlbum(albumId, postId, userId);
     }
 
-    public void addAlbumToFavorites() {
-
+    @DeleteMapping("{albumId}/posts/{postId}")
+    public AlbumDto removePostFromAlbum(@PathVariable("albumId") long albumId, @PathVariable("postId") long postId) {
+        long userId = userContext.getUserId();
+        return albumService.removePostFromAlbum(albumId, postId, userId);
     }
 
-    @GetMapping("/api/v1/albums/{id}")
-    public Album getAlbum(@PathVariable long id) {
-        var album = albumService.getAlbum(id);
-        return album;
+    @PostMapping("/add/album/{albumId}/favorites")
+    public AlbumDto addAlbumToFavorite(@PathVariable("albumId") long albumId) {
+        long userId = userContext.getUserId();
+        return albumService.addAlbumToFavorite(albumId, userId);
     }
 
-    public List<AlbumDto> getAllHisAlbum() {
-        return AlbumDto;
+    @DeleteMapping("/album/{albumId}/favorites")
+    public AlbumDto removeAlbumFromFavorite(@PathVariable("albumId") long albumId) {
+        long userId = userContext.getUserId();
+        return albumService.removeAlbumFromFavorite(albumId, userId);
     }
 
-    public List<AlbumDto> getAllGeneralAlbum() {
-        return AlbumDto;
+    @GetMapping("/{albumId}")
+    public AlbumDto getAlbumById(@PathVariable("albumId") long albumId) {
+        return albumService.getAlbumById(albumId);
     }
 
-    public List<Album> getAllFavoriteAlbum() {
-        return AlbumDto;
+    @PostMapping("/filtered")
+    public List<AlbumDto> getAllUserAlbums(@RequestBody AlbumFilterDto albumFilterDto) {
+        long userId = userContext.getUserId();
+        return albumService.getAllUserAlbums(userId, albumFilterDto);
     }
-
-    public void updateAlbum() {
-
-    }
-
-    public void deleteAlbum() {
-
-    }
+//
+//    @GetMapping("/all")
+//    public List<AlbumDto> getAllAlbums(@RequestBody AlbumFilterDto albumFilterDto) {
+//        return albumService.getAllAlbums(albumFilterDto);
+//    }
+//
+//    @GetMapping("/favorites")
+//    public List<AlbumDto> getAllUserFavoriteAlbums(@RequestBody AlbumFilterDto albumFilterDto) {
+//        long userId = userContext.getUserId();
+//        return albumService.getAllUserFavoriteAlbums(userId, albumFilterDto);
+//    }
+//
+//    @PutMapping("/{albumId}")
+//    public AlbumDto updateAlbum(@PathVariable("albumId") long albumId, @RequestBody AlbumDto albumDto) {
+//        long userId = userContext.getUserId();
+//        return albumService.updateAlbum(albumId, userId, albumDto);
+//    }
+//
+//    @DeleteMapping("/{albumId}")
+//    public AlbumDto deleteAlbum(@PathVariable("albumId") long albumId){
+//        long userId = userContext.getUserId();
+//        return albumService.deleteAlbum(albumId, userId);
+//    }
 }
