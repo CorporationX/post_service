@@ -9,7 +9,7 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: none
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         format_sql: true
@@ -28,6 +28,47 @@ spring:
           name: user_ban
         comment-channel: comment_channel
         like-event-channel: like_event
+      cache:
+        ttl-minutes: 10
+        user-ttl-minutes: 1440
+        post-ttl-minutes: 1440
+        comment-ttl-minutes: 1440
+        user-cache-name: user
+        post-cache-name: post
+        comment-cache-name: comment
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      retries: 3
+    consumer:
+      group-id: newsfeed2
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "faang.school.postservice.dto"  # Пакет с DTO
+        spring.json.type.mapping: >
+          commentEvent:faang.school.postservice.dto.post.PostCommentEvent,
+          postEvent:faang.school.postservice.dto.post.PostPublicationEvent,
+          postProcessEvent:faang.school.postservice.dto.post.PostProcessEvent,
+          likeEvent:faang.school.postservice.dto.post.PostLikeEvent,
+          viewEvent:faang.school.postservice.dto.post.PostViewEvent,
+          feedHeaterEvent:faang.school.postservice.dto.feed.FeedHeaterEvent
+    listener:
+      ack-mode: manual
+      retry-attempts: 3 # Количество попыток повтора
+      retry-interval: 1000 # Интервал между попытками
+    topic:
+      posts-topic: posts3
+      posts-process-topic: posts_process3
+      post-views-topic: post_views3
+      post-likes-topic: post_likes3
+      post-comments-topic: post_comments3
+      feed-heater-topic: heater3
 
   mvc:
     servlet:
@@ -37,6 +78,12 @@ spring:
     multipart:
       max-file-size: 5MB
       max-request-size: 5MB
+
+  async:
+    core-pool-size: 5
+    max-pool-size: 20
+    queue-capacity: 30
+    thread-name-prefix: AsyncThread-
 
 server:
   port: 8081
@@ -52,6 +99,7 @@ post_service:
 logging:
   level:
     root: info
+    feign: debug
 
 user-service:
   host: localhost
@@ -85,9 +133,16 @@ comment:
   path-to-dictionary: /bad_words_list.txt
 
   schedule:
-    verify: "*/10 * * * * *"
-    user-ban: "*/30 * * * * *"
+    verify: "* */10 * * * *"    #каждые 10 сек // временно сделал каждые 10 минут
+    user-ban: "* */30 * * * *"  #каждые 10 сек // временно сделал каждые 30 минут
   batchSize: 100
   thread-pool-size: 4
   word-split-regex: "(?<=\\p{L})(?=\\p{P})|(?<=\\p{P})(?=\\p{L})|\\s+"
   number-bad-comments: 5
+
+newsfeed:
+  prefix: newsfeed11
+  max-posts: 10 # Max posts per feed
+  page-size: 5  # posts for feed page
+  batch-size: 2 # users/followers batch size for processing
+  comments-number: 3 # Number of comments in feed post

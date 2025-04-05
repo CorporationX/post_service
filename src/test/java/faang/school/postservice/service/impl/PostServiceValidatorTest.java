@@ -3,8 +3,8 @@ package faang.school.postservice.service.impl;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostCreateRequestDto;
-import faang.school.postservice.dto.project.ProjectDto;
-import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.dto.project.ProjectResponseDto;
+import faang.school.postservice.dto.user.UserResponseDto;
 import faang.school.postservice.model.Post;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,16 +20,17 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class PostServiceValidatorTest {
 
     @InjectMocks
-    PostServiceValidator postServiceValidator;
+    private PostServiceValidator postServiceValidator;
     @Mock
-    ProjectServiceClient projectServiceClient;
+    private ProjectServiceClient projectServiceClient;
     @Mock
-    UserServiceClient userServiceClient;
+    private UserServiceClient userServiceClient;
 
 
     PostCreateRequestDto validPostCreateRequestDto;
-    UserDto userDto;
-    ProjectDto projectDto;
+    //UserDto userDto;
+    UserResponseDto userDto;
+    ProjectResponseDto projectDto;
     Post post;
     Post postByOtherAuthor;
     Post postInOtherProject;
@@ -59,8 +60,14 @@ class PostServiceValidatorTest {
                 .authorId(111L)
                 .projectId(1231L)
                 .build();
-        userDto = new UserDto(111L, "Alice", "alice@mail.ru");
-        projectDto = new ProjectDto(222L, "New project");
+        //userDto = new UserResponseDto(111L, "Alice", "alice@mail.ru");
+        userDto = new UserResponseDto(
+                111L,
+                "Alice",
+                "alice@mail.ru",
+                "12221",
+                UserResponseDto.PreferredContact.EMAIL);
+        projectDto = new ProjectResponseDto(222L, 1L,"New project", "new", "test");
     }
 
     @Test
@@ -99,8 +106,10 @@ class PostServiceValidatorTest {
     @Test
     @DisplayName("Test author and project exist for post")
     void testValidateAuthorAndProjectPostDto() {
-        Mockito.when(userServiceClient.getUser(11111111L)).thenReturn(new UserDto(null, null, null));
-        Mockito.when(projectServiceClient.getProject(222222222L)).thenReturn(new ProjectDto(0, null));
+        Mockito.when(userServiceClient.getUser(11111111L))
+                .thenReturn(new UserResponseDto(1L, null, null, null, null));
+        Mockito.when(projectServiceClient.getProject(222222222L))
+                .thenReturn(new ProjectResponseDto(0L, null, null, null, null));
         PostCreateRequestDto unknownAuthorPostDto = PostCreateRequestDto.builder()
                 .authorId(11111111L)
                 .content("test")

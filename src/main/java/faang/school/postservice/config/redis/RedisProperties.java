@@ -1,15 +1,20 @@
 package faang.school.postservice.config.redis;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
 
-@Setter
-@Getter
-@Configuration
 @ConfigurationProperties(prefix = "spring.data.redis")
-public class RedisProperties {
-    private String host;
-    private int port;
+public record RedisProperties(
+        int port,
+        String host,
+        Cache cache
+) {
+    public record Cache(
+            int ttlMinutes,
+            int userTtlMinutes,
+            int postTtlMinutes,
+            int commentTtlMinutes,
+            String userCacheName,
+            String postCacheName,
+            String commentCacheName) {
+    }
 }

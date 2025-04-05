@@ -1,16 +1,17 @@
 package faang.school.postservice.service.comment;
 
 import faang.school.postservice.dto.comment.CommentRequestDto;
-import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.dto.user.UserResponseDto;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+
 import java.time.LocalDateTime;
 
 public class TestData {
 
-    public static UserDto createUserDto(Long id, String username, String email) {
-        return UserDto.builder()
+    public static UserResponseDto createUserDto(Long id, String username, String email) {
+        return UserResponseDto.builder()
                 .id(id)
                 .username(username)
                 .email(email)

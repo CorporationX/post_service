@@ -3,16 +3,12 @@ package faang.school.postservice.service.image;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
-import faang.school.postservice.config.AwsProperties;
-import faang.school.postservice.exception.UploadFileException;
+import faang.school.postservice.config.aws.AwsProperties;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
+
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 
 @Slf4j
 @Service

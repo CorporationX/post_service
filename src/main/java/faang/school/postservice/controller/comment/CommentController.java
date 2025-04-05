@@ -33,6 +33,7 @@ import java.util.List;
 @RequestMapping("/comments")
 @Tag(name = "Comment Controller", description = "API for managing comments and uploading images")
 public class CommentController {
+
     private final CommentService commentService;
 
     @PostMapping
@@ -67,7 +68,7 @@ public class CommentController {
     public CommentResponseDto updateComment(
             @Parameter(description = "ID of the comment to update", required = true)
             @NotNull @PathVariable Long commentId,
-                              @Valid @RequestBody CommentUpdateDto commentUpdateDto) {
+            @Valid @RequestBody CommentUpdateDto commentUpdateDto) {
         return commentService.updateComment(commentId, commentUpdateDto);
     }
 

@@ -2,10 +2,12 @@ package faang.school.postservice.mapper.comment;
 
 import faang.school.postservice.dto.comment.CommentRequestDto;
 import faang.school.postservice.dto.comment.CommentResponseDto;
+import faang.school.postservice.dto.feed.FeedItemCommentDto;
 import faang.school.postservice.dto.like.LikeDto;
+import faang.school.postservice.dto.post.PostCommentEvent;
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.mapper.like.LikeMapper;
+import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
@@ -41,6 +43,15 @@ public abstract class CommentMapper {
     @Mapping(source = "post", target = "postDto", qualifiedByName = "mapPost")
     @Mapping(source = "likes", target = "likeDtos", qualifiedByName = "mapLikes")
     public abstract CommentResponseDto toCommentResponseDto(Comment comment);
+
+    public abstract List<CommentResponseDto> toCommentResponseDtos(List<Comment> comment);
+
+    @Mapping(source = "postDto.id", target = "postId")
+    public abstract FeedItemCommentDto toFeedItemCommentDto(CommentResponseDto commentResponseDto);
+
+    public abstract List<FeedItemCommentDto> toFeedItemCommentDtos(List<CommentResponseDto> commentResponseDtos);
+
+    public abstract FeedItemCommentDto toFeedItemCommentDto(PostCommentEvent postCommentEvent);
 
     @Named("mapLikes")
     protected List<LikeDto> mapLikes(List<Like> likes) {

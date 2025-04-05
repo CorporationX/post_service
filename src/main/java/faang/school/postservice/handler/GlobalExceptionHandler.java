@@ -3,12 +3,14 @@ package faang.school.postservice.handler;
 import faang.school.postservice.dto.ErrorDto;
 import faang.school.postservice.exception.ApiError;
 import faang.school.postservice.exception.CommentValidationException;
+import faang.school.postservice.exception.DataFetchException;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.UploadFileException;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -22,6 +24,11 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(DataFetchException.class)
+    public ResponseEntity<String> handleDataFetchException(DataFetchException e) {
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(e.getMessage());
+    }
     @ExceptionHandler(DataValidationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorDto handleDataValidationException(DataValidationException ex) {

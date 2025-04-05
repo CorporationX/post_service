@@ -1,4 +1,4 @@
-package faang.school.postservice.config;
+package faang.school.postservice.config.aws;
 
 import lombok.Getter;
 import lombok.Setter;

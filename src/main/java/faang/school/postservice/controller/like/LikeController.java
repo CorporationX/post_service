@@ -30,7 +30,7 @@ public class LikeController {
     public List<UserDto> getUsersWhoLikedPost(@PathVariable Long postId) {
         log.debug("Received request to get users who liked post with id: {}", postId);
         List<UserDto> users = likeService.getUsersWhoLikedPost(postId);
-        log.info("Received users {} who liked post with id: {}",users, postId);
+        log.info("Received users {} who liked post with id: {}", users, postId);
         return users;
     }
 

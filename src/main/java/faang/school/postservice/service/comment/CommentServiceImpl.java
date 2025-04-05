@@ -1,6 +1,6 @@
 package faang.school.postservice.service.comment;
 
-import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.broker.producer.PostCommentEventProducer;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CommentEvent;
 import faang.school.postservice.dto.comment.CommentFiltersDto;
@@ -20,6 +20,7 @@ import faang.school.postservice.publisher.comment.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.image.ImageService;
+import faang.school.postservice.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -39,15 +40,14 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
-
 @Setter
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class CommentServiceImpl implements CommentService {
+
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
-    private final UserServiceClient userServiceClient;
     private final CommentMapper commentMapper;
     private final UserContext userContext;
     private final ImageService imageService;
@@ -55,6 +55,8 @@ public class CommentServiceImpl implements CommentService {
     private final ExecutorService moderationExecutor;
     private final ModerationDictionary moderationDictionary;
     private final UsersBanPublisher usersBanPublisher;
+    private final PostCommentEventProducer postCommentEventProducer;
+    private final UserService userService;
 
     @Value("${comment.batchSize}")
     private int batchSize;
@@ -74,6 +76,7 @@ public class CommentServiceImpl implements CommentService {
                 savedComment.getPost().getId(),
                 savedComment.getId(),
                 savedComment.getCreatedAt());
+        postCommentEventProducer.produceCommentPostEventAsync(savedComment);
         return commentMapper.toCommentResponseDto(savedComment);
     }
 
@@ -152,6 +155,11 @@ public class CommentServiceImpl implements CommentService {
         usersBanPublisher.publish(new UsersBanEvent(userIdsToBan));
     }
 
+    @Override
+    public List<CommentResponseDto> getAllByPostId(long postId) {
+        return commentMapper.toCommentResponseDtos(commentRepository.findAllByPostId(postId));
+    }
+
     private CompletableFuture<Void> moderatePartition(List<Comment> partition) {
         return CompletableFuture.runAsync(() -> {
             partition.forEach(comment -> {
@@ -178,8 +186,8 @@ public class CommentServiceImpl implements CommentService {
     }
 
     private void validateUser(Long authorId) {
-        UserDto user = userServiceClient.getUser(authorId);
-        if (user == null) {
+        UserDto userDto = userService.getUserWithCache(authorId);
+        if (userDto == null) {
             throw new EntityNotFoundException(String.format("User with id %s not found", authorId));
         }
     }

@@ -1,14 +1,19 @@
 package faang.school.postservice.service.impl;
 
+import faang.school.postservice.broker.producer.PostEventProducer;
+import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.config.feed.NewsFeedProperties;
+import faang.school.postservice.config.redis.RedisProperties;
 import faang.school.postservice.dto.post.PostCreateRequestDto;
 import faang.school.postservice.dto.post.PostFilterDto;
 import faang.school.postservice.dto.post.PostResponseDto;
 import faang.school.postservice.dto.post.PostUpdateRequestDto;
 import faang.school.postservice.filter.post.PostAuthorSpecification;
-import faang.school.postservice.filter.post.PostSpecificationFilter;
 import faang.school.postservice.filter.post.PostProjectSpecification;
 import faang.school.postservice.filter.post.PostPublishedSpecification;
-import faang.school.postservice.mapper.PostMapperImpl;
+import faang.school.postservice.filter.post.PostSpecificationFilter;
+import faang.school.postservice.mapper.comment.CommentMapper;
+import faang.school.postservice.mapper.post.PostMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import org.junit.jupiter.api.Assertions;
@@ -21,6 +26,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.redis.core.RedisTemplate;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -37,12 +43,26 @@ class PostServiceImplTest {
     @Spy
     private PostMapperImpl postMapper;
     @Mock
-    ExecutorService executorService;
+    private ExecutorService executorService;
     @InjectMocks
     private PostServiceImpl postService;
+    @Mock
+    private PostEventProducer postEventProducer;
+    @Mock
+    private RedisProperties redisProperties;
+    @Mock
+    private UserContext userContext;
+    @Mock
+    private RedisTemplate<String, PostResponseDto> postRedisTemplate;
+    @Mock
+    private CommentMapper commentMapper;
+    @Mock
+    private NewsFeedProperties newsFeedProperties;
+
     private PostCreateRequestDto postCreateRequestDto;
     private PostUpdateRequestDto postUpdateRequestDto;
     private final List<PostSpecificationFilter> postSpecificationFilters = new ArrayList<>();
+
 
     @BeforeEach
     void setUp() {
@@ -60,7 +80,13 @@ class PostServiceImplTest {
                 postServiceValidatorMock,
                 postMapper,
                 postSpecificationFilters,
-                executorService
+                executorService,
+                postEventProducer,
+                postRedisTemplate,
+                redisProperties,
+                userContext,
+                commentMapper,
+                newsFeedProperties
         );
 
         postCreateRequestDto = PostCreateRequestDto.builder()
@@ -155,7 +181,7 @@ class PostServiceImplTest {
     void testGetPost() {
         Long postId = 123L;
         Mockito.when(postRepositoryMock.findById(postId)).thenReturn(Optional.of(new Post()));
-        postService.getPost(postId);
+        postService.getPostWithCache(postId);
         Mockito.verify(postRepositoryMock, Mockito.times(1)).findById(postId);
     }
 

@@ -1,11 +1,11 @@
 package faang.school.postservice.service.impl;
 
 import faang.school.postservice.client.ProjectServiceClient;
-import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostCreateRequestDto;
-import faang.school.postservice.dto.project.ProjectDto;
+import faang.school.postservice.dto.project.ProjectResponseDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -15,22 +15,16 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class PostServiceValidator {
 
-    private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
+    private final UserService userService;
 
     void validatePostDto(PostCreateRequestDto postCreateRequestDto) {
         Long authorId = postCreateRequestDto.authorId();
         Long projectId = postCreateRequestDto.projectId();
 
-        if (authorId != null) {
-            checkAuthorExists(authorId);
-        }
-        if (projectId != null) {
-            checkProjectExists(projectId);
-        }
-        if (authorId != null && projectId != null) {
-            checkAuthorship(authorId, projectId);
-        }
+        checkAuthorExists(authorId);
+        checkProjectExists(projectId);
+        checkAuthorship(authorId, projectId);
     }
 
     void validatePostBeforePublish(Post post) {
@@ -64,16 +58,20 @@ public class PostServiceValidator {
     }
 
     private void checkAuthorExists(Long authorId) {
-        UserDto userDto = userServiceClient.getUser(authorId);
-        if (!authorId.equals(userDto.id())) {
-            throw new IllegalArgumentException("Unable to find user with id = " + authorId);
+        if (authorId != null) {
+            UserDto userDto = userService.getUserWithCache(authorId);
+            if (!authorId.equals(userDto.id())) {
+                throw new IllegalArgumentException("Unable to find user with id = " + authorId);
+            }
         }
     }
 
     private void checkProjectExists(Long projectId) {
-        ProjectDto projectDto = projectServiceClient.getProject(projectId);
-        if (!projectId.equals(projectDto.id())) {
-            throw new IllegalArgumentException("Unable to find project with id = " + projectId);
+        if (projectId != null) {
+            ProjectResponseDto projectDto = projectServiceClient.getProject(projectId);
+            if (!projectId.equals(projectDto.id())) {
+                throw new IllegalArgumentException("Unable to find project with id = " + projectId);
+            }
         }
     }
 }

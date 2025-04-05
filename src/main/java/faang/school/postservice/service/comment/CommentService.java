@@ -4,8 +4,6 @@ import faang.school.postservice.dto.comment.CommentFiltersDto;
 import faang.school.postservice.dto.comment.CommentRequestDto;
 import faang.school.postservice.dto.comment.CommentResponseDto;
 import faang.school.postservice.dto.comment.CommentUpdateDto;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Positive;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -24,4 +22,6 @@ public interface CommentService {
     void verifyComments();
 
     void publishUsersToBanEvent();
+
+    List<CommentResponseDto> getAllByPostId(long postId);
 }
