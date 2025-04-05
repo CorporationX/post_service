@@ -1,23 +1,35 @@
 package faang.school.postservice.service.impl;
 
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.ExternalServiceValidationException;
 import faang.school.postservice.exception.PostNotFoundException;
 import faang.school.postservice.gateway.ProjectServiceGateway;
 import faang.school.postservice.gateway.UserServiceGateway;
+import faang.school.postservice.kafka.producer.KafkaPostProducer;
 import faang.school.postservice.mapper.PostMapper;
+import faang.school.postservice.model.Identifiable;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.event.PostEvent;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.UserRepository;
+import faang.school.postservice.repository.cache.AuthorCacheRepository;
+import faang.school.postservice.repository.cache.FeedCacheRepository;
+import faang.school.postservice.repository.cache.PostCacheRepository;
 import faang.school.postservice.service.AIService;
 import faang.school.postservice.service.PostService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static faang.school.postservice.controller.ControllerExceptionHandler.DEFAULT_SERVICE_NAME;
 import static java.util.Comparator.naturalOrder;
@@ -31,12 +43,65 @@ public class PostServiceImpl implements PostService {
     public static final String POST_WITH_ID_NOT_FOUND = "Post with id %s not found";
     public static final String POST_WITH_ID_ALREADY_PUBLISHED = "Post with ID %s is already published";
     public static final String POSTS_MUST_HAVE_ONE_AUTHOR = "Post must have exactly one author (either user or project).";
+    public static final long FEED_BATCH = 20L;
 
     private final PostRepository postRepository;
     private final ProjectServiceGateway projectServiceGateway;
     private final UserServiceGateway userServiceGateway;
     private final PostMapper postMapper;
     private final AIService aiService;
+    private final PostCacheRepository postCacheRepository;
+    private final AuthorCacheRepository authorCacheRepository;
+    private final FeedCacheRepository feedCacheRepository;
+    private final KafkaPostProducer kafkaPostProducer;
+    private final UserRepository userRepository;
+    private final UserContext userContext;
+
+    @Override
+    public List<PostDto> getFeed(PostDto postDto) {
+        if (postDto == null) {
+            return List.of();
+        }
+        if (postDto.getId() != null) {
+            return List.of(getCachedPost(postDto.getId()));
+        }
+
+        Set<Long> postIds = feedCacheRepository.getPostEvents(userContext.getUserId(), FEED_BATCH);
+        Set<PostDto> feed = postIds.stream()
+                .map(id -> {
+                    PostEvent event = postCacheRepository.getPost(id);
+                    if (event == null) {
+                        return postMapper.toDto(postRepository.findById(id).orElse(null));
+                    } else {
+                        return postMapper.toDto(event);
+                    }
+
+                })
+                .collect(Collectors.toSet());
+
+        if (feed.size() < FEED_BATCH) {
+            feed.addAll(postRepository.findByAuthorIdInAndIdNotIn(
+                    userRepository.findByFollowerId(userContext.getUserId()).stream()
+                            .map(Identifiable::getId).toList(), new ArrayList<>(postIds),
+                    Pageable.ofSize((int) (FEED_BATCH - feed.size())))
+                    .stream()
+                    .map(postMapper::toDto)
+                    .toList()
+            );
+        }
+        return new ArrayList<>(feed);
+    }
+
+
+
+    private PostDto getCachedPost(Long postId) {
+        PostDto post = postMapper.toDto(postCacheRepository.getPost(postId));
+        if (post == null) {
+            post = postMapper.toDto(postRepository.findById(postId).orElseThrow(
+                    () -> new PostNotFoundException(DEFAULT_SERVICE_NAME, String.format(POST_WITH_ID_NOT_FOUND, postId))));
+        }
+        return post;
+    }
 
     @Override
     public PostDto createDraft(PostDto postDto) {
@@ -49,7 +114,20 @@ public class PostServiceImpl implements PostService {
         } else if (postDto.getProjectId() != null) {
             projectServiceGateway.getProject(postDto.getProjectId());
         }
+
+        cache(postDto, post);
         return savePostAndMapToDto(post);
+    }
+
+    private void cache(PostDto postDto, Post post) {
+        postCacheRepository.cachePost(postMapper.toEvent(post));
+        authorCacheRepository.cacheAuthor(postDto.getAuthorId());
+        sendToKafka(postDto);
+    }
+
+    private void sendToKafka(PostDto postDto) {
+        List<Long> ids = userRepository.findAllSubscribersById(postDto.getAuthorId());
+        kafkaPostProducer.sendMessage(postDto.getId(), ids);
     }
 
     @Override

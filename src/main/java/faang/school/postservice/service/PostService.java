@@ -6,6 +6,8 @@ import faang.school.postservice.model.Post;
 import java.util.List;
 
 public interface PostService {
+    List<PostDto> getFeed(PostDto postDto);
+
     PostDto createDraft(PostDto postDto);
 
     PostDto publish(Long postId);

@@ -25,6 +25,25 @@ spring:
         calculations_channel:
           name: calculations_channel
 
+  kafka:
+    bootstrap-servers: localhost:29092
+    producer:
+      acks: all
+      retries: 10
+      properties:
+        delivery.timeout.ms: 120000
+        linger.ms: 5
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      enable-auto-commit: false
+      group-id: feed
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "faang.school.postservice.model.event"
+
 server:
   port: 8081
 
@@ -43,11 +62,21 @@ domain:
   base-path: /api/v1
 
 post-service:
+  kafka:
+    post-topic: posts
+    post-view-topic: post_views
+    like-topic: likes
+    partitions: 3
+  cache:
+    post-ttl: 1d
+    author-ttl: 1d
+    feed-ttl: 1d
+    cache-feed-size: 500
   ai:
     grammar-prompt: "Проверь текст на орфографию, если есть ошибка или ошибки верни только исправленный текст."
-    api-key: ""
+    api-key: ${GPT_API_KEY}
     base-url: "https://api.openai.com"
-    chat-uri: "/v1/chat/completions"
+    chat-uri: "/v1/chat/"
     model: "gpt-4o-mini"
   jobs:
     post-corrector:

@@ -1,26 +1,30 @@
-package faang.school.postservice.dto.post;
+package faang.school.postservice.model.event;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.List;
 
-@Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class PostDto {
+@Data
+public class PostEvent implements Serializable {
     private Long id;
-    @NotBlank(message = "Content cannot be null or empty")
     private String content;
     private Long authorId;
     private Long projectId;
+    private List<Long> likes;
+    private List<Long> comments;
+    private List<Long> albums;
+    private Long ad;
+    private List<Long> resources;
     private boolean published;
+    private boolean aiChecked;
     private LocalDateTime publishedAt;
+    private LocalDateTime scheduledAt;
     private boolean deleted;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

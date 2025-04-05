@@ -1,6 +1,7 @@
 package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.service.LikeService;
 import faang.school.postservice.service.PostService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -19,6 +20,17 @@ import java.util.List;
 @RequestMapping("${domain.base-path}/post")
 public class PostController {
     private final PostService postService;
+    private final LikeService likeService;
+
+    @GetMapping(value = "/feed")
+    public List<PostDto> getFeed(@RequestBody PostDto postDto) {
+        return postService.getFeed(postDto);
+    }
+
+    @PostMapping(value = "/like")
+    public void like(@RequestBody PostDto postDto) {
+        likeService.addLike(postDto);
+    }
 
     @PostMapping(value = "/create-draft")
     @Operation(summary = "Создать пост", description = "Создает новый пост")

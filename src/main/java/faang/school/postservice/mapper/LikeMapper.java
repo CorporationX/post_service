@@ -1,23 +1,18 @@
 package faang.school.postservice.mapper;
 
-import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.model.Identifiable;
-import faang.school.postservice.model.Post;
-import faang.school.postservice.model.event.PostEvent;
+import faang.school.postservice.model.Like;
+import faang.school.postservice.model.event.LikeEvent;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
 @Mapper(componentModel = "spring",
         nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-public interface PostMapper {
+public interface LikeMapper {
 
-    PostDto toDto(Post post);
-
-    Post toEntity(PostDto post);
-
-    PostEvent toEvent(Post post);
-
-    PostDto toDto(PostEvent postEvent);
+    @Mapping(target = "postId", source = "post.id")
+    LikeEvent toEvent(Like postEvent);
 
     default Long toId(Identifiable identifiable) {
         if (identifiable == null) {
