@@ -1,12 +1,10 @@
 package faang.school.postservice.utils;
 
-import io.minio.BucketExistsArgs;
-import io.minio.GetObjectArgs;
-import io.minio.MakeBucketArgs;
-import io.minio.MinioClient;
-import io.minio.PutObjectArgs;
+import io.minio.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayInputStream;
@@ -21,6 +19,8 @@ import java.util.UUID;
 public class MinioService {
 
     private final MinioClient minioClient;
+    @Value("${minio.bucket.name}")
+    private String bucketName;
 
     public String uploadFile(byte[] byteArray, String contentType, String bucketName) {
         try {
@@ -68,6 +68,25 @@ public class MinioService {
         } catch (Exception e) {
             log.error("Minio get object error", e);
             throw new RuntimeException("Minio get object error");
+        }
+    }
+
+    public void completeRemoval(String key) {
+        log.info("Удаление объекта из MinIO: bucket={}, key={}", bucketName, key);
+        if (key == null || key.isEmpty()) {
+            throw new IllegalArgumentException("Ключ файла (key) не может быть пустым");
+        }
+        try {
+            minioClient.removeObject(
+                    RemoveObjectArgs.builder()
+                            .bucket(bucketName)
+                            .object(key)
+                            .build()
+            );
+            log.info("Файл {} успешно удалён из MinIO", key);
+        } catch (Exception e) {
+            log.error("Ошибка при удалении файла {} из MinIO: {}", key, e.getMessage());
+            throw new RuntimeException("Ошибка при удалении файла из MinIO", e);
         }
     }
 }
