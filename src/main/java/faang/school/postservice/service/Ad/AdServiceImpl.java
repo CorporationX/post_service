@@ -4,14 +4,15 @@ import faang.school.postservice.repository.ad.AdRepository;
 import faang.school.postservice.validator.AdValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.ListUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
 @Service
@@ -21,12 +22,13 @@ public class AdServiceImpl implements AdService {
 
     private final AdRepository adRepository;
     private final AdValidator adValidator;
-    private final ExecutorService executorService;
+    private final ThreadPoolTaskExecutor taskExecutor;
 
     @Value("${ad.deletion.batchsize}")
     private int batchSize;
 
     @Override
+    @Transactional
     public void removeExpiredAds() {
         List<Long> expiredAdIds = adRepository.findExpiredAdIds(LocalDateTime.now());
         if (expiredAdIds.isEmpty()) {
@@ -34,12 +36,13 @@ public class AdServiceImpl implements AdService {
             return;
         }
         adValidator.validateAdIds(expiredAdIds);
-        List<List<Long>> batches = partitionList(expiredAdIds, batchSize);
-        List<Future<?>> futures = submitDeleteTasks(executorService, batches);
+        List<List<Long>> batches = partitionList(expiredAdIds);
+        List<Future<Object>> futures = submitDeleteTasks(batches);
         waitForCompletion(futures);
     }
 
     @Override
+    @Transactional
     public void deleteAdById(long id) {
         adValidator.validateAdId(id);
         try {
@@ -49,34 +52,35 @@ public class AdServiceImpl implements AdService {
         }
     }
 
-    private <T> List<List<T>> partitionList(List<T> list, int batch) {
-        List<List<T>> partitions = new ArrayList<>();
-        for (int i = 0; i < list.size(); i += batch) {
-            partitions.add(list.subList(i, Math.min(i + batch, list.size())));
-        }
-        return partitions;
+    private <T> List<List<T>> partitionList(List<T> list) {
+        return ListUtils.partition(list, batchSize);
     }
 
-    private List<Future<?>> submitDeleteTasks(ExecutorService executorService, List<List<Long>> batches) {
-        List<Future<?>> futures = new ArrayList<>();
-        for (List<Long> batch : batches) {
-            futures.add(executorService.submit(() -> {
-                try {
-                    adRepository.deleteByIds(batch);
-                } catch (Exception e) {
-                    log.error("Error while deleting batch {}: {}", batch, e.getMessage());
-                }
-            }));
-        }
-        return futures;
+    private List<Future<Object>> submitDeleteTasks(List<List<Long>> batches) {
+        return batches.stream()
+                .map(batch -> taskExecutor.submit(() -> {
+                    deleteBatch(batch);
+                    return null;
+                }))
+                .toList();
     }
 
-    private void waitForCompletion(List<Future<?>> futures) {
-        for (Future<?> future : futures) {
+    private void deleteBatch(List<Long> batch) {
+        try {
+            adRepository.deleteByIds(batch);
+        } catch (Exception e) {
+            log.error("Error while deleting batch of size {}: {}", batch.size(), e.getMessage());
+        }
+    }
+
+    private void waitForCompletion(List<Future<Object>> futures) {
+        for (Future<Object> future : futures) {
             try {
                 future.get();
-            } catch (ExecutionException | InterruptedException e) {
-                log.error("Error executing batch deletion: {}", e.getMessage());
+            } catch (ExecutionException e) {
+                log.error("Error executing batch deletion: {}", e.getCause().getMessage());
+            } catch (InterruptedException e) {
+                log.error("Batch deletion interrupted: {}", e.getMessage());
                 Thread.currentThread().interrupt();
             }
         }
