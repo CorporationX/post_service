@@ -42,7 +42,9 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok:1.18.26")
     implementation("org.mapstruct:mapstruct:1.5.3.Final")
     annotationProcessor("org.mapstruct:mapstruct-processor:1.5.3.Final")
-
+    annotationProcessor("jakarta.persistence:jakarta.persistence-api:3.1.0")
+    implementation("jakarta.persistence:jakarta.persistence-api:3.1.0")
+    annotationProcessor("org.hibernate.orm:hibernate-jpamodelgen:6.4.0.Final")
     /**
      * Test containers
      */
