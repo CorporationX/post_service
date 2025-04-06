@@ -118,21 +118,21 @@ public class AlbumServiceImpl implements AlbumService {
                 .toList();
     }
 
-//    @Override
-//    @Transactional
-//    public List<AlbumDto> getAllAlbums(AlbumFilterDto albumFilterDto) {
-//        return albumFilterService.applyFilters(albumRepository.findAll().stream(), albumFilterDto)
-//                .map(albumMapper::toAlbumDto)
-//                .toList();
-//    }
-//
-//    @Override
-//    @Transactional
-//    public List<AlbumDto> getAllUserFavoriteAlbums(long userId, AlbumFilterDto albumFilterDto) {
-//        return albumFilterService.applyFilters(albumRepository.findFavoriteAlbumsByUserId(userId), albumFilterDto)
-//                .map(albumMapper::toAlbumDto)
-//                .toList();
-//    }
+    @Override
+    @Transactional
+    public List<AlbumDto> getAllAlbums(AlbumFilterDto albumFilterDto) {
+        return albumFilterService.applyFilters(albumRepository.findAll().stream(), albumFilterDto)
+                .map(albumMapper::toAlbumDto)
+                .toList();
+    }
+
+    @Override
+    @Transactional
+    public List<AlbumDto> getAllUserFavoriteAlbums(long userId, AlbumFilterDto albumFilterDto) {
+        return albumFilterService.applyFilters(albumRepository.findFavoriteAlbumsByUserId(userId), albumFilterDto)
+                .map(albumMapper::toAlbumDto)
+                .toList();
+    }
 //
 //    @Override
 //    @Transactional

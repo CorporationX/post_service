@@ -2,11 +2,13 @@ package faang.school.postservice.filter.album;
 
 import faang.school.postservice.dto.albums.AlbumFilterDto;
 import faang.school.postservice.model.Album;
+import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.stream.Stream;
 
+@Component
 public class FromDateFilter implements AlbumFilter {
 
     @Override

@@ -65,17 +65,17 @@ public class AlbumController {
         long userId = userContext.getUserId();
         return albumService.getAllUserAlbums(userId, albumFilterDto);
     }
-//
-//    @GetMapping("/all")
-//    public List<AlbumDto> getAllAlbums(@RequestBody AlbumFilterDto albumFilterDto) {
-//        return albumService.getAllAlbums(albumFilterDto);
-//    }
-//
-//    @GetMapping("/favorites")
-//    public List<AlbumDto> getAllUserFavoriteAlbums(@RequestBody AlbumFilterDto albumFilterDto) {
-//        long userId = userContext.getUserId();
-//        return albumService.getAllUserFavoriteAlbums(userId, albumFilterDto);
-//    }
+
+    @PostMapping("/all")
+    public List<AlbumDto> getAllAlbums(@RequestBody AlbumFilterDto albumFilterDto) {
+        return albumService.getAllAlbums(albumFilterDto);
+    }
+
+    @PostMapping("/favorites")
+    public List<AlbumDto> getAllUserFavoriteAlbums(@RequestBody AlbumFilterDto albumFilterDto) {
+        long userId = userContext.getUserId();
+        return albumService.getAllUserFavoriteAlbums(userId, albumFilterDto);
+    }
 //
 //    @PutMapping("/{albumId}")
 //    public AlbumDto updateAlbum(@PathVariable("albumId") long albumId, @RequestBody AlbumDto albumDto) {

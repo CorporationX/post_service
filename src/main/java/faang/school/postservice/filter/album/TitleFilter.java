@@ -2,9 +2,11 @@ package faang.school.postservice.filter.album;
 
 import faang.school.postservice.dto.albums.AlbumFilterDto;
 import faang.school.postservice.model.Album;
+import org.springframework.stereotype.Component;
 
 import java.util.stream.Stream;
 
+@Component
 public class TitleFilter implements AlbumFilter {
 
     @Override
@@ -14,7 +16,7 @@ public class TitleFilter implements AlbumFilter {
 
     @Override
     public Stream<Album> apply(Stream<Album> albums, AlbumFilterDto albumFilterDto) {
-        System.out.println("Applying TitleFilter");
+//        System.out.println("Applying TitleFilter");
 //        return albums.filter(album -> album.getTitle().startsWith(albumFilterDto.getTitlePattern()));
         return albums.filter(album ->
                 album.getTitle().toLowerCase().startsWith(albumFilterDto.getTitlePattern().toLowerCase()));

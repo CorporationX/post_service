@@ -172,4 +172,9 @@ public class AlbumServiceImplTest {
         verify(albumRepository).save(album);
         verify(albumMapper).toAlbumDto(album);
     }
+
+    @Test
+    public void test_addAlbumToFavorite() {
+
+    }
 }

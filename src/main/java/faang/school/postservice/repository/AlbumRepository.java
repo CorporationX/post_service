@@ -33,7 +33,7 @@ public interface AlbumRepository extends JpaRepository<Album, Long> {
 
     Stream<Album> findByAuthorId(long authorId);
 
-    // Stream<Album> findFavoriteAlbumsByUserId(long userId);
+     Stream<Album> findFavoriteAlbumsByUserId(long userId);
 
 //      void update(AlbumDto albumDto, Album albumToUpdate);
 

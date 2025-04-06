@@ -21,10 +21,10 @@ public interface AlbumService {
 
     List<AlbumDto> getAllUserAlbums(long userId, AlbumFilterDto albumFilterDto);
 
-//    List<AlbumDto> getAllAlbums(AlbumFilterDto albumFilterDto);
+    List<AlbumDto> getAllAlbums(AlbumFilterDto albumFilterDto);
 
-//    List<AlbumDto> getAllUserFavoriteAlbums(long userId, AlbumFilterDto albumFilterDto);
-//
+    List<AlbumDto> getAllUserFavoriteAlbums(long userId, AlbumFilterDto albumFilterDto);
+
 //    AlbumDto updateAlbum(long albumId, long userId, AlbumDto albumDto);
 //
 //    AlbumDto deleteAlbum(long albumId, long userId);
