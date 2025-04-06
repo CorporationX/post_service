@@ -111,12 +111,12 @@ public class HashtagServiceTest {
     }
 
     @Test
-    public void testExtractHashtagsFromContent_extractHashtags() {
+    public void testExtractHashtagsFromPost_extractHashtags() {
         post.setContent("Content #hashtag_1 #h2 #who? ");
         when(hashtagRepository.findByTag(anyString())).thenReturn(null);
         when(hashtagRepository.save(any())).thenReturn(new Hashtag());
 
-        hashtagService.extractHashtagsFromContent(post);
+        hashtagService.extractHashtagsFromPost(post);
 
         verify(hashtagRedisService, times(1))
                 .saveHashtag("hashtag_1", post);
@@ -128,10 +128,10 @@ public class HashtagServiceTest {
     }
 
     @Test
-    public void testExtractHashtagsFromContent_noHashtags() {
+    public void testExtractHashtagsFromPost_noHashtags() {
         post.setContent("Just text without hashtags");
 
-        hashtagService.extractHashtagsFromContent(post);
+        hashtagService.extractHashtagsFromPost(post);
 
         verify(hashtagRedisService, never())
                 .saveHashtag(anyString(), any());
