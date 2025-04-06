@@ -44,7 +44,7 @@ public class HashtagService {
         return postPageFromRedis != null ? postPageFromRedis : getPostsFromDB(hashtagRequestDto);
     }
 
-    public void extractHashtagsFromContent(Post post) {
+    public void extractHashtagsFromPost(Post post) {
         Pattern pattern = Pattern.compile("#(\\S+)");
         Matcher matcher = pattern.matcher(post.getContent());
         Set<Hashtag> hashtags = new HashSet<>();
