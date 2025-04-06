@@ -1,20 +1,16 @@
-package faang.school.postservice.controller.handler;
+package faang.school.postservice.exception.handler;
 
-import faang.school.postservice.exception.AIIntegrationException;
 import faang.school.postservice.exception.AuthorNotFoundException;
 import faang.school.postservice.exception.CommentIdMismatchException;
 import faang.school.postservice.exception.CommentNotFoundException;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.FileProcessException;
 import faang.school.postservice.exception.ForbiddenException;
-import faang.school.postservice.exception.JsonNotReadException;
 import faang.school.postservice.exception.LikeAlreadyExistException;
 import faang.school.postservice.exception.LikeNotFoundException;
 import faang.school.postservice.exception.PostDtoValidationException;
 import faang.school.postservice.exception.PostIdMismatchException;
-import faang.school.postservice.exception.PostNotCorrectedException;
 import faang.school.postservice.exception.PostNotFoundException;
-import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -95,37 +91,6 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleFileProcessException(FileProcessException e) {
         log.error("FileProcessException", e);
-        return buildResponse(e);
-    }
-
-    @ExceptionHandler(PostDtoValidationException.class)
-    public ResponseEntity<String> handleValidationException(PostDtoValidationException e) {
-        log.warn("Post dto validation exception: {}", e.getMessage());
-        return ResponseEntity.badRequest().body(e.getMessage());
-    }
-
-    @ExceptionHandler(PostNotCorrectedException.class)
-    public ErrorResponse handlePostNotCorrectedException(PostNotCorrectedException e) {
-        log.error("PostNotCorrectedException", e);
-        return buildResponse(e);
-    }
-
-    @ExceptionHandler(AIIntegrationException.class)
-    public ErrorResponse handleAIIntegrationException(AIIntegrationException e) {
-        log.error("AIIntegrationException", e);
-        return buildResponse(e);
-    }
-
-    @ExceptionHandler(JsonNotReadException.class)
-    public ErrorResponse handleJsonNotReadException(JsonNotReadException e) {
-        log.error("JsonNotReadException", e);
-        return buildResponse(e);
-    }
-
-    @ExceptionHandler(ConstraintViolationException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleConstraintViolation(ConstraintViolationException e) {
-        log.error("Validation failed: {}", e.getClass().getSimpleName(), e);
         return buildResponse(e);
     }
 
