@@ -6,3 +6,5 @@ DROP TABLE favorite_albums;
 DROP INDEX album_author_title_idx;
 DROP TABLE album;
 DROP TABLE post_resource;
+DROP TABLE post_tag;
+DROP TABLE tag;
