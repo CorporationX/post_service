@@ -84,8 +84,11 @@ import static org.mockito.Mockito.*;
             ResponseEntity<Map<String, String>> response = commentController.deleteComment(commentId);
 
             assertNotNull(response);
-            assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
-            assertNull(response.getBody());
+            assertEquals(HttpStatus.OK, response.getStatusCode());
+
+            Map<String, String> expected = Map.of("message", "Comment with ID " + commentId + " deleted");
+            assertEquals(expected, response.getBody());
+
             verify(commentService, times(1)).deleteComment(commentId);
         }
     }
