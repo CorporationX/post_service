@@ -11,10 +11,10 @@ import java.util.Optional;
 @Repository
 public interface ResourceRepository extends CrudRepository<Resource, Long> {
 
-    @Query(nativeQuery = true, value = "SELECT r.key FROM post_resource r WHERE r.id = :id")
+    @Query("SELECT r.key FROM Resource r WHERE r.id = :id")
     Optional<String> findResourceKeyById(Long id);
 
-    @Query(nativeQuery = true, value = "SELECT r.type FROM post_resource r WHERE r.id = :id")
+    @Query("SELECT r.type FROM Resource r WHERE r.id = :id")
     Optional<String> findResourceTypeById(Long id);
 
     @Modifying

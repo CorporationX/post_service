@@ -12,11 +12,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.util.ThumbnailatorUtils;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.InvalidMediaTypeException;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -96,12 +92,12 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     public ResponseEntity<byte[]> downloadResource(Long resourceId) {
-        String resourceType = getResourceType(resourceId);
-        try (InputStream inputStream = s3Service.downloadResource(getResourceKey(resourceId))) {
+        Resource resource = getResourceById(resourceId);
+        try (InputStream inputStream = s3Service.downloadResource(resource.getKey())) {
             log.debug("Resource: {} downloaded successfully", resourceId);
             return new ResponseEntity<>(
                     inputStream.readAllBytes(),
-                    createHttpHeadersForType(resourceType),
+                    createHttpHeadersForType(resource.getType()),
                     HttpStatus.OK);
         } catch (IOException e) {
             log.error("Error while downloading resource: {}", resourceId);
@@ -129,9 +125,9 @@ public class ResourceServiceImpl implements ResourceService {
                 .orElseThrow(() -> new EntityNotFoundException("Can't find resource with id: " + resourceId));
     }
 
-    private String getResourceType(Long resourceId) {
-        return resourceRepository.findResourceTypeById(resourceId)
-                .orElseThrow(() -> new EntityNotFoundException("Can't find resource with id: " + resourceId));
+    private Resource getResourceById(Long resourceId) {
+        return resourceRepository.findById(resourceId)
+                .orElseThrow(() -> new EntityNotFoundException("Resource with id: " + resourceId + " not found"));
     }
 
     private HttpHeaders createHttpHeadersForType(String type) {
