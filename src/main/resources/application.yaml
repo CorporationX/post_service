@@ -44,3 +44,6 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+post-service:
+  tag:
+    count-of-most-popular-tags: 2

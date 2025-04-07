@@ -3,6 +3,7 @@ package faang.school.postservice.service;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.NotFoundException;
+import faang.school.postservice.exception.PostNotFoundException;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
@@ -18,15 +19,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PostServiceTest {
@@ -38,7 +32,7 @@ class PostServiceTest {
     private PostMapperImpl postMapper;
 
     @InjectMocks
-    private PostServiceImpl postService;
+    private PostService postService;
 
     private PostDto postDto;
     private Post post;
@@ -256,5 +250,31 @@ class PostServiceTest {
                 () -> postService.getPostEntryById(postId)
         );
         assertEquals("Post not found", exception.getMessage());
+    }
+
+    @Test
+    public void testFindPostByIdThrowPostNotFoundException() {
+        when(postRepository.findById(1L)).thenReturn(Optional.empty());
+
+        assertThrows(PostNotFoundException.class, () -> postService.findPostById(1L));
+    }
+
+    @Test
+    public void testFindPostById() {
+        when(postRepository.findById(1L)).thenReturn(Optional.of(post));
+
+        Post actualResult = postService.findPostById(1L);
+
+        assertNotNull(actualResult);
+        assertEquals(postDto.getContent(), actualResult.getContent());
+        assertEquals(postDto.getAuthorId(), actualResult.getAuthorId());
+        verify(postRepository, times(1)).findById(1L);
+    }
+
+    @Test
+    public void testRemoveTagsFromPost() {
+        postService.removeTagsFromPost(1L, List.of(1L, 2L));
+
+        verify(postRepository, times(1)).deleteTagsFromPost(1L, List.of(1L, 2L));
     }
 }
