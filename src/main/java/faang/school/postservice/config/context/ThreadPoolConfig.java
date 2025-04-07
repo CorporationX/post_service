@@ -12,8 +12,8 @@ import java.util.concurrent.Executors;
 @RequiredArgsConstructor
 public class ThreadPoolConfig {
 
-    @Value("$.{app.thread-pool.publish-posts-max-threads}")
-    private final int publishThreadSize;
+    @Value("$.{thread-pool.publish-posts-max-threads}")
+    private int publishThreadSize;
 
     @Bean(destroyMethod = "shutdown")
     public ExecutorService threadPool() {

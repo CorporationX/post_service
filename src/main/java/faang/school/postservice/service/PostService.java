@@ -53,11 +53,11 @@ public class PostService {
     private final AlbumRepository albumRepository;
     private final ExecutorService executorService;
 
-    @Value("$.{app.batch.size:1000}")
-    private final int batchSize;
+    @Value("$.{batch.size}")
+    private int batchSize;
 
-    @Value("$.{app.thread-pool.publish-timeout:3}")
-    private final int threadTimeout;
+    @Value("$.{thread-pool.publish-timeout}")
+    private int threadTimeout;
 
     public void publishScheduledPosts() {
         List<Post> readyPosts = postRepository.findReadyToPublish();
@@ -239,7 +239,7 @@ public class PostService {
                 () -> new EntityNotFoundException("Post not found"));
     }
 
-    private <T> List<List<T>> partitionList(List<T> list, int batchSize) {
+    private List<List<Post>> partitionList(List<Post> list, int batchSize) {
         return IntStream.range(0, (list.size() + batchSize - 1) / batchSize)
                 .mapToObj(i -> list.subList(
                         i * batchSize, Math.min((i + 1) * batchSize, list.size())
@@ -248,7 +248,7 @@ public class PostService {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    private void publishBatch(List<Post> batch) {
+    public void publishBatch(List<Post> batch) {
         if (batch == null || batch.isEmpty()) {
             log.error("в списке не содержится постов");
             throw new DataValidationException("список постов пуст");
@@ -263,6 +263,7 @@ public class PostService {
         log.info("Опубликовано {} постов с {} по {} id.",
                 batch.size(), batch.get(0).getId(), batch.get(batch.size() - 1).getId());
     }
+
 }
 
 
