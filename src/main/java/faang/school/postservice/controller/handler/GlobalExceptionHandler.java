@@ -1,4 +1,4 @@
-package faang.school.postservice.exception.handler;
+package faang.school.postservice.controller.handler;
 
 import faang.school.postservice.exception.AuthorNotFoundException;
 import faang.school.postservice.exception.CommentIdMismatchException;
