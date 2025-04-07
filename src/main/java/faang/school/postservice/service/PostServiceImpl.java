@@ -28,7 +28,7 @@ import java.util.Optional;
 @Validated
 @Transactional
 @Slf4j
-public class PostService {
+public class PostServiceImpl implements PostService {
 
     private static final String POST_NOT_EXIST = "Post doesn't exist";
 
@@ -140,6 +140,17 @@ public class PostService {
         return postOptional.get();
     }
 
+    @Override
+    public Post findPostById(Long id) {
+        return postRepository.findById(id)
+                .orElseThrow(() -> new PostNotFoundException("Post with id: " + id + " not found"));
+    }
+
+    @Override
+    public void removeTagsFromPost(Long postId, List<Long> tagsId) {
+        postRepository.deleteTagsFromPost(postId, tagsId);
+    }
+
     private void validatePostDto(PostDto postDto) {
         if (postDto.getAuthorId() != null && postDto.getProjectId() != null) {
             throw new IllegalArgumentException("Post can have only one author: either user or project");
@@ -156,14 +167,5 @@ public class PostService {
                 throw new NotFoundException("Project doesn't exist");
             }
         }
-    }
-    
-    public Post findPostById(Long id) {
-        return postRepository.findById(id)
-                .orElseThrow(() -> new PostNotFoundException("Post with id: " + id + " not found"));
-    }
-
-    public void removeTagsFromPost(Long postId, List<Long> tagsId) {
-        postRepository.deleteTagsFromPost(postId, tagsId);
     }
 }

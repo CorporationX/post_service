@@ -32,7 +32,7 @@ class PostServiceTest {
     private PostMapperImpl postMapper;
 
     @InjectMocks
-    private PostService postService;
+    private PostServiceImpl postService;
 
     private PostDto postDto;
     private Post post;
