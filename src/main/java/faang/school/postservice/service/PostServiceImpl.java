@@ -27,7 +27,7 @@ import java.util.Optional;
 @Validated
 @Transactional
 @Slf4j
-public class PostServiceImpl implements PostService {
+public class PostService {
 
     private static final String POST_NOT_EXIST = "Post doesn't exist";
 
