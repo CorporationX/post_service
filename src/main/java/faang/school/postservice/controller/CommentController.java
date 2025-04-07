@@ -31,13 +31,13 @@ public class CommentController {
 
     private final CommentService commentService;
 
-    @PostMapping()
-    public ResponseEntity<Void> createComment(@RequestBody @Valid CommentCreateDto commentCreateDto) {
+    @PostMapping
+    public ResponseEntity<Long> createComment(@RequestBody @Valid CommentCreateDto commentCreateDto) {
         log.debug("Received request to add comment: {}", commentCreateDto);
-        commentService.createComment(commentCreateDto);
-        log.debug("Comment successfully added cre");
+        long returnedComment = commentService.createComment(commentCreateDto);
+        log.debug("Comment successfully added created");
 
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        return ResponseEntity.status(HttpStatus.CREATED).body(returnedComment);
     }
 
     @PutMapping(value = "/{commentId}")

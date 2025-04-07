@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface CommentService {
 
-    void createComment(CommentCreateDto commentCreateDto);
+    long createComment(CommentCreateDto commentCreateDto);
 
     void updateCommentContent(long commentId, CommentUpdateDto commentUpdateDto);
 

@@ -31,6 +31,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -66,17 +67,33 @@ class CommentServiceImplTest {
         commentCreateDto.setContent("test");
 
         List<Comment> comments = new ArrayList<>();
-        Post post = Post.builder().comments(comments).build();
-        Comment comment = Comment.builder().post(post).build();
+        Post post = Post.builder()
+                .id(1L)
+                .comments(comments)
+                .build();
+
         UserDto userDto = new UserDto(1L, "Leo", "no@null.net");
+        Comment comment = Comment.builder()
+                .id(100L)
+                .post(post)
+                .content("test")
+                .build();
 
         when(userServiceClient.getUser(commentCreateDto.getAuthorId())).thenReturn(userDto);
         when(postService.getPostEntryById(commentCreateDto.getPostId())).thenReturn(post);
         when(commentCreateMapper.toEntity(commentCreateDto)).thenReturn(comment);
+        when(commentRepository.save(comment)).thenReturn(comment);
 
-        commentService.createComment(commentCreateDto);
+        long result = commentService.createComment(commentCreateDto);
 
         verify(commentRepository, times(1)).save(comment);
+
+        assertEquals(1, post.getComments().size());
+        assertTrue(post.getComments().contains(comment));
+
+        assertEquals(100L, result);
+
+        assertEquals(post, comment.getPost());
     }
 
     @Test //todo Включить когда заработает валидация пользователя

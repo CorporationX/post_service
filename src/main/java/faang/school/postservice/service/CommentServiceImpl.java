@@ -36,7 +36,7 @@ public class CommentServiceImpl implements CommentService {
     private final UserServiceClient userServiceClient;
 
     @Override
-    public void createComment(CommentCreateDto commentCreateDto) {
+    public long createComment(CommentCreateDto commentCreateDto) {
         log.debug("Adding {}", commentCreateDto);
 
         //todo Будет работать только после появления endPoint в userService
@@ -59,8 +59,10 @@ public class CommentServiceImpl implements CommentService {
         log.debug("{} successfully added to post with ID: {}", comment, commentCreateDto.getPostId());
 
         log.debug("Saving {} to the database", comment);
-        commentRepository.save(comment);
+        Comment returnedComment = commentRepository.save(comment);
         log.debug("{} successfully saved to the database", comment);
+
+        return returnedComment.getId();
     }
 
     @Override
