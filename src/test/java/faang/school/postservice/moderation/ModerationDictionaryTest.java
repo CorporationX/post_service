@@ -1,17 +1,33 @@
 package faang.school.postservice.moderation;
 
 import org.junit.jupiter.api.Test;
-import java.util.List;
+import org.springframework.core.io.Resource;
 
-import static org.junit.jupiter.api.Assertions.*;
+import java.io.File;
+import java.io.FileWriter;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 class ModerationDictionaryTest {
-    ModerationDictionary dictionary = new ModerationDictionary(List.of("badword", "testmat"));
 
     @Test
-    void shouldDetectBadWordsInText() {
-        assertTrue(dictionary.containsBadWords("This contains badword."));
-        assertTrue(dictionary.containsBadWords("clean TESTMAT text"));
-        assertFalse(dictionary.containsBadWords("This is fine."));
+    void shouldLoadBadWordsFromFile() throws Exception {
+        File tempFile = File.createTempFile("badwords", ".txt");
+        try (FileWriter writer = new FileWriter(tempFile)) {
+            writer.write("badword\nTestMat");
+        }
+
+        Resource mockResource = mock(Resource.class);
+        when(mockResource.getFile()).thenReturn(tempFile);
+
+        ModerationDictionary dictionary = new ModerationDictionary(mockResource);
+
+        assertTrue(dictionary.containsBadWords("this is badword"));
+        assertTrue(dictionary.containsBadWords("clean TESTMAT here"));
+        assertFalse(dictionary.containsBadWords("everything is fine"));
         assertFalse(dictionary.containsBadWords(null));
         assertFalse(dictionary.containsBadWords(""));
     }

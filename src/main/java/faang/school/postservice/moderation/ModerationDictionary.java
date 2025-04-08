@@ -8,7 +8,6 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -26,12 +25,6 @@ public class ModerationDictionary {
                         .collect(Collectors.toSet())
         );
         log.info("Loaded {} bad words from moderation dictionary", badWords.size());
-    }
-
-    public ModerationDictionary(List<String> badWords) {
-        this.badWords = badWords.stream()
-                .map(String::toLowerCase)
-                .collect(Collectors.toSet());
     }
 
     public boolean containsBadWords(String text) {
