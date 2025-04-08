@@ -5,24 +5,31 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.NotFoundException;
 import faang.school.postservice.exception.PostNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Validated
+@Transactional
 @Slf4j
 public class PostServiceImpl implements PostService {
 
@@ -38,6 +45,7 @@ public class PostServiceImpl implements PostService {
     @Value("${app.scheduling.post.max-posts-per-time}")
     private int limitToModerate;
 
+    @Override
     public PostDto createDraft(PostDto postDto) {
 //        validatePostDto(postDto); TODO: remove the // when UserController and ProjectController are ready
         Post post = postMapper.toEntity(postDto);
@@ -46,6 +54,7 @@ public class PostServiceImpl implements PostService {
         return postMapper.toDto(post);
     }
 
+    @Override
     public PostDto publishPost(Long postId) {
         Post post = postRepository.findById(postId).orElseThrow(() -> new NotFoundException(POST_NOT_EXIST));
         if (post.isPublished()) {
@@ -57,6 +66,7 @@ public class PostServiceImpl implements PostService {
         return postMapper.toDto(post);
     }
 
+    @Override
     public PostDto updatePost(Long postId, PostDto postDto) {
 //        validatePostDto(postDto); TODO: remove the // when UserController and ProjectController are ready
         Post post = postRepository.findById(postId).orElseThrow(() -> new NotFoundException(POST_NOT_EXIST));
@@ -71,6 +81,7 @@ public class PostServiceImpl implements PostService {
         return postMapper.toDto(post);
     }
 
+    @Override
     public PostDto softDelete(Long postId) {
         Post post = postRepository.findById(postId).orElseThrow(() -> new NotFoundException(POST_NOT_EXIST));
         post.setDeleted(true);
@@ -78,11 +89,13 @@ public class PostServiceImpl implements PostService {
         return postMapper.toDto(post);
     }
 
+    @Override
     public PostDto getPostById(Long postId) {
         return postMapper.toDto(postRepository
                 .findById(postId).orElseThrow(() -> new NotFoundException("The post hasn't been found")));
     }
 
+    @Override
     public List<PostDto> getAllDraftsByAuthorId(Long authorId) {
         return postRepository.findByAuthorId(authorId).stream()
                 .filter(post -> !post.isPublished() && !post.isDeleted())
@@ -91,6 +104,7 @@ public class PostServiceImpl implements PostService {
                 .toList();
     }
 
+    @Override
     public List<PostDto> getAllDraftsByProjectId(Long projectId) {
         List<Post> posts = postRepository.findByProjectId(projectId);
         return posts.stream()
@@ -100,6 +114,7 @@ public class PostServiceImpl implements PostService {
                 .toList();
     }
 
+    @Override
     public List<PostDto> getAllPublishedPostsByAuthorId(Long authorId) {
         List<Post> posts = postRepository.findByAuthorId(authorId);
         return posts.stream()
@@ -108,6 +123,7 @@ public class PostServiceImpl implements PostService {
                 .map(postMapper::toDto).toList();
     }
 
+    @Override
     public List<PostDto> getAllPublishedPostsByProjectId(Long projectId) {
         List<Post> posts = postRepository.findByProjectId(projectId);
         return posts.stream()
@@ -115,6 +131,21 @@ public class PostServiceImpl implements PostService {
                 .sorted(Comparator.comparing(Post::getPublishedAt).reversed())
                 .map(postMapper::toDto)
                 .toList();
+    }
+
+    @Override
+    public Post getPostEntryById(@Min(1) long id) {
+        log.debug("Fetching post with ID: {}", id);
+
+        log.debug("Search for fasting in the database");
+        Optional<Post> postOptional = postRepository.findById(id);
+        if (postOptional.isEmpty()) {
+            log.error("Post with ID {} not found", id);
+            throw new EntityNotFoundException("Post not found");
+        }
+
+        log.debug("Post with ID {} fetched successfully", id);
+        return postOptional.get();
     }
 
     public void moderatePosts() {
@@ -134,6 +165,17 @@ public class PostServiceImpl implements PostService {
         }
     }
 
+    @Override
+    public Post findPostById(Long id) {
+        return postRepository.findById(id)
+                .orElseThrow(() -> new PostNotFoundException("Post with id: " + id + " not found"));
+    }
+
+    @Override
+    public void removeTagsFromPost(Long postId, List<Long> tagsId) {
+        postRepository.deleteTagsFromPost(postId, tagsId);
+    }
+
     private void moderatePost(Post post) {
         boolean isClean = moderationDictionary.isTextWithoutForbiddenWords(post.getContent());
         post.setVerified(isClean);
@@ -142,14 +184,6 @@ public class PostServiceImpl implements PostService {
         log.debug("Post {} moderated. Status: {}", post.getId(), isClean);
     }
 
-    public Post findPostById(Long id) {
-        return postRepository.findById(id)
-                .orElseThrow(() -> new PostNotFoundException("Post with id: " + id + " not found"));
-    }
-
-    public void removeTagsFromPost(Long postId, List<Long> tagsId) {
-        postRepository.deleteTagsFromPost(postId, tagsId);
-    }
 
     private void validatePostDto(PostDto postDto) {
         if (postDto.getAuthorId() != null && postDto.getProjectId() != null) {

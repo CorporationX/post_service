@@ -1,6 +1,7 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.dto.PostDto;
+import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.NotFoundException;
 import faang.school.postservice.exception.PostNotFoundException;
 import faang.school.postservice.mapper.PostMapperImpl;
@@ -232,6 +233,34 @@ class PostServiceTest {
         assertEquals(postDto.getContent(), result.get(0).getContent());
         verify(postRepository).findByProjectId(1L);
         verify(postMapper).toDto(post);
+    }
+
+    @Test
+    void testGetPostEntryByIdSuccessfulFetch() {
+        long postId = 1L;
+        Post post = new Post();
+        post.setId(postId);
+
+        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+
+        Post result = postService.getPostEntryById(postId);
+
+        assertNotNull(result);
+        assertEquals(postId, result.getId());
+        verify(postRepository, times(1)).findById(postId);
+    }
+
+    @Test
+    void testGetPostEntryByIdPostNotFound() {
+        long postId = 2L;
+
+        when(postRepository.findById(postId)).thenReturn(Optional.empty());
+
+        EntityNotFoundException exception = assertThrows(
+                EntityNotFoundException.class,
+                () -> postService.getPostEntryById(postId)
+        );
+        assertEquals("Post not found", exception.getMessage());
     }
 
     @Test
