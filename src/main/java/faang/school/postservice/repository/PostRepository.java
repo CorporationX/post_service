@@ -37,4 +37,7 @@ public interface PostRepository extends CrudRepository<Post, Long> {
 
     @Query("SELECT p FROM Post p JOIN p.hashtags h WHERE h.tag = :tag AND p.deleted = false ORDER BY p.publishedAt DESC")
     Page<Post> findPostsByHashtag(Pageable pageable, String tag);
+
+    @Query("SELECT p FROM Post p WHERE p.verified = false")
+    List<Post> findByVerifiedFalse();
 }
