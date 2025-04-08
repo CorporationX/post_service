@@ -1,3 +1,3 @@
 ALTER TABLE post
-    ADD COLUMN verified BOOLEAN DEFAULT FALSE NOT NULL,
+    ADD COLUMN verified BOOLEAN,
     ADD COLUMN verified_date TIMESTAMP;
