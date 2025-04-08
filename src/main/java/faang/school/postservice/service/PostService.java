@@ -31,6 +31,9 @@ public class PostService {
     @Transactional
     public void moderateAllUnverifiedPosts() {
         List<Post> unverifiedPosts = postRepository.findByVerifiedAtIsNull();
+        if (unverifiedPosts.isEmpty()) {
+            return;
+        }
         List<List<Post>> batches = partitionList(unverifiedPosts);
 
         List<CompletableFuture<Void>> futures = batches.stream()
