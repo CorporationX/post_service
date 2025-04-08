@@ -1,6 +1,7 @@
 package faang.school.postservice.servise;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.event.LikeEventDto;
 import faang.school.postservice.dto.likes.BaseFilterDto;
 import faang.school.postservice.dto.likes.LikeDto;
 import faang.school.postservice.dto.user.UserDto;
@@ -16,6 +17,8 @@ import faang.school.postservice.repository.PostRepositoryAdapter;
 import faang.school.postservice.service.impl.LikeServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -28,7 +31,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import static org.assertj.core.api.FactoryBasedNavigableListAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -49,6 +54,8 @@ public class LikeServiceImplTest {
     private UserServiceClient userServiceClient;
     @Mock
     private KafkaLikeProducer kafkaLikeProducer;
+    @Captor
+    ArgumentCaptor<LikeEventDto> likeCaptor;
 
     private static final long USER_ID = 1L;
     private static final long POST_ID = 1L;
@@ -76,6 +83,9 @@ public class LikeServiceImplTest {
 
         assertNotNull(likeDto);
         verify(likeRepository, times(1)).save(like);
+        verify(kafkaLikeProducer, times(1)).sendEvent(likeCaptor.capture());
+        LikeEventDto likeValue = likeCaptor.getValue();
+        assertNotNull(likeValue);
     }
 
     @Test

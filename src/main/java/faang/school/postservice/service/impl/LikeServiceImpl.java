@@ -17,6 +17,7 @@ import faang.school.postservice.repository.LikeRepositoryAdapter;
 import faang.school.postservice.repository.PostRepositoryAdapter;
 import faang.school.postservice.service.LikeService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
@@ -31,9 +32,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class LikeServiceImpl implements LikeService {
-    private static final Logger log = LoggerFactory.getLogger(LikeServiceImpl.class);
     private final PostRepositoryAdapter postRepositoryAdapter;
     private final LikeRepositoryAdapter likeRepositoryAdapter;
     private final CommentRepositoryAdapter commentRepositoryAdapter;
