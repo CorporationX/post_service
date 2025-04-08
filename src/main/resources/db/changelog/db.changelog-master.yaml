@@ -7,3 +7,5 @@ databaseChangeLog:
       file: db/changelog/changeset/post_V003_resource.sql
   - include:
       file: db/changelog/changeset/post_V004_alter_comment_add_image_keys.sql
+  - include:
+      file: db/changelog/changeset/post_V005_add_tag.sql

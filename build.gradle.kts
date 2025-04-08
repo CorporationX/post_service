@@ -46,6 +46,16 @@ dependencies {
     implementation ("io.minio:minio:8.5.7")
 
     /**
+     * S3
+     */
+    implementation("software.amazon.awssdk:s3:2.31.8")
+
+    /**
+     * Image compress
+     */
+    implementation("net.coobird:thumbnailator:0.4.20")
+
+    /**
      * Test containers
      */
     implementation(platform("org.testcontainers:testcontainers-bom:1.17.6"))

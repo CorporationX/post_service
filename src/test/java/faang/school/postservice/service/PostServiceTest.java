@@ -5,7 +5,9 @@ import faang.school.postservice.config.image.ImageProcessingProperties;
 import faang.school.postservice.config.image.ImageResizeProperties;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.dto.ResourceDto;
+import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.NotFoundException;
+import faang.school.postservice.exception.PostNotFoundException;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.mapper.ResourceMapperImpl;
 import faang.school.postservice.model.Post;
@@ -396,5 +398,58 @@ class PostServiceTest {
         resource.setPost(post);
         resource.getTempFile().deleteOnExit();
         return resource;
+      
+    @Test
+    void testGetPostEntryByIdSuccessfulFetch() {
+        long postId = 1L;
+        Post post = new Post();
+        post.setId(postId);
+
+        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+
+        Post result = postService.getPostEntryById(postId);
+
+        assertNotNull(result);
+        assertEquals(postId, result.getId());
+        verify(postRepository, times(1)).findById(postId);
+    }
+
+    @Test
+    void testGetPostEntryByIdPostNotFound() {
+        long postId = 2L;
+
+        when(postRepository.findById(postId)).thenReturn(Optional.empty());
+
+        EntityNotFoundException exception = assertThrows(
+                EntityNotFoundException.class,
+                () -> postService.getPostEntryById(postId)
+        );
+        assertEquals("Post not found", exception.getMessage());
+    }
+
+    @Test
+    public void testFindPostByIdThrowPostNotFoundException() {
+        when(postRepository.findById(1L)).thenReturn(Optional.empty());
+
+        assertThrows(PostNotFoundException.class, () -> postService.findPostById(1L));
+    }
+
+    @Test
+    public void testFindPostById() {
+        when(postRepository.findById(1L)).thenReturn(Optional.of(post));
+
+        Post actualResult = postService.findPostById(1L);
+
+        assertNotNull(actualResult);
+        assertEquals(postDto.getContent(), actualResult.getContent());
+        assertEquals(postDto.getAuthorId(), actualResult.getAuthorId());
+        verify(postRepository, times(1)).findById(1L);
+    }
+
+    @Test
+    public void testRemoveTagsFromPost() {
+        postService.removeTagsFromPost(1L, List.of(1L, 2L));
+
+        verify(postRepository, times(1)).deleteTagsFromPost(1L, List.of(1L, 2L));
     }
 }

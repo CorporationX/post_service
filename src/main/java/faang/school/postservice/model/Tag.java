@@ -6,61 +6,53 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "comment")
-@ToString(exclude = {"post", "likes"})
-public class Comment {
-
+@Table(name = "tag")
+public class Tag {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "content", nullable = false, length = 4096)
-    private String content;
+    @Column(name = "rating")
+    private Long rating;
 
-    @Column(name = "author_id", nullable = false)
-    private Long authorId;
-
-    @OneToMany(mappedBy = "comment", orphanRemoval = true)
-    private List<Like> likes;
-
-    @ManyToOne
-    @JoinColumn(name = "post_id", nullable = false)
-    private Post post;
+    @Column(name = "name", nullable = false)
+    private String name;
 
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    @UpdateTimestamp
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    @Column(name = "creator_id", nullable = false)
+    private Long creatorId;
 
-    @Column(name = "large_image_file_key")
-    private String largeImageFileKey;
-
-    @Column(name = "small_image_file_key")
-    private String smallImageFileKey;
+    @ManyToMany
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
+    @JoinTable(
+            name = "post_tag",
+            joinColumns = @JoinColumn(name = "tag_id"),
+            inverseJoinColumns = @JoinColumn(name = "post_id"))
+    private Set<Post> posts;
 }

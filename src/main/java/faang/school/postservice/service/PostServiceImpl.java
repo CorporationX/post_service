@@ -2,31 +2,42 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.config.image.ImageDimensions;
-import faang.school.postservice.config.image.ImageProcessingProperties;
 import faang.school.postservice.dto.PostDto;
-import faang.school.postservice.dto.ResourceDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.exception.EntityNotFoundException;
+import faang.school.postservice.exception.NotFoundException;
+import faang.school.postservice.exception.PostNotFoundException;
+import faang.school.postservice.mapper.PostMapper;
+import faang.school.postservice.model.Post;
+import faang.school.postservice.repository.PostRepository;
+import jakarta.validation.constraints.Min;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
+import faang.school.postservice.config.image.ImageDimensions;
+import faang.school.postservice.config.image.ImageProcessingProperties;
+import faang.school.postservice.dto.ResourceDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.NotFoundException;
 import faang.school.postservice.exception.ResourceProcessingException;
-import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.mapper.ResourceMapper;
-import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
-import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ResourceRepository;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
 import io.minio.RemoveObjectArgs;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -42,6 +53,8 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Validated
+@Transactional
 @Slf4j
 public class PostServiceImpl implements PostService {
 
@@ -59,6 +72,7 @@ public class PostServiceImpl implements PostService {
     @Value("${minio.bucket-name}")
     private String bucketName;
 
+    @Override
     public PostDto createDraft(PostDto postDto) {
 //        validatePostDto(postDto); TODO: remove the // when UserController and ProjectController are ready
         Post post = postMapper.toEntity(postDto);
@@ -67,6 +81,7 @@ public class PostServiceImpl implements PostService {
         return postMapper.toDto(post);
     }
 
+    @Override
     public PostDto publishPost(Long postId) {
         Post post = postRepository.findById(postId).orElseThrow(() -> new NotFoundException(POST_NOT_EXIST));
         if (post.isPublished()) {
@@ -78,6 +93,7 @@ public class PostServiceImpl implements PostService {
         return postMapper.toDto(post);
     }
 
+    @Override
     public PostDto updatePost(Long postId, PostDto postDto) {
 //        validatePostDto(postDto); TODO: remove the // when UserController and ProjectController are ready
         Post post = postRepository.findById(postId).orElseThrow(() -> new NotFoundException(POST_NOT_EXIST));
@@ -92,6 +108,7 @@ public class PostServiceImpl implements PostService {
         return postMapper.toDto(post);
     }
 
+    @Override
     public PostDto softDelete(Long postId) {
         Post post = postRepository.findById(postId).orElseThrow(() -> new NotFoundException(POST_NOT_EXIST));
         post.setDeleted(true);
@@ -99,11 +116,13 @@ public class PostServiceImpl implements PostService {
         return postMapper.toDto(post);
     }
 
+    @Override
     public PostDto getPostById(Long postId) {
         return postMapper.toDto(postRepository
                 .findById(postId).orElseThrow(() -> new NotFoundException("The post hasn't been found")));
     }
 
+    @Override
     public List<PostDto> getAllDraftsByAuthorId(Long authorId) {
         return postRepository.findByAuthorId(authorId).stream()
                 .filter(post -> !post.isPublished() && !post.isDeleted())
@@ -112,6 +131,7 @@ public class PostServiceImpl implements PostService {
                 .toList();
     }
 
+    @Override
     public List<PostDto> getAllDraftsByProjectId(Long projectId) {
         List<Post> posts = postRepository.findByProjectId(projectId);
         return posts.stream()
@@ -121,6 +141,7 @@ public class PostServiceImpl implements PostService {
                 .toList();
     }
 
+    @Override
     public List<PostDto> getAllPublishedPostsByAuthorId(Long authorId) {
         List<Post> posts = postRepository.findByAuthorId(authorId);
         return posts.stream()
@@ -129,6 +150,7 @@ public class PostServiceImpl implements PostService {
                 .map(postMapper::toDto).toList();
     }
 
+    @Override
     public List<PostDto> getAllPublishedPostsByProjectId(Long projectId) {
         List<Post> posts = postRepository.findByProjectId(projectId);
         return posts.stream()
@@ -137,7 +159,7 @@ public class PostServiceImpl implements PostService {
                 .map(postMapper::toDto)
                 .toList();
     }
-
+    
     public List<ResourceDto> uploadImageToPost(Long postId, List<MultipartFile> files) {
         log.info("Starting image upload for postId: {}, files count: {}", postId, files.size());
         Post post = postRepository.findById(postId).orElseThrow(() -> new NotFoundException("Post doesn't exist"));
@@ -178,6 +200,31 @@ public class PostServiceImpl implements PostService {
         }
         log.info("Successfully uploaded {} images for postId: {}", savedResources.size(), postId);
         return savedResources.stream().map(resourceMapper::toDto).toList();
+
+    @Override
+    public Post getPostEntryById(@Min(1) long id) {
+        log.debug("Fetching post with ID: {}", id);
+
+        log.debug("Search for fasting in the database");
+        Optional<Post> postOptional = postRepository.findById(id);
+        if (postOptional.isEmpty()) {
+            log.error("Post with ID {} not found", id);
+            throw new EntityNotFoundException("Post not found");
+        }
+
+        log.debug("Post with ID {} fetched successfully", id);
+        return postOptional.get();
+    }
+
+    @Override
+    public Post findPostById(Long id) {
+        return postRepository.findById(id)
+                .orElseThrow(() -> new PostNotFoundException("Post with id: " + id + " not found"));
+    }
+
+    @Override
+    public void removeTagsFromPost(Long postId, List<Long> tagsId) {
+        postRepository.deleteTagsFromPost(postId, tagsId);
     }
 
     private void validatePostDto(PostDto postDto) {
