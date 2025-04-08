@@ -6,12 +6,12 @@ import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.moderation.BatchProcessorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.ListUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -31,7 +31,7 @@ public class PostService {
     @Transactional
     public void moderateAllUnverifiedPosts() {
         List<Post> unverifiedPosts = postRepository.findByVerifiedAtIsNull();
-        List<List<Post>> batches = partitionList(unverifiedPosts, batchSize);
+        List<List<Post>> batches = partitionList(unverifiedPosts);
 
         List<CompletableFuture<Void>> futures = batches.stream()
                 .map(this::moderateBatchAsync)
@@ -45,13 +45,8 @@ public class PostService {
                 .join();
     }
 
-    private <T> List<List<T>> partitionList(List<T> list, int batchSize) {
-        List<List<T>> partitions = new ArrayList<>();
-        for (int i = 0; i < list.size(); i += batchSize) {
-            int end = Math.min(i + batchSize, list.size());
-            partitions.add(list.subList(i, end));
-        }
-        return partitions;
+    private <T> List<List<T>> partitionList(List<T> list) {
+        return ListUtils.partition(list, batchSize);
     }
 
     public Post getPost(Long postId) {
