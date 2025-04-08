@@ -1,0 +1,18 @@
+package faang.school.postservice.dto.album;
+
+import lombok.Data;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Data
+public class AlbumDto {
+
+    private Long id;
+    private String title;
+    private String description;
+    private long authorId;
+    private LocalDateTime createdAt;
+    private List<Long> postIds;
+
+}
