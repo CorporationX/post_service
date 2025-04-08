@@ -19,6 +19,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.mock.web.MockMultipartFile;
 
@@ -28,9 +29,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class CommentServiceTest {
@@ -53,6 +52,9 @@ public class CommentServiceTest {
 
     @Mock
     private ImageService imageService;
+
+    @Mock
+    private TaskExecutor taskExecutor;
 
     @InjectMocks
     private CommentService commentService;
@@ -129,6 +131,7 @@ public class CommentServiceTest {
         when(imageService.uploadResizedImages(mockFile, 1L))
                 .thenReturn(new ImageService.ImageKeys("comments/1_large.jpg", "comments/1_small.jpg"));
 
+        commentService.createComment(1L, commentDto);
 
         CommentDto result = commentService.createComment(1L, commentDto);
 
@@ -254,7 +257,7 @@ public class CommentServiceTest {
             commentService.moderateUnverifiedComments();
 
             try {
-                Thread.sleep(500);
+                Thread.sleep(100);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }

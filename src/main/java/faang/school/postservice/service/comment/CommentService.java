@@ -12,6 +12,8 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -42,6 +44,8 @@ public class CommentService {
 
     @Value("${moderation.chunk-size}")
     private int chunkSize;
+
+    private final TaskExecutor fileUploadTaskExecutor;
 
     public CommentDto createComment(Long postId, CommentDto commentDto) {
         commentValidator.validateCommentDto(commentDto);
@@ -109,10 +113,8 @@ public class CommentService {
             chunks.add(comments.subList(i, Math.min(i + chunkSize, comments.size())));
         }
 
-        ExecutorService executor = Executors.newFixedThreadPool(chunks.size());
-
         for (List<Comment> chunk : chunks) {
-            executor.submit(() -> {
+            fileUploadTaskExecutor.execute(() -> {
                 for (Comment comment : chunk) {
                     boolean hasBadWords = moderationDictionary.containsBadWords(comment.getContent());
                     comment.setVerified(!hasBadWords);
@@ -120,18 +122,6 @@ public class CommentService {
                 }
                 commentRepository.saveAll(chunk);
             });
-        }
-        executor.shutdown();
-
-        try {
-            if (!executor.awaitTermination(1, TimeUnit.MINUTES)) {
-                log.warn("Executor did not terminate in the specified time.");
-                executor.shutdownNow();
-            }
-        } catch (InterruptedException e) {
-            log.error("Executor was interrupted: {}", e.getMessage());
-            executor.shutdownNow();
-            Thread.currentThread().interrupt();
         }
 
         log.info("Moderation finished.");
