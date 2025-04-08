@@ -8,6 +8,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -32,7 +33,7 @@ public class ImageServiceTest {
 
         MockMultipartFile file = new MockMultipartFile(
                 "image", "test.jpg", "image/jpeg", imageBytes);
-
+        ReflectionTestUtils.setField(imageService, "maxFileSize", 5 * 1024 * 1024);
         assertDoesNotThrow(() -> imageService.uploadResizedImages(file, 1L));
     }
 
@@ -53,6 +54,7 @@ public class ImageServiceTest {
         MockMultipartFile file = new MockMultipartFile(
                 "image", "text.txt", "text/plain", "hello".getBytes());
 
+        ReflectionTestUtils.setField(imageService, "maxFileSize", 5 * 1024 * 1024);
         ImageProcessingException ex = assertThrows(ImageProcessingException.class,
                 () -> imageService.uploadResizedImages(file, 1L));
 
@@ -64,6 +66,7 @@ public class ImageServiceTest {
         MockMultipartFile file = new MockMultipartFile(
                 "image", "anim.gif", "image/gif", new byte[500]);
 
+        ReflectionTestUtils.setField(imageService, "maxFileSize", 5 * 1024 * 1024);
         ImageProcessingException ex = assertThrows(ImageProcessingException.class,
                 () -> imageService.uploadResizedImages(file, 1L));
 

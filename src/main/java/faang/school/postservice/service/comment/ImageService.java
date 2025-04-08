@@ -1,22 +1,23 @@
 package faang.school.postservice.service.comment;
 
+import com.amazonaws.AmazonClientException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import faang.school.postservice.exception.ImageProcessingException;
 import faang.school.postservice.exception.ImageReadException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.coobird.thumbnailator.Thumbnails;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.imageio.ImageIO;
-import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -24,13 +25,15 @@ import java.util.List;
 public class ImageService {
 
     private final AmazonS3 amazonS3;
-    private final String bucketName = "corpbucket";
+
+    @Value("${amazonS3.bucket-name}")
+    private  String bucketName;
+
+    @Value("${comment-img.max-size-bytes}")
+    private long maxFileSize;
 
     public ImageKeys uploadResizedImages(MultipartFile file, long id) {
         validateImage(file);
-
-        String largeKey = String.format("comments/%d_large.jpg", id);
-        String smallKey = String.format("comments/%d_small.jpg", id);
 
         byte[] originalBytes = null;
 
@@ -41,11 +44,15 @@ public class ImageService {
             throw new ImageReadException(ErrorMessages.FAILED_READ.getMessage(), e);
         }
 
-        byte[] largeBytes = resize(originalBytes, 1080);
-        byte[] smallBytes = resize(originalBytes, 170);
+        String largeKey = String.format("comments/%d_large.jpg", id);
+        String smallKey = String.format("comments/%d_small.jpg", id);
 
-        upload(largeKey, largeBytes);
-        upload(smallKey, smallBytes);
+        Map<String,byte[]> resizedImages = Map.of(
+                largeKey, resize(originalBytes, 1080),
+                smallKey, resize(originalBytes, 170)
+        );
+
+        resizedImages.forEach(this::upload);
 
         return new ImageKeys(largeKey, smallKey);
     }
@@ -60,50 +67,39 @@ public class ImageService {
     }
 
     private void upload(String key, byte[] bytes) {
-        InputStream is = new java.io.ByteArrayInputStream(bytes);
-        ObjectMetadata metadata = new ObjectMetadata();
-        metadata.setContentLength(bytes.length);
-        metadata.setContentType("image/jpeg");
+        try (InputStream is = new ByteArrayInputStream(bytes)) {
+            ObjectMetadata metadata = new ObjectMetadata();
+            metadata.setContentLength(bytes.length);
+            metadata.setContentType("image/jpeg");
 
-        amazonS3.putObject(bucketName, key, is, metadata);
+            amazonS3.putObject(bucketName, key, is, metadata);
+        } catch (AmazonClientException e) {
+            log.error(ErrorMessages.FAILED_UPLOAD.getMessage(), e);
+            throw new ImageProcessingException(ErrorMessages.FAILED_UPLOAD.getMessage(), e);
+
+        } catch (IOException e) {
+            log.error(ErrorMessages.UNEXPECTED_IO_ERROR.getMessage(), e);
+            throw new ImageProcessingException(ErrorMessages.UNEXPECTED_IO_ERROR.getMessage(), e);
+        }
     }
 
     private byte[] resize(byte[] bytes, int maxSize) {
-        try {
-            BufferedImage originalImage = ImageIO.read(new ByteArrayInputStream(bytes));
-
-            int width = originalImage.getWidth();
-            int height = originalImage.getHeight();
-
-            if (Math.max(width, height) <= maxSize) {
-                return bytes;
-            }
-
-            float scale = (float) maxSize / Math.max(width, height);
-            int newWidth = Math.round(width * scale);
-            int newHeight = Math.round(height * scale);
-
-            Image scaledInstance = originalImage.getScaledInstance(newWidth, newHeight, Image.SCALE_SMOOTH);
-            BufferedImage resizedImage = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_RGB);
-
-            Graphics2D g2d = resizedImage.createGraphics();
-            g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-            g2d.drawImage(scaledInstance, 0, 0, null);
-            g2d.dispose();
-
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ImageIO.write(resizedImage, "jpg", baos);
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            Thumbnails.of(new ByteArrayInputStream(bytes))
+                    .size(maxSize, maxSize)
+                    .outputFormat("jpg")
+                    .outputQuality(1.0)
+                    .toOutputStream(baos);
             return baos.toByteArray();
-
         } catch (IOException e) {
-            log.error(ErrorMessages.FAILED_RESIZE.getMessage());
-            throw new ImageProcessingException(ErrorMessages.FAILED_RESIZE.getMessage());
+            log.error(ErrorMessages.FAILED_RESIZE.getMessage(), e);
+            throw new ImageProcessingException(ErrorMessages.FAILED_RESIZE.getMessage(),e);
         }
     }
 
 
     private void validateImage(MultipartFile file) {
-        if (file.getSize() > 5 * 1024 * 1024) {
+        if (file.getSize() > maxFileSize) {
             log.error(ErrorMessages.IMAGE_SIZE_EXCEED.getMessage());
             throw new ImageProcessingException(ErrorMessages.IMAGE_SIZE_EXCEED.getMessage());
         }

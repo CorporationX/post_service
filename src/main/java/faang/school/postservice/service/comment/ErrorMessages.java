@@ -10,7 +10,8 @@ public enum ErrorMessages {
     IMAGE_SIZE_EXCEED("Image size must not exceed 5MB"),
     INVALID_TYPE("Invalid file type: not an image"),
     INVALID_FORMAT("Only JPG and PNG formats are supported"),
-    FAILED_RESIZE("Failed to resize image");
-
+    FAILED_RESIZE("Failed to resize image"),
+    FAILED_UPLOAD("Failed to upload image to S3"),
+    UNEXPECTED_IO_ERROR("Unexpected IO error during image upload");
     private final String message;
 }

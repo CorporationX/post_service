@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -71,8 +72,11 @@ public class CommentService {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new EntityNotFoundException("Comment not found with ID" + commentId));
 
-        imageService.deleteImageIfExists(comment.getLargeImageFileKey());
-        imageService.deleteImageIfExists(comment.getSmallImageFileKey());
+        Stream.of(
+                        comment.getLargeImageFileKey(),
+                        comment.getSmallImageFileKey()
+                )
+                .forEach(imageService::deleteImageIfExists);
 
         commentRepository.deleteById(commentId);
     }
