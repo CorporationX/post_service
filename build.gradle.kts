@@ -23,8 +23,11 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.retry:spring-retry:2.0.10")
     implementation("org.springframework:spring-aspects")
+    implementation("org.redisson:redisson-spring-boot-starter:3.39.0")
     implementation("org.springframework.cloud:spring-cloud-starter-openfeign:4.0.2")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+
+    implementation("org.springframework.kafka:spring-kafka:3.3.4")
 
     /**
      * Database

@@ -1,4 +1,4 @@
-package faang.school.postservice.config;
+package faang.school.postservice.config.thread;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,7 +12,7 @@ import java.util.concurrent.Executors;
 @RequiredArgsConstructor
 public class ThreadPoolConfig {
 
-    @Value("${thread_pool.max_threads}")
+    @Value("${thread-pool.max-threads}")
     private Integer threadsNumber;
 
     @Bean

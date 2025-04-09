@@ -29,7 +29,7 @@ public class PostController {
     private final PostService postService;
     private final ResourceService resourceService;
 
-    @PostMapping("/")
+    @PostMapping
     public PostResponseDto createPostDraft(@RequestBody PostCreateRequestDto postCreateRequestDto) {
         return postService.createPostDraft(postCreateRequestDto);
     }
@@ -40,7 +40,8 @@ public class PostController {
     }
 
     @PutMapping("/{id}")
-    public PostResponseDto updatePost(@PathVariable("id") Long postId, @RequestBody PostUpdateRequestDto postUpdateRequestDto) {
+    public PostResponseDto updatePost(@PathVariable("id") Long postId,
+                                      @RequestBody PostUpdateRequestDto postUpdateRequestDto) {
         return postService.updatePost(postId, postUpdateRequestDto);
     }
 

@@ -5,6 +5,10 @@ spring:
     username: user
     password: password
 
+  mvc:
+    servlet:
+      path: /api/v1
+
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
@@ -29,22 +33,56 @@ spring:
         comment-channel: comment_channel
         like-event-channel: like_event
 
+  kafka:
+    bootstrap-servers: localhost:9092
+
+    consumer:
+      group-id: group_id
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+        spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
+        spring.json.value.default.type: faang.school.postservice.dto.post
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+    topic:
+      post:
+        name: posts
+        partitions: 10
+        replicas: 1
+
+
   servlet:
     multipart:
       enabled: true
       max-file-size: 5MB
       max-request-size: 50MB
 
+
+
 server:
   port: 8081
-  servlet:
-    context-path: /api/v1
 
   tomcat:
     max-swallow-size: 5MB
 
-thread_pool:
-  max_threads: 10
+thread-pool:
+  max-threads: 10
+  feed:
+    core-pool-size: 5
+    max-pool-size: 10
+    queue-capacity: 100
+
+
+
+retry:
+  max-attempts: 3           # Количество попыток
+  backoff-multiplier: 2.0   # Множитель для экспоненциальной задержки
+
 
 post_service:
   batch_size: 1000
@@ -52,6 +90,8 @@ post_service:
 logging:
   level:
     root: info
+    #org.springframework.kafka: DEBUG
+    #org.apache.kafka.clients.consumer: DEBUG
 
 user-service:
   host: localhost
@@ -108,9 +148,32 @@ comment:
   path-to-dictionary: /bad_words_list.txt
 
   schedule:
-    verify: "*/10 * * * * *"
-    user-ban: "*/30 * * * * *"
+    verify: "* * */10 * * * "
+    user-ban: "* * */30 * * *"
   batchSize: 100
   thread-pool-size: 4
   word-split-regex: "(?<=\\p{L})(?=\\p{P})|(?<=\\p{P})(?=\\p{L})|\\s+"
   number-bad-comments: 5
+
+
+cache:
+  author-ttl: 86400
+  post-ttl: 86400
+  post:
+    prefix: "posts:"
+    fields:
+      views: numberOfViews
+      number-of-likes: numberOfLikes
+  author:
+    prefix: "author:"
+  heat:
+    producer-batch-size: 1000
+    process-batch-size: 100
+    max-posts: 500
+    max-days-back: 60
+
+post-comments:
+  size: 3
+
+feed-posts:
+  size: 500
