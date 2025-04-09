@@ -10,8 +10,6 @@ import java.util.List;
 public interface CommentService {
     Mono<Void> moderateComments();
 
-    void banUsersForComments();
-
     void createComment(CommentRequestDto commentRequestDto);
 
     void updateComment(Long id, CommentUpdateDto commentUpdateDto);

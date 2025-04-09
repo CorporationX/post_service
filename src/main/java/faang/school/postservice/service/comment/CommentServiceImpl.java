@@ -17,7 +17,6 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.kafka.publisher.UserBanPublisher;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,20 +31,10 @@ import reactor.util.retry.Retry;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
-import java.util.stream.IntStream;
 
 import static faang.school.postservice.contants.ErrorMessage.ERROR_NOT_AUTHOR_COMMENT;
 import static faang.school.postservice.contants.ErrorMessage.ERROR_NULL_AUTHOR_ID;
@@ -77,28 +66,12 @@ public class CommentServiceImpl implements CommentService {
     @Value("${moderation.ban-users-for-comments.batch-size}")
     private int banBatchSize;
 
-    @Value("${moderation.ban-users-for-comments.max-attempts}")
-    private int userBanMaxAttempts;
-
-    @Value("${moderation.ban-users-for-comments.backoff-delay}")
-    private int userBanBackoffDelay;
-
-    @Value("${moderation.ban-users-for-comments.thread-pool-size}")
-    private int userBanThreadPoolSize;
-
-    @Value("${moderation.ban-users-for-comments.timeout-hours}")
-    private int userBanTimeoutHours;
-
-    @Value("${moderation.ban-users-for-comments.ban-threshold}")
-    private int userBanThreshold;
-
     private static final double TOXICITY_THRESHOLD = 0.35;
     private static final int MAX_LENGTH_CHARACTER = 4096;
 
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final CommentAnalyzer commentAnalyzer;
-    private final UserBanPublisher userBanPublisher;
     private final CommentRequestMapper commentRequestMapper;
     private final CommentResponseMapper commentResponseMapper;
     private final UserServiceClient userServiceClient;
@@ -123,37 +96,6 @@ public class CommentServiceImpl implements CommentService {
                 .then()
                 .doOnSuccess(v -> log.info("Comment moderation completed"))
                 .doOnError(e -> log.error("Error while moderating comments", e));
-    }
-
-    public void banUsersForComments() {
-        log.info("User ban process started");
-        ExecutorService executor = Executors.newFixedThreadPool(userBanThreadPoolSize);
-        List<CompletableFuture<Void>> futures = new ArrayList<>();
-        int commentCount = (int) commentRepository.count();
-        int batches = (commentCount + banBatchSize - 1) / banBatchSize;
-
-        IntStream.range(0, batches).forEach(batchNumber -> {
-            Pageable pageable = PageRequest.of(batchNumber, banBatchSize);
-            futures.add(CompletableFuture.runAsync(() -> {
-                banUserForComments(commentRepository.findUnverifiedComments(pageable).getContent());
-            }, executor));
-        });
-
-        try {
-            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).get(userBanTimeoutHours, TimeUnit.HOURS);
-            log.info("User ban process completed");
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            log.error("Thread interrupted while waiting for user ban execution", e);
-            executor.shutdownNow();
-            log.warn("User ban process was interrupted and may not have completed");
-        } catch (ExecutionException e) {
-            log.error("Execution exception while submitting posts for review. ", e);
-        } catch (TimeoutException e) {
-            log.warn("User ban process did not complete within timeout: {} hours", userBanTimeoutHours, e);
-        } finally {
-            executor.shutdown();
-        }
     }
 
     public void createComment(CommentRequestDto commentRequestDto) {
@@ -252,18 +194,6 @@ public class CommentServiceImpl implements CommentService {
             log.error(errorMessage);
             return new EntityNotFoundException(errorMessage);
         });
-    }
-
-    private void banUserForComments(List<Comment> comments) {
-        Map<Long, Integer> unverifiedComments = new HashMap<>();
-        comments.stream()
-                .filter(comment -> !comment.isVerified())
-                .forEach(comment -> unverifiedComments.merge(comment.getId(), 1, Integer::sum));
-
-        unverifiedComments.entrySet()
-                .stream()
-                .filter(entry -> entry.getValue() >= userBanThreshold)
-                .forEach(entry -> userBanPublisher.publish(entry.getKey()));
     }
 
     private Mono<Void> moderateComment(Comment comment) {
