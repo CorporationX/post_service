@@ -4,6 +4,7 @@ import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.exceptions.AsyncPostProcessingException;
 import faang.school.postservice.exceptions.PostAlreadyPublishedException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Album;
@@ -75,10 +76,10 @@ public class PostService {
                     publishBatch(batch);
                 } catch (DataValidationException e) {
                     log.error("Ошибка валидации в списке: {}", e.getMessage());
-                    throw new RuntimeException(e);
+                    throw new DataValidationException("Ошибка валидации в списке. Размер: {}", batch.size());
                 } catch (Exception e) {
                     log.error("Ошибка публикации списка: {}", e.getMessage());
-                    throw new RuntimeException(e);
+                    throw new AsyncPostProcessingException("Не удалось опубликовать список", e);
                 }
             }, executorService);
 
@@ -90,15 +91,17 @@ public class PostService {
                     .get(threadTimeout, TimeUnit.MINUTES);
         } catch (TimeoutException e) {
             log.warn("Превышено время ожидания публикации");
+            throw new AsyncPostProcessingException("Таймаут публикации постов", e);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             log.error("Поток был прерван во время публикации");
-            throw new RuntimeException("Публикация прервана", e);
+            throw new AsyncPostProcessingException("Публикация прервана", e);
         } catch (ExecutionException e) {
             log.error("Ошибка при выполнении публикации", e.getCause());
-            throw new RuntimeException("Ошибка публикации постов", e.getCause());
+            throw new AsyncPostProcessingException("Ошибка публикации постов", e.getCause());
         }
     }
+
 
     public PostDto create(PostDto postDto) {
         validateContent(postDto);
