@@ -1,6 +1,8 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.client.LanguageToolClient;
+import faang.school.postservice.dto.languageTool.GrammarMatch;
+import faang.school.postservice.dto.languageTool.LanguageToolResponseDto;
 import faang.school.postservice.dto.post.PostRequestDto;
 import faang.school.postservice.dto.post.PostResponseDto;
 import faang.school.postservice.exception.LanguageToolException;
@@ -24,6 +26,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -187,10 +190,32 @@ public class PostService {
             backoff = @Backoff(delayExpression = "${spring.retry.language-tool.backoff-delay}")
     )
     private void sendPostContentChecking(Post post) {
-        log.debug("Before correcting errors in the text: {}", post.getContent());
-        post.setContent(languageToolClient.getCorrectedText(post.getContent(), "auto"));
+        String text = post.getContent();
+        log.debug("Before correcting errors in the text: {}", text);
+        LanguageToolResponseDto response = languageToolClient.getCorrectedText(text, "auto");
+        post.setContent(response != null ? correctText(text, response) : text);
         postRepository.save(post);
-        log.debug("After correcting errors in the text: {}", post.getContent());
+        log.debug("After correcting errors in the text: {}", text);
+    }
+
+    private String correctText(String text, LanguageToolResponseDto response) {
+        if (response.getMatches() == null || response.getMatches().isEmpty()) {
+            return text;
+        }
+        response.getMatches().sort(Comparator.comparingInt(GrammarMatch::getOffset));
+        StringBuilder correctedText = new StringBuilder(text);
+        int offsetCorrection = 0;
+
+        for (GrammarMatch match : response.getMatches()) {
+            int offset = match.getOffset() + offsetCorrection;
+            int length = match.getLength();
+            String replacement = match.getReplacements().isEmpty() ? ""
+                    : match.getReplacements().get(0).getValue();
+
+            offsetCorrection += replacement.length() - length;
+            correctedText.replace(offset, offset + length, replacement);
+        }
+        return correctedText.toString();
     }
 
     @Recover
