@@ -60,9 +60,6 @@ services:
   payment-service:
     host: localhost
     port: 9080
-  comment-analyzer:
-    endpoint: https://commentanalyzer.googleapis.com/v1alpha1
-    api-key: "AIzaSyDNS2DzSDuUQI_FLdY4dSmA5Bgj397kwK8"
 
 moderation:
   ban-users-for-comments:
