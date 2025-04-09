@@ -3,13 +3,10 @@ package faang.school.postservice.service.comment;
 import faang.school.postservice.dto.comment.CommentRequestDto;
 import faang.school.postservice.dto.comment.CommentResponseDto;
 import faang.school.postservice.dto.comment.CommentUpdateDto;
-import reactor.core.publisher.Mono;
 
 import java.util.List;
 
 public interface CommentService {
-    Mono<Void> moderateComments();
-
     void banUsersForComments();
 
     void createComment(CommentRequestDto commentRequestDto);

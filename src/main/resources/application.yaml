@@ -65,13 +65,6 @@ services:
     api-key: "AIzaSyDNS2DzSDuUQI_FLdY4dSmA5Bgj397kwK8"
 
 moderation:
-  comments:
-    cron: "0 0 * * * *"
-    batch-size: 250000
-    max-attempts: 3
-    backoff-delay: 1000
-    timeout-hours: 5
-
   ban-users-for-comments:
     cron: "0 3 * * * *"
     batch-size: 250000
