@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
@@ -19,11 +20,14 @@ public class AsyncModerationService {
 
     @Async("fileUploadTaskExecutor")
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void moderateBatchAsync(List<Post> batch) {
+    public CompletableFuture<Void> moderateBatchAsync(List<Post> batch) {
         try {
             batchProcessorService.processBatch(batch);
+            return CompletableFuture.completedFuture(null);
         } catch (Exception e) {
-            log.error("Batch moderation failed. Size: {}", batch.size(), e);
+            CompletableFuture<Void> future = new CompletableFuture<>();
+            future.completeExceptionally(e);
+            return future;
         }
     }
 }

@@ -1,27 +1,22 @@
 package faang.school.postservice.config.threads;
 
-import org.springframework.beans.factory.annotation.Value;
+import faang.school.postservice.config.ModerationProperties;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 @Configuration
+@RequiredArgsConstructor
 public class FileUploadAsyncConfig {
-    @Value("${task-executor.file-upload.core-pool-size}")
-    private int corePoolSize;
-
-    @Value("${task-executor.file-upload.max-pool-size}")
-    private int maxPoolSize;
-
-    @Value("${task-executor.file-upload.queue-capacity}")
-    private int queueCapacity;
+    private final ModerationProperties moderationProperties;
 
     @Bean(name = "fileUploadTaskExecutor")
     public ThreadPoolTaskExecutor fileUploadTaskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(corePoolSize);
-        executor.setMaxPoolSize(maxPoolSize);
-        executor.setQueueCapacity(queueCapacity);
+        executor.setCorePoolSize(moderationProperties.getCorePoolSize());
+        executor.setMaxPoolSize(moderationProperties.getMaxPoolSize());
+        executor.setQueueCapacity(moderationProperties.getQueueCapacity());
         executor.setThreadNamePrefix("FileUploadAsync-");
         executor.initialize();
         return executor;

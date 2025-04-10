@@ -1,10 +1,9 @@
 package faang.school.postservice.service.moderation;
 
+import faang.school.postservice.config.ModerationProperties;
 import jakarta.annotation.PostConstruct;
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
@@ -23,14 +22,14 @@ import java.util.Set;
 @Validated
 public class ModerationDictionary {
 
+    private final ModerationProperties moderationProperties;
     private final Set<String> badWords = new HashSet<>();
 
-    @Value("${moderation.dictionary}")
-    @NotNull
     private Resource badWordsResource;
 
     @PostConstruct
     public void init() {
+        badWordsResource = moderationProperties.getDictionary();
         try {
             loadBadWords();
         } catch (IOException e) {

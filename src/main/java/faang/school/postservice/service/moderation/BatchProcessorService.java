@@ -19,7 +19,7 @@ public class BatchProcessorService {
     private final PostRepository postRepository;
     private final ModerationDictionary moderationDictionary;
 
-    @Transactional(propagation = Propagation.MANDATORY)
+    @Transactional(propagation = Propagation.REQUIRED)
     public void processBatch(List<Post> batch) {
         batch.forEach(post -> {
             boolean hasBadWords = moderationDictionary.containsBadWord(post.getContent());
