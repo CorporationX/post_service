@@ -17,6 +17,7 @@ import org.springframework.web.client.RestTemplate;
 @Component
 @RequiredArgsConstructor
 public class LanguageToolClient {
+
     @Value("${servers.language-tool.base-url}")
     private String baseUrl;
 

@@ -1,15 +1,5 @@
 package faang.school.postservice.service.comment;
 
-import static faang.school.postservice.contants.ErrorMessage.ERROR_NOT_AUTHOR_COMMENT;
-import static faang.school.postservice.contants.ErrorMessage.ERROR_NULL_AUTHOR_ID;
-import static faang.school.postservice.contants.ErrorMessage.ERROR_NULL_COMMENT_ID;
-import static faang.school.postservice.contants.ErrorMessage.ERROR_NULL_CONTENT;
-import static faang.school.postservice.contants.ErrorMessage.ERROR_NULL_POST_ID;
-import static faang.school.postservice.contants.InfoMessage.INFO_CREATE_COMMENT;
-import static faang.school.postservice.contants.InfoMessage.INFO_DELETE_COMMENT;
-import static faang.school.postservice.contants.InfoMessage.INFO_GET_COMMENTS;
-import static faang.school.postservice.contants.InfoMessage.INFO_UPDATE_COMMENT;
-
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.contants.ErrorMessage;
 import faang.school.postservice.dto.comment.CommentRequestDto;
@@ -34,6 +24,16 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
+
+import static faang.school.postservice.contants.ErrorMessage.ERROR_NOT_AUTHOR_COMMENT;
+import static faang.school.postservice.contants.ErrorMessage.ERROR_NULL_AUTHOR_ID;
+import static faang.school.postservice.contants.ErrorMessage.ERROR_NULL_COMMENT_ID;
+import static faang.school.postservice.contants.ErrorMessage.ERROR_NULL_CONTENT;
+import static faang.school.postservice.contants.ErrorMessage.ERROR_NULL_POST_ID;
+import static faang.school.postservice.contants.InfoMessage.INFO_CREATE_COMMENT;
+import static faang.school.postservice.contants.InfoMessage.INFO_DELETE_COMMENT;
+import static faang.school.postservice.contants.InfoMessage.INFO_GET_COMMENTS;
+import static faang.school.postservice.contants.InfoMessage.INFO_UPDATE_COMMENT;
 
 @Slf4j
 @Service

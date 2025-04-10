@@ -1,10 +1,5 @@
 package faang.school.postservice.service.comment;
 
-import static faang.school.postservice.contants.ErrorMessage.*;
-import static faang.school.postservice.contants.ErrorMessage.getErrorNotFoundUser;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentRequestDto;
 import faang.school.postservice.dto.comment.CommentResponseDto;
@@ -34,6 +29,24 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+
+import static faang.school.postservice.contants.ErrorMessage.ERROR_NOT_AUTHOR_COMMENT;
+import static faang.school.postservice.contants.ErrorMessage.ERROR_NULL_AUTHOR_ID;
+import static faang.school.postservice.contants.ErrorMessage.ERROR_NULL_COMMENT_ID;
+import static faang.school.postservice.contants.ErrorMessage.ERROR_NULL_CONTENT;
+import static faang.school.postservice.contants.ErrorMessage.ERROR_NULL_POST_ID;
+import static faang.school.postservice.contants.ErrorMessage.getErrorNotFoundComment;
+import static faang.school.postservice.contants.ErrorMessage.getErrorNotFoundPost;
+import static faang.school.postservice.contants.ErrorMessage.getErrorNotFoundUser;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class CommentServiceTest {

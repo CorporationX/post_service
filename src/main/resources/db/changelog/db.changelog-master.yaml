@@ -9,3 +9,5 @@ databaseChangeLog:
       file: db/changelog/changeset/post_V004_alter_comment_add_image_keys.sql
   - include:
       file:  db/changelog/changeset/post_V005_hashtags.sql
+  - include:
+      file: db/changelog/changeset/post_V006__post_correction.sql

@@ -13,6 +13,7 @@ import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.hashtags.HashtagService;
 import faang.school.postservice.utils.validationUtils.PostValidation;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -145,26 +146,17 @@ public class PostService {
         return postMapper.toPostResponseDtoList(posts);
     }
 
-    private void validatePostOptional(Optional<Post> postOptional, Long id) {
-        if (postOptional.isEmpty()) {
-            String message = String.format(NO_POST_FOUND, id);
-            log.error(message);
-            throw new PostNotFoundException(message);
-        }
-    }
-
     public void sendPostsForChecking() {
         ExecutorService executor = Executors.newFixedThreadPool(threadPoolSize);
         long total = postRepository.count();
         List<CompletableFuture<Void>> futures = new ArrayList<>();
-
         for (int start = 0; start < total; start += batchSize) {
             int end = Math.min(start + batchSize - 1, (int) total);
             int size = end - start + 1;
             int finalStart = start;
             futures.add(CompletableFuture.runAsync(() -> {
                 Pageable pageable = PageRequest.of((finalStart + size - 1) / size, size);
-                Page<Post> postContents = postRepository.findPosts(pageable);
+                Page<Post> postContents = postRepository.findUncorrectedPosts(pageable);
                 postContents.forEach(this::sendPostContentChecking);
             }, executor));
         }
@@ -189,13 +181,23 @@ public class PostService {
             maxAttemptsExpression = "${spring.retry.language-tool.max-attempts}",
             backoff = @Backoff(delayExpression = "${spring.retry.language-tool.backoff-delay}")
     )
+    @Transactional
     private void sendPostContentChecking(Post post) {
         String text = post.getContent();
         log.debug("Before correcting errors in the text: {}", text);
         LanguageToolResponseDto response = languageToolClient.getCorrectedText(text, "auto");
         post.setContent(response != null ? correctText(text, response) : text);
+        post.setCorrected(true);
         postRepository.save(post);
         log.debug("After correcting errors in the text: {}", text);
+    }
+
+    private void validatePostOptional(Optional<Post> postOptional, Long id) {
+        if (postOptional.isEmpty()) {
+            String message = String.format(NO_POST_FOUND, id);
+            log.error(message);
+            throw new PostNotFoundException(message);
+        }
     }
 
     private String correctText(String text, LanguageToolResponseDto response) {
