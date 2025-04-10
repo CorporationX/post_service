@@ -11,6 +11,10 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class PostServiceImpl implements PostService {
@@ -78,5 +82,60 @@ public class PostServiceImpl implements PostService {
                 () -> new EntityNotFoundException("Нет такого поста"));
 
         return postMapper.toDto(post);
+    }
+
+    public List<PostDto> getAllBlackPostsByAuthorId(Long authorId) {
+        List<Post> posts = postRepository.findByAuthorId(authorId);
+
+        return getPostDtos(posts);
+    }
+
+    public List<PostDto> getAllBlackProjectsByAuthorId(Long projectId) {
+        List<Post> posts = postRepository.findByProjectId(projectId);
+
+        return getPostDtos(posts);
+    }
+
+    public List<PostDto> getAllPublicPostsByAuthorId(Long authorId) {
+        List<Post> posts = postRepository.findByAuthorId(authorId);
+
+        return getPostPublic(posts);
+    }
+
+    public List<PostDto> getAllPublicProjectsByAuthorId(Long projectId) {
+        List<Post> posts = postRepository.findByProjectId(projectId);
+
+
+        return getPostPublic(posts);
+    }
+
+    private List<PostDto> getPostDtos(List<Post> posts) {
+        List<Post> outPosts = new ArrayList<>();
+
+        for (Post post : posts) {
+            if (!post.isPublished()) {
+                outPosts.add(post);
+            }
+        }
+
+        return outPosts.stream()
+                .sorted(Comparator.comparing(Post::getCreatedAt))
+                .map(postMapper::toDto)
+                .toList();
+    }
+
+    private List<PostDto> getPostPublic(List<Post> posts) {
+        List<Post> outPosts = new ArrayList<>();
+
+        for (Post post : posts) {
+            if (post.isPublished()) {
+                outPosts.add(post);
+            }
+        }
+
+        return outPosts.stream()
+                .sorted(Comparator.comparing(Post::getCreatedAt))
+                .map(postMapper::toDto)
+                .toList();
     }
 }
