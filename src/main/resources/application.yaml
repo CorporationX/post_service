@@ -26,7 +26,7 @@ spring:
           name: calculations_channel
 
 server:
-  port: 8081
+  port: 8089
 
 user-service:
   host: localhost
@@ -37,4 +37,11 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+  services:
+    s3:
+      endpoint: <http://localhost:9000>
+      accessKey: user
+      secretKey: password
+      bucketName: corpb
 

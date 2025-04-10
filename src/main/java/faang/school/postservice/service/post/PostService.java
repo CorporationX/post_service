@@ -6,16 +6,21 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.AmazonS3.PostImageService;
 import feign.FeignException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 
 @Service
@@ -25,16 +30,32 @@ public class PostService {
     private final UserServiceClient userServiceClient;
     private final PostRepository postRepository;
     private final PostMapper postMapper;
+    private final PostImageService postImageService;
 
-
-    public PostDto createDraftPost(PostDto postDto) {
+    public PostDto createDraftPost(PostDto postDto, MultipartFile[] files) {
         validateOwner(postDto.getAuthorId(), postDto.getProjectId());
-        Post post = postMapper.toEntity(postDto);
-        post.setAuthorId(postDto.getAuthorId());
-        post.setProjectId(postDto.getProjectId());
+        try {
+            Post post = postMapper.toEntity(postDto);
+            post.setAuthorId(postDto.getAuthorId());
+            post.setProjectId(postDto.getProjectId());
 
-        return postMapper.toDto(postRepository.save(post));
+            CompletableFuture<List<Resource>> uploadFuture = (files != null && files.length > 0)
+                    ? CompletableFuture.supplyAsync(() -> postImageService.uploadImages(files))
+                    : CompletableFuture.completedFuture(Collections.emptyList());
+
+            return uploadFuture.thenApply(resources -> {
+                post.setResources(resources);
+                return postMapper.toDto(postRepository.save(post));
+            }).exceptionally(ex -> {
+
+                throw new DataValidationException("Failed to create post or upload images");
+            }).join();
+
+        } catch (Exception e) {
+            throw new DataValidationException("Error occurred while creating draft post");
+        }
     }
+
 
     @Transactional
     public PostDto publishPost(long postId) {
@@ -50,12 +71,26 @@ public class PostService {
     }
 
     @Transactional
-    public PostDto updatePost(long postId, PostDto postDto) {
+    public PostDto updatePost(long postId, PostDto postDto, List<Long> deletedFileIds, MultipartFile[] addedFiles) {
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new EntityNotFoundException("post with id " + postId + " is not exists"));
+                .orElseThrow(() -> new EntityNotFoundException("Post with id " + postId + " does not exist"));
+
         validateDeleted(post);
 
         postMapper.updatePostFromDto(postDto, post);
+
+        if (deletedFileIds != null && !deletedFileIds.isEmpty()) {
+            List<Resource> deleteResources = postImageService.deleteImages(deletedFileIds);
+            post.getResources().removeAll(deleteResources); // Удаляем ресурсы из поста
+        }
+
+        if (addedFiles != null && addedFiles.length > 0) {
+            List<Resource> addedResources = postImageService.uploadImages(addedFiles);
+            post.getResources().addAll(addedResources); // Добавляем новые ресурсы к посту
+        }
+
+        postRepository.save(post);
+
         return postMapper.toDto(post);
     }
 
@@ -116,7 +151,7 @@ public class PostService {
 
     private void validateDeleted(Post post) {
         if (post.isDeleted()) {
-            throw new DataValidationException("post with id " + post.getId() +" has been deleted.");
+            throw new DataValidationException("post with id " + post.getId() + " has been deleted.");
         }
     }
 
@@ -127,7 +162,7 @@ public class PostService {
         }
     }
 
-    private void validateOwner(Long authorId, Long projectId)  {
+    private void validateOwner(Long authorId, Long projectId) {
         if (authorId != null && projectId != null) {
             throw new DataValidationException("author or project should be null");
         }
@@ -160,4 +195,5 @@ public class PostService {
             }
         }
     }
+
 }

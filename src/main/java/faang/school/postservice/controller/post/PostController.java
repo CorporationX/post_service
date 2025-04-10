@@ -1,8 +1,10 @@
 package faang.school.postservice.controller.post;
 
 import faang.school.postservice.dto.post.PostDto;
+
 import faang.school.postservice.service.post.PostService;
 import jakarta.validation.Valid;
+import org.springframework.web.multipart.MultipartFile;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -26,8 +29,9 @@ public class PostController {
     private final PostService postService;
 
     @PostMapping
-    public PostDto creatingDraftPost(@Valid @RequestBody PostDto postDto) {
-        return postService.createDraftPost(postDto);
+    public PostDto crateDraftPost(@RequestBody @Validated PostDto postDto,
+                                  @RequestParam(required = false) MultipartFile[] files) {
+        return postService.createDraftPost(postDto, files);
     }
 
     @PutMapping("/public/{postId}")
@@ -37,8 +41,12 @@ public class PostController {
 
     @PutMapping("/{postId}")
     public PostDto updatePost(
-            @PathVariable @Min(value = 1, message = MSG) long postId, @RequestBody PostDto postDto) {
-        return postService.updatePost(postId, postDto);
+            @PathVariable("postId") @Min(value = 1, message = MSG) long postId,
+            @RequestBody @Valid PostDto postDto,
+            @RequestParam(value = "deletedFileIds", required = false) List<Long> deletedFileIds,
+            @RequestParam(value = "addedFiles", required = false) MultipartFile[] addedFiles
+    ) {
+        return postService.updatePost(postId, postDto, deletedFileIds, addedFiles);
     }
 
     @DeleteMapping("/{postId}")
