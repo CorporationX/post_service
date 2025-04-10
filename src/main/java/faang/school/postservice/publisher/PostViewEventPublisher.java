@@ -12,7 +12,7 @@ public class PostViewEventPublisher {
     @Value("${postViewEventPublisher.channel}")
     private String channel;
 
-    private final RedisTemplate<String, String> redisTemplate;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     public void published(PostViewEvent postViewEvent) {
         redisTemplate.convertAndSend(channel,postViewEvent);
