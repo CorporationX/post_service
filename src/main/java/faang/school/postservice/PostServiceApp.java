@@ -6,7 +6,10 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableScheduling;
+
+import java.time.Clock;
 
 @SpringBootApplication
 @ConfigurationPropertiesScan
@@ -18,5 +21,11 @@ public class PostServiceApp {
         new SpringApplicationBuilder(PostServiceApp.class)
                 .bannerMode(Banner.Mode.OFF)
                 .run(args);
+    }
+
+    @Bean
+
+    public Clock clock() {
+        return Clock.systemDefaultZone();
     }
 }

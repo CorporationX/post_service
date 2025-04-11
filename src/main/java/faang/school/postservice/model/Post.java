@@ -38,7 +38,7 @@ public class Post {
     @Column(name = "content", nullable = false, length = 4096)
     private String content;
 
-    @Column(name = "author_id", nullable = false)
+    @Column(name = "author_id")
     private Long authorId;
 
     @Column(name = "project_id")
@@ -59,7 +59,7 @@ public class Post {
     @OneToMany(mappedBy = "post", orphanRemoval = true)
     private List<Resource> resources;
 
-    @Column(name = "published", nullable = false)
+    @Column(name = "published")
     private boolean published;
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -70,7 +70,7 @@ public class Post {
     @Column(name = "scheduled_at")
     private LocalDateTime scheduledAt;
 
-    @Column(name = "deleted", nullable = false)
+    @Column(name = "deleted")
     private boolean deleted;
 
     @CreationTimestamp

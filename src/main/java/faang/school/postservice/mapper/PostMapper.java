@@ -21,12 +21,16 @@ public interface PostMapper {
     @Mapping(source = "albums", target = "albumIds")
     PostDto toDto(Post post);
 
+    Post toEntity(PostDto postDto);
     default List<Long> extractIdsFromComments(List<Comment> comments) {
         return comments != null
                 ? comments.stream().map(Comment::getId).collect(Collectors.toList())
                 : Collections.emptyList();
     }
 
+    List<PostDto> toDtoList(List<Post> postList);
+
+    List<Post> toEntityList(List<PostDto> postDtoList);
     default List<Long> extractIdsFromAlbums(List<Album> albums) {
         return albums != null
                 ? albums.stream().map(Album::getId).toList()
