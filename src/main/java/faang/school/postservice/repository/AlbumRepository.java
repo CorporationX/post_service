@@ -16,6 +16,9 @@ public interface AlbumRepository extends CrudRepository<Album, Long> {
 
     List<Album> findByAuthorId(long authorId);
 
+    @Query("SELECT a FROM Album a LEFT JOIN FETCH a.posts")
+    List<Album> findAllAlbums();
+
     @Query("SELECT a FROM Album a LEFT JOIN FETCH a.posts WHERE a.id = :id")
     Optional<Album> findByIdWithPosts(long id);
 

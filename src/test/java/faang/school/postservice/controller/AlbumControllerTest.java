@@ -1,6 +1,10 @@
 package faang.school.postservice.controller;
 
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.controller.handler.GlobalExceptionHandler;
+import faang.school.postservice.dto.album.AlbumDto;
+import faang.school.postservice.dto.album.AlbumFilterDto;
 import faang.school.postservice.dto.album.AlbumResponseDto;
 import faang.school.postservice.dto.album.AlbumUsersDto;
 import faang.school.postservice.service.AlbumService;
@@ -14,10 +18,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
@@ -28,8 +32,9 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -43,17 +48,37 @@ class AlbumControllerTest {
 
     @Mock
     private AlbumService albumService;
+    @Mock
+    private UserContext userContext;
 
     @InjectMocks
     private AlbumController albumController;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+    long userId = 1L;
+    long albumId = 2L;
+    long postId = 3L;
+    AlbumDto albumDto = new AlbumDto();
+    AlbumFilterDto albumFilterDto = new AlbumFilterDto();
+
     @BeforeEach
     void setUp() {
+        objectMapper.registerModule(new JavaTimeModule());
         mockMvc = MockMvcBuilders.standaloneSetup(albumController)
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
+    }
+
+    void setUpAlbumDto() {
+        albumDto.setTitle("title");
+        albumDto.setDescription("description");
+        albumDto.setAuthorId(userId);
+    }
+
+    void prepareAlbumFilterDto() {
+        albumFilterDto.setTitle("title");
+        albumFilterDto.setCreatedAtBefore(LocalDateTime.now().minusDays(2));
     }
 
     @Test
@@ -168,4 +193,134 @@ class AlbumControllerTest {
                 .andDo(print())
                 .andExpect(status().isBadRequest());
     }
+
+    @Test
+    void testCreateAlbumReturnAlbum() throws Exception {
+        setUpAlbumDto();
+        when(albumService.createAlbum(userId, albumDto)).thenReturn(albumDto);
+
+        mockMvc.perform(post("/albums/new")
+                        .header("x-user-id", userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(albumDto)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.title").value(albumDto.getTitle()));
+    }
+
+    @Test
+    void testAddPostToAlbum() throws Exception {
+        setUpAlbumDto();
+        when(albumService.addPostToAlbum(userId, postId, albumId)).thenReturn(albumDto);
+
+        mockMvc.perform(post("/albums/{albumId}/add-post/{postId}", albumId, postId)
+                        .header("x-user-id", userId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.title").value(albumDto.getTitle()));
+    }
+
+    @Test
+    void testDeletePostFromAlbumReturnOk() throws Exception {
+        doNothing().when(albumService).deletePostFromAlbum(userId, postId, albumId);
+
+        mockMvc.perform(delete("/albums/{albumId}/delete-post/{postId}", albumId, postId)
+                        .header("x-user-id", userId))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void testGetAlbumByIdReturnAlbum() throws Exception {
+        setUpAlbumDto();
+        when(albumService.getAlbumByIdReturnAlbumDto(albumId)).thenReturn(albumDto);
+
+        mockMvc.perform(get("/albums/get/{albumId}", albumId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.title").value(albumDto.getTitle()));
+    }
+
+    @Test
+    void testUpdateAlbumOk() throws Exception {
+        setUpAlbumDto();
+        when(albumService.updateAlbum(eq(userId), any(AlbumDto.class))).thenReturn(albumDto);
+
+        mockMvc.perform(put("/albums/update/{albumId}", albumId)
+                        .header("x-user-id", userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(albumDto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.title").value(albumDto.getTitle()));
+    }
+
+    @Test
+    void testDeleteAlbumOk() throws Exception {
+        doNothing().when(albumService).deleteAlbum(userId, albumId);
+
+        mockMvc.perform(delete("/albums/delete/{albumId}", albumId)
+                        .header("x-user-id", userId))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void testGetAllAlbumsByAuthorIdWithFilters() throws Exception {
+        setUpAlbumDto();
+        prepareAlbumFilterDto();
+        List<AlbumDto> expectedAlbums = List.of(albumDto);
+        when(albumService.getAllAlbumsByAuthorIdWithFilters(eq(userId), any(AlbumFilterDto.class)))
+                .thenReturn(expectedAlbums);
+
+        mockMvc.perform(post("/albums/by-author/{userId}", userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(albumFilterDto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].title").value(albumDto.getTitle()));
+    }
+
+    @Test
+    void testGetAllAlbumsWithFilters() throws Exception {
+        setUpAlbumDto();
+        prepareAlbumFilterDto();
+        List<AlbumDto> expectedAlbums = List.of(albumDto);
+        when(albumService.getAllAlbumsWithFilters(any(AlbumFilterDto.class)))
+                .thenReturn(expectedAlbums);
+
+        mockMvc.perform(post("/albums/all-albums")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(albumFilterDto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].title").value(albumDto.getTitle()));
+    }
+
+    @Test
+    void testAddFavouriteAlbum() throws Exception {
+        doNothing().when(albumService).addFavouriteAlbum(userId, albumId);
+
+        mockMvc.perform(post("/albums/favourite/add/{albumId}", albumId)
+                        .header("x-user-id", userId))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void testDeleteFavouriteAlbum() throws Exception {
+        doNothing().when(albumService).deleteFavouriteAlbum(userId, albumId);
+
+        mockMvc.perform(delete("/albums/favourite/delete/{albumId}", albumId)
+                        .header("x-user-id", userId))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void testGetFavouriteAlbumsByUserId() throws Exception {
+        setUpAlbumDto();
+        prepareAlbumFilterDto();
+        List<AlbumDto> expectedAlbums = List.of(albumDto);
+        when(albumService.getFavouriteAlbumsByUserId(eq(userId), any(AlbumFilterDto.class)))
+                .thenReturn(expectedAlbums);
+
+        mockMvc.perform(post("/albums/favourite")
+                        .header("x-user-id", userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(albumFilterDto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].title").value(albumDto.getTitle()));
+    }
+
 }
