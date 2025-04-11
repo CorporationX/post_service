@@ -1,6 +1,7 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.like.LikeEvent;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.config.context.UserContext;
@@ -11,6 +12,7 @@ import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.like.LikeEventPublisher;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.validator.CommentValidator;
 import faang.school.postservice.validator.PostValidator;
@@ -21,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -40,6 +43,8 @@ public class LikeService {
     private final LikeRepository likeRepository;
     private final LikeMapper likeMapper;
     private final PostMapper postMapper;
+    private final LikeEventPublisher likeEventPublisher;
+    private final PostService postService;
 
     public List<UserDto> getAllUsersWhoLikedPost(Long postId) {
         Post post = postValidator.getPostById(postId);
@@ -71,7 +76,18 @@ public class LikeService {
                 .post(postValidator.getPostById(postId))
                 .build();
         likeRepository.save(like);
+        LikeEvent likeEvent = getLikeEvent(postId, userId);
+        likeEventPublisher.publish(likeEvent);
         return likeMapper.toLikeDto(like);
+    }
+
+    private LikeEvent getLikeEvent(Long postId, Long userId) {
+        return LikeEvent.builder()
+                .authorPostId(postService.getPost(postId).getAuthorId())
+                .authorLikeId(userId)
+                .postId(postId)
+                .createdAt(LocalDateTime.now())
+                .build();
     }
 
     private List<UserDto> fetchUsersInBatches(List<Long> userIds) {
