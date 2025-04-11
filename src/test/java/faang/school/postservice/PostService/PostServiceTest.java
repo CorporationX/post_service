@@ -12,6 +12,7 @@ import faang.school.postservice.service.PostService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -20,6 +21,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static faang.school.postservice.service.PostService.CANT_UPDATE_DELETED_POST;
 import static faang.school.postservice.service.PostService.NO_POST_FOUND;
@@ -28,6 +32,7 @@ import static faang.school.postservice.utils.validationUtils.PostValidation.POST
 import static faang.school.postservice.utils.validationUtils.PostValidation.POST_DELETED;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -40,8 +45,12 @@ public class PostServiceTest {
 
     @Mock
     private PostRepository postRepository;
+
     @Mock
     private LikeRepository likeRepository;
+
+    @Mock
+    private ExecutorService executorService;
 
     @Spy
     private PostMapperImpl postMapper;
@@ -235,5 +244,24 @@ public class PostServiceTest {
         List<PostResponseDto> responseDtos = postService.getProjectPublishedPosts(1L);
 
         assertEquals(5, responseDtos.get(0).getLikesCount());
+    }
+
+    @Test
+    void publishScheduledPosts_ShouldProcessBatches() {
+        List<Post> posts = IntStream.range(0, 2500)
+                .mapToObj(i -> Post.builder().id((long) i).build())
+                .collect(Collectors.toList());
+
+        when(postRepository.findReadyToPublish()).thenReturn(posts);
+        ArgumentCaptor<Runnable> captor = ArgumentCaptor.forClass(Runnable.class);
+
+        postService.publishScheduledPosts();
+
+        verify(postRepository).findReadyToPublish();
+        verify(executorService, times(3)).execute(captor.capture());
+
+        captor.getAllValues().forEach(Runnable::run);
+
+        verify(postRepository, times(3)).saveAll(anyList());
     }
 }
