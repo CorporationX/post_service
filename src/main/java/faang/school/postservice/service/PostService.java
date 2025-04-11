@@ -2,6 +2,7 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.dto.post.PostRequestDto;
 import faang.school.postservice.dto.post.PostResponseDto;
+import faang.school.postservice.exception.LanguageToolException;
 import faang.school.postservice.exception.PostNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
@@ -9,18 +10,34 @@ import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.hashtags.HashtagService;
 import faang.school.postservice.utils.validationUtils.PostValidation;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 @Service
 @Slf4j
@@ -29,13 +46,21 @@ public class PostService {
     public static final String CANT_UPDATE_DELETED_POST = "Can't update deleted post";
     public static final String NO_POST_FOUND = "No post found with ID %d";
     public static final String POST_HAS_ALREADY_BEEN_DELETED = "Post has already been deleted";
+    private static final int TIMEOUT_HOURS = 2;
     public static final int BATCH_SIZE = 1000;
 
     private final PostMapper postMapper;
     private final PostRepository postRepository;
+    private final LanguageToolClient languageToolClient;
     private final LikeRepository likeRepository;
     private final HashtagService hashtagService;
     private final ExecutorService executorService;
+
+    @Value("${posts.correction.batch-size}")
+    int batchSize;
+
+    @Value("${posts.correction.thread-poop-size}")
+    int threadPoolSize;
 
     public PostResponseDto createDraftPost(PostRequestDto postRequestDto) {
         PostValidation.validatePostAuthors(postRequestDto);
@@ -125,6 +150,52 @@ public class PostService {
         return postMapper.toPostResponseDtoList(posts);
     }
 
+    public void sendPostsForChecking() {
+        ExecutorService executor = Executors.newFixedThreadPool(threadPoolSize);
+        long total = postRepository.count();
+        List<CompletableFuture<Void>> futures = new ArrayList<>();
+        for (int start = 0; start < total; start += batchSize) {
+            int end = Math.min(start + batchSize - 1, (int) total);
+            int size = end - start + 1;
+            int finalStart = start;
+            futures.add(CompletableFuture.runAsync(() -> {
+                Pageable pageable = PageRequest.of((finalStart + size - 1) / size, size);
+                Page<Post> postContents = postRepository.findUncorrectedPosts(pageable);
+                postContents.forEach(this::sendPostContentChecking);
+            }, executor));
+        }
+
+        try {
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).get(TIMEOUT_HOURS, TimeUnit.HOURS);
+            log.info("Submitting posts for review completed");
+        } catch (TimeoutException e) {
+            log.error("Submitting posts for review haven't completed on time");
+        } catch (InterruptedException e) {
+            log.error("Submitting posts for review was interrupted. ", e);
+            Thread.currentThread().interrupt();
+        } catch (ExecutionException e) {
+            log.error("Execution exception while submitting posts for review. ", e);
+        } finally {
+            executor.shutdown();
+        }
+    }
+
+    @Retryable(
+            retryFor = {LanguageToolException.class},
+            maxAttemptsExpression = "${spring.retry.language-tool.max-attempts}",
+            backoff = @Backoff(delayExpression = "${spring.retry.language-tool.backoff-delay}")
+    )
+    @Transactional
+    private void sendPostContentChecking(Post post) {
+        String text = post.getContent();
+        log.debug("Before correcting errors in the text: {}", text);
+        LanguageToolResponseDto response = languageToolClient.getCorrectedText(text, "auto");
+        post.setContent(response != null ? correctText(text, response) : text);
+        post.setCorrected(true);
+        postRepository.save(post);
+        log.debug("After correcting errors in the text: {}", text);
+    }
+
     @Transactional
     public void publishScheduledPosts() {
         List<Post> posts = postRepository.findReadyToPublish();
@@ -139,6 +210,32 @@ public class PostService {
             log.error(message);
             throw new PostNotFoundException(message);
         }
+    }
+
+    private String correctText(String text, LanguageToolResponseDto response) {
+        if (response.getMatches() == null || response.getMatches().isEmpty()) {
+            return text;
+        }
+        response.getMatches().sort(Comparator.comparingInt(GrammarMatch::getOffset));
+        StringBuilder correctedText = new StringBuilder(text);
+        int offsetCorrection = 0;
+
+        for (GrammarMatch match : response.getMatches()) {
+            int offset = match.getOffset() + offsetCorrection;
+            int length = match.getLength();
+            String replacement = match.getReplacements().isEmpty() ? ""
+                    : match.getReplacements().get(0).getValue();
+
+            offsetCorrection += replacement.length() - length;
+            correctedText.replace(offset, offset + length, replacement);
+        }
+        return correctedText.toString();
+    }
+
+    @Recover
+    private void recoverSendPostContentChecking(LanguageToolException e, Post post) {
+        log.error("Failed to correct text after retries. ", e);
+        log.error("Post with ID could not be corrected: {}", post.getId());
     }
 
     private void publishBatch(List<Post> batch) {

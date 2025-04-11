@@ -93,4 +93,7 @@ public class Post {
             inverseJoinColumns = @JoinColumn(name = "hashtag_id")
     )
     private Set<Hashtag> hashtags;
+
+    @Column(name = "is_corrected")
+    private boolean isCorrected;
 }
