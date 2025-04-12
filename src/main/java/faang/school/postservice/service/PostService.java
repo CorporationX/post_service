@@ -35,7 +35,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -230,9 +229,9 @@ public class PostService {
 
     public void checkAuthorsPostsVerification() {
         List<Post> rejectedPosts = postRepository.findAllByVerifiedStatus(VerifiedStatus.REJECTED);
-        Map<Long, Long> groupingPosts = rejectedPosts.stream()
-                .collect(Collectors.groupingBy(Post::getAuthorId, Collectors.counting()));
-        groupingPosts.entrySet().stream()
+        rejectedPosts.stream()
+                .collect(Collectors.groupingBy(Post::getAuthorId, Collectors.counting()))
+                .entrySet().stream()
                 .filter(entry -> entry.getValue().intValue() >= valuePosts)
                 .forEach(entry -> banPublisher.publish(entry.getKey()));
     }

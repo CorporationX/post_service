@@ -26,12 +26,15 @@ spring:
           name: calculations_channel
         user-ban: user-ban
 
+  profiles:
+    active: local
+
 server:
   port: 8081
 
 logging:
   level:
-    root: info
+    root: debug
 
 user-service:
   host: localhost
