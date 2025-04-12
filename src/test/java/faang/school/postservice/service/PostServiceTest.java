@@ -7,7 +7,6 @@ import faang.school.postservice.exceptions.PostAlreadyPublishedException;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.VerifiedStatus;
-import faang.school.postservice.publisher.AuthorBanPublisher;
 import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
@@ -38,9 +37,6 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class PostServiceTest {
-
-    private final VerifiedStatus rejectedStatus = VerifiedStatus.REJECTED;
-    private final Long authorId = 13L;
 
     @Mock
     private PostRepository postRepository;
@@ -74,9 +70,6 @@ public class PostServiceTest {
 
     @Captor
     private ArgumentCaptor<Post> postCaptor;
-
-    @Mock
-    private AuthorBanPublisher authorBanPublisher;
 
     @Test
     public void testPositivePublish() {
@@ -341,7 +334,7 @@ public class PostServiceTest {
         when(albumRepository.findByIdIn(any())).thenReturn(List.of());
         when(resourceRepository.findByIdIn(any())).thenReturn(List.of());
 
-        PostDto postDto1 = postService.create(postDto);
+        postService.create(postDto);
 
         verify(postRepository, times(1)).save(postCaptor.capture());
         Post post = postCaptor.getValue();
@@ -365,25 +358,5 @@ public class PostServiceTest {
         assertThrows(NullPointerException.class, () -> postService.create(PostDto.builder()
                 .content("")
                 .build()));
-    }
-
-    @Test
-    void testPositiveCheckAuthorsPostsVerification() {
-        List<Post> posts = List.of(
-                createPost(1L), createPost(2L), createPost(3L), createPost(4L), createPost(5L)
-        );
-        when(postRepository.findAllByVerifiedStatus(VerifiedStatus.REJECTED)).thenReturn(posts);
-
-        postService.checkAuthorsPostsVerification();
-
-        verify(authorBanPublisher, times(1)).publish(authorId);
-    }
-
-    private Post createPost(Long id) {
-        return Post.builder()
-                .id(id)
-                .authorId(authorId)
-                .verifiedStatus(rejectedStatus)
-                .build();
     }
 }

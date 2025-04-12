@@ -50,14 +50,16 @@ thread-pool:
   delete-expired-posts-max-threads: 3
   publish-posts-max-threads: 10
   publish-timeout: 3
-  author-ban: 1
+  author-ban:
+    size: 2
+    shutdown-timeout-seconds: 30
 
 batch:
   size: 1000
 
 cron:
   delete-expired-posts: 0 49 18 * * FRI
-  author-ban: 0 0 0 * * *
+  author-ban: 0 * * * * *
 
 ban-properties:
   value-rejected-posts: 5

@@ -15,7 +15,6 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.model.VerifiedStatus;
 import faang.school.postservice.model.ad.Ad;
-import faang.school.postservice.publisher.AuthorBanPublisher;
 import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
@@ -40,7 +39,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @Slf4j
@@ -57,16 +55,12 @@ public class PostService {
     private final ResourceRepository resourceRepository;
     private final AlbumRepository albumRepository;
     private final ExecutorService executorService;
-    private final AuthorBanPublisher banPublisher;
 
     @Value("${batch.size}")
     private int batchSize;
 
     @Value("${thread-pool.publish-timeout}")
     private int threadTimeout;
-
-    @Value("${ban-properties.value-rejected-posts}")
-    private int valuePosts;
 
     public void publishScheduledPosts() {
         List<Post> readyPosts = postRepository.findReadyToPublish();
@@ -225,15 +219,6 @@ public class PostService {
                 .sorted(Comparator.comparing(Post::getPublishedAt).reversed())
                 .map(postMapper::toDto)
                 .toList();
-    }
-
-    public void checkAuthorsPostsVerification() {
-        List<Post> rejectedPosts = postRepository.findAllByVerifiedStatus(VerifiedStatus.REJECTED);
-        rejectedPosts.stream()
-                .collect(Collectors.groupingBy(Post::getAuthorId, Collectors.counting()))
-                .entrySet().stream()
-                .filter(entry -> entry.getValue().intValue() >= valuePosts)
-                .forEach(entry -> banPublisher.publish(entry.getKey()));
     }
 
     private void validateContent(PostDto postDto) {
