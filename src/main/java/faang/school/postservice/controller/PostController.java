@@ -1,6 +1,8 @@
 package faang.school.postservice.controller;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.PostDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;

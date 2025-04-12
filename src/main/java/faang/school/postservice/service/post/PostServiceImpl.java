@@ -32,26 +32,6 @@ public class PostServiceImpl implements PostService {
         return postMapper.toDto(postRepository.save(post));
     }
 
-    public void checkOwnerPost(PostDto postDto) {
-        if (postDto.getAuthorId() != null) {
-            checkAuthorPost(postDto);
-        } else if (postDto.getProjectId() != null) {
-            checkProjectPost(postDto);
-        }
-    }
-
-    public void checkAuthorPost(PostDto postDto) {
-        if (userClient.getUser(postDto.getAuthorId()) == null) {
-            throw new EntityNotFoundException("Нет такого пользователя");
-        }
-    }
-
-    public void checkProjectPost(PostDto postDto) {
-        if (projectClient.getProject(postDto.getProjectId()) == null) {
-            throw new EntityNotFoundException("Проект не существует");
-        }
-    }
-
     public PostDto createPost(Long id) {
         Post post = postRepository.findById(id).orElseThrow(
                 () -> new EntityNotFoundException("Нет такого черновика"));
@@ -137,5 +117,25 @@ public class PostServiceImpl implements PostService {
                 .sorted(Comparator.comparing(Post::getCreatedAt))
                 .map(postMapper::toDto)
                 .toList();
+    }
+
+    private void checkOwnerPost(PostDto postDto) {
+        if (postDto.getAuthorId() != null) {
+            checkAuthorPost(postDto);
+        } else if (postDto.getProjectId() != null) {
+            checkProjectPost(postDto);
+        }
+    }
+
+    private void checkAuthorPost(PostDto postDto) {
+        if (userClient.getUser(postDto.getAuthorId()) == null) {
+            throw new EntityNotFoundException("Нет такого пользователя");
+        }
+    }
+
+    private void checkProjectPost(PostDto postDto) {
+        if (projectClient.getProject(postDto.getProjectId()) == null) {
+            throw new EntityNotFoundException("Проект не существует");
+        }
     }
 }
