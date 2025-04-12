@@ -5,6 +5,7 @@ import faang.school.postservice.contants.ErrorMessage;
 import faang.school.postservice.dto.comment.CommentRequestDto;
 import faang.school.postservice.dto.comment.CommentResponseDto;
 import faang.school.postservice.dto.comment.CommentUpdateDto;
+import faang.school.postservice.dto.user.UserBanDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.InvalidCommentContentException;
 import faang.school.postservice.exception.NotAuthorException;
@@ -15,8 +16,9 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.kafka.publisher.UserBanPublisher;
+import faang.school.postservice.service.kafka.publisher.KafkaPublisher;
 import feign.FeignException;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -75,14 +77,20 @@ public class CommentServiceImpl implements CommentService {
 
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
-    private final UserBanPublisher userBanPublisher;
+    private final KafkaPublisher kafkaPublisher;
     private final CommentRequestMapper commentRequestMapper;
     private final CommentResponseMapper commentResponseMapper;
     private final UserServiceClient userServiceClient;
+    private ExecutorService executor;
+
+    @PostConstruct
+    public void setUp() {
+        executor = Executors.newFixedThreadPool(userBanThreadPoolSize);
+    }
 
     public void banUsersForComments() {
         log.info("User ban process started");
-        ExecutorService executor = Executors.newFixedThreadPool(userBanThreadPoolSize);
+
         List<CompletableFuture<Void>> futures = new ArrayList<>();
         int commentCount = (int) commentRepository.count();
         int batches = (commentCount + banBatchSize - 1) / banBatchSize;
@@ -90,7 +98,7 @@ public class CommentServiceImpl implements CommentService {
         IntStream.range(0, batches).forEach(batchNumber -> {
             Pageable pageable = PageRequest.of(batchNumber, banBatchSize);
             futures.add(CompletableFuture.runAsync(() -> {
-                banUserForComments(commentRepository.findUnverifiedComments(pageable).getContent());
+                processUsersBan(commentRepository.findUnverifiedComments(pageable).getContent());
             }, executor));
         });
 
@@ -124,10 +132,13 @@ public class CommentServiceImpl implements CommentService {
     public void updateComment(Long id, CommentUpdateDto commentUpdateDto) {
         validateContent(commentUpdateDto.getContent());
         validateId(commentUpdateDto.getAuthorId(), ERROR_NULL_AUTHOR_ID);
+
         Comment comment = getComment(id);
         isAuthorComment(comment, commentUpdateDto);
         comment.setContent(commentUpdateDto.getContent());
         commentRepository.save(comment);
+        comment.setVerified(false);
+        comment.setVerifiedDate(null);
         log.info(INFO_UPDATE_COMMENT, id, commentUpdateDto.getAuthorId());
     }
 
@@ -209,15 +220,15 @@ public class CommentServiceImpl implements CommentService {
         });
     }
 
-    private void banUserForComments(List<Comment> comments) {
+    private void processUsersBan(List<Comment> comments) {
         Map<Long, Integer> unverifiedComments = new HashMap<>();
         comments.stream()
                 .filter(comment -> comment.getVerifiedDate() != null && !comment.isVerified())
-                .forEach(comment -> unverifiedComments.merge(comment.getId(), 1, Integer::sum));
+                .forEach(comment -> unverifiedComments.merge(comment.getAuthorId(), 1, Integer::sum));
 
         unverifiedComments.entrySet()
                 .stream()
                 .filter(entry -> entry.getValue() >= userBanThreshold)
-                .forEach(entry -> userBanPublisher.publish(entry.getKey()));
+                .forEach(entry -> kafkaPublisher.send(new UserBanDto(entry.getKey())));
     }
 }

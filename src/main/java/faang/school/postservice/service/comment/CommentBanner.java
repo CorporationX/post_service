@@ -1,6 +1,5 @@
-package faang.school.postservice.utils;
+package faang.school.postservice.service.comment;
 
-import faang.school.postservice.service.comment.CommentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;

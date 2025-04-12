@@ -10,4 +10,4 @@ databaseChangeLog:
   - include:
       file:  db/changelog/changeset/post_V005_hashtags.sql
   - include:
-      file: db/changelog/changeset/post_V006_moderation.sql
+      file: db/changelog/changeset/post_V006_comment_moderation.sql

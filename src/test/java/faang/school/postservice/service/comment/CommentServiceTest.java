@@ -4,13 +4,14 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentRequestDto;
 import faang.school.postservice.dto.comment.CommentResponseDto;
 import faang.school.postservice.dto.comment.CommentUpdateDto;
+import faang.school.postservice.dto.user.UserBanDto;
 import faang.school.postservice.mapper.CommentRequestMapper;
 import faang.school.postservice.mapper.CommentResponseMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.kafka.publisher.UserBanPublisher;
+import faang.school.postservice.service.kafka.publisher.KafkaPublisher;
 import feign.FeignException;
 import feign.Request;
 import org.junit.jupiter.api.BeforeEach;
@@ -74,7 +75,7 @@ class CommentServiceTest {
     private CommentRequestMapper commentRequestMapper = Mappers.getMapper(CommentRequestMapper.class);
 
     @Mock
-    private UserBanPublisher userBanPublisher;
+    private KafkaPublisher kafkaPublisher;
 
     private static final Long POST_ID = 1L;
     private static final Long COMMENT_ID = 2L;
@@ -356,6 +357,6 @@ class CommentServiceTest {
 
         commentService.banUsersForComments();
 
-        verify(userBanPublisher, times(1)).publish(comment.getId());
+        verify(kafkaPublisher, times(1)).send(new UserBanDto(comment.getAuthorId()));
     }
 }
