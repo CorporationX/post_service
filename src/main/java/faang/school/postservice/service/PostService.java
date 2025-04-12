@@ -4,6 +4,7 @@ import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.exception.PostUnverifiedException;
 import faang.school.postservice.exceptions.AsyncPostProcessingException;
 import faang.school.postservice.exceptions.PostAlreadyPublishedException;
 import faang.school.postservice.mapper.PostMapper;
@@ -12,7 +13,9 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
+import faang.school.postservice.model.VerifiedStatus;
 import faang.school.postservice.model.ad.Ad;
+import faang.school.postservice.publisher.AuthorBanPublisher;
 import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
@@ -32,11 +35,13 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @Slf4j
@@ -53,12 +58,16 @@ public class PostService {
     private final ResourceRepository resourceRepository;
     private final AlbumRepository albumRepository;
     private final ExecutorService executorService;
+    private final AuthorBanPublisher banPublisher;
 
-    @Value("$.{batch.size}")
+    @Value("${batch.size}")
     private int batchSize;
 
-    @Value("$.{thread-pool.publish-timeout}")
+    @Value("${thread-pool.publish-timeout}")
     private int threadTimeout;
+
+    @Value("${ban-properties.value-rejected-posts}")
+    private int valuePosts;
 
     public void publishScheduledPosts() {
         List<Post> readyPosts = postRepository.findReadyToPublish();
@@ -102,13 +111,32 @@ public class PostService {
         }
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void publishBatch(List<Post> batch) {
+        if (batch == null || batch.isEmpty()) {
+            log.error("в списке не содержится постов");
+            throw new DataValidationException("список постов пуст");
+        }
+
+        for (Post post : batch) {
+            post.setPublished(true);
+            post.setPublishedAt(LocalDateTime.now());
+        }
+
+        postRepository.saveAll(batch);
+        log.info("Опубликовано {} постов с {} по {} id.",
+                batch.size(), batch.get(0).getId(), batch.get(batch.size() - 1).getId());
+    }
 
     public PostDto create(PostDto postDto) {
         validateContent(postDto);
         validateAuthor(postDto.authorId(), postDto.projectId());
         Post post = postMapper.toEntity(postDto);
-        Ad ad = adRepository.findById(postDto.adId()).orElseThrow(
-                () -> new RuntimeException("ad not found"));
+        Ad ad = null;
+        if (post.getAd() != null) {
+            ad = adRepository.findById(postDto.adId()).orElseThrow(
+                    () -> new RuntimeException("ad not found"));
+        }
         List<Comment> comments = commentRepository.findByIdIn(postDto
                 .commentsId() != null ? postDto.commentsId() : List.of());
         List<Like> likes = likeRepository.findByIdIn(postDto
@@ -123,6 +151,7 @@ public class PostService {
         post.setLikes(likes);
         post.setResources(resources);
         post.setAlbums(albums);
+        post.setVerifiedStatus(VerifiedStatus.PENDING);
 
         postRepository.save(post);
         log.info("Post created: {}", post);
@@ -133,6 +162,9 @@ public class PostService {
         Post post = takePost(postId);
         if (post.isPublished()) {
             throw new PostAlreadyPublishedException("Post with ID " + postId + " is already published.");
+        }
+        if (post.getVerifiedStatus() != VerifiedStatus.APPROVED) {
+            throw new PostUnverifiedException("Post with id %d is unverified.", postId);
         }
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
@@ -196,6 +228,15 @@ public class PostService {
                 .toList();
     }
 
+    public void checkAuthorsPostsVerification() {
+        List<Post> rejectedPosts = postRepository.findAllByVerifiedStatus(VerifiedStatus.REJECTED);
+        Map<Long, Long> groupingPosts = rejectedPosts.stream()
+                .collect(Collectors.groupingBy(Post::getAuthorId, Collectors.counting()));
+        groupingPosts.entrySet().stream()
+                .filter(entry -> entry.getValue().intValue() >= valuePosts)
+                .forEach(entry -> banPublisher.publish(entry.getKey()));
+    }
+
     private void validateContent(PostDto postDto) {
         if (postDto.content() == null || postDto.content().isBlank()) {
             throw new NullPointerException("Content is null or empty");
@@ -249,24 +290,4 @@ public class PostService {
                 ))
                 .toList();
     }
-
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void publishBatch(List<Post> batch) {
-        if (batch == null || batch.isEmpty()) {
-            log.error("в списке не содержится постов");
-            throw new DataValidationException("список постов пуст");
-        }
-
-        for (Post post : batch) {
-            post.setPublished(true);
-            post.setPublishedAt(LocalDateTime.now());
-        }
-
-        postRepository.saveAll(batch);
-        log.info("Опубликовано {} постов с {} по {} id.",
-                batch.size(), batch.get(0).getId(), batch.get(batch.size() - 1).getId());
-    }
-
 }
-
-
