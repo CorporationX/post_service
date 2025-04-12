@@ -30,6 +30,8 @@ spring:
           name: calculations_channel
         like-channel:
           name: like_channel
+        not-like-channel:
+          name: not-like-channel
 
 springdoc:
   swagger-ui:

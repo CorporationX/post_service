@@ -5,17 +5,17 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 @Component
-public class LikeEventPublisher extends AbstractListEventPublisher {
+public class NotLikeEventPublisher extends AbstractListEventPublisher{
 
-    @Value("${spring.data.redis.channels.like-channel.name}")
-    private String likeChannel;
+    @Value("${spring.data.redis.channels.not-like-channel.name}")
+    private String notLikeChannel;
 
-    public LikeEventPublisher(RedisTemplate<String, Object> redisTemplate) {
+    public NotLikeEventPublisher(RedisTemplate<String, Object> redisTemplate) {
         super(redisTemplate);
     }
 
     @Override
     protected String getChannel() {
-        return likeChannel;
+        return notLikeChannel;
     }
 }
