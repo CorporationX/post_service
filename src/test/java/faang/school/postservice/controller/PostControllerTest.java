@@ -1,6 +1,5 @@
-package faang.school.postservice.util.service.controller;
+package faang.school.postservice.controller;
 
-import faang.school.postservice.controller.PostController;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.service.PostService;
 import org.junit.jupiter.api.Test;
@@ -12,7 +11,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;

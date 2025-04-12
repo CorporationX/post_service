@@ -1,26 +1,18 @@
-package faang.school.postservice.util.service;
+package faang.school.postservice.service;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.PostDto;
-import faang.school.postservice.dto.project.ProjectDto;
-import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exceptions.PostAlreadyPublishedException;
-import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.mapper.PostMapperImpl;
-import faang.school.postservice.model.Album;
-import faang.school.postservice.model.Comment;
-import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.model.Resource;
-import faang.school.postservice.model.ad.Ad;
+import faang.school.postservice.model.VerifiedStatus;
 import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ResourceRepository;
 import faang.school.postservice.repository.ad.AdRepository;
-import faang.school.postservice.service.PostService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -39,7 +31,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -73,6 +64,7 @@ public class PostServiceTest {
     public void testPositivePublish() {
         Post post = Post.builder()
                 .id(1L)
+                .verifiedStatus(VerifiedStatus.APPROVED)
                 .published(false)
                 .build();
         when(postRepository.findById(any())).thenReturn(Optional.of(post));
@@ -326,7 +318,6 @@ public class PostServiceTest {
                 .authorId(1L)
                 .content("content")
                 .build();
-        when(adRepository.findById(any())).thenReturn(Optional.of(Ad.builder().build()));
         when(commentRepository.findByIdIn(any())).thenReturn(List.of());
         when(likeRepository.findByIdIn(any())).thenReturn(List.of());
         when(albumRepository.findByIdIn(any())).thenReturn(List.of());

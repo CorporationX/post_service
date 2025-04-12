@@ -2,7 +2,7 @@ plugins {
     java
     id("org.springframework.boot") version "3.0.6"
     id("io.spring.dependency-management") version "1.1.0"
-    id("jacoco")
+    jacoco
 }
 
 group = "faang.school"
@@ -59,10 +59,6 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
 
-tasks.test {
-    useJUnitPlatform()
-}
-
 tasks.withType<Test> {
     useJUnitPlatform()
 }
@@ -73,26 +69,41 @@ tasks.bootJar {
     archiveFileName.set("service.jar")
 }
 
-tasks.test {
-    finalizedBy(tasks.jacocoTestReport, tasks.jacocoTestCoverageVerification)
+jacoco {
+    toolVersion = "0.8.10"
+    reportsDirectory.set(layout.buildDirectory.dir("reports/jacoco"))
 }
+
 tasks.jacocoTestReport {
-    dependsOn(tasks.test)
+    reports {
+        xml.required.set(true)
+        csv.required.set(false)
+        html.required.set(true)
+    }
+    classDirectories.setFrom(
+        files(classDirectories.files.map {
+            fileTree(it).apply {
+                include("faang/school/postservice/service/**")
+            }
+        })
+    )
 }
 
 tasks.jacocoTestCoverageVerification {
     violationRules {
         rule {
-            element = "CLASS"
-            includes = listOf("faang.school.postservice.service.*")
-
             limit {
-                counter = "INSTRUCTION"
+                counter = "CLASS"
                 value = "COVEREDRATIO"
                 minimum = "0.50".toBigDecimal()
             }
         }
     }
+}
+
+tasks.test {
+    useJUnitPlatform()
+    finalizedBy(tasks.jacocoTestReport)
 }
 
 tasks.check {
