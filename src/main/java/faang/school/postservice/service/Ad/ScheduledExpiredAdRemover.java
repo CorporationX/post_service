@@ -1,5 +1,6 @@
 package faang.school.postservice.service.Ad;
 
+import faang.school.postservice.config.ad.ExpiredAdProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -9,8 +10,9 @@ import org.springframework.stereotype.Component;
 public class ScheduledExpiredAdRemover {
 
     private final AdService adService;
+    private final ExpiredAdProperties expiredAdProperties;
 
-    @Scheduled(cron = "${ad.expired.cron-expired-post-ad-deletion}")
+    @Scheduled(cron = "#{@expiredAdProperties.cronExpiredPostAdDeletion}")
     public void scheduledRemoveExpiredAds() {
         adService.removeExpiredAds();
     }

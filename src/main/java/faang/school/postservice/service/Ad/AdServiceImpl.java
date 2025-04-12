@@ -1,19 +1,20 @@
 package faang.school.postservice.service.Ad;
 
+import faang.school.postservice.config.ad.AdDeletionProperties;
 import faang.school.postservice.repository.ad.AdRepository;
 import faang.school.postservice.validator.AdValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.ListUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 @Service
 @Slf4j
@@ -23,9 +24,7 @@ public class AdServiceImpl implements AdService {
     private final AdRepository adRepository;
     private final AdValidator adValidator;
     private final ThreadPoolTaskExecutor taskExecutor;
-
-    @Value("${ad.deletion.batchsize}")
-    private int batchSize;
+    private final AdDeletionProperties adDeletionProperties;
 
     @Override
     @Transactional
@@ -37,7 +36,7 @@ public class AdServiceImpl implements AdService {
         }
         adValidator.validateAdIds(expiredAdIds);
         List<List<Long>> batches = partitionList(expiredAdIds);
-        List<Future<Object>> futures = submitDeleteTasks(batches);
+        List<CompletableFuture<Void>> futures = submitDeleteTasks(batches);
         waitForCompletion(futures);
     }
 
@@ -53,15 +52,17 @@ public class AdServiceImpl implements AdService {
     }
 
     private <T> List<List<T>> partitionList(List<T> list) {
-        return ListUtils.partition(list, batchSize);
+        return ListUtils.partition(list, adDeletionProperties.getBatchSize());
     }
 
-    private List<Future<Object>> submitDeleteTasks(List<List<Long>> batches) {
+    private List<CompletableFuture<Void>> submitDeleteTasks(List<List<Long>> batches) {
+        if (batches.isEmpty()) {
+            return Collections.emptyList();
+        }
         return batches.stream()
-                .map(batch -> taskExecutor.submit(() -> {
+                .map(batch -> CompletableFuture.runAsync(() -> {
                     deleteBatch(batch);
-                    return null;
-                }))
+                }, taskExecutor))
                 .toList();
     }
 
@@ -73,16 +74,18 @@ public class AdServiceImpl implements AdService {
         }
     }
 
-    private void waitForCompletion(List<Future<Object>> futures) {
-        for (Future<Object> future : futures) {
-            try {
-                future.get();
-            } catch (ExecutionException e) {
-                log.error("Error executing batch deletion: {}", e.getCause().getMessage());
-            } catch (InterruptedException e) {
-                log.error("Batch deletion interrupted: {}", e.getMessage());
-                Thread.currentThread().interrupt();
-            }
+    private void waitForCompletion(List<CompletableFuture<Void>> futures) {
+        if (futures.isEmpty()) {
+            return;
+        }
+        CompletableFuture<Void> allOf = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+        try {
+            allOf.get();
+        } catch (InterruptedException e) {
+            log.error("Batch deletion interrupted: {}", e.getMessage());
+            Thread.currentThread().interrupt();
+        } catch (ExecutionException e) {
+            log.error("Error executing batch deletion: {}", e.getCause().getMessage());
         }
     }
 }

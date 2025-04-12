@@ -112,6 +112,6 @@ task-executor:
 
 ad:
   expired:
-    cron-expired-post-ad-deletion: "0 0 1 * *"
+    cronExpiredPostAdDeletion: "0 0 1 * * *"
   deletion:
-    batchsize: 100
+    batchSize: 100
