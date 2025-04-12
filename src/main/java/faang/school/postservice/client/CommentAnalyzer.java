@@ -16,10 +16,13 @@ public class CommentAnalyzer {
     @Value("${services.comment-analyzer.api-key}")
     String apiKey;
 
+    @Value("${services.comment-analyzer.path}")
+    String commentAnalyzerPath;
+
     public Mono<ToxicityScoreDto> analyzeComment(String text) {
         return commentAnalyzerClient.post()
                 .uri(uriBuilder -> uriBuilder
-                        .path("/comments:analyze")
+                        .path(commentAnalyzerPath)
                         .queryParam("key", apiKey)
                         .build())
                 .bodyValue(new CommentRequestDto(text))

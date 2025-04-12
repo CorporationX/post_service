@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,13 +20,10 @@ public class CommentRequestDto {
 
     public CommentRequestDto(String text) {
         this.comment = new CommentDto(text);
-        requestedAttributes = new HashMap<>();
-        this.requestedAttributes.put("TOXICITY", new HashMap<>());
-        this.requestedAttributes.put("SEVERE_TOXICITY", new HashMap<>());
-        this.requestedAttributes.put("IDENTITY_ATTACK", new HashMap<>());
-        this.requestedAttributes.put("INSULT", new HashMap<>());
-        this.requestedAttributes.put("PROFANITY", new HashMap<>());
-        this.requestedAttributes.put("THREAT", new HashMap<>());
+        this.requestedAttributes = new HashMap<>();
+        for (RequestedAttributeType type : EnumSet.allOf(RequestedAttributeType.class)) {
+            this.requestedAttributes.put(type.name(), new HashMap<>());
+        }
         this.doNotStore = true;
     }
 }
