@@ -10,6 +10,17 @@ spring:
     url: jdbc:postgresql://localhost:5432/postgres
     username: user
     password: password
+  kafka:
+    producer:
+      bootstrap-servers: localhost:9092
+      acks: all
+      retries: 3
+      enable-idempotence: false
+
+    topics:
+      like:
+        notification:
+          post-like-topic: post-like-event-topic
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect

@@ -1,4 +1,4 @@
-package faang.school.postservice.like;
+package faang.school.postservice.dto.like;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
