@@ -120,6 +120,7 @@ class CommentServiceTest {
         ReflectionTestUtils.setField(commentService, "userBanThreshold", 1);
         ReflectionTestUtils.setField(commentService, "userBanThreadPoolSize", 1);
         ReflectionTestUtils.setField(commentService, "userBanTimeoutHours", 1);
+        commentService.setUp();
     }
 
     //Positive

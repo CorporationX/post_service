@@ -30,6 +30,10 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
+  retry:
+    language-tool:
+      max-attempts: 4
+      backoff-delay: 500
 
   kafka:
     bootstrap-servers: localhost:9092
@@ -41,7 +45,6 @@ spring:
       max-in-flight-requests-per-connection: 10
       topics:
         user-ban: "user-ban-topic"
-
 
 server:
   port: 8081
@@ -60,6 +63,15 @@ services:
   payment-service:
     host: localhost
     port: 9080
+
+  language-tool:
+    base-url: https://api.languagetool.org/v2
+
+posts:
+  correction:
+    cron: "0 5 * * * *"
+    batch-size: 100000
+    thread-poop-size: 16
 
 moderation:
   ban-users-for-comments:
