@@ -11,6 +11,8 @@ import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.like.LikeEventPublisher;
+import faang.school.postservice.publisher.like.NotLikeEventPublisher;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.publisher.like.LikeEventPublisher;
 import faang.school.postservice.validator.CommentValidator;
@@ -45,6 +47,7 @@ public class LikeService {
     private final DeleteLikeEventPublisher deleteLikeEventPublisher;
     private final PostService postService;
     private final LikeEventPublisher likeEventPublisher;
+    private final NotLikeEventPublisher notLikeEventPublisher;
     private final PostService postService;
 
     public List<UserDto> getAllUsersWhoLikedPost(Long postId) {

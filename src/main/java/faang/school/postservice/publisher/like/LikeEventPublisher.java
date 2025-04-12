@@ -15,6 +15,7 @@ public class LikeEventPublisher extends AbstractEventPublisher<LikeEvent> {
 public class LikeEventPublisher {
 
     private final RedisTemplate<String, Object> redisTemplate;
+public class LikeEventPublisher extends AbstractListEventPublisher {
 
     @Value("${spring.data.redis.channels.like-channel.name}")
     private String likeChannel;
@@ -29,5 +30,12 @@ public class LikeEventPublisher {
     public void publish(LikeEvent likeEvent) {
         redisTemplate.convertAndSend(likeChannel, likeEvent);
         log.debug("Published LikeEvent to channel {}: {}", likeChannel, likeEvent);
+    public LikeEventPublisher(RedisTemplate<String, Object> redisTemplate) {
+        super(redisTemplate);
+    }
+
+    @Override
+    protected String getChannel() {
+        return likeChannel;
     }
 }
