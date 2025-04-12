@@ -63,6 +63,12 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class CommentServiceTest {
+    private static final Long POST_ID = 1L;
+    private static final Long COMMENT_ID = 2L;
+    private static final Long AUTHOR_ID = 3L;
+
+    private static final String CONTENT = "Content";
+    private static final String UPDATE_CONTENT = "Update content";
 
     @InjectMocks
     private CommentServiceImpl commentService;
@@ -84,13 +90,6 @@ class CommentServiceTest {
 
     @Spy
     private CommentRequestMapper commentRequestMapper = Mappers.getMapper(CommentRequestMapper.class);
-
-    private static final Long POST_ID = 1L;
-    private static final Long COMMENT_ID = 2L;
-    private static final Long AUTHOR_ID = 3L;
-
-    private static final String CONTENT = "Content";
-    private static final String UPDATE_CONTENT = "Update content";
 
     private CommentRequestDto commentRequestDto;
     private CommentResponseDto commentResponseDto;
@@ -125,7 +124,6 @@ class CommentServiceTest {
         commentUpdateDto.setAuthorId(AUTHOR_ID);
         commentUpdateDto.setContent(UPDATE_CONTENT);
 
-        ReflectionTestUtils.setField(commentService, "banBatchSize", 100);
         ReflectionTestUtils.setField(commentService, "commentModerationTimeoutHours", 1);
         ReflectionTestUtils.setField(commentService, "commentModerationBatchSize", commentModerationBatchSize);
 

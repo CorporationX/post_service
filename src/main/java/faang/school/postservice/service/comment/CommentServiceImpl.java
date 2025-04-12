@@ -63,9 +63,6 @@ public class CommentServiceImpl implements CommentService {
     @Value("${moderation.comments.timeout-hours}")
     private int commentModerationTimeoutHours;
 
-    @Value("${moderation.ban-users-for-comments.batch-size}")
-    private int banBatchSize;
-
     private static final double TOXICITY_THRESHOLD = 0.35;
     private static final int MAX_LENGTH_CHARACTER = 4096;
 
