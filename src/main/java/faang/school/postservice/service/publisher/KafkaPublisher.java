@@ -16,10 +16,11 @@ public class KafkaPublisher {
 
     public void publishEvent(String topic, Object object) {
         try {
-            kafkaTemplate.send(topic, objectMapper.writeValueAsString(object));
+            String message = objectMapper.writeValueAsString(object);
+            kafkaTemplate.send(topic, message);
         } catch (JsonProcessingException e) {
-            log.error("Serialization error");
-            throw new RuntimeException();
+            log.error("Serialization error for object: {}", object, e);
+            throw new RuntimeException("Failed to serialize object", e);
         }
         log.info("Sent object: {}, to topic: {}", object.getClass(), topic);
     }
