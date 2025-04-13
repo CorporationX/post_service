@@ -7,10 +7,12 @@ import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Slf4j
 @Service
@@ -19,17 +21,17 @@ public class UserModerationService {
     private final PostRepository postRepository;
     private final UserBanPublisher userBanPublisher;
 
+    @Transactional(readOnly = true)
     public void checkAndBanUsersWithUnverifiedPosts() {
-        List<Post> unverifiedPosts = postRepository.findByVerifiedFalse();
-
-        Map<Long, List<Post>> userPostCounts = unverifiedPosts.stream()
-                .collect(Collectors.groupingBy(Post::getAuthorId));
-
-        userPostCounts.forEach((authorId, posts) -> {
-            if(posts.size() > 5) {
-                log.info(InfoMessage.INFO_BANNED_USER, authorId, posts.size());
-                userBanPublisher.publishUserBan(authorId);
-            }
-        });
+        try (Stream<Post> postStream = postRepository.streamByVerifiedFalse()) {
+            Map<Long, List<Post>> userPostCounts = postStream
+                    .collect(Collectors.groupingBy(Post::getAuthorId));
+            userPostCounts.forEach((authorId, posts) -> {
+                if (posts.size() > 5) {
+                    log.info(InfoMessage.INFO_BANNED_USER, authorId, posts.size());
+                    userBanPublisher.publishUserBan(authorId);
+                }
+            });
+        }
     }
 }

@@ -13,7 +13,7 @@ public class AuthorBanner {
     private final UserModerationService userModerationService;
 
     @Scheduled(cron = "${app.cron.author-banner}")
-    public void runDailyTask() {
+    public void runModerationTask() {
         userModerationService.checkAndBanUsersWithUnverifiedPosts();
     }
 }

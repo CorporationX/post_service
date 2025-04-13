@@ -9,7 +9,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.List;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -32,8 +31,8 @@ class UserModerationServiceTest {
 
     @Test
     void test_checkAndBanUsersWithUnverifiedPosts() {
-        List<Post> posts = generatePosts(6, 1L);
-        when(postRepository.findByVerifiedFalse()).thenReturn(posts);
+        Stream<Post> posts = generatePosts(6, 1L);
+        when(postRepository.streamByVerifiedFalse()).thenReturn(posts);
 
         userModerationService.checkAndBanUsersWithUnverifiedPosts();
 
@@ -42,8 +41,8 @@ class UserModerationServiceTest {
 
     @Test
     void test_checkAndNotBanUsersWithFiveOrFewerUnverifiedPosts() {
-        List<Post> posts = generatePosts(5, 2L);
-        when(postRepository.findByVerifiedFalse()).thenReturn(posts);
+        Stream<Post> posts = generatePosts(5, 2L);
+        when(postRepository.streamByVerifiedFalse()).thenReturn(posts);
 
         userModerationService.checkAndBanUsersWithUnverifiedPosts();
 
@@ -52,11 +51,11 @@ class UserModerationServiceTest {
 
     @Test
     void test_checkAndBanOnlyUsersWithMoreFiveUnverifiedPosts() {
-        List<Post> posts = Stream.of(
+        Stream<Post> posts = Stream.of(
                 generatePosts(6, 1L),
                 generatePosts(4, 2L)
-        ).flatMap(List::stream).toList();
-        when(postRepository.findByVerifiedFalse()).thenReturn(posts);
+        ).flatMap(postStream -> postStream);
+        when(postRepository.streamByVerifiedFalse()).thenReturn(posts);
 
         userModerationService.checkAndBanUsersWithUnverifiedPosts();
 
@@ -64,14 +63,13 @@ class UserModerationServiceTest {
         verify(userBanPublisher, never()).publishUserBan(2L);
     }
 
-    private List<Post> generatePosts(int count, Long authorId) {
+    private Stream<Post> generatePosts(int count, Long authorId) {
         return IntStream.range(0, count)
                 .mapToObj(i -> {
                     Post post = new Post();
                     post.setAuthorId(authorId);
                     post.setVerified(false);
                     return post;
-                })
-                .toList();
+                });
     }
 }
