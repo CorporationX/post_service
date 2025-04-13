@@ -37,7 +37,8 @@ public class PostServiceImpl implements PostService {
                 () -> new EntityNotFoundException("Нет такого черновика"));
 
         post.setPublished(true);
-        return postMapper.toDto(post);
+        Post savePost = postRepository.save(post);
+        return postMapper.toDto(savePost);
     }
 
     public PostDto updatePost(PostDto postDto) {
@@ -54,6 +55,7 @@ public class PostServiceImpl implements PostService {
                 () -> new EntityNotFoundException("Нет поста")); {
 
             post.setDeleted(true);
+            postRepository.save(post);
         }
     }
 
@@ -65,7 +67,7 @@ public class PostServiceImpl implements PostService {
     }
 
     public List<PostDto> getAllBlackPostsByAuthorId(Long authorId) {
-        List<Post> posts = postRepository.findByAuthorId(authorId);
+        List<Post> posts = postRepository.findAllByAuthorId(authorId);
 
         return getPostDtos(posts);
     }
@@ -77,7 +79,7 @@ public class PostServiceImpl implements PostService {
     }
 
     public List<PostDto> getAllPublicPostsByAuthorId(Long authorId) {
-        List<Post> posts = postRepository.findByAuthorId(authorId);
+        List<Post> posts = postRepository.findAllByAuthorId(authorId);
 
         return getPostPublic(posts);
     }
