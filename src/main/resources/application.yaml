@@ -110,8 +110,17 @@ task-executor:
     max-pool-size: 20
     queue-capacity: 50
 
+
 ad:
   expired:
     cronExpiredPostAdDeletion: "0 0 1 * * *"
   deletion:
     batchSize: 100
+
+moderation:
+  dictionary: classpath:moderation/bad-words.txt
+  cron-expression: 0 0 2 * * ?
+  batch-size: 100
+  core-pool-size: 10
+  max-pool-size: 20
+  queue-capacity: 50

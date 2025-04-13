@@ -11,3 +11,5 @@ databaseChangeLog:
       file: db/changelog/changeset/post_V005_album_add_visibility.sql
   - include:
       file: db/changelog/changeset/post_V006_album_allowed_users.sql
+  - include:
+      file: db/changelog/changeset/post_V007_alter_post_add_verified_and_verifiedDate.sql

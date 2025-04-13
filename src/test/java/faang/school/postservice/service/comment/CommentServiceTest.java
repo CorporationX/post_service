@@ -86,6 +86,7 @@ public class CommentServiceTest {
     void testCreateComment_Success() {
         when(postValidator.getPostById(1L)).thenReturn(post);
         when(userServiceClient.getUser(1L)).thenReturn(userDto);
+        when(commentMapper.toComment(commentDto)).thenReturn(comment);
         when(commentMapper.toCommentDto(any(Comment.class))).thenReturn(commentDto);
         when(commentRepository.save(any(Comment.class))).thenReturn(comment);
 
