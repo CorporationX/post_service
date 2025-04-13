@@ -1,5 +1,9 @@
 package faang.school.postservice.PostService;
 
+import faang.school.postservice.client.LanguageToolClient;
+import faang.school.postservice.dto.languageTool.GrammarMatch;
+import faang.school.postservice.dto.languageTool.LanguageToolResponseDto;
+import faang.school.postservice.dto.languageTool.ReplacementValueDto;
 import faang.school.postservice.dto.post.PostRequestDto;
 import faang.school.postservice.dto.post.PostResponseDto;
 import faang.school.postservice.exception.PostNotFoundException;
@@ -16,8 +20,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,7 +37,9 @@ import static faang.school.postservice.utils.validationUtils.PostValidation.POST
 import static faang.school.postservice.utils.validationUtils.PostValidation.POST_DELETED;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -39,7 +50,14 @@ public class PostServiceTest {
     private PostService postService;
 
     @Mock
+    private LanguageToolClient languageToolClient;
+
+    @Mock
+    private RestTemplate restTemplate;
+
+    @Mock
     private PostRepository postRepository;
+
     @Mock
     private LikeRepository likeRepository;
 
@@ -49,12 +67,18 @@ public class PostServiceTest {
     private PostRequestDto postRequestDto;
     private Post post;
     private final Long id = 1L;
+    private String text;
+    private final String language = "auto";
+    private final String baseUrl = "https://api.languagetool.org/v2";
 
     @BeforeEach
     public void startUp() {
         postRequestDto = new PostRequestDto(1L, "content", 1L,
                 null, false, false);
         post = Post.builder().id(1L).content("content").authorId(1L).likes(new ArrayList<>()).build();
+        ReflectionTestUtils.setField(languageToolClient, "baseUrl", "https://api.languagetool.org/v2");
+        ReflectionTestUtils.setField(postService, "threadPoolSize", 1);
+        ReflectionTestUtils.setField(postService, "batchSize", 5);
     }
 
     @Test
@@ -235,5 +259,38 @@ public class PostServiceTest {
         List<PostResponseDto> responseDtos = postService.getProjectPublishedPosts(1L);
 
         assertEquals(5, responseDtos.get(0).getLikesCount());
+    }
+
+    @Test
+    public void testSendPostsForChecking_returnsOriginalText() {
+        LanguageToolResponseDto response = new LanguageToolResponseDto();
+        response.setMatches(Collections.emptyList());
+        when(postRepository.count()).thenReturn(1L);
+        when(postRepository.findUncorrectedPosts(any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(post)));
+        when(languageToolClient.getCorrectedText(anyString(), anyString())).thenReturn(response);
+
+        String initialContent = post.getContent();
+        postService.sendPostsForChecking();
+
+        assertEquals(initialContent, post.getContent());
+    }
+
+    @Test
+    public void testSendPostsForChecking_singleMatch() {
+        LanguageToolResponseDto response = new LanguageToolResponseDto();
+        post.setContent("Thhis is text");
+        response.setMatches(new ArrayList<>(List.of(
+                new GrammarMatch(List.of(new ReplacementValueDto("This")), 0, 5)))
+        );
+        when(postRepository.count()).thenReturn(1L);
+        when(postRepository.findUncorrectedPosts(any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(post)));
+        when(languageToolClient.getCorrectedText(anyString(), anyString())).thenReturn(response);
+
+        postService.sendPostsForChecking();
+
+        assertEquals(response.getMatches().get(0).getReplacements().get(0).getValue(),
+                post.getContent().substring(0, 4));
     }
 }

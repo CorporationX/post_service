@@ -37,7 +37,7 @@ public class LikeService {
     private final CommentRepository commentRepository;
     private final UserServiceClient userServiceClient;
     private final LikeMapper likeMapper;
-    private final TargetLike targetLike;
+    private TargetLike targetLike;
 
     @Transactional
     public LikeDto likePost(long postId, long userId) {
