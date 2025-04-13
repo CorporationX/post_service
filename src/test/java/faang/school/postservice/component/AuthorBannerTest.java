@@ -20,8 +20,8 @@ class AuthorBannerTest {
     private AuthorBanner authorBanner;
 
     @Test
-    void test_runDailyTask(){
-        authorBanner.runDailyTask();
+    void test_runModerationTask(){
+        authorBanner.runModerationTask();
 
         verify(userModerationService, times(1)).checkAndBanUsersWithUnverifiedPosts();
     }
