@@ -3,6 +3,7 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.like.LikeDto;
+import faang.school.postservice.dto.like.LikeEvent;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.UserAlreadyLikedException;
@@ -11,6 +12,8 @@ import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.like.DeleteLikeEventPublisher;
+import faang.school.postservice.publisher.like.LikeEventPublisher;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.validator.CommentValidator;
 import faang.school.postservice.validator.PostValidator;
@@ -70,6 +73,12 @@ public class LikeServiceTest {
     private LikeMapper likeMapper;
     @Spy
     private PostMapper postMapper;
+    @Mock
+    private LikeEventPublisher likeEventPublisher;
+    @Mock
+    private DeleteLikeEventPublisher deleteLikeEventPublisher;
+    @Mock
+    private PostService postService;
     @InjectMocks
     private LikeService likeService;
 
@@ -182,6 +191,8 @@ public class LikeServiceTest {
         when(postValidator.getPostById(POST_ID)).thenReturn(post);
         when(likeRepository.findByPostIdAndUserId(POST_ID, userId)).thenReturn(Optional.empty());
         when(likeRepository.save(any(Like.class))).thenReturn(like);
+        doNothing().when(likeEventPublisher).publish(any(LikeEvent.class));
+        when(postService.getPost(POST_ID)).thenReturn(post);
         when(likeMapper.toLikeDto(like)).thenReturn(likeDto);
 
         LikeDto result = likeService.likePost(POST_ID);
@@ -190,6 +201,8 @@ public class LikeServiceTest {
         verify(postValidator, times(1)).getPostById(POST_ID);
         verify(likeRepository, times(1)).findByPostIdAndUserId(POST_ID, userId);
         verify(likeRepository, times(1)).save(any(Like.class));
+        verify(likeEventPublisher, times(1)).publish(any(LikeEvent.class));
+        verify(postService, times(1)).getPost(POST_ID);
         verify(likeMapper, times(1)).toLikeDto(like);
 
         assertNotNull(result);
@@ -221,6 +234,8 @@ public class LikeServiceTest {
 
         when(userContext.getUserId()).thenReturn(userId);
         when(likeRepository.findByPostIdAndUserId(POST_ID, userId)).thenReturn(Optional.of(like));
+        doNothing().when(deleteLikeEventPublisher).publish(any(LikeEvent.class));
+        when(postService.getPost(POST_ID)).thenReturn(post);
         when(likeMapper.toLikeDto(like)).thenReturn(likeDto);
 
         LikeDto result = likeService.removeLikeOnPost(POST_ID);
@@ -228,6 +243,8 @@ public class LikeServiceTest {
         verify(userContext, times(1)).getUserId();
         verify(likeRepository, times(1)).findByPostIdAndUserId(POST_ID, userId);
         verify(likeRepository, times(1)).delete(like);
+        verify(deleteLikeEventPublisher, times(1)).publish(any(LikeEvent.class));
+        verify(postService, times(1)).getPost(POST_ID);
         verify(likeMapper, times(1)).toLikeDto(like);
 
         assertNotNull(result);

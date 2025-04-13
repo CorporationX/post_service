@@ -1,16 +1,18 @@
 package faang.school.postservice.publisher.like;
 
+import faang.school.postservice.dto.like.LikeEvent;
+import faang.school.postservice.publisher.AbstractEventPublisher;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 @Component
-public class NotLikeEventPublisher extends AbstractListEventPublisher{
+public class DeleteLikeEventPublisher extends AbstractEventPublisher<LikeEvent> {
 
     @Value("${spring.data.redis.channels.not-like-channel.name}")
     private String notLikeChannel;
 
-    public NotLikeEventPublisher(RedisTemplate<String, Object> redisTemplate) {
+    public DeleteLikeEventPublisher(RedisTemplate<String, Object> redisTemplate) {
         super(redisTemplate);
     }
 
