@@ -2,6 +2,7 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.publisher.AuthorBanPublisher;
 import faang.school.postservice.repository.PostRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.ListUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -16,25 +17,21 @@ import java.util.concurrent.CompletionException;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class PostVerificationService {
 
     private final AuthorBanPublisher banPublisher;
-    private final ThreadPoolTaskExecutor authorBannerExecutor;
-    private final PostRepository postRepository;
-    private final int valuePosts;
-    private final int banAuthorPoolSize;
 
-    public PostVerificationService(AuthorBanPublisher banPublisher,
-                                   @Qualifier("authorBannerPool") ThreadPoolTaskExecutor authorBannerExecutor,
-                                   PostRepository postRepository,
-                                   @Value("${ban-properties.value-rejected-posts}") int valuePosts,
-                                   @Value("${thread-pool.author-ban.size}") int banAuthorPoolSize) {
-        this.banPublisher = banPublisher;
-        this.authorBannerExecutor = authorBannerExecutor;
-        this.postRepository = postRepository;
-        this.valuePosts = valuePosts;
-        this.banAuthorPoolSize = banAuthorPoolSize;
-    }
+    @Qualifier("authorBannerPool")
+    private final ThreadPoolTaskExecutor authorBannerExecutor;
+
+    private final PostRepository postRepository;
+
+    @Value("${ban-properties.value-rejected-posts}")
+    private int valuePosts;
+
+    @Value("${thread-pool.author-ban.size}")
+    private int banAuthorPoolSize;
 
     @Async("authorBannerPool")
     public void checkAuthorsPostsVerification() {

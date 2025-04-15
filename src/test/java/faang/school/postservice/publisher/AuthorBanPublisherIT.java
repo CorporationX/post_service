@@ -22,6 +22,7 @@ import redis.clients.jedis.JedisPubSub;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 @SpringBootTest
 @Testcontainers
@@ -64,7 +65,7 @@ public class AuthorBanPublisherIT {
             assertNotNull(redisPubSub.getReceivedMessage(), "No message received within timeout");
             assertTrue(redisPubSub.getReceivedMessage().contains(authorId.toString()));
         } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            fail(e);
         }
     }
 
