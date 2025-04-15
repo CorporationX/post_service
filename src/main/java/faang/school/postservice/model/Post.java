@@ -23,14 +23,15 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 @Entity
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "post")
 public class Post {
 
@@ -59,8 +60,9 @@ public class Post {
     @OneToOne(mappedBy = "post", cascade = CascadeType.ALL)
     private Ad ad;
 
-    @OneToMany(mappedBy = "post", orphanRemoval = true)
-    private List<Resource> resources;
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Resource> resources = new ArrayList<>();
 
     @Column(name = "published", nullable = false)
     private boolean published;

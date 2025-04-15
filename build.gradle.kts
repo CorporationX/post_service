@@ -24,6 +24,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.cloud:spring-cloud-starter-openfeign:4.0.2")
+    implementation("org.springframework:spring-test")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     implementation("org.springframework:spring-aspects")
     implementation("org.springframework.retry:spring-retry:2.0.10")
@@ -53,6 +54,16 @@ dependencies {
     testImplementation("org.testcontainers:junit-jupiter")
     testImplementation("org.testcontainers:postgresql")
     testImplementation("com.redis.testcontainers:testcontainers-redis-junit-jupiter:1.4.6")
+
+    /**
+     * MinIo
+     */
+    implementation("io.minio:minio:8.5.9")
+
+    /**
+     * Thumbnailator
+     */
+    implementation("net.coobird:thumbnailator:0.4.19")
 
     /**
      * Tests

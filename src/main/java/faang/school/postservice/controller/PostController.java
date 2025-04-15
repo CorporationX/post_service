@@ -2,9 +2,11 @@ package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.post.PostRequestDto;
 import faang.school.postservice.dto.post.PostResponseDto;
+import faang.school.postservice.dto.resource.ResourceDto;
 import faang.school.postservice.service.PostService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,14 +14,16 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/post")
+@RequestMapping("/api/v1/post")
 public class PostController {
     private final PostService postService;
 
@@ -93,5 +97,17 @@ public class PostController {
         List<PostResponseDto> response = postService.getProjectPublishedPosts(projectId);
         log.info("Finished fetching published posts for project ID: {}", projectId);
         return response;
+    }
+
+    @PutMapping("/{postId}")
+    public @Validated List<ResourceDto> addResource(@PathVariable Long postId,
+                                                    @RequestParam("files") List<MultipartFile> files) {
+        List<ResourceDto> resourceDtoList = postService.add(postId, files);
+        return resourceDtoList;
+    }
+
+    @DeleteMapping("/{postId}/resources/{resourceId}")
+    public void deleteResource(@PathVariable Long postId, @PathVariable Long resourceId) {
+        postService.delete(postId, resourceId);
     }
 }

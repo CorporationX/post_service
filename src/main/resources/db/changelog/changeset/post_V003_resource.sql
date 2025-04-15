@@ -7,8 +7,8 @@ CREATE TABLE IF NOT EXISTS post_resource
     status     VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    post_id BIGINT,
+    post_id    BIGINT,
     size       BIGINT,
     CONSTRAINT fk_post
     FOREIGN KEY (post_id) REFERENCES post (id)
-    );
+);
