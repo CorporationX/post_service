@@ -52,3 +52,6 @@ batch:
 
 cron:
   delete-expired-posts: 0 49 18 * * FRI
+
+postViewEventPublisher:
+  channel: PostViewEvent_topic

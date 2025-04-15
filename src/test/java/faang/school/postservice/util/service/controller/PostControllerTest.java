@@ -1,5 +1,6 @@
 package faang.school.postservice.util.service.controller;
 
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.controller.PostController;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.service.PostService;
@@ -39,6 +40,8 @@ public class PostControllerTest {
     private final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     @MockBean
     private PostService postService;
+    @MockBean
+    private  UserContext context;
 
     @Autowired
     private MockMvc mockMvc;
@@ -87,7 +90,8 @@ public class PostControllerTest {
 
     @Test
     void testPositiveGetPost() throws Exception {
-        when(postService.getPost(any())).thenReturn(preparePostDto());
+        when(postService.getPost(1L,1L)).thenReturn(preparePostDto());
+        when(context.getUserId()).thenReturn(1L);
 
         mockMvc.perform(get(REQUEST_URL_POST_ID, 1)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -98,7 +102,8 @@ public class PostControllerTest {
 
     @Test
     void testPositiveGetDraftsByAuthor() throws Exception {
-        when(postService.findDraftsByAuthorId(any())).thenReturn(list());
+        when(postService.findDraftsByAuthorId(any(),any())).thenReturn(list());
+        when(context.getUserId()).thenReturn(1L);
 
         mockMvc.perform(get(DRAFTS_BY_AUTHOR_URL, 1)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -109,7 +114,8 @@ public class PostControllerTest {
 
     @Test
     void testPositiveGetDraftsByProject() throws Exception {
-        when(postService.findDraftsByProjectId(any())).thenReturn(list());
+        when(postService.findDraftsByProjectId(any(),any())).thenReturn(list());
+        when(context.getUserId()).thenReturn(1L);
 
         mockMvc.perform(get(DRAFTS_BY_PROJECT_URL, 1)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -120,7 +126,8 @@ public class PostControllerTest {
 
     @Test
     void testPositiveGetPublishedByAuthor() throws Exception {
-        when(postService.findPublishedByAuthorId(any())).thenReturn(list());
+        when(postService.findPublishedByAuthorId(any(),any())).thenReturn(list());
+        when(context.getUserId()).thenReturn(1L);
 
         mockMvc.perform(get(PUBLISHED_BY_AUTHOR_URL, 1)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -131,7 +138,8 @@ public class PostControllerTest {
 
     @Test
     void testPositiveGetPublishedByProject() throws Exception {
-        when(postService.findPublishedByProjectId(any())).thenReturn(list());
+        when(postService.findPublishedByProjectId(any(),any())).thenReturn(list());
+        when(context.getUserId()).thenReturn(1L);
 
         mockMvc.perform(get(PUBLISHED_BY_PROJECT_URL, 1)
                         .contentType(MediaType.APPLICATION_JSON)
