@@ -25,6 +25,7 @@ spring:
         calculations_channel:
           name: calculations_channel
         user-ban: user-ban
+        postViewEventPublisher: PostViewEvent_topic
 
   profiles:
     active: local

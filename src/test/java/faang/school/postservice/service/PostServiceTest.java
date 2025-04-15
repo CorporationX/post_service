@@ -7,6 +7,8 @@ import faang.school.postservice.exceptions.PostAlreadyPublishedException;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.VerifiedStatus;
+import faang.school.postservice.model.ad.Ad;
+import faang.school.postservice.publisher.PostViewEventPublisher;
 import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
@@ -70,6 +72,9 @@ public class PostServiceTest {
 
     @Captor
     private ArgumentCaptor<Post> postCaptor;
+
+    @Mock
+    private PostViewEventPublisher postViewEventPublisher;
 
     @Test
     public void testPositivePublish() {
@@ -155,7 +160,7 @@ public class PostServiceTest {
                 .id(1L)
                 .build();
         when(postRepository.findById(1L)).thenReturn(Optional.of(post));
-        PostDto dto = postService.getPost(post.getId());
+        PostDto dto = postService.getPost(post.getId(),1L);
         assertEquals(post.getId(), dto.id());
     }
 
@@ -180,7 +185,7 @@ public class PostServiceTest {
         Stream<Post> stream = Stream.of(post, post1, post2);
 
         when(postRepository.findByAuthorId(1L)).thenReturn(stream);
-        List<PostDto> list = postService.findDraftsByAuthorId(1L);
+        List<PostDto> list = postService.findDraftsByAuthorId(1L,1L);
 
         assertEquals(1, list.size());
         assertEquals(post.getId(), list.get(0).id());
@@ -194,7 +199,7 @@ public class PostServiceTest {
         Stream<Post> stream = Stream.empty();
 
         when(postRepository.findByAuthorId(1L)).thenReturn(stream);
-        List<PostDto> list = postService.findDraftsByAuthorId(1L);
+        List<PostDto> list = postService.findDraftsByAuthorId(1L,1L);
 
         assertEquals(0, list.size());
         assertTrue(list.isEmpty());
@@ -221,7 +226,7 @@ public class PostServiceTest {
         Stream<Post> stream = Stream.of(post, post1, post2);
 
         when(postRepository.findByProjectId(1L)).thenReturn(stream);
-        List<PostDto> list = postService.findDraftsByProjectId(1L);
+        List<PostDto> list = postService.findDraftsByProjectId(1L,1L);
 
         assertEquals(1, list.size());
         assertEquals(post.getId(), list.get(0).id());
@@ -235,7 +240,7 @@ public class PostServiceTest {
         Stream<Post> stream = Stream.empty();
 
         when(postRepository.findByProjectId(1L)).thenReturn(stream);
-        List<PostDto> list = postService.findDraftsByProjectId(1L);
+        List<PostDto> list = postService.findDraftsByProjectId(1L,1L);
 
         assertEquals(0, list.size());
         assertTrue(list.isEmpty());
@@ -262,7 +267,7 @@ public class PostServiceTest {
         Stream<Post> stream = Stream.of(post, post1, post2);
 
         when(postRepository.findByAuthorId(1L)).thenReturn(stream);
-        List<PostDto> list = postService.findPublishedByAuthorId(1L);
+        List<PostDto> list = postService.findPublishedByAuthorId(1L,1L);
 
         assertEquals(1, list.size());
         assertEquals(post.getId(), list.get(0).id());
@@ -276,7 +281,7 @@ public class PostServiceTest {
         Stream<Post> stream = Stream.empty();
 
         when(postRepository.findByAuthorId(1L)).thenReturn(stream);
-        List<PostDto> list = postService.findPublishedByAuthorId(1L);
+        List<PostDto> list = postService.findPublishedByAuthorId(1L,1L);
 
         assertEquals(0, list.size());
         assertTrue(list.isEmpty());
@@ -303,7 +308,7 @@ public class PostServiceTest {
         Stream<Post> stream = Stream.of(post, post1, post2);
 
         when(postRepository.findByProjectId(1L)).thenReturn(stream);
-        List<PostDto> list = postService.findPublishedByProjectId(1L);
+        List<PostDto> list = postService.findPublishedByProjectId(1L,1L);
 
         assertEquals(1, list.size());
         assertEquals(post.getId(), list.get(0).id());
@@ -317,7 +322,7 @@ public class PostServiceTest {
         Stream<Post> stream = Stream.empty();
 
         when(postRepository.findByProjectId(1L)).thenReturn(stream);
-        List<PostDto> list = postService.findPublishedByProjectId(1L);
+        List<PostDto> list = postService.findPublishedByProjectId(1L,1L);
 
         assertEquals(0, list.size());
         assertTrue(list.isEmpty());
