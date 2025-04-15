@@ -1,4 +1,4 @@
-package faang.school.postservice.config.context;
+package faang.school.postservice.config;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,7 +12,7 @@ import java.util.concurrent.Executors;
 @RequiredArgsConstructor
 public class ThreadPoolConfig {
 
-    @Value("$.{thread-pool.publish-posts-max-threads}")
+    @Value("${thread-pool.publish-posts-max-threads}")
     private int publishThreadSize;
 
     @Bean(destroyMethod = "shutdown")

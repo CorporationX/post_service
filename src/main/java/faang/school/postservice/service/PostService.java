@@ -4,15 +4,17 @@ import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.exception.DataValidationException;
-import faang.school.postservice.exceptions.AsyncPostProcessingException;
+import faang.school.postservice.exception.PostUnverifiedException;
+import faang.school.postservice.exception.AsyncPostProcessingException;
 import faang.school.postservice.dto.event.PostViewEvent;
-import faang.school.postservice.exceptions.PostAlreadyPublishedException;
+import faang.school.postservice.exception.PostAlreadyPublishedException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
+import faang.school.postservice.model.VerifiedStatus;
 import faang.school.postservice.model.ad.Ad;
 import faang.school.postservice.publisher.PostViewEventPublisher;
 import faang.school.postservice.repository.AlbumRepository;
@@ -57,10 +59,10 @@ public class PostService {
     private final PostViewEventPublisher postViewEventPublisher;
     private final ExecutorService executorService;
 
-    @Value("$.{batch.size}")
+    @Value("${batch.size}")
     private int batchSize;
 
-    @Value("$.{thread-pool.publish-timeout}")
+    @Value("${thread-pool.publish-timeout}")
     private int threadTimeout;
 
     public void publishScheduledPosts() {
@@ -105,12 +107,32 @@ public class PostService {
         }
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void publishBatch(List<Post> batch) {
+        if (batch == null || batch.isEmpty()) {
+            log.error("в списке не содержится постов");
+            throw new DataValidationException("список постов пуст");
+        }
+
+        for (Post post : batch) {
+            post.setPublished(true);
+            post.setPublishedAt(LocalDateTime.now());
+        }
+
+        postRepository.saveAll(batch);
+        log.info("Опубликовано {} постов с {} по {} id.",
+                batch.size(), batch.get(0).getId(), batch.get(batch.size() - 1).getId());
+    }
+
     public PostDto create(PostDto postDto) {
         validateContent(postDto);
         validateAuthor(postDto.authorId(), postDto.projectId());
         Post post = postMapper.toEntity(postDto);
-        Ad ad = adRepository.findById(postDto.adId()).orElseThrow(
-                () -> new RuntimeException("ad not found"));
+        Ad ad = null;
+        if (post.getAd() != null) {
+            ad = adRepository.findById(postDto.adId()).orElseThrow(
+                    () -> new RuntimeException("ad not found"));
+        }
         List<Comment> comments = commentRepository.findByIdIn(postDto
                 .commentsId() != null ? postDto.commentsId() : List.of());
         List<Like> likes = likeRepository.findByIdIn(postDto
@@ -125,6 +147,7 @@ public class PostService {
         post.setLikes(likes);
         post.setResources(resources);
         post.setAlbums(albums);
+        post.setVerifiedStatus(VerifiedStatus.PENDING);
 
         postRepository.save(post);
         log.info("Post created: {}", post);
@@ -135,6 +158,9 @@ public class PostService {
         Post post = takePost(postId);
         if (post.isPublished()) {
             throw new PostAlreadyPublishedException("Post with ID " + postId + " is already published.");
+        }
+        if (post.getVerifiedStatus() != VerifiedStatus.APPROVED) {
+            throw new PostUnverifiedException("Post with id %d is unverified.", postId);
         }
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
@@ -172,10 +198,8 @@ public class PostService {
         return postRepository.findByAuthorId(authorId)
                 .filter(post -> !post.isDeleted() && !post.isPublished())
                 .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
-                .peek(post -> {
-                    postViewEventPublisher.published(
-                            new PostViewEvent(post.getId(), userId, authorId, LocalDateTime.now()));
-                })
+                .peek(post -> postViewEventPublisher.published(
+                        new PostViewEvent(post.getId(), userId, authorId, LocalDateTime.now())))
                 .map(postMapper::toDto)
                 .toList();
     }
@@ -184,10 +208,8 @@ public class PostService {
         return postRepository.findByProjectId(projectId)
                 .filter(post -> !post.isDeleted() && !post.isPublished())
                 .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
-                .peek(post -> {
-                    postViewEventPublisher.published(
-                            new PostViewEvent(post.getId(), userId, projectId, LocalDateTime.now()));
-                })
+                .peek(post -> postViewEventPublisher.published(
+                        new PostViewEvent(post.getId(), userId, projectId, LocalDateTime.now())))
                 .map(postMapper::toDto)
                 .toList();
     }
@@ -196,10 +218,8 @@ public class PostService {
         return postRepository.findByAuthorId(authorId)
                 .filter(post -> !post.isDeleted() && post.isPublished())
                 .sorted(Comparator.comparing(Post::getPublishedAt).reversed())
-                .peek(post -> {
-                    postViewEventPublisher.published(
-                            new PostViewEvent(post.getId(), userId, authorId, LocalDateTime.now()));
-                })
+                .peek(post -> postViewEventPublisher.published(
+                        new PostViewEvent(post.getId(), userId, authorId, LocalDateTime.now())))
                 .map(postMapper::toDto)
                 .toList();
     }
@@ -208,10 +228,8 @@ public class PostService {
         return postRepository.findByProjectId(projectId)
                 .filter(post -> !post.isDeleted() && post.isPublished())
                 .sorted(Comparator.comparing(Post::getPublishedAt).reversed())
-                .peek(post -> {
-                    postViewEventPublisher.published(
-                            new PostViewEvent(post.getId(), userId, projectId, LocalDateTime.now()));
-                })
+                .peek(post -> postViewEventPublisher.published(
+                        new PostViewEvent(post.getId(), userId, projectId, LocalDateTime.now())))
                 .map(postMapper::toDto)
                 .toList();
     }
@@ -269,24 +287,4 @@ public class PostService {
                 ))
                 .toList();
     }
-
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void publishBatch(List<Post> batch) {
-        if (batch == null || batch.isEmpty()) {
-            log.error("в списке не содержится постов");
-            throw new DataValidationException("список постов пуст");
-        }
-
-        for (Post post : batch) {
-            post.setPublished(true);
-            post.setPublishedAt(LocalDateTime.now());
-        }
-
-        postRepository.saveAll(batch);
-        log.info("Опубликовано {} постов с {} по {} id.",
-                batch.size(), batch.get(0).getId(), batch.get(batch.size() - 1).getId());
-    }
-
 }
-
-
