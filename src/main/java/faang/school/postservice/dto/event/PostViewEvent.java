@@ -9,12 +9,12 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 public class PostViewEvent {
-    @JsonProperty("idPost")
-    private Long idPost;
-    @JsonProperty("idUser")
-    private Long idUser;
-    @JsonProperty("idAuthor")
-    private Long idAuthor;
+    @JsonProperty("postId")
+    private Long postId;
+    @JsonProperty("userId")
+    private Long userId;
+    @JsonProperty("authorId")
+    private Long authorId;
     @JsonProperty("date")
     private LocalDateTime date;
 }
