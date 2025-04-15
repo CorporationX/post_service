@@ -1,5 +1,6 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.config.ModerationProperties;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,6 +40,9 @@ public class PostServiceTest {
     @Mock
     private GrammarBotService grammarBotService;
 
+    @Mock
+    private ModerationProperties moderationProperties;
+
     @InjectMocks
     private PostService postService;
 
@@ -54,15 +58,16 @@ public class PostServiceTest {
         post2 = new Post();
         post2.setId(POST_ID_2);
         post2.setContent(ORIGINAL_TEXT_2);
+        moderationProperties.setBatchSize(1);
     }
 
     @Test
-    void moderateAllUnverifiedPostsSuccessWithEmptyList() {
+
     public void correctUnpublishedPosts_ShouldCorrectGrammarAndSavePosts() {
         when(postRepository.findReadyToPublish()).thenReturn(List.of(post1, post2));
         when(grammarBotService.checkGrammar(ORIGINAL_TEXT_1)).thenReturn(CORRECTED_TEXT_1);
         when(grammarBotService.checkGrammar(ORIGINAL_TEXT_2 )).thenReturn(CORRECTED_TEXT_2);
-
+        when(moderationProperties.getBatchSize()).thenReturn(1);
         postService.correctUnpublishedPosts();
 
         when(postRepository.findByVerifiedAtIsNull()).thenReturn(Collections.emptyList());
@@ -73,9 +78,9 @@ public class PostServiceTest {
                 post.getId().equals(POST_ID_1) && post.getContent().equals(CORRECTED_TEXT_1)));
         verify(postRepository, times(1)).save(argThat(post ->
                 post.getId().equals(POST_ID_2) && post.getContent().equals(CORRECTED_TEXT_2)));
+        postService.moderateAllUnverifiedPosts();
     }
 
-        postService.moderateAllUnverifiedPosts();
     @Test
     void correctUnpublishedPosts_ShouldContinueProcessingEvenIfGrammarServiceFails() {
         when(postRepository.findReadyToPublish()).thenReturn(List.of(post1, post2));
@@ -83,7 +88,6 @@ public class PostServiceTest {
         when(grammarBotService.checkGrammar(ORIGINAL_TEXT_2))
                 .thenThrow(new RuntimeException(API_ERROR_MESSAGE));
 
-        verify(postRepository, times(1)).findByVerifiedAtIsNull();
         verify(postRepository, never()).saveAll(any());
         postService.correctUnpublishedPosts();
 
