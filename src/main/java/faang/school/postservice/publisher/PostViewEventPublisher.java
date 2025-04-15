@@ -9,7 +9,8 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class PostViewEventPublisher {
-    @Value("${postViewEventPublisher.channel}")
+
+    @Value("${spring.data.redis.channels.postViewEventPublisher}")
     private String channel;
 
     private final RedisTemplate<String, Object> redisTemplate;

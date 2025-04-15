@@ -1,8 +1,6 @@
 package faang.school.postservice.exception;
 
 import faang.school.postservice.dto.error.ErrorResponse;
-import faang.school.postservice.exceptions.AsyncPostProcessingException;
-import faang.school.postservice.exceptions.PostAlreadyPublishedException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;

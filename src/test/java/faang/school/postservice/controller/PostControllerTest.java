@@ -1,7 +1,6 @@
 package faang.school.postservice.controller;
 
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.controller.PostController;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.service.PostService;
 import org.junit.jupiter.api.Test;
@@ -20,7 +19,6 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -29,11 +27,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest
 public class PostControllerTest {
     private final String REQUEST_URL = "/posts";
-    private final String PUBLISH_URL = REQUEST_URL + "/publish/{postId}";
-    private final String DRAFTS_BY_AUTHOR_URL = REQUEST_URL + "/drafts/author/{authorId}";
-    private final String DRAFTS_BY_PROJECT_URL = REQUEST_URL + "/drafts/project/{projectId}";
-    private final String PUBLISHED_BY_AUTHOR_URL = REQUEST_URL + "/published/author/{authorId}";
-    private final String PUBLISHED_BY_PROJECT_URL = REQUEST_URL + "/published/project/{projectId}";
     private final String REQUEST_URL_POST_ID = REQUEST_URL + "/{postId}";
 
     private final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
@@ -60,6 +53,7 @@ public class PostControllerTest {
     void testPositivePublish() throws Exception {
         when(postService.publish(any())).thenReturn(preparePostDto());
 
+        String PUBLISH_URL = REQUEST_URL + "/publish/{postId}";
         mockMvc.perform(put(PUBLISH_URL, 1)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(OBJECT_MAPPER.writeValueAsString(preparePostDto())))
@@ -104,6 +98,7 @@ public class PostControllerTest {
         when(postService.findDraftsByAuthorId(any(),any())).thenReturn(list());
         when(context.getUserId()).thenReturn(1L);
 
+        String DRAFTS_BY_AUTHOR_URL = REQUEST_URL + "/drafts/author/{authorId}";
         mockMvc.perform(get(DRAFTS_BY_AUTHOR_URL, 1)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(OBJECT_MAPPER.writeValueAsString(list())))
@@ -116,6 +111,7 @@ public class PostControllerTest {
         when(postService.findDraftsByProjectId(any(),any())).thenReturn(list());
         when(context.getUserId()).thenReturn(1L);
 
+        String DRAFTS_BY_PROJECT_URL = REQUEST_URL + "/drafts/project/{projectId}";
         mockMvc.perform(get(DRAFTS_BY_PROJECT_URL, 1)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(OBJECT_MAPPER.writeValueAsString(list())))
@@ -128,6 +124,7 @@ public class PostControllerTest {
         when(postService.findPublishedByAuthorId(any(),any())).thenReturn(list());
         when(context.getUserId()).thenReturn(1L);
 
+        String PUBLISHED_BY_AUTHOR_URL = REQUEST_URL + "/published/author/{authorId}";
         mockMvc.perform(get(PUBLISHED_BY_AUTHOR_URL, 1)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(OBJECT_MAPPER.writeValueAsString(list())))
@@ -140,6 +137,7 @@ public class PostControllerTest {
         when(postService.findPublishedByProjectId(any(),any())).thenReturn(list());
         when(context.getUserId()).thenReturn(1L);
 
+        String PUBLISHED_BY_PROJECT_URL = REQUEST_URL + "/published/project/{projectId}";
         mockMvc.perform(get(PUBLISHED_BY_PROJECT_URL, 1)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(OBJECT_MAPPER.writeValueAsString(list())))

@@ -5,9 +5,9 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.PostUnverifiedException;
-import faang.school.postservice.exceptions.AsyncPostProcessingException;
+import faang.school.postservice.exception.AsyncPostProcessingException;
 import faang.school.postservice.dto.event.PostViewEvent;
-import faang.school.postservice.exceptions.PostAlreadyPublishedException;
+import faang.school.postservice.exception.PostAlreadyPublishedException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.Comment;
@@ -198,10 +198,8 @@ public class PostService {
         return postRepository.findByAuthorId(authorId)
                 .filter(post -> !post.isDeleted() && !post.isPublished())
                 .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
-                .peek(post -> {
-                    postViewEventPublisher.published(
-                            new PostViewEvent(post.getId(), userId, authorId, LocalDateTime.now()));
-                })
+                .peek(post -> postViewEventPublisher.published(
+                        new PostViewEvent(post.getId(), userId, authorId, LocalDateTime.now())))
                 .map(postMapper::toDto)
                 .toList();
     }
@@ -210,10 +208,8 @@ public class PostService {
         return postRepository.findByProjectId(projectId)
                 .filter(post -> !post.isDeleted() && !post.isPublished())
                 .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
-                .peek(post -> {
-                    postViewEventPublisher.published(
-                            new PostViewEvent(post.getId(), userId, projectId, LocalDateTime.now()));
-                })
+                .peek(post -> postViewEventPublisher.published(
+                        new PostViewEvent(post.getId(), userId, projectId, LocalDateTime.now())))
                 .map(postMapper::toDto)
                 .toList();
     }
@@ -222,10 +218,8 @@ public class PostService {
         return postRepository.findByAuthorId(authorId)
                 .filter(post -> !post.isDeleted() && post.isPublished())
                 .sorted(Comparator.comparing(Post::getPublishedAt).reversed())
-                .peek(post -> {
-                    postViewEventPublisher.published(
-                            new PostViewEvent(post.getId(), userId, authorId, LocalDateTime.now()));
-                })
+                .peek(post -> postViewEventPublisher.published(
+                        new PostViewEvent(post.getId(), userId, authorId, LocalDateTime.now())))
                 .map(postMapper::toDto)
                 .toList();
     }
@@ -234,10 +228,8 @@ public class PostService {
         return postRepository.findByProjectId(projectId)
                 .filter(post -> !post.isDeleted() && post.isPublished())
                 .sorted(Comparator.comparing(Post::getPublishedAt).reversed())
-                .peek(post -> {
-                    postViewEventPublisher.published(
-                            new PostViewEvent(post.getId(), userId, projectId, LocalDateTime.now()));
-                })
+                .peek(post -> postViewEventPublisher.published(
+                        new PostViewEvent(post.getId(), userId, projectId, LocalDateTime.now())))
                 .map(postMapper::toDto)
                 .toList();
     }
