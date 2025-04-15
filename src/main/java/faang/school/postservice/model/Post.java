@@ -41,7 +41,7 @@ public class Post {
     @Column(name = "content", nullable = false, length = 4096)
     private String content;
 
-    @Column(name = "author_id")
+    @Column(name = "author_id", nullable = false)
     private Long authorId;
 
     @Column(name = "project_id")
@@ -96,4 +96,12 @@ public class Post {
 
     @Column(name = "is_corrected")
     private boolean isCorrected;
+
+    @Builder.Default
+    @Column(name = "verified", nullable = false)
+    private boolean verified = false;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "verified_date")
+    private LocalDateTime verifiedDate;
 }

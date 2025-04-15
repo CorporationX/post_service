@@ -10,6 +10,9 @@ spring:
     url: jdbc:postgresql://localhost:5432/postgres
     username: user
     password: password
+  messages:
+    basename: messages
+    encoding: UTF-8
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
@@ -61,3 +64,18 @@ posts:
     cron: "0 5 * * * *"
     batch-size: 100000
     thread-poop-size: 16
+
+perspective-api:
+  key: "AIzaSyDSLgf8qagfMyfjnvfxAVOmpgGLkNfWB-Y"
+  url: "https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze"
+
+moderation:
+  threads: 20
+  job:
+    cron: "0 0 15 * * ?"
+  batch:
+    size: 1000
+  retry:
+    delay: "1000"
+    multiplier: "2"
+    max-attempts: "3"
