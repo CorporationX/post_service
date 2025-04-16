@@ -9,6 +9,8 @@ import java.util.List;
 
 public interface CommentService {
 
+    void moderateComments(int batchSize);
+
     long createComment(CommentCreateDto commentCreateDto);
 
     void updateCommentContent(long commentId, CommentUpdateDto commentUpdateDto);

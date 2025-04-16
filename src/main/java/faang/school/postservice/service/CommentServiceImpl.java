@@ -13,11 +13,12 @@ import faang.school.postservice.mapper.CommentResponseMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.ListUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
@@ -34,6 +35,16 @@ public class CommentServiceImpl implements CommentService {
     private final CommentResponseMapper commentResponseMapper;
     private final PostService postService;
     private final UserServiceClient userServiceClient;
+    private final AsyncCommentServiceImpl asyncCommentServiceImpl;
+
+    @Override
+    public void moderateComments(int batchSize) {
+        log.info("Start moderating comments");
+        ListUtils.partition(commentRepository.getUnverifiedCommentsIds(), batchSize).stream()
+                .map(commentRepository::getUnverifiedComments)
+                .forEach(asyncCommentServiceImpl::moderateComments);
+        log.info("Finished moderating comments");
+    }
 
     @Override
     public long createComment(CommentCreateDto commentCreateDto) {

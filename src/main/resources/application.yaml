@@ -30,6 +30,16 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
+  task:
+    scheduling:
+      comment:
+        max_comments_per_size: 20
+        cron_expression: 0 0 0 * * *
+        executor:
+          core_pool_size: 10
+          max_poll_size: 20
+          queue_capacity: 200
+          thread_prefix: comment-moderator
 
 server:
   port: 8081
@@ -47,6 +57,10 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+dictionary:
+  comments:
+    path_to_file: /dictionary/comments/badWords.txt
 post-service:
   tag:
     count-of-most-popular-tags: 2

@@ -10,4 +10,10 @@ public interface CommentRepository extends CrudRepository<Comment, Long> {
 
     @Query("SELECT c FROM Comment c WHERE c.post.id = :postId")
     List<Comment> findAllByPostId(long postId);
+
+    @Query("SELECT c FROM Comment c WHERE c.verified IS NULL AND c.id IN (?1)")
+    List<Comment> getUnverifiedComments(List<Long> ids);
+
+    @Query("SELECT c.id FROM Comment c WHERE  c.verified IS NULL")
+    List<Long> getUnverifiedCommentsIds();
 }
