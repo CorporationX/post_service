@@ -24,6 +24,8 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
+        user-ban: user-ban
+        postViewEventPublisher: PostViewEvent_topic
     kafka:
       bootstrap-servers: localhost:9092
       topic:
@@ -33,12 +35,15 @@ spring:
         retry-backoff-ms: 1000
         acks: all
 
+  profiles:
+    active: local
+
 server:
   port: 8081
 
 logging:
   level:
-    root: info
+    root: debug
 
 user-service:
   host: localhost
@@ -54,9 +59,16 @@ thread-pool:
   delete-expired-posts-max-threads: 3
   publish-posts-max-threads: 10
   publish-timeout: 3
+  author-ban:
+    size: 2
+    shutdown-timeout-seconds: 30
 
 batch:
   size: 1000
 
 cron:
   delete-expired-posts: 0 49 18 * * FRI
+  author-ban: 0 0 0 * * *
+
+ban-properties:
+  value-rejected-posts: 5

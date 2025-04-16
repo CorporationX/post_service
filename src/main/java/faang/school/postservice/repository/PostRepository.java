@@ -3,6 +3,7 @@ package faang.school.postservice.repository;
 import faang.school.postservice.model.Post;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.stream.Stream;
@@ -22,4 +23,12 @@ public interface PostRepository extends CrudRepository<Post, Long> {
     @Query("SELECT p FROM Post p WHERE p.published = false AND p.deleted = false AND p.scheduledAt <= CURRENT_TIMESTAMP")
     List<Post> findReadyToPublish();
 
+    @Query("""
+            SELECT p.authorId
+            FROM Post p
+            WHERE p.verifiedStatus = 'REJECTED'
+            GROUP BY p.authorId
+            HAVING COUNT(p) >= :minRejectedPosts
+            """)
+    List<Long> findAuthorIdsWithMinRejectedPosts(@Param("minRejectedPosts") int minRejectedPosts);
 }

@@ -1,10 +1,6 @@
-package faang.school.postservice.exceptions;
+package faang.school.postservice.exception;
 
 public class AsyncPostProcessingException extends RuntimeException {
-
-    public AsyncPostProcessingException(String message) {
-        super(message);
-    }
 
     public AsyncPostProcessingException(String message, Throwable cause) {
         super(message, cause);
