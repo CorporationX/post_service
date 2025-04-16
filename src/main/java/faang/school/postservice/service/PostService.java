@@ -1,5 +1,8 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.client.LanguageToolClient;
+import faang.school.postservice.dto.languageTool.GrammarMatch;
+import faang.school.postservice.dto.languageTool.LanguageToolResponseDto;
 import faang.school.postservice.dto.post.PostRequestDto;
 import faang.school.postservice.dto.post.PostResponseDto;
 import faang.school.postservice.exception.LanguageToolException;
@@ -21,7 +24,6 @@ import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -29,15 +31,13 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service
 @Slf4j
@@ -47,14 +47,13 @@ public class PostService {
     public static final String NO_POST_FOUND = "No post found with ID %d";
     public static final String POST_HAS_ALREADY_BEEN_DELETED = "Post has already been deleted";
     private static final int TIMEOUT_HOURS = 2;
-    public static final int BATCH_SIZE = 1000;
 
     private final PostMapper postMapper;
     private final PostRepository postRepository;
     private final LanguageToolClient languageToolClient;
     private final LikeRepository likeRepository;
     private final HashtagService hashtagService;
-    private final ExecutorService executorService;
+    private final ExecutorService threadPoolExecutor;
 
     @Value("${posts.correction.batch-size}")
     int batchSize;
@@ -196,12 +195,17 @@ public class PostService {
         log.debug("After correcting errors in the text: {}", text);
     }
 
-    @Transactional
     public void publishScheduledPosts() {
-        List<Post> posts = postRepository.findReadyToPublish();
-        List<List<Post>> batches = sectionList(posts, BATCH_SIZE);
+        List<Post> readyToPublishPosts = postRepository.findReadyToPublish();
+        log.info("Found {} posts ready to publish", readyToPublishPosts.size());
 
-        batches.forEach(batch -> CompletableFuture.runAsync(() -> publishBatch(batch), executorService));
+        for (Post post: readyToPublishPosts) {
+            CompletableFuture.runAsync(() -> publishPost(post), threadPoolExecutor)
+                    .exceptionally(ex -> {
+                        log.error("Error while publishing post with ID: {}", post.getId(), ex);
+                        return null;
+                    });
+        }
     }
 
     private void validatePostOptional(Optional<Post> postOptional, Long id) {
@@ -238,17 +242,9 @@ public class PostService {
         log.error("Post with ID could not be corrected: {}", post.getId());
     }
 
-    private void publishBatch(List<Post> batch) {
-        batch.forEach(post -> {
-            post.setPublished(true);
-            post.setPublishedAt(LocalDateTime.now());
-        });
-        postRepository.saveAll(batch);
-    }
-
-    private <T> List<List<T>> sectionList(List<T> list, int size) {
-        return IntStream.range(0, (list.size() + size - 1) / size)
-                .mapToObj(i -> list.subList(i * size, Math.min((i + 1) * size, list.size())))
-                .collect(Collectors.toList());
+    private void publishPost(Post post) {
+        post.setPublished(true);
+        post.setPublishedAt(LocalDateTime.now());
+        log.info("Post with ID {} published successfully", post.getId());
     }
 }
