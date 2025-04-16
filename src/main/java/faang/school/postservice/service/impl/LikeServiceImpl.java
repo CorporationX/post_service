@@ -1,6 +1,7 @@
 package faang.school.postservice.service.impl;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.event.LikeEventDto;
 import faang.school.postservice.dto.likes.BaseFilterDto;
 import faang.school.postservice.dto.likes.LikeDto;
 import faang.school.postservice.dto.user.UserDto;
@@ -9,12 +10,16 @@ import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.KafkaLikeProducer;
 import faang.school.postservice.repository.CommentRepositoryAdapter;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.LikeRepositoryAdapter;
 import faang.school.postservice.repository.PostRepositoryAdapter;
 import faang.school.postservice.service.LikeService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -27,6 +32,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class LikeServiceImpl implements LikeService {
     private final PostRepositoryAdapter postRepositoryAdapter;
@@ -35,6 +41,7 @@ public class LikeServiceImpl implements LikeService {
     private final LikeRepository likeRepository;
     private final LikeMapper likeMapper;
     private final UserServiceClient userServiceClient;
+    private final KafkaLikeProducer kafkaLikeProducer;
 
     private static final int BATCH_SIZE = 100;
 
@@ -49,7 +56,12 @@ public class LikeServiceImpl implements LikeService {
         postLike = new Like();
         postLike.setUserId(userId);
         postLike.setPost(post);
-        return likeMapper.toDto(likeRepository.save(postLike));
+        Like savedLike = likeRepository.save(postLike);
+        LikeEventDto likeEventDto = new LikeEventDto(savedLike.getId(), savedLike.getUserId(),
+                savedLike.getPost().getId());
+        kafkaLikeProducer.sendEvent(likeEventDto);
+        log.info("Like event with id {} was sent to Kafka", likeEventDto.getId());
+        return likeMapper.toDto(savedLike);
     }
 
     @Transactional

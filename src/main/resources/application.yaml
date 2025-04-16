@@ -24,6 +24,9 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
+    kafka:
+      bootstrapAddress: localhost:29092
+      likePostTopic: like_post
 
   cloud:
     openfeign:

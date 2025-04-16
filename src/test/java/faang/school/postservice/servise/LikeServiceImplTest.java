@@ -1,6 +1,7 @@
 package faang.school.postservice.servise;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.event.LikeEventDto;
 import faang.school.postservice.dto.likes.BaseFilterDto;
 import faang.school.postservice.dto.likes.LikeDto;
 import faang.school.postservice.dto.user.UserDto;
@@ -8,6 +9,7 @@ import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.KafkaLikeProducer;
 import faang.school.postservice.repository.CommentRepositoryAdapter;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.LikeRepositoryAdapter;
@@ -15,6 +17,8 @@ import faang.school.postservice.repository.PostRepositoryAdapter;
 import faang.school.postservice.service.impl.LikeServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -27,7 +31,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import static org.assertj.core.api.FactoryBasedNavigableListAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -46,6 +52,10 @@ public class LikeServiceImplTest {
     private LikeMapper likeMapper;
     @Mock
     private UserServiceClient userServiceClient;
+    @Mock
+    private KafkaLikeProducer kafkaLikeProducer;
+    @Captor
+    ArgumentCaptor<LikeEventDto> likeCaptor;
 
     private static final long USER_ID = 1L;
     private static final long POST_ID = 1L;
@@ -62,6 +72,7 @@ public class LikeServiceImplTest {
         like.setPost(post);
 
         Like savedLike = new Like();
+        savedLike.setPost(post);
 
         when(postRepositoryAdapter.findById(POST_ID)).thenReturn(post);
         when(likeRepositoryAdapter.findLikeByPostIdAndUserId(USER_ID, POST_ID)).thenReturn(null);
@@ -72,6 +83,9 @@ public class LikeServiceImplTest {
 
         assertNotNull(likeDto);
         verify(likeRepository, times(1)).save(like);
+        verify(kafkaLikeProducer, times(1)).sendEvent(likeCaptor.capture());
+        LikeEventDto likeValue = likeCaptor.getValue();
+        assertNotNull(likeValue);
     }
 
     @Test
