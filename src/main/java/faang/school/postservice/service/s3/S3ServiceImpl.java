@@ -14,7 +14,7 @@ import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.InputStream;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Service
 @RequiredArgsConstructor
@@ -49,7 +49,7 @@ public class S3ServiceImpl implements S3Service {
         return Resource.builder()
                 .key(key)
                 .size(fileSize)
-                .createdAt(LocalDateTime.now())
+                .createdAt(Instant.now())
                 .name(fileName)
                 .type(contentType)
                 .build();

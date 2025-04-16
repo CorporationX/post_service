@@ -16,6 +16,7 @@ import software.amazon.awssdk.services.s3.model.InvalidRequestException;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.InputStream;
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -67,7 +68,7 @@ public class S3ServiceImplTest {
         assertEquals(123L, actualResource.getSize());
         assertEquals("filename.jpg", actualResource.getName());
         assertEquals("image/jpeg", actualResource.getType());
-        assertTrue(actualResource.getCreatedAt().isBefore(LocalDateTime.now()));
+        assertTrue(actualResource.getCreatedAt().isBefore(Instant.now()));
     }
 
     @Test

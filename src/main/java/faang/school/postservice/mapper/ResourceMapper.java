@@ -18,7 +18,6 @@ public interface ResourceMapper {
 
     @Mapping(source = "resourceDto.id", target = "id")
     @Mapping(source = "resourceDto.createdAt", target = "createdAt")
-    @Mapping(target = "tempFile", ignore = true)
     Resource toEntity(ResourceDto resourceDto, Post post);
 
     default Long getPostId(Resource resource) {

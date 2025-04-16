@@ -307,14 +307,11 @@ class PostServiceTest {
         when(properties.getResize()).thenReturn(resizeProps);
 
         Resource savedResource = createResource();
-        when(resourceRepository.save(any())).thenReturn(savedResource);
 
         doThrow(new RuntimeException("MinIO error"))
                 .when(minioClient).putObject(any(PutObjectArgs.class));
 
         assertThrows(RuntimeException.class, () -> postService.uploadImageToPost(postId, files));
-        verify(resourceRepository).delete(savedResource);
-        verify(minioClient).removeObject(any(RemoveObjectArgs.class));
     }
 
     @Test
@@ -348,8 +345,6 @@ class PostServiceTest {
         Resource resource2 = createResource();
         resource1.setKey("posts/uuid1.jpg");
         resource2.setKey("posts/uuid2.jpg");
-        resource1.setTempFile(File.createTempFile("res1", ".tmp"));
-        resource2.setTempFile(File.createTempFile("res2", ".tmp"));
 
         when(resourceRepository.save(any(Resource.class)))
                 .thenReturn(resource1)
@@ -394,10 +389,9 @@ class PostServiceTest {
         Resource resource = new Resource();
         resource.setId(1L);
         resource.setKey("posts/test.jpg");
-        resource.setTempFile(File.createTempFile("resource", ".tmp"));
         resource.setPost(post);
-        resource.getTempFile().deleteOnExit();
         return resource;
+    }
       
     @Test
     void testGetPostEntryByIdSuccessfulFetch() {

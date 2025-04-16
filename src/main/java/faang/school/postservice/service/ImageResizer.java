@@ -21,6 +21,8 @@ public class ImageResizer {
                 .keepAspectRatio(true)
                 .outputFormat("jpg")
                 .toOutputStream(outputStream);
-        return ImageIO.read(new ByteArrayInputStream(outputStream.toByteArray()));
+        BufferedImage result = ImageIO.read(new ByteArrayInputStream(outputStream.toByteArray()));
+        outputStream.close();
+        return result;
     }
 }

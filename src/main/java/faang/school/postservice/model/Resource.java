@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.io.File;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Data
 @Entity
@@ -41,7 +41,7 @@ public class Resource {
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_at")
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     @Column(name = "name", length = 150)
     private String name;
@@ -52,13 +52,4 @@ public class Resource {
     @ManyToOne
     @JoinColumn(name = "post_id", nullable = false)
     private Post post;
-
-    @Transient
-    private File tempFile;
-
-    public void cleanup() {
-        if (tempFile != null && tempFile.exists()) {
-            tempFile.delete();
-        }
-    }
 }

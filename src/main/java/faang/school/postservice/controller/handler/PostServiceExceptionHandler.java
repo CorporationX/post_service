@@ -1,7 +1,9 @@
 package faang.school.postservice.controller.handler;
 
 import faang.school.postservice.exception.FileValidationException;
+import faang.school.postservice.exception.PostNotFoundException;
 import faang.school.postservice.exception.S3Exception;
+import faang.school.postservice.exception.TagNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.fileupload.impl.SizeLimitExceededException;
 import org.springframework.beans.factory.annotation.Value;
