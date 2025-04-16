@@ -24,6 +24,14 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
+    kafka:
+      bootstrap-servers: localhost:9092
+      topic:
+        comment: comment_topic
+      producer:
+        retries: 3
+        retry-backoff-ms: 1000
+        acks: all
 
 server:
   port: 8081
