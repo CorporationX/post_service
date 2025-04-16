@@ -147,15 +147,16 @@ public class ResourceServiceImplTest {
 
     @Test
     public void testDownloadResourceWithResourceWithoutKey() {
-        when(resourceRepository.findResourceTypeById(1L)).thenReturn(Optional.of("image/jpeg"));
-
         assertThrows(EntityNotFoundException.class, () -> resourceService.downloadResource(1L));
     }
 
     @Test
     public void testDownloadResourceWithResource() {
-        when(resourceRepository.findResourceTypeById(1L)).thenReturn(Optional.of("image/jpeg"));
-        when(resourceRepository.findResourceKeyById(1L)).thenReturn(Optional.of("some key"));
+        Resource resource = new Resource();
+        resource.setId(1L);
+        resource.setType("image/jpeg");
+        resource.setKey("some key");
+        when(resourceRepository.findById(1L)).thenReturn(Optional.of(resource));
         when(s3Service.downloadResource("some key"))
                 .thenReturn(IOUtils.toInputStream("Hello", Charset.defaultCharset()));
 

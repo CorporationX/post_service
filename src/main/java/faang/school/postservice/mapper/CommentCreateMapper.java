@@ -9,5 +9,9 @@ import org.mapstruct.Mapping;
 public interface CommentCreateMapper {
 
     @Mapping(target = "post", ignore = true)
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "likes", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
     Comment toEntity(CommentCreateDto commentCreateDto);
 }

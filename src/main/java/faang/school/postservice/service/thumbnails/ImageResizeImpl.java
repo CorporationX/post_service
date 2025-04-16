@@ -56,8 +56,12 @@ public class ImageResizeImpl implements ImageResize {
     }
 
     private BufferedImage getBufferedImageFromBytes(byte[] imageBytes) {
-        try (ByteArrayInputStream bais = new ByteArrayInputStream(imageBytes)) {
-            return ImageIO.read(bais);
+        try (ByteArrayInputStream baits = new ByteArrayInputStream(imageBytes)) {
+            BufferedImage image = ImageIO.read(baits);
+            if (image == null) {
+                throw new ImageResizeException(new IllegalArgumentException("Invalid image data or unsupported format"));
+            }
+            return image;
         } catch (IOException e) {
             log.error("Error while reading image", e);
             throw new ImageResizeException(e);

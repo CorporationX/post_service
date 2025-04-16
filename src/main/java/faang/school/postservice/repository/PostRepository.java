@@ -7,12 +7,16 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface PostRepository extends CrudRepository<Post, Long> {
 
     List<Post> findByAuthorId(long authorId);
 
     List<Post> findByProjectId(long projectId);
+
+    @Query("SELECT p FROM Post p LEFT JOIN FETCH p.likes WHERE p.id = :postId")
+    Optional<Post> findByIdWithLikes(Long postId);
 
     @Query("SELECT p FROM Post p LEFT JOIN FETCH p.likes WHERE p.projectId = :projectId")
     List<Post> findByProjectIdWithLikes(long projectId);

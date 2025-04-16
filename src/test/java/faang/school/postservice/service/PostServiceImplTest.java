@@ -10,6 +10,7 @@ import faang.school.postservice.exception.NotFoundException;
 import faang.school.postservice.exception.PostNotFoundException;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.mapper.ResourceMapperImpl;
+import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.PostRepository;
@@ -38,11 +39,18 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class PostServiceTest {
+class PostServiceImplTest {
 
     @Mock
     private PostRepository postRepository;
@@ -178,23 +186,26 @@ class PostServiceTest {
 
     @Test
     public void testGetPostById() {
-        when(postRepository.findById(1L)).thenReturn(Optional.of(post));
+        post.setLikes(List.of(new Like(), new Like()));
+
+        when(postRepository.findByIdWithLikes(1L)).thenReturn(Optional.of(post));
 
         PostDto result = postService.getPostById(1L);
 
         assertNotNull(result);
         assertEquals(postDto.getContent(), result.getContent());
         assertEquals(postDto.getAuthorId(), result.getAuthorId());
-        verify(postRepository).findById(1L);
+        assertEquals(2, result.getLikeCount());
+        verify(postRepository).findByIdWithLikes(1L);
         verify(postMapper).toDto(post);
     }
 
     @Test
     public void testGetPostByIdNotFound() {
-        when(postRepository.findById(1L)).thenReturn(Optional.empty());
+        when(postRepository.findByIdWithLikes(1L)).thenReturn(Optional.empty());
 
         assertThrows(NotFoundException.class, () -> postService.getPostById(1L));
-        verify(postRepository).findById(1L);
+        verify(postRepository).findByIdWithLikes(1L);
     }
 
     @Test
@@ -227,15 +238,17 @@ class PostServiceTest {
     public void testGetAllPublishedPostsByAuthorId() {
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
+        post.setLikes(List.of(new Like(), new Like()));
 
-        when(postRepository.findByAuthorId(1L)).thenReturn(List.of(post));
+        when(postRepository.findByAuthorIdWithLikes(1L)).thenReturn(List.of(post));
 
         List<PostDto> result = postService.getAllPublishedPostsByAuthorId(1L);
 
         assertNotNull(result);
         assertEquals(1, result.size());
         assertEquals(postDto.getContent(), result.get(0).getContent());
-        verify(postRepository).findByAuthorId(1L);
+        assertEquals(2, result.get(0).getLikeCount());
+        verify(postRepository).findByAuthorIdWithLikes(1L);
         verify(postMapper).toDto(post);
     }
 
@@ -244,14 +257,15 @@ class PostServiceTest {
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
 
-        when(postRepository.findByProjectId(1L)).thenReturn(List.of(post));
+        when(postRepository.findByProjectIdWithLikes(1L)).thenReturn(List.of(post));
 
         List<PostDto> result = postService.getAllPublishedPostsByProjectId(1L);
 
         assertNotNull(result);
         assertEquals(1, result.size());
         assertEquals(postDto.getContent(), result.get(0).getContent());
-        verify(postRepository).findByProjectId(1L);
+        assertEquals(2, result.get(0).getLikeCount());
+        verify(postRepository).findByProjectIdWithLikes(1L);
         verify(postMapper).toDto(post);
     }
 
@@ -392,7 +406,7 @@ class PostServiceTest {
         resource.setPost(post);
         return resource;
     }
-      
+
     @Test
     void testGetPostEntryByIdSuccessfulFetch() {
         long postId = 1L;
