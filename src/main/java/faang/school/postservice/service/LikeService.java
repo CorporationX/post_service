@@ -167,7 +167,7 @@ public class LikeService {
         return userClient.getUser(userContext.getUserId()).id();
     }
 
-    private boolean isLikeOnPostEmpty(Long postId, Long userId) {
+    boolean isLikeOnPostEmpty(Long postId, Long userId) {
         return likeRepository.findByPostIdAndUserId(postId, userId).isEmpty();
     }
 
