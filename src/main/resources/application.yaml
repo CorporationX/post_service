@@ -63,6 +63,18 @@ services:
   payment-service:
     host: localhost
     port: 9080
+  comment-analyzer:
+    endpoint: https://commentanalyzer.googleapis.com/v1alpha1
+    api-key: "AIzaSyDNS2DzSDuUQI_FLdY4dSmA5Bgj397kwK8"
+    path: "/comments:analyze"
+
+moderation:
+  comments:
+    cron: "0 0 * * * *"
+    batch-size: 250000
+    max-attempts: 3
+    backoff-delay: 1000
+    timeout-hours: 5
 
   language-tool:
     base-url: https://api.languagetool.org/v2
@@ -72,13 +84,3 @@ posts:
     cron: "0 5 * * * *"
     batch-size: 100000
     thread-poop-size: 16
-
-moderation:
-  ban-users-for-comments:
-    cron: "0 3 * * * *"
-    batch-size: 250000
-    max-attempts: 3
-    backoff-delay: 1000
-    thread-pool-size: 8
-    timeout-hours: 2
-    ban-threshold: 5
