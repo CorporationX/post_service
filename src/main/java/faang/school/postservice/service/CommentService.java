@@ -2,11 +2,13 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.event.CommentEvent;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +26,9 @@ public class CommentService {
     private final CommentMapper mapper;
     private final PostRepository postRepository;
     private final UserServiceClient client;
+    private final CommentEventPublisher commentEventPublisher;
     private static final int MAX_LENGTH = 4096;
+
 
     public CommentDto createComment(long userId, long postId, CommentDto commentDto) {
         UserDto user = client.getUser(userId);
@@ -38,6 +42,14 @@ public class CommentService {
         Comment commentForSave = mapper.toEntity(commentDto);
         Comment savedComment = repository.save(commentForSave);
         log.info("Комментарий {} успешно опубликован", savedComment.getId());
+        CommentEvent commentEvent = CommentEvent.builder()
+                .commentId(savedComment.getId())
+                .title(savedComment.getContent())
+                .authorId(savedComment.getAuthorId())
+                .postId(savedComment.getPost().getId())
+                .build();
+        commentEventPublisher.publish(commentEvent);
+        log.info("Комментарий {} отправлен в топик ", savedComment);
         return mapper.toDto(savedComment);
     }
 
