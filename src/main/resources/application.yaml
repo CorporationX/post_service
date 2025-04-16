@@ -110,6 +110,13 @@ task-executor:
     max-pool-size: 20
     queue-capacity: 50
 
+
+ad:
+  expired:
+    cronExpiredPostAdDeletion: "0 0 1 * * *"
+  deletion:
+    batchSize: 100
+
 post-corrector:
   cron:
     every-day-at-three-pm: "0 0 3 * * ?"
@@ -118,6 +125,7 @@ grammar-bot:
   api:
     url: "https://grammarbot.p.rapidapi.com/check"
     key: "812b9b6481mshc1aae881c0c2f03p1411dfjsne87203f42d87"
+
 
 moderation:
   dictionary: classpath:moderation/bad-words.txt
