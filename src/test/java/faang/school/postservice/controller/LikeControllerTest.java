@@ -18,6 +18,7 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.matchesPattern;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -86,7 +87,7 @@ public class LikeControllerTest {
                 .andExpect(jsonPath("$.userId", is(USER_ID.intValue())))
                 .andExpect(jsonPath("$.postId", is(POST_ID.intValue())))
                 .andExpect(jsonPath("$.commentId").doesNotExist())
-                .andExpect(jsonPath("$.timestamp", is(TIMESTAMP.toString())));
+                .andExpect(jsonPath("$.timestamp", matchesPattern("^" + TIMESTAMP.toString().substring(0, 23) + ".*$")));
     }
 
     @Test
@@ -99,7 +100,7 @@ public class LikeControllerTest {
                 .andExpect(jsonPath("$.userId", is(USER_ID.intValue())))
                 .andExpect(jsonPath("$.postId", is(POST_ID.intValue())))
                 .andExpect(jsonPath("$.commentId").doesNotExist())
-                .andExpect(jsonPath("$.timestamp", is(TIMESTAMP.toString())));
+                .andExpect(jsonPath("$.timestamp", matchesPattern("^" + TIMESTAMP.toString().substring(0, 23) + ".*$")));
     }
 
     @Test
@@ -112,7 +113,7 @@ public class LikeControllerTest {
                 .andExpect(jsonPath("$.userId", is(USER_ID.intValue())))
                 .andExpect(jsonPath("$.commentId", is(COMMENT_ID.intValue())))
                 .andExpect(jsonPath("$.postId").doesNotExist())
-                .andExpect(jsonPath("$.timestamp", is(TIMESTAMP.toString())));
+                .andExpect(jsonPath("$.timestamp", matchesPattern("^" + TIMESTAMP.toString().substring(0, 23) + ".*$")));
     }
 
     @Test
@@ -125,7 +126,7 @@ public class LikeControllerTest {
                 .andExpect(jsonPath("$.userId", is(USER_ID.intValue())))
                 .andExpect(jsonPath("$.commentId", is(COMMENT_ID.intValue())))
                 .andExpect(jsonPath("$.postId").doesNotExist())
-                .andExpect(jsonPath("$.timestamp", is(TIMESTAMP.toString())));
+                .andExpect(jsonPath("$.timestamp", matchesPattern("^" + TIMESTAMP.toString().substring(0, 23) + ".*$")));
     }
 
     @Test

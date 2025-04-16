@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 @Slf4j
 @RestControllerAdvice
@@ -39,6 +40,16 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<Map<String, Object>> handleConstraintViolation(ConstraintViolationException ex) {
         return createErrorResponse(HttpStatus.BAD_REQUEST, ex);
+    }
+
+    @ExceptionHandler(ExecutionException.class)
+    public ResponseEntity<Map<String, Object>> handleExecutionException(ExecutionException ex) {
+        return createErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex);
+    }
+
+    @ExceptionHandler(InterruptedException.class)
+    public ResponseEntity<Map<String, Object>> handleInterruptedException(InterruptedException ex) {
+        return createErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex);
     }
 
     @ExceptionHandler(Exception.class)
