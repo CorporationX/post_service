@@ -63,4 +63,10 @@ public class Comment {
 
     @Column(name = "small_image_file_key")
     private String smallImageFileKey;
+
+    @Column(name = "verified")
+    private boolean verified;
+
+    @Column(name = "verified_at")
+    private LocalDateTime verifiedAt;
 }

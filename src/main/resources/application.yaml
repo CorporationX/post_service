@@ -31,6 +31,11 @@ spring:
         calculations_channel:
           name: calculations_channel
 
+task:
+  scheduling:
+    comment-ban:
+      cron_expression: 0 0 4 * * *
+
 server:
   port: 8081
 
@@ -50,6 +55,10 @@ payment-service:
 post-service:
   tag:
     count-of-most-popular-tags: 2
+  comment:
+    count-of-unverified-comments-for-ban: 5
+    redis:
+      ban-users-key: user_ban
 
 s3:
   endpoint: http://localhost:9000

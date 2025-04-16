@@ -12,8 +12,10 @@ import faang.school.postservice.mapper.CommentCreateMapper;
 import faang.school.postservice.mapper.CommentResponseMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.dto.comment.UserUnverifiedCommentsDto;
 import faang.school.postservice.repository.CommentRepository;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -22,6 +24,7 @@ import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -34,18 +37,20 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.anyLong;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class CommentServiceImplTest {
+public class CommentServiceImplTest {
 
     @Mock
     private CommentRepository commentRepository;
-
     @Mock
     private PostService postService;
+    @Mock
+    private RedisService redisService;
 
     @Mock
     private UserServiceClient userServiceClient;
@@ -58,6 +63,12 @@ class CommentServiceImplTest {
 
     @InjectMocks
     private CommentServiceImpl commentService;
+
+
+    @BeforeEach
+    public void init() {
+        ReflectionTestUtils.setField(commentService, "maxUnverifiedComments", 3);
+    }
 
     @Test
     void testCreateCommentSavesCommentToRepository() {
@@ -325,5 +336,17 @@ class CommentServiceImplTest {
         assertEquals("Comment not found", exception.getMessage());
 
         verify(commentRepository, never()).deleteById(commentId);
+    }
+
+
+    @Test
+    public void collectAndPushUsersForBanTest() {
+        when(commentRepository.getUnverifiedCommentAuthorCountDto()).thenReturn(
+                List.of(new UserUnverifiedCommentsDto(1L, 2L),
+                        new UserUnverifiedCommentsDto(3L, 4L)));
+
+        commentService.collectAndPushUsersForBan();
+
+        verify(redisService, times(1)).pushToRedisUsersForBan(anyLong());
     }
 }

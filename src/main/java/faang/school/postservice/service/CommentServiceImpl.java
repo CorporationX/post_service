@@ -17,6 +17,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
@@ -34,6 +35,11 @@ public class CommentServiceImpl implements CommentService {
     private final CommentResponseMapper commentResponseMapper;
     private final PostService postService;
     private final UserServiceClient userServiceClient;
+    private final RedisService redisService;
+
+
+    @Value("${post-service.comment.count-of-unverified-comments-for-ban}")
+    private int maxUnverifiedComments;
 
     @Override
     public long createComment(CommentCreateDto commentCreateDto) {
@@ -110,7 +116,6 @@ public class CommentServiceImpl implements CommentService {
                 ))
                 .toList();
         log.debug("Fetched and sorted {} comments for post with ID {}", commentResponseDtos.size(), postId);
-
         log.debug("{} is interrupted by ResponseEntity and returned", commentResponseDtos);
         return ResponseEntity.ok(commentResponseDtos);
     }
@@ -132,6 +137,18 @@ public class CommentServiceImpl implements CommentService {
         log.debug("Deleting comment with ID: {}", commentId);
         commentRepository.deleteById(commentId);
         log.debug("Comment with ID {} successfully deleted", commentId);
+
+    }
+
+    public void collectAndPushUsersForBan() {
+        commentRepository.getUnverifiedCommentAuthorCountDto().stream()
+                .filter(banAuthorByCommentsDto ->
+                        banAuthorByCommentsDto.count() >= maxUnverifiedComments)
+                .forEach(banAuthorByCommentsDto -> {
+                            log.debug("Push user: {} to redis for ban", banAuthorByCommentsDto);
+                            redisService.pushToRedisUsersForBan(banAuthorByCommentsDto.authorId());
+                        }
+                );
     }
 
     private void validateUserDto(UserDto userDto) {

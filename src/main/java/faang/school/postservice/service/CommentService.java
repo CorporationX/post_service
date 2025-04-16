@@ -16,4 +16,6 @@ public interface CommentService {
     ResponseEntity<List<CommentResponseDto>> getAllComments(long postId);
 
     void deleteComment(long commentId);
+
+    void collectAndPushUsersForBan();
 }
