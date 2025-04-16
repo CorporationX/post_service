@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 public class CommentBanner {
     private final CommentService commentService;
 
-    @Scheduled(cron = "${moderation.ban-users-for-comments.cron}")
+    @Scheduled(cron = "${moderation.comments.cron}")
     public void commentBanner() {
         commentService.banUsersForComments();
     }

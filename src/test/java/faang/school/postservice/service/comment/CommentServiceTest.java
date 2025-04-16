@@ -5,11 +5,11 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentRequestDto;
 import faang.school.postservice.dto.comment.CommentResponseDto;
 import faang.school.postservice.dto.comment.CommentUpdateDto;
-import faang.school.postservice.dto.user.UserBanDto;
 import faang.school.postservice.dto.commentAnalyzer.response.AttributeScoreDto;
 import faang.school.postservice.dto.commentAnalyzer.response.SpanScoreDto;
 import faang.school.postservice.dto.commentAnalyzer.response.SummaryScoreDto;
 import faang.school.postservice.dto.commentAnalyzer.response.ToxicityScoreDto;
+import faang.school.postservice.dto.user.UserBanDto;
 import faang.school.postservice.enums.CommentToxicityType;
 import faang.school.postservice.mapper.CommentRequestMapper;
 import faang.school.postservice.mapper.CommentResponseMapper;
@@ -30,12 +30,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.util.ReflectionTestUtils;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -69,12 +67,6 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class CommentServiceTest {
-    private static final Long POST_ID = 1L;
-    private static final Long COMMENT_ID = 2L;
-    private static final Long AUTHOR_ID = 3L;
-
-    private static final String CONTENT = "Content";
-    private static final String UPDATE_CONTENT = "Update content";
 
     @InjectMocks
     private CommentServiceImpl commentService;
@@ -113,8 +105,6 @@ class CommentServiceTest {
     private Comment comment;
     private Post post;
     private Mono<ToxicityScoreDto> toxicityScore;
-    private final ArgumentCaptor<Comment> commentCaptor = ArgumentCaptor.forClass(Comment.class);
-    private final int commentModerationBatchSize = 3;
     private final ArgumentCaptor<Comment> commentCaptor = ArgumentCaptor.forClass(Comment.class);
     private final int commentModerationBatchSize = 3;
 

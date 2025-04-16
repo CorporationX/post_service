@@ -16,5 +16,7 @@ public interface CommentService {
 
     List<CommentResponseDto> getCommentsByPostId(Long postId);
 
+    void banUsersForComments();
+
     void deleteComment(Long id);
 }

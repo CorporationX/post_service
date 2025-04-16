@@ -6,6 +6,8 @@ import faang.school.postservice.contants.ErrorMessage;
 import faang.school.postservice.dto.comment.CommentRequestDto;
 import faang.school.postservice.dto.comment.CommentResponseDto;
 import faang.school.postservice.dto.comment.CommentUpdateDto;
+import faang.school.postservice.dto.user.UserBanDto;
+import faang.school.postservice.exception.CommentAnalyzerException;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.InvalidCommentContentException;
 import faang.school.postservice.exception.NotAuthorException;
@@ -30,6 +32,9 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import reactor.util.retry.Retry;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -70,22 +75,22 @@ public class CommentServiceImpl implements CommentService {
     @Value("${moderation.comments.timeout-hours}")
     private int commentModerationTimeoutHours;
 
-    @Value("${moderation.ban-users-for-comments.batch-size}")
+    @Value("${moderation.comments.batch-size}")
     private int banBatchSize;
 
-    @Value("${moderation.ban-users-for-comments.max-attempts}")
+    @Value("${moderation.comments.max-attempts}")
     private int userBanMaxAttempts;
 
-    @Value("${moderation.ban-users-for-comments.backoff-delay}")
+    @Value("${moderation.comments.backoff-delay}")
     private int userBanBackoffDelay;
 
-    @Value("${moderation.ban-users-for-comments.thread-pool-size}")
+    @Value("${moderation.comments.thread-pool-size}")
     private int userBanThreadPoolSize;
 
-    @Value("${moderation.ban-users-for-comments.timeout-hours}")
+    @Value("${moderation.comments.timeout-hours}")
     private int userBanTimeoutHours;
 
-    @Value("${moderation.ban-users-for-comments.ban-threshold}")
+    @Value("${moderation.comments.ban-threshold}")
     private int userBanThreshold;
 
     private static final double TOXICITY_THRESHOLD = 0.35;

@@ -75,6 +75,8 @@ moderation:
     max-attempts: 3
     backoff-delay: 1000
     timeout-hours: 5
+    thread-pool-size: 16
+    ban-threshold: 5
 
   language-tool:
     base-url: https://api.languagetool.org/v2
