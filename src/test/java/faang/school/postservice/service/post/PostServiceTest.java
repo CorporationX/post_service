@@ -1,4 +1,4 @@
-package faang.school.postservice.PostService;
+package faang.school.postservice.service.post;
 
 import faang.school.postservice.client.LanguageToolClient;
 import faang.school.postservice.dto.languageTool.GrammarMatch;

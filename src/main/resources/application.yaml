@@ -42,17 +42,29 @@ logging:
   level:
     root: info
 
-user-service:
-  host: localhost
-  port: 8080
-project-service:
-  host: localhost
-  port: 8082
-payment-service:
-  host: localhost
-  port: 9080
+services:
+  user-service:
+    host: localhost
+    port: 8080
+  project-service:
+    host: localhost
+    port: 8082
+  payment-service:
+    host: localhost
+    port: 9080
+  comment-analyzer:
+    endpoint: https://commentanalyzer.googleapis.com/v1alpha1
+    api-key: "AIzaSyDNS2DzSDuUQI_FLdY4dSmA5Bgj397kwK8"
+    path: "/comments:analyze"
 
-servers:
+moderation:
+  comments:
+    cron: "0 0 * * * *"
+    batch-size: 250000
+    max-attempts: 3
+    backoff-delay: 1000
+    timeout-hours: 5
+
   language-tool:
     base-url: https://api.languagetool.org/v2
 
