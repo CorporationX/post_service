@@ -17,7 +17,6 @@ import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ResourceRepository;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
-import io.minio.RemoveObjectArgs;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -44,6 +43,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -256,6 +257,7 @@ class PostServiceImplTest {
     public void testGetAllPublishedPostsByProjectId() {
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
+        post.setLikes(List.of(new Like(), new Like()));
 
         when(postRepository.findByProjectIdWithLikes(1L)).thenReturn(List.of(post));
 
