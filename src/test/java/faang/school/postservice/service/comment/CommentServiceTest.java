@@ -1,6 +1,7 @@
 package faang.school.postservice.service.comment;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.comment.CommentEvent;
 import faang.school.postservice.dto.comment.CommentRequestDto;
 import faang.school.postservice.dto.comment.CommentResponseDto;
 import faang.school.postservice.dto.comment.CommentUpdateDto;
@@ -8,6 +9,7 @@ import faang.school.postservice.mapper.CommentRequestMapper;
 import faang.school.postservice.mapper.CommentResponseMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import feign.FeignException;
@@ -67,6 +69,8 @@ class CommentServiceTest {
     private PostRepository postRepository;
     @Mock
     private UserServiceClient userServiceClient;
+    @Mock
+    private CommentEventPublisher commentEventPublisher;
 
     @Spy
     private CommentResponseMapper commentResponseMapper = Mappers.getMapper(CommentResponseMapper.class);
@@ -75,6 +79,8 @@ class CommentServiceTest {
 
     @Captor
     private ArgumentCaptor<Comment> commentCaptor;
+    @Captor
+    private ArgumentCaptor<CommentEvent> commentEventCaptor;
 
 
     private CommentRequestDto commentRequestDto;
@@ -119,6 +125,13 @@ class CommentServiceTest {
 
         verify(commentRepository, times(1)).save(commentCaptor.capture());
         assertEquals(comment, commentCaptor.getValue());
+        Comment savedComment = commentCaptor.getValue();
+
+        assertEquals(post, savedComment.getPost());
+        assertEquals(commentRequestDto.getAuthorId(), savedComment.getAuthorId());
+        assertEquals(comment.getContent(), savedComment.getContent());
+
+        verify(commentEventPublisher, times(1)).publish(commentEventCaptor.capture());
     }
 
     @Test
