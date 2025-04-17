@@ -10,8 +10,8 @@ import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.event.PostEvent;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.publisher.PostEventPublisher;
-import faang.school.postservice.publisher.kafka.KafkaPostProducer;
+import faang.school.postservice.publisher.redis.PostEventPublisher;
+import faang.school.postservice.publisher.kafka.PostEventProducer;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.corrector.PostCorrector;
 import faang.school.postservice.service.moderate.ModerationService;
@@ -42,7 +42,7 @@ public class PostService {
     private final ModerationService moderationService;
     private final AsyncConfig asyncConfig;
     private final PostEventPublisher postEventPublisher;
-    private final KafkaPostProducer kafkaPostProducer;
+    private final PostEventProducer postEventProducer;
     private final UserServiceClient userServiceClient;
     private final FeedService feedService;
 
@@ -81,14 +81,13 @@ public class PostService {
 
         Post savedPost = postRepository.save(post);
 
-
         List<Long> subscriberIds = userServiceClient.getFollowerIds(savedPost.getAuthorId());
         PostCreatedEvent event = PostCreatedEvent.builder()
                 .postId(savedPost.getId())
                 .authorId(savedPost.getAuthorId())
                 .subscriberIds(subscriberIds)
                 .build();
-        kafkaPostProducer.sendEvent(event);
+        postEventProducer.sendEvent(event);
 
         return postMapper.toDto(savedPost);
     }

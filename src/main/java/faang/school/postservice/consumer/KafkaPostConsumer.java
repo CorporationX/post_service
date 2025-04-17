@@ -1,12 +1,15 @@
 package faang.school.postservice.consumer;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.event.PostEvent;
-import faang.school.postservice.exception.SubscriberProcessingException;
 import faang.school.postservice.exception.InvalidPostEventException;
+import faang.school.postservice.exception.SubscriberProcessingException;
 import faang.school.postservice.service.FeedService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -15,17 +18,24 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class KafkaPostConsumer {
-
+    private final ObjectMapper objectMapper;
     private final FeedService feedService;
 
-    @KafkaListener(topics = "posts", groupId = "feed-group")
-    public void listen(PostEvent postEvent) {
-        validatePostEvent(postEvent);
-        List<Long> failedSubscribers = postEvent.subscriberIds().stream()
-                .filter(subscriberId -> !processSubscriber(subscriberId, postEvent))
-                .toList();
+    @KafkaListener(topics = "${spring.data.kafka.topic.post.name}",
+            groupId = "${spring.data.kafka.topic.post.group}")
+    public void listen(String postEventString, Acknowledgment ack) {
+        try {
+            PostEvent postEvent = objectMapper.readValue(postEventString, PostEvent.class);
+            validatePostEvent(postEvent);
+            List<Long> failedSubscribers = postEvent.subscriberIds().stream()
+                    .filter(subscriberId -> !processSubscriber(subscriberId, postEvent))
+                    .toList();
 
-        checkFailedSubscribers(failedSubscribers);
+            checkFailedSubscribers(failedSubscribers);
+            ack.acknowledge();
+        } catch (JsonProcessingException e) {
+            log.error("Произошла ошибка при десериализации ивента PostEvent", e);
+        }
     }
 
     private void checkFailedSubscribers(List<Long> failedSubscribers) {

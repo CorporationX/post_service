@@ -10,8 +10,8 @@ import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.publisher.PostEventPublisher;
-import faang.school.postservice.publisher.kafka.KafkaPostProducer;
+import faang.school.postservice.publisher.redis.PostEventPublisher;
+import faang.school.postservice.publisher.kafka.PostEventProducer;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.corrector.PostCorrector;
 import faang.school.postservice.service.moderate.ModerationService;
@@ -81,7 +81,7 @@ public class PostServiceTest {
     private UserServiceClient userServiceClient;
 
     @Mock
-    private KafkaPostProducer kafkaPostProducer;
+    private PostEventProducer postEventProducer;
 
     private final Executor executor = Executors.newSingleThreadExecutor();
 
@@ -136,7 +136,7 @@ public class PostServiceTest {
         ReadPostDto response = postService.create(createPostDto);
 
         ArgumentCaptor<PostCreatedEvent> eventCaptor = ArgumentCaptor.forClass(PostCreatedEvent.class);
-        verify(kafkaPostProducer).sendEvent(eventCaptor.capture());
+        verify(postEventProducer).sendEvent(eventCaptor.capture());
 
         PostCreatedEvent sentEvent = eventCaptor.getValue();
         assertEquals(1L, sentEvent.getPostId());

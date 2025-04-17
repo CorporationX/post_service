@@ -1,5 +1,7 @@
 package faang.school.postservice.consumer;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.event.PostViewEvent;
 import faang.school.postservice.service.PostService;
 import lombok.RequiredArgsConstructor;
@@ -12,14 +14,18 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 @Slf4j
 public class KafkaPostViewConsumer {
-
+    private final ObjectMapper objectMapper;
     private final PostService postService;
 
-    @KafkaListener(topics = "post.views", groupId = "post-view-group", containerFactory = "postViewKafkaListenerContainerFactory")
-    public void listen(PostViewEvent event, Acknowledgment ack) {
+    @KafkaListener(topics = "${spring.data.kafka.topic.post-views.name}",
+            groupId = "${spring.data.kafka.topic.post-views.group}")
+    public void listen(String postViewEventString, Acknowledgment ack) {
         try {
-            postService.incrementView(event.postId());
+            PostViewEvent postViewEvent = objectMapper.readValue(postViewEventString, PostViewEvent.class);
+            postService.incrementView(postViewEvent.postId());
             ack.acknowledge();
+        } catch (JsonProcessingException e) {
+            log.error("Произошла ошибка при десериализации ивента PostEvent", e);
         } catch (Exception e) {
             log.error("Произошла ошибка при увеличении просмотров у поста", e);
         }

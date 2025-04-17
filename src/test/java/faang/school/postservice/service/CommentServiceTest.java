@@ -3,12 +3,14 @@ package faang.school.postservice.service;
 import faang.school.postservice.dto.comment.CommentCreateDto;
 import faang.school.postservice.dto.comment.CommentReadDto;
 import faang.school.postservice.dto.comment.CommentUpdateDto;
+import faang.school.postservice.dto.post.CommentCreatedEvent;
 import faang.school.postservice.event.CommentEvent;
 import faang.school.postservice.exception.BusinessException;
 import faang.school.postservice.mapper.comment.CommentMapperImpl;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.publisher.CommentEventPublisher;
+import faang.school.postservice.publisher.kafka.CommentEventProducer;
+import faang.school.postservice.publisher.redis.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.Test;
@@ -23,6 +25,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -45,6 +48,9 @@ class CommentServiceTest {
 
     @Mock
     private CommentEventPublisher commentEventPublisher;
+
+    @Mock
+    private CommentEventProducer commentEventProducer;
 
     @InjectMocks
     private CommentService commentService;
@@ -82,6 +88,7 @@ class CommentServiceTest {
                 .commentId(comment.getId())
                 .content(comment.getContent())
                 .build());
+        verify(commentEventProducer).sendEvent(any(CommentCreatedEvent.class));
     }
 
     @Test

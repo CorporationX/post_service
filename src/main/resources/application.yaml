@@ -39,9 +39,15 @@ spring:
       topic:
         post-views:
           name: post.views
+          group: post-view-group
         post:
           name: posts
+          group: feed-group
           partitions: 10
+          replicas: 1
+        comments:
+          name: comments
+          partitions: 3
           replicas: 1
       admin:
         properties:
