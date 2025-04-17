@@ -1,6 +1,7 @@
 package faang.school.postservice.publisher.like;
 
 import faang.school.postservice.dto.like.LikeEvent;
+import faang.school.postservice.model.outbox.EventType;
 import faang.school.postservice.publisher.AbstractEventPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,5 +41,15 @@ public class LikeEventPublisher extends AbstractEventPublisher<LikeEvent> {
     @Override
     protected String getChannel() {
         return likeChannel;
+    }
+
+    @Override
+    public EventType getEventType() {
+        return EventType.LIKE_CREATED;
+    }
+
+    @Override
+    public Class<LikeEvent> getEventClass() {
+        return LikeEvent.class;
     }
 }

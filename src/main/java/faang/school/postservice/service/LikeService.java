@@ -1,8 +1,11 @@
 package faang.school.postservice.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.like.LikeDto;
+import faang.school.postservice.dto.like.LikeEvent;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.UserAlreadyLikedException;
@@ -11,10 +14,14 @@ import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.publisher.like.LikeEventPublisher;
+import faang.school.postservice.model.outbox.EventStatus;
+import faang.school.postservice.model.outbox.EventType;
+import faang.school.postservice.model.outbox.OutboxEvent;
 import faang.school.postservice.publisher.like.DeleteLikeEventPublisher;
+import faang.school.postservice.publisher.like.LikeEventPublisher;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.publisher.like.LikeEventPublisher;
+import faang.school.postservice.service.outbox.OutboxEventService;
 import faang.school.postservice.validator.CommentValidator;
 import faang.school.postservice.validator.PostValidator;
 import faang.school.postservice.validator.UserValidator;
@@ -49,6 +56,8 @@ public class LikeService {
     private final LikeEventPublisher likeEventPublisher;
     private final DeleteLikeEventPublisher deleteLikeEventPublisher;
     private final PostService postService;
+    private final OutboxEventService outboxService;
+    private final OutboxEventService outboxEventService;
 
     public List<UserDto> getAllUsersWhoLikedPost(Long postId) {
         Post post = postValidator.getPostById(postId);
@@ -80,7 +89,21 @@ public class LikeService {
                 .post(postValidator.getPostById(postId))
                 .build();
         likeRepository.save(like);
+
+        LikeEvent likeEvent = getLikeEvent(postId, userId);
+        OutboxEvent outboxEvent = buildOutboxEvent(likeEvent);
+        outboxEventService.saveOutboxEvent(outboxEvent);
+
         return likeMapper.toLikeDto(like);
+    }
+
+    private OutboxEvent buildOutboxEvent(LikeEvent likeEvent) {
+        String payload = serializePayload(likeEvent);
+        return OutboxEvent.builder()
+                .type(EventType.LIKE_CREATED)
+                .payload(payload)
+                .status(EventStatus.IN_PROGRESS)
+                .build();
     }
 
     private LikeEvent getLikeEvent(Long postId, Long userId) {
@@ -162,5 +185,14 @@ public class LikeService {
         Long userId = userContext.getUserId();
         userValidator.validateUserExist(userId);
         return userId;
+    }
+
+    private String serializePayload(Object obj) {
+        try {
+            return new ObjectMapper().writeValueAsString(obj);
+        } catch (JsonProcessingException e) {
+            log.error("Failed to serialize payload", e);
+            throw new RuntimeException("Event serialization error", e);
+        }
     }
 }
