@@ -11,8 +11,8 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 public class FileUploadAsyncConfig {
     private final ModerationProperties moderationProperties;
 
-    @Bean(name = "fileUploadTaskExecutor")
-    public ThreadPoolTaskExecutor fileUploadTaskExecutor() {
+    @Bean(name = "asyncModerationExecutor")
+    public ThreadPoolTaskExecutor asyncModerationExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(moderationProperties.getCorePoolSize());
         executor.setMaxPoolSize(moderationProperties.getMaxPoolSize());

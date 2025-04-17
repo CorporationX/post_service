@@ -13,11 +13,11 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Component
-public class ModerationDictionary {
+public class ModerationDictionaryComment {
 
     private final Set<String> badWords;
 
-    public ModerationDictionary(@Value("classpath:moderation-dictionary.txt") Resource resource) throws IOException {
+    public ModerationDictionaryComment(@Value("classpath:moderation-dictionary.txt") Resource resource) throws IOException {
         this.badWords = new HashSet<>(
                 Files.readAllLines(resource.getFile().toPath())
                         .stream()

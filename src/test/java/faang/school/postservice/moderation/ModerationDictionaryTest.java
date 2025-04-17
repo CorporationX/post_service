@@ -23,7 +23,7 @@ class ModerationDictionaryTest {
         Resource mockResource = mock(Resource.class);
         when(mockResource.getFile()).thenReturn(tempFile);
 
-        ModerationDictionary dictionary = new ModerationDictionary(mockResource);
+        ModerationDictionaryComment dictionary = new ModerationDictionaryComment(mockResource);
 
         assertTrue(dictionary.containsBadWords("this is badword"));
         assertTrue(dictionary.containsBadWords("clean TESTMAT here"));
