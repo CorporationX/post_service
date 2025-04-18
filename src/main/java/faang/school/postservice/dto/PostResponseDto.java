@@ -1,10 +1,12 @@
 package faang.school.postservice.dto;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import lombok.Builder;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 @Builder
 public record PostResponseDto(
         Long id,

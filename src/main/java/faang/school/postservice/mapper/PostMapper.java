@@ -24,7 +24,6 @@ public interface PostMapper {
     @Mapping(target = "resources", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
-    @Mapping(target = "hashtagsName", ignore = true)
     Post toEntity(PostDto postDto);
 
     @Mapping(target = "likeCount", source = "likes", qualifiedByName = "calculateLikeCount")
@@ -36,12 +35,6 @@ public interface PostMapper {
     PostResponseDto toResponseDto(Post post);
 
     List<PostResponseDto> toResponseDtoList(List<Post> posts);
-
-    default List<Long> mapLikeToIds(List<Like> likes) {
-        return likes != null ? likes.stream()
-                .map(Like::getId)
-                .toList() : Collections.emptyList();
-    }
 
     default List<Long> mapCommentToIds(List<Comment> comments) {
         return comments != null ? comments.stream()
