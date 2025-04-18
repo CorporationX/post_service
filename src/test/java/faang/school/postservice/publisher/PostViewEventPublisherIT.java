@@ -8,8 +8,11 @@ import faang.school.postservice.dto.event.PostViewEvent;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.VerifiedStatus;
 import faang.school.postservice.repository.PostRepository;
+import jakarta.transaction.Transactional;
 import lombok.Getter;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -17,7 +20,6 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 import org.testcontainers.utility.DockerImageName;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPubSub;
@@ -26,9 +28,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 
 @SpringBootTest
 @Testcontainers
@@ -40,8 +40,7 @@ public class PostViewEventPublisherIT {
     private UserContext userContext;
     @Autowired
     private PostRepository postRepository;
-
-    private final ObjectMapper mapper = new ObjectMapper();
+    private static final Logger log = LoggerFactory.getLogger(PostViewEventPublisherIT.class);
 
     @Container
     public static PostgreSQLContainer<?> POSTGRESQL_CONTAINER =
@@ -51,6 +50,7 @@ public class PostViewEventPublisherIT {
     private static final RedisContainer REDIS_CONTAINER =
             new RedisContainer(DockerImageName.parse("redis/redis-stack:latest"));
 
+    @Transactional
     @Test
     public void testPositivePostViewEventPublisher() throws IOException {
         try (Jedis jedis = new Jedis(REDIS_CONTAINER.getHost(), REDIS_CONTAINER.getMappedPort(6379))) {
@@ -83,15 +83,12 @@ public class PostViewEventPublisherIT {
                     .build();
 
             PostDto postDto = postController.getPost(post.getId());
+            System.out.println(myPubSub.getReceivedMessage());
+            log.info("Received message: {}", myPubSub.getReceivedMessage());
 
+            assertTrue(myPubSub.getReceivedMessage().contains(postViewEvent.getPostId().toString()));
         }
-
     }
-    @Test
-    public void testNegativePostViewEventPublisher() throws IOException {
-
-    }
-
 
     @DynamicPropertySource
     static void postgresqlProperties(DynamicPropertyRegistry registry) {
@@ -116,6 +113,10 @@ public class PostViewEventPublisherIT {
         @Override
         public void onMessage(String channel, String message) {
             receivedMessage = message;
+        }
+
+        public String getReceivedMessage() {
+            return receivedMessage;
         }
     }
 }
