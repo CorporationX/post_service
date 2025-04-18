@@ -22,6 +22,12 @@ spring:
 
   kafka:
     bootstrap-servers: localhost:9092
+    producer:
+      batch-size: 16384
+      linger-ms: 500
+      buffer-memory: 33554432
+      scheduler:
+        cron: "*/30 * * * * *"
     topics:
       analytics-comment-topic:
         name: analytics_comment_topic
@@ -36,6 +42,10 @@ spring:
       publish-post-topic:
         name: publish_post_topic
         subscribers-batch-size: 1000
+      analytics-post-view-topic:
+          name: analytics_post_view_topic
+      notification-post-view-topic:
+          name: notification_post_view_topic
 
   data:
     redis:

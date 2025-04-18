@@ -1,7 +1,10 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.annotations.PublishPostEvent;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.event.post.view.AnalyticsPostViewEvent;
+import faang.school.postservice.model.event.post.view.NotificationPostViewEvent;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -91,6 +94,7 @@ public class PostService {
         postCacheService.removePostFromCache(postId);
     }
 
+    @PublishPostEvent(events = {AnalyticsPostViewEvent.class, NotificationPostViewEvent.class})
     public Post get(Long postId) {
         Optional<Post> cachedPost = postCacheService.getCachedPost(postId);
 
@@ -113,6 +117,7 @@ public class PostService {
                 .toList();
     }
 
+    @PublishPostEvent(events = {AnalyticsPostViewEvent.class})
     public List<Post> getPostsByAuthorId(Long userId) {
         return postRepository.findByAuthorId(userId).stream()
                 .filter(post -> !post.isDeleted() && post.isPublished())
@@ -120,6 +125,7 @@ public class PostService {
                 .toList();
     }
 
+    @PublishPostEvent(events = {AnalyticsPostViewEvent.class})
     public List<Post> getPostsByProjectId(Long projectId) {
         return postRepository.findByProjectId(projectId).stream()
                 .filter(post -> !post.isDeleted() && post.isPublished())

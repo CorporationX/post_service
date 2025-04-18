@@ -18,12 +18,26 @@ public class KafkaProducerConfig {
     @Value(value = "${spring.kafka.bootstrap-servers}")
     private String bootstrapAddress;
 
+    @Value("${spring.kafka.producer.batch-size}")
+    private int batchSize;
+
+    @Value("${spring.kafka.producer.linger-ms}")
+    private int lingerMs;
+
+    @Value("${spring.kafka.producer.buffer-memory}")
+    private int bufferMemory;
+
     @Bean
     public ProducerFactory<String, String> producerFactory() {
         Map<String, Object> configProps = new HashMap<>();
         configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress);
         configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+
+        configProps.put(ProducerConfig.BATCH_SIZE_CONFIG, batchSize);
+        configProps.put(ProducerConfig.LINGER_MS_CONFIG, lingerMs);
+        configProps.put(ProducerConfig.BUFFER_MEMORY_CONFIG, bufferMemory);
+
         return new DefaultKafkaProducerFactory<>(configProps);
     }
 
