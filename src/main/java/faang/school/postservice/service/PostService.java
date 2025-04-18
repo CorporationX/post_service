@@ -3,11 +3,12 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.PostDto;
-import faang.school.postservice.exception.DataValidationException;
-import faang.school.postservice.exception.PostUnverifiedException;
-import faang.school.postservice.exception.AsyncPostProcessingException;
+import faang.school.postservice.dto.PostResponseDto;
 import faang.school.postservice.dto.event.PostViewEvent;
+import faang.school.postservice.exception.AsyncPostProcessingException;
+import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.PostAlreadyPublishedException;
+import faang.school.postservice.exception.PostUnverifiedException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.Comment;
@@ -124,7 +125,7 @@ public class PostService {
                 batch.size(), batch.get(0).getId(), batch.get(batch.size() - 1).getId());
     }
 
-    public PostDto create(PostDto postDto) {
+    public PostResponseDto create(PostDto postDto) {
         validateContent(postDto);
         validateAuthor(postDto.authorId(), postDto.projectId());
         Post post = postMapper.toEntity(postDto);
@@ -151,10 +152,10 @@ public class PostService {
 
         postRepository.save(post);
         log.info("Post created: {}", post);
-        return postMapper.toDto(post);
+        return postMapper.toResponseDto(post);
     }
 
-    public PostDto publish(Long postId) {
+    public PostResponseDto publish(Long postId) {
         Post post = takePost(postId);
         if (post.isPublished()) {
             throw new PostAlreadyPublishedException("Post with ID " + postId + " is already published.");
@@ -166,16 +167,16 @@ public class PostService {
         post.setPublishedAt(LocalDateTime.now());
         postRepository.save(post);
         log.info("Post published: {}", post);
-        return postMapper.toDto(post);
+        return postMapper.toResponseDto(post);
     }
 
-    public PostDto update(PostDto postDto, Long postId) {
+    public PostResponseDto update(PostDto postDto, Long postId) {
         validateContent(postDto);
         Post post = takePost(postId);
         post.setContent(postDto.content());
         postRepository.save(post);
         log.info("Post updated: {}", post);
-        return postMapper.toDto(post);
+        return postMapper.toResponseDto(post);
     }
 
     public void deleteById(Long postId) {
@@ -186,52 +187,56 @@ public class PostService {
         postRepository.save(post);
     }
 
-    public PostDto getPost(Long postId, Long userId) {
+    public PostResponseDto getPost(Long postId, Long userId) {
         Post post = takePost(postId);
         log.info("Post retrieved: {}", post);
         postViewEventPublisher.published(new PostViewEvent(postId, userId,
                 post.getAuthorId(), LocalDateTime.now()));
-        return postMapper.toDto(post);
+        return postMapper.toResponseDto(post);
     }
 
-    public List<PostDto> findDraftsByAuthorId(Long authorId, Long userId) {
+    public List<PostResponseDto> findDraftsByAuthorId(Long authorId, Long userId) {
         return postRepository.findByAuthorId(authorId)
                 .filter(post -> !post.isDeleted() && !post.isPublished())
                 .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
                 .peek(post -> postViewEventPublisher.published(
                         new PostViewEvent(post.getId(), userId, authorId, LocalDateTime.now())))
-                .map(postMapper::toDto)
+                .map(postMapper::toResponseDto)
                 .toList();
     }
 
-    public List<PostDto> findDraftsByProjectId(Long projectId, Long userId) {
+    public List<PostResponseDto> findDraftsByProjectId(Long projectId, Long userId) {
         return postRepository.findByProjectId(projectId)
                 .filter(post -> !post.isDeleted() && !post.isPublished())
                 .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
                 .peek(post -> postViewEventPublisher.published(
                         new PostViewEvent(post.getId(), userId, projectId, LocalDateTime.now())))
-                .map(postMapper::toDto)
+                .map(postMapper::toResponseDto)
                 .toList();
     }
 
-    public List<PostDto> findPublishedByAuthorId(Long authorId, Long userId) {
+    public List<PostResponseDto> findPublishedByAuthorId(Long authorId, Long userId) {
         return postRepository.findByAuthorId(authorId)
                 .filter(post -> !post.isDeleted() && post.isPublished())
                 .sorted(Comparator.comparing(Post::getPublishedAt).reversed())
                 .peek(post -> postViewEventPublisher.published(
                         new PostViewEvent(post.getId(), userId, authorId, LocalDateTime.now())))
-                .map(postMapper::toDto)
+                .map(postMapper::toResponseDto)
                 .toList();
     }
 
-    public List<PostDto> findPublishedByProjectId(Long projectId, Long userId) {
+    public List<PostResponseDto> findPublishedByProjectId(Long projectId, Long userId) {
         return postRepository.findByProjectId(projectId)
                 .filter(post -> !post.isDeleted() && post.isPublished())
                 .sorted(Comparator.comparing(Post::getPublishedAt).reversed())
                 .peek(post -> postViewEventPublisher.published(
                         new PostViewEvent(post.getId(), userId, projectId, LocalDateTime.now())))
-                .map(postMapper::toDto)
+                .map(postMapper::toResponseDto)
                 .toList();
+    }
+
+    public List<PostResponseDto> getPostsByIds(List<Long> postIds) {
+        return postMapper.toResponseDtoList(postRepository.findAllByIdIn(postIds));
     }
 
     private void validateContent(PostDto postDto) {

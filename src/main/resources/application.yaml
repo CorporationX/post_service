@@ -46,6 +46,9 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+hashtag-service:
+  host: localhost
+  port: 8090
 
 thread-pool:
   delete-expired-posts-max-threads: 3

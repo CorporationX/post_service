@@ -31,4 +31,6 @@ public interface PostRepository extends CrudRepository<Post, Long> {
             HAVING COUNT(p) >= :minRejectedPosts
             """)
     List<Long> findAuthorIdsWithMinRejectedPosts(@Param("minRejectedPosts") int minRejectedPosts);
+
+    List<Post> findAllByIdIn(List<Long> ids);
 }
