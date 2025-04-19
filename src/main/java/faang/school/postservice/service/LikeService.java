@@ -2,12 +2,14 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.event.LikeEvent;
 import faang.school.postservice.exception.ConcurrentLikeException;
 import faang.school.postservice.exception.DuplicateEntityException;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.LikeEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -17,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -38,6 +41,7 @@ public class LikeService {
     private final CommentRepository commentRepository;
     private final UserContext userContext;
     private final UserServiceClient userClient;
+    private final LikeEventPublisher likeEventPublisher;
 
     public void putLikeOnPost(Long postId) {
         Long userId = getContextUser();
@@ -61,6 +65,9 @@ public class LikeService {
             printMessageAddLike(postId);
         } finally {
             userLock.unlock();
+            Like like = likeRepository.findByPostIdAndUserId(postId, userId)
+                    .orElseThrow(() -> new EntityNotFoundException("Лайк не найден"));
+            likeEventPublisher.publish(new LikeEvent(like.getId(), userId, postId));
         }
     }
 
@@ -160,7 +167,7 @@ public class LikeService {
         return userClient.getUser(userContext.getUserId()).id();
     }
 
-    private boolean isLikeOnPostEmpty(Long postId, Long userId) {
+    boolean isLikeOnPostEmpty(Long postId, Long userId) {
         return likeRepository.findByPostIdAndUserId(postId, userId).isEmpty();
     }
 
