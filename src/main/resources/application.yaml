@@ -27,6 +27,23 @@ spring:
         user-ban: user-ban
         postViewEventPublisher: PostViewEvent_topic
 
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: post-group
+      auto-offset-reset: earliest
+    producer:
+      acks: "1"
+    topics:
+      hashtag-adding:
+        name: "hashtag-adding-topic"
+        partitions: 3
+        replicas: 1
+      hashtag-removing:
+        name: "hashtag-removing-topic"
+        partitions: 3
+        replicas: 1
+
   profiles:
     active: local
 

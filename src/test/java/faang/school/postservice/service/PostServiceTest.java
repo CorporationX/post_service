@@ -1,5 +1,6 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.client.HashtagServiceClient;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.PostDto;
@@ -8,6 +9,8 @@ import faang.school.postservice.exception.PostAlreadyPublishedException;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.VerifiedStatus;
+import faang.school.postservice.publisher.HashtagAddingEventPublisher;
+import faang.school.postservice.publisher.HashtagRemovingEventPublisher;
 import faang.school.postservice.publisher.PostViewEventPublisher;
 import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.repository.CommentRepository;
@@ -76,6 +79,15 @@ public class PostServiceTest {
     @Mock
     private PostViewEventPublisher postViewEventPublisher;
 
+    @Mock
+    private HashtagAddingEventPublisher hashtagAddingPublisher;
+
+    @Mock
+    private HashtagRemovingEventPublisher hashtagRemovingPublisher;
+
+    @Mock
+    private HashtagServiceClient hashtagClient;
+
     @Test
     public void testPositivePublish() {
         Post post = Post.builder()
@@ -87,8 +99,8 @@ public class PostServiceTest {
         PostResponseDto postDto = postService.publish(post.getId());
         verify(postRepository, times(1)).save(post);
 
-        assertEquals(post.getId(), postDto.id());
-        assertTrue(postDto.published());
+        assertEquals(post.getId(), postDto.getId());
+        assertTrue(postDto.isPublished());
     }
 
     @Test
@@ -118,7 +130,7 @@ public class PostServiceTest {
         when(postRepository.findById(any())).thenReturn(Optional.of(post));
         PostResponseDto postDto1 = postService.update(postDto, 1L);
         verify(postRepository, times(1)).save(post);
-        assertEquals(postDto1.content(), postDto.content());
+        assertEquals(postDto1.getContent(), postDto.content());
     }
 
     @Test
@@ -161,7 +173,7 @@ public class PostServiceTest {
                 .build();
         when(postRepository.findById(1L)).thenReturn(Optional.of(post));
         PostResponseDto dto = postService.getPost(post.getId(),1L);
-        assertEquals(post.getId(), dto.id());
+        assertEquals(post.getId(), dto.getId());
     }
 
     @Test
@@ -188,9 +200,9 @@ public class PostServiceTest {
         List<PostResponseDto> list = postService.findDraftsByAuthorId(1L,1L);
 
         assertEquals(1, list.size());
-        assertEquals(post.getId(), list.get(0).id());
-        assertEquals(post.isPublished(), list.get(0).published());
-        assertEquals(post.getContent(), list.get(0).content());
+        assertEquals(post.getId(), list.get(0).getId().intValue());
+        assertEquals(post.isPublished(), list.get(0).isPublished());
+        assertEquals(post.getContent(), list.get(0).getContent());
     }
 
     @Test
@@ -228,9 +240,9 @@ public class PostServiceTest {
         List<PostResponseDto> list = postService.findDraftsByProjectId(1L,1L);
 
         assertEquals(1, list.size());
-        assertEquals(post.getId(), list.get(0).id());
-        assertEquals(post.isPublished(), list.get(0).published());
-        assertEquals(post.getContent(), list.get(0).content());
+        assertEquals(post.getId(), list.get(0).getId().intValue());
+        assertEquals(post.isPublished(), list.get(0).isPublished());
+        assertEquals(post.getContent(), list.get(0).getContent());
     }
 
     @Test
@@ -268,9 +280,9 @@ public class PostServiceTest {
         List<PostResponseDto> list = postService.findPublishedByAuthorId(1L,1L);
 
         assertEquals(1, list.size());
-        assertEquals(post.getId(), list.get(0).id());
-        assertEquals(post.isPublished(), list.get(0).published());
-        assertEquals(post.getContent(), list.get(0).content());
+        assertEquals(post.getId(), list.get(0).getId().intValue());
+        assertEquals(post.isPublished(), list.get(0).isPublished());
+        assertEquals(post.getContent(), list.get(0).getContent());
     }
 
     @Test
@@ -308,9 +320,9 @@ public class PostServiceTest {
         List<PostResponseDto> list = postService.findPublishedByProjectId(1L,1L);
 
         assertEquals(1, list.size());
-        assertEquals(post.getId(), list.get(0).id());
-        assertEquals(post.isPublished(), list.get(0).published());
-        assertEquals(post.getContent(), list.get(0).content());
+        assertEquals(post.getId(), list.get(0).getId().intValue());
+        assertEquals(post.isPublished(), list.get(0).isPublished());
+        assertEquals(post.getContent(), list.get(0).getContent());
     }
 
     @Test

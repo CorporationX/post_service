@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
+import java.util.Map;
 
 @FeignClient(name = "hashtag-service", url = "${hashtag-service.host}:${hashtag-service.port}")
 public interface HashtagServiceClient {
@@ -14,5 +15,5 @@ public interface HashtagServiceClient {
     List<Long> getHashtagsIdsByPostId(@PathVariable Long postId);
 
     @GetMapping("/hashtags/posts")
-    List<Long> getHashtagsIdsByPostIds(@RequestParam List<Long> postIds);
+    Map<Long, List<Long>> getHashtagsIdsByPostIds(@RequestParam List<Long> postIds);
 }
