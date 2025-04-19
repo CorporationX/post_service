@@ -17,10 +17,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.model.outbox.EventStatus;
 import faang.school.postservice.model.outbox.EventType;
 import faang.school.postservice.model.outbox.OutboxEvent;
-import faang.school.postservice.publisher.like.DeleteLikeEventPublisher;
-import faang.school.postservice.publisher.like.LikeEventPublisher;
 import faang.school.postservice.repository.LikeRepository;
-import faang.school.postservice.publisher.like.LikeEventPublisher;
 import faang.school.postservice.service.outbox.OutboxEventService;
 import faang.school.postservice.validator.CommentValidator;
 import faang.school.postservice.validator.PostValidator;
@@ -56,7 +53,6 @@ public class LikeService {
     private final LikeEventPublisher likeEventPublisher;
     private final DeleteLikeEventPublisher deleteLikeEventPublisher;
     private final PostService postService;
-    private final OutboxEventService outboxService;
     private final OutboxEventService outboxEventService;
 
     public List<UserDto> getAllUsersWhoLikedPost(Long postId) {
@@ -91,28 +87,10 @@ public class LikeService {
         likeRepository.save(like);
 
         LikeEvent likeEvent = getLikeEvent(postId, userId);
-        OutboxEvent outboxEvent = buildOutboxEvent(likeEvent);
+        OutboxEvent outboxEvent = buildOutboxEvent(likeEvent, EventType.LIKE_CREATED);
         outboxEventService.saveOutboxEvent(outboxEvent);
 
         return likeMapper.toLikeDto(like);
-    }
-
-    private OutboxEvent buildOutboxEvent(LikeEvent likeEvent) {
-        String payload = serializePayload(likeEvent);
-        return OutboxEvent.builder()
-                .type(EventType.LIKE_CREATED)
-                .payload(payload)
-                .status(EventStatus.IN_PROGRESS)
-                .build();
-    }
-
-    private LikeEvent getLikeEvent(Long postId, Long userId) {
-        return LikeEvent.builder()
-                .authorPostId(postService.getPost(postId).getAuthorId())
-                .authorLikeId(userId)
-                .postId(postId)
-                .createdAt(LocalDateTime.now())
-                .build();
     }
 
     private List<UserDto> fetchUsersInBatches(List<Long> userIds) {
@@ -139,7 +117,8 @@ public class LikeService {
                 });
         likeRepository.delete(like);
         LikeEvent likeEvent = getLikeEvent(postId, userId);
-        deleteLikeEventPublisher.publish(likeEvent);
+        OutboxEvent outboxEvent = buildOutboxEvent(likeEvent, EventType.LIKE_DELETED);
+        outboxEventService.saveOutboxEvent(outboxEvent);
         return likeMapper.toLikeDto(like);
     }
 
@@ -194,5 +173,23 @@ public class LikeService {
             log.error("Failed to serialize payload", e);
             throw new RuntimeException("Event serialization error", e);
         }
+    }
+
+    private OutboxEvent buildOutboxEvent(LikeEvent likeEvent, EventType eventType) {
+        String payload = serializePayload(likeEvent);
+        return OutboxEvent.builder()
+                .type(eventType)
+                .payload(payload)
+                .status(EventStatus.IN_PROGRESS)
+                .build();
+    }
+
+    private LikeEvent getLikeEvent(Long postId, Long userId) {
+        return LikeEvent.builder()
+                .authorPostId(postService.getPost(postId).getAuthorId())
+                .authorLikeId(userId)
+                .postId(postId)
+                .createdAt(LocalDateTime.now())
+                .build();
     }
 }
