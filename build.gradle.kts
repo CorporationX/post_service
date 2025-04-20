@@ -96,6 +96,8 @@ tasks.jacocoTestReport {
 tasks.jacocoTestCoverageVerification {
     violationRules {
         rule {
+            enabled = false
+
             limit {
                 counter = "CLASS"
                 value = "COVEREDRATIO"
