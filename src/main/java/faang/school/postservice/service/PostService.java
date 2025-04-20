@@ -325,8 +325,8 @@ public class PostService {
         return hashtags;
     }
 
-    private List<PostResponseDto> returnPostsDtoList(Stream<Post> posts, Long userId, Long id, Map<Long,
-            List<Long>> hashtags) {
+    private List<PostResponseDto> returnPostsDtoList(Stream<Post> posts, Long userId, Long id,
+                                                     Map<Long, List<Long>> hashtags) {
         return posts
                 .sorted(Comparator.comparing(Post::getPublishedAt).reversed())
                 .peek(post -> postViewEventPublisher.published(

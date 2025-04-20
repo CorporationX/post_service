@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MultipartException;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @RestControllerAdvice
@@ -16,8 +17,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler({
             jakarta.persistence.EntityNotFoundException.class,
-            faang.school.postservice.exception.EntityNotFoundException.class,
-            HashtagServiceConnectionException.class,
+            faang.school.postservice.exception.EntityNotFoundException.class
     })
     public ResponseEntity<ErrorResponse> handleExceptionsWithStatusNotFound(Exception ex) {
         return ResponseEntity.status(NOT_FOUND).body(getErrorResponse(ex));
@@ -35,6 +35,13 @@ public class GlobalExceptionHandler {
     })
     public ResponseEntity<ErrorResponse> handleExceptionsWithStatusBadRequest(Exception ex) {
         return ResponseEntity.status(BAD_REQUEST).body(getErrorResponse(ex));
+    }
+
+    @ExceptionHandler({
+            HashtagServiceConnectionException.class
+    })
+    public ResponseEntity<ErrorResponse> handleExceptionsWithStatusInternalServerError(Exception ex) {
+        return ResponseEntity.status(INTERNAL_SERVER_ERROR).body(getErrorResponse(ex));
     }
 
     private ErrorResponse getErrorResponse(Exception ex) {
