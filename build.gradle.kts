@@ -94,10 +94,15 @@ tasks.jacocoTestReport {
 }
 
 tasks.jacocoTestCoverageVerification {
+    classDirectories.setFrom(
+        files(classDirectories.files.map {
+            fileTree(it).apply {
+                include("faang/school/postservice/service/**")
+            }
+        })
+    )
     violationRules {
         rule {
-            enabled = false
-
             limit {
                 counter = "CLASS"
                 value = "COVEREDRATIO"
