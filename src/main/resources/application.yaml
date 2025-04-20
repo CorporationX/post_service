@@ -26,6 +26,7 @@ spring:
           name: calculations_channel
         user-ban: user-ban
         postViewEventPublisher: PostViewEvent_topic
+        like-event: likeEventTopic
 
   kafka:
     bootstrap-servers: localhost:9092
