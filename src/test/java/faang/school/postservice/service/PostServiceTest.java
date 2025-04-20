@@ -27,6 +27,7 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -371,5 +372,45 @@ public class PostServiceTest {
         assertThrows(NullPointerException.class, () -> postService.create(PostDto.builder()
                 .content("")
                 .build()));
+    }
+
+    @Test
+    public void testPositiveGetPostsByIds() {
+        String content = "content";
+        List<Long> postIds = List.of(1L, 2L, 3L);
+        List<Post> posts = List.of(
+                createPost(postIds.get(0), content),
+                createPost(postIds.get(1), content),
+                createPost(postIds.get(2), content)
+        );
+        List<PostResponseDto> responsePosts = List.of(
+                createPostDto(postIds.get(0), content),
+                createPostDto(postIds.get(1), content),
+                createPostDto(postIds.get(2), content)
+        );
+        when(postRepository.findAllByIdIn(postIds)).thenReturn(posts);
+
+        List<PostResponseDto> result = postService.getPostsByIds(postIds);
+
+        assertEquals(3, result.size());
+        assertEquals(responsePosts.get(0), result.get(0));
+    }
+
+    private Post createPost(Long id, String content) {
+        return Post.builder()
+                .id(id)
+                .content(content)
+                .build();
+    }
+
+    private PostResponseDto createPostDto(Long id, String content) {
+        return PostResponseDto.builder()
+                .id(id)
+                .content(content)
+                .likeCount(0)
+                .commentsId(Collections.emptyList())
+                .albumsId(Collections.emptyList())
+                .resourcesId(Collections.emptyList())
+                .build();
     }
 }
