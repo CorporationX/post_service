@@ -86,7 +86,7 @@ public class LikeService {
                 .build();
         likeRepository.save(like);
 
-        LikeEvent likeEvent = getLikeEvent(postId, userId);
+        LikeEvent likeEvent = getLikeEvent(postId, userId, false);
         OutboxEvent outboxEvent = buildOutboxEvent(likeEvent, EventType.LIKE_CREATED);
         outboxEventService.saveOutboxEvent(outboxEvent);
 
@@ -116,7 +116,7 @@ public class LikeService {
                                     .formatted(userId, postId));
                 });
         likeRepository.delete(like);
-        LikeEvent likeEvent = getLikeEvent(postId, userId);
+        LikeEvent likeEvent = getLikeEvent(postId, userId, true);
         OutboxEvent outboxEvent = buildOutboxEvent(likeEvent, EventType.LIKE_DELETED);
         outboxEventService.saveOutboxEvent(outboxEvent);
         return likeMapper.toLikeDto(like);
@@ -184,11 +184,12 @@ public class LikeService {
                 .build();
     }
 
-    private LikeEvent getLikeEvent(Long postId, Long userId) {
+    private LikeEvent getLikeEvent(Long postId, Long userId, boolean isDeleted) {
         return LikeEvent.builder()
                 .authorPostId(postService.getPost(postId).getAuthorId())
                 .authorLikeId(userId)
                 .postId(postId)
+                .isDeleted(isDeleted)
                 .createdAt(LocalDateTime.now())
                 .build();
     }

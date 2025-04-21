@@ -16,5 +16,6 @@ public class LikeEvent {
     private Long authorPostId;
     private Long authorLikeId;
     private Long postId;
+    private boolean isDeleted;
     private LocalDateTime createdAt;
 }
