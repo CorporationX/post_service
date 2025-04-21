@@ -17,14 +17,13 @@ public class AlbumValidator {
             throw new NotUniqueAlbumException("Album with the same title and author already exists.");
         } else {
             return albumDto;
+    
         }
     }
 
     public void validateAlbumOwner(long userId, Album album) {
-        // проверка, что юзер - хозяин альбома
     }
 
     public void validateAlbumAccess(long userId, Album album) {
-        // проверка, что у юзера есть доступ к альбому
     }
 }

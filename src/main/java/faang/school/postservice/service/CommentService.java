@@ -1,117 +1,118 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.dto.comment.CommentResponseDto;
-import faang.school.postservice.dto.comment.CreateCommentDto;
-import faang.school.postservice.dto.comment.UpdateCommentDto;
-import faang.school.postservice.event.CommentEvent;
+import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.event.EventsGenerator;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
-import faang.school.postservice.model.OutboxEvent;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.publisher.CommentEventPublisher;
+import faang.school.postservice.service.AuthorCacheService;
 import faang.school.postservice.repository.CommentRepository;
-import faang.school.postservice.repository.OutboxEventRepository;
-import faang.school.postservice.utils.Helper;
-import faang.school.postservice.validator.CommentValidator;
-import faang.school.postservice.validator.PostValidator;
-import jakarta.persistence.EntityNotFoundException;
+import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.CommentServiceErrors;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class CommentService {
-    private final CommentRepository commentRepository;
-    private final CommentAuthorCacheService commentAuthorCacheService;
-    private final PostService postService;
-    private final CommentMapper commentMapper;
-    private final PostValidator postValidator;
-    private final CommentValidator commentValidator;
-    private final UserServiceClient userServiceClient;
-    private final Helper helper;
-    private final OutboxEventRepository outboxEventRepository;
-    private final String AGGREGATE_TYPE = "Post";
+    private final CommentRepository repository;
+    private final PostRepository postRepository;
+    private final CommentMapper mapper;
+    private final EventsGenerator eventsGenerator;
+    private final AuthorCacheService authorCacheService;
 
-    @Transactional
-    public CommentResponseDto createComment(long postId, CreateCommentDto dto) {
-        postValidator.validatePostExistsById(postId);
-        userServiceClient.getUser(dto.getAuthorId());
+    public CommentDto addComment(Long postId, CommentDto commentDto) {
+        if (commentDto.getContent() == null || commentDto.getContent().isBlank()) {
+            throw new IllegalArgumentException(CommentServiceErrors.COMMENT_IS_EMPTY.getValue());
+        }
+        if (commentDto.getContent().length() > 4096) {
+            throw new IllegalArgumentException(CommentServiceErrors.COMMENT_TOO_LONG.getValue());
+        }
 
-        Comment comment = commentMapper.toEntity(dto);
-        comment.setPost(postService.getPostById(postId));
-        commentRepository.save(comment);
-        log.info("New comment: {} to post: {} has been created", comment.getId(), comment.getPost().getId());
+        Comment comment = mapper.toEntity(commentDto);
+        Post post = getPost(postId);
+        comment.setPost(post);
+        Comment saveComment = repository.save(comment);
+        post.getComments().add(saveComment);
+        post.setUpdatedAt(LocalDateTime.now());
+        postRepository.save(post);
+        var savedCommentDto = mapper.toDto(saveComment);
 
-        OutboxEvent outboxEvent = OutboxEvent.builder()
-                .aggregateId(postId)
-                .aggregateType(AGGREGATE_TYPE)
-                .eventType(CommentEvent.class.getSimpleName())
-                .payload(createAndSerializeCommentEvent(comment))
-                .createdAt(LocalDateTime.now())
-                .processed(false)
-                .build();
+        eventsGenerator.generateAndSendCommentEventToKafka(savedCommentDto);
+        authorCacheService.saveAuthorCache(savedCommentDto.getAuthorId());
 
-        outboxEventRepository.save(outboxEvent);
+        return savedCommentDto;
 
-        commentAuthorCacheService.cacheCommentAuthor(comment.getId(), comment.getAuthorId());
-
-        return commentMapper.toDto(comment);
     }
 
-    @Transactional
-    public CommentResponseDto updateComment(long postId, UpdateCommentDto dto) {
-        postValidator.validatePostExistsById(postId);
-        commentValidator.validateCommentExistsById(dto.getId());
-        userServiceClient.getUser(dto.getAuthorId());
+    public CommentDto updateComment(Long postId, CommentDto commentDto) {
+        getPost(postId);
+        Comment comment = repository.findById(commentDto.getId()).orElse(null);
+        if (comment == null) {
+            throw new IllegalArgumentException(CommentServiceErrors.COMMENT_NOT_FOUND.getValue());
+        }
+        CommentDto currentCommentDto = mapper.toDto(comment);
+        equalUpdateComment(commentDto, currentCommentDto);
+        commentDto.setUpdatedAt(LocalDateTime.now());
+        Comment newComment = mapper.toEntity(commentDto);
+        return mapper.toDto(repository.save(newComment));
 
-        Comment comment = getCommentById(dto.getId());
-        commentValidator.validateCommentAuthorId(comment, dto.getAuthorId());
-        comment.setContent(dto.getContent());
-        commentRepository.save(comment);
-        log.info("Comment: {} to post: {} has been updated", comment.getId(), comment.getPost().getId());
-
-        return commentMapper.toDto(comment);
     }
 
-    public List<CommentResponseDto> getAllComments(long postId) {
-        postValidator.validatePostExistsById(postId);
-        Post post = postService.getPostById(postId);
-        List<Comment> comments = post.getComments().stream()
-                .sorted(Comparator.comparing(Comment::getUpdatedAt, Comparator.nullsLast(Comparator.reverseOrder())))
+    public List<CommentDto> getComments(Long postId) {
+        getPost(postId);
+        List<Comment> comments = repository.findAllByPostId(postId);
+        List<CommentDto> commentDtos = mapper.toDto(comments);
+        return commentDtos.stream()
+                .sorted(this::localDateComparator)
                 .toList();
-        log.info("All comments to the post: {} has been received", post.getId());
-
-        return commentMapper.toListDto(comments);
     }
 
-    public void deleteComment(long postId, long commentId) {
-        postValidator.validatePostExistsById(postId);
-        commentValidator.validateCommentExistsById(commentId);
-        commentRepository.deleteById(commentId);
-        log.info("Comment: {} from post: {} was deleted successfully", commentId, postId);
+    public CommentDto getComment(Long commentId) {
+        Comment comment = getCommentByIdOrFail(commentId);
+        return mapper.toDto(comment);
     }
 
-    public Comment getCommentById(Long id) {
-        return commentRepository.findById(id).orElseThrow(() ->
-                new EntityNotFoundException(String.format("Comment with id: %s doesn't exist", id)));
+    public CommentDto deleteComment(Long postId, CommentDto commentDto) {
+        getPost(postId);
+        repository.deleteById(commentDto.getId());
+        return commentDto;
     }
 
-    private String createAndSerializeCommentEvent(Comment comment) {
-        return helper.serializeToJson(
-                CommentEvent.builder()
-                        .commentAuthorId(comment.getAuthorId())
-                        .postAuthorId(comment.getPost().getAuthorId())
-                        .postId(comment.getPost().getId())
-                        .commentId(comment.getId())
-                        .build()
-        );
+    private Comment getCommentByIdOrFail(Long commentId) {
+        return repository.findById(commentId).orElseThrow(() -> new IllegalArgumentException("Comment not found"));
+    }
+
+    private Post getPost(Long postId) {
+        Post post = postRepository.findById(postId).orElse(null);
+        if (post == null) {
+            throw new IllegalArgumentException(CommentServiceErrors.POST_NOT_FOUND.getValue());
+        }
+        return post;
+    }
+
+    private void equalUpdateComment(CommentDto commentDto, CommentDto currentCommentDto) {
+        if (!Objects.equals(commentDto.getAuthorId(), currentCommentDto.getAuthorId())
+                || !Objects.equals(commentDto.getLikes(), currentCommentDto.getLikes())
+                || !Objects.equals(commentDto.getPostId(), currentCommentDto.getPostId())
+                || !Objects.equals(commentDto.getCreatedAt(), currentCommentDto.getCreatedAt())
+                || !Objects.equals(commentDto.getUpdatedAt(), currentCommentDto.getUpdatedAt())
+        ) {
+            throw new IllegalArgumentException(CommentServiceErrors.CHANGE_NOT_COMMENT.getValue());
+        }
+    }
+
+    private int localDateComparator(CommentDto commentLeft, CommentDto commentRight) {
+        if (commentLeft.getCreatedAt().isAfter(commentRight.getCreatedAt())) {
+            return 1;
+        } else if (commentLeft.getCreatedAt().isBefore(commentRight.getCreatedAt())) {
+            return -1;
+        } else {
+            return 0;
+        }
     }
 }

@@ -1,6 +1,6 @@
 package faang.school.postservice.dto.like;
 
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -8,11 +8,12 @@ import lombok.NoArgsConstructor;
 
 @Data
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 public class LikeDto {
-    @Positive(message = "User id should be a positive number")
+    private Long id;
+    @NotNull(message = "User ID must be specified")
     private Long userId;
-    @Positive(message = "Comment id should be a positive number")
     private Long commentId;
+    private Long postId;
 }

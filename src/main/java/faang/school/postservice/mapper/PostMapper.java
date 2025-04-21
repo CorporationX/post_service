@@ -1,27 +1,25 @@
 package faang.school.postservice.mapper;
 
-import faang.school.postservice.dto.post.CreatePostDto;
-import faang.school.postservice.dto.post.ResponsePostDto;
-import faang.school.postservice.model.Hashtag;
+import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
-import org.mapstruct.ReportingPolicy;
 
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.List;
 
-@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
+@Mapper(componentModel = "spring", uses = CommentMapper.class, unmappedTargetPolicy = org.mapstruct.ReportingPolicy.IGNORE)
 public interface PostMapper {
-    @Mapping(target = "hashtags", expression = "java(toHashtags(post.getHashtags()))")
-    ResponsePostDto toDto(Post post);
+    @Mapping(source = "likes", target = "likes", qualifiedByName = "countTotalLikes")
+    PostDto toDto(Post post);
 
-    @Mapping(target = "hashtags", ignore = true)
-    Post toEntity(CreatePostDto createPostDto);
+    @Mapping(target = "likes", ignore = true)
+    @Mapping(target = "comments", ignore = true)
+    Post toEntity(PostDto postDto);
 
-    @Named("toHashtags")
-    default Set<String> toHashtags(Set<Hashtag> hashtags) {
-        return hashtags.stream().map(Hashtag::getTag).collect(Collectors.toSet());
+    @Named("countTotalLikes")
+    default Integer countTotalLikes(List<Like> likes){
+        return likes == null ? 0 : likes.size();
     }
 }

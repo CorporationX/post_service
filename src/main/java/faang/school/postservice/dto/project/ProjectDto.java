@@ -1,20 +1,17 @@
 package faang.school.postservice.dto.project;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
-@JsonIgnoreProperties(ignoreUnknown = true)
+@NoArgsConstructor
+@AllArgsConstructor
 public class ProjectDto {
-    @NotNull(message = "ID should not be null")
-    @Positive(message = "ID must be positive")
+    @Min(0)
     private long id;
-
-    @NotBlank(message = "Title should not be blank")
-    @Size(max = 255, message = "Title should not exceed 255 characters")
+    @NotBlank(message = "Это поле не должно быть пустым и не должно содержать одни пробелы")
     private String title;
 }

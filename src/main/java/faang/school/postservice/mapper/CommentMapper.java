@@ -1,38 +1,29 @@
 package faang.school.postservice.mapper;
 
-import faang.school.postservice.dto.comment.CommentResponseDto;
-import faang.school.postservice.dto.comment.CreateCommentDto;
+import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
+import faang.school.postservice.model.Post;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 import org.mapstruct.ReportingPolicy;
-import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
-@Component
-@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
+@Mapper(componentModel = "spring",
+        uses = {LikeMapper.class},
+        unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface CommentMapper {
+    @Mapping(target = "likes", source = "likes")
+    @Mapping(target = "post.id", source = "postId")
+    Comment toEntity(CommentDto commentDto);
 
-    Comment toEntity(CreateCommentDto dto);
+    @Mapping(target = "likes", source = "likes")
+    @Mapping(target = "postId", source = "post.id")
+    CommentDto toDto(Comment comment);
 
-    @Mapping(source = "likes", target = "likeIds", qualifiedByName = "mapToLikeIds")
-    @Mapping(source = "post.id", target = "postId")
-    CommentResponseDto toDto(Comment comment);
+    List<Comment> toEntity(List<CommentDto> dtos);
 
-    List<CommentResponseDto> toListDto(List<Comment> comments);
-
-    @Named("mapToLikeIds")
-    default List<Long> mapToLikeIds(List<Like> likes) {
-        return Optional.ofNullable(likes)
-                .orElse(Collections.emptyList())
-                .stream()
-                .map(Like::getId)
-                .toList();
-    }
+    List<CommentDto> toDto(List<Comment> entities);
 }

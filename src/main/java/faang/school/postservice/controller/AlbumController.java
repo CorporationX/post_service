@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Month;
+import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -55,7 +56,7 @@ public class AlbumController {
             @NotNull(message = "PostId must be greater than 0.") long postId) {
         log.info("Adding post #{} to album. UserId #{}, AlbumId #{}", postId, userId, albumId);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(albumService.addPostToAlbum(userId, albumId, postId));
+        return ResponseEntity.status(HttpStatus.CREATED).body(albumService.addPostToAlbum(userId, albumId, Collections.singletonList(postId)));
     }
 
     @DeleteMapping("/{albumId}/users/{userId}/posts/{postId}")

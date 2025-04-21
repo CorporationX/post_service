@@ -45,5 +45,6 @@ public class OutboxEvent {
     private LocalDateTime createdAt;
 
     @Column(name = "processed", nullable = false)
+    @Builder.Default
     private Boolean processed = false;
 }

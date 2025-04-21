@@ -5,7 +5,6 @@ import faang.school.postservice.dto.album.AlbumFilterDto;
 import faang.school.postservice.dto.album.AlbumUpdateDto;
 import faang.school.postservice.filter.Filter;
 import faang.school.postservice.mapper.AlbumMapper;
-import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.AlbumRepository;
@@ -17,6 +16,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import faang.school.postservice.repository.PostRepository;
 
 import java.util.List;
 import java.util.stream.Stream;
@@ -31,7 +31,7 @@ public class AlbumService {
     private final UserValidator userValidator;
     private final AlbumValidator albumValidator;
     private final AlbumMapper albumMapper;
-    private final PostMapper postMapper;
+    private final PostRepository postRepository;
     private final PostService postService;
     private final List<Filter<Album, AlbumFilterDto>> filters;
 
@@ -45,13 +45,18 @@ public class AlbumService {
     }
 
     @Transactional
-    public AlbumDto addPostToAlbum(long userId, long albumId, long postId) {
-        Post post = postService.getPostById(postId);
+    public AlbumDto addPostToAlbum(long userId, long albumId, List<Long> postId) {
+        Post post = (Post) postService.getPostsByIds(postId);
         Album album = findAlbumForUser(userId, albumId);
         album.addPost(post);
         albumRepository.save(album);
 
         return albumMapper.toDto(album);
+    }
+
+    public Post getPostById(Long id) {
+        return postRepository.findById(id).orElseThrow(() ->
+                new EntityNotFoundException(String.format("Post with id: %s not found", id)));
     }
 
     @Transactional

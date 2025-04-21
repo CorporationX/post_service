@@ -1,47 +1,42 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.dto.AuthorPostCount;
-import faang.school.postservice.dto.post.CreatePostDto;
-import faang.school.postservice.dto.post.ResponsePostDto;
-import faang.school.postservice.dto.post.UpdatePostDto;
+import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.event.EventsGenerator;
 import faang.school.postservice.mapper.PostMapper;
-import faang.school.postservice.model.Hashtag;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.utils.PostSpecifications;
-import faang.school.postservice.validator.HashtagValidator;
-import faang.school.postservice.validator.PostValidator;
-import jakarta.persistence.EntityNotFoundException;
+import faang.school.postservice.validator.PostServiceValidator;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.data.redis.core.RedisTemplate;
+
 
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class PostService {
-    private final PostRepository postRepository;
     private final PostMapper postMapper;
-    private final PostValidator postValidator;
-    private final HashtagService hashtagService;
-    private final HashtagValidator hashtagValidator;
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final PostRepository postRepository;
+    private final PostServiceValidator<PostDto> validator;
+
+    private final PostCacheService postCacheService;
+    private final EventsGenerator eventsGenerator;
+    private final AuthorCacheService authorCacheService;
     private final ExecutorService executorService;
+    private final RedisTemplate<String, Object> redisTemplate;
+
 
     @Value("${spring.data.redis.channel.user-bans-channel}")
     private String userBansChannelName;
@@ -50,151 +45,91 @@ public class PostService {
     @Value("${ad.batch.size}")
     private int batchSize;
 
-    @Transactional
-    public ResponsePostDto create(CreatePostDto createPostDto) {
-        postValidator.validateContent(createPostDto.getContent());
-        postValidator.validateAuthorIdAndProjectId(createPostDto.getAuthorId(), createPostDto.getProjectId());
-        postValidator.validateAuthorId(createPostDto.getAuthorId());
-        postValidator.validateProjectId(createPostDto.getProjectId(), createPostDto.getAuthorId());
+    public PostDto createPost(final PostDto postDto) {
+        validator.validate(postDto);
 
-        validateHashtags(createPostDto.getHashtags());
+        Post post = postMapper.toEntity(postDto);
 
-        if (createPostDto.getAuthorId() != null && createPostDto.getProjectId() != null) {
-            createPostDto.setProjectId(null);
-        }
-
-        Post entity = postMapper.toEntity(createPostDto);
-
-        entity.setCreatedAt(LocalDateTime.now(ZoneId.of("UTC+3")));
-        entity.setPublished(false);
-        entity.setDeleted(false);
-
-        if (hasHashtags(createPostDto.getHashtags())) {
-            entity.setHashtags(getAndCreateHashtags(createPostDto.getHashtags()));
-        }
-
-        postRepository.save(entity);
-
-        return postMapper.toDto(entity);
+        return postMapper.toDto(postRepository.save(post));
     }
 
-    @Transactional
-    public ResponsePostDto publish(Long postId) {
-        postValidator.validateExistingPostId(postId);
-        postValidator.validatePostIdOnPublished(postId);
+    public PostDto publishPost(final long postId) {
+        Post post = getPostByIdOrFail(postId);
 
-        Post post = postRepository.findById(postId).get();
+        validatePostPublishing(post);
 
+        LocalDateTime now = LocalDateTime.now();
         post.setPublished(true);
-        post.setPublishedAt(LocalDateTime.now(ZoneId.of("UTC+3")));
-        post.setUpdatedAt(LocalDateTime.now(ZoneId.of("UTC+3")));
+        post.setPublishedAt(now);
+        post.setUpdatedAt(now);
 
-        postRepository.save(post);
+        var savedPost = postRepository.save(post);
+        var postDto = postMapper.toDto(savedPost);
 
-        return postMapper.toDto(post);
+        authorCacheService.saveAuthorCache(postDto.getAuthorId());
+        postCacheService.savePostCache(postDto);
+        eventsGenerator.generateAndSendPostFollowersEvent(postDto);
+
+        return postDto;
     }
 
-    @Transactional
-    public ResponsePostDto update(Long postId, UpdatePostDto updatePostDto) {
-        postValidator.validateExistingPostId(postId);
-        postValidator.validateContent(updatePostDto.getContent());
 
-        validateHashtags(updatePostDto.getHashtags());
+    public PostDto updatePost(final long postId, final PostDto postDto) {
+        Post newPost = postMapper.toEntity(postDto);
+        Post post = getPostByIdOrFail(postId);
 
-        Post post = postRepository.findById(postId).get();
+        post.setContent(newPost.getContent());
+        post.setUpdatedAt(LocalDateTime.now());
 
-
-        if (hasHashtags(updatePostDto.getHashtags())) {
-            post.setHashtags(getAndCreateHashtags(updatePostDto.getHashtags()));
-        }
-
-        post.setContent(updatePostDto.getContent());
-        post.setUpdatedAt(LocalDateTime.now(ZoneId.of("UTC+3")));
-
-        postRepository.save(post);
-
-        return postMapper.toDto(post);
+        return postMapper.toDto(postRepository.save(post));
     }
 
-    @Transactional
-    public void delete(Long postId) {
-        postValidator.validateExistingPostId(postId);
-        postValidator.validatePostIdOnRemoved(postId);
 
-        Post post = postRepository.findById(postId).get();
+    public void deletePost(final long postId) {
+        Post post = getPostByIdOrFail(postId);
 
         post.setDeleted(true);
+        post.setUpdatedAt(LocalDateTime.now());
 
         postRepository.save(post);
     }
 
-    public ResponsePostDto getById(Long postId) {
-        postValidator.validateExistingPostId(postId);
-        postValidator.validatePostIdOnRemoved(postId);
+    public PostDto getPost(final long postId) {
+        Post post = getPostByIdOrFail(postId);
+        var postDto = postMapper.toDto(post);
 
-        return postMapper.toDto(postRepository.findById(postId).get());
+        eventsGenerator.generateAndSendPostViewEvent(postDto);
+        return postDto;
     }
 
-    public List<ResponsePostDto> getDraftsByUserId(Long userId) {
-        postValidator.validateAuthorId(userId);
-
-        return postRepository.findReadyToPublishByAuthor(userId).stream().map(postMapper::toDto).toList();
+    public List<PostDto> getPostsByIds(List<Long> postIds) {
+        return postRepository.findAllById(postIds).stream()
+                .map(postMapper::toDto)
+                .toList();
     }
 
-    public List<ResponsePostDto> getDraftsByProjectId(Long userId) {
-        postValidator.validateAuthorId(userId);
+    @Transactional
+    public void checkAndVerifyPosts() {
+        List<Post> postsToVerify = postRepository.findAllByVerifiedDateIsNull(PostSpecifications.isReadyToPublish());
+        List<CompletableFuture<Void>> futures = new ArrayList<>();
 
-        return postRepository.findReadyToPublishByProject(userId).stream().map(postMapper::toDto).toList();
-    }
+        for (int i = 0; i < postsToVerify.size(); i += batchSize) {
+            int end = Math.min(i + batchSize, postsToVerify.size());
+            List<Post> batch = postsToVerify.subList(i, end);
 
-    public List<ResponsePostDto> getPublishedByUserId(Long userId) {
-        postValidator.validateAuthorId(userId);
-
-        return postRepository.findPublishedByAuthor(userId).stream().map(postMapper::toDto).toList();
-    }
-
-    public List<ResponsePostDto> getPublishedByProjectId(Long projectId, Long authorId) {
-        postValidator.validateProjectId(projectId, authorId);
-
-        return postRepository.findPublishedByProject(projectId).stream().map(postMapper::toDto).toList();
-    }
-
-    public List<ResponsePostDto> findByHashtags(String tag) {
-        hashtagValidator.validateHashtag(tag);
-
-        return postRepository.findByHashtags(tag).stream().map(postMapper::toDto).toList();
-    }
-
-    public Post getPostById(Long id) {
-        return postRepository.findById(id).orElseThrow(() ->
-                new EntityNotFoundException(String.format("Post with id: %s not found", id)));
-    }
-
-    private void validateHashtags(List<String> hashtags) {
-        if (hashtags != null) {
-            for (String hashtag : hashtags) {
-                System.out.println(hashtag);
-                hashtagValidator.validateHashtag(hashtag);
-            }
+            CompletableFuture<Void> future = postVerificationService.checkAndVerifyPostsInBatch(batch);
+            futures.add(future);
         }
+
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
     }
 
-    private boolean hasHashtags(List<String> hashtags) {
-        return hashtags != null && !hashtags.isEmpty();
-    }
+    private List<AuthorPostCount> getUnverifiedPostsGroupedByAuthor() {
+        List<Object[]> rawResults = postRepository.findUnverifiedPostsGroupedByAuthor();
 
-    private Set<Hashtag> getAndCreateHashtags(List<String> hashtags) {
-        Map<String, Hashtag> existingHashtags = hashtagService.findAllByTags(hashtags)
-                .stream()
-                .collect(Collectors.toMap(Hashtag::getTag, Function.identity()));
-
-        Set<Hashtag> result = new HashSet<>();
-
-        for (String tag : hashtags) {
-            Hashtag hashtag = existingHashtags.computeIfAbsent(tag, hashtagService::create);
-            result.add(hashtag);
-        }
-        return result;
+        return rawResults.stream()
+                .map(result -> new AuthorPostCount((Long) result[0], (Long) result[1]))
+                .collect(Collectors.toList());
     }
 
     public void banOffensiveAuthors() {
@@ -212,33 +147,9 @@ public class PostService {
         });
     }
 
-    private List<AuthorPostCount> getUnverifiedPostsGroupedByAuthor() {
-        List<Object[]> rawResults = postRepository.findUnverifiedPostsGroupedByAuthor();
-
-        return rawResults.stream()
-                .map(result -> new AuthorPostCount((Long) result[0], (Long) result[1]))
-                .collect(Collectors.toList());
-    }
-
-
-    @Transactional
-    public void checkAndVerifyPosts() {
-        List<Post> postsToVerify = postRepository.findAllByVerifiedDateIsNull();
-        List<CompletableFuture<Void>> futures = new ArrayList<>();
-
-        for (int i = 0; i < postsToVerify.size(); i += batchSize) {
-            int end = Math.min(i + batchSize, postsToVerify.size());
-            List<Post> batch = postsToVerify.subList(i, end);
-
-            CompletableFuture<Void> future = postVerificationService.checkAndVerifyPostsInBatch(batch);
-            futures.add(future);
-        }
-
-        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
-    }
-
     public void publishScheduledPosts() {
-        List<Post> postsToPublish = postRepository.findAll(PostSpecifications.isReadyToPublish());
+        //List<Post> postsToPublish = postRepository.findAll(PostSpecifications.isReadyToPublish());
+        List<Post> postsToPublish = postRepository.findAllByVerifiedDateIsNull(PostSpecifications.isReadyToPublish());
 
         if (postsToPublish.isEmpty()) {
             log.info("No posts to publish at this time");
@@ -266,11 +177,31 @@ public class PostService {
                 }
             }, executorService);
         }
-
         log.info("Batch processing completed");
     }
 
-    public List<Post> getReadyToPublishPosts() {
-        return postRepository.findAll(PostSpecifications.isReadyToPublish());
+    public List<PostDto> getFilteredPosts(final Long authorId, final Long projectId, final Boolean isPostPublished) {
+        List<Post> result = new ArrayList<>();
+        boolean isPublished = isPostPublished;
+
+        if (authorId != null) {
+            result = postRepository.findByAuthorIdAndPublishedAndDeletedIsFalseOrderByPublished(authorId, isPublished);
+        } else if (projectId != null) {
+            result = postRepository.findByProjectIdAndPublishedAndDeletedIsFalseOrderByPublished(projectId, isPublished);
+        }
+
+        return result.stream()
+                .map((postMapper::toDto))
+                .toList();
+    }
+
+    public void validatePostPublishing(Post post) {
+        if (post.isPublished()) {
+            throw new IllegalArgumentException("Post is already published");
+        }
+    }
+
+    public Post getPostByIdOrFail(long postId) {
+        return postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("Post not found"));
     }
 }

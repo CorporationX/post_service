@@ -2,62 +2,46 @@ package faang.school.postservice.validator;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.exception.DataValidationException;
-import faang.school.postservice.exception.EntityWasRemovedException;
-import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.project.ProjectDto;
+import faang.school.postservice.dto.user.UserDto;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import faang.school.postservice.repository.PostRepository;
 
 @Component
 @RequiredArgsConstructor
-public class PostValidator {
+public class PostValidator implements PostServiceValidator<PostDto> {
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
     private final PostRepository postRepository;
 
-    public void validateContent(String content) {
-        if (content.isBlank()) {
-            throw new DataValidationException("Post content cannot be blank");
+    @Override
+    public void validate(PostDto postDto) {
+        Long authorId = postDto.getAuthorId();
+        Long projectId = postDto.getProjectId();
+
+        if (authorId == null && projectId == null || authorId != null && projectId != null) {
+            throw new IllegalArgumentException("Post must have either author or project");
+        }
+
+        if (authorId != null) {
+            UserDto user = userServiceClient.getUser(authorId);
+
+            if (user == null) {
+                throw new IllegalArgumentException("User not found");
+            }
+        }
+
+        if (projectId != null) {
+            ProjectDto project = projectServiceClient.getProject(projectId);
+
+            if (project == null) {
+                throw new IllegalArgumentException("Project not found");
+            }
         }
     }
-
-    public void validateAuthorIdAndProjectId(Long authorId, Long projectId) {
-        if (authorId == null && projectId == null) {
-            throw new DataValidationException("Author id and project id cannot be null at the same time");
-        }
-    }
-
-    public void validateExistingPostId(Long postId) {
-        if (postRepository.findById(postId).isEmpty()) {
-            throw new DataValidationException("Post with id " + postId + " not found");
-        }
-    }
-
-    public void validateAuthorId(Long authorId) {
-        if (authorId != null && userServiceClient.getUser(authorId).getId() == null) {
-            throw new DataValidationException("User with id " + authorId + " not found");
-        }
-    }
-
-    public void validateProjectId(Long projectId, Long authorId) {
-        if (projectId != null && projectServiceClient.getProjectById(projectId, authorId).getId() == 0) {
-            throw new DataValidationException("Project with id " + projectId + " not found");
-        }
-    }
-
-    public void validatePostIdOnRemoved(Long postId) {
-        if (postRepository.findById(postId).get().isDeleted()) {
-            throw new EntityWasRemovedException("Post with id " + postId + " was removed");
-        }
-    }
-
-    public void validatePostIdOnPublished(Long postId) {
-        if (postRepository.findById(postId).get().isPublished()) {
-            throw new DataValidationException("Post with id " + postId + " was published");
-        }
-    }
-
     public void validatePostExistsById(Long postId) {
         if (!postRepository.existsById(postId)) {
             throw new EntityNotFoundException(String.format("Post with id: %s doesn't exist", postId));
