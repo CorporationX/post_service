@@ -14,6 +14,9 @@ public interface PostMapper {
     @Mapping(target = "albums", ignore = true)
     @Mapping(target = "ad", ignore = true)
     @Mapping(target = "resources", ignore = true)
+    @Mapping(target = "verified", ignore = true)
+    @Mapping(target = "verifiedDate", ignore = true)
+    @Mapping(target = "tags", ignore = true)
     Post toEntity(PostDto postDto);
 
     @Mapping(target = "likeCount", expression = "java((long) (post.getLikes() != null ? post.getLikes().size() : 0))")
@@ -25,5 +28,8 @@ public interface PostMapper {
     @Mapping(target = "albums", ignore = true)
     @Mapping(target = "ad", ignore = true)
     @Mapping(target = "resources", ignore = true)
+    @Mapping(target = "verified", ignore = true)
+    @Mapping(target = "verifiedDate", ignore = true)
+    @Mapping(target = "tags", ignore = true)
     void update(PostDto postDto, @MappingTarget Post post);
 }

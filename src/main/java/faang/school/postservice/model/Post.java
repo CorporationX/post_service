@@ -90,4 +90,11 @@ public class Post {
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
     private Set<Tag> tags;
+
+    @Column(name = "verified")
+    private boolean verified;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "verified_date")
+    private LocalDateTime verifiedDate;
 }
