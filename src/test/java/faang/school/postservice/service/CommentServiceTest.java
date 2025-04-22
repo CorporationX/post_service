@@ -1,5 +1,6 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.dto.kafkaevents.CommentEvent;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.client.UserServiceClient;
@@ -7,6 +8,7 @@ import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
@@ -51,6 +53,9 @@ public class CommentServiceTest {
     @Mock
     private UserServiceClient client;
 
+    @Mock
+    private CommentEventPublisher commentEventPublisher;
+
     @Value("${app.settings.max-length}")
     private int maxLength;
 
@@ -67,13 +72,14 @@ public class CommentServiceTest {
 
     @Test
     public void positiveCreateComment() {
-        Comment successComment = Comment.builder().content("Ха=ха").build();
+        Comment successComment = Comment.builder().id(1L).content("Ха=ха").build();
         CommentDto goodDto = commentDto = CommentDto.builder().content("Ха=ха").build();
         when(client.getUser(1L)).thenReturn(user);
         when(postRepository.findById(1L)).thenReturn(Optional.of(post));
         when(mapper.toEntity(goodDto)).thenReturn(successComment);
         when(repository.save(any(Comment.class))).thenReturn(successComment);
         when(mapper.toDto(successComment)).thenReturn(goodDto);
+        doNothing().when(commentEventPublisher).publish(any(CommentEvent.class));
 
         CommentDto result;
         result = service.createComment(1L, 1L, goodDto);
