@@ -55,11 +55,6 @@ public class PostServiceImpl implements PostService {
 
     @Value("${post-service.post.count-of-unverified-posts-to-ban}")
     private int countOfUnverifiedPostsToBan;
-    private final ThreadPoolTaskScheduler taskScheduler;
-    private final PostModerationDictionaryImpl moderationDictionary;
-
-    @Value("${app.scheduling.post.max-posts-per-time}")
-    private int limitToModerate;
 
     @Override
     public PostDto createDraft(PostDto postDto) {
@@ -178,23 +173,6 @@ public class PostServiceImpl implements PostService {
         }
         log.debug("Post with ID {} fetched successfully", id);
         return postOptional.get();
-    }
-
-    public void moderatePosts() {
-        List<Post> batch;
-        int processedTotal = 0;
-        while (!(batch = postRepository.findUnverifiedPosts(limitToModerate)).isEmpty()){
-            List<CompletableFuture<Void>> futures = batch.stream()
-                    .map(post -> CompletableFuture.runAsync(
-                            () -> moderatePost(post),
-                            taskScheduler.getScheduledExecutor()
-                    ))
-                    .toList();
-            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
-
-            processedTotal += batch.size();
-            log.info("Processed batch of {} posts. Total processed: {}", batch.size(), processedTotal);
-        }
     }
 
     private void moderatePost(Post post) {

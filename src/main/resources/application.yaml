@@ -81,11 +81,3 @@ image:
   resize-sizes:
     - 1080
     - 170
-
-app:
-  scheduling:
-    daily-midnight-cron: "0 0 0 * * *" # Каждый день в 00:00
-    post:
-      max-posts-per-time: 10
-  dictionary:
-    post-dictionary-path: /dictionary/post-forbidden-words.txt

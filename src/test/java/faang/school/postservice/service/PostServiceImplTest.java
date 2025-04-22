@@ -273,21 +273,6 @@ class PostServiceImplTest {
     }
 
     @Test
-    void testGetPostEntryByIdSuccessfulFetch() {
-        long postId = 1L;
-        Post post = new Post();
-        post.setId(postId);
-
-        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
-
-        Post result = postService.getPostEntryById(postId);
-
-        assertNotNull(result);
-        assertEquals(postId, result.getId());
-        verify(postRepository, times(1)).findById(postId);
-    }
-
-    @Test
     void testGetPostEntryByIdPostNotFound() {
         long postId = 2L;
 
@@ -355,19 +340,6 @@ class PostServiceImplTest {
         assertNotNull(result);
         assertEquals(postId, result.getId());
         verify(postRepository, times(1)).findById(postId);
-    }
-
-    @Test
-    void testGetPostEntryByIdPostNotFound() {
-        long postId = 2L;
-
-        when(postRepository.findById(postId)).thenReturn(Optional.empty());
-
-        EntityNotFoundException exception = assertThrows(
-                EntityNotFoundException.class,
-                () -> postService.getPostEntryById(postId)
-        );
-        assertEquals("Post not found", exception.getMessage());
     }
 
     @Test

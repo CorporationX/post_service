@@ -35,7 +35,5 @@ public interface PostService {
     void moderatePosts();
 
     void banUsersWithTooManyOffendedPosts();
-
-    void moderatePosts();
 }
 

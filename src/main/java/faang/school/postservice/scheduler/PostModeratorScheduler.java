@@ -1,6 +1,6 @@
 package faang.school.postservice.scheduler;
 
-import faang.school.postservice.service.PostServiceImpl;
+import faang.school.postservice.service.PostService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class PostModeratorScheduler implements Moderator {
 
-    private final PostServiceImpl postService;
+    private final PostService postService;
 
     @Scheduled(cron = "${app.scheduling.daily-midnight-cron}")
     @Override
