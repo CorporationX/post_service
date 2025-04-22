@@ -19,6 +19,7 @@ public interface PostMapper {
     @Mapping(target = "tags", ignore = true)
     Post toEntity(PostDto postDto);
 
+    @Mapping(target = "likeCount", expression = "java((long) (post.getLikes() != null ? post.getLikes().size() : 0))")
     PostDto toDto(Post post);
 
     @Mapping(target = "id", ignore = true)

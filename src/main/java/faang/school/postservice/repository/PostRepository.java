@@ -8,12 +8,16 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface PostRepository extends CrudRepository<Post, Long> {
 
     List<Post> findByAuthorId(long authorId);
 
     List<Post> findByProjectId(long projectId);
+
+    @Query("SELECT p FROM Post p LEFT JOIN FETCH p.likes WHERE p.id = :postId")
+    Optional<Post> findByIdWithLikes(Long postId);
 
     @Query("SELECT p FROM Post p LEFT JOIN FETCH p.likes WHERE p.projectId = :projectId")
     List<Post> findByProjectIdWithLikes(long projectId);
@@ -26,6 +30,9 @@ public interface PostRepository extends CrudRepository<Post, Long> {
 
     @Query(value = "SELECT * FROM Post p WHERE p.verified = FALSE AND p.verified_date IS NULL ORDER BY p.created_at ASC LIMIT :limit" , nativeQuery = true)
     List<Post> findUnverifiedPosts(@Param("limit") int limit);
+
+    @Query("SELECT p FROM Post p WHERE p.verified = false and p.verifiedDate IS NOT NULL")
+    List<Post> findByVerifiedFalse();
 
     @Modifying
     @Transactional

@@ -1,10 +1,13 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.exception.EntityNotFoundException;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.NotFoundException;
 import faang.school.postservice.exception.PostNotFoundException;
 import faang.school.postservice.mapper.PostMapperImpl;
+import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,6 +17,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -24,11 +29,20 @@ import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class PostServiceTest {
+class PostServiceImplTest {
 
     @Mock
     private PostRepository postRepository;
@@ -42,8 +56,19 @@ class PostServiceTest {
     @Mock
     private PostModerationDictionaryImpl moderationDictionary;
 
+    @Mock
+    private RedisTemplate<String, Object> redisTemplate;
+
+    @Mock
+    private ChannelTopic channelTopic;
+
+    @Mock
+    private UserServiceClient userServiceClient;
+
     @InjectMocks
     private PostServiceImpl postService;
+
+    private final int countOfUnverifiedPostsToBan = 2;
 
     private PostDto postDto;
     private Post post;
@@ -71,6 +96,8 @@ class PostServiceTest {
     @Test
     public void testCreateDraft() {
         when(postRepository.save(any(Post.class))).thenReturn(post);
+        when(userServiceClient.getUser(postDto.getAuthorId()))
+                .thenReturn(new UserDto(1L, "Rick", "test"));
 
         PostDto result = postService.createDraft(postDto);
 
@@ -116,6 +143,8 @@ class PostServiceTest {
                 .build();
 
         when(postRepository.findById(1L)).thenReturn(Optional.of(post));
+        when(userServiceClient.getUser(postDto.getAuthorId()))
+                .thenReturn(new UserDto(1L, "Rick", "test"));
         when(postRepository.save(post)).thenReturn(post);
 
         PostDto result = postService.updatePost(1L, updatedPostDto);
@@ -134,7 +163,8 @@ class PostServiceTest {
                 .content("Updated content")
                 .authorId(2L)
                 .build();
-
+        UserDto userDto = new UserDto(2L, "Rick", "test");
+        when(userServiceClient.getUser(2L)).thenReturn(userDto);
         when(postRepository.findById(1L)).thenReturn(Optional.of(post));
 
         assertThrows(IllegalArgumentException.class, () -> postService.updatePost(1L, updatedPostDto));
@@ -158,23 +188,26 @@ class PostServiceTest {
 
     @Test
     public void testGetPostById() {
-        when(postRepository.findById(1L)).thenReturn(Optional.of(post));
+        post.setLikes(List.of(new Like(), new Like()));
+
+        when(postRepository.findByIdWithLikes(1L)).thenReturn(Optional.of(post));
 
         PostDto result = postService.getPostById(1L);
 
         assertNotNull(result);
         assertEquals(postDto.getContent(), result.getContent());
         assertEquals(postDto.getAuthorId(), result.getAuthorId());
-        verify(postRepository).findById(1L);
+        assertEquals(2, result.getLikeCount());
+        verify(postRepository).findByIdWithLikes(1L);
         verify(postMapper).toDto(post);
     }
 
     @Test
     public void testGetPostByIdNotFound() {
-        when(postRepository.findById(1L)).thenReturn(Optional.empty());
+        when(postRepository.findByIdWithLikes(1L)).thenReturn(Optional.empty());
 
         assertThrows(NotFoundException.class, () -> postService.getPostById(1L));
-        verify(postRepository).findById(1L);
+        verify(postRepository).findByIdWithLikes(1L);
     }
 
     @Test
@@ -207,15 +240,17 @@ class PostServiceTest {
     public void testGetAllPublishedPostsByAuthorId() {
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
+        post.setLikes(List.of(new Like(), new Like()));
 
-        when(postRepository.findByAuthorId(1L)).thenReturn(List.of(post));
+        when(postRepository.findByAuthorIdWithLikes(1L)).thenReturn(List.of(post));
 
         List<PostDto> result = postService.getAllPublishedPostsByAuthorId(1L);
 
         assertNotNull(result);
         assertEquals(1, result.size());
         assertEquals(postDto.getContent(), result.get(0).getContent());
-        verify(postRepository).findByAuthorId(1L);
+        assertEquals(2, result.get(0).getLikeCount());
+        verify(postRepository).findByAuthorIdWithLikes(1L);
         verify(postMapper).toDto(post);
     }
 
@@ -223,15 +258,17 @@ class PostServiceTest {
     public void testGetAllPublishedPostsByProjectId() {
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
+        post.setLikes(List.of(new Like(), new Like()));
 
-        when(postRepository.findByProjectId(1L)).thenReturn(List.of(post));
+        when(postRepository.findByProjectIdWithLikes(1L)).thenReturn(List.of(post));
 
         List<PostDto> result = postService.getAllPublishedPostsByProjectId(1L);
 
         assertNotNull(result);
         assertEquals(1, result.size());
         assertEquals(postDto.getContent(), result.get(0).getContent());
-        verify(postRepository).findByProjectId(1L);
+        assertEquals(2, result.get(0).getLikeCount());
+        verify(postRepository).findByProjectIdWithLikes(1L);
         verify(postMapper).toDto(post);
     }
 
@@ -306,6 +343,34 @@ class PostServiceTest {
     }
 
     @Test
+    void testGetPostEntryByIdSuccessfulFetch() {
+        long postId = 1L;
+        Post post = new Post();
+        post.setId(postId);
+
+        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+
+        Post result = postService.getPostEntryById(postId);
+
+        assertNotNull(result);
+        assertEquals(postId, result.getId());
+        verify(postRepository, times(1)).findById(postId);
+    }
+
+    @Test
+    void testGetPostEntryByIdPostNotFound() {
+        long postId = 2L;
+
+        when(postRepository.findById(postId)).thenReturn(Optional.empty());
+
+        EntityNotFoundException exception = assertThrows(
+                EntityNotFoundException.class,
+                () -> postService.getPostEntryById(postId)
+        );
+        assertEquals("Post not found", exception.getMessage());
+    }
+
+    @Test
     public void testFindPostByIdThrowPostNotFoundException() {
         when(postRepository.findById(1L)).thenReturn(Optional.empty());
 
@@ -329,5 +394,25 @@ class PostServiceTest {
         postService.removeTagsFromPost(1L, List.of(1L, 2L));
 
         verify(postRepository, times(1)).deleteTagsFromPost(1L, List.of(1L, 2L));
+    }
+
+    @Test
+    public void testBanUserWithTooManyOffendedPostsWithNoRejectedPosts() {
+        when(postRepository.findByVerifiedFalse()).thenReturn(Collections.emptyList());
+
+        postService.banUsersWithTooManyOffendedPosts();
+
+        verify(redisTemplate, never()).convertAndSend(anyString(), any());
+    }
+
+    @Test
+    public void testBanUserWithTooManyOffendedPostsSuccessfully() {
+        post.setAuthorId(1L);
+        when(postRepository.findByVerifiedFalse()).thenReturn(List.of(post, post, post));
+        when(channelTopic.getTopic()).thenReturn("ban-users");
+
+        postService.banUsersWithTooManyOffendedPosts();
+
+        verify(redisTemplate, times(1)).convertAndSend(anyString(), any());
     }
 }

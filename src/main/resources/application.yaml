@@ -47,7 +47,7 @@ logging:
 
 user-service:
   host: localhost
-  port: 8080
+  port: 8080/api/v1
 project-service:
   host: localhost
   port: 8082
@@ -57,6 +57,19 @@ payment-service:
 post-service:
   tag:
     count-of-most-popular-tags: 2
+  post:
+    count-of-unverified-posts-to-ban: 5
+  redis:
+    ban-user-key: user_ban
+
+app:
+  scheduling:
+    daily-midnight-cron: "0 0 0 * * ?" # Every day at 00:00
+    daily-one-am-cron: "0 0 1 * * ?" # Every day at 01:00
+    post:
+      max-posts-per-time: 10
+  dictionary:
+    post-dictionary-path: /dictionary/post-forbidden-words.txt
 
 s3:
   endpoint: http://localhost:9000

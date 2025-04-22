@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @RequiredArgsConstructor
@@ -16,14 +15,9 @@ public class PostModeratorScheduler implements Moderator {
 
     @Scheduled(cron = "${app.scheduling.daily-midnight-cron}")
     @Override
-    @Transactional
     public void startModerate() {
         log.info("Post moderation started");
-        try {
-            postService.moderatePosts();
-            log.info("All posts have been moderated");
-        } catch (Exception e) {
-            log.error("Moderation failed ", e);
-        }
+        postService.moderatePosts();
+        log.info("All posts have been moderated");
     }
 }
