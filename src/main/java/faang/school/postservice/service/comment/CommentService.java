@@ -1,19 +1,18 @@
 package faang.school.postservice.service.comment;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.ModerationProperties;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.moderation.ModerationDictionaryComment;
 import faang.school.postservice.repository.CommentRepository;
-import faang.school.postservice.service.moderation.ModerationDictionary;
 import faang.school.postservice.validator.CommentValidator;
 import faang.school.postservice.validator.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -40,12 +39,12 @@ public class CommentService {
     private final CommentMapper commentMapper;
 
     private final CommentValidator commentValidator;
+
     private final ImageService imageService;
 
     private final ModerationDictionaryComment moderationDictionaryComment;
 
-    @Value("${moderation.chunk-size}")
-    private int chunkSize;
+    private final ModerationProperties moderationProperties;
 
     private final TaskExecutor asyncModerationExecutor;
 
@@ -111,8 +110,8 @@ public class CommentService {
         log.info("Found {} unverified comments to process", comments.size());
 
         List<List<Comment>> chunks = new ArrayList<>();
-        for (int i = 0; i < comments.size(); i += chunkSize) {
-            chunks.add(comments.subList(i, Math.min(i + chunkSize, comments.size())));
+        for (int i = 0; i < comments.size(); i += moderationProperties.getChunkSize()) {
+            chunks.add(comments.subList(i, Math.min(i + moderationProperties.getChunkSize(), comments.size())));
         }
 
         List<CompletableFuture<Void>> futures = new ArrayList<>();

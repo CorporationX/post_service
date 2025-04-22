@@ -1,12 +1,12 @@
 package faang.school.postservice.service.comment;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.ModerationProperties;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.moderation.ModerationDictionary;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.validator.CommentValidator;
 import faang.school.postservice.validator.PostValidator;
@@ -19,9 +19,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.task.SyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -33,7 +34,6 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class CommentServiceTest {
-
 
     @Mock
     private CommentRepository commentRepository;
@@ -52,9 +52,6 @@ public class CommentServiceTest {
 
     @Mock
     private ImageService imageService;
-
-    @Mock
-    private TaskExecutor taskExecutor;
 
     @InjectMocks
     private CommentService commentService;
@@ -130,8 +127,6 @@ public class CommentServiceTest {
         when(commentRepository.save(any(Comment.class))).thenReturn(comment);
         when(imageService.uploadResizedImages(mockFile, 1L))
                 .thenReturn(new ImageService.ImageKeys("comments/1_large.jpg", "comments/1_small.jpg"));
-
-        commentService.createComment(1L, commentDto);
 
         CommentDto result = commentService.createComment(1L, commentDto);
 
@@ -246,26 +241,23 @@ public class CommentServiceTest {
         }
 
         @Test
-        public void withComments(){
+        void withComments() {
             Comment comment = new Comment();
             comment.setContent("clean content");
-            ReflectionTestUtils.setField(commentService, "chunkSize", 100);
+
+            ModerationProperties moderationProperties = mock(ModerationProperties.class);
+            when(moderationProperties.getChunkSize()).thenReturn(100);
+            ReflectionTestUtils.setField(commentService, "moderationProperties", moderationProperties);
+            ReflectionTestUtils.setField(commentService, "asyncModerationExecutor", new SyncTaskExecutor());
 
             when(commentRepository.findByVerifiedIsNull()).thenReturn(List.of(comment));
             LogCaptor logCaptor = LogCaptor.forClass(CommentService.class);
 
             commentService.moderateUnverifiedComments();
 
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-
             List<String> logs = logCaptor.getInfoLogs();
             assertTrue(logs.contains("Found 1 unverified comments to process"));
             assertTrue(logs.contains("Moderation finished."));
-
         }
     }
 }
