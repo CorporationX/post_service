@@ -1,6 +1,8 @@
 package faang.school.postservice.controller.comment;
 
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.event.CommentEvent;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.service.comment.CommentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,12 +21,25 @@ import java.util.Map;
 public class CommentController {
 
     private final CommentService commentService;
+    private final CommentEventPublisher commentEventPublisher;
 
     @PostMapping("/{postId}")
     public ResponseEntity<CommentDto> createComment(
             @PathVariable Long postId,
             @Valid @ModelAttribute CommentDto commentDto) {
-        return ResponseEntity.ok(commentService.createComment(postId, commentDto));
+
+        CommentDto  resultDto = commentService.createComment(postId, commentDto);
+
+        CommentEvent event = new CommentEvent(
+                resultDto.getAuthorId(),
+                resultDto.getPostId(),
+                resultDto.getId(),
+                resultDto.getContent()
+        );
+
+        commentEventPublisher.publish(event);
+
+        return ResponseEntity.ok(resultDto);
     }
 
     @PutMapping("/{commentId}")
