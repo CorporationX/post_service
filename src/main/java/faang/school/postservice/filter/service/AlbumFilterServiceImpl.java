@@ -25,6 +25,7 @@ public class AlbumFilterServiceImpl implements AlbumFilterService {
                     .reduce(albums, (a, filter) -> filter.apply(a, albumFilterDto), (a, b) -> b);
         }
         return albums;
+
 //        if (albumFilterDto != null) {
 //            System.out.println("Filters available: " + filters.size());
 //            albums = filters.stream()

@@ -22,6 +22,9 @@ public class UserHeaderFilter implements Filter {
             throws ServletException, IOException {
         HttpServletRequest req = (HttpServletRequest) request;
         String userId = req.getHeader("x-user-id");
+
+        System.out.println("UserHeaderFilter: x-user-id = " + userId);
+
         if (userId != null) {
             userContext.setUserId(Long.parseLong(userId));
         }

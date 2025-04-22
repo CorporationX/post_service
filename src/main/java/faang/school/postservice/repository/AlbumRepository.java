@@ -2,6 +2,7 @@ package faang.school.postservice.repository;
 
 import faang.school.postservice.dto.albums.AlbumDto;
 import faang.school.postservice.model.Album;
+import feign.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -25,16 +26,15 @@ public interface AlbumRepository extends JpaRepository<Album, Long> {
     @Modifying
     void addAlbumToFavorites(long albumId, long userId);
 
-    //void addAlbumToFavorites(long albumId, long authorId);
-
     @Query(nativeQuery = true, value = "DELETE FROM favorite_albums WHERE album_id = :albumId AND user_id = :userId")
     @Modifying
     void deleteAlbumFromFavorites(long albumId, long userId);
 
     Stream<Album> findByAuthorId(long authorId);
 
-     Stream<Album> findFavoriteAlbumsByUserId(long userId);
+    Stream<Album> findFavoriteAlbumsByAuthorId(long userId);
 
-//      void update(AlbumDto albumDto, Album albumToUpdate);
-
+    @Modifying
+    @Query("UPDATE Album a SET a.title = :title, a.description = :description WHERE a.id = :id")
+    void update(@Param("title") String title, @Param("description") String description, @Param("id") Long id);
 }

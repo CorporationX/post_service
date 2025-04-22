@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,6 +29,7 @@ public class AlbumController {
 
     @PostMapping()
     public AlbumDto createAlbum(@Valid @RequestBody AlbumDto albumDto) {
+       // userContext.setUserId(12);
         return albumService.createAlbum(albumDto);
     }
 
@@ -76,16 +78,16 @@ public class AlbumController {
         long userId = userContext.getUserId();
         return albumService.getAllUserFavoriteAlbums(userId, albumFilterDto);
     }
-//
-//    @PutMapping("/{albumId}")
-//    public AlbumDto updateAlbum(@PathVariable("albumId") long albumId, @RequestBody AlbumDto albumDto) {
-//        long userId = userContext.getUserId();
-//        return albumService.updateAlbum(albumId, userId, albumDto);
-//    }
-//
-//    @DeleteMapping("/{albumId}")
-//    public AlbumDto deleteAlbum(@PathVariable("albumId") long albumId){
-//        long userId = userContext.getUserId();
-//        return albumService.deleteAlbum(albumId, userId);
-//    }
+
+    @PutMapping("/{albumId}")
+    public AlbumDto updateAlbum(@PathVariable("albumId") long albumId, @RequestBody AlbumDto albumDto) {
+        long userId = userContext.getUserId();
+        return albumService.updateAlbum(albumId, userId, albumDto);
+    }
+
+    @DeleteMapping("/{albumId}")
+    public AlbumDto deleteAlbum(@PathVariable("albumId") long albumId){
+        long userId = userContext.getUserId();
+        return albumService.deleteAlbum(albumId, userId);
+    }
 }

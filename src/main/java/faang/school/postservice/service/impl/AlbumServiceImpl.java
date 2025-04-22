@@ -38,7 +38,8 @@ public class AlbumServiceImpl implements AlbumService {
         Album album = albumMapper.toAlbum(albumDto);
 
         albumValidator.validateUniqueTitle(album);
-        userExistValidator.userExist(userContext.getUserId());
+//        userExistValidator.userExist(userContext.getUserId());
+
 
         final Album savedAlbum = albumRepository.save(album);
         return albumMapper.toAlbumDto(savedAlbum);
@@ -129,34 +130,36 @@ public class AlbumServiceImpl implements AlbumService {
     @Override
     @Transactional
     public List<AlbumDto> getAllUserFavoriteAlbums(long userId, AlbumFilterDto albumFilterDto) {
-        return albumFilterService.applyFilters(albumRepository.findFavoriteAlbumsByUserId(userId), albumFilterDto)
+        return albumFilterService.applyFilters(albumRepository.findFavoriteAlbumsByAuthorId(userId), albumFilterDto)
                 .map(albumMapper::toAlbumDto)
                 .toList();
     }
-//
-//    @Override
-//    @Transactional
-//    public AlbumDto updateAlbum(long albumId, long userId, AlbumDto albumDto) {
-//
-//        Album albumToUpdate = albumRepository.findById(albumId);
-//
-//        albumValidator.validateUpdateAlbum(albumToUpdate, userId, albumDto);
 
-//        albumRepository.update(albumDto, albumToUpdate);
+    @Override
+    @Transactional
+    public AlbumDto updateAlbum(long albumId, long userId, AlbumDto albumDto) {
 
-//        return albumMapper.toAlbumDto(albumRepository.save(albumToUpdate));
-//    }
-//
-//    @Override
-//    @Transactional
-//    public AlbumDto deleteAlbum(long albumId, long userId) {
-//
-//        Album album = albumRepository.findById(albumId);
-//        AlbumDto albumDto = albumMapper.toAlbumDto(album);
-//
-//        albumValidator.validateDeleteAlbum(album, userId);
-//
-//        albumRepository.deleteById(albumId);
-//        return albumDto;
-//    }
+        Album albumToUpdate = albumRepository.findById(albumId);
+
+        albumValidator.validateUpdateAlbum(albumToUpdate, userId, albumDto);
+
+        albumMapper.update(albumDto, albumToUpdate);
+
+        Album updatedAlbum = albumRepository.save(albumToUpdate);
+
+        return albumMapper.toAlbumDto(updatedAlbum);
+    }
+
+    @Override
+    @Transactional
+    public AlbumDto deleteAlbum(long albumId, long userId) {
+
+        Album album = albumRepository.findById(albumId);
+        AlbumDto albumDto = albumMapper.toAlbumDto(album);
+
+        albumValidator.validateDeleteAlbum(album, userId);
+
+        albumRepository.deleteById(albumId);
+        return albumDto;
+    }
 }
