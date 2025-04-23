@@ -8,6 +8,8 @@ import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.CommentEvenRedisPublisher;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
@@ -54,6 +56,9 @@ public class CommentServiceTest {
 
     @Mock
     private CommentEventPublisher commentEventPublisher;
+
+    @Mock
+    private CommentEvenRedisPublisher commentEvenRedisPublisher;
 
     @Value("${app.settings.max-length}")
     private int maxLength;

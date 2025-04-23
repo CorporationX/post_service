@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 
 @Builder
-public record CommentEvent(
+public record CommentEventRedis(
         @JsonProperty("authorId")
         Long authorId,
         @JsonProperty("postId")
