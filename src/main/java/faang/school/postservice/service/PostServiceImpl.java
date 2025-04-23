@@ -36,7 +36,6 @@ import faang.school.postservice.repository.ResourceRepository;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
 import io.minio.RemoveObjectArgs;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
