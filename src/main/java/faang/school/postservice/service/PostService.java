@@ -36,8 +36,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 @Service
 @Slf4j
@@ -58,7 +56,7 @@ public class PostService {
     @Value("${posts.correction.batch-size}")
     int batchSize;
 
-    @Value("${posts.correction.thread-poop-size}")
+    @Value("${posts.correction.thread-pool-size}")
     int threadPoolSize;
 
     public PostResponseDto createDraftPost(PostRequestDto postRequestDto) {
@@ -185,7 +183,7 @@ public class PostService {
             backoff = @Backoff(delayExpression = "${spring.retry.language-tool.backoff-delay}")
     )
     @Transactional
-    private void sendPostContentChecking(Post post) {
+    protected void sendPostContentChecking(Post post) {
         String text = post.getContent();
         log.debug("Before correcting errors in the text: {}", text);
         LanguageToolResponseDto response = languageToolClient.getCorrectedText(text, "auto");
