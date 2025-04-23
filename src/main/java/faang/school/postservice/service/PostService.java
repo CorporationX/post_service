@@ -3,6 +3,7 @@ package faang.school.postservice.service;
 import faang.school.postservice.config.ModerationProperties;
 import com.google.common.collect.Lists;
 import faang.school.postservice.exception.EntityNotFoundException;
+import faang.school.postservice.exception.PostPublishingException;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.moderation.AsyncModerationService;
@@ -18,12 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-
-import java.util.List;
-
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
 @Slf4j
@@ -38,6 +34,8 @@ public class PostService {
     private final AsyncModerationService asyncModerationService;
     private final ModerationProperties moderationProperties;
     private final ExecutorService executorService;
+
+    private static final int BATCH_SIZE = 1000;
 
     @Transactional(propagation = Propagation.REQUIRED)
     public void moderateAllUnverifiedPosts() {
@@ -88,20 +86,29 @@ public class PostService {
     }
 
     @Async("fileUploadTaskExecutor")
-    public void publishSchedulePosts() {
+    @Transactional
+    public  CompletableFuture<Void> publishSchedulePosts() {
         List<Post> postsToPublish = postRepository.findReadyToPublish();
 
         if (postsToPublish.isEmpty()) {
-            return;
+            return CompletableFuture.completedFuture(null);
         }
 
-        List<List<Post>> batches = Lists.partition(postsToPublish, 1000);
+        List<List<Post>> batches = Lists.partition(postsToPublish, BATCH_SIZE);
 
         List<CompletableFuture<Void>> futures = batches.stream()
                 .map(batch -> CompletableFuture.runAsync(() -> publishBatch(batch), executorService))
                 .toList();
 
-        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+        CompletableFuture<Void> allFutures = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+
+        return allFutures.whenComplete((result, throwable) -> {
+            if (throwable != null) {
+                log.error("Error while publishing posts: {}", throwable.getMessage(), throwable);
+            } else {
+                log.info("All posts have been successfully published (total: {} )", postsToPublish.size());
+            }
+        });
     }
 
     private void publishBatch(List<Post> batch) {
@@ -113,8 +120,9 @@ public class PostService {
             postRepository.saveAll(batch);
         } catch (Exception e) {
             log.error("Failed to publish batch of size {}", batch.size(), e);
-            throw new IllegalArgumentException("Failed to publish batch of size");
+            throw new PostPublishingException(
+                    String.format("Failed to publish batch of size %d. Reason: %s",
+                            batch.size(), e.getMessage()), e);
         }
-
     }
 }

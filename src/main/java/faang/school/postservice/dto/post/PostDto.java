@@ -11,9 +11,9 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class PostDto {
 
-    Long id;
-    Long authorId;
-    Long projectId;
-    Long likes;
-    LocalDateTime scheduleAt;
+    private Long id;
+    private Long authorId;
+    private Long projectId;
+    private Long likes;
+    private LocalDateTime scheduleAt;
 }
