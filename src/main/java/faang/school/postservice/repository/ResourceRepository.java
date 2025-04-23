@@ -20,5 +20,4 @@ public interface ResourceRepository extends CrudRepository<Resource, Long> {
     @Modifying
     @Query("DELETE FROM Resource r WHERE r.id = :id")
     void deleteResourceById(Long id);
-
 }

@@ -1,6 +1,8 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.dto.PostDto;
+import faang.school.postservice.dto.ResourceDto;
+import org.springframework.web.multipart.MultipartFile;
 import faang.school.postservice.model.Post;
 import jakarta.validation.constraints.Min;
 
@@ -26,6 +28,8 @@ public interface PostService {
 
     List<PostDto> getAllPublishedPostsByProjectId(Long projectId);
 
+    List<ResourceDto> uploadImageToPost(Long postId, List<MultipartFile> files);
+  
     Post getPostEntryById(@Min(1) long id);
 
     Post findPostById(Long id);

@@ -5,11 +5,15 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.EntityNotFoundException;
+import faang.school.postservice.exception.FileUploadException;
 import faang.school.postservice.exception.NotFoundException;
 import faang.school.postservice.exception.PostNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import io.minio.BucketExistsArgs;
+import io.minio.MakeBucketArgs;
+import jakarta.annotation.PostConstruct;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +26,22 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
+import faang.school.postservice.config.image.ImageDimensions;
+import faang.school.postservice.config.image.ImageProcessingProperties;
+import faang.school.postservice.dto.ResourceDto;
+import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.mapper.ResourceMapper;
+import faang.school.postservice.model.Resource;
+import faang.school.postservice.repository.ResourceRepository;
+import io.minio.MinioClient;
+import io.minio.PutObjectArgs;
+import io.minio.RemoveObjectArgs;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
@@ -31,6 +50,13 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.Optional;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Objects;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -42,7 +68,9 @@ public class PostServiceImpl implements PostService {
     private static final String POST_NOT_EXIST = "Post doesn't exist";
 
     private final PostRepository postRepository;
+    private final ResourceRepository resourceRepository;
     private final PostMapper postMapper;
+    private final ResourceMapper resourceMapper;
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
     private final ThreadPoolTaskScheduler taskScheduler;
@@ -55,6 +83,27 @@ public class PostServiceImpl implements PostService {
 
     @Value("${post-service.post.count-of-unverified-posts-to-ban}")
     private int countOfUnverifiedPostsToBan;
+    private final ImageProcessingProperties properties;
+    private final ImageResizer imageResizer;
+    private final MinioClient minioClient;
+    @Value("${s3.bucket-name}")
+    private String bucketName;
+
+    @PostConstruct
+    public void init() {
+        try {
+            boolean isExist = minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build());
+            if (!isExist) {
+                minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
+                log.info("Bucket '{}' created successfully", bucketName);
+            } else {
+                log.info("Bucket '{}' already exists", bucketName);
+            }
+        } catch (Exception e) {
+            log.error("Error while initializing MinIO bucket: {}", e.getMessage());
+            throw new RuntimeException("Failed to initialize MinIO bucket", e);
+        }
+    }
 
     @Override
     public PostDto createDraft(PostDto postDto) {
@@ -133,6 +182,56 @@ public class PostServiceImpl implements PostService {
                 .sorted(Comparator.comparing(Post::getPublishedAt).reversed())
                 .map(postMapper::toDto)
                 .toList();
+    }
+
+    public List<ResourceDto> uploadImageToPost(Long postId, List<MultipartFile> files) {
+        log.info("Starting image upload for postId: {}, files count: {}", postId, files.size());
+        Post post = postRepository.findById(postId).orElseThrow(() -> new NotFoundException("Post doesn't exist"));
+        List<Resource> savedResources = new ArrayList<>();
+        try {
+            for (MultipartFile file : files) {
+                log.debug("Processing file: {} (size: {} bytes)", file.getOriginalFilename(), file.getSize());
+                BufferedImage bufferedImage = resizeImage(file);
+                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                ImageIO.write(bufferedImage, "jpg", byteArrayOutputStream);
+                byte[] imageBytes = byteArrayOutputStream.toByteArray();
+
+                Resource processedResource = createResource(file);
+                processedResource.setSize(imageBytes.length);
+                processedResource.setPost(post);
+
+                uploadToMinio(processedResource, new ByteArrayInputStream(imageBytes));
+                log.info("Successfully uploaded to MinIO: {}", processedResource.getKey());
+
+                Resource savedResource = resourceRepository.save(processedResource);
+                log.debug("Saved resource to DB with id: {}, key: {}",
+                        savedResource.getId(), savedResource.getKey());
+                savedResources.add(savedResource);
+            }
+        } catch (Exception e) {
+            rollbackUpload(e, savedResources);
+            throw new FileUploadException("File couldn't be uploaded" + e);
+        }
+        log.info("Successfully uploaded {} images for postId: {}", savedResources.size(), postId);
+        return savedResources.stream().map(resourceMapper::toDto).toList();
+    }
+
+    private void rollbackUpload(Exception e, List<Resource> savedResources) {
+        log.error("Error during image upload. Rolling back changes", e);
+        savedResources.forEach(resource -> {
+            try {
+                if (resource.getKey() != null) {
+                    minioClient.removeObject(
+                            RemoveObjectArgs.builder()
+                                    .bucket(bucketName)
+                                    .object(resource.getKey())
+                                    .build());
+                }
+            } catch (Exception ex) {
+                log.error("Failed to cleanup MinIO object: {}", resource.getKey(), ex);
+            }
+            resourceRepository.delete(resource);
+        });
     }
 
     @Override
@@ -228,5 +327,77 @@ public class PostServiceImpl implements PostService {
 //                throw new NotFoundException("Project doesn't exist");
 //            }
 //        }
+    }
+
+    private BufferedImage resizeImage(MultipartFile file) {
+        if (!properties.getAllowedContentTypes().contains(file.getContentType())) {
+            log.error("Sent photo with ContentType: {}", file.getContentType());
+            throw new DataValidationException("Illegal type of the image");
+        }
+
+        BufferedImage image;
+        try {
+            image = ImageIO.read(file.getInputStream());
+        } catch (IOException e) {
+            log.error("Image can't be read by the application when uploading");
+            throw new DataValidationException("Can't read the image");
+        }
+        if (image == null) {
+            log.error("File can't be read because it's not an image");
+            throw new DataValidationException("The file is not an image");
+        }
+
+        int width = image.getWidth();
+        int height = image.getHeight();
+        ImageDimensions targetDimensions = (width > height) ?
+                properties.getResize().getHorizontal() : properties.getResize().getSquare();
+
+        if (width > targetDimensions.getWidth() || height > targetDimensions.getHeight()) {
+            try {
+                image = imageResizer.resize(image, targetDimensions.getWidth(), targetDimensions.getHeight());
+            } catch (IOException e) {
+                log.error("Image can't be resized: {}", file.getName());
+                throw new DataValidationException("Wrong image size. Can't be resized");
+            }
+        }
+        return image;
+    }
+
+    private Resource createResource(MultipartFile originalFile) {
+        return Resource.builder()
+                .name(generateFileName(originalFile))
+                .type("image/jpeg")
+                .size(originalFile.getSize())
+                .key("posts/" + UUID.randomUUID() + getFileExtension(originalFile))
+                .build();
+    }
+
+    private String generateFileName(MultipartFile file) {
+        return StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
+    }
+
+    private String getFileExtension(MultipartFile file) {
+        String originalFilename = file.getOriginalFilename();
+        if (originalFilename == null || originalFilename.isBlank()) {
+            return ".jpg";
+        }
+        int dotIndex = originalFilename.lastIndexOf(".");
+        return dotIndex > 0 ? originalFilename.substring(dotIndex) : ".jpg";
+    }
+
+    private void uploadToMinio(Resource resource, InputStream inputStream) {
+        try {
+            byte[] imageBytes = inputStream.readAllBytes();
+            minioClient.putObject(
+                    PutObjectArgs.builder()
+                            .bucket(bucketName)
+                            .object(resource.getKey())
+                            .stream(new ByteArrayInputStream(imageBytes), imageBytes.length, -1)
+                            .contentType(resource.getType() != null ?
+                                    resource.getType() : "image/jpeg")
+                            .build());
+        } catch (Exception e) {
+            throw new FileUploadException("File couldn't be uploaded to MinIO: " + e);
+        }
     }
 }

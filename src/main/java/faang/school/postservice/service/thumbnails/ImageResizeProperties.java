@@ -10,7 +10,7 @@ import java.util.List;
 @Getter
 @Setter
 @Configuration
-@ConfigurationProperties(prefix = "image")
+@ConfigurationProperties(prefix = "image-s3")
 public class ImageResizeProperties {
 
     private List<Integer> resizeSizes;
