@@ -2,7 +2,7 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
-import faang.school.postservice.dto.event.CommentEvent;
+import faang.school.postservice.dto.kafkaevents.CommentEvent;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.CommentMapper;
@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 
@@ -26,9 +27,8 @@ public class CommentService {
     private final CommentMapper mapper;
     private final PostRepository postRepository;
     private final UserServiceClient client;
-    private final CommentEventPublisher commentEventPublisher;
     private static final int MAX_LENGTH = 4096;
-
+    private final CommentEventPublisher commentEventPublisher;
 
     public CommentDto createComment(long userId, long postId, CommentDto commentDto) {
         UserDto user = client.getUser(userId);
@@ -40,16 +40,18 @@ public class CommentService {
         validateNullCommentDto(commentDto);
         validateCommentContent(commentDto);
         Comment commentForSave = mapper.toEntity(commentDto);
+        commentForSave.setPost(post);
         Comment savedComment = repository.save(commentForSave);
         log.info("Комментарий {} успешно опубликован", savedComment.getId());
-        CommentEvent commentEvent = CommentEvent.builder()
-                .commentId(savedComment.getId())
-                .title(savedComment.getContent())
-                .authorId(savedComment.getAuthorId())
-                .postId(savedComment.getPost().getId())
-                .build();
-        commentEventPublisher.publish(commentEvent);
-        log.info("Комментарий {} отправлен в топик ", savedComment);
+
+        commentEventPublisher.publish(new CommentEvent(
+                savedComment.getId(),
+                commentDto.authorId(),
+                userId,
+                commentDto.postId(),
+                commentDto.content(),
+                LocalDateTime.now()
+        ));
         return mapper.toDto(savedComment);
     }
 

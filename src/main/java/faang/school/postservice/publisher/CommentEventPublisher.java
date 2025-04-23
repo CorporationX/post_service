@@ -1,24 +1,24 @@
 package faang.school.postservice.publisher;
 
-import faang.school.postservice.dto.event.CommentEvent;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import faang.school.postservice.config.kafka.KafkaTopic;
+import faang.school.postservice.dto.kafkaevents.CommentEvent;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
+
 @Component
-@RequiredArgsConstructor
-@Slf4j
-public class CommentEventPublisher {
+public class CommentEventPublisher extends AbstractEventPublisher implements KafkaEventPublisher<CommentEvent> {
 
-    @Value("${spring.data.redis.channels.comment_channel}")
-    private String channel;
+    private final KafkaTopic kafkaTopic;
 
-    private final RedisTemplate<String, Object> redisTemplate;
+    public CommentEventPublisher(KafkaTemplate<String, String> kafkaTemplate, ObjectMapper objectMapper, KafkaTopic kafkaTopic) {
+        super(kafkaTemplate, objectMapper);
+        this.kafkaTopic = kafkaTopic;
+    }
 
-    public void publish(CommentEvent commentEvent) {
-        redisTemplate.convertAndSend(channel, commentEvent);
-        log.info("Published comment event: {}", commentEvent);
+    @Override
+    public void publish(CommentEvent event) {
+        sendMessage(event, kafkaTopic.comment().name());
     }
 }

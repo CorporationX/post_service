@@ -27,6 +27,15 @@ spring:
         user-ban: user-ban
         postViewEventPublisher: PostViewEvent_topic
         comment_channel: comment_topic
+        like-event: likeEventTopic
+    kafka:
+      bootstrap-servers: localhost:9092
+      topic:
+        comment: comment_topic
+      producer:
+        retries: 3
+        retry-backoff-ms: 1000
+        acks: all
 
   profiles:
     active: local

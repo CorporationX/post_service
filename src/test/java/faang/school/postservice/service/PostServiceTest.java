@@ -280,7 +280,7 @@ public class PostServiceTest {
         Stream<Post> stream = Stream.empty();
 
         when(postRepository.findByAuthorId(1L)).thenReturn(stream);
-        List<PostDto> list = postService.findPublishedByAuthorId(1L,1L);
+        List<PostDto> list = postService.findPublishedByAuthorId(1L, 1L);
 
         assertEquals(0, list.size());
         assertTrue(list.isEmpty());
@@ -344,7 +344,7 @@ public class PostServiceTest {
         Post post = postCaptor.getValue();
 
         assertEquals("content", post.getContent());
-        assertEquals(0,post.getLikes().size());
+        assertEquals(0, post.getLikes().size());
     }
 
     @Test
@@ -361,6 +361,15 @@ public class PostServiceTest {
     public void testNegativeCreateContentIsEmpty() {
         assertThrows(NullPointerException.class, () -> postService.create(PostDto.builder()
                 .content("")
+                .build()));
+    }
+
+    @Test
+    public void testNegativeCreateValidateAuthor() {
+        assertThrows(IllegalArgumentException.class, () -> postService.create(PostDto.builder()
+                .projectId(1L)
+                .authorId(1L)
+                .content("content")
                 .build()));
     }
 }
