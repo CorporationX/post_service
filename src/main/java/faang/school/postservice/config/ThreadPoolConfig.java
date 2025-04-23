@@ -9,7 +9,7 @@ import java.util.concurrent.Executors;
 
 @Configuration
 public class ThreadPoolConfig {
-    @Value("${threadpool.size}")
+    @Value("${app.thread-pool-size}")
     private int threadPoolSize;
 
     @Bean

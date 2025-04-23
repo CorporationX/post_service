@@ -3,6 +3,7 @@ app:
     max-cached-posts-per-hashtag: 100
     thread-pool-size: 8
     top-hashtags-cache: 1000
+  thread-pool-size: 16
 
 spring:
   datasource:
@@ -86,3 +87,6 @@ posts:
     cron: "0 5 * * * *"
     batch-size: 100000
     thread-poop-size: 16
+
+  publishing:
+    cron: "0 0 * * * *"
