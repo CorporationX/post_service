@@ -86,7 +86,7 @@ posts:
   correction:
     cron: "0 5 * * * *"
     batch-size: 100000
-    thread-poop-size: 16
+    thread-pool-size: 16
 
   publishing:
     cron: "0 0 * * * *"
