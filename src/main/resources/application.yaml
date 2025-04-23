@@ -3,6 +3,9 @@ app:
     max-cached-posts-per-hashtag: 100
     thread-pool-size: 8
     top-hashtags-cache: 1000
+  redis:
+    topic:
+      like_achievement: like_achievement_topic
 
 spring:
   datasource:

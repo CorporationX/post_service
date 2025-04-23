@@ -1,6 +1,7 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.like.LikeEvent;
 import faang.school.postservice.exception.LikeException;
 import faang.school.postservice.like.LikeDto;
 import faang.school.postservice.like.TargetLike;
@@ -8,6 +9,7 @@ import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.LikeEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -37,6 +39,7 @@ public class LikeService {
     private final CommentRepository commentRepository;
     private final UserServiceClient userServiceClient;
     private final LikeMapper likeMapper;
+    private final LikeEventPublisher likeEventPublisher;
     private TargetLike targetLike;
 
     @Transactional
@@ -50,6 +53,7 @@ public class LikeService {
         Like like = buildLike(userId, post, null);
         LikeDto result = likeMapper.toLikeDto(likeRepository.save(like));
         log.info("User {} liked post {} !", userId, postId);
+        likeEventPublisher.publish(new LikeEvent(like.getUserId(), postId, like.getId()));
         return result;
     }
 
