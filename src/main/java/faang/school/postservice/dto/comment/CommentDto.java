@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 
@@ -23,9 +24,13 @@ public class CommentDto {
     private Long postId;
 
     private LocalDateTime createdAt;
-    private int likeCount;
+    private Integer likeCount;
 
     @NotBlank(message = "Comment text cannot be empty")
     @Size(max = 4096, message = "Comment text cannot be longer than 4096 characters")
     private String content;
+
+    private MultipartFile image;
+    private String largeImageFileKey;
+    private String smallImageFileKey;
 }

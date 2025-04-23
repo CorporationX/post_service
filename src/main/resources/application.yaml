@@ -110,7 +110,11 @@ task-executor:
     max-pool-size: 20
     queue-capacity: 50
 
-
+comment-img:
+  max-size-bytes: 5242880
+  sizes:
+    large: 1080
+    small: 170
 ad:
   expired:
     cronExpiredPostAdDeletion: "0 0 1 * * *"
@@ -126,7 +130,6 @@ grammar-bot:
   api:
     url: "https://grammarbot.p.rapidapi.com/check"
     key: "812b9b6481mshc1aae881c0c2f03p1411dfjsne87203f42d87"
-
 
 moderation:
   dictionary: classpath:moderation/bad-words.txt
