@@ -7,6 +7,7 @@ import faang.school.postservice.dto.kafkaevents.CommentEvent;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.CommentMapper;
+import faang.school.postservice.model.AuthorCommentCount;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.CommentEvenRedisPublisher;
@@ -20,6 +21,8 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -95,6 +98,11 @@ public class CommentService {
                 .orElseThrow(() -> new DataValidationException("Комментарий %d не найден", commentId));
         log.info("Комментарий {} успешно удален", commentId);
         repository.deleteById(commentId);
+    }
+
+    public Map<Integer, Integer> findNotVerifiedComments() {
+        return repository.findNotVerifiedComments().stream()
+                .collect(Collectors.toMap(AuthorCommentCount::getAuthorId, AuthorCommentCount::getCount));
     }
 
     private void validateCommentContent(CommentDto commentDto) {
