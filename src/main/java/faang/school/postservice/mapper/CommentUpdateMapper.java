@@ -3,8 +3,9 @@ package faang.school.postservice.mapper;
 import faang.school.postservice.dto.comment.CommentUpdateDto;
 import faang.school.postservice.model.Comment;
 import org.mapstruct.Mapper;
+import org.mapstruct.ReportingPolicy;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface CommentUpdateMapper {
     Comment toComment(CommentUpdateDto commentUpdateDto);
 
