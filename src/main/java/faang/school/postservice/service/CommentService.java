@@ -104,15 +104,14 @@ public class CommentService {
     }
 
     public void findNotVerifiedComments() {
-        Map<Long, Integer> unverifiedCountMap = repository.findNotVerifiedComments().stream()
-                .collect(Collectors.toMap(AuthorCommentCount::getAuthorId, AuthorCommentCount::getCount));
+        List<Long> usersForBan = repository.findNotVerifiedComments().stream()
+                .collect(Collectors.toMap(AuthorCommentCount::getAuthorId, AuthorCommentCount::getCount))
+                .entrySet().stream()
+                .filter(entry -> entry.getValue() >= MAX_NOT_VERIFIED_COMMENTS)
+                .map(Map.Entry::getKey)
+                .toList();
 
-        if (!unverifiedCountMap.isEmpty()) {
-            List<Long> usersForBan = unverifiedCountMap.entrySet().stream()
-                    .filter(entry -> entry.getValue() >= MAX_NOT_VERIFIED_COMMENTS)
-                    .map(Map.Entry::getKey)
-                    .toList();
-
+        if (!usersForBan.isEmpty()) {
             commentBanPublisher.publish(usersForBan);
         }
     }
