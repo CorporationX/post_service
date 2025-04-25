@@ -32,6 +32,7 @@ spring:
       bootstrap-servers: localhost:9092
       topic:
         comment: comment_topic
+        userBan: user_ban
       producer:
         retries: 3
         retry-backoff-ms: 1000
@@ -45,7 +46,7 @@ server:
 
 logging:
   level:
-    root: debug
+    root: info
 
 user-service:
   host: localhost
@@ -69,8 +70,9 @@ batch:
   size: 1000
 
 cron:
-  delete-expired-posts: 0 49 18 * * FRI
+  delete-expired-posts: 0 49 15 * * FRI
   author-ban: 0 0 0 * * *
+  comment-ban: 0 13 18 * * FRI
 
 ban-properties:
   value-rejected-posts: 5
