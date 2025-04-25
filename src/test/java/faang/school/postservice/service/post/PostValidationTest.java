@@ -1,4 +1,4 @@
-package faang.school.postservice.PostService;
+package faang.school.postservice.service.post;
 
 import faang.school.postservice.dto.post.PostRequestDto;
 import faang.school.postservice.exception.InvalidPostAuthorsException;

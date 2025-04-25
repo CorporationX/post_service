@@ -18,7 +18,7 @@ import org.springframework.web.client.RestTemplate;
 @RequiredArgsConstructor
 public class LanguageToolClient {
 
-    @Value("${servers.language-tool.base-url}")
+    @Value("${moderation.language-tool.base-url}")
     private String baseUrl;
 
     private final RestTemplate restTemplate;

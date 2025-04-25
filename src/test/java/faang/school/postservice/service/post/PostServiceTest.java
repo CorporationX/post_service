@@ -1,4 +1,4 @@
-package faang.school.postservice.PostService;
+package faang.school.postservice.service.post;
 
 import faang.school.postservice.client.LanguageToolClient;
 import faang.school.postservice.dto.languageTool.GrammarMatch;
@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
 
 import static faang.school.postservice.service.PostService.CANT_UPDATE_DELETED_POST;
 import static faang.school.postservice.service.PostService.NO_POST_FOUND;
@@ -60,6 +61,9 @@ public class PostServiceTest {
 
     @Mock
     private LikeRepository likeRepository;
+
+    @Mock
+    private ExecutorService threadPoolExecutorService;
 
     @Spy
     private PostMapperImpl postMapper;
@@ -292,5 +296,25 @@ public class PostServiceTest {
 
         assertEquals(response.getMatches().get(0).getReplacements().get(0).getValue(),
                 post.getContent().substring(0, 4));
+    }
+
+    @Test
+    void testPublishScheduledPosts_shouldPublishPosts() {
+        Post post1 = new Post();
+        post1.setId(1L);
+        post1.setPublished(true);
+
+        Post post2 = new Post();
+        post2.setId(2L);
+        post2.setPublished(true);
+
+        List<Post> posts = List.of(post1, post2);
+
+        when(postRepository.findReadyToPublish()).thenReturn(posts);
+
+        postService.publishScheduledPosts();
+
+        verify(postRepository).findReadyToPublish();
+        verify(threadPoolExecutorService, times(2)).execute(any(Runnable.class));
     }
 }

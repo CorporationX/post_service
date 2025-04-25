@@ -51,11 +51,12 @@ public class PostService {
     private final LanguageToolClient languageToolClient;
     private final LikeRepository likeRepository;
     private final HashtagService hashtagService;
+    private final ExecutorService threadPoolExecutor;
 
     @Value("${posts.correction.batch-size}")
     int batchSize;
 
-    @Value("${posts.correction.thread-poop-size}")
+    @Value("${posts.correction.thread-pool-size}")
     int threadPoolSize;
 
     public PostResponseDto createDraftPost(PostRequestDto postRequestDto) {
@@ -182,7 +183,7 @@ public class PostService {
             backoff = @Backoff(delayExpression = "${spring.retry.language-tool.backoff-delay}")
     )
     @Transactional
-    private void sendPostContentChecking(Post post) {
+    protected void sendPostContentChecking(Post post) {
         String text = post.getContent();
         log.debug("Before correcting errors in the text: {}", text);
         LanguageToolResponseDto response = languageToolClient.getCorrectedText(text, "auto");
@@ -190,6 +191,19 @@ public class PostService {
         post.setCorrected(true);
         postRepository.save(post);
         log.debug("After correcting errors in the text: {}", text);
+    }
+
+    public void publishScheduledPosts() {
+        List<Post> readyToPublishPosts = postRepository.findReadyToPublish();
+        log.info("Found {} posts ready to publish", readyToPublishPosts.size());
+
+        for (Post post: readyToPublishPosts) {
+            CompletableFuture.runAsync(() -> publishPost(post), threadPoolExecutor)
+                    .exceptionally(ex -> {
+                        log.error("Error while publishing post with ID: {}", post.getId(), ex);
+                        return null;
+                    });
+        }
     }
 
     private void validatePostOptional(Optional<Post> postOptional, Long id) {
@@ -224,5 +238,11 @@ public class PostService {
     private void recoverSendPostContentChecking(LanguageToolException e, Post post) {
         log.error("Failed to correct text after retries. ", e);
         log.error("Post with ID could not be corrected: {}", post.getId());
+    }
+
+    private void publishPost(Post post) {
+        post.setPublished(true);
+        post.setPublishedAt(LocalDateTime.now());
+        log.info("Post with ID {} published successfully", post.getId());
     }
 }

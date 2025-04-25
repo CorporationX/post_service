@@ -2,6 +2,7 @@ package faang.school.postservice.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -42,7 +43,7 @@ public class Comment {
     @OneToMany(mappedBy = "comment", orphanRemoval = true)
     private List<Like> likes;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id", nullable = false)
     private Post post;
 
@@ -61,4 +62,10 @@ public class Comment {
 
     @Column(name = "small_image_file_key")
     private String smallImageFileKey;
+
+    @Column(name = "verified")
+    private boolean verified;
+
+    @Column(name = "verified_date")
+    private LocalDateTime verifiedDate;
 }

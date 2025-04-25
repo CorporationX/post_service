@@ -1,6 +1,8 @@
 package faang.school.postservice.repository;
 
 import faang.school.postservice.model.Comment;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
@@ -10,4 +12,10 @@ public interface CommentRepository extends CrudRepository<Comment, Long> {
 
     @Query("SELECT c FROM Comment c WHERE c.post.id = :postId")
     List<Comment> findAllByPostId(long postId);
+
+    @Query("SELECT c FROM Comment c")
+    Page<Comment> findComments(Pageable pageable);
+
+    @Query("SELECT c FROM Comment c WHERE c.verified = false")
+    Page<Comment> findUnverifiedComments(Pageable pageable);
 }

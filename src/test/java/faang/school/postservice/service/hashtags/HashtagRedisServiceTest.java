@@ -1,7 +1,6 @@
-package faang.school.postservice.hashtags;
+package faang.school.postservice.service.hashtags;
 
 import faang.school.postservice.model.Post;
-import faang.school.postservice.service.hashtags.HashtagRedisService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
