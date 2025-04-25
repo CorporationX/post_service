@@ -18,6 +18,7 @@ import java.util.stream.Stream;
 @Service
 @RequiredArgsConstructor
 public class UserModerationService {
+    public static final int MAX_UNVERIFIED_POSTS_BEFORE_BAN = 5;
     private final PostRepository postRepository;
     private final UserBanPublisher userBanPublisher;
 
@@ -27,7 +28,7 @@ public class UserModerationService {
             Map<Long, List<Post>> userPostCounts = postStream
                     .collect(Collectors.groupingBy(Post::getAuthorId));
             userPostCounts.forEach((authorId, posts) -> {
-                if (posts.size() > 5) {
+                if (posts.size() > MAX_UNVERIFIED_POSTS_BEFORE_BAN) {
                     log.info(InfoMessage.INFO_BANNED_USER, authorId, posts.size());
                     userBanPublisher.publishUserBan(authorId);
                 }
