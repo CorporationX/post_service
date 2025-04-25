@@ -4,6 +4,10 @@ app:
     thread-pool-size: 8
     top-hashtags-cache: 1000
 
+  redis:
+    topic:
+      comment_analytics: comment_analytics_topic
+
 spring:
   datasource:
     driver-class-name: org.postgresql.Driver

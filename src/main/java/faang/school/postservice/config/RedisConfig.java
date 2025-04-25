@@ -2,6 +2,7 @@ package faang.school.postservice.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.service.hashtags.HashtagRedisWarmUpService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,6 +16,8 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
 public class RedisConfig {
+    @Value("${app.redis.topic.comment_analytics}")
+    private String commentAnalyticsTopicName;
 
     @Bean
     public RedisTemplate<String, String> redisTemplate(RedisConnectionFactory connectionFactory, ObjectMapper objectMapper) {
@@ -47,7 +50,7 @@ public class RedisConfig {
     }
 
     @Bean
-    public ChannelTopic commentTopic() {
-        return new ChannelTopic("comment_events");
+    public ChannelTopic commentAnalyticsTopic() {
+        return new ChannelTopic(commentAnalyticsTopicName);
     }
 }
