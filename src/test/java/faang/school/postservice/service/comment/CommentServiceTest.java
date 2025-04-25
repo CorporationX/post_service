@@ -1,6 +1,7 @@
 package faang.school.postservice.service.comment;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.ModerationProperties;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.comment.CommentMapper;
@@ -10,13 +11,18 @@ import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.validator.CommentValidator;
 import faang.school.postservice.validator.PostValidator;
 import jakarta.persistence.EntityNotFoundException;
+import nl.altindag.log.LogCaptor;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.task.SyncTaskExecutor;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -24,9 +30,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class CommentServiceTest {
@@ -124,7 +128,6 @@ public class CommentServiceTest {
         when(imageService.uploadResizedImages(mockFile, 1L))
                 .thenReturn(new ImageService.ImageKeys("comments/1_large.jpg", "comments/1_small.jpg"));
 
-
         CommentDto result = commentService.createComment(1L, commentDto);
 
         assertNotNull(result);
@@ -221,5 +224,40 @@ public class CommentServiceTest {
         assertThrows(EntityNotFoundException.class, () ->
                 commentService.deleteComment(1L)
         );
+    }
+
+    @Nested
+    class ModerateUnverifiedComments{
+        @Test
+        public void noComments(){
+            when(commentRepository.findByVerifiedIsNull()).thenReturn(List.of());
+
+            LogCaptor logCaptor = LogCaptor.forClass(CommentService.class);
+
+            commentService.moderateUnverifiedComments();
+
+            List<String> logs = logCaptor.getInfoLogs();
+            assertTrue(logs.contains("No comments to moderate."));
+        }
+
+        @Test
+        void withComments() {
+            Comment comment = new Comment();
+            comment.setContent("clean content");
+
+            ModerationProperties moderationProperties = mock(ModerationProperties.class);
+            when(moderationProperties.getChunkSize()).thenReturn(100);
+            ReflectionTestUtils.setField(commentService, "moderationProperties", moderationProperties);
+            ReflectionTestUtils.setField(commentService, "asyncModerationExecutor", new SyncTaskExecutor());
+
+            when(commentRepository.findByVerifiedIsNull()).thenReturn(List.of(comment));
+            LogCaptor logCaptor = LogCaptor.forClass(CommentService.class);
+
+            commentService.moderateUnverifiedComments();
+
+            List<String> logs = logCaptor.getInfoLogs();
+            assertTrue(logs.contains("Found 1 unverified comments to process"));
+            assertTrue(logs.contains("Moderation finished."));
+        }
     }
 }

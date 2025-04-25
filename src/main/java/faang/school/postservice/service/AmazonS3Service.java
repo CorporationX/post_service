@@ -34,7 +34,7 @@ public class AmazonS3Service {
     @Value("${amazonS3.bucket-name}")
     private String bucketName;
 
-    @Async("fileUploadTaskExecutor")
+    @Async("asyncModerationExecutor")
     public CompletableFuture<Pair<String, FileData>> uploadFile(FileData fileData, String folder) {
         log.info("Starting uploading file named '{}' to folder named '{}'", fileData.getOriginalName(), folder);
         try {
