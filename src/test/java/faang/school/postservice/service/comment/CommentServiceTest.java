@@ -28,6 +28,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mapstruct.factory.Mappers;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -112,7 +113,6 @@ class CommentServiceTest {
     private Comment comment;
     private Post post;
     private Mono<ToxicityScoreDto> toxicityScore;
-    private final ArgumentCaptor<Comment> commentCaptor = ArgumentCaptor.forClass(Comment.class);
     private final int commentModerationBatchSize = 3;
 
     @BeforeEach
