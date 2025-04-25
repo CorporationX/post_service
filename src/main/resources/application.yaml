@@ -7,7 +7,7 @@ app:
   redis:
     topic:
       like_achievement: like_achievement_topic
-
+      
 spring:
   datasource:
     driver-class-name: org.postgresql.Driver

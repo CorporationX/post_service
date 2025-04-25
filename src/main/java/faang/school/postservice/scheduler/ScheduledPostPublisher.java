@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class ScheduledPostPublisher {
     private final PostService postService;
+  
     @Scheduled(cron = "${posts.publishing.cron}")
     public void publicScheduledPostJob() {
         postService.publishScheduledPosts();
