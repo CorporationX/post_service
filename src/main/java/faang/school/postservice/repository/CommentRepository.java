@@ -14,9 +14,10 @@ public interface CommentRepository extends CrudRepository<Comment, Long> {
     List<Comment> findByIdIn(List<Long> ids);
 
     @Query(nativeQuery = true, value = """
-            select author_id as authorId, count(*) from comment
-            where verified = false
-            group by author_id
+            SELECT author_id as authorId, COUNT(*) FROM comment c
+            LEFT JOIN users u ON u.id = c.author_id
+            WHERE u.banned = false AND c.verified = false
+            GROUP BY author_id
             """)
     List<AuthorCommentCount> findNotVerifiedComments();
 }
