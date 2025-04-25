@@ -7,8 +7,10 @@ import faang.school.postservice.dto.kafkaevents.CommentEvent;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.CommentMapper;
+import faang.school.postservice.model.AuthorCommentCount;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.CommentBanPublisher;
 import faang.school.postservice.publisher.CommentEvenRedisPublisher;
 import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
@@ -20,11 +22,14 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class CommentService {
+    private static final int MAX_NOT_VERIFIED_COMMENTS = 5;
     private final CommentRepository repository;
     private final CommentMapper mapper;
     private final PostRepository postRepository;
@@ -32,6 +37,7 @@ public class CommentService {
     private static final int MAX_LENGTH = 4096;
     private final CommentEventPublisher commentEventPublisher;
     private final CommentEvenRedisPublisher commentEvenRedisPublisher;
+    private final CommentBanPublisher commentBanPublisher;
 
     public CommentDto createComment(long userId, long postId, CommentDto commentDto) {
         UserDto user = client.getUser(userId);
@@ -95,6 +101,19 @@ public class CommentService {
                 .orElseThrow(() -> new DataValidationException("Комментарий %d не найден", commentId));
         log.info("Комментарий {} успешно удален", commentId);
         repository.deleteById(commentId);
+    }
+
+    public void findNotVerifiedComments() {
+        List<Long> usersForBan = repository.findNotVerifiedComments().stream()
+                .collect(Collectors.toMap(AuthorCommentCount::getAuthorId, AuthorCommentCount::getCount))
+                .entrySet().stream()
+                .filter(entry -> entry.getValue() >= MAX_NOT_VERIFIED_COMMENTS)
+                .map(Map.Entry::getKey)
+                .toList();
+
+        if (!usersForBan.isEmpty()) {
+            commentBanPublisher.publish(usersForBan);
+        }
     }
 
     private void validateCommentContent(CommentDto commentDto) {
