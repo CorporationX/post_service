@@ -28,6 +28,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -47,11 +48,6 @@ public class LikeService {
     private final LikeRepository likeRepository;
     private final LikeMapper likeMapper;
     private final PostMapper postMapper;
-    private final LikeEventPublisher likeEventPublisher;
-    private final DeleteLikeEventPublisher deleteLikeEventPublisher;
-    private final PostService postService;
-    private final LikeEventPublisher likeEventPublisher;
-    private final DeleteLikeEventPublisher deleteLikeEventPublisher;
     private final PostService postService;
     private final OutboxEventService outboxEventService;
 

@@ -30,7 +30,7 @@ public class OutboxEventService {
         outboxEventRepository.save(outboxEvent);
     }
 
-    @Scheduled(fixedDelayString = "${post-corrector.fixe-delay.outbox-event.every-five-second}")
+    @Scheduled(fixedDelayString = "${post-corrector.fixed-delay.outbox-event.every-five-second}")
     @Transactional
     public void publishOutboxEvents() {
         for (EventType eventType : EventType.values()) {
