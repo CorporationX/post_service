@@ -11,5 +11,5 @@ import java.util.List;
 @Repository
 public interface OutboxEventRepository extends JpaRepository<OutboxEvent, Long> {
 
-    List<OutboxEvent> findTop100ByEventStatusAndTypeOrderByCreatedAtAsc(EventStatus eventStatus, EventType type);
+    List<OutboxEvent> findTop100ByStatusAndTypeOrderByCreatedAtAsc(EventStatus eventStatus, EventType type);
 }

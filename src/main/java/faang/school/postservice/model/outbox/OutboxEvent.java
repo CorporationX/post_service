@@ -19,7 +19,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "outbox_events")
+@Table(name = "outbox_event")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -41,8 +41,10 @@ public class OutboxEvent {
     private EventStatus status;
 
     @CreationTimestamp
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 }

@@ -42,7 +42,7 @@ public class OutboxEventService {
     @Transactional
     public void processOutboxEvent(EventType eventType) {
         List<OutboxEvent> outboxEvents = outboxEventRepository
-                .findTop100ByEventStatusAndTypeOrderByCreatedAtAsc(EventStatus.IN_PROGRESS, eventType);
+                .findTop100ByStatusAndTypeOrderByCreatedAtAsc(EventStatus.IN_PROGRESS, eventType);
 
         for (OutboxEvent outboxEvent : outboxEvents) {
             try {
