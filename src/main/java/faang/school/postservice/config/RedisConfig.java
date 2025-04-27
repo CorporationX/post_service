@@ -16,7 +16,7 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
 public class RedisConfig {
-    @Value("${app.redis.topic.comment_analytics}")
+    @Value("${app.redis.topic.comment-analytics}")
     private String commentAnalyticsTopicName;
 
     @Bean

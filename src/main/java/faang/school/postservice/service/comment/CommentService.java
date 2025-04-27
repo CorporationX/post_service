@@ -9,12 +9,14 @@ import java.util.List;
 
 public interface CommentService {
     Mono<Void> moderateComments();
+
     void createComment(CommentRequestDto commentRequestDto);
 
     void updateComment(Long id, CommentUpdateDto commentUpdateDto);
 
-
     List<CommentResponseDto> getCommentsByPostId(Long postId);
+
     void banUsersForComments();
+
     void deleteComment(Long id);
 }
