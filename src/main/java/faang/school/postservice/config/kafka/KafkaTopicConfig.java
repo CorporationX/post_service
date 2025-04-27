@@ -1,5 +1,6 @@
 package faang.school.postservice.config.kafka;
 
+import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,37 +12,33 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Configuration
+@RequiredArgsConstructor
 public class KafkaTopicConfig {
 
-    @Value(value = "${spring.data.kafka.bootstrap-servers}")
-    private String bootstrapAddress;
-
-    @Value(value = "${spring.data.kafka.topic.post.name}")
-    private String postTopic;
-
-    @Value(value = "${spring.data.kafka.topic.post-views.name}")
-    private String postViewTopic;
-
-    @Value(value = "${spring.data.kafka.topic.post.partitions}")
-    private int postTopicNumPartitions;
-
-    @Value(value = "${spring.data.kafka.topic.post.replicas}")
-    private short postReplicationFactor;
+    private final KafkaProperties kafkaProperties;
 
     @Bean
     public KafkaAdmin kafkaAdmin() {
         Map<String, Object> configs = new HashMap<>();
-        configs.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress);
+        configs.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.getBootstrapServers());
         return new KafkaAdmin(configs);
     }
 
-    @Bean
+    @Bean(name = "postsTopic")
     public NewTopic postsTopic() {
-        return new NewTopic(postTopic, postTopicNumPartitions, postReplicationFactor);
+        return new NewTopic(
+                kafkaProperties.getTopic().getPost().getName(),
+                kafkaProperties.getTopic().getPost().getPartitions(),
+                kafkaProperties.getTopic().getPost().getReplicas()
+                );
     }
 
-    @Bean
-    public NewTopic postViewTopic() {
-        return new NewTopic(postViewTopic, postTopicNumPartitions, postReplicationFactor);
+    @Bean(name = "postViewsTopic")
+    public NewTopic postViewsTopic() {
+        return new NewTopic(
+                kafkaProperties.getTopic().getPostView().getName(),
+                kafkaProperties.getTopic().getPostView().getPartitions(),
+                kafkaProperties.getTopic().getPostView().getReplicas()
+        );
     }
 }

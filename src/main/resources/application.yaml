@@ -43,6 +43,10 @@ spring:
           name: posts
           partitions: 10
           replicas: 1
+        post-view:
+          name: post-views
+          partitions: 10
+          replicas: 1
       admin:
         properties:
           retries: 5
