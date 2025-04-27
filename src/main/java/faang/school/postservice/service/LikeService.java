@@ -50,6 +50,7 @@ public class LikeService {
     private final PostMapper postMapper;
     private final PostService postService;
     private final OutboxEventService outboxEventService;
+    private final ObjectMapper objectMapper;
 
     public List<UserDto> getAllUsersWhoLikedPost(Long postId) {
         Post post = postValidator.getPostById(postId);
@@ -164,7 +165,7 @@ public class LikeService {
 
     private String serializePayload(Object obj) {
         try {
-            return new ObjectMapper().writeValueAsString(obj);
+            return objectMapper.writeValueAsString(obj);
         } catch (JsonProcessingException e) {
             log.error("Failed to serialize payload", e);
             throw new RuntimeException("Event serialization error", e);
