@@ -3,6 +3,11 @@ app:
     max-cached-posts-per-hashtag: 100
     thread-pool-size: 8
     top-hashtags-cache: 1000
+  cron:
+    author-banner: "0 0 12 * * ?"  # Каждый день в 12:00
+  redis:
+    topic:
+      user_ban: user_ban
   thread-pool-size: 16
 
 spring:
