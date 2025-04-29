@@ -18,7 +18,7 @@ public class HashtagAddingEventPublisher {
     private final KafkaTemplate<String, String> kafkaTemplate;
     private final ObjectMapper objectMapper;
 
-    @Value("${spring.kafka.topics.hashtag-adding.name}")
+    @Value("${spring.data.kafka.topic.hashtag-adding.name}")
     private String topic;
 
     public void publish(HashtagAddingEvent event) {
