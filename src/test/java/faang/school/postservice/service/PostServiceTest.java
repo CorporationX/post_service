@@ -354,7 +354,7 @@ public class PostServiceTest {
         Post post = postCaptor.getValue();
 
         assertEquals("content", post.getContent());
-        assertEquals(0,post.getLikes().size());
+        assertEquals(0, post.getLikes().size());
     }
 
     @Test
@@ -412,5 +412,14 @@ public class PostServiceTest {
                 .albumsId(Collections.emptyList())
                 .resourcesId(Collections.emptyList())
                 .build();
+    }
+
+    @Test
+    public void testNegativeCreateValidateAuthor() {
+        assertThrows(IllegalArgumentException.class, () -> postService.create(PostDto.builder()
+                .projectId(1L)
+                .authorId(1L)
+                .content("content")
+                .build()));
     }
 }
