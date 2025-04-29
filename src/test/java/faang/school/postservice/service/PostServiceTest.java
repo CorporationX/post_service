@@ -396,6 +396,15 @@ public class PostServiceTest {
         assertEquals(responsePosts.get(0), result.get(0));
     }
 
+    @Test
+    public void testNegativeCreateValidateAuthor() {
+        assertThrows(IllegalArgumentException.class, () -> postService.create(PostDto.builder()
+                .projectId(1L)
+                .authorId(1L)
+                .content("content")
+                .build()));
+    }
+
     private Post createPost(Long id, String content) {
         return Post.builder()
                 .id(id)
@@ -412,14 +421,5 @@ public class PostServiceTest {
                 .albumsId(Collections.emptyList())
                 .resourcesId(Collections.emptyList())
                 .build();
-    }
-
-    @Test
-    public void testNegativeCreateValidateAuthor() {
-        assertThrows(IllegalArgumentException.class, () -> postService.create(PostDto.builder()
-                .projectId(1L)
-                .authorId(1L)
-                .content("content")
-                .build()));
     }
 }

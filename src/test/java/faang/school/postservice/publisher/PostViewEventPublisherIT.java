@@ -3,7 +3,6 @@ package faang.school.postservice.publisher;
 import com.redis.testcontainers.RedisContainer;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.controller.PostController;
-import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.dto.event.PostViewEvent;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.VerifiedStatus;
@@ -24,7 +23,6 @@ import org.testcontainers.utility.DockerImageName;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPubSub;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
@@ -52,7 +50,7 @@ public class PostViewEventPublisherIT {
 
     @Transactional
     @Test
-    public void testPositivePostViewEventPublisher() throws IOException {
+    public void testPositivePostViewEventPublisher() {
         try (Jedis jedis = new Jedis(REDIS_CONTAINER.getHost(), REDIS_CONTAINER.getMappedPort(6379))) {
             MyPubSub myPubSub = new MyPubSub();
 
@@ -63,15 +61,15 @@ public class PostViewEventPublisherIT {
                     .content("Это пример поста.")
                     .authorId(1L)
                     .projectId(2L)
-                    .likes(new ArrayList<>()) // Если у вас есть список лайков
-                    .comments(new ArrayList<>()) // Если у вас есть список комментариев
-                    .albums(new ArrayList<>()) // Если у вас есть список альбомов
-                    .resources(new ArrayList<>()) // Если у вас есть список ресурсов
+                    .likes(new ArrayList<>())
+                    .comments(new ArrayList<>())
+                    .albums(new ArrayList<>())
+                    .resources(new ArrayList<>())
                     .published(true)
                     .publishedAt(LocalDateTime.now())
-                    .scheduledAt(null) // Если у вас нет запланированной даты, установите null
+                    .scheduledAt(null)
                     .deleted(false)
-                    .verifiedStatus(VerifiedStatus.APPROVED) // Установите статус верификации
+                    .verifiedStatus(VerifiedStatus.APPROVED)
                     .build();
             postRepository.save(post);
             userContext.setUserId(2L);
@@ -82,7 +80,7 @@ public class PostViewEventPublisherIT {
                     .authorId(post.getAuthorId())
                     .build();
 
-            PostDto postDto = postController.getPost(post.getId());
+            postController.getPost(post.getId());
             System.out.println(myPubSub.getReceivedMessage());
             log.info("Received message: {}", myPubSub.getReceivedMessage());
 
