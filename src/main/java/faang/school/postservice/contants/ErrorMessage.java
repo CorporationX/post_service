@@ -9,12 +9,13 @@ public class ErrorMessage {
     public static final String ERROR_NULL_CONTENT = "Content cant be null";
     public static final String ERROR_NULL_ID = "ID cant be null";
     public static final String ERROR_NOT_AUTHOR_COMMENT = "You are not the author of the comment";
+    public static final String ERROR_SERIALIZE = "Failed to serialize event {}.\n";
 
     private static final String ERROR_NOT_FOUND_USER = "User with ID %d not found in the system.\n";
     private static final String ERROR_NOT_FOUND_POST = "Post with ID %d not found in the system.\n";
     private static final String ERROR_NOT_FOUND_COMMENT = "Post with ID %d not found in the system.\n";
     private static final String ERROR_OCCURRED_VALIDATING_USER = "Error occurred while validating user with ID: %d\n";
-    private static final String ERROR_WRONG_FORMAT_CONTENT = "Content is blank or more %d\n.";
+    private static final String ERROR_WRONG_FORMAT_CONTENT = "Content is blank or more %d.\n";
 
     public static String getErrorWrongFormatContent(int maxLength) {
         return String.format(ERROR_WRONG_FORMAT_CONTENT, maxLength);

@@ -14,8 +14,8 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
 public class RedisConfig {
-    @Value("${app.redis.topic.like_achievement}")
-    private String likeAchievementTopicName;
+    @Value("${app.redis.topic.like-achievement}")
+    private String likeAchievementTopic;
 
     @Bean
     public RedisTemplate<String, String> redisTemplate(RedisConnectionFactory connectionFactory) {
@@ -45,7 +45,7 @@ public class RedisConfig {
     }
 
     @Bean
-    public ChannelTopic like_achievement_topic() {
-        return new ChannelTopic(likeAchievementTopicName);
+    public ChannelTopic likeAchievementTopic() {
+        return new ChannelTopic(likeAchievementTopic);
     }
 }

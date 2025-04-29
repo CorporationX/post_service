@@ -2,7 +2,7 @@ package faang.school.postservice.publisher;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import faang.school.postservice.dto.like.LikeEvent;
+import faang.school.postservice.contants.ErrorMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -12,18 +12,17 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class LikeEventPublisher {
+public class EventPublisher {
     private final RedisTemplate<String, String> redisTemplate;
-    private final ChannelTopic channelTopic;
     private final ObjectMapper objectMapper;
 
-    public void publish(LikeEvent event) {
+    public <T> void publish(T event, ChannelTopic channelTopic) {
         try {
             String message = objectMapper.writeValueAsString(event);
             redisTemplate.convertAndSend(channelTopic.getTopic(), message);
-            log.info("m: {}, t: {}", message, channelTopic.getTopic());
+            log.info("message: {}, topic: {}", message, channelTopic.getTopic());
         } catch (JsonProcessingException e) {
-            log.error("Failed to serialize LikeEvent", e);
+            log.error(ErrorMessage.ERROR_SERIALIZE, event, e);
             throw new RuntimeException(e);
         }
     }

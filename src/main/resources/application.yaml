@@ -6,7 +6,7 @@ app:
   thread-pool-size: 16
   redis:
     topic:
-      like_achievement: like_achievement_topic
+      like-achievement: like_achievement_topic
       
 spring:
   datasource:
