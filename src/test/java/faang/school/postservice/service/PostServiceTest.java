@@ -30,7 +30,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -195,9 +194,9 @@ public class PostServiceTest {
                 .published(true)
                 .deleted(true)
                 .build();
-        Stream<Post> stream = Stream.of(post, post1, post2);
+        List<Post> posts = List.of(post, post1, post2);
 
-        when(postRepository.findByAuthorId(1L)).thenReturn(stream);
+        when(postRepository.findByAuthorId(1L)).thenReturn(posts);
         List<PostResponseDto> list = postService.findDraftsByAuthorId(1L,1L);
 
         assertEquals(1, list.size());
@@ -208,9 +207,9 @@ public class PostServiceTest {
 
     @Test
     public void testNegativeFindDraftsByAuthorIdIsEmpty() {
-        Stream<Post> stream = Stream.empty();
+        List<Post> posts = Collections.emptyList();
 
-        when(postRepository.findByAuthorId(1L)).thenReturn(stream);
+        when(postRepository.findByAuthorId(1L)).thenReturn(posts);
         List<PostResponseDto> list = postService.findDraftsByAuthorId(1L,1L);
 
         assertEquals(0, list.size());
@@ -235,9 +234,9 @@ public class PostServiceTest {
                 .published(true)
                 .deleted(true)
                 .build();
-        Stream<Post> stream = Stream.of(post, post1, post2);
+        List<Post> posts = List.of(post, post1, post2);
 
-        when(postRepository.findByProjectId(1L)).thenReturn(stream);
+        when(postRepository.findByProjectId(1L)).thenReturn(posts);
         List<PostResponseDto> list = postService.findDraftsByProjectId(1L,1L);
 
         assertEquals(1, list.size());
@@ -248,9 +247,9 @@ public class PostServiceTest {
 
     @Test
     public void testNegativeFindDraftsByProjectIdIsEmpty() {
-        Stream<Post> stream = Stream.empty();
+        List<Post> posts = Collections.emptyList();
 
-        when(postRepository.findByProjectId(1L)).thenReturn(stream);
+        when(postRepository.findByProjectId(1L)).thenReturn(posts);
         List<PostResponseDto> list = postService.findDraftsByProjectId(1L,1L);
 
         assertEquals(0, list.size());
@@ -275,9 +274,9 @@ public class PostServiceTest {
                 .published(true)
                 .deleted(true)
                 .build();
-        Stream<Post> stream = Stream.of(post, post1, post2);
+        List<Post> posts = List.of(post, post1, post2);
 
-        when(postRepository.findByAuthorId(1L)).thenReturn(stream);
+        when(postRepository.findByAuthorId(1L)).thenReturn(posts);
         List<PostResponseDto> list = postService.findPublishedByAuthorId(1L,1L);
 
         assertEquals(1, list.size());
@@ -288,9 +287,9 @@ public class PostServiceTest {
 
     @Test
     public void testNegativeFindPublishedByAuthorIdIsEmpty() {
-        Stream<Post> stream = Stream.empty();
+        List<Post> posts = Collections.emptyList();
 
-        when(postRepository.findByAuthorId(1L)).thenReturn(stream);
+        when(postRepository.findByAuthorId(1L)).thenReturn(posts);
         List<PostResponseDto> list = postService.findPublishedByAuthorId(1L,1L);
 
         assertEquals(0, list.size());
@@ -315,9 +314,9 @@ public class PostServiceTest {
                 .published(true)
                 .deleted(true)
                 .build();
-        Stream<Post> stream = Stream.of(post, post1, post2);
+        List<Post> posts = List.of(post, post1, post2);
 
-        when(postRepository.findByProjectId(1L)).thenReturn(stream);
+        when(postRepository.findByProjectId(1L)).thenReturn(posts);
         List<PostResponseDto> list = postService.findPublishedByProjectId(1L,1L);
 
         assertEquals(1, list.size());
@@ -328,9 +327,9 @@ public class PostServiceTest {
 
     @Test
     public void testNegativeFindPublishedByProjectIdIsEmpty() {
-        Stream<Post> stream = Stream.empty();
+        List<Post> posts = Collections.emptyList();
 
-        when(postRepository.findByProjectId(1L)).thenReturn(stream);
+        when(postRepository.findByProjectId(1L)).thenReturn(posts);
         List<PostResponseDto> list = postService.findPublishedByProjectId(1L,1L);
 
         assertEquals(0, list.size());

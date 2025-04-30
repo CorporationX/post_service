@@ -6,13 +6,12 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
-import java.util.stream.Stream;
 
 public interface PostRepository extends CrudRepository<Post, Long> {
 
-    Stream<Post> findByAuthorId(long authorId);
+    List<Post> findByAuthorId(long authorId);
 
-    Stream<Post> findByProjectId(long projectId);
+    List<Post> findByProjectId(long projectId);
 
     @Query("SELECT p FROM Post p LEFT JOIN FETCH p.likes WHERE p.projectId = :projectId")
     List<Post> findByProjectIdWithLikes(long projectId);

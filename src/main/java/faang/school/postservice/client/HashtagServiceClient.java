@@ -14,6 +14,6 @@ public interface HashtagServiceClient {
     @GetMapping("/hashtags/{postId}")
     List<Long> getHashtagsIdsByPostId(@PathVariable Long postId);
 
-    @GetMapping("/hashtags/posts")
+    @GetMapping("/hashtags")
     Map<Long, List<Long>> getHashtagsIdsByPostIds(@RequestParam List<Long> postIds);
 }

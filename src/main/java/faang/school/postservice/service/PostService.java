@@ -49,7 +49,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 @Slf4j
 @Service
@@ -164,8 +163,13 @@ public class PostService {
         log.info("Post created: {}", post);
 
         if (postDto.hashtagsName() != null && !postDto.hashtagsName().isEmpty()) {
-            postDto.hashtagsName().forEach(hashtag ->
-                    hashtagAddingPublisher.publish(takeHashtagEvent(post.getId(), hashtag))
+            postDto.hashtagsName().forEach(hashtag -> {
+                        Long authorId = 0L;
+                        if (post.getAuthorId() != null) {
+                            authorId = post.getAuthorId();
+                        }
+                        hashtagAddingPublisher.publish(takeHashtagEvent(post.getId(), hashtag, authorId));
+                    }
             );
         }
         return postMapper.toResponseDto(post);
@@ -216,35 +220,39 @@ public class PostService {
     }
 
     public List<PostResponseDto> findDraftsByAuthorId(Long authorId, Long userId) {
-        List<Post> posts = postRepository.findByAuthorId(authorId).toList();
+        List<Post> posts = postRepository.findByAuthorId(authorId);
         Map<Long, List<Long>> hashtagsOnPosts = findHashtagsByPosts(posts);
 
-        return returnPostsDtoList(posts.stream()
-                .filter(post -> !post.isDeleted() && !post.isPublished()), userId, authorId, hashtagsOnPosts);
+        posts = posts.stream()
+                .filter(post -> !post.isDeleted() && !post.isPublished()).toList();
+        return returnPostsDtoList(posts, userId, authorId, hashtagsOnPosts);
     }
 
     public List<PostResponseDto> findDraftsByProjectId(Long projectId, Long userId) {
-        List<Post> posts = postRepository.findByProjectId(projectId).toList();
+        List<Post> posts = postRepository.findByProjectId(projectId);
         Map<Long, List<Long>> hashtagsOnPosts = findHashtagsByPosts(posts);
 
-        return returnPostsDtoList(posts.stream()
-                .filter(post -> !post.isDeleted() && !post.isPublished()), userId, projectId, hashtagsOnPosts);
+        posts = posts.stream()
+                .filter(post -> !post.isDeleted() && !post.isPublished()).toList();
+        return returnPostsDtoList(posts, userId, projectId, hashtagsOnPosts);
     }
 
     public List<PostResponseDto> findPublishedByAuthorId(Long authorId, Long userId) {
-        List<Post> posts = postRepository.findByAuthorId(authorId).toList();
+        List<Post> posts = postRepository.findByAuthorId(authorId);
         Map<Long, List<Long>> hashtagsOnPosts = findHashtagsByPosts(posts);
 
-        return returnPostsDtoList(posts.stream()
-                .filter(post -> !post.isDeleted() && post.isPublished()), userId, authorId, hashtagsOnPosts);
+        posts = posts.stream()
+                .filter(post -> !post.isDeleted() && post.isPublished()).toList();
+        return returnPostsDtoList(posts, userId, authorId, hashtagsOnPosts);
     }
 
     public List<PostResponseDto> findPublishedByProjectId(Long projectId, Long userId) {
-        List<Post> posts = postRepository.findByProjectId(projectId).toList();
+        List<Post> posts = postRepository.findByProjectId(projectId);
         Map<Long, List<Long>> hashtagsOnPosts = findHashtagsByPosts(posts);
 
-        return returnPostsDtoList(posts.stream()
-                .filter(post -> !post.isDeleted() && post.isPublished()), userId, projectId, hashtagsOnPosts);
+        posts = posts.stream()
+                .filter(post -> !post.isDeleted() && post.isPublished()).toList();
+        return returnPostsDtoList(posts, userId, projectId, hashtagsOnPosts);
     }
 
     public List<PostResponseDto> getPostsByIds(List<Long> postIds) {
@@ -305,10 +313,11 @@ public class PostService {
                 .toList();
     }
 
-    private HashtagAddingEvent takeHashtagEvent(Long postId, String name) {
+    private HashtagAddingEvent takeHashtagEvent(Long postId, String name, Long authorId) {
         return HashtagAddingEvent.builder()
                 .hashtagName(name)
                 .postId(postId)
+                .authorId(authorId)
                 .build();
     }
 
@@ -325,9 +334,9 @@ public class PostService {
         return hashtags;
     }
 
-    private List<PostResponseDto> returnPostsDtoList(Stream<Post> posts, Long userId, Long id,
+    private List<PostResponseDto> returnPostsDtoList(List<Post> posts, Long userId, Long id,
                                                      Map<Long, List<Long>> hashtags) {
-        return posts
+        return posts.stream()
                 .sorted(Comparator.comparing(Post::getPublishedAt).reversed())
                 .peek(post -> postViewEventPublisher.published(
                         new PostViewEvent(post.getId(), userId, id, LocalDateTime.now())))

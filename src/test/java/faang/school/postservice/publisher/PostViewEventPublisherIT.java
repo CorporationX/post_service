@@ -52,6 +52,7 @@ public class PostViewEventPublisherIT {
     @Test
     public void testPositivePostViewEventPublisher() {
         try (Jedis jedis = new Jedis(REDIS_CONTAINER.getHost(), REDIS_CONTAINER.getMappedPort(6379))) {
+
             MyPubSub myPubSub = new MyPubSub();
 
             Thread subscriber = new Thread(() -> jedis.subscribe(myPubSub, "PostViewEvent_topic"));
