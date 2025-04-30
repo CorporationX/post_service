@@ -1,15 +1,20 @@
 package faang.school.postservice.config.redis;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
+import org.springframework.data.redis.connection.jedis.JedisClientConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import redis.clients.jedis.JedisPoolConfig;
 
 @Configuration
+@RequiredArgsConstructor
 public class RedisConfig {
 
     @Value("${spring.data.redis.host}")
@@ -17,10 +22,24 @@ public class RedisConfig {
     @Value("${spring.data.redis.port}")
     private Integer port;
 
+    private final RedisProperties redisProperties;
+
     @Bean
     JedisConnectionFactory jedisConnectionFactory() {
         RedisStandaloneConfiguration redisConfig = new RedisStandaloneConfiguration(host, port);
-        return new JedisConnectionFactory(redisConfig);
+        JedisPoolConfig poolConfig = new JedisPoolConfig();
+        RedisProperties.Pool props = redisProperties.getJedis().getPool();
+        poolConfig.setMaxTotal(props.getMaxActive());
+        poolConfig.setMaxIdle(props.getMaxIdle());
+        poolConfig.setMinIdle(props.getMinIdle());
+        poolConfig.setMaxWait(props.getMaxWait());
+
+        JedisClientConfiguration clientConfig = JedisClientConfiguration.builder()
+                .usePooling()
+                .poolConfig(poolConfig)
+                .build();
+
+        return new JedisConnectionFactory(redisConfig, clientConfig);
     }
 
     @Bean

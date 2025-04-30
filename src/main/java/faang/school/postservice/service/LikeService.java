@@ -8,6 +8,7 @@ import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.like.LikeEvent;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.exception.EventSerialiizationExeption;
 import faang.school.postservice.exception.UserAlreadyLikedException;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.mapper.PostMapper;
@@ -168,7 +169,7 @@ public class LikeService {
             return objectMapper.writeValueAsString(obj);
         } catch (JsonProcessingException e) {
             log.error("Failed to serialize payload", e);
-            throw new RuntimeException("Event serialization error", e);
+            throw new EventSerialiizationExeption("Event serialization error", e);
         }
     }
 

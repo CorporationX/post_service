@@ -15,7 +15,11 @@ public abstract class AbstractEventPublisher<T> {
     public abstract Class<?> getEventClass();
 
     public void publish(T event) {
-        redisTemplate.convertAndSend(getChannel(), event);
-        log.debug("Published {} to channel {}: {}",event.getClass(), getChannel(), event);
+        try {
+            redisTemplate.convertAndSend(getChannel(), event);
+            log.debug("Published {} to channel {}: {}",event.getClass(), getChannel(), event);
+        } catch (Exception e) {
+            log.error("Failed to publish event {} to Redis channel {}: {}", event, getChannel(), e.getMessage(), e);
+        }
     }
 }
