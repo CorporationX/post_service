@@ -7,6 +7,7 @@ import faang.school.postservice.model.outbox.OutboxEvent;
 import faang.school.postservice.publisher.AbstractEventPublisher;
 import faang.school.postservice.repository.outbox.OutboxEventRepository;
 import jakarta.transaction.Transactional;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -23,6 +24,10 @@ public class OutboxEventService {
     private final OutboxEventRepository outboxEventRepository;
     private final Map<EventType, AbstractEventPublisher<?>> eventPublisherMap;
     private final ObjectMapper objectMapper;
+
+    public void saveOutboxEvent(@NonNull OutboxEvent outboxEvent) {
+        outboxEventRepository.save(outboxEvent);
+    }
 
     @Transactional
     public void processingEvent(List<OutboxEvent> events) {
@@ -43,7 +48,7 @@ public class OutboxEventService {
                 outboxEvent.setStatus(EventStatus.FAILED);
             }
 
-            outboxEventRepository.save(outboxEvent);
+            saveOutboxEvent(outboxEvent);
         }
     }
 
