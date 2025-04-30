@@ -20,7 +20,7 @@ public class EventPublisher {
         try {
             String message = objectMapper.writeValueAsString(event);
             redisTemplate.convertAndSend(channelTopic.getTopic(), message);
-            log.info("message: {}, topic: {}", message, channelTopic.getTopic());
+            log.info("Send message: {}, the topic: {}", message, channelTopic.getTopic());
         } catch (JsonProcessingException e) {
             log.error(ErrorMessage.ERROR_SERIALIZE, event, e);
             throw new RuntimeException(e);
