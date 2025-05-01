@@ -10,6 +10,10 @@ app:
       user_ban: user_ban
   thread-pool-size: 16
 
+  redis:
+    topic:
+      comment-analytics: comment_analytics_topic
+
 spring:
   datasource:
     driver-class-name: org.postgresql.Driver
