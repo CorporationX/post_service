@@ -17,7 +17,7 @@ import java.util.List;
 public class OutboxScheduler {
 
     @Value("${scheduler.outbox-event.batch-size}")
-    private int batchSize;
+    private Integer batchSize;
     private final OutboxEventRepository outboxEventRepository;
     private final OutboxEventService outboxEventService;
 

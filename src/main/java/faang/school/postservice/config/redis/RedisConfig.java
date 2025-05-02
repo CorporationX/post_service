@@ -17,16 +17,13 @@ import redis.clients.jedis.JedisPoolConfig;
 @RequiredArgsConstructor
 public class RedisConfig {
 
-    @Value("${spring.data.redis.host}")
-    private String host;
-    @Value("${spring.data.redis.port}")
-    private Integer port;
-
     private final RedisProperties redisProperties;
 
     @Bean
     JedisConnectionFactory jedisConnectionFactory() {
-        RedisStandaloneConfiguration redisConfig = new RedisStandaloneConfiguration(host, port);
+        RedisStandaloneConfiguration redisConfig = new RedisStandaloneConfiguration();
+        redisConfig.setHostName(redisProperties.getHost());
+        redisConfig.setPort(redisProperties.getPort());
         JedisPoolConfig poolConfig = new JedisPoolConfig();
         RedisProperties.Pool props = redisProperties.getJedis().getPool();
         poolConfig.setMaxTotal(props.getMaxActive());
