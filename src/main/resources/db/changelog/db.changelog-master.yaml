@@ -13,3 +13,5 @@ databaseChangeLog:
       file: db/changelog/changeset/post_V006__post_correction.sql
   - include:
       file: db/changelog/changeset/post_V007_comment_moderation.sql
+  - include:
+      file: db/changelog/changeset/post_V008_add_views_to_post.sql

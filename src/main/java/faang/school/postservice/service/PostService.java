@@ -9,7 +9,6 @@ import faang.school.postservice.exception.LanguageToolException;
 import faang.school.postservice.exception.PostNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.hashtags.HashtagService;
 import faang.school.postservice.utils.validationUtils.PostValidation;
@@ -36,8 +35,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 @Service
 @Slf4j
@@ -51,9 +48,9 @@ public class PostService {
     private final PostMapper postMapper;
     private final PostRepository postRepository;
     private final LanguageToolClient languageToolClient;
-    private final LikeRepository likeRepository;
     private final HashtagService hashtagService;
     private final ExecutorService threadPoolExecutor;
+    private final FeedRedisService feedRedisService;
 
     @Value("${posts.correction.batch-size}")
     int batchSize;
@@ -77,6 +74,7 @@ public class PostService {
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
         postRepository.save(post);
+        feedRedisService.createPost(postMapper.toFeedPostDto(post));
         hashtagService.extractHashtagsFromPost(post);
         return postMapper.toPostResponseDto(post);
     }
@@ -100,6 +98,7 @@ public class PostService {
             log.warn("Nothing was updated for post with ID {}", postRequestDto.getId());
         }
         postRepository.save(post);
+        feedRedisService.createPost(postMapper.toFeedPostDto(post));
         return postMapper.toPostResponseDto(post);
     }
 
@@ -114,6 +113,7 @@ public class PostService {
         }
         post.setDeleted(true);
         postRepository.save(post);
+        feedRedisService.removePost(postId);
         return postMapper.toPostResponseDto(post);
     }
 
@@ -185,7 +185,7 @@ public class PostService {
             backoff = @Backoff(delayExpression = "${spring.retry.language-tool.backoff-delay}")
     )
     @Transactional
-    private void sendPostContentChecking(Post post) {
+    public void sendPostContentChecking(Post post) {
         String text = post.getContent();
         log.debug("Before correcting errors in the text: {}", text);
         LanguageToolResponseDto response = languageToolClient.getCorrectedText(text, "auto");
@@ -206,6 +206,15 @@ public class PostService {
                         return null;
                     });
         }
+    }
+
+    public void viewPost(Long postId) {
+        int updated = postRepository.incrementViews(postId);
+        if(updated == 0) {
+            log.error(NO_POST_FOUND.formatted(postId));
+            throw new PostNotFoundException(NO_POST_FOUND.formatted(postId));
+        }
+        feedRedisService.addView(postId);
     }
 
     private void validatePostOptional(Optional<Post> postOptional, Long id) {

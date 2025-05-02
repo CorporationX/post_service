@@ -1,8 +1,15 @@
 app:
+  thread-pool-size: 8
+
   hashtags:
     max-cached-posts-per-hashtag: 100
     thread-pool-size: 8
     top-hashtags-cache: 1000
+
+  feed:
+    post-cache-key: "feed:post"
+    post-comments-cache-key: "feed:post:%d:comments"
+    post-ttl-hours: 24
 
 spring:
   datasource:
@@ -37,14 +44,23 @@ spring:
 
   kafka:
     bootstrap-servers: localhost:9092
+
     producer:
       retries: 5
       acks: all
-      linger-ms: 5
+
       batch-size: 16384
-      max-in-flight-requests-per-connection: 10
+      properties:
+        max-in-flight-requests-per-connection: 10
+        linger-ms: 5
+        enable.idempotence: true
+
       topics:
         user-ban: "user-ban-topic"
+    consumer:
+      enable-auto-commit: true
+      auto-commit-interval: 1000
+
 
 server:
   port: 8081
@@ -86,3 +102,6 @@ posts:
     cron: "0 5 * * * *"
     batch-size: 100000
     thread-poop-size: 16
+
+  publishing:
+    cron: "0 0 5 * * *"

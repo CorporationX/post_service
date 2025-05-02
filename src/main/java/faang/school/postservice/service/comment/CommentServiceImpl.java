@@ -18,6 +18,7 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.FeedRedisService;
 import faang.school.postservice.service.kafka.publisher.KafkaPublisher;
 import feign.FeignException;
 import jakarta.annotation.PostConstruct;
@@ -104,6 +105,7 @@ public class CommentServiceImpl implements CommentService {
     private final CommentResponseMapper commentResponseMapper;
     private final UserServiceClient userServiceClient;
     private ExecutorService executor;
+    private final FeedRedisService feedRedisService;
 
     @PostConstruct
     public void setUp() {
@@ -170,6 +172,7 @@ public class CommentServiceImpl implements CommentService {
         comment.setPost(post);
         comment.setAuthorId(commentRequestDto.getAuthorId());
         commentRepository.save(comment);
+        feedRedisService.addComment(post.getId());
         log.info(INFO_CREATE_COMMENT, comment.getId(), commentRequestDto.getAuthorId(), commentRequestDto.getPostId());
     }
 
@@ -199,6 +202,7 @@ public class CommentServiceImpl implements CommentService {
     public void deleteComment(Long id) {
         getComment(id);
         commentRepository.deleteById(id);
+        feedRedisService.
         log.info(INFO_DELETE_COMMENT, id);
     }
 

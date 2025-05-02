@@ -19,7 +19,7 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/post")
+@RequestMapping("/api/v1/posts")
 public class PostController {
     private final PostService postService;
 
@@ -93,5 +93,11 @@ public class PostController {
         List<PostResponseDto> response = postService.getProjectPublishedPosts(projectId);
         log.info("Finished fetching published posts for project ID: {}", projectId);
         return response;
+    }
+
+    @PostMapping("/{postId}/view")
+    public void viewPost(@PathVariable Long postId) {
+        log.info("Received request to add view for post with ID: {}", postId);
+        postService.viewPost(postId);
     }
 }

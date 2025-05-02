@@ -96,4 +96,7 @@ public class Post {
 
     @Column(name = "is_corrected")
     private boolean isCorrected;
+
+    @Column(name = "views")
+    private long views;
 }

@@ -37,7 +37,7 @@ public class LikeService {
     private final CommentRepository commentRepository;
     private final UserServiceClient userServiceClient;
     private final LikeMapper likeMapper;
-    private TargetLike targetLike;
+    private final FeedRedisService feedRedisService;
 
     @Transactional
     public LikeDto likePost(long postId, long userId) {
@@ -45,10 +45,11 @@ public class LikeService {
 
         Post post = getEntity(() -> postRepository.findById(postId), () -> String.format(POST_NOT_FOUND, postId));
 
-        validateNotLiked(postId, userId, targetLike.POST);
+        validateNotLiked(postId, userId, TargetLike.POST);
 
         Like like = buildLike(userId, post, null);
         LikeDto result = likeMapper.toLikeDto(likeRepository.save(like));
+        feedRedisService.addLikeToPost(postId);
         log.info("User {} liked post {} !", userId, postId);
         return result;
     }
@@ -62,6 +63,7 @@ public class LikeService {
             throw new LikeException(error);
         }
         likeRepository.deleteByPostIdAndUserId(postId, userId);
+        feedRedisService.removeLikeFromPost(postId);
         log.info("User {} removed a like from a post {}", userId, postId);
     }
 
@@ -73,7 +75,7 @@ public class LikeService {
                 String.format(COMMENT_NOT_FOUND, commentId));
 
         validateLikesRepeat(null, comment);
-        validateNotLiked(commentId, userId, targetLike.COMMENT);
+        validateNotLiked(commentId, userId, TargetLike.COMMENT);
 
         Like like = buildLike(userId, null, comment);
         LikeDto result = likeMapper.toLikeDto(likeRepository.save(like));
