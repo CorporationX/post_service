@@ -1,17 +1,25 @@
 package faang.school.postservice.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.model.Comment;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.like.LikeDto;
+import faang.school.postservice.dto.like.LikeEvent;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.exception.EventSerialiizationExeption;
 import faang.school.postservice.exception.UserAlreadyLikedException;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.mapper.PostMapper;
+import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.outbox.EventStatus;
+import faang.school.postservice.model.outbox.EventType;
+import faang.school.postservice.model.outbox.OutboxEvent;
 import faang.school.postservice.repository.LikeRepository;
+import faang.school.postservice.service.outbox.OutboxEventService;
 import faang.school.postservice.validator.CommentValidator;
 import faang.school.postservice.validator.PostValidator;
 import faang.school.postservice.validator.UserValidator;
@@ -21,6 +29,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -40,6 +49,9 @@ public class LikeService {
     private final LikeRepository likeRepository;
     private final LikeMapper likeMapper;
     private final PostMapper postMapper;
+    private final PostService postService;
+    private final OutboxEventService outboxEventService;
+    private final ObjectMapper objectMapper;
 
     public List<UserDto> getAllUsersWhoLikedPost(Long postId) {
         Post post = postValidator.getPostById(postId);
@@ -71,6 +83,11 @@ public class LikeService {
                 .post(postValidator.getPostById(postId))
                 .build();
         likeRepository.save(like);
+
+        LikeEvent likeEvent = getLikeEvent(postId, userId, false);
+        OutboxEvent outboxEvent = buildOutboxEvent(likeEvent, EventType.LIKE_CREATED);
+        outboxEventService.saveOutboxEvent(outboxEvent);
+
         return likeMapper.toLikeDto(like);
     }
 
@@ -97,6 +114,9 @@ public class LikeService {
                                     .formatted(userId, postId));
                 });
         likeRepository.delete(like);
+        LikeEvent likeEvent = getLikeEvent(postId, userId, true);
+        OutboxEvent outboxEvent = buildOutboxEvent(likeEvent, EventType.LIKE_DELETED);
+        outboxEventService.saveOutboxEvent(outboxEvent);
         return likeMapper.toLikeDto(like);
     }
 
@@ -142,5 +162,33 @@ public class LikeService {
         Long userId = userContext.getUserId();
         userValidator.validateUserExist(userId);
         return userId;
+    }
+
+    private String serializePayload(Object obj) {
+        try {
+            return objectMapper.writeValueAsString(obj);
+        } catch (JsonProcessingException e) {
+            log.error("Failed to serialize payload", e);
+            throw new EventSerialiizationExeption("Event serialization error", e);
+        }
+    }
+
+    private OutboxEvent buildOutboxEvent(LikeEvent likeEvent, EventType eventType) {
+        String payload = serializePayload(likeEvent);
+        return OutboxEvent.builder()
+                .type(eventType)
+                .payload(payload)
+                .status(EventStatus.IN_PROGRESS)
+                .build();
+    }
+
+    private LikeEvent getLikeEvent(Long postId, Long userId, boolean isDeleted) {
+        return LikeEvent.builder()
+                .authorPostId(postService.getPost(postId).getAuthorId())
+                .authorLikeId(userId)
+                .postId(postId)
+                .isDeleted(isDeleted)
+                .createdAt(LocalDateTime.now())
+                .build();
     }
 }

@@ -17,8 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-import java.util.List;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
