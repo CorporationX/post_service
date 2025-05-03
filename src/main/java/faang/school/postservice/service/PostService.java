@@ -6,6 +6,7 @@ import faang.school.postservice.exception.DataAlreadyExistException;
 import faang.school.postservice.exception.UnpublishedPostException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.KafkaPostProducer;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.adapter.PostRepositoryAdapter;
 import faang.school.postservice.validator.PostValidator;
@@ -25,6 +26,7 @@ public class PostService {
     private final PostMapper postMapper;
     private final PostRepositoryAdapter postRepositoryAdapter;
     private final PostRepository postRepository;
+    private final KafkaPostProducer kafkaPostProducer;
 
     public PostDto createDraft(PostDto draftDTO) {
         postValidator.validatedOwnerPost(draftDTO);
@@ -49,6 +51,8 @@ public class PostService {
 
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
+
+        kafkaPostProducer.produce(post.getId(), post.getCreatedAt(), post.getAuthorId());
 
         log.info("Post was successfully published, post id = {}", id);
         return postMapper.toDto(post);

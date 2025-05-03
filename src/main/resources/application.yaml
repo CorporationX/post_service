@@ -25,6 +25,16 @@ spring:
         calculations_channel:
           name: calculations_channel
 
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id:
+        posts: posts-group
+    topic:
+      posts:
+        name: posts-topic
+        partition-count: 4
+
 server:
   port: 8081
 
@@ -35,6 +45,16 @@ logging:
 
 like:
   batch: 100
+
+posts:
+  followees:
+    batch: 1000
+
+cache:
+  feed:
+    name: feed
+    batch: 500
+    time-to-live: 24h
 
 user-service:
   host: localhost
