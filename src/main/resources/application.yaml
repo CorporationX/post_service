@@ -5,6 +5,7 @@ app:
     top-hashtags-cache: 1000
   cron:
     author-banner: "0 0 12 * * ?"  # Каждый день в 12:00
+
   redis:
     topic:
       user_ban: user_ban
@@ -52,9 +53,6 @@ spring:
       max-in-flight-requests-per-connection: 10
       topics:
         user-ban: "user-ban-topic"
-        like:
-          notification:
-            post-like-topic: post-like-event-topic
 
 server:
   port: 8081
