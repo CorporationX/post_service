@@ -24,6 +24,7 @@ public class KafkaPublisher {
             log.error("Serialization error for object: {}", object, e);
             throw new RuntimeException(FAILED_SERIALIZING_OBJECT, e);
         }
+
         log.info("Sent object: {}, to topic: {}", object.getClass().getName(), topic);
     }
 }
