@@ -17,24 +17,19 @@ import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.kafka.test.utils.KafkaTestUtils;
 
-import java.time.LocalDateTime;
 import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import static faang.school.postservice.constant.PostEventTestConstants.LOCAL_DATE_TIME_NOW;
+import static faang.school.postservice.constant.PostEventTestConstants.POST_AUTHOR_FOLLOWERS_IDS_LIST;
+import static faang.school.postservice.constant.PostEventTestConstants.POST_AUTHOR_ID;
+import static faang.school.postservice.constant.PostEventTestConstants.POST_EVENT_DTO;
+import static faang.school.postservice.constant.PostEventTestConstants.POST_ID;
 
 @EmbeddedKafka(
         topics = "${spring.kafka.topic.posts.name}",
-        brokerProperties = {"listeners=PLAINTEXT://localhost:9092", "port=9092"})
+        brokerProperties = {"listeners=PLAINTEXT://${spring.kafka.bootstrap-servers}", "port=9092"})
 class KafkaPostProducerIntegrationTest extends BaseContextTest {
-
-    private static final long POST_AUTHOR_ID = 1L;
-    private static final List<Long> POST_AUTHOR_FOLLOWERS_IDS_LIST = List.of(2L, 3L, 4L, 5L, 6L, 7L, 8L);
-
-    private static final long POST_ID = 2L;
-    private static final LocalDateTime CURRENT_LOCAL_DATE_TIME = LocalDateTime.now();
-
-    private static final PostEventDto POST_EVENT_DTO
-            = new PostEventDto(POST_ID, CURRENT_LOCAL_DATE_TIME, POST_AUTHOR_FOLLOWERS_IDS_LIST);
 
     @Autowired
     private EmbeddedKafkaBroker embeddedKafkaBroker;
@@ -52,14 +47,14 @@ class KafkaPostProducerIntegrationTest extends BaseContextTest {
     private UserServiceClient userServiceClient;
 
     @Test
-    void produceSuccessfully() {
+    void produce_shouldBeCompletedSuccessfully() {
         Mockito.when(userServiceClient.getFollowersIds(POST_AUTHOR_ID)).thenReturn(POST_AUTHOR_FOLLOWERS_IDS_LIST);
 
         try (Consumer<String, PostEventDto> consumer = postEventConsumerFactory.createConsumer()) {
             consumer.subscribe(Collections.singleton(postsTopicProperties.name()));
             embeddedKafkaBroker.consumeFromAnEmbeddedTopic(consumer, postsTopicProperties.name());
 
-            kafkaPostProducer.produce(POST_ID, CURRENT_LOCAL_DATE_TIME, POST_AUTHOR_ID);
+            kafkaPostProducer.produce(POST_ID, LOCAL_DATE_TIME_NOW, POST_AUTHOR_ID);
 
             Awaitility.await().atMost(20, TimeUnit.SECONDS)
                     .pollInterval(500, TimeUnit.MILLISECONDS)

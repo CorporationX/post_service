@@ -22,21 +22,21 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Optional;
 
-import static faang.school.postservice.LikeTestConstants.COMMENT;
-import static faang.school.postservice.LikeTestConstants.COMMENT_ID;
-import static faang.school.postservice.LikeTestConstants.LIKE_COMMENT;
-import static faang.school.postservice.LikeTestConstants.LIKE_COMMENT_RESPONSE_DTO;
-import static faang.school.postservice.LikeTestConstants.LIKE_POST;
-import static faang.school.postservice.LikeTestConstants.LIKE_POST_RESPONSE_DTO;
-import static faang.school.postservice.LikeTestConstants.LIKE_REQUEST_DTO;
-import static faang.school.postservice.LikeTestConstants.POST;
-import static faang.school.postservice.LikeTestConstants.POST_ID;
-import static faang.school.postservice.LikeTestConstants.USERS_IDS_WHO_LIKED_THE_COMMENT;
-import static faang.school.postservice.LikeTestConstants.USERS_IDS_WHO_LIKED_THE_POST;
-import static faang.school.postservice.LikeTestConstants.USERS_WHO_LIKED_THE_COMMENT;
-import static faang.school.postservice.LikeTestConstants.USERS_WHO_LIKED_THE_POST;
-import static faang.school.postservice.LikeTestConstants.USER_DTO;
-import static faang.school.postservice.LikeTestConstants.USER_ID;
+import static faang.school.postservice.constant.LikeTestConstants.COMMENT;
+import static faang.school.postservice.constant.LikeTestConstants.COMMENT_ID;
+import static faang.school.postservice.constant.LikeTestConstants.LIKE_COMMENT;
+import static faang.school.postservice.constant.LikeTestConstants.LIKE_COMMENT_RESPONSE_DTO;
+import static faang.school.postservice.constant.LikeTestConstants.LIKE_POST;
+import static faang.school.postservice.constant.LikeTestConstants.LIKE_POST_RESPONSE_DTO;
+import static faang.school.postservice.constant.LikeTestConstants.LIKE_REQUEST_DTO;
+import static faang.school.postservice.constant.LikeTestConstants.POST;
+import static faang.school.postservice.constant.LikeTestConstants.POST_ID;
+import static faang.school.postservice.constant.LikeTestConstants.USERS_IDS_WHO_LIKED_THE_COMMENT;
+import static faang.school.postservice.constant.LikeTestConstants.USERS_IDS_WHO_LIKED_THE_POST;
+import static faang.school.postservice.constant.LikeTestConstants.USERS_WHO_LIKED_THE_COMMENT;
+import static faang.school.postservice.constant.LikeTestConstants.USERS_WHO_LIKED_THE_POST;
+import static faang.school.postservice.constant.LikeTestConstants.USER_DTO;
+import static faang.school.postservice.constant.LikeTestConstants.USER_ID;
 
 @ExtendWith(MockitoExtension.class)
 public class LikeServiceTest {

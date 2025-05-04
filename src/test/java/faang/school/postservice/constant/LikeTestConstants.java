@@ -1,4 +1,4 @@
-package faang.school.postservice;
+package faang.school.postservice.constant;
 
 import faang.school.postservice.dto.like.LikeRequestDto;
 import faang.school.postservice.dto.like.LikeResponseDto;
