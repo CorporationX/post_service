@@ -41,7 +41,7 @@ public class LikeService {
     private final UserServiceClient userServiceClient;
     private final KafkaPublisher kafkaPublisher;
     private final LikeMapper likeMapper;
-    private TargetLike targetLike;
+    private final TargetLike targetLike;
 
     @Value("${spring.kafka.topics.like.notification.post-like-topic}")
     private String likeTopic;

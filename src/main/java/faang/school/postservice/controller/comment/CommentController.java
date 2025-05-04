@@ -1,7 +1,5 @@
 package faang.school.postservice.controller.comment;
 
-import static faang.school.postservice.contants.InfoMessage.*;
-
 import faang.school.postservice.dto.comment.CommentRequestDto;
 import faang.school.postservice.dto.comment.CommentResponseDto;
 import faang.school.postservice.dto.comment.CommentUpdateDto;
@@ -20,6 +18,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+
+import static faang.school.postservice.contants.InfoMessage.INFO_START_CONTROLLER_CREATE_COMMENT;
+import static faang.school.postservice.contants.InfoMessage.INFO_START_CONTROLLER_DELETE_COMMENT;
+import static faang.school.postservice.contants.InfoMessage.INFO_START_CONTROLLER_GET_COMMENT;
+import static faang.school.postservice.contants.InfoMessage.INFO_START_CONTROLLER_UPDATE_COMMENT;
 
 @Slf4j
 @RestController

@@ -15,5 +15,6 @@ public class PostResponseDto {
     private LocalDateTime publishedAt;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private LocalDateTime scheduledAt;
     private long likesCount;
 }

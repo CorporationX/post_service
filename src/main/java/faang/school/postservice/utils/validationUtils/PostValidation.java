@@ -1,7 +1,7 @@
 package faang.school.postservice.utils.validationUtils;
 
-import faang.school.postservice.exception.InvalidPostAuthorsException;
 import faang.school.postservice.dto.post.PostRequestDto;
+import faang.school.postservice.exception.InvalidPostAuthorsException;
 import faang.school.postservice.model.Post;
 import lombok.extern.slf4j.Slf4j;
 
