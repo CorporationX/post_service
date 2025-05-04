@@ -4,6 +4,7 @@ import faang.school.postservice.client.CommentAnalyzer;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.kafka.NotificationKafkaProducer;
 import faang.school.postservice.dto.comment.CommentEvent;
+import faang.school.postservice.dto.comment.CommentEvent;
 import faang.school.postservice.dto.comment.CommentRequestDto;
 import faang.school.postservice.dto.comment.CommentResponseDto;
 import faang.school.postservice.dto.comment.CommentUpdateDto;
@@ -17,6 +18,7 @@ import faang.school.postservice.mapper.CommentRequestMapper;
 import faang.school.postservice.mapper.CommentResponseMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.kafka.publisher.KafkaPublisher;
@@ -28,6 +30,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mapstruct.factory.Mappers;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -69,7 +72,6 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class CommentServiceTest {
-
     @InjectMocks
     private CommentServiceImpl commentService;
 
@@ -84,6 +86,8 @@ class CommentServiceTest {
 
     @Mock
     private UserServiceClient userServiceClient;
+    @Mock
+    private CommentEventPublisher commentEventPublisher;
 
     @Spy
     private CommentResponseMapper commentResponseMapper = Mappers.getMapper(CommentResponseMapper.class);
@@ -91,6 +95,10 @@ class CommentServiceTest {
     @Spy
     private CommentRequestMapper commentRequestMapper = Mappers.getMapper(CommentRequestMapper.class);
 
+    @Captor
+    private ArgumentCaptor<Comment> commentCaptor;
+    @Captor
+    private ArgumentCaptor<CommentEvent> commentEventCaptor;
     @Mock
     private KafkaPublisher kafkaPublisher;
 
@@ -174,6 +182,13 @@ class CommentServiceTest {
         verify(commentRepository, times(1)).save(commentCaptor.capture());
         assertEquals(comment, commentCaptor.getValue());
         verify(notificationKafkaProducer, times(1)).sendNotificationComment(any(CommentEvent.class));
+        Comment savedComment = commentCaptor.getValue();
+
+        assertEquals(post, savedComment.getPost());
+        assertEquals(commentRequestDto.getAuthorId(), savedComment.getAuthorId());
+        assertEquals(comment.getContent(), savedComment.getContent());
+
+        verify(commentEventPublisher, times(1)).publish(commentEventCaptor.capture());
     }
 
     @Test

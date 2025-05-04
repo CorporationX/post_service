@@ -18,6 +18,7 @@ import faang.school.postservice.mapper.CommentRequestMapper;
 import faang.school.postservice.mapper.CommentResponseMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.kafka.publisher.KafkaPublisher;
@@ -105,6 +106,7 @@ public class CommentServiceImpl implements CommentService {
     private final CommentRequestMapper commentRequestMapper;
     private final CommentResponseMapper commentResponseMapper;
     private final UserServiceClient userServiceClient;
+    private final CommentEventPublisher commentEventPublisher;
     private final NotificationKafkaProducer notificationKafkaProducer;
     private ExecutorService executor;
 
@@ -178,6 +180,8 @@ public class CommentServiceImpl implements CommentService {
                 commentRequestDto.getAuthorId(),
                 comment.getId(),
                 LocalDateTime.now()));
+        commentEventPublisher.publish(new CommentEvent(commentRequestDto.getPostId(), commentRequestDto.getAuthorId(),
+                comment.getId(), LocalDateTime.now()));
         log.info(INFO_CREATE_COMMENT, comment.getId(), commentRequestDto.getAuthorId(), commentRequestDto.getPostId());
     }
 

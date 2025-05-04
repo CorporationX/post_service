@@ -3,6 +3,16 @@ app:
     max-cached-posts-per-hashtag: 100
     thread-pool-size: 8
     top-hashtags-cache: 1000
+  cron:
+    author-banner: "0 0 12 * * ?"  # Каждый день в 12:00
+  redis:
+    topic:
+      user_ban: user_ban
+  thread-pool-size: 16
+
+  redis:
+    topic:
+      comment-analytics: comment_analytics_topic
 
 spring:
   datasource:
@@ -86,4 +96,7 @@ posts:
   correction:
     cron: "0 5 * * * *"
     batch-size: 100000
-    thread-poop-size: 16
+    thread-pool-size: 16
+
+  publishing:
+    cron: "0 0 * * * *"
