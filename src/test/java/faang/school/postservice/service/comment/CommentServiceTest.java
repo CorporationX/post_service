@@ -4,7 +4,6 @@ import faang.school.postservice.client.CommentAnalyzer;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.kafka.NotificationKafkaProducer;
 import faang.school.postservice.dto.comment.CommentEvent;
-import faang.school.postservice.dto.comment.CommentEvent;
 import faang.school.postservice.dto.comment.CommentRequestDto;
 import faang.school.postservice.dto.comment.CommentResponseDto;
 import faang.school.postservice.dto.comment.CommentUpdateDto;
@@ -118,7 +117,6 @@ class CommentServiceTest {
     private Comment comment;
     private Post post;
     private Mono<ToxicityScoreDto> toxicityScore;
-    private final ArgumentCaptor<Comment> commentCaptor = ArgumentCaptor.forClass(Comment.class);
     private final int commentModerationBatchSize = 3;
 
     @BeforeEach
