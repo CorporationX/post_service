@@ -19,7 +19,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.kafka.publisher.KafkaPublisher;
+import faang.school.postservice.service.publisher.KafkaPublisher;
 import feign.FeignException;
 import feign.Request;
 import org.junit.jupiter.api.BeforeEach;
@@ -454,6 +454,6 @@ class CommentServiceTest {
 
         commentService.banUsersForComments();
 
-        verify(kafkaPublisher, times(1)).send(new UserBanDto(comment.getAuthorId()));
+        verify(kafkaPublisher, times(1)).publishEvent(anyString(), new UserBanDto(comment.getAuthorId()));
     }
 }
