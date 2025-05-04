@@ -49,6 +49,7 @@ spring:
     redis:
       port: 6379
       host: localhost
+      ttl-days: 1
       channels:
         calculations_channel:
           name: calculations_channel
