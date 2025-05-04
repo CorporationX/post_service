@@ -3,7 +3,6 @@ package faang.school.postservice.kafka;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.service.publisher.KafkaPublisher;
-import lombok.AllArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -47,7 +46,7 @@ public class KafkaPublisherTest {
         String serializedObject = "{\"field1\":\"test\",\"field2\":123}";
         when(objectMapper.writeValueAsString(testObject)).thenReturn(serializedObject);
 
-        kafkaPublisher.publishEvent(testTopic, testObject);
+        kafkaPublisher.send(testTopic, testObject);
 
         verify(objectMapper).writeValueAsString(testObject);
         verify(kafkaTemplate).send(eq(testTopic), eq(serializedObject));
@@ -59,7 +58,7 @@ public class KafkaPublisherTest {
         when(objectMapper.writeValueAsString(any())).thenThrow(jsonException);
 
         RuntimeException exception = assertThrows(RuntimeException.class,
-                () -> kafkaPublisher.publishEvent(testTopic, testObject));
+                () -> kafkaPublisher.send(testTopic, testObject));
 
         assertEquals(FAILED_SERIALIZING_OBJECT, exception.getMessage());
     }

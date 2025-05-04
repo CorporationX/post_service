@@ -55,7 +55,7 @@ public class LikeService {
 
         Like like = buildLike(userId, post, null);
         LikeDto result = likeMapper.toLikeDto(likeRepository.save(like));
-        kafkaPublisher.publishEvent(likeTopic, createLikeEvent(like.getUserId(), post.getAuthorId(), post.getId()));
+        kafkaPublisher.send(likeTopic, createLikeEvent(like.getUserId(), post.getAuthorId(), post.getId()));
         log.info("User {} liked post {} !", userId, postId);
         return result;
     }

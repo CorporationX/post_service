@@ -27,11 +27,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mapstruct.factory.Mappers;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -43,30 +39,12 @@ import reactor.test.StepVerifier;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
-import static faang.school.postservice.contants.ErrorMessage.ERROR_NOT_AUTHOR_COMMENT;
-import static faang.school.postservice.contants.ErrorMessage.ERROR_NULL_AUTHOR_ID;
-import static faang.school.postservice.contants.ErrorMessage.ERROR_NULL_COMMENT_ID;
-import static faang.school.postservice.contants.ErrorMessage.ERROR_NULL_CONTENT;
-import static faang.school.postservice.contants.ErrorMessage.ERROR_NULL_POST_ID;
-import static faang.school.postservice.contants.ErrorMessage.getErrorNotFoundComment;
-import static faang.school.postservice.contants.ErrorMessage.getErrorNotFoundPost;
-import static faang.school.postservice.contants.ErrorMessage.getErrorNotFoundUser;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static faang.school.postservice.contants.ErrorMessage.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class CommentServiceTest {
@@ -143,6 +121,7 @@ class CommentServiceTest {
         ReflectionTestUtils.setField(commentService, "userBanThreshold", 1);
         ReflectionTestUtils.setField(commentService, "userBanThreadPoolSize", 1);
         ReflectionTestUtils.setField(commentService, "userBanTimeoutHours", 1);
+        ReflectionTestUtils.setField(commentService, "userBanTopic", "user-ban-topic");
         commentService.setUp();
 
         ReflectionTestUtils.setField(commentService, "commentModerationTimeoutHours", 1);
@@ -454,6 +433,6 @@ class CommentServiceTest {
 
         commentService.banUsersForComments();
 
-        verify(kafkaPublisher, times(1)).publishEvent(anyString(), new UserBanDto(comment.getAuthorId()));
+        verify(kafkaPublisher, times(1)).send(anyString(), eq(new UserBanDto(comment.getAuthorId())));
     }
 }

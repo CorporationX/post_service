@@ -16,7 +16,7 @@ public class KafkaPublisher {
     private final KafkaTemplate<String, String> kafkaTemplate;
     private final ObjectMapper objectMapper;
 
-    public void publishEvent(String topic, Object object) {
+    public void send(String topic, Object object) {
         try {
             String message = objectMapper.writeValueAsString(object);
             kafkaTemplate.send(topic, message);

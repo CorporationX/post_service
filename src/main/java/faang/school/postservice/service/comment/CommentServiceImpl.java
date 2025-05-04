@@ -281,7 +281,7 @@ public class CommentServiceImpl implements CommentService {
         unverifiedComments.entrySet()
                 .stream()
                 .filter(entry -> entry.getValue() >= userBanThreshold)
-                .forEach(entry -> kafkaPublisher.publishEvent(userBanTopic, new UserBanDto(entry.getKey())));
+                .forEach(entry -> kafkaPublisher.send(userBanTopic, new UserBanDto(entry.getKey())));
     }
 
     private Mono<Void> moderateComment(Comment comment) {
