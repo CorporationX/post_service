@@ -21,12 +21,12 @@ import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-import static faang.school.postservice.LikeTestConstants.COMMENT_ID;
-import static faang.school.postservice.LikeTestConstants.LIKE_ID;
-import static faang.school.postservice.LikeTestConstants.POST_ID;
-import static faang.school.postservice.LikeTestConstants.USERS_WHO_LIKED_THE_COMMENT;
-import static faang.school.postservice.LikeTestConstants.USERS_WHO_LIKED_THE_POST;
-import static faang.school.postservice.LikeTestConstants.USER_ID;
+import static faang.school.postservice.constant.LikeTestConstants.COMMENT_ID;
+import static faang.school.postservice.constant.LikeTestConstants.LIKE_ID;
+import static faang.school.postservice.constant.LikeTestConstants.POST_ID;
+import static faang.school.postservice.constant.LikeTestConstants.USERS_WHO_LIKED_THE_COMMENT;
+import static faang.school.postservice.constant.LikeTestConstants.USERS_WHO_LIKED_THE_POST;
+import static faang.school.postservice.constant.LikeTestConstants.USER_ID;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;

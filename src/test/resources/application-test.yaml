@@ -1,0 +1,10 @@
+spring:
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id:
+        posts: posts-group
+    topic:
+      posts:
+        name: posts-topic
+        partition-count: 4
