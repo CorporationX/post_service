@@ -5,14 +5,12 @@ app:
     top-hashtags-cache: 1000
   cron:
     author-banner: "0 0 12 * * ?"  # Каждый день в 12:00
-  redis:
-    topic:
-      user_ban: user_ban
-  thread-pool-size: 16
 
   redis:
     topic:
+      user_ban: user_ban
       comment-analytics: comment_analytics_topic
+  thread-pool-size: 16
 
 spring:
   datasource:
