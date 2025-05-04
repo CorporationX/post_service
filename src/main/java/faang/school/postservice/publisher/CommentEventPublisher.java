@@ -10,9 +10,9 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class CommentEventPublisher {
     private final RedisTemplate<String, String> redisTemplate;
-    private final ChannelTopic commentAnalyticsTopicName;
+    private final ChannelTopic commentAnalyticsTopic;
 
     public void publish(CommentEvent event) {
-        redisTemplate.convertAndSend(commentAnalyticsTopicName.getTopic(), event);
+        redisTemplate.convertAndSend(commentAnalyticsTopic.getTopic(), event);
     }
 }
