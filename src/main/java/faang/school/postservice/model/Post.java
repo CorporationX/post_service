@@ -94,6 +94,10 @@ public class Post {
     )
     private Set<Hashtag> hashtags;
 
+    @Column(name = "verified", nullable = false)
+    @Builder.Default
+    private boolean verified = false;
+  
     @Column(name = "is_corrected")
     private boolean isCorrected;
 

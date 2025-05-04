@@ -9,6 +9,7 @@ import faang.school.postservice.exception.LanguageToolException;
 import faang.school.postservice.exception.PostNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.hashtags.HashtagService;
 import faang.school.postservice.utils.validationUtils.PostValidation;
@@ -35,6 +36,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service
 @Slf4j
@@ -55,7 +58,7 @@ public class PostService {
     @Value("${posts.correction.batch-size}")
     int batchSize;
 
-    @Value("${posts.correction.thread-poop-size}")
+    @Value("${posts.correction.thread-pool-size}")
     int threadPoolSize;
 
     public PostResponseDto createDraftPost(PostRequestDto postRequestDto) {

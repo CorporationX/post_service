@@ -1,10 +1,17 @@
 app:
-  thread-pool-size: 8
-
   hashtags:
     max-cached-posts-per-hashtag: 100
     thread-pool-size: 8
     top-hashtags-cache: 1000
+  cron:
+    author-banner: "0 0 12 * * ?"  # Каждый день в 12:00
+
+  redis:
+    topic:
+      user_ban: user_ban
+      comment-analytics: comment_analytics_topic
+
+  thread-pool-size: 16
 
   feed:
     post-cache-key: "feed:post"
@@ -57,10 +64,6 @@ spring:
 
       topics:
         user-ban: "user-ban-topic"
-    consumer:
-      enable-auto-commit: true
-      auto-commit-interval: 1000
-
 
 server:
   port: 8081
@@ -101,7 +104,7 @@ posts:
   correction:
     cron: "0 5 * * * *"
     batch-size: 100000
-    thread-poop-size: 16
+    thread-pool-size: 16
 
   publishing:
     cron: "0 0 5 * * *"

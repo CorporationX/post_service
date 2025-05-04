@@ -3,6 +3,7 @@ package faang.school.postservice.service.comment;
 import faang.school.postservice.client.CommentAnalyzer;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.contants.ErrorMessage;
+import faang.school.postservice.dto.comment.CommentEvent;
 import faang.school.postservice.dto.comment.CommentRequestDto;
 import faang.school.postservice.dto.comment.CommentResponseDto;
 import faang.school.postservice.dto.comment.CommentUpdateDto;
@@ -16,6 +17,7 @@ import faang.school.postservice.mapper.CommentRequestMapper;
 import faang.school.postservice.mapper.CommentResponseMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.FeedRedisService;
@@ -104,6 +106,7 @@ public class CommentServiceImpl implements CommentService {
     private final CommentRequestMapper commentRequestMapper;
     private final CommentResponseMapper commentResponseMapper;
     private final UserServiceClient userServiceClient;
+    private final CommentEventPublisher commentEventPublisher;
     private ExecutorService executor;
     private final FeedRedisService feedRedisService;
 
@@ -174,6 +177,8 @@ public class CommentServiceImpl implements CommentService {
         commentRepository.save(comment);
         feedRedisService.addComment(post.getId());
         log.info(INFO_CREATE_COMMENT, comment.getId(), commentRequestDto.getAuthorId(), commentRequestDto.getPostId());
+        commentEventPublisher.publish(new CommentEvent(commentRequestDto.getPostId(), commentRequestDto.getAuthorId(),
+                comment.getId(), LocalDateTime.now()));
     }
 
     public void updateComment(Long id, CommentUpdateDto commentUpdateDto) {
