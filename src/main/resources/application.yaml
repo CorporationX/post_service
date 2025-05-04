@@ -8,11 +8,8 @@ app:
   redis:
     topic:
       user_ban: user_ban
-  thread-pool-size: 16
-
-  redis:
-    topic:
       comment-analytics: comment_analytics_topic
+  thread-pool-size: 16
 
 spring:
   datasource:
@@ -20,17 +17,6 @@ spring:
     url: jdbc:postgresql://localhost:5432/postgres
     username: user
     password: password
-  kafka:
-    producer:
-      bootstrap-servers: localhost:9092
-      acks: all
-      retries: 3
-      enable-idempotence: false
-
-    topics:
-      like:
-        notification:
-          post-like-topic: post-like-event-topic
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
@@ -66,6 +52,9 @@ spring:
       max-in-flight-requests-per-connection: 10
       topics:
         user-ban: "user-ban-topic"
+        like:
+          notification:
+            post-like-topic: post-like-event-topic
 
 server:
   port: 8081
