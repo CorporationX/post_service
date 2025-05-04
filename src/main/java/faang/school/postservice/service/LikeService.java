@@ -41,9 +41,8 @@ public class LikeService {
     private final UserServiceClient userServiceClient;
     private final KafkaPublisher kafkaPublisher;
     private final LikeMapper likeMapper;
-    private final TargetLike targetLike;
 
-    @Value("${spring.kafka.topics.like.notification.post-like-topic}")
+    @Value("${spring.kafka.producer.topics.post-like}")
     private String likeTopic;
 
     @Transactional
@@ -52,7 +51,7 @@ public class LikeService {
 
         Post post = getEntity(() -> postRepository.findById(postId), () -> String.format(POST_NOT_FOUND, postId));
 
-        validateNotLiked(postId, userId, targetLike.POST);
+        validateNotLiked(postId, userId, TargetLike.POST);
 
         Like like = buildLike(userId, post, null);
         LikeDto result = likeMapper.toLikeDto(likeRepository.save(like));
@@ -81,7 +80,7 @@ public class LikeService {
                 String.format(COMMENT_NOT_FOUND, commentId));
 
         validateLikesRepeat(null, comment);
-        validateNotLiked(commentId, userId, targetLike.COMMENT);
+        validateNotLiked(commentId, userId, TargetLike.COMMENT);
 
         Like like = buildLike(userId, null, comment);
         LikeDto result = likeMapper.toLikeDto(likeRepository.save(like));
