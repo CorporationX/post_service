@@ -52,6 +52,7 @@ spring:
       batch-size: 16384
       max-in-flight-requests-per-connection: 10
       topics:
+        notification: "notification-topic"
         user-ban: "user-ban-topic"
 
 server:
