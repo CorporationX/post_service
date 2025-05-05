@@ -2,6 +2,7 @@ package faang.school.postservice.service.comment;
 
 import faang.school.postservice.client.CommentAnalyzer;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.kafka.NotificationKafkaProducer;
 import faang.school.postservice.dto.comment.CommentEvent;
 import faang.school.postservice.dto.comment.CommentRequestDto;
 import faang.school.postservice.dto.comment.CommentResponseDto;
@@ -100,6 +101,9 @@ class CommentServiceTest {
     @Mock
     private KafkaPublisher kafkaPublisher;
 
+    @Mock
+    private NotificationKafkaProducer notificationKafkaProducer;
+
     private static final Long POST_ID = 1L;
     private static final Long COMMENT_ID = 2L;
     private static final Long AUTHOR_ID = 3L;
@@ -175,6 +179,7 @@ class CommentServiceTest {
 
         verify(commentRepository, times(1)).save(commentCaptor.capture());
         assertEquals(comment, commentCaptor.getValue());
+        verify(notificationKafkaProducer, times(1)).sendNotificationComment(any(CommentEvent.class));
         Comment savedComment = commentCaptor.getValue();
 
         assertEquals(post, savedComment.getPost());

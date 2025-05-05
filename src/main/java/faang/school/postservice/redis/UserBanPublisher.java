@@ -12,11 +12,11 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class UserBanPublisher {
     private final StringRedisTemplate redisTemplate;
-    private final ChannelTopic topic;
+    private final ChannelTopic userTopic;
 
     public void publishUserBan(Long userId) {
         log.info(InfoMessage.INFO_PUBLISHING_USER, userId);
-        redisTemplate.convertAndSend(topic.getTopic(), userId.toString());
+        redisTemplate.convertAndSend(userTopic.getTopic(), userId.toString());
     }
 }
 
