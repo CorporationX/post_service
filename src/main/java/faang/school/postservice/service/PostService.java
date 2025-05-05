@@ -9,9 +9,9 @@ import faang.school.postservice.exception.LanguageToolException;
 import faang.school.postservice.exception.PostNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.hashtags.HashtagService;
+import faang.school.postservice.utils.JsonUtils;
 import faang.school.postservice.utils.validationUtils.PostValidation;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
@@ -36,8 +37,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 @Service
 @Slf4j
@@ -48,6 +47,8 @@ public class PostService {
     public static final String POST_HAS_ALREADY_BEEN_DELETED = "Post has already been deleted";
     private static final int TIMEOUT_HOURS = 2;
 
+    private final KafkaTemplate<String, String> kafkaTemplate;
+    private final JsonUtils jsonUtils;
     private final PostMapper postMapper;
     private final PostRepository postRepository;
     private final LanguageToolClient languageToolClient;
@@ -68,7 +69,7 @@ public class PostService {
         return postMapper.toPostResponseDto(post);
     }
 
-    public PostResponseDto publishPost(Long postId) {
+    public void publishPost(Long postId) {
         Optional<Post> postDraftOptional = postRepository.findById(postId);
         validatePostOptional(postDraftOptional, postId);
         Post post = postDraftOptional.get();
@@ -79,10 +80,9 @@ public class PostService {
         postRepository.save(post);
         feedRedisService.createPost(postMapper.toFeedPostDto(post));
         hashtagService.extractHashtagsFromPost(post);
-        return postMapper.toPostResponseDto(post);
     }
 
-    public PostResponseDto updatePost(PostRequestDto postRequestDto) {
+    public void updatePost(PostRequestDto postRequestDto) {
         PostValidation.validatePostUpdate(postRequestDto);
         Optional<Post> postOptional = postRepository.findById(postRequestDto.getId());
         validatePostOptional(postOptional, postRequestDto.getId());
@@ -102,7 +102,6 @@ public class PostService {
         }
         postRepository.save(post);
         feedRedisService.createPost(postMapper.toFeedPostDto(post));
-        return postMapper.toPostResponseDto(post);
     }
 
     public PostResponseDto deletePost(Long postId) {

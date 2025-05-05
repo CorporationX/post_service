@@ -26,7 +26,6 @@ import java.util.Optional;
 import static faang.school.postservice.service.LikeService.ALREADY_LIKED;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
@@ -81,11 +80,8 @@ public class LikeServiceTest {
         when(likeMapper.toLikeDto(any(Like.class))).thenReturn(likeDto);
         when(likeRepository.save(any(Like.class))).thenReturn(like);
 
-        LikeDto result = likeService.likePost(postId, userId);
+        likeService.likePost(postId, userId);
 
-        assertNotNull(result);
-        assertEquals(userId, result.getUserId());
-        assertEquals(postId, result.getPostId());
         verify(likeRepository, times(1)).save(any(Like.class));
     }
 
@@ -108,11 +104,8 @@ public class LikeServiceTest {
         when(likeMapper.toLikeDto(any(Like.class))).thenReturn(expectedLikeDto);
         when(likeRepository.save(any(Like.class))).thenReturn(commentLike);
 
-        LikeDto result = likeService.likeComment(commentId, userId);
+        likeService.likeComment(commentId, userId);
 
-        assertNotNull(result);
-        assertEquals(userId, result.getUserId());
-        assertEquals(commentId, result.getCommentId());
         verify(likeRepository, times(1)).save(any(Like.class));
     }
 

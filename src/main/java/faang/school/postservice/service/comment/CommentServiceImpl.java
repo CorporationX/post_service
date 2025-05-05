@@ -22,6 +22,7 @@ import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.FeedRedisService;
 import faang.school.postservice.service.kafka.publisher.KafkaPublisher;
+import faang.school.postservice.utils.JsonUtils;
 import feign.FeignException;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -96,6 +97,9 @@ public class CommentServiceImpl implements CommentService {
     @Value("${moderation.comments.ban-threshold}")
     private int userBanThreshold;
 
+    @Value("${spring.kafka.topics.user-ban}")
+    private String userBanTopic;
+
     private static final double TOXICITY_THRESHOLD = 0.35;
     private static final int MAX_LENGTH_CHARACTER = 4096;
 
@@ -103,6 +107,7 @@ public class CommentServiceImpl implements CommentService {
     private final PostRepository postRepository;
     private final CommentAnalyzer commentAnalyzer;
     private final KafkaPublisher kafkaPublisher;
+    private final JsonUtils jsonUtils;
     private final CommentRequestMapper commentRequestMapper;
     private final CommentResponseMapper commentResponseMapper;
     private final UserServiceClient userServiceClient;
@@ -207,7 +212,7 @@ public class CommentServiceImpl implements CommentService {
     public void deleteComment(Long id) {
         getComment(id);
         commentRepository.deleteById(id);
-        feedRedisService.
+        //feedRedisService.
         log.info(INFO_DELETE_COMMENT, id);
     }
 
@@ -282,7 +287,8 @@ public class CommentServiceImpl implements CommentService {
         unverifiedComments.entrySet()
                 .stream()
                 .filter(entry -> entry.getValue() >= userBanThreshold)
-                .forEach(entry -> kafkaPublisher.send(new UserBanDto(entry.getKey())));
+                .forEach(entry -> kafkaPublisher.send(
+                        userBanTopic, new UserBanDto(entry.getKey())));
     }
 
     private Mono<Void> moderateComment(Comment comment) {

@@ -24,8 +24,8 @@ public class FeedRedisService {
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
 
-    @Value("${app.feed.post-ttl-hours}")
-    private int postTtlHours;
+    @Value("${app.feed.ttl-hours}")
+    private int ttlHours;
 
     @Value("${app.feed.post-cache-key}")
     private String postCachePrefix;
@@ -44,7 +44,7 @@ public class FeedRedisService {
         Map<String, String> postFields = objectMapper.convertValue(feedPostDto, new TypeReference<Map<String, String>>() {
         });
         redisTemplate.opsForHash().putAll(key, postFields);
-        redisTemplate.expire(key, Duration.ofHours(postTtlHours));
+        redisTemplate.expire(key, Duration.ofHours(ttlHours));
         log.info("Cached post: {}", postFields);
     }
 

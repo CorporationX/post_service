@@ -20,6 +20,7 @@ import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.kafka.publisher.KafkaPublisher;
+import faang.school.postservice.utils.JsonUtils;
 import feign.FeignException;
 import feign.Request;
 import org.junit.jupiter.api.BeforeEach;
@@ -100,12 +101,16 @@ class CommentServiceTest {
     @Mock
     private KafkaPublisher kafkaPublisher;
 
+    @Mock
+    private JsonUtils jsonUtils;
+
     private static final Long POST_ID = 1L;
     private static final Long COMMENT_ID = 2L;
     private static final Long AUTHOR_ID = 3L;
 
     private static final String CONTENT = "Content";
     private static final String UPDATE_CONTENT = "Update content";
+    private String userBanTopic = "user-vban-topic";
 
     private CommentRequestDto commentRequestDto;
     private CommentResponseDto commentResponseDto;
@@ -454,6 +459,7 @@ class CommentServiceTest {
 
         commentService.banUsersForComments();
 
-        verify(kafkaPublisher, times(1)).send(new UserBanDto(comment.getAuthorId()));
+        verify(kafkaPublisher, times(1)).send(
+                userBanTopic, new UserBanDto(comment.getAuthorId()));
     }
 }

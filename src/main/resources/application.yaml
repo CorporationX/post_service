@@ -16,7 +16,7 @@ app:
   feed:
     post-cache-key: "feed:post"
     post-comments-cache-key: "feed:post:%d:comments"
-    post-ttl-hours: 24
+    ttl-hours: 24
 
 spring:
   datasource:
@@ -60,10 +60,22 @@ spring:
       properties:
         max-in-flight-requests-per-connection: 10
         linger-ms: 5
-        enable.idempotence: true
 
-      topics:
-        user-ban: "user-ban-topic"
+    topics:
+      user-ban: "user-ban-topic"
+      feed:
+        post-like-topic: "post-like-topic"
+        post-unlike-topic: "post-unlike-topic"
+        comment-like-topic: "comment-like-topic"
+        comment-unlike-topic: "comment-unlike-topic"
+        post-view-topic: "post-view-topic"
+        post-create-topic: "post-create-topic"
+        post-update-topic: "post-update-topic"
+        comment-create-topic: "comment-create-topic"
+        comment-update-topic: "comment-create-topic"
+
+    groups:
+      feed-group: "news-feed-group"
 
 server:
   port: 8081

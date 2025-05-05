@@ -1,6 +1,7 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.ike.PostLikeDto;
 import faang.school.postservice.exception.LikeException;
 import faang.school.postservice.like.LikeDto;
 import faang.school.postservice.like.TargetLike;
@@ -11,9 +12,13 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.kafka.publisher.KafkaPublisher;
+import faang.school.postservice.utils.JsonUtils;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +37,8 @@ public class LikeService {
     public static final String BOTH_LIKE = "You cannot like a post and comment at the same time.";
     public static final String ERROR_VALIDATING_USER = "Error occurred when validating a user with id: %d.";
 
+    private final JsonUtils jsonUtils;
+    private final KafkaPublisher kafkaPublisher;
     private final LikeRepository likeRepository;
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
@@ -39,19 +46,31 @@ public class LikeService {
     private final LikeMapper likeMapper;
     private final FeedRedisService feedRedisService;
 
-    @Transactional
-    public LikeDto likePost(long postId, long userId) {
-        validateUser(userId);
+    @Value("${spring.kafka.topics.feed.post-like-topic}")
+    private String postLikeTopic;
 
+    public void likePost(long postId, long userId) {
+        kafkaPublisher.send(postLikeTopic, new PostLikeDto(postId, userId));
+    }
+
+    @KafkaListener(
+            topics = "${spring.kafka.topics.feed.post-like-topic}",
+            groupId = "${spring.kafka.groups.feed-group}"
+    )
+    @Transactional
+    public void likePostListener(String data) {
+        PostLikeDto postLikeDto = jsonUtils.deserialize(data, PostLikeDto.class);
+        Long userId = postLikeDto.getUserId();
+        Long postId = postLikeDto.getPostId();
+        validateUser(userId);
         Post post = getEntity(() -> postRepository.findById(postId), () -> String.format(POST_NOT_FOUND, postId));
 
         validateNotLiked(postId, userId, TargetLike.POST);
 
         Like like = buildLike(userId, post, null);
-        LikeDto result = likeMapper.toLikeDto(likeRepository.save(like));
+        validateLikesRepeat(post, null);
         feedRedisService.addLikeToPost(postId);
         log.info("User {} liked post {} !", userId, postId);
-        return result;
     }
 
     @Transactional
@@ -68,7 +87,7 @@ public class LikeService {
     }
 
     @Transactional
-    public LikeDto likeComment(long commentId, long userId) {
+    public void likeComment(long commentId, long userId) {
         validateUser(userId);
 
         Comment comment = getEntity(() -> commentRepository.findById(commentId), () ->
@@ -80,7 +99,6 @@ public class LikeService {
         Like like = buildLike(userId, null, comment);
         LikeDto result = likeMapper.toLikeDto(likeRepository.save(like));
         log.info("User {} liked comment {} !", userId, commentId);
-        return result;
     }
 
     @Transactional
