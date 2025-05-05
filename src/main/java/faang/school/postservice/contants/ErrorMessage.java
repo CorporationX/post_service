@@ -17,7 +17,6 @@ public class ErrorMessage {
     private static final String ERROR_OCCURRED_VALIDATING_USER = "Error occurred while validating user with ID: %d\n";
     private static final String ERROR_WRONG_FORMAT_CONTENT = "Content is blank or more %d\n.";
     private static final String ERROR_SERIALIZE_MESSAGE = "Failed to serialize message for topic [%s]: %s\n.";
-    private static final String ERROR_WRONG_FORMAT_CONTENT = "Content is blank or more %d.\n";
 
     public static String getErrorWrongFormatContent(int maxLength) {
         return String.format(ERROR_WRONG_FORMAT_CONTENT, maxLength);
