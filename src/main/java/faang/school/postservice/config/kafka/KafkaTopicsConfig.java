@@ -17,16 +17,16 @@ public class KafkaTopicsConfig {
 
     @Bean
     public NewTopic hashtagAddingTopic() {
-        return createTopic(hashtagAddingTopic.getName(),
-                hashtagAddingTopic.getPartitions(),
-                hashtagAddingTopic.getReplicas());
+        return createTopic(hashtagAddingTopic.name(),
+                hashtagAddingTopic.partitions(),
+                hashtagAddingTopic.replicas());
     }
 
     @Bean
     public NewTopic hashtagRemovingTopic() {
-        return createTopic(hashtagRemovingTopic.getName(),
-                hashtagRemovingTopic.getPartitions(),
-                hashtagRemovingTopic.getReplicas());
+        return createTopic(hashtagRemovingTopic.name(),
+                hashtagRemovingTopic.partitions(),
+                hashtagRemovingTopic.replicas());
     }
 
     private NewTopic createTopic(String name, int partitions, int replicas) {

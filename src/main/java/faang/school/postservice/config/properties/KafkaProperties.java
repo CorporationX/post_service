@@ -1,29 +1,23 @@
 package faang.school.postservice.config.properties;
 
-import lombok.Getter;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@Getter
-@Configuration
-public class KafkaProperties {
+@ConfigurationProperties(prefix = "spring.data.kafka")
+public record KafkaProperties(
+        String bootstrapServers,
+        Consumer consumer,
+        Producer producer
+) {
+    public record Consumer(
+            String groupId,
+            String autoOffsetReset
+    ) {
+    }
 
-    @Value("${spring.data.kafka.bootstrap-servers}")
-    private String bootstrapServers;
-
-    @Value("${spring.data.kafka.consumer.group-id}")
-    private String groupId;
-
-    @Value("${spring.data.kafka.consumer.auto-offset-reset}")
-    private String autoOffsetReset;
-
-    @Value("${spring.data.kafka.producer.acks}")
-    private String acks;
-
-    @Value("${spring.data.kafka.producer.retries}")
-    private int retries;
-
-    @Value("${spring.data.kafka.producer.retry-backoff-ms}")
-    private int retryBackoffMs;
-
+    public record Producer(
+            String acks,
+            int retries,
+            int retryBackoffMs
+    ) {
+    }
 }
