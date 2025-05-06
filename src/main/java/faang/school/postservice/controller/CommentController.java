@@ -40,7 +40,7 @@ public class CommentController {
     @PutMapping("/{id}")
     public void updateComment(@PathVariable Long id, @NonNull @RequestBody CommentUpdateDto commentUpdateDto) {
         log.info(INFO_START_CONTROLLER_UPDATE_COMMENT, id, commentUpdateDto.getAuthorId());
-        commentService.updateComment(id, commentUpdateDto);
+        commentService.updateComment(commentUpdateDto);
     }
 
     @GetMapping("/by-post")

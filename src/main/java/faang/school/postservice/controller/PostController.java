@@ -49,12 +49,13 @@ public class PostController {
         log.info("Finished updating post: {}", postRequestDto);
     }
 
+    @ResponseStatus(HttpStatus.ACCEPTED)
+
     @DeleteMapping("/{postId}")
-    public PostResponseDto deletePost(@PathVariable Long postId) {
+    public void deletePost(@PathVariable Long postId) {
         log.info("Starting to delete post with ID: {}", postId);
-        PostResponseDto response = postService.deletePost(postId);
+        postService.deletePost(postId);
         log.info("Finished deleting post with ID: {}", postId);
-        return response;
     }
 
     @GetMapping("/{postId}")

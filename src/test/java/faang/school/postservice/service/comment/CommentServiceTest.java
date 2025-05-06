@@ -12,8 +12,7 @@ import faang.school.postservice.dto.commentAnalyzer.response.SummaryScoreDto;
 import faang.school.postservice.dto.commentAnalyzer.response.ToxicityScoreDto;
 import faang.school.postservice.dto.user.UserBanDto;
 import faang.school.postservice.enums.CommentToxicityType;
-import faang.school.postservice.mapper.CommentRequestMapper;
-import faang.school.postservice.mapper.CommentResponseMapper;
+import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.CommentEventPublisher;
@@ -89,10 +88,7 @@ class CommentServiceTest {
     private CommentEventPublisher commentEventPublisher;
 
     @Spy
-    private CommentResponseMapper commentResponseMapper = Mappers.getMapper(CommentResponseMapper.class);
-
-    @Spy
-    private CommentRequestMapper commentRequestMapper = Mappers.getMapper(CommentRequestMapper.class);
+    private CommentMapper commentMapper = Mappers.getMapper(CommentMapper.class);
 
     @Captor
     private ArgumentCaptor<Comment> commentCaptor;
@@ -174,7 +170,7 @@ class CommentServiceTest {
     @DisplayName("Test should create comment")
     void createComment() {
         when(postRepository.findById(POST_ID)).thenReturn(Optional.of(post));
-        when(commentRequestMapper.toComment(commentRequestDto)).thenReturn(comment);
+        when(commentMapper.toComment(commentRequestDto)).thenReturn(comment);
 
         commentService.createComment(commentRequestDto);
 

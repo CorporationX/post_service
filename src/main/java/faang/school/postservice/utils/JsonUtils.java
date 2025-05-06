@@ -1,10 +1,13 @@
 package faang.school.postservice.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+
+import java.util.Map;
 
 import static faang.school.postservice.messages.ErrorMessages.ERROR_DESERIALIZING;
 import static faang.school.postservice.messages.ErrorMessages.SERIALIZATION_ERROR;
@@ -31,5 +34,10 @@ public class JsonUtils {
             log.error(SERIALIZATION_ERROR, e);
             throw new RuntimeException(e);
         }
+    }
+
+    public Map<String, Object> toMap(Object obj) {
+        return objectMapper.convertValue(obj, new TypeReference<Map<String, Object>>() {
+        });
     }
 }

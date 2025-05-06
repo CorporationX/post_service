@@ -13,8 +13,7 @@ import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.InvalidCommentContentException;
 import faang.school.postservice.exception.NotAuthorException;
 import faang.school.postservice.exception.NullEntityException;
-import faang.school.postservice.mapper.CommentRequestMapper;
-import faang.school.postservice.mapper.CommentResponseMapper;
+import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.CommentEventPublisher;
@@ -30,6 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -82,12 +82,6 @@ public class CommentServiceImpl implements CommentService {
     @Value("${moderation.comments.batch-size}")
     private int banBatchSize;
 
-    @Value("${moderation.comments.max-attempts}")
-    private int userBanMaxAttempts;
-
-    @Value("${moderation.comments.backoff-delay}")
-    private int userBanBackoffDelay;
-
     @Value("${moderation.comments.thread-pool-size}")
     private int userBanThreadPoolSize;
 
@@ -100,6 +94,15 @@ public class CommentServiceImpl implements CommentService {
     @Value("${spring.kafka.topics.user-ban}")
     private String userBanTopic;
 
+    @Value("${spring.kafka.topics.feed.comment-create-topic}")
+    private String commentCreateTopic;
+
+    @Value("${spring.kafka.topics.feed.comment-update-topic}")
+    private String commentUpdateTopic;
+
+    @Value("${spring.kafka.topics.feed.comment-delete-topic}")
+    private String commentDeleteTopic;
+
     private static final double TOXICITY_THRESHOLD = 0.35;
     private static final int MAX_LENGTH_CHARACTER = 4096;
 
@@ -108,8 +111,7 @@ public class CommentServiceImpl implements CommentService {
     private final CommentAnalyzer commentAnalyzer;
     private final KafkaPublisher kafkaPublisher;
     private final JsonUtils jsonUtils;
-    private final CommentRequestMapper commentRequestMapper;
-    private final CommentResponseMapper commentResponseMapper;
+    private final CommentMapper commentMapper;
     private final UserServiceClient userServiceClient;
     private final CommentEventPublisher commentEventPublisher;
     private ExecutorService executor;
@@ -174,46 +176,77 @@ public class CommentServiceImpl implements CommentService {
     }
 
     public void createComment(CommentRequestDto commentRequestDto) {
+        kafkaPublisher.send(commentCreateTopic, commentRequestDto);
+    }
+
+    @KafkaListener(
+            topics = "${spring.kafka.topics.feed.comment-create-topic}",
+            groupId = "${spring.kafka.groups.feed-group}"
+    )
+    public void createCommentListener(String data) {
+        CommentRequestDto commentRequestDto = jsonUtils.deserialize(data, CommentRequestDto.class);
         validateCreateComment(commentRequestDto);
         Post post = getPost(commentRequestDto.getPostId());
-        Comment comment = commentRequestMapper.toComment(commentRequestDto);
+        Comment comment = commentMapper.toComment(commentRequestDto);
         comment.setPost(post);
         comment.setAuthorId(commentRequestDto.getAuthorId());
+
         commentRepository.save(comment);
-        feedRedisService.addComment(post.getId());
+        feedRedisService.incrementComments(post.getId());
+        feedRedisService.incrementComments(comment.getPost().getId());
         log.info(INFO_CREATE_COMMENT, comment.getId(), commentRequestDto.getAuthorId(), commentRequestDto.getPostId());
         commentEventPublisher.publish(new CommentEvent(commentRequestDto.getPostId(), commentRequestDto.getAuthorId(),
                 comment.getId(), LocalDateTime.now()));
     }
 
-    public void updateComment(Long id, CommentUpdateDto commentUpdateDto) {
+    public void updateComment(CommentUpdateDto commentUpdateDto) {
+        kafkaPublisher.send(commentUpdateTopic, commentUpdateDto);
+    }
+
+    @KafkaListener(
+            topics = "${spring.kafka.topics.feed.comment-update-topic}",
+            groupId = "${spring.kafka.groups.feed-group}"
+    )
+    public void updateCommentListener(String data) {
+        CommentUpdateDto commentUpdateDto = jsonUtils.deserialize(data, CommentUpdateDto.class);
         validateContent(commentUpdateDto.getContent());
         validateId(commentUpdateDto.getAuthorId(), ERROR_NULL_AUTHOR_ID);
 
-        Comment comment = getComment(id);
+        Comment comment = getComment(commentUpdateDto.getId());
         isAuthorComment(comment, commentUpdateDto);
         comment.setContent(commentUpdateDto.getContent());
-        commentRepository.save(comment);
         comment.setVerified(false);
         comment.setVerifiedDate(null);
-        log.info(INFO_UPDATE_COMMENT, id, commentUpdateDto.getAuthorId());
+        commentRepository.save(comment);
+        feedRedisService.updateComment(comment.getPost().getId(), commentMapper.toFeedCommentDto(comment));
+        log.info(INFO_UPDATE_COMMENT, commentUpdateDto.getId(), commentUpdateDto.getAuthorId());
     }
 
     public List<CommentResponseDto> getCommentsByPostId(Long postId) {
         getPost(postId);
         List<CommentResponseDto> commentResponseDto = commentRepository.findAllByPostId(postId).stream()
                 .sorted(Comparator.comparing(Comment::getCreatedAt).reversed())
-                .map(commentResponseMapper::toCommentDto)
+                .map(commentMapper::toCommentDto)
                 .toList();
         log.info(INFO_GET_COMMENTS, commentResponseDto.size(), postId);
         return commentResponseDto;
     }
 
     public void deleteComment(Long id) {
-        getComment(id);
-        commentRepository.deleteById(id);
-        //feedRedisService.
-        log.info(INFO_DELETE_COMMENT, id);
+        kafkaPublisher.send(commentDeleteTopic, id);
+    }
+
+    @KafkaListener(
+            topics = "${spring.kafka.topics.feed.comment-delete-topic}",
+            groupId = "${spring.kafka.groups.feed-group}"
+    )
+    public void deleteCommentListener(Long commentId) {
+        getComment(commentId);
+        commentRepository.deleteById(commentId);
+        Long postId = postRepository.findPostIdByCommentId(commentId);
+        feedRedisService.decrementComments(postId);
+        feedRedisService.removeCommentFromPost(postId, commentId);
+        log.info(INFO_DELETE_COMMENT, commentId);
     }
 
     private Comment getComment(Long id) {

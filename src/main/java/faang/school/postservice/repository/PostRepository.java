@@ -51,4 +51,7 @@ public interface PostRepository extends CrudRepository<Post, Long> {
     @Transactional
     @Query("UPDATE Post p SET p.views = p.views + 1 WHERE p.id = :id")
     int incrementViews(Long id);
+
+    @Query("SELECT c.post.id FROM Comment c WHERE c.id = :commentId")
+    Long findPostIdByCommentId(Long commentId);
 }

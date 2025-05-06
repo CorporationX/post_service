@@ -11,6 +11,7 @@ import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.hashtags.HashtagService;
+import faang.school.postservice.service.kafka.publisher.KafkaPublisher;
 import faang.school.postservice.utils.JsonUtils;
 import faang.school.postservice.utils.validationUtils.PostValidation;
 import jakarta.transaction.Transactional;
@@ -20,7 +21,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
@@ -47,7 +48,7 @@ public class PostService {
     public static final String POST_HAS_ALREADY_BEEN_DELETED = "Post has already been deleted";
     private static final int TIMEOUT_HOURS = 2;
 
-    private final KafkaTemplate<String, String> kafkaTemplate;
+    private final KafkaPublisher kafkaPublisher;
     private final JsonUtils jsonUtils;
     private final PostMapper postMapper;
     private final PostRepository postRepository;
@@ -57,10 +58,22 @@ public class PostService {
     private final FeedRedisService feedRedisService;
 
     @Value("${posts.correction.batch-size}")
-    int batchSize;
+    private int batchSize;
 
     @Value("${posts.correction.thread-pool-size}")
-    int threadPoolSize;
+    private int threadPoolSize;
+
+    @Value("${spring.kafka.topics.feed.post-view-topic}")
+    private String postViewTopic;
+
+    @Value("${spring.kafka.topics.feed.post-create-topic}")
+    private String postCreateTopic;
+
+    @Value("${spring.kafka.topics.feed.post-update-topic}")
+    private String postUpdateTopic;
+
+    @Value("${spring.kafka.topics.feed.post-delete-topic}")
+    private String postDeleteTopic;
 
     public PostResponseDto createDraftPost(PostRequestDto postRequestDto) {
         PostValidation.validatePostAuthors(postRequestDto);
@@ -70,6 +83,15 @@ public class PostService {
     }
 
     public void publishPost(Long postId) {
+        kafkaPublisher.send(postCreateTopic, postId);
+    }
+
+    @KafkaListener(
+            topics = "${spring.kafka.topics.feed.post-create-topic}",
+            groupId = "${spring.kafka.groups.feed-group}"
+    )
+    public void publishPostListener(String data) {
+        Long postId = Long.valueOf(data);
         Optional<Post> postDraftOptional = postRepository.findById(postId);
         validatePostOptional(postDraftOptional, postId);
         Post post = postDraftOptional.get();
@@ -83,6 +105,15 @@ public class PostService {
     }
 
     public void updatePost(PostRequestDto postRequestDto) {
+        kafkaPublisher.send(postUpdateTopic, postRequestDto);
+    }
+
+    @KafkaListener(
+            topics = "${spring.kafka.topics.feed.post-update-topic}",
+            groupId = "${spring.kafka.groups.feed-group}"
+    )
+    public void updatePostListener(String data) {
+        PostRequestDto postRequestDto = jsonUtils.deserialize(data, PostRequestDto.class);
         PostValidation.validatePostUpdate(postRequestDto);
         Optional<Post> postOptional = postRepository.findById(postRequestDto.getId());
         validatePostOptional(postOptional, postRequestDto.getId());
@@ -103,8 +134,16 @@ public class PostService {
         postRepository.save(post);
         feedRedisService.createPost(postMapper.toFeedPostDto(post));
     }
+    public void deletePost(Long postId) {
+        kafkaPublisher.send(postDeleteTopic, postId);
+    }
 
-    public PostResponseDto deletePost(Long postId) {
+    @KafkaListener(
+            topics = "${spring.kafka.topics.feed.post-delete-topic}",
+            groupId = "${spring.kafka.groups.feed-group}"
+    )
+    public void deletePostListener(String data) {
+        Long postId = Long.valueOf(data);
         Optional<Post> postOptional = postRepository.findById(postId);
         validatePostOptional(postOptional, postId);
 
@@ -116,7 +155,6 @@ public class PostService {
         post.setDeleted(true);
         postRepository.save(post);
         feedRedisService.removePost(postId);
-        return postMapper.toPostResponseDto(post);
     }
 
     public PostResponseDto getPostById(Long postId) {
@@ -201,7 +239,7 @@ public class PostService {
         List<Post> readyToPublishPosts = postRepository.findReadyToPublish();
         log.info("Found {} posts ready to publish", readyToPublishPosts.size());
 
-        for (Post post: readyToPublishPosts) {
+        for (Post post : readyToPublishPosts) {
             CompletableFuture.runAsync(() -> publishPost(post), threadPoolExecutor)
                     .exceptionally(ex -> {
                         log.error("Error while publishing post with ID: {}", post.getId(), ex);
@@ -211,8 +249,16 @@ public class PostService {
     }
 
     public void viewPost(Long postId) {
+        kafkaPublisher.send(postViewTopic, postId);
+    }
+
+    @KafkaListener(
+            topics = "${spring.kafka.topics.feed.post-view-topic}",
+            groupId = "${spring.kafka.groups.feed-group}"
+    )
+    public void viewPostListener(Long postId) {
         int updated = postRepository.incrementViews(postId);
-        if(updated == 0) {
+        if (updated == 0) {
             log.error(NO_POST_FOUND.formatted(postId));
             throw new PostNotFoundException(NO_POST_FOUND.formatted(postId));
         }

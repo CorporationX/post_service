@@ -12,7 +12,7 @@ public interface CommentService {
 
     void createComment(CommentRequestDto commentRequestDto);
 
-    void updateComment(Long id, CommentUpdateDto commentUpdateDto);
+    void updateComment(CommentUpdateDto commentUpdateDto);
 
     List<CommentResponseDto> getCommentsByPostId(Long postId);
 

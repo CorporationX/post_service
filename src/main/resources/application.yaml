@@ -16,7 +16,9 @@ app:
   feed:
     post-cache-key: "feed:post"
     post-comments-cache-key: "feed:post:%d:comments"
+    comment-cache-key: "comment:%d"
     ttl-hours: 24
+    max-cached-comments-for-post: "5"
 
 spring:
   datasource:
@@ -71,8 +73,10 @@ spring:
         post-view-topic: "post-view-topic"
         post-create-topic: "post-create-topic"
         post-update-topic: "post-update-topic"
+        post-delete-topic: "post-delete-topic"
         comment-create-topic: "comment-create-topic"
         comment-update-topic: "comment-create-topic"
+        comment-delete-topic: "comment-delete-topic"
 
     groups:
       feed-group: "news-feed-group"

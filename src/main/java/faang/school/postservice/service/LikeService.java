@@ -1,6 +1,7 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.ike.CommentLikeDto;
 import faang.school.postservice.dto.ike.PostLikeDto;
 import faang.school.postservice.exception.LikeException;
 import faang.school.postservice.like.LikeDto;
@@ -49,6 +50,15 @@ public class LikeService {
     @Value("${spring.kafka.topics.feed.post-like-topic}")
     private String postLikeTopic;
 
+    @Value("${spring.kafka.topics.feed.post-unlike-topic}")
+    private String postUnlikeTopic;
+
+    @Value("${spring.kafka.topics.feed.comment-like-topic}")
+    private String commentLikeTopic;
+
+    @Value("${spring.kafka.topics.feed.comment-unlike-topic}")
+    private String commentUnlikeTopic;
+
     public void likePost(long postId, long userId) {
         kafkaPublisher.send(postLikeTopic, new PostLikeDto(postId, userId));
     }
@@ -62,19 +72,32 @@ public class LikeService {
         PostLikeDto postLikeDto = jsonUtils.deserialize(data, PostLikeDto.class);
         Long userId = postLikeDto.getUserId();
         Long postId = postLikeDto.getPostId();
+
         validateUser(userId);
         Post post = getEntity(() -> postRepository.findById(postId), () -> String.format(POST_NOT_FOUND, postId));
-
         validateNotLiked(postId, userId, TargetLike.POST);
 
         Like like = buildLike(userId, post, null);
         validateLikesRepeat(post, null);
-        feedRedisService.addLikeToPost(postId);
+        likeRepository.save(like);
+        feedRedisService.incrementPostLikes(postId);
         log.info("User {} liked post {} !", userId, postId);
     }
 
-    @Transactional
     public void unlikePost(long postId, long userId) {
+        kafkaPublisher.send(postUnlikeTopic, new PostLikeDto(postId, userId));
+    }
+
+    @KafkaListener(
+            topics = "${spring.kafka.topics.feed.post-unlike-topic}",
+            groupId = "${spring.kafka.groups.feed-group}"
+    )
+    @Transactional
+    public void unlikePostListener(String data) {
+        PostLikeDto postLikeDto = jsonUtils.deserialize(data, PostLikeDto.class);
+        Long userId = postLikeDto.getUserId();
+        Long postId = postLikeDto.getPostId();
+
         validateUser(userId);
         if (!likeRepository.existsByPostIdAndUserId(postId, userId)) {
             String error = (String.format(LIKE_NOT_FOUND, postId, userId));
@@ -82,14 +105,25 @@ public class LikeService {
             throw new LikeException(error);
         }
         likeRepository.deleteByPostIdAndUserId(postId, userId);
-        feedRedisService.removeLikeFromPost(postId);
+        feedRedisService.decrementPostLikes(postId);
         log.info("User {} removed a like from a post {}", userId, postId);
     }
 
-    @Transactional
     public void likeComment(long commentId, long userId) {
-        validateUser(userId);
+        kafkaPublisher.send(commentLikeTopic, new CommentLikeDto(commentId, userId));
+    }
 
+    @KafkaListener(
+            topics = "${spring.kafka.topics.feed.comment-like-topic}",
+            groupId = "${spring.kafka.groups.feed-group}"
+    )
+    @Transactional
+    public void likeCommentListener(String data) {
+        CommentLikeDto commentLikeDto = jsonUtils.deserialize(data, CommentLikeDto.class);
+        Long userId = commentLikeDto.getUserId();
+        Long commentId = commentLikeDto.getCommentId();
+
+        validateUser(userId);
         Comment comment = getEntity(() -> commentRepository.findById(commentId), () ->
                 String.format(COMMENT_NOT_FOUND, commentId));
 
@@ -101,8 +135,20 @@ public class LikeService {
         log.info("User {} liked comment {} !", userId, commentId);
     }
 
-    @Transactional
     public void unlikeComment(long commentId, long userId) {
+        kafkaPublisher.send(commentLikeTopic, new CommentLikeDto(commentId, userId));
+    }
+
+    @KafkaListener(
+            topics = "${spring.kafka.topics.feed.comment-unlike-topic}",
+            groupId = "${spring.kafka.groups.feed-group}"
+    )
+    @Transactional
+    public void unlikeCommentListener(String data) {
+        CommentLikeDto commentLikeDto = jsonUtils.deserialize(data, CommentLikeDto.class);
+        Long userId = commentLikeDto.getUserId();
+        Long commentId = commentLikeDto.getCommentId();
+
         validateUser(userId);
         if (!likeRepository.existsByCommentIdAndUserId(commentId, userId)) {
             String error = (String.format(LIKE_NOT_FOUND, commentId, userId));
