@@ -55,6 +55,12 @@ spring:
       topics:
         notification: "notification-topic"
         user-ban: "user-ban-topic"
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    topics:
+      post:
+        achievement:
+          post-event-topic: "post-topic"
 
 server:
   port: 8081
@@ -88,6 +94,17 @@ moderation:
     thread-pool-size: 16
     ban-threshold: 5
 
+user-service:
+  host: localhost
+  port: 8080
+project-service:
+  host: localhost
+  port: 8082
+payment-service:
+  host: localhost
+  port: 9080
+
+servers:
   language-tool:
     base-url: https://api.languagetool.org/v2
 

@@ -1,5 +1,6 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.dto.PostEvent;
 import faang.school.postservice.client.LanguageToolClient;
 import faang.school.postservice.dto.languageTool.GrammarMatch;
 import faang.school.postservice.dto.languageTool.LanguageToolResponseDto;
@@ -16,6 +17,8 @@ import faang.school.postservice.utils.validationUtils.PostValidation;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -51,6 +54,7 @@ public class PostService {
     private final LanguageToolClient languageToolClient;
     private final LikeRepository likeRepository;
     private final HashtagService hashtagService;
+    private final KafkaTemplate<String, PostEvent> kafkaTemplate;
     private final ExecutorService threadPoolExecutor;
 
     @Value("${posts.correction.batch-size}")
@@ -58,6 +62,9 @@ public class PostService {
 
     @Value("${posts.correction.thread-pool-size}")
     int threadPoolSize;
+
+    @Value("${spring.kafka.topics.post.achievement.post-event-topic}")
+    private String postEventTopicName;
 
     public PostResponseDto createDraftPost(PostRequestDto postRequestDto) {
         PostValidation.validatePostAuthors(postRequestDto);
@@ -75,6 +82,12 @@ public class PostService {
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
         postRepository.save(post);
+
+        PostEvent event = new PostEvent(post.getAuthorId(), post.getId());
+        kafkaTemplate.send(postEventTopicName, event);
+        log.info("Send post event with author id = {} and post id = {}",
+                post.getAuthorId(), post.getId());
+
         hashtagService.extractHashtagsFromPost(post);
         return postMapper.toPostResponseDto(post);
     }
