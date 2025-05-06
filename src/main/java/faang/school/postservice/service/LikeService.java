@@ -1,14 +1,15 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.dto.like.LikeDto;
-import faang.school.postservice.enums.TargetLike;
-import faang.school.postservice.event.PostLikeEvent;
+import faang.school.postservice.dto.like.LikeEvent;
 import faang.school.postservice.exception.LikeException;
+import faang.school.postservice.like.LikeDto;
+import faang.school.postservice.event.PostLikeEvent;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.EventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -17,6 +18,7 @@ import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,10 +42,13 @@ public class LikeService {
     private final CommentRepository commentRepository;
     private final UserServiceClient userServiceClient;
     private final KafkaPublisher kafkaPublisher;
+    private final EventPublisher eventPublisher;
     private final LikeMapper likeMapper;
+    private final ChannelTopic likeAchievementTopic;
 
     @Value("${spring.kafka.producer.topics.post-like}")
     private String likeTopic;
+
 
     @Transactional
     public LikeDto likePost(long postId, long userId) {
@@ -57,6 +62,7 @@ public class LikeService {
         LikeDto result = likeMapper.toLikeDto(likeRepository.save(like));
         kafkaPublisher.send(likeTopic, createLikeEvent(like.getUserId(), post.getAuthorId(), post.getId()));
         log.info("User {} liked post {} !", userId, postId);
+        eventPublisher.publish(new LikeEvent(like.getUserId(), postId, like.getId()), likeAchievementTopic);
         return result;
     }
 

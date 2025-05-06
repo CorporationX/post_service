@@ -10,6 +10,7 @@ app:
     topic:
       user_ban: user_ban
       comment-analytics: comment_analytics_topic
+      like-achievement: like_achievement_topic
   thread-pool-size: 16
 
 spring:
@@ -52,6 +53,7 @@ spring:
       batch-size: 16384
       max-in-flight-requests-per-connection: 10
       topics:
+        notification: "notification-topic"
         user-ban: "user-ban-topic"
         post-like: "post-like-event-topic"
 

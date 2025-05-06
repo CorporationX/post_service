@@ -2,6 +2,7 @@ package faang.school.postservice.service.comment;
 
 import faang.school.postservice.client.CommentAnalyzer;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.kafka.NotificationKafkaProducer;
 import faang.school.postservice.contants.ErrorMessage;
 import faang.school.postservice.dto.comment.CommentEvent;
 import faang.school.postservice.dto.comment.CommentRequestDto;
@@ -109,6 +110,7 @@ public class CommentServiceImpl implements CommentService {
     private final CommentResponseMapper commentResponseMapper;
     private final UserServiceClient userServiceClient;
     private final CommentEventPublisher commentEventPublisher;
+    private final NotificationKafkaProducer notificationKafkaProducer;
     private ExecutorService executor;
 
     @PostConstruct
@@ -176,9 +178,14 @@ public class CommentServiceImpl implements CommentService {
         comment.setPost(post);
         comment.setAuthorId(commentRequestDto.getAuthorId());
         commentRepository.save(comment);
-        log.info(INFO_CREATE_COMMENT, comment.getId(), commentRequestDto.getAuthorId(), commentRequestDto.getPostId());
+        notificationKafkaProducer.sendNotificationComment(new CommentEvent(
+                commentRequestDto.getPostId(),
+                commentRequestDto.getAuthorId(),
+                comment.getId(),
+                LocalDateTime.now()));
         commentEventPublisher.publish(new CommentEvent(commentRequestDto.getPostId(), commentRequestDto.getAuthorId(),
                 comment.getId(), LocalDateTime.now()));
+        log.info(INFO_CREATE_COMMENT, comment.getId(), commentRequestDto.getAuthorId(), commentRequestDto.getPostId());
     }
 
     public void updateComment(Long id, CommentUpdateDto commentUpdateDto) {
