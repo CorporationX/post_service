@@ -7,6 +7,7 @@ import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.EventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -45,6 +46,8 @@ public class LikeServiceTest {
     private CommentRepository commentRepository;
     @Mock
     private UserServiceClient userServiceClient;
+    @Mock
+    private EventPublisher eventPublisher;
 
     @Spy
     private LikeMapper likeMapper;

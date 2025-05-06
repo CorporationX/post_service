@@ -24,6 +24,9 @@ public class RedisConfig {
     @Value("${app.redis.topic.comment-analytics}")
     private String userBanTopicName;
 
+    @Value("${app.redis.topic.like-achievement}")
+    private String likeAchievementTopic;
+
     @Bean
     public RedisTemplate<String, String> redisTemplate(RedisConnectionFactory connectionFactory, ObjectMapper objectMapper) {
         RedisTemplate<String, String> redisTemplate = new RedisTemplate<>();
@@ -74,5 +77,10 @@ public class RedisConfig {
     @Bean
     public ChannelTopic userTopic() {
         return new ChannelTopic(userBanTopicName);
+    }
+
+    @Bean
+    public ChannelTopic likeAchievementTopic() {
+        return new ChannelTopic(likeAchievementTopic);
     }
 }
