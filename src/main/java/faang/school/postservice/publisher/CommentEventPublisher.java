@@ -25,7 +25,7 @@ public class CommentEventPublisher {
             backoff = @Backoff(delay = 2000)
     )
     public void publish(CommentEvent event) {
-        redisTemplate.convertAndSend(redisProperties.getComment(), event);
+        redisTemplate.convertAndSend(redisProperties.getChannels().getComment(), event);
     }
 
     @Recover
