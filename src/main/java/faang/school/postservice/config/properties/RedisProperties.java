@@ -9,9 +9,28 @@ import org.springframework.validation.annotation.Validated;
 @Getter
 @Setter
 @Validated
-@ConfigurationProperties(prefix = "spring.data.redis.channels")
+@ConfigurationProperties(prefix = "spring.data.redis")
 public class RedisProperties {
 
     @NotBlank
-    private String comment;
+    private String host;
+
+    private Integer port;
+
+    private Channels channels;
+
+    @Getter
+    @Setter
+    public static class Channels {
+        @NotBlank
+        private String comment;
+
+        private Channel calculationsChannel;
+
+        @Getter
+        @Setter
+        public static class Channel {
+            private String name;
+        }
+    }
 }

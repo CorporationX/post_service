@@ -21,25 +21,12 @@ import java.util.Map;
 public class CommentController {
 
     private final CommentService commentService;
-    private final CommentEventPublisher commentEventPublisher;
 
     @PostMapping("/{postId}")
     public ResponseEntity<CommentDto> createComment(
             @PathVariable Long postId,
-            @Valid @ModelAttribute CommentDto commentDto) {
-
-        CommentDto  resultDto = commentService.createComment(postId, commentDto);
-
-        CommentEvent event = new CommentEvent(
-                resultDto.getAuthorId(),
-                resultDto.getPostId(),
-                resultDto.getId(),
-                resultDto.getContent()
-        );
-
-        commentEventPublisher.publish(event);
-
-        return ResponseEntity.ok(resultDto);
+            @Valid @RequestBody CommentDto commentDto) {
+        return ResponseEntity.ok(commentService.createComment(postId, commentDto));
     }
 
     @PutMapping("/{commentId}")

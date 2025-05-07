@@ -3,9 +3,11 @@ package faang.school.postservice.service.comment;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.ModerationProperties;
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.event.CommentEvent;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.moderation.ModerationDictionaryComment;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.validator.CommentValidator;
 import faang.school.postservice.validator.PostValidator;
@@ -18,7 +20,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -41,6 +42,7 @@ public class CommentService {
     private final CommentValidator commentValidator;
 
     private final ImageService imageService;
+    private final CommentEventPublisher commentEventPublisher;
 
     private final ModerationDictionaryComment moderationDictionaryComment;
 
@@ -58,8 +60,11 @@ public class CommentService {
         Comment comment = commentMapper.toComment(commentDto);
         comment = commentRepository.save(comment);
         comment = saveCommentWithImage(commentDto, comment);
+        CommentDto resultDto = commentMapper.toCommentDto(comment);
 
-        return commentMapper.toCommentDto(comment);
+        publishCommentEvent(resultDto);
+
+        return resultDto;
     }
 
     public CommentDto updateComment(Long commentId, CommentDto commentDto) {
@@ -162,5 +167,15 @@ public class CommentService {
             comment = commentRepository.save(comment);
         }
         return comment;
+    }
+
+    private void publishCommentEvent(CommentDto dto) {
+        CommentEvent event = new CommentEvent(
+                dto.getAuthorId(),
+                dto.getPostId(),
+                dto.getId(),
+                dto.getContent()
+        );
+        commentEventPublisher.publish(event);
     }
 }
