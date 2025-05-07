@@ -1,6 +1,6 @@
 package faang.school.postservice.controller;
 
-import faang.school.postservice.like.LikeDto;
+import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.service.LikeService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

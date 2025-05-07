@@ -1,4 +1,5 @@
-package faang.school.postservice.like;
+package faang.school.postservice.enums;
+
 
 public enum TargetLike {
     POST,

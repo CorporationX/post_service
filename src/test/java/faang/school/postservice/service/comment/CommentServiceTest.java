@@ -20,7 +20,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.kafka.publisher.KafkaPublisher;
+import faang.school.postservice.service.publisher.KafkaPublisher;
 import feign.FeignException;
 import feign.Request;
 import org.junit.jupiter.api.BeforeEach;
@@ -65,6 +65,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -147,6 +148,7 @@ class CommentServiceTest {
         ReflectionTestUtils.setField(commentService, "userBanThreshold", 1);
         ReflectionTestUtils.setField(commentService, "userBanThreadPoolSize", 1);
         ReflectionTestUtils.setField(commentService, "userBanTimeoutHours", 1);
+        ReflectionTestUtils.setField(commentService, "userBanTopic", "user-ban-topic");
         commentService.setUp();
 
         ReflectionTestUtils.setField(commentService, "commentModerationTimeoutHours", 1);
@@ -459,6 +461,6 @@ class CommentServiceTest {
 
         commentService.banUsersForComments();
 
-        verify(kafkaPublisher, times(1)).send(new UserBanDto(comment.getAuthorId()));
+        verify(kafkaPublisher, times(1)).send(anyString(), eq(new UserBanDto(comment.getAuthorId())));
     }
 }

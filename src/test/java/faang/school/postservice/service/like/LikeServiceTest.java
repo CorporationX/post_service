@@ -1,8 +1,8 @@
 package faang.school.postservice.service.like;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.exception.LikeException;
-import faang.school.postservice.like.LikeDto;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
@@ -12,6 +12,7 @@ import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.LikeService;
+import faang.school.postservice.service.publisher.KafkaPublisher;
 import feign.FeignException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -48,6 +49,8 @@ public class LikeServiceTest {
     private UserServiceClient userServiceClient;
     @Mock
     private EventPublisher eventPublisher;
+    @Mock
+    private KafkaPublisher kafkaPublisher;
 
     @Spy
     private LikeMapper likeMapper;

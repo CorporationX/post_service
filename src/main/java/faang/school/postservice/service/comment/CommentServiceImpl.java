@@ -21,7 +21,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.kafka.publisher.KafkaPublisher;
+import faang.school.postservice.service.publisher.KafkaPublisher;
 import feign.FeignException;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -95,6 +95,9 @@ public class CommentServiceImpl implements CommentService {
 
     @Value("${moderation.comments.ban-threshold}")
     private int userBanThreshold;
+
+    @Value("${spring.kafka.producer.topics.user-ban}")
+    private String userBanTopic;
 
     private static final double TOXICITY_THRESHOLD = 0.35;
     private static final int MAX_LENGTH_CHARACTER = 4096;
@@ -285,7 +288,7 @@ public class CommentServiceImpl implements CommentService {
         unverifiedComments.entrySet()
                 .stream()
                 .filter(entry -> entry.getValue() >= userBanThreshold)
-                .forEach(entry -> kafkaPublisher.send(new UserBanDto(entry.getKey())));
+                .forEach(entry -> kafkaPublisher.send(userBanTopic, new UserBanDto(entry.getKey())));
     }
 
     private Mono<Void> moderateComment(Comment comment) {

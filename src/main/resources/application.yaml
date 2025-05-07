@@ -55,6 +55,7 @@ spring:
       topics:
         notification: "notification-topic"
         user-ban: "user-ban-topic"
+        post-like: "post-like-event-topic"
 
 server:
   port: 8081

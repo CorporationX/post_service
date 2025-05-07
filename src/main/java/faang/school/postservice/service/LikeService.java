@@ -1,10 +1,11 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.like.LikeEvent;
+import faang.school.postservice.enums.TargetLike;
+import faang.school.postservice.event.PostLikeEvent;
 import faang.school.postservice.exception.LikeException;
-import faang.school.postservice.like.LikeDto;
-import faang.school.postservice.like.TargetLike;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
@@ -13,9 +14,11 @@ import faang.school.postservice.publisher.EventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.publisher.KafkaPublisher;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,10 +42,13 @@ public class LikeService {
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final UserServiceClient userServiceClient;
-    private final LikeMapper likeMapper;
+    private final KafkaPublisher kafkaPublisher;
     private final EventPublisher eventPublisher;
+    private final LikeMapper likeMapper;
     private final ChannelTopic likeAchievementTopic;
-    private TargetLike targetLike;
+
+    @Value("${spring.kafka.producer.topics.post-like}")
+    private String likeTopic;
 
 
     @Transactional
@@ -51,10 +57,11 @@ public class LikeService {
 
         Post post = getEntity(() -> postRepository.findById(postId), () -> String.format(POST_NOT_FOUND, postId));
 
-        validateNotLiked(postId, userId, targetLike.POST);
+        validateNotLiked(postId, userId, TargetLike.POST);
 
         Like like = buildLike(userId, post, null);
         LikeDto result = likeMapper.toLikeDto(likeRepository.save(like));
+        kafkaPublisher.send(likeTopic, createLikeEvent(like.getUserId(), post.getAuthorId(), post.getId()));
         log.info("User {} liked post {} !", userId, postId);
         eventPublisher.publish(new LikeEvent(like.getUserId(), postId, like.getId()), likeAchievementTopic);
         return result;
@@ -80,7 +87,7 @@ public class LikeService {
                 String.format(COMMENT_NOT_FOUND, commentId));
 
         validateLikesRepeat(null, comment);
-        validateNotLiked(commentId, userId, targetLike.COMMENT);
+        validateNotLiked(commentId, userId, TargetLike.COMMENT);
 
         Like like = buildLike(userId, null, comment);
         LikeDto result = likeMapper.toLikeDto(likeRepository.save(like));
@@ -151,5 +158,13 @@ public class LikeService {
         if (post != null && commentRepository.existsById(post.getId())) {
             throw new LikeException(BOTH_LIKE);
         }
+    }
+
+    private PostLikeEvent createLikeEvent(Long likeAuthorId, Long postAuthorId, Long postId) {
+        return PostLikeEvent.builder()
+                .likeAuthorId(likeAuthorId)
+                .postAuthorId(postAuthorId)
+                .postId(postId)
+                .build();
     }
 }
