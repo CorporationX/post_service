@@ -20,16 +20,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class CommentService {
-
 
     private final CommentRepository commentRepository;
 
@@ -42,6 +43,7 @@ public class CommentService {
     private final CommentValidator commentValidator;
 
     private final ImageService imageService;
+
     private final CommentEventPublisher commentEventPublisher;
 
     private final ModerationDictionaryComment moderationDictionaryComment;

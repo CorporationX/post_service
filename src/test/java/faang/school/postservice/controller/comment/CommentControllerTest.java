@@ -2,7 +2,6 @@ package faang.school.postservice.controller.comment;
 
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.event.CommentEvent;
-import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.service.comment.CommentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,11 +12,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -26,8 +25,6 @@ public class CommentControllerTest {
     @Mock
     private CommentService commentService;
 
-    @Mock
-    private CommentEventPublisher commentEventPublisher;
 
     @InjectMocks
     private CommentController commentController;
@@ -49,8 +46,6 @@ public class CommentControllerTest {
     @Test
     void testCreateComment() {
         when(commentService.createComment(postId, commentDto)).thenReturn(commentDto);
-        doNothing().when(commentEventPublisher).publish(any(CommentEvent.class));
-
 
         ResponseEntity<CommentDto> response = commentController.createComment(postId, commentDto);
 
@@ -58,7 +53,6 @@ public class CommentControllerTest {
         assertEquals(200, response.getStatusCode().value());
         assertEquals(commentDto, response.getBody());
         verify(commentService, times(1)).createComment(postId, commentDto);
-        verify(commentEventPublisher, times(1)).publish(any(CommentEvent.class));
     }
 
     @Test

@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class CommentEventPublisher {
 
-    private final RedisTemplate<String, CommentEvent> redisTemplate;
+    private final RedisTemplate<String, Object> redisTemplate;
     private final RedisProperties redisProperties;
 
     @Retryable(

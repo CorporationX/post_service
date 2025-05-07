@@ -1,24 +1,16 @@
 package faang.school.postservice.config.redis;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
-import faang.school.postservice.config.properties.RedisProperties;
-import faang.school.postservice.dto.event.CommentEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisClientConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
-import org.springframework.data.redis.connection.jedis.JedisClientConfiguration;
-import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
-import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import redis.clients.jedis.JedisPoolConfig;
 
@@ -59,11 +51,11 @@ public class RedisConfig {
     }
 
     @Bean
-    public CommandLineRunner verifyRedisConnection(RedisTemplate<String, CommentEvent> redisTemplate) {
+    public CommandLineRunner verifyRedisConnection(RedisTemplate<String, Object> redisTemplate) {
         return args -> {
             try {
                 String result = redisTemplate.getConnectionFactory().getConnection().ping();
-                if(!"PONG".equals(result)){
+                if (!"PONG".equals(result)) {
                     throw new IllegalArgumentException("Redis ping != PONG: " + result);
                 }
                 log.info("✅ Redis доступен: {}", result);
