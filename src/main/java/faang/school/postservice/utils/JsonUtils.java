@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static faang.school.postservice.messages.ErrorMessages.ERROR_DESERIALIZING;
 import static faang.school.postservice.messages.ErrorMessages.SERIALIZATION_ERROR;
@@ -39,5 +40,14 @@ public class JsonUtils {
     public Map<String, Object> toMap(Object obj) {
         return objectMapper.convertValue(obj, new TypeReference<Map<String, Object>>() {
         });
+    }
+
+    public <T> T convertMapToClass(Map<Object, Object> map, Class<T> classType) {
+        Map<String, Object> stringMap = map.entrySet().stream()
+                .collect(Collectors.toMap(
+                        entry -> entry.getKey().toString(),
+                        Map.Entry::getValue
+                ));
+        return objectMapper.convertValue(stringMap, classType);
     }
 }

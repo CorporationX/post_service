@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class FeedCommentDto {
     private Long id;
+    private Long postId;
     private String content;
     private Long authorId;
     private long likes;

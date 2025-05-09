@@ -27,6 +27,8 @@ public interface PostMapper {
     @Mapping(target = "updatedAt", expression = "java(formatLocalDateTime(post.getUpdatedAt()))")
     FeedPostDto toFeedPostDto(Post post);
 
+    List<FeedPostDto> toFeedPostDtoList(List<Post> posts);
+
     default String formatLocalDateTime(LocalDateTime localDateTime) {
         if (localDateTime == null) {
             return null;

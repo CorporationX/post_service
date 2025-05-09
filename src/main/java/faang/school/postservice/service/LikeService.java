@@ -4,7 +4,6 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.ike.CommentLikeDto;
 import faang.school.postservice.dto.ike.PostLikeDto;
 import faang.school.postservice.exception.LikeException;
-import faang.school.postservice.like.LikeDto;
 import faang.school.postservice.like.TargetLike;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
@@ -13,6 +12,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.feed.FeedRedisService;
 import faang.school.postservice.service.kafka.publisher.KafkaPublisher;
 import faang.school.postservice.utils.JsonUtils;
 import feign.FeignException;
@@ -131,7 +131,8 @@ public class LikeService {
         validateNotLiked(commentId, userId, TargetLike.COMMENT);
 
         Like like = buildLike(userId, null, comment);
-        LikeDto result = likeMapper.toLikeDto(likeRepository.save(like));
+        likeRepository.save(like);
+        feedRedisService.incrementCommentLikes(commentId);
         log.info("User {} liked comment {} !", userId, commentId);
     }
 
@@ -156,6 +157,7 @@ public class LikeService {
             throw new LikeException(error);
         }
         likeRepository.deleteByCommentIdAndUserId(commentId, userId);
+        feedRedisService.decrementCommentLikes(commentId);
         log.info("User {} removed a like from a comment {}", userId, commentId);
     }
 

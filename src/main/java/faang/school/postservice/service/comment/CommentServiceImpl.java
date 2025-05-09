@@ -19,7 +19,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.FeedRedisService;
+import faang.school.postservice.service.feed.FeedRedisService;
 import faang.school.postservice.service.kafka.publisher.KafkaPublisher;
 import faang.school.postservice.utils.JsonUtils;
 import feign.FeignException;
@@ -187,13 +187,16 @@ public class CommentServiceImpl implements CommentService {
         CommentRequestDto commentRequestDto = jsonUtils.deserialize(data, CommentRequestDto.class);
         validateCreateComment(commentRequestDto);
         Post post = getPost(commentRequestDto.getPostId());
+
         Comment comment = commentMapper.toComment(commentRequestDto);
         comment.setPost(post);
+        comment.setLikes(new ArrayList<>());
         comment.setAuthorId(commentRequestDto.getAuthorId());
 
         commentRepository.save(comment);
         feedRedisService.incrementComments(post.getId());
-        feedRedisService.incrementComments(comment.getPost().getId());
+        feedRedisService.cacheComment(commentMapper.toFeedCommentDto(comment));
+
         log.info(INFO_CREATE_COMMENT, comment.getId(), commentRequestDto.getAuthorId(), commentRequestDto.getPostId());
         commentEventPublisher.publish(new CommentEvent(commentRequestDto.getPostId(), commentRequestDto.getAuthorId(),
                 comment.getId(), LocalDateTime.now()));
@@ -217,8 +220,9 @@ public class CommentServiceImpl implements CommentService {
         comment.setContent(commentUpdateDto.getContent());
         comment.setVerified(false);
         comment.setVerifiedDate(null);
+
         commentRepository.save(comment);
-        feedRedisService.updateComment(comment.getPost().getId(), commentMapper.toFeedCommentDto(comment));
+        feedRedisService.cacheComment(commentMapper.toFeedCommentDto(comment));
         log.info(INFO_UPDATE_COMMENT, commentUpdateDto.getId(), commentUpdateDto.getAuthorId());
     }
 
@@ -240,12 +244,13 @@ public class CommentServiceImpl implements CommentService {
             topics = "${spring.kafka.topics.feed.comment-delete-topic}",
             groupId = "${spring.kafka.groups.feed-group}"
     )
-    public void deleteCommentListener(Long commentId) {
+    public void deleteCommentListener(String data) {
+        Long commentId = Long.valueOf(data);
         getComment(commentId);
         commentRepository.deleteById(commentId);
         Long postId = postRepository.findPostIdByCommentId(commentId);
         feedRedisService.decrementComments(postId);
-        feedRedisService.removeCommentFromPost(postId, commentId);
+        feedRedisService.removeComment(postId, commentId);
         log.info(INFO_DELETE_COMMENT, commentId);
     }
 

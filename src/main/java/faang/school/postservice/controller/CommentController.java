@@ -4,9 +4,13 @@ import faang.school.postservice.dto.comment.CommentRequestDto;
 import faang.school.postservice.dto.comment.CommentResponseDto;
 import faang.school.postservice.dto.comment.CommentUpdateDto;
 import faang.school.postservice.service.comment.CommentService;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,6 +19,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -25,6 +30,7 @@ import static faang.school.postservice.contants.InfoMessage.INFO_START_CONTROLLE
 import static faang.school.postservice.contants.InfoMessage.INFO_START_CONTROLLER_UPDATE_COMMENT;
 
 @Slf4j
+@Validated
 @RestController
 @RequestMapping("/api/v1/comments")
 @RequiredArgsConstructor
@@ -32,12 +38,14 @@ public class CommentController {
     private final CommentService commentService;
 
     @PostMapping
+    @ResponseStatus(HttpStatus.ACCEPTED)
     public void createComment(@NonNull @RequestBody CommentRequestDto commentRequestDto) {
         log.info(INFO_START_CONTROLLER_CREATE_COMMENT, commentRequestDto.getAuthorId(), commentRequestDto.getPostId());
         commentService.createComment(commentRequestDto);
     }
 
     @PutMapping("/{id}")
+    @ResponseStatus(HttpStatus.ACCEPTED)
     public void updateComment(@PathVariable Long id, @NonNull @RequestBody CommentUpdateDto commentUpdateDto) {
         log.info(INFO_START_CONTROLLER_UPDATE_COMMENT, id, commentUpdateDto.getAuthorId());
         commentService.updateComment(commentUpdateDto);
@@ -50,7 +58,8 @@ public class CommentController {
     }
 
     @DeleteMapping("/{id}")
-    public void deleteComment(@PathVariable Long id) {
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public void deleteComment(@PathVariable @Valid @NotNull Long id) {
         log.info(INFO_START_CONTROLLER_DELETE_COMMENT, id);
         commentService.deleteComment(id);
     }

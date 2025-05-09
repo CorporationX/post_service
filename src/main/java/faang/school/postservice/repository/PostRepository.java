@@ -54,4 +54,22 @@ public interface PostRepository extends CrudRepository<Post, Long> {
 
     @Query("SELECT c.post.id FROM Comment c WHERE c.id = :commentId")
     Long findPostIdByCommentId(Long commentId);
+
+    @Query("""
+                SELECT p.id
+                FROM Post p
+                WHERE p.published = true
+                AND p.authorId IN :authorIds
+                ORDER BY p.publishedAt DESC
+            """)
+    Page<Long> findPublishedPostIdsByAuthorIds(Pageable pageable, List<Long> authorIds);
+
+    @Query("""
+                SELECT p
+                FROM Post p
+                WHERE p.published = true
+                AND p.authorId IN :authorIds
+                ORDER BY p.publishedAt DESC
+            """)
+    Page<Post> findPublishedPostsByAuthorIds(Pageable pageable, List<Long> authorIds);
 }

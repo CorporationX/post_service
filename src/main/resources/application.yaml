@@ -14,11 +14,19 @@ app:
   thread-pool-size: 16
 
   feed:
-    post-cache-key: "feed:post"
-    post-comments-cache-key: "feed:post:%d:comments"
-    comment-cache-key: "comment:%d"
+    post-feed: "feed:posts:user:%d:offset:%d"
+    comment-feed: "feed:post:%d:comments:offset:%d"
+    post-cache-key: "post:%d:"
+    comment-cache-key: "comment:%d:"
     ttl-hours: 24
-    max-cached-comments-for-post: "5"
+    post-batch-size: 20
+    comment-batch-size: 20
+    post-start-from: "feed:posts:user:%d:start:from:"
+    comment-start-from: "feed:comments:post:%d:start:from:"
+    user-heat-batch-size: 50
+    heat-topic: "feed-heat-topic"
+    heat-group: "feed-heat-group"
+    thread-pool-size: 16
 
 spring:
   datasource:
@@ -75,7 +83,7 @@ spring:
         post-update-topic: "post-update-topic"
         post-delete-topic: "post-delete-topic"
         comment-create-topic: "comment-create-topic"
-        comment-update-topic: "comment-create-topic"
+        comment-update-topic: "comment-update-topic"
         comment-delete-topic: "comment-delete-topic"
 
     groups:

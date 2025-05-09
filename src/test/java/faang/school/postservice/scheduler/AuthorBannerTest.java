@@ -20,7 +20,7 @@ class AuthorBannerTest {
     private AuthorBanner authorBanner;
 
     @Test
-    void test_runModerationTask(){
+    void test_runModerationTask() {
         authorBanner.runModerationTask();
 
         verify(userModerationService, times(1)).checkAndBanUsersWithUnverifiedPosts();

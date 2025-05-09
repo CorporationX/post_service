@@ -10,6 +10,7 @@ import faang.school.postservice.exception.PostNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.feed.FeedRedisService;
 import faang.school.postservice.service.hashtags.HashtagService;
 import faang.school.postservice.service.kafka.publisher.KafkaPublisher;
 import faang.school.postservice.utils.JsonUtils;
@@ -100,7 +101,7 @@ public class PostService {
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
         postRepository.save(post);
-        feedRedisService.createPost(postMapper.toFeedPostDto(post));
+        feedRedisService.cachePost(postMapper.toFeedPostDto(post));
         hashtagService.extractHashtagsFromPost(post);
     }
 
@@ -132,8 +133,9 @@ public class PostService {
             log.warn("Nothing was updated for post with ID {}", postRequestDto.getId());
         }
         postRepository.save(post);
-        feedRedisService.createPost(postMapper.toFeedPostDto(post));
+        feedRedisService.cachePost(postMapper.toFeedPostDto(post));
     }
+
     public void deletePost(Long postId) {
         kafkaPublisher.send(postDeleteTopic, postId);
     }
@@ -154,7 +156,7 @@ public class PostService {
         }
         post.setDeleted(true);
         postRepository.save(post);
-        feedRedisService.removePost(postId);
+        feedRedisService.removePostFromCache(postId);
     }
 
     public PostResponseDto getPostById(Long postId) {
@@ -262,7 +264,7 @@ public class PostService {
             log.error(NO_POST_FOUND.formatted(postId));
             throw new PostNotFoundException(NO_POST_FOUND.formatted(postId));
         }
-        feedRedisService.addView(postId);
+        feedRedisService.incrementPostViews(postId);
     }
 
     private void validatePostOptional(Optional<Post> postOptional, Long id) {
