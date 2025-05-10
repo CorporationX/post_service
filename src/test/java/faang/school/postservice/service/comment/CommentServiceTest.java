@@ -109,7 +109,7 @@ class CommentServiceTest {
     private static final Long AUTHOR_ID = 3L;
     private static final String CONTENT = "Content";
     private static final String UPDATE_CONTENT = "Update content";
-    private String userBanTopic = "user-ban-topic";
+    private final String userBanTopic = "user-ban-topic";
 
     private CommentRequestDto commentRequestDto;
     private CommentResponseDto commentResponseDto;

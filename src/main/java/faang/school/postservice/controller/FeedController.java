@@ -3,10 +3,15 @@ package faang.school.postservice.controller;
 import faang.school.postservice.dto.comment.FeedCommentDto;
 import faang.school.postservice.dto.post.FeedPostDto;
 import faang.school.postservice.service.feed.FeedService;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,6 +21,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
+@Validated
 @RestController
 @RequestMapping("/api/v1/feed")
 @RequiredArgsConstructor
@@ -24,14 +30,18 @@ public class FeedController {
 
     @GetMapping("/posts/user/{userId}")
     @ResponseStatus(HttpStatus.OK)
-    public Page<FeedPostDto> getFeedPosts(@PathVariable Long userId, @RequestParam int offset) {
+    public Page<FeedPostDto> getFeedPosts(@PathVariable @Valid @NotNull Long userId,
+                                          @RequestParam @Valid @PositiveOrZero int offset) {
+
         log.info("Received request to get post feed from post {} for user with ID: {}", offset, userId);
         return feedService.getFeedPosts(userId, offset);
     }
 
     @GetMapping("/comments/user/{userId}")
     @ResponseStatus(HttpStatus.OK)
-    public Page<FeedCommentDto> getFeedComments(@PathVariable Long userId, @RequestParam int offset) {
+    public Page<FeedCommentDto> getFeedComments(@PathVariable @Valid @NotNull Long userId,
+                                                @RequestParam @Valid @PositiveOrZero int offset) {
+
         log.info("Fetching comment feed for userId={} starting from commentId={}", userId, offset);
         return feedService.getFeedComments(userId, offset);
     }

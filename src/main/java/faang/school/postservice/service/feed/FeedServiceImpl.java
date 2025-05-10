@@ -103,6 +103,9 @@ public class FeedServiceImpl implements FeedService {
         log.info("Heating cached user id {}", userId);
         feedRedisService.preloadUserPosts(userId);
         List<Long> followees = userServiceClient.getFollowees(userId);
+        if (followees.isEmpty()) {
+            return;
+        }
         List<Long> postIds = postRepository.findPublishedPostIdsByAuthorIds(
                 PageRequest.of(0, postBatchSize), followees).getContent();
 
