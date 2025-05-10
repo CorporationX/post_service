@@ -1,6 +1,5 @@
 package faang.school.postservice.service.comment;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.client.CommentAnalyzer;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentEvent;
@@ -21,7 +20,6 @@ import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.feed.FeedRedisService;
 import faang.school.postservice.service.kafka.publisher.KafkaPublisher;
-import faang.school.postservice.utils.JsonUtils;
 import feign.FeignException;
 import feign.Request;
 import org.junit.jupiter.api.BeforeEach;
@@ -104,9 +102,6 @@ class CommentServiceTest {
     private KafkaPublisher kafkaPublisher;
 
     @Mock
-    private JsonUtils mockJsonUtils;
-
-    @Mock
     private FeedRedisService feedRedisService;
 
     private static final Long POST_ID = 1L;
@@ -116,7 +111,6 @@ class CommentServiceTest {
     private static final String UPDATE_CONTENT = "Update content";
     private String userBanTopic = "user-ban-topic";
 
-    private final JsonUtils jsonUtils = new JsonUtils(new ObjectMapper());
     private CommentRequestDto commentRequestDto;
     private CommentResponseDto commentResponseDto;
     private CommentUpdateDto commentUpdateDto;
@@ -181,12 +175,10 @@ class CommentServiceTest {
     @Test
     @DisplayName("Test should create comment")
     void createComment() {
-        when(mockJsonUtils.deserialize(jsonUtils.serialize(commentRequestDto), CommentRequestDto.class))
-                .thenReturn(commentRequestDto);
         when(postRepository.findById(POST_ID)).thenReturn(Optional.of(post));
         when(commentMapper.toComment(commentRequestDto)).thenReturn(comment);
 
-        commentService.createCommentListener(jsonUtils.serialize(commentRequestDto));
+        commentService.createCommentConsumer(commentRequestDto);
 
         verify(commentRepository, times(1)).save(commentCaptor.capture());
         assertEquals(comment, commentCaptor.getValue());
@@ -203,13 +195,10 @@ class CommentServiceTest {
     @Test
     @DisplayName("Test should update comment")
     void updateComment() {
-        when(mockJsonUtils.deserialize(jsonUtils.serialize(commentUpdateDto), CommentUpdateDto.class))
-                .thenReturn(commentUpdateDto);
-
         comment.setContent(CONTENT);
         when(commentRepository.findById(COMMENT_ID)).thenReturn(Optional.of(comment));
 
-        commentService.updateCommentListener(jsonUtils.serialize(commentUpdateDto));
+        commentService.updateCommentConsumer(commentUpdateDto);
 
         verify(commentRepository, times(1)).save(commentCaptor.capture());
         verify(feedRedisService, times(1))
@@ -238,7 +227,7 @@ class CommentServiceTest {
         when(commentRepository.findById(COMMENT_ID)).thenReturn(Optional.of(comment));
         doNothing().when(commentRepository).deleteById(COMMENT_ID);
 
-        commentService.deleteCommentListener(String.valueOf(COMMENT_ID));
+        commentService.deleteCommentConsumer(COMMENT_ID);
 
         verify(commentRepository, times(1)).deleteById(COMMENT_ID);
     }
@@ -248,22 +237,18 @@ class CommentServiceTest {
     @DisplayName("Test Should ThrowException when fields are")
     void createComment_NullFieldsAre() {
         commentRequestDto = new CommentRequestDto();
-        when(mockJsonUtils.deserialize(jsonUtils.serialize(commentRequestDto), CommentRequestDto.class))
-                .thenReturn(commentRequestDto);
 
         assertThrows(IllegalArgumentException.class,
-                () -> commentService.createCommentListener(jsonUtils.serialize(commentRequestDto)));
+                () -> commentService.createCommentConsumer(commentRequestDto));
     }
 
     @Test
     @DisplayName("Test Should ThrowException when Content is Null")
     void createComment_NullContent() {
         commentRequestDto.setContent(null);
-        when(mockJsonUtils.deserialize(jsonUtils.serialize(commentRequestDto), CommentRequestDto.class))
-                .thenReturn(commentRequestDto);
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> commentService.createCommentListener(jsonUtils.serialize(commentRequestDto))
+                () -> commentService.createCommentConsumer(commentRequestDto)
         );
 
         assertEquals(ERROR_NULL_CONTENT, exception.getMessage());
@@ -273,11 +258,9 @@ class CommentServiceTest {
     @DisplayName("Test Should ThrowException when AuthorId is Null")
     void createComment_NullAuthorId() {
         commentRequestDto.setAuthorId(null);
-        when(mockJsonUtils.deserialize(jsonUtils.serialize(commentRequestDto), CommentRequestDto.class))
-                .thenReturn(commentRequestDto);
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> commentService.createCommentListener(jsonUtils.serialize(commentRequestDto))
+                () -> commentService.createCommentConsumer(commentRequestDto)
         );
 
         assertEquals(ERROR_NULL_AUTHOR_ID, exception.getMessage());
@@ -287,11 +270,9 @@ class CommentServiceTest {
     @DisplayName("Test Should ThrowException when PostId is Null")
     void createComment_NullPostId() {
         commentRequestDto.setPostId(null);
-        when(mockJsonUtils.deserialize(jsonUtils.serialize(commentRequestDto), CommentRequestDto.class))
-                .thenReturn(commentRequestDto);
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> commentService.createCommentListener(jsonUtils.serialize(commentRequestDto)));
+                () -> commentService.createCommentConsumer(commentRequestDto));
 
         assertEquals(ERROR_NULL_POST_ID, exception.getMessage());
     }
@@ -302,11 +283,8 @@ class CommentServiceTest {
         when(postRepository.findById(POST_ID))
                 .thenThrow(new IllegalArgumentException(getErrorNotFoundPost(POST_ID)));
 
-        when(mockJsonUtils.deserialize(jsonUtils.serialize(commentRequestDto), CommentRequestDto.class))
-                .thenReturn(commentRequestDto);
-
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> commentService.createCommentListener(jsonUtils.serialize(commentRequestDto))
+                () -> commentService.createCommentConsumer(commentRequestDto)
         );
 
         assertEquals(getErrorNotFoundPost(POST_ID), exception.getMessage());
@@ -323,11 +301,8 @@ class CommentServiceTest {
                 .thenThrow(new FeignException.NotFound(getErrorNotFoundUser(AUTHOR_ID), mockRequest,
                         null, null));
 
-        when(mockJsonUtils.deserialize(jsonUtils.serialize(commentRequestDto), CommentRequestDto.class))
-                .thenReturn(commentRequestDto);
-
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> commentService.createCommentListener(jsonUtils.serialize(commentRequestDto))
+                () -> commentService.createCommentConsumer(commentRequestDto)
         );
 
         assertTrue(exception.getMessage().contains(getErrorNotFoundUser(AUTHOR_ID)));
@@ -338,22 +313,18 @@ class CommentServiceTest {
     @DisplayName("Test Should ThrowException when fields are")
     void updateComment_NullFieldsAre() {
         commentUpdateDto = new CommentUpdateDto();
-        when(mockJsonUtils.deserialize(jsonUtils.serialize(commentUpdateDto), CommentUpdateDto.class))
-                .thenReturn(commentUpdateDto);
 
         assertThrows(IllegalArgumentException.class,
-                () -> commentService.updateCommentListener(jsonUtils.serialize(commentUpdateDto)));
+                () -> commentService.updateCommentConsumer(commentUpdateDto));
     }
 
     @Test
     @DisplayName("Test Should ThrowException when Content is Null")
     void updateComment_NullContent() {
         commentUpdateDto.setContent(null);
-        when(mockJsonUtils.deserialize(jsonUtils.serialize(commentUpdateDto), CommentUpdateDto.class))
-                .thenReturn(commentUpdateDto);
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> commentService.updateCommentListener(jsonUtils.serialize(commentUpdateDto))
+                () -> commentService.updateCommentConsumer(commentUpdateDto)
         );
 
         assertEquals(ERROR_NULL_CONTENT, exception.getMessage());
@@ -363,11 +334,9 @@ class CommentServiceTest {
     @DisplayName("Test Should ThrowException when AuthorId is Null")
     void updateComment_NullAuthorId() {
         commentUpdateDto.setAuthorId(null);
-        when(mockJsonUtils.deserialize(jsonUtils.serialize(commentUpdateDto), CommentUpdateDto.class))
-                .thenReturn(commentUpdateDto);
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> commentService.updateCommentListener(jsonUtils.serialize(commentUpdateDto))
+                () -> commentService.updateCommentConsumer(commentUpdateDto)
         );
 
         assertEquals(ERROR_NULL_AUTHOR_ID, exception.getMessage());
@@ -379,11 +348,8 @@ class CommentServiceTest {
         when(commentRepository.findById(COMMENT_ID))
                 .thenThrow(new IllegalArgumentException(getErrorNotFoundComment(COMMENT_ID)));
 
-        when(mockJsonUtils.deserialize(jsonUtils.serialize(commentUpdateDto), CommentUpdateDto.class))
-                .thenReturn(commentUpdateDto);
-
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> commentService.updateCommentListener(jsonUtils.serialize(commentUpdateDto))
+                () -> commentService.updateCommentConsumer(commentUpdateDto)
         );
 
         assertEquals(getErrorNotFoundComment(COMMENT_ID), exception.getMessage());
@@ -395,11 +361,9 @@ class CommentServiceTest {
     void updateComment_NotAuthorComment() {
         commentUpdateDto.setAuthorId(0L);
         when(commentRepository.findById(COMMENT_ID)).thenReturn(Optional.of(comment));
-        when(mockJsonUtils.deserialize(jsonUtils.serialize(commentUpdateDto), CommentUpdateDto.class))
-                .thenReturn(commentUpdateDto);
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> commentService.updateCommentListener(jsonUtils.serialize(commentUpdateDto))
+                () -> commentService.updateCommentConsumer(commentUpdateDto)
         );
 
         assertEquals(ERROR_NOT_AUTHOR_COMMENT, exception.getMessage());
@@ -438,7 +402,7 @@ class CommentServiceTest {
                 .thenThrow(new IllegalArgumentException(getErrorNotFoundComment(COMMENT_ID)));
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> commentService.deleteCommentListener(String.valueOf(COMMENT_ID))
+                () -> commentService.deleteCommentConsumer(COMMENT_ID)
         );
 
         assertEquals(getErrorNotFoundComment(COMMENT_ID), exception.getMessage());

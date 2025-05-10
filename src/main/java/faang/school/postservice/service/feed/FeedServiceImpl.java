@@ -15,7 +15,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -100,12 +99,7 @@ public class FeedServiceImpl implements FeedService {
         }
     }
 
-    @KafkaListener(
-            topics = "${app.feed.heat-topic}",
-            groupId = "${app.feed.heat-group}"
-    )
-    public void heatFeedConsumer(String data) {
-        Long userId = Long.valueOf(data);
+    public void heatFeedConsumer(Long userId) {
         log.info("Heating cached user id {}", userId);
         feedRedisService.preloadUserPosts(userId);
         List<Long> followees = userServiceClient.getFollowees(userId);

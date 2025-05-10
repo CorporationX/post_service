@@ -19,7 +19,6 @@ import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -63,13 +62,8 @@ public class LikeService {
         kafkaPublisher.send(postLikeTopic, new PostLikeDto(postId, userId));
     }
 
-    @KafkaListener(
-            topics = "${spring.kafka.topics.feed.post-like-topic}",
-            groupId = "${spring.kafka.groups.feed-group}"
-    )
     @Transactional
-    public void likePostListener(String data) {
-        PostLikeDto postLikeDto = jsonUtils.deserialize(data, PostLikeDto.class);
+    public void likePostConsumer(PostLikeDto postLikeDto) {
         Long userId = postLikeDto.getUserId();
         Long postId = postLikeDto.getPostId();
 
@@ -88,13 +82,8 @@ public class LikeService {
         kafkaPublisher.send(postUnlikeTopic, new PostLikeDto(postId, userId));
     }
 
-    @KafkaListener(
-            topics = "${spring.kafka.topics.feed.post-unlike-topic}",
-            groupId = "${spring.kafka.groups.feed-group}"
-    )
     @Transactional
-    public void unlikePostListener(String data) {
-        PostLikeDto postLikeDto = jsonUtils.deserialize(data, PostLikeDto.class);
+    public void unlikePostConsumer(PostLikeDto postLikeDto) {
         Long userId = postLikeDto.getUserId();
         Long postId = postLikeDto.getPostId();
 
@@ -113,13 +102,8 @@ public class LikeService {
         kafkaPublisher.send(commentLikeTopic, new CommentLikeDto(commentId, userId));
     }
 
-    @KafkaListener(
-            topics = "${spring.kafka.topics.feed.comment-like-topic}",
-            groupId = "${spring.kafka.groups.feed-group}"
-    )
     @Transactional
-    public void likeCommentListener(String data) {
-        CommentLikeDto commentLikeDto = jsonUtils.deserialize(data, CommentLikeDto.class);
+    public void likeCommentConsumer(CommentLikeDto commentLikeDto) {
         Long userId = commentLikeDto.getUserId();
         Long commentId = commentLikeDto.getCommentId();
 
@@ -140,13 +124,8 @@ public class LikeService {
         kafkaPublisher.send(commentLikeTopic, new CommentLikeDto(commentId, userId));
     }
 
-    @KafkaListener(
-            topics = "${spring.kafka.topics.feed.comment-unlike-topic}",
-            groupId = "${spring.kafka.groups.feed-group}"
-    )
     @Transactional
-    public void unlikeCommentListener(String data) {
-        CommentLikeDto commentLikeDto = jsonUtils.deserialize(data, CommentLikeDto.class);
+    public void unlikeCommentConsumer(CommentLikeDto commentLikeDto) {
         Long userId = commentLikeDto.getUserId();
         Long commentId = commentLikeDto.getCommentId();
 

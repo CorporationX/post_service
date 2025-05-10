@@ -13,7 +13,6 @@ import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.feed.FeedRedisService;
 import faang.school.postservice.service.hashtags.HashtagService;
 import faang.school.postservice.service.kafka.publisher.KafkaPublisher;
-import faang.school.postservice.utils.JsonUtils;
 import faang.school.postservice.utils.validationUtils.PostValidation;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +21,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
@@ -50,7 +48,6 @@ public class PostService {
     private static final int TIMEOUT_HOURS = 2;
 
     private final KafkaPublisher kafkaPublisher;
-    private final JsonUtils jsonUtils;
     private final PostMapper postMapper;
     private final PostRepository postRepository;
     private final LanguageToolClient languageToolClient;
@@ -87,12 +84,7 @@ public class PostService {
         kafkaPublisher.send(postCreateTopic, postId);
     }
 
-    @KafkaListener(
-            topics = "${spring.kafka.topics.feed.post-create-topic}",
-            groupId = "${spring.kafka.groups.feed-group}"
-    )
-    public void publishPostListener(String data) {
-        Long postId = Long.valueOf(data);
+    public void publishPostConsumer(Long postId) {
         Optional<Post> postDraftOptional = postRepository.findById(postId);
         validatePostOptional(postDraftOptional, postId);
         Post post = postDraftOptional.get();
@@ -109,12 +101,7 @@ public class PostService {
         kafkaPublisher.send(postUpdateTopic, postRequestDto);
     }
 
-    @KafkaListener(
-            topics = "${spring.kafka.topics.feed.post-update-topic}",
-            groupId = "${spring.kafka.groups.feed-group}"
-    )
-    public void updatePostListener(String data) {
-        PostRequestDto postRequestDto = jsonUtils.deserialize(data, PostRequestDto.class);
+    public void updatePostConsumer(PostRequestDto postRequestDto) {
         PostValidation.validatePostUpdate(postRequestDto);
         Optional<Post> postOptional = postRepository.findById(postRequestDto.getId());
         validatePostOptional(postOptional, postRequestDto.getId());
@@ -140,12 +127,7 @@ public class PostService {
         kafkaPublisher.send(postDeleteTopic, postId);
     }
 
-    @KafkaListener(
-            topics = "${spring.kafka.topics.feed.post-delete-topic}",
-            groupId = "${spring.kafka.groups.feed-group}"
-    )
-    public void deletePostListener(String data) {
-        Long postId = Long.valueOf(data);
+    public void deletePostConsumer(Long postId) {
         Optional<Post> postOptional = postRepository.findById(postId);
         validatePostOptional(postOptional, postId);
 
@@ -254,11 +236,7 @@ public class PostService {
         kafkaPublisher.send(postViewTopic, postId);
     }
 
-    @KafkaListener(
-            topics = "${spring.kafka.topics.feed.post-view-topic}",
-            groupId = "${spring.kafka.groups.feed-group}"
-    )
-    public void viewPostListener(Long postId) {
+    public void viewPostConsumer(Long postId) {
         int updated = postRepository.incrementViews(postId);
         if (updated == 0) {
             log.error(NO_POST_FOUND.formatted(postId));

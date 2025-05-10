@@ -1,12 +1,10 @@
 package faang.school.postservice.service.post;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.dto.post.PostRequestDto;
 import faang.school.postservice.exception.InvalidPostAuthorsException;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.PostService;
-import faang.school.postservice.utils.JsonUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,13 +34,9 @@ public class PostValidationTest {
     @Mock
     private PostRepository postRepository;
 
-    @Mock
-    private JsonUtils mockJsonUtils;
-
     private PostRequestDto postRequestDto;
     private Post post;
     private final Long id = 1L;
-    private final JsonUtils jsonUtils = new JsonUtils(new ObjectMapper());
 
     @BeforeEach
     public void startUp() {
@@ -102,7 +96,7 @@ public class PostValidationTest {
         post.setPublished(true);
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> postService.publishPostListener(String.valueOf(id))
+                () -> postService.publishPostConsumer(id)
         );
 
         assertEquals(String.format(POST_ALREADY_PUBLISHED, post.getId()), exception.getMessage());
@@ -111,11 +105,9 @@ public class PostValidationTest {
     @Test
     public void testUpdatePost_deletePost() {
         postRequestDto.setDeleted(true);
-        when(mockJsonUtils.deserialize(jsonUtils.serialize(postRequestDto), PostRequestDto.class))
-                .thenReturn(postRequestDto);
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> postService.updatePostListener(jsonUtils.serialize(postRequestDto))
+                () -> postService.updatePostConsumer(postRequestDto)
         );
 
         assertEquals(CANT_DELETE_POST_DURING_UPDATE, exception.getMessage());
@@ -124,11 +116,9 @@ public class PostValidationTest {
     @Test
     public void testUpdatePost_nullContent() {
         postRequestDto.setContent(null);
-        when(mockJsonUtils.deserialize(jsonUtils.serialize(postRequestDto), PostRequestDto.class))
-                .thenReturn(postRequestDto);
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> postService.updatePostListener(jsonUtils.serialize(postRequestDto))
+                () -> postService.updatePostConsumer(postRequestDto)
         );
 
         assertEquals(CONTENT_CANT_BE_NULL, exception.getMessage());

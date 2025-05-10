@@ -73,6 +73,7 @@ spring:
 
     topics:
       user-ban: "user-ban-topic"
+
       feed:
         post-like-topic: "post-like-topic"
         post-unlike-topic: "post-unlike-topic"

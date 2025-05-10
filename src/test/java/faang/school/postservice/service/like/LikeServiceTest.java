@@ -1,6 +1,5 @@
 package faang.school.postservice.service.like;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.ike.CommentLikeDto;
 import faang.school.postservice.dto.ike.PostLikeDto;
@@ -15,7 +14,6 @@ import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.LikeService;
 import faang.school.postservice.service.feed.FeedRedisService;
-import faang.school.postservice.utils.JsonUtils;
 import feign.FeignException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -65,9 +63,6 @@ public class LikeServiceTest {
     private LikeService likeService;
 
     @Mock
-    private JsonUtils mockJsonUtils;
-
-    @Mock
     private FeedRedisService feedRedisService;
 
     private final long userId = 1L;
@@ -78,7 +73,6 @@ public class LikeServiceTest {
     private Comment comment;
     private Like like;
     private LikeDto likeDto;
-    private final JsonUtils jsonUtils = new JsonUtils(new ObjectMapper());
     private final PostLikeDto postLikeDto = new PostLikeDto(postId, userId);
     private final CommentLikeDto commentLikeDto = new CommentLikeDto(commentId, userId);
 
@@ -95,14 +89,12 @@ public class LikeServiceTest {
     //Positive tests
     @Test
     public void testCreatedLikeForPost() {
-        when(mockJsonUtils.deserialize(jsonUtils.serialize(postLikeDto), PostLikeDto.class))
-                .thenReturn(postLikeDto);
 
         when(postRepository.findById(postId)).thenReturn(Optional.of(post));
         when(likeRepository.findByPostIdAndUserId(postId, userId)).thenReturn(Optional.empty());
         when(likeRepository.save(any(Like.class))).thenReturn(like);
 
-        likeService.likePostListener(jsonUtils.serialize(postLikeDto));
+        likeService.likePostConsumer(postLikeDto);
 
         verify(likeRepository, times(1)).save(any(Like.class));
         verify(feedRedisService, times(1)).incrementPostLikes(postId);
@@ -110,13 +102,10 @@ public class LikeServiceTest {
 
     @Test
     public void testDeletedLikeForPost() {
-        when(mockJsonUtils.deserialize(jsonUtils.serialize(postLikeDto), PostLikeDto.class))
-                .thenReturn(postLikeDto);
-
         when(likeRepository.existsByPostIdAndUserId(postId, userId)).thenReturn(true);
         doNothing().when(likeRepository).deleteByPostIdAndUserId(postId, userId);
 
-        assertDoesNotThrow(() -> likeService.unlikePostListener(jsonUtils.serialize(postLikeDto)));
+        assertDoesNotThrow(() -> likeService.unlikePostConsumer(postLikeDto));
         verify(likeRepository, times(1)).deleteByPostIdAndUserId(postId, userId);
         verify(feedRedisService, times(1)).decrementPostLikes(postId);
     }
@@ -124,14 +113,12 @@ public class LikeServiceTest {
     @Test
     public void testCreatedLikeForComment() {
         Like commentLike = Like.builder().id(2L).userId(userId).comment(comment).build();
-        when(mockJsonUtils.deserialize(jsonUtils.serialize(commentLikeDto), CommentLikeDto.class))
-                .thenReturn(commentLikeDto);
 
         when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
         when(likeRepository.findByCommentIdAndUserId(commentId, userId)).thenReturn(Optional.empty());
         when(likeRepository.save(any(Like.class))).thenReturn(commentLike);
 
-        likeService.likeCommentListener(jsonUtils.serialize(commentLikeDto));
+        likeService.likeCommentConsumer(commentLikeDto);
 
         verify(likeRepository, times(1)).save(any(Like.class));
         verify(feedRedisService, times(1)).incrementCommentLikes(commentId);
@@ -139,13 +126,10 @@ public class LikeServiceTest {
 
     @Test
     public void testDeletedLikeForComment() {
-        when(mockJsonUtils.deserialize(jsonUtils.serialize(commentLikeDto), CommentLikeDto.class))
-                .thenReturn(commentLikeDto);
-
         when(likeRepository.existsByCommentIdAndUserId(commentId, userId)).thenReturn(true);
         doNothing().when(likeRepository).deleteByCommentIdAndUserId(commentId, userId);
 
-        assertDoesNotThrow(() -> likeService.unlikeCommentListener(jsonUtils.serialize(commentLikeDto)));
+        assertDoesNotThrow(() -> likeService.unlikeCommentConsumer(commentLikeDto));
         verify(likeRepository, times(1)).deleteByCommentIdAndUserId(commentId, userId);
         verify(feedRedisService, times(1)).decrementCommentLikes(commentId);
     }
@@ -153,13 +137,10 @@ public class LikeServiceTest {
     //Negative Tests
     @Test
     public void testPostNotFound() {
-        when(mockJsonUtils.deserialize(jsonUtils.serialize(postLikeDto), PostLikeDto.class))
-                .thenReturn(postLikeDto);
-
         when(postRepository.findById(postId)).thenReturn(Optional.empty());
 
         LikeException exception = assertThrows(LikeException.class,
-                () -> likeService.likePostListener(jsonUtils.serialize(postLikeDto))
+                () -> likeService.likePostConsumer(postLikeDto)
         );
 
         assertEquals(POST_NOT_FOUND.formatted(postLikeDto.getPostId()), exception.getMessage());
@@ -168,14 +149,11 @@ public class LikeServiceTest {
 
     @Test
     public void testPostAlreadyLiked() {
-        when(mockJsonUtils.deserialize(jsonUtils.serialize(postLikeDto), PostLikeDto.class))
-                .thenReturn(postLikeDto);
-
         when(postRepository.findById(postId)).thenReturn(Optional.of(post));
         when(likeRepository.findByPostIdAndUserId(postId, userId)).thenReturn(Optional.of(like));
 
         LikeException exception = assertThrows(LikeException.class,
-                () -> likeService.likePostListener(jsonUtils.serialize(postLikeDto))
+                () -> likeService.likePostConsumer(postLikeDto)
         );
 
         assertEquals(ALREADY_LIKED, exception.getMessage());
@@ -184,14 +162,11 @@ public class LikeServiceTest {
 
     @Test
     public void testCommentAlreadyLiked() {
-        when(mockJsonUtils.deserialize(jsonUtils.serialize(commentLikeDto), CommentLikeDto.class))
-                .thenReturn(commentLikeDto);
-
         when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
         when(likeRepository.findByCommentIdAndUserId(commentId, userId)).thenReturn(Optional.of(like));
 
         LikeException exception = assertThrows(LikeException.class,
-                () -> likeService.likeCommentListener(jsonUtils.serialize(commentLikeDto))
+                () -> likeService.likeCommentConsumer(commentLikeDto)
         );
 
         assertEquals(ALREADY_LIKED, exception.getMessage());
@@ -200,13 +175,10 @@ public class LikeServiceTest {
 
     @Test
     public void testUserNotFound() {
-        when(mockJsonUtils.deserialize(jsonUtils.serialize(postLikeDto), PostLikeDto.class))
-                .thenReturn(postLikeDto);
-
         when(userServiceClient.getUser(userId)).thenThrow(FeignException.NotFound.class);
 
         LikeException exception = assertThrows(LikeException.class,
-                () -> likeService.likePostListener(jsonUtils.serialize(postLikeDto))
+                () -> likeService.likePostConsumer(postLikeDto)
         );
 
         assertEquals(USER_NOT_FOUND.formatted(postLikeDto.getUserId()), exception.getMessage());
@@ -215,13 +187,10 @@ public class LikeServiceTest {
 
     @Test
     public void testUserValidationError() {
-        when(mockJsonUtils.deserialize(jsonUtils.serialize(postLikeDto), PostLikeDto.class))
-                .thenReturn(postLikeDto);
-
         when(userServiceClient.getUser(userId)).thenThrow(FeignException.InternalServerError.class);
 
         LikeException exception = assertThrows(LikeException.class,
-                () -> likeService.likePostListener(jsonUtils.serialize(postLikeDto))
+                () -> likeService.likePostConsumer(postLikeDto)
         );
 
         assertEquals(ERROR_VALIDATING_USER.formatted(postLikeDto.getUserId()), exception.getMessage());
@@ -235,15 +204,12 @@ public class LikeServiceTest {
 
     @Test
     public void testLikeWithArgumentCaptor() {
-        when(mockJsonUtils.deserialize(jsonUtils.serialize(postLikeDto), PostLikeDto.class))
-                .thenReturn(postLikeDto);
-
         when(postRepository.findById(postId)).thenReturn(Optional.of(post));
         when(likeRepository.findByPostIdAndUserId(postId, userId)).thenReturn(Optional.empty());
         when(likeRepository.save(any(Like.class))).thenReturn(like);
 
         ArgumentCaptor<Like> likeArgumentCaptor = ArgumentCaptor.forClass(Like.class);
-        likeService.likePostListener(jsonUtils.serialize(postLikeDto));
+        likeService.likePostConsumer(postLikeDto);
 
         verify(likeRepository, times(1)).save(likeArgumentCaptor.capture());
         verify(feedRedisService, times(1)).incrementPostLikes(postId);
@@ -254,13 +220,10 @@ public class LikeServiceTest {
 
     @Test
     public void testLikeNotFound() {
-        when(mockJsonUtils.deserialize(jsonUtils.serialize(postLikeDto), PostLikeDto.class))
-                .thenReturn(postLikeDto);
-
         when(likeRepository.existsByPostIdAndUserId(postId, userId)).thenReturn(false);
 
         LikeException exception = assertThrows(LikeException.class,
-                () -> likeService.unlikePostListener(jsonUtils.serialize(postLikeDto))
+                () -> likeService.unlikePostConsumer(postLikeDto)
         );
 
         assertEquals(LIKE_NOT_FOUND.formatted(postId, userId), exception.getMessage());

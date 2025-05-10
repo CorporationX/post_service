@@ -1,6 +1,5 @@
 package faang.school.postservice.service.post;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.client.LanguageToolClient;
 import faang.school.postservice.dto.languageTool.GrammarMatch;
 import faang.school.postservice.dto.languageTool.LanguageToolResponseDto;
@@ -15,7 +14,6 @@ import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.PostService;
 import faang.school.postservice.service.feed.FeedRedisService;
-import faang.school.postservice.utils.JsonUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -74,13 +72,9 @@ public class PostServiceTest {
     @Mock
     private FeedRedisService feedRedisService;
 
-    @Mock
-    private JsonUtils mockJsonUtils;
-
     private PostRequestDto postRequestDto;
     private Post post;
     private final Long postId = 1L;
-    private final JsonUtils jsonUtils = new JsonUtils(new ObjectMapper());
 
     @BeforeEach
     public void startUp() {
@@ -112,7 +106,7 @@ public class PostServiceTest {
         when(postRepository.findById(postRequestDto.getId())).thenReturn(Optional.empty());
 
         PostNotFoundException exception = assertThrows(PostNotFoundException.class,
-                () -> postService.publishPostListener(String.valueOf(postId))
+                () -> postService.publishPostConsumer(postId)
         );
 
         assertEquals(String.format(NO_POST_FOUND, postRequestDto.getId()), exception.getMessage());
@@ -124,7 +118,7 @@ public class PostServiceTest {
         post.setDeleted(true);
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> postService.publishPostListener(String.valueOf(postId))
+                () -> postService.publishPostConsumer(postId)
         );
 
         assertEquals(String.format(POST_DELETED, post.getId()), exception.getMessage());
@@ -136,7 +130,7 @@ public class PostServiceTest {
         when(postRepository.findById(postRequestDto.getId())).thenReturn(Optional.of(post));
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> postService.publishPostListener(String.valueOf(postId))
+                () -> postService.publishPostConsumer(postId)
         );
 
         assertEquals(String.format(POST_ALREADY_PUBLISHED, post.getId()), exception.getMessage());
@@ -145,11 +139,9 @@ public class PostServiceTest {
     @Test
     public void testUpdatePost_noPost() {
         when(postRepository.findById(postRequestDto.getId())).thenReturn(Optional.empty());
-        when(mockJsonUtils.deserialize(jsonUtils.serialize(postRequestDto), PostRequestDto.class))
-                .thenReturn(postRequestDto);
 
         PostNotFoundException exception = assertThrows(PostNotFoundException.class,
-                () -> postService.updatePostListener(jsonUtils.serialize(postRequestDto))
+                () -> postService.updatePostConsumer(postRequestDto)
         );
 
         assertEquals(String.format(NO_POST_FOUND, postRequestDto.getId()), exception.getMessage());
@@ -159,11 +151,9 @@ public class PostServiceTest {
     public void testUpdatePost_deletedPost() {
         post.setDeleted(true);
         when(postRepository.findById(postRequestDto.getId())).thenReturn(Optional.of(post));
-        when(mockJsonUtils.deserialize(jsonUtils.serialize(postRequestDto), PostRequestDto.class))
-                .thenReturn(postRequestDto);
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> postService.updatePostListener(jsonUtils.serialize(postRequestDto))
+                () -> postService.updatePostConsumer(postRequestDto)
         );
 
         assertEquals(CANT_UPDATE_DELETED_POST, exception.getMessage());
@@ -174,10 +164,8 @@ public class PostServiceTest {
         when(postRepository.findById(postRequestDto.getId())).thenReturn(Optional.of(post));
         postRequestDto.setContent("New content");
         post.setContent("New content");
-        when(mockJsonUtils.deserialize(jsonUtils.serialize(postRequestDto), PostRequestDto.class))
-                .thenReturn(postRequestDto);
 
-        postService.updatePostListener(jsonUtils.serialize(postRequestDto));
+        postService.updatePostConsumer(postRequestDto);
 
         verify(postRepository, times(1))
                 .save(post);
@@ -190,7 +178,7 @@ public class PostServiceTest {
         when(postRepository.findById(postRequestDto.getId())).thenReturn(Optional.empty());
 
         PostNotFoundException exception = assertThrows(PostNotFoundException.class,
-                () -> postService.deletePostListener(String.valueOf(postId))
+                () -> postService.deletePostConsumer(postId)
         );
 
         assertEquals(String.format(NO_POST_FOUND, postRequestDto.getId()), exception.getMessage());
@@ -202,7 +190,7 @@ public class PostServiceTest {
         when(postRepository.findById(postRequestDto.getId())).thenReturn(Optional.of(post));
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> postService.deletePostListener(String.valueOf(postId))
+                () -> postService.deletePostConsumer(postId)
         );
 
         assertEquals(POST_HAS_ALREADY_BEEN_DELETED, exception.getMessage());
@@ -212,7 +200,7 @@ public class PostServiceTest {
     public void testDeletePost_deletePost() {
         when(postRepository.findById(postRequestDto.getId())).thenReturn(Optional.of(post));
 
-        postService.deletePostListener(String.valueOf(postId));
+        postService.deletePostConsumer(postId);
 
         post.setDeleted(true);
         verify(postRepository, times(1)).save(post);

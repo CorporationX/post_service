@@ -21,7 +21,6 @@ import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.feed.FeedRedisService;
 import faang.school.postservice.service.kafka.publisher.KafkaPublisher;
-import faang.school.postservice.utils.JsonUtils;
 import feign.FeignException;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +28,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -110,7 +108,6 @@ public class CommentServiceImpl implements CommentService {
     private final PostRepository postRepository;
     private final CommentAnalyzer commentAnalyzer;
     private final KafkaPublisher kafkaPublisher;
-    private final JsonUtils jsonUtils;
     private final CommentMapper commentMapper;
     private final UserServiceClient userServiceClient;
     private final CommentEventPublisher commentEventPublisher;
@@ -179,12 +176,7 @@ public class CommentServiceImpl implements CommentService {
         kafkaPublisher.send(commentCreateTopic, commentRequestDto);
     }
 
-    @KafkaListener(
-            topics = "${spring.kafka.topics.feed.comment-create-topic}",
-            groupId = "${spring.kafka.groups.feed-group}"
-    )
-    public void createCommentListener(String data) {
-        CommentRequestDto commentRequestDto = jsonUtils.deserialize(data, CommentRequestDto.class);
+    public void createCommentConsumer(CommentRequestDto commentRequestDto) {
         validateCreateComment(commentRequestDto);
         Post post = getPost(commentRequestDto.getPostId());
 
@@ -206,12 +198,7 @@ public class CommentServiceImpl implements CommentService {
         kafkaPublisher.send(commentUpdateTopic, commentUpdateDto);
     }
 
-    @KafkaListener(
-            topics = "${spring.kafka.topics.feed.comment-update-topic}",
-            groupId = "${spring.kafka.groups.feed-group}"
-    )
-    public void updateCommentListener(String data) {
-        CommentUpdateDto commentUpdateDto = jsonUtils.deserialize(data, CommentUpdateDto.class);
+    public void updateCommentConsumer(CommentUpdateDto commentUpdateDto) {
         validateContent(commentUpdateDto.getContent());
         validateId(commentUpdateDto.getAuthorId(), ERROR_NULL_AUTHOR_ID);
 
@@ -240,12 +227,7 @@ public class CommentServiceImpl implements CommentService {
         kafkaPublisher.send(commentDeleteTopic, id);
     }
 
-    @KafkaListener(
-            topics = "${spring.kafka.topics.feed.comment-delete-topic}",
-            groupId = "${spring.kafka.groups.feed-group}"
-    )
-    public void deleteCommentListener(String data) {
-        Long commentId = Long.valueOf(data);
+    public void deleteCommentConsumer(Long commentId) {
         getComment(commentId);
         commentRepository.deleteById(commentId);
         Long postId = postRepository.findPostIdByCommentId(commentId);
