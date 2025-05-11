@@ -1,7 +1,7 @@
 package faang.school.postservice.controller;
 
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.dto.PostDto;
+import faang.school.postservice.dto.PostResponseDto;
 import faang.school.postservice.service.PostService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -145,15 +145,15 @@ public class PostControllerTest {
                 .andExpect(status().isOk());
     }
 
-    private PostDto preparePostDto() {
-        return PostDto.builder()
+    private PostResponseDto preparePostDto() {
+        return PostResponseDto.builder()
                 .id(1L)
                 .authorId(1L)
                 .content("content")
                 .build();
     }
 
-    private List<PostDto> list() {
+    private List<PostResponseDto> list() {
         return List.of(preparePostDto());
     }
 }

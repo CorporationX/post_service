@@ -33,10 +33,21 @@ spring:
       topic:
         comment: comment_topic
         userBan: user_ban
+        hashtag-adding:
+          name: "hashtag-adding-topic"
+          partitions: 3
+          replicas: 1
+        hashtag-removing:
+          name: "hashtag-removing-topic"
+          partitions: 3
+          replicas: 1
       producer:
         retries: 3
         retry-backoff-ms: 1000
         acks: all
+      consumer:
+        group-id: post-group
+        auto-offset-reset: earliest
 
   profiles:
     active: local
@@ -57,6 +68,9 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+hashtag-service:
+  host: localhost
+  port: 8090
 
 thread-pool:
   delete-expired-posts-max-threads: 3

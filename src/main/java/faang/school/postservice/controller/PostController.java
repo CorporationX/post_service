@@ -1,8 +1,8 @@
 package faang.school.postservice.controller;
 
-import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.PostDto;
+import faang.school.postservice.dto.PostResponseDto;
 import faang.school.postservice.service.PostService;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -27,23 +28,28 @@ public class PostController {
     private final UserContext userContext;
 
     @PostMapping()
-    public PostDto createPost(@NotNull @RequestBody PostDto postDto) {
+    public PostResponseDto createPost(@NotNull @RequestBody PostDto postDto) {
         return postService.create(postDto);
     }
 
     @PutMapping("/publish/{postId}")
-    public PostDto publish(@PathVariable Long postId) {
+    public PostResponseDto publish(@PathVariable Long postId) {
         return postService.publish(postId);
     }
 
     @GetMapping("/{postId}")
-    public PostDto getPost(@PathVariable Long postId) {
+    public PostResponseDto getPost(@PathVariable Long postId) {
         return postService.getPost(postId, userContext.getUserId());
     }
 
     @PutMapping("/{postId}")
-    public PostDto updatePost(@PathVariable Long postId, @NotNull @RequestBody PostDto postDto) {
+    public PostResponseDto updatePost(@PathVariable Long postId, @NotNull @RequestBody PostDto postDto) {
         return postService.update(postDto, postId);
+    }
+
+    @GetMapping
+    public List<PostResponseDto> getPostsByIds(@RequestParam List<Long> postIds) {
+        return postService.getPostsByIds(postIds);
     }
 
     @DeleteMapping("/{postId}")
@@ -52,22 +58,22 @@ public class PostController {
     }
 
     @GetMapping("/drafts/author/{authorId}")
-    public List<PostDto> getDraftsByAuthor(@PathVariable Long authorId) {
+    public List<PostResponseDto> getDraftsByAuthor(@PathVariable Long authorId) {
         return postService.findDraftsByAuthorId(authorId, userContext.getUserId());
     }
 
     @GetMapping("/drafts/project/{projectId}")
-    public List<PostDto> getDraftsByProject(@PathVariable Long projectId) {
+    public List<PostResponseDto> getDraftsByProject(@PathVariable Long projectId) {
         return postService.findDraftsByProjectId(projectId, userContext.getUserId());
     }
 
     @GetMapping("/published/author/{authorId}")
-    public List<PostDto> getPublishedByAuthor(@PathVariable Long authorId) {
+    public List<PostResponseDto> getPublishedByAuthor(@PathVariable Long authorId) {
         return postService.findPublishedByAuthorId(authorId, userContext.getUserId());
     }
 
     @GetMapping("/published/project/{projectId}")
-    public List<PostDto> getPublishedByProject(@PathVariable Long projectId) {
+    public List<PostResponseDto> getPublishedByProject(@PathVariable Long projectId) {
         return postService.findPublishedByProjectId(projectId, userContext.getUserId());
     }
 }

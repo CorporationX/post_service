@@ -1,13 +1,17 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.client.HashtagServiceClient;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.PostDto;
-import faang.school.postservice.exception.DataValidationException;
-import faang.school.postservice.exception.PostUnverifiedException;
-import faang.school.postservice.exception.AsyncPostProcessingException;
+import faang.school.postservice.dto.PostResponseDto;
+import faang.school.postservice.dto.event.HashtagAddingEvent;
 import faang.school.postservice.dto.event.PostViewEvent;
+import faang.school.postservice.exception.AsyncPostProcessingException;
+import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.exception.HashtagServiceConnectionException;
 import faang.school.postservice.exception.PostAlreadyPublishedException;
+import faang.school.postservice.exception.PostUnverifiedException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.Comment;
@@ -16,6 +20,8 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.model.VerifiedStatus;
 import faang.school.postservice.model.ad.Ad;
+import faang.school.postservice.publisher.HashtagAddingEventPublisher;
+import faang.school.postservice.publisher.HashtagRemovingEventPublisher;
 import faang.school.postservice.publisher.PostViewEventPublisher;
 import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.repository.CommentRepository;
@@ -36,6 +42,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -58,6 +65,9 @@ public class PostService {
     private final AlbumRepository albumRepository;
     private final PostViewEventPublisher postViewEventPublisher;
     private final ExecutorService executorService;
+    private final HashtagAddingEventPublisher hashtagAddingPublisher;
+    private final HashtagRemovingEventPublisher hashtagRemovingPublisher;
+    private final HashtagServiceClient hashtagClient;
 
     @Value("${batch.size}")
     private int batchSize;
@@ -124,7 +134,7 @@ public class PostService {
                 batch.size(), batch.get(0).getId(), batch.get(batch.size() - 1).getId());
     }
 
-    public PostDto create(PostDto postDto) {
+    public PostResponseDto create(PostDto postDto) {
         validateContent(postDto);
         validateAuthor(postDto.authorId(), postDto.projectId());
         Post post = postMapper.toEntity(postDto);
@@ -151,10 +161,21 @@ public class PostService {
 
         postRepository.save(post);
         log.info("Post created: {}", post);
-        return postMapper.toDto(post);
+
+        if (postDto.hashtagsName() != null && !postDto.hashtagsName().isEmpty()) {
+            postDto.hashtagsName().forEach(hashtag -> {
+                        Long authorId = 0L;
+                        if (post.getAuthorId() != null) {
+                            authorId = post.getAuthorId();
+                        }
+                        hashtagAddingPublisher.publish(takeHashtagEvent(post.getId(), hashtag, authorId));
+                    }
+            );
+        }
+        return postMapper.toResponseDto(post);
     }
 
-    public PostDto publish(Long postId) {
+    public PostResponseDto publish(Long postId) {
         Post post = takePost(postId);
         if (post.isPublished()) {
             throw new PostAlreadyPublishedException("Post with ID " + postId + " is already published.");
@@ -166,72 +187,76 @@ public class PostService {
         post.setPublishedAt(LocalDateTime.now());
         postRepository.save(post);
         log.info("Post published: {}", post);
-        return postMapper.toDto(post);
+        return postMapper.toResponseDto(post);
     }
 
-    public PostDto update(PostDto postDto, Long postId) {
+    public PostResponseDto update(PostDto postDto, Long postId) {
         validateContent(postDto);
         Post post = takePost(postId);
         post.setContent(postDto.content());
         postRepository.save(post);
         log.info("Post updated: {}", post);
-        return postMapper.toDto(post);
+        return postMapper.toResponseDto(post);
     }
 
     public void deleteById(Long postId) {
         Post post = takePost(postId);
         post.setDeleted(true);
         post.setPublished(false);
-        log.info("Post deleted: {}", post);
         postRepository.save(post);
+        log.info("Post deleted: {}", post);
+        hashtagRemovingPublisher.publish(postId);
     }
 
-    public PostDto getPost(Long postId, Long userId) {
+    public PostResponseDto getPost(Long postId, Long userId) {
         Post post = takePost(postId);
         log.info("Post retrieved: {}", post);
         postViewEventPublisher.published(new PostViewEvent(postId, userId,
                 post.getAuthorId(), LocalDateTime.now()));
-        return postMapper.toDto(post);
+        PostResponseDto response = postMapper.toResponseDto(post);
+        List<Long> hashtags = hashtagClient.getHashtagsIdsByPostId(postId);
+        response.setHashtagsId(hashtags);
+        return response;
     }
 
-    public List<PostDto> findDraftsByAuthorId(Long authorId, Long userId) {
-        return postRepository.findByAuthorId(authorId)
-                .filter(post -> !post.isDeleted() && !post.isPublished())
-                .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
-                .peek(post -> postViewEventPublisher.published(
-                        new PostViewEvent(post.getId(), userId, authorId, LocalDateTime.now())))
-                .map(postMapper::toDto)
-                .toList();
+    public List<PostResponseDto> findDraftsByAuthorId(Long authorId, Long userId) {
+        List<Post> posts = postRepository.findByAuthorId(authorId);
+        Map<Long, List<Long>> hashtagsOnPosts = findHashtagsByPosts(posts);
+
+        posts = posts.stream()
+                .filter(post -> !post.isDeleted() && !post.isPublished()).toList();
+        return returnPostsDtoList(posts, userId, authorId, hashtagsOnPosts);
     }
 
-    public List<PostDto> findDraftsByProjectId(Long projectId, Long userId) {
-        return postRepository.findByProjectId(projectId)
-                .filter(post -> !post.isDeleted() && !post.isPublished())
-                .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
-                .peek(post -> postViewEventPublisher.published(
-                        new PostViewEvent(post.getId(), userId, projectId, LocalDateTime.now())))
-                .map(postMapper::toDto)
-                .toList();
+    public List<PostResponseDto> findDraftsByProjectId(Long projectId, Long userId) {
+        List<Post> posts = postRepository.findByProjectId(projectId);
+        Map<Long, List<Long>> hashtagsOnPosts = findHashtagsByPosts(posts);
+
+        posts = posts.stream()
+                .filter(post -> !post.isDeleted() && !post.isPublished()).toList();
+        return returnPostsDtoList(posts, userId, projectId, hashtagsOnPosts);
     }
 
-    public List<PostDto> findPublishedByAuthorId(Long authorId, Long userId) {
-        return postRepository.findByAuthorId(authorId)
-                .filter(post -> !post.isDeleted() && post.isPublished())
-                .sorted(Comparator.comparing(Post::getPublishedAt).reversed())
-                .peek(post -> postViewEventPublisher.published(
-                        new PostViewEvent(post.getId(), userId, authorId, LocalDateTime.now())))
-                .map(postMapper::toDto)
-                .toList();
+    public List<PostResponseDto> findPublishedByAuthorId(Long authorId, Long userId) {
+        List<Post> posts = postRepository.findByAuthorId(authorId);
+        Map<Long, List<Long>> hashtagsOnPosts = findHashtagsByPosts(posts);
+
+        posts = posts.stream()
+                .filter(post -> !post.isDeleted() && post.isPublished()).toList();
+        return returnPostsDtoList(posts, userId, authorId, hashtagsOnPosts);
     }
 
-    public List<PostDto> findPublishedByProjectId(Long projectId, Long userId) {
-        return postRepository.findByProjectId(projectId)
-                .filter(post -> !post.isDeleted() && post.isPublished())
-                .sorted(Comparator.comparing(Post::getPublishedAt).reversed())
-                .peek(post -> postViewEventPublisher.published(
-                        new PostViewEvent(post.getId(), userId, projectId, LocalDateTime.now())))
-                .map(postMapper::toDto)
-                .toList();
+    public List<PostResponseDto> findPublishedByProjectId(Long projectId, Long userId) {
+        List<Post> posts = postRepository.findByProjectId(projectId);
+        Map<Long, List<Long>> hashtagsOnPosts = findHashtagsByPosts(posts);
+
+        posts = posts.stream()
+                .filter(post -> !post.isDeleted() && post.isPublished()).toList();
+        return returnPostsDtoList(posts, userId, projectId, hashtagsOnPosts);
+    }
+
+    public List<PostResponseDto> getPostsByIds(List<Long> postIds) {
+        return postMapper.toResponseDtoList(postRepository.findAllByIdIn(postIds));
     }
 
     private void validateContent(PostDto postDto) {
@@ -285,6 +310,38 @@ public class PostService {
                 .mapToObj(i -> list.subList(
                         i * batchSize, Math.min((i + 1) * batchSize, list.size())
                 ))
+                .toList();
+    }
+
+    private HashtagAddingEvent takeHashtagEvent(Long postId, String name, Long authorId) {
+        return HashtagAddingEvent.builder()
+                .hashtagName(name)
+                .postId(postId)
+                .authorId(authorId)
+                .build();
+    }
+
+    private Map<Long, List<Long>> findHashtagsByPosts(List<Post> posts) {
+        List<Long> postIds = posts.stream()
+                .map(Post::getId)
+                .toList();
+        Map<Long, List<Long>> hashtags;
+        try {
+            hashtags = hashtagClient.getHashtagsIdsByPostIds(postIds);
+        } catch (FeignException e) {
+            throw new HashtagServiceConnectionException(e.getMessage());
+        }
+        return hashtags;
+    }
+
+    private List<PostResponseDto> returnPostsDtoList(List<Post> posts, Long userId, Long id,
+                                                     Map<Long, List<Long>> hashtags) {
+        return posts.stream()
+                .sorted(Comparator.comparing(Post::getPublishedAt).reversed())
+                .peek(post -> postViewEventPublisher.published(
+                        new PostViewEvent(post.getId(), userId, id, LocalDateTime.now())))
+                .map(postMapper::toResponseDto)
+                .peek(postDto -> postDto.setHashtagsId(hashtags.get(postDto.getId())))
                 .toList();
     }
 }
