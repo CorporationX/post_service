@@ -27,7 +27,7 @@ public class GrammarBotService {
         this.restTemplate = new RestTemplate();
     }
 
-    @Async("fileUploadTaskExecutor")
+    @Async("asyncModerationExecutor")
     public String checkGrammar(String text) {
         HttpHeaders headers = new HttpHeaders();
         headers.set("x-rapidapi-key", apiKey);

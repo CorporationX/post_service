@@ -13,7 +13,7 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: none
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         format_sql: true
@@ -25,9 +25,20 @@ spring:
     redis:
       port: 6379
       host: localhost
+      jedis:
+        pool:
+          max-active: 10
+          max-idle: 5
+          min-idle: 1
+          max-wait: 2000
       channels:
+        comment: comment_channel
         calculations_channel:
           name: calculations_channel
+        like-channel:
+          name: like_channel
+        not-like-channel:
+          name: not-like-channel
 
 springdoc:
   swagger-ui:
@@ -125,6 +136,9 @@ ad:
 post-corrector:
   cron:
     every-day-at-three-pm: "0 0 3 * * ?"
+  fixed-delay:
+    outbox-event:
+      every-five-second: 5000
 
 grammar-bot:
   api:
@@ -138,3 +152,8 @@ moderation:
   core-pool-size: 10
   max-pool-size: 20
   queue-capacity: 50
+  cron: "0 0 3 * * *"  # каждый день в 03:00   0 0 3 * * *
+  chunk-size: 100     # количество комментов в одном потоке
+scheduler:
+  outbox-event:
+    batch-size: 10

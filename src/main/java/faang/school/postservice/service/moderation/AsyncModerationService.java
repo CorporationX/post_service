@@ -18,7 +18,7 @@ public class AsyncModerationService {
 
     private final BatchProcessorService batchProcessorService;
 
-    @Async("fileUploadTaskExecutor")
+    @Async("asyncModerationExecutor")
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public CompletableFuture<Void> moderateBatchAsync(List<Post> batch) {
         try {
