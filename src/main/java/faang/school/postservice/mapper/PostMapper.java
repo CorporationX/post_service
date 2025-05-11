@@ -10,5 +10,6 @@ import org.mapstruct.ReportingPolicy;
 public interface PostMapper {
 
     @Mapping(target = "likes", expression = "java(post.getLikes() != null ? (long)post.getLikes().size() : 0)")
+    @Mapping(target = "scheduleAt", ignore = true)
     PostDto toDto(Post post);
 }

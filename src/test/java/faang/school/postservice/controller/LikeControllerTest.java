@@ -135,7 +135,7 @@ public class LikeControllerTest {
         Long authorId = 10L;
         Long projectId = 20L;
         Long likes = 15L;
-        PostDto postDto = new PostDto(POST_ID, authorId, projectId, likes);
+        PostDto postDto = new PostDto(POST_ID, authorId, projectId, likes, LocalDateTime.now());
         when(likeService.countLikesPost(POST_ID)).thenReturn(postDto);
 
         mockMvc.perform(get("/likes/posts/{postId}/countLikes", POST_ID))

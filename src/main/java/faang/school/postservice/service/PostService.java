@@ -20,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.time.LocalDateTime;
-import java.util.concurrent.ExecutorService;
 
 @Slf4j
 @Service
@@ -33,7 +32,6 @@ public class PostService {
     private final PostRepository postRepository;
     private final AsyncModerationService asyncModerationService;
     private final ModerationProperties moderationProperties;
-    private final ExecutorService executorService;
 
     private static final int BATCH_SIZE = 1000;
 
@@ -96,8 +94,8 @@ public class PostService {
 
         List<List<Post>> batches = Lists.partition(postsToPublish, BATCH_SIZE);
 
-        List<CompletableFuture<Void>> futures = batches.stream()
-                .map(batch -> CompletableFuture.runAsync(() -> publishBatch(batch), executorService))
+        List<CompletableFuture<Void>> futures = batches.parallelStream()
+                .map(batch -> CompletableFuture.runAsync(() -> publishBatch(batch)))
                 .toList();
 
         CompletableFuture<Void> allFutures = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
