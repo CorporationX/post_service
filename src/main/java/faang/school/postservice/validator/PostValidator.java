@@ -29,10 +29,9 @@ import org.springframework.stereotype.Component;
 public class PostValidator {
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
-    private final PostRepositoryAdapter postRepositoryAdapter;
     private final UserContext userContext;
 
-    public void validatedOwnerPost(PostDto postDTO) {
+    public Long validatedOwnerPost(PostDto postDTO) {
         if (postDTO.authorId() == null && postDTO.projectId() == null) {
             throw new RequiredOwnerException("Author post must be project or user");
         }
@@ -43,10 +42,11 @@ public class PostValidator {
 
         if (postDTO.authorId() != null) {
             getUserById(postDTO.authorId());
-        }
+            return postDTO.authorId();
 
-        if (postDTO.projectId() != null) {
+        } else {
             getProjectById(postDTO.projectId());
+            return postDTO.projectId();
         }
     }
 
@@ -65,9 +65,9 @@ public class PostValidator {
     @Retryable(retryFor = {FeignException.class},
             noRetryFor = {FeignException.NotFound.class},
             backoff = @Backoff(delay = 1000, multiplier = 2))
-    public ProjectDto getProjectById(Long projectId) {
+    public void getProjectById(Long projectId) {
         try {
-            return projectServiceClient.getProjectById(projectId);
+            projectServiceClient.getProjectById(projectId);
         } catch (FeignException e) {
             log.error("Project with ID {} not found", projectId, e);
             throw new EntityNotFoundException("Project with ID " + projectId + " not found");

@@ -25,6 +25,15 @@ spring:
         calculations_channel:
           name: calculations_channel
 
+    kafka:
+      bootstrap-servers: localhost:9092
+      follower-ids-batch-size: 10
+      topics:
+        posts:
+          name: posts-topic
+          partitions: 3
+          replicas: 1
+
   servlet:
     multipart:
       max-file-size: 52428800

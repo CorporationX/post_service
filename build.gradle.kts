@@ -41,6 +41,11 @@ dependencies {
     implementation("io.minio:minio:8.5.10")
 
     /**
+     * Kafka
+     */
+    implementation("org.springframework.kafka:spring-kafka:3.3.3")
+
+    /**
      * Thumbnailator
      */
     implementation ("net.coobird:thumbnailator:0.4.20")
@@ -64,6 +69,7 @@ dependencies {
     implementation(platform("org.testcontainers:testcontainers-bom:1.17.6"))
     testImplementation("org.testcontainers:junit-jupiter")
     testImplementation("org.testcontainers:postgresql")
+    testImplementation("org.testcontainers:kafka")
     testImplementation("com.redis.testcontainers:testcontainers-redis-junit-jupiter:1.4.6")
 
     /**
