@@ -129,6 +129,7 @@ comment-img:
 ad:
   expired:
     cronExpiredPostAdDeletion: "0 0 1 * * *"
+    cron-one-minute: "0 0 1 * * ?"
   deletion:
     batchSize: 100
 

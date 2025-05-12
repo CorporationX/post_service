@@ -346,7 +346,7 @@ public class LikeServiceTest {
     @Test
     public void testCountLikesPostSuccessful() {
         Post post = Post.builder().id(POST_ID).likes(List.of(new Like(), new Like())).build();
-        PostDto postDto = new PostDto(POST_ID, 1L, 1L, 2L);
+        PostDto postDto = new PostDto(POST_ID, 1L, 1L, 2L, LocalDateTime.now());
 
         when(postValidator.getPostById(POST_ID)).thenReturn(post);
         when(postMapper.toDto(post)).thenReturn(postDto);
