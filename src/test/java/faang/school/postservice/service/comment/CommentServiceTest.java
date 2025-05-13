@@ -189,7 +189,7 @@ class CommentServiceTest {
         assertEquals(comment.getContent(), savedComment.getContent());
 
         verify(commentEventPublisher, times(1)).publish(commentEventCaptor.capture());
-        verify(feedRedisService, times(1)).incrementComments(commentRequestDto.getPostId());
+        verify(feedRedisService, times(1)).incrementPostComments(commentRequestDto.getPostId());
     }
 
     @Test
@@ -202,7 +202,7 @@ class CommentServiceTest {
 
         verify(commentRepository, times(1)).save(commentCaptor.capture());
         verify(feedRedisService, times(1))
-                .cacheComment(commentMapper.toFeedCommentDto(comment));
+                .cacheCommentDetails(commentMapper.toFeedCommentDto(comment));
 
         assertEquals(UPDATE_CONTENT, comment.getContent());
     }

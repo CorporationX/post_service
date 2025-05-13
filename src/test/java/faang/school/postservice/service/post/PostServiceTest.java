@@ -170,7 +170,7 @@ public class PostServiceTest {
         verify(postRepository, times(1))
                 .save(post);
 
-        verify(feedRedisService, times(1)).cachePost(postMapper.toFeedPostDto(post));
+        verify(feedRedisService, times(1)).cachePostDetails(postMapper.toFeedPostDto(post));
     }
 
     @Test

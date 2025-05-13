@@ -18,7 +18,7 @@ public interface FeedRedisService {
 
     void cacheCommentIdForPost(Long postId, Long commentId, int offset);
 
-    void cachePost(FeedPostDto feedPostDto);
+    void cachePostDetails(FeedPostDto feedPostDto);
 
     void removePostFromCache(Long postId);
 
@@ -30,13 +30,13 @@ public interface FeedRedisService {
 
     void decrementCommentLikes(Long commentId);
 
-    void incrementComments(Long postId);
+    void incrementPostComments(Long postId);
 
-    void decrementComments(Long postId);
+    void decrementPostComments(Long postId);
 
-    void cacheComment(FeedCommentDto feedCommentDto);
+    void cacheCommentDetails(FeedCommentDto feedCommentDto);
 
-    void removeComment(Long postId, Long commentId);
+    void removeCommentFromCache(Long commentId);
 
     void incrementPostViews(Long postId);
 
@@ -44,7 +44,7 @@ public interface FeedRedisService {
 
     void preloadPostComments(Long postId);
 
-    void updateUserPostFeedOffset(Long userId, int value);
+    void updateUserPostOffset(Long userId, int value);
 
-    void updatePostCommentsFeedOffset(Long postId, int value);
+    void updatePostCommentsOffset(Long postId, int value);
 }

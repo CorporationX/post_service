@@ -186,8 +186,8 @@ public class CommentServiceImpl implements CommentService {
         comment.setAuthorId(commentRequestDto.getAuthorId());
 
         commentRepository.save(comment);
-        feedRedisService.incrementComments(post.getId());
-        feedRedisService.cacheComment(commentMapper.toFeedCommentDto(comment));
+        feedRedisService.incrementPostComments(post.getId());
+        feedRedisService.cacheCommentDetails(commentMapper.toFeedCommentDto(comment));
 
         log.info(INFO_CREATE_COMMENT, comment.getId(), commentRequestDto.getAuthorId(), commentRequestDto.getPostId());
         commentEventPublisher.publish(new CommentEvent(commentRequestDto.getPostId(), commentRequestDto.getAuthorId(),
@@ -209,7 +209,7 @@ public class CommentServiceImpl implements CommentService {
         comment.setVerifiedDate(null);
 
         commentRepository.save(comment);
-        feedRedisService.cacheComment(commentMapper.toFeedCommentDto(comment));
+        feedRedisService.cacheCommentDetails(commentMapper.toFeedCommentDto(comment));
         log.info(INFO_UPDATE_COMMENT, commentUpdateDto.getId(), commentUpdateDto.getAuthorId());
     }
 
@@ -231,8 +231,8 @@ public class CommentServiceImpl implements CommentService {
         getComment(commentId);
         commentRepository.deleteById(commentId);
         Long postId = postRepository.findPostIdByCommentId(commentId);
-        feedRedisService.decrementComments(postId);
-        feedRedisService.removeComment(postId, commentId);
+        feedRedisService.decrementPostComments(postId);
+        feedRedisService.removeCommentFromCache(commentId);
         log.info(INFO_DELETE_COMMENT, commentId);
     }
 

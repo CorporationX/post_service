@@ -1,4 +1,4 @@
-package faang.school.postservice.messaging;
+package faang.school.postservice.messaging.feed;
 
 import faang.school.postservice.service.feed.FeedServiceImpl;
 import lombok.RequiredArgsConstructor;

@@ -75,7 +75,7 @@ public class FeedServiceImpl implements FeedService {
             comments = feedRedisService.loadCommentsFromCache(postId, offset);
         } else {
             comments = commentMapper.toFeedCommentDtoList(commentRepository
-                    .findByPostIdOrderByCreatedAtDesc(postId, pageable).getContent());
+                    .findByPostIdOrderByCreatedAtDesc(pageable, postId).getContent());
 
             feedNextCommentBatchExecutor.submit(() -> heatNextCommentBatch(postId, offset, comments));
         }
@@ -113,17 +113,17 @@ public class FeedServiceImpl implements FeedService {
     }
 
     private void heatNextPostBatch(Long userId, int offset, List<FeedPostDto> posts) {
-        feedRedisService.updateUserPostFeedOffset(userId, offset + postBatchSize);
+        feedRedisService.updateUserPostOffset(userId, offset + postBatchSize);
         posts.forEach(feedPostDto -> {
-            feedRedisService.cachePost(feedPostDto);
+            feedRedisService.cachePostDetails(feedPostDto);
             feedRedisService.cachePostIdForUser(userId, feedPostDto.getId(), offset + postBatchSize);
         });
     }
 
     private void heatNextCommentBatch(Long postId, int offset, List<FeedCommentDto> comments) {
-        feedRedisService.updatePostCommentsFeedOffset(postId, offset + postBatchSize);
+        feedRedisService.updatePostCommentsOffset(postId, offset + postBatchSize);
         comments.forEach(feedPostDto -> {
-            feedRedisService.cacheComment(feedPostDto);
+            feedRedisService.cacheCommentDetails(feedPostDto);
             feedRedisService.cacheCommentIdForPost(postId, feedPostDto.getId(), offset + postBatchSize);
         });
     }

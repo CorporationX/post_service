@@ -29,6 +29,7 @@ dependencies {
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     implementation("org.springframework:spring-aspects")
     implementation("org.springframework.retry:spring-retry:2.0.10")
+    implementation("io.lettuce:lettuce-core")
 
     /**
      * Database

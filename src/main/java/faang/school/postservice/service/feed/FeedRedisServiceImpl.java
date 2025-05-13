@@ -88,7 +88,7 @@ public class FeedRedisServiceImpl implements FeedRedisService {
             return false;
         }
         for (String commentId : commentIds) {
-            if (!redisTemplate.hasKey(getPostFeedCommentsKey(Long.valueOf(commentId), offset))) {
+            if (!redisTemplate.hasKey(getCommentKey(Long.valueOf(commentId)))) {
                 return false;
             }
         }
@@ -130,6 +130,7 @@ public class FeedRedisServiceImpl implements FeedRedisService {
         String postFeedKey = getUserFeedPostsKey(userId, offset);
         redisTemplate.opsForList().rightPush(postFeedKey, String.valueOf(postId));
         redisTemplate.expire(postFeedKey, Duration.ofHours(cacheTtlHours));
+        log.info("Post with ID {} has been cached for user {}", postId, userId);
     }
 
     @Override
@@ -137,10 +138,11 @@ public class FeedRedisServiceImpl implements FeedRedisService {
         String commentsKey = getPostFeedCommentsKey(postId, offset);
         redisTemplate.opsForList().rightPush(commentsKey, String.valueOf(commentId));
         redisTemplate.expire(commentsKey, Duration.ofHours(cacheTtlHours));
+        log.info("Comment with ID {} has been cached for post {}", commentId, postId);
     }
 
     @Override
-    public void cachePost(FeedPostDto feedPostDto) {
+    public void cachePostDetails(FeedPostDto feedPostDto) {
         if (feedPostDto.getAuthorId() != null) {
             feedPostDto.setAuthorName(userServiceClient.getUser(feedPostDto.getAuthorId()).username());
         } else {
@@ -148,7 +150,7 @@ public class FeedRedisServiceImpl implements FeedRedisService {
                     projectServiceClient.getProject(feedPostDto.getProjectId()).getBody()).name());
         }
         String postKey = getPostKey(feedPostDto.getId());
-        Map<String, Object> json = jsonUtils.toMap(feedPostDto);
+        Map<String, String> json = jsonUtils.toMap(feedPostDto);
         redisTemplate.opsForHash().putAll(postKey, json);
         redisTemplate.expire(postKey, Duration.ofHours(cacheTtlHours));
         log.info("Post: {} saved to cache", json);
@@ -210,8 +212,8 @@ public class FeedRedisServiceImpl implements FeedRedisService {
     }
 
     @Override
-    public void incrementComments(Long postId) {
-        String commentKey = getCommentKey(postId);
+    public void incrementPostComments(Long postId) {
+        String commentKey = getPostKey(postId);
         if (redisTemplate.hasKey(commentKey)) {
             redisTemplate.opsForHash().increment(commentKey, "comments", 1);
             log.info("Add comment in cache for post with ID: {}", postId);
@@ -221,8 +223,8 @@ public class FeedRedisServiceImpl implements FeedRedisService {
     }
 
     @Override
-    public void decrementComments(Long postId) {
-        String commentKey = getCommentKey(postId);
+    public void decrementPostComments(Long postId) {
+        String commentKey = getPostKey(postId);
         if (redisTemplate.hasKey(commentKey)) {
             redisTemplate.opsForHash().increment(commentKey, "comments", -1);
             log.info("Removed comment in cache for post with ID: {}", postId);
@@ -232,9 +234,9 @@ public class FeedRedisServiceImpl implements FeedRedisService {
     }
 
     @Override
-    public void cacheComment(FeedCommentDto feedCommentDto) {
+    public void cacheCommentDetails(FeedCommentDto feedCommentDto) {
         String commentKey = getCommentKey(feedCommentDto.getId());
-        Map<String, Object> json = jsonUtils.toMap(feedCommentDto);
+        Map<String, String> json = jsonUtils.toMap(feedCommentDto);
 
         redisTemplate.opsForHash().putAll(commentKey, json);
         redisTemplate.expire(commentKey, Duration.ofHours(cacheTtlHours));
@@ -242,13 +244,13 @@ public class FeedRedisServiceImpl implements FeedRedisService {
     }
 
     @Override
-    public void removeComment(Long postId, Long commentId) {
+    public void removeCommentFromCache(Long commentId) {
         String commentKey = getCommentKey(commentId);
         if (redisTemplate.hasKey(commentKey)) {
             redisTemplate.delete(commentKey);
-            log.info("Comment with ID {} deleted from cache", postId);
+            log.info("Comment with ID {} deleted from cache", commentId);
         } else {
-            log.warn("Comment with ID {} not found in cache", postId);
+            log.warn("Comment with ID {} not found in cache", commentId);
         }
     }
 
@@ -265,7 +267,7 @@ public class FeedRedisServiceImpl implements FeedRedisService {
 
     @Override
     public void preloadUserPosts(Long userId) {
-        updateUserPostFeedOffset(userId, 0);
+        updateUserPostOffset(userId, 0);
         int offset = 0;
         List<Long> followees = userServiceClient.getFollowees(userId);
 
@@ -274,33 +276,33 @@ public class FeedRedisServiceImpl implements FeedRedisService {
 
         posts.forEach(post -> {
             cachePostIdForUser(userId, post.getId(), offset);
-            cachePost(postMapper.toFeedPostDto(post));
+            cachePostDetails(postMapper.toFeedPostDto(post));
         });
         log.info("Finished heat posts for user with ID: {}", userId);
     }
 
     @Override
     public void preloadPostComments(Long postId) {
-        updatePostCommentsFeedOffset(postId, 0);
+        updatePostCommentsOffset(postId, 0);
         int offset = 0;
         Pageable pageable = PageRequest.of(0, commentBatchSize);
-        List<Comment> comments = commentRepository.findByPostIdOrderByCreatedAtDesc(postId, pageable).getContent();
+        List<Comment> comments = commentRepository.findByPostIdOrderByCreatedAtDesc(pageable, postId).getContent();
 
         comments.forEach(comment -> {
             cacheCommentIdForPost(postId, comment.getId(), offset);
-            cacheComment(commentMapper.toFeedCommentDto(comment));
+            cacheCommentDetails(commentMapper.toFeedCommentDto(comment));
         });
         log.info("Finished heat comments for post with ID: {}", postId);
     }
 
     @Override
-    public void updateUserPostFeedOffset(Long userId, int value) {
+    public void updateUserPostOffset(Long userId, int value) {
         redisTemplate.opsForValue().set(getPostFeedStartFromKey(userId),
                 String.valueOf(value), cacheTtlHours);
     }
 
     @Override
-    public void updatePostCommentsFeedOffset(Long postId, int value) {
+    public void updatePostCommentsOffset(Long postId, int value) {
         redisTemplate.opsForValue().set(getCommentFeedStartFromKey(postId),
                 String.valueOf(value), cacheTtlHours);
     }

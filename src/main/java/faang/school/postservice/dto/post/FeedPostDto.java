@@ -15,9 +15,9 @@ public class FeedPostDto {
     private Long projectId;
     private String authorName;
     private String projectName;
-    private long views;
-    private long likes;
-    private long comments;
+    private int views;
+    private int likes;
+    private int comments;
     private String createdAt;
     private String updatedAt;
     private String content;

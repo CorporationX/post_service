@@ -1,4 +1,4 @@
-package faang.school.postservice.messaging;
+package faang.school.postservice.messaging.feed;
 
 import faang.school.postservice.dto.comment.CommentRequestDto;
 import faang.school.postservice.dto.comment.CommentUpdateDto;

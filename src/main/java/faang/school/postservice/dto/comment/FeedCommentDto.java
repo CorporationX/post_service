@@ -14,7 +14,7 @@ public class FeedCommentDto {
     private Long postId;
     private String content;
     private Long authorId;
-    private long likes;
+    private int likes;
     private String createdAt;
     private String updatedAt;
 }

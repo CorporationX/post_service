@@ -93,7 +93,7 @@ public class PostService {
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
         postRepository.save(post);
-        feedRedisService.cachePost(postMapper.toFeedPostDto(post));
+        feedRedisService.cachePostDetails(postMapper.toFeedPostDto(post));
         hashtagService.extractHashtagsFromPost(post);
     }
 
@@ -120,7 +120,7 @@ public class PostService {
             log.warn("Nothing was updated for post with ID {}", postRequestDto.getId());
         }
         postRepository.save(post);
-        feedRedisService.cachePost(postMapper.toFeedPostDto(post));
+        feedRedisService.cachePostDetails(postMapper.toFeedPostDto(post));
     }
 
     public void deletePost(Long postId) {

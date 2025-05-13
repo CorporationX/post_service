@@ -5,7 +5,6 @@ import faang.school.postservice.dto.post.FeedPostDto;
 import faang.school.postservice.service.feed.FeedService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

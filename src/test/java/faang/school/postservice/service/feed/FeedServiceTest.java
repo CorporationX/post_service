@@ -211,13 +211,13 @@ public class FeedServiceTest {
     @Test
     public void testGetFeedComments_takeFromDataBase() {
         when(feedRedisService.isCommentAvailableInCache(postId, offset)).thenReturn(false);
-        when(commentRepository.findByPostIdOrderByCreatedAtDesc(eq(postId), any(Pageable.class)))
+        when(commentRepository.findByPostIdOrderByCreatedAtDesc(any(Pageable.class), eq(postId)))
                 .thenReturn(commentPage);
 
         List<FeedCommentDto> result = feedService.getFeedComments(postId, offset).getContent();
 
         assertEquals(commentMapper.toFeedCommentDtoList(comments), result);
         verify(commentRepository, times(1))
-                .findByPostIdOrderByCreatedAtDesc(eq(postId), any(Pageable.class));
+                .findByPostIdOrderByCreatedAtDesc(any(Pageable.class), eq(postId));
     }
 }

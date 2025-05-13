@@ -37,9 +37,14 @@ public class JsonUtils {
         }
     }
 
-    public Map<String, Object> toMap(Object obj) {
-        return objectMapper.convertValue(obj, new TypeReference<Map<String, Object>>() {
-        });
+    public Map<String, String> toMap(Object obj) {
+        Map<String, Object> intermediate = objectMapper.convertValue(obj, new TypeReference<Map<String, Object>>() {});
+        return intermediate.entrySet().stream()
+                .filter(entry -> entry.getValue() != null)
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> String.valueOf(entry.getValue())
+                ));
     }
 
     public <T> T convertMapToClass(Map<Object, Object> map, Class<T> classType) {
