@@ -25,7 +25,7 @@ public interface CommentMapper {
     CommentResponseDto toCommentDto(Comment comment);
 
     @Mapping(target = "postId", expression = "java(comment.getPost().getId())")
-    @Mapping(target = "likes", expression = "java(comment.getLikes().size())")
+    @Mapping(target = "likes", source = "likeCount")
     @Mapping(target = "createdAt", expression = "java(formatLocalDateTime(comment.getCreatedAt()))")
     @Mapping(target = "updatedAt", expression = "java(formatLocalDateTime(comment.getUpdatedAt()))")
     FeedCommentDto toFeedCommentDto(Comment comment);

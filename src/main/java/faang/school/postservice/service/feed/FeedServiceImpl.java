@@ -86,15 +86,11 @@ public class FeedServiceImpl implements FeedService {
     public void heatFeedCache() {
         int page = 0;
         while (true) {
-            Page<Long> userIdsPage = userServiceClient.getUsersByPage(page, userHeatBatchSize);
-            List<Long> userIds = userIdsPage.getContent();
+            List<Long> userIds = userServiceClient.getUserIdsByPage(page, userHeatBatchSize);
             if (userIds.isEmpty()) {
                 break;
             }
             userIds.forEach(userId -> kafkaPublisher.send(heatTopic, userId));
-            if (!userIdsPage.hasNext()) {
-                break;
-            }
             page++;
         }
     }

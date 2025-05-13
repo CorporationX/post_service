@@ -17,7 +17,8 @@ public class FeedListener {
             groupId = "${app.feed.heat-group}"
     )
     public void heatFeedConsumer(String data) {
-        log.info("Received heating cache user id {} from kafka", data);
+        log.info("Received message from Kafka topic '{}': heating cache for userId={}",
+                "${app.feed.heat-topic}", data);
         feedService.heatFeedConsumer(Long.valueOf(data));
     }
 }

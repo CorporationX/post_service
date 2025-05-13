@@ -103,4 +103,7 @@ public class Post {
 
     @Column(name = "views")
     private long views;
+
+    @Column(name = "like_count")
+    private int likeCount;
 }

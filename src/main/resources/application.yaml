@@ -22,7 +22,7 @@ app:
     post-batch-size: 20
     comment-batch-size: 20
     post-start-from: "feed:posts:user:%d:start:from:"
-    comment-start-from: "feed:post:comments:%d:start:from:"
+    post-comment-start-from: "feed:post:%d:comments:start:from:"
     user-heat-batch-size: 50
     heat-topic: "feed-heat-topic"
     heat-group: "feed-heat-group"

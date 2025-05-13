@@ -62,7 +62,7 @@ public class FeedRedisServiceImpl implements FeedRedisService {
     @Value("${app.feed.post-start-from}")
     private String userPostFeedOffsetKey;
 
-    @Value("${app.feed.comment-start-from}")
+    @Value("${app.feed.post-comment-start-from}")
     private String postCommentFeedOffsetKey;
 
     @Override

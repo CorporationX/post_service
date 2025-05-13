@@ -21,7 +21,7 @@ public interface PostMapper {
 
     Post toPost(PostRequestDto postRequestDto);
 
-    @Mapping(target = "likes", expression = "java(post.getLikes().size())")
+    @Mapping(target = "likes", source = "likeCount")
     @Mapping(target = "comments", expression = "java(post.getComments().size())")
     @Mapping(target = "createdAt", expression = "java(formatLocalDateTime(post.getCreatedAt()))")
     @Mapping(target = "updatedAt", expression = "java(formatLocalDateTime(post.getUpdatedAt()))")

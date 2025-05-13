@@ -16,4 +16,6 @@ databaseChangeLog:
   - include:
       file: db/changelog/changeset/post_V008__add_verified_column.sql
   - include:
-      file: db/changelog/changeset/post_V009_add_views_to_post.sql
+      file: db/changelog/changeset/post_V009_add_views_and_like_count_to_post.sql
+  - include:
+      file: db/changelog/changeset/post_V010__add_like_count_to_comment.sql
