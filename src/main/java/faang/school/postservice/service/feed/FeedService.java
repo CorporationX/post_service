@@ -7,7 +7,7 @@ import org.springframework.data.domain.Page;
 public interface FeedService {
     Page<FeedPostDto> getFeedPosts(Long userId, int offset);
 
-    Page<FeedCommentDto> getFeedComments(Long userId, int offset);
+    Page<FeedCommentDto> getFeedComments(Long postId, int offset);
 
     void heatFeedCache();
 }

@@ -36,13 +36,13 @@ public class FeedController {
         return feedService.getFeedPosts(userId, offset);
     }
 
-    @GetMapping("/comments/user/{userId}")
+    @GetMapping("/comments/post/{postId}")
     @ResponseStatus(HttpStatus.OK)
-    public Page<FeedCommentDto> getFeedComments(@PathVariable @Valid @NotNull Long userId,
+    public Page<FeedCommentDto> getFeedComments(@PathVariable @Valid @NotNull Long postId,
                                                 @RequestParam @Valid @PositiveOrZero int offset) {
 
-        log.info("Fetching comment feed for userId={} starting from commentId={}", userId, offset);
-        return feedService.getFeedComments(userId, offset);
+        log.info("Received request to get comment feed from comment {} for post with ID: {}", offset, postId);
+        return feedService.getFeedComments(postId, offset);
     }
 
     @PostMapping("/heat")

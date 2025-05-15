@@ -38,7 +38,8 @@ public class JsonUtils {
     }
 
     public Map<String, String> toMap(Object obj) {
-        Map<String, Object> intermediate = objectMapper.convertValue(obj, new TypeReference<Map<String, Object>>() {});
+        Map<String, Object> intermediate = objectMapper.convertValue(obj, new TypeReference<Map<String, Object>>() {
+        });
         return intermediate.entrySet().stream()
                 .filter(entry -> entry.getValue() != null)
                 .collect(Collectors.toMap(

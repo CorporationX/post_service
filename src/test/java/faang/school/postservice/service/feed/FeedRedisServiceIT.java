@@ -16,9 +16,8 @@ import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.utils.JsonUtils;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
@@ -57,7 +56,6 @@ import static org.mockito.Mockito.when;
 )
 @ImportAutoConfiguration(RedisAutoConfiguration.class)
 @Testcontainers
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class FeedRedisServiceIT {
 
     @MockBean
@@ -113,7 +111,7 @@ public class FeedRedisServiceIT {
     private Post post;
     private Comment comment;
 
-    @BeforeAll
+    @BeforeEach
     void init() {
         feedPostDto = FeedPostDto.builder()
                 .id(postId)
@@ -428,15 +426,5 @@ public class FeedRedisServiceIT {
     private String getPostFeedCommentsKey(Long postId, int offset) {
         String postFeedCommentsKey = "feed:post:%d:comments:offset:%d";
         return postFeedCommentsKey.formatted(postId, offset);
-    }
-
-    private String getPostFeedStartFromKey(Long userId) {
-        String userPostFeedOffsetKey = "feed:posts:user:%d:start:from:";
-        return userPostFeedOffsetKey.formatted(userId);
-    }
-
-    private String getCommentFeedStartFromKey(Long postId) {
-        String postCommentFeedOffsetKey = "feed:post:comments:%d:start:from:";
-        return postCommentFeedOffsetKey.formatted(postId);
     }
 }
