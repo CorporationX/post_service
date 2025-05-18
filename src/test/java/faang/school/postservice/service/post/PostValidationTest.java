@@ -94,18 +94,22 @@ public class PostValidationTest {
     public void testPublishPost_postAlreadyPublished() {
         when(postRepository.findById(postRequestDto.getId())).thenReturn(Optional.of(post));
         post.setPublished(true);
+
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> postService.publishPost(id)
+                () -> postService.publishPostConsumer(id)
         );
+
         assertEquals(String.format(POST_ALREADY_PUBLISHED, post.getId()), exception.getMessage());
     }
 
     @Test
     public void testUpdatePost_deletePost() {
         postRequestDto.setDeleted(true);
+
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> postService.updatePost(postRequestDto)
+                () -> postService.updatePostConsumer(postRequestDto)
         );
+
         assertEquals(CANT_DELETE_POST_DURING_UPDATE, exception.getMessage());
     }
 
@@ -114,8 +118,9 @@ public class PostValidationTest {
         postRequestDto.setContent(null);
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> postService.updatePost(postRequestDto)
+                () -> postService.updatePostConsumer(postRequestDto)
         );
+
         assertEquals(CONTENT_CANT_BE_NULL, exception.getMessage());
     }
 

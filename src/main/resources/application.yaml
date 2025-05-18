@@ -10,7 +10,23 @@ app:
     topic:
       user_ban: user_ban
       comment-analytics: comment_analytics_topic
+
   thread-pool-size: 16
+
+  feed:
+    post-feed: "feed:posts:user:%d:offset:%d"
+    comment-feed: "feed:post:%d:comments:offset:%d"
+    post-cache-key: "post:%d:"
+    comment-cache-key: "comment:%d:"
+    ttl-hours: 24
+    post-batch-size: 20
+    comment-batch-size: 20
+    post-start-from: "feed:posts:user:%d:start:from:"
+    post-comment-start-from: "feed:post:%d:comments:start:from:"
+    user-heat-batch-size: 50
+    heat-topic: "feed-heat-topic"
+    heat-group: "feed-heat-group"
+    thread-pool-size: 16
 
 spring:
   datasource:
@@ -45,14 +61,34 @@ spring:
 
   kafka:
     bootstrap-servers: localhost:9092
+
     producer:
       retries: 5
       acks: all
-      linger-ms: 5
+
       batch-size: 16384
-      max-in-flight-requests-per-connection: 10
-      topics:
-        user-ban: "user-ban-topic"
+      properties:
+        max-in-flight-requests-per-connection: 10
+        linger-ms: 5
+
+    topics:
+      user-ban: "user-ban-topic"
+
+      feed:
+        post-like-topic: "post-like-topic"
+        post-unlike-topic: "post-unlike-topic"
+        comment-like-topic: "comment-like-topic"
+        comment-unlike-topic: "comment-unlike-topic"
+        post-view-topic: "post-view-topic"
+        post-create-topic: "post-create-topic"
+        post-update-topic: "post-update-topic"
+        post-delete-topic: "post-delete-topic"
+        comment-create-topic: "comment-create-topic"
+        comment-update-topic: "comment-update-topic"
+        comment-delete-topic: "comment-delete-topic"
+
+    groups:
+      feed-group: "news-feed-group"
 
 server:
   port: 8081
@@ -96,4 +132,4 @@ posts:
     thread-pool-size: 16
 
   publishing:
-    cron: "0 0 * * * *"
+    cron: "0 0 5 * * *"

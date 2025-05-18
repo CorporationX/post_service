@@ -5,6 +5,7 @@ import faang.school.postservice.dto.post.PostResponseDto;
 import faang.school.postservice.service.PostService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -19,7 +21,7 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/post")
+@RequestMapping("/api/v1/posts")
 public class PostController {
     private final PostService postService;
 
@@ -31,28 +33,29 @@ public class PostController {
         return response;
     }
 
+    @ResponseStatus(HttpStatus.ACCEPTED)
     @PostMapping("/{postId}/publish")
-    public PostResponseDto publishPost(@PathVariable Long postId) {
+    public void publishPost(@PathVariable Long postId) {
         log.info("Starting to publish post with ID: {}", postId);
-        PostResponseDto response = postService.publishPost(postId);
+        postService.publishPost(postId);
         log.info("Finished publishing post with ID: {}", postId);
-        return response;
     }
 
+    @ResponseStatus(HttpStatus.ACCEPTED)
     @PutMapping("/update")
-    public PostResponseDto updatePost(@RequestBody PostRequestDto postRequestDto) {
+    public void updatePost(@RequestBody PostRequestDto postRequestDto) {
         log.info("Starting to update post: {}", postRequestDto);
-        PostResponseDto response = postService.updatePost(postRequestDto);
+        postService.updatePost(postRequestDto);
         log.info("Finished updating post: {}", postRequestDto);
-        return response;
     }
+
+    @ResponseStatus(HttpStatus.ACCEPTED)
 
     @DeleteMapping("/{postId}")
-    public PostResponseDto deletePost(@PathVariable Long postId) {
+    public void deletePost(@PathVariable Long postId) {
         log.info("Starting to delete post with ID: {}", postId);
-        PostResponseDto response = postService.deletePost(postId);
+        postService.deletePost(postId);
         log.info("Finished deleting post with ID: {}", postId);
-        return response;
     }
 
     @GetMapping("/{postId}")
@@ -93,5 +96,12 @@ public class PostController {
         List<PostResponseDto> response = postService.getProjectPublishedPosts(projectId);
         log.info("Finished fetching published posts for project ID: {}", projectId);
         return response;
+    }
+
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    @PostMapping("/{postId}/view")
+    public void viewPost(@PathVariable Long postId) {
+        log.info("Received request to add view for post with ID: {}", postId);
+        postService.viewPost(postId);
     }
 }

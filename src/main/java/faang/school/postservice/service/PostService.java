@@ -9,9 +9,10 @@ import faang.school.postservice.exception.LanguageToolException;
 import faang.school.postservice.exception.PostNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.feed.post.FeedPostRedisService;
 import faang.school.postservice.service.hashtags.HashtagService;
+import faang.school.postservice.service.kafka.publisher.KafkaPublisher;
 import faang.school.postservice.utils.validationUtils.PostValidation;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -46,18 +47,31 @@ public class PostService {
     public static final String POST_HAS_ALREADY_BEEN_DELETED = "Post has already been deleted";
     private static final int TIMEOUT_HOURS = 2;
 
+    private final KafkaPublisher kafkaPublisher;
     private final PostMapper postMapper;
     private final PostRepository postRepository;
     private final LanguageToolClient languageToolClient;
-    private final LikeRepository likeRepository;
     private final HashtagService hashtagService;
     private final ExecutorService threadPoolExecutor;
+    private final FeedPostRedisService feedPostRedisService;
 
     @Value("${posts.correction.batch-size}")
-    int batchSize;
+    private int batchSize;
 
     @Value("${posts.correction.thread-pool-size}")
-    int threadPoolSize;
+    private int threadPoolSize;
+
+    @Value("${spring.kafka.topics.feed.post-view-topic}")
+    private String postViewTopic;
+
+    @Value("${spring.kafka.topics.feed.post-create-topic}")
+    private String postCreateTopic;
+
+    @Value("${spring.kafka.topics.feed.post-update-topic}")
+    private String postUpdateTopic;
+
+    @Value("${spring.kafka.topics.feed.post-delete-topic}")
+    private String postDeleteTopic;
 
     public PostResponseDto createDraftPost(PostRequestDto postRequestDto) {
         PostValidation.validatePostAuthors(postRequestDto);
@@ -66,7 +80,11 @@ public class PostService {
         return postMapper.toPostResponseDto(post);
     }
 
-    public PostResponseDto publishPost(Long postId) {
+    public void publishPost(Long postId) {
+        kafkaPublisher.send(postCreateTopic, postId);
+    }
+
+    public void publishPostConsumer(Long postId) {
         Optional<Post> postDraftOptional = postRepository.findById(postId);
         validatePostOptional(postDraftOptional, postId);
         Post post = postDraftOptional.get();
@@ -75,11 +93,15 @@ public class PostService {
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
         postRepository.save(post);
+        feedPostRedisService.cachePostDetails(postMapper.toFeedPostDto(post));
         hashtagService.extractHashtagsFromPost(post);
-        return postMapper.toPostResponseDto(post);
     }
 
-    public PostResponseDto updatePost(PostRequestDto postRequestDto) {
+    public void updatePost(PostRequestDto postRequestDto) {
+        kafkaPublisher.send(postUpdateTopic, postRequestDto);
+    }
+
+    public void updatePostConsumer(PostRequestDto postRequestDto) {
         PostValidation.validatePostUpdate(postRequestDto);
         Optional<Post> postOptional = postRepository.findById(postRequestDto.getId());
         validatePostOptional(postOptional, postRequestDto.getId());
@@ -98,10 +120,14 @@ public class PostService {
             log.warn("Nothing was updated for post with ID {}", postRequestDto.getId());
         }
         postRepository.save(post);
-        return postMapper.toPostResponseDto(post);
+        feedPostRedisService.cachePostDetails(postMapper.toFeedPostDto(post));
     }
 
-    public PostResponseDto deletePost(Long postId) {
+    public void deletePost(Long postId) {
+        kafkaPublisher.send(postDeleteTopic, postId);
+    }
+
+    public void deletePostConsumer(Long postId) {
         Optional<Post> postOptional = postRepository.findById(postId);
         validatePostOptional(postOptional, postId);
 
@@ -112,7 +138,7 @@ public class PostService {
         }
         post.setDeleted(true);
         postRepository.save(post);
-        return postMapper.toPostResponseDto(post);
+        feedPostRedisService.removePostFromCache(postId);
     }
 
     public PostResponseDto getPostById(Long postId) {
@@ -183,7 +209,7 @@ public class PostService {
             backoff = @Backoff(delayExpression = "${spring.retry.language-tool.backoff-delay}")
     )
     @Transactional
-    protected void sendPostContentChecking(Post post) {
+    public void sendPostContentChecking(Post post) {
         String text = post.getContent();
         log.debug("Before correcting errors in the text: {}", text);
         LanguageToolResponseDto response = languageToolClient.getCorrectedText(text, "auto");
@@ -197,13 +223,26 @@ public class PostService {
         List<Post> readyToPublishPosts = postRepository.findReadyToPublish();
         log.info("Found {} posts ready to publish", readyToPublishPosts.size());
 
-        for (Post post: readyToPublishPosts) {
+        for (Post post : readyToPublishPosts) {
             CompletableFuture.runAsync(() -> publishPost(post), threadPoolExecutor)
                     .exceptionally(ex -> {
                         log.error("Error while publishing post with ID: {}", post.getId(), ex);
                         return null;
                     });
         }
+    }
+
+    public void viewPost(Long postId) {
+        kafkaPublisher.send(postViewTopic, postId);
+    }
+
+    public void viewPostConsumer(Long postId) {
+        int updated = postRepository.incrementViews(postId);
+        if (updated == 0) {
+            log.error(NO_POST_FOUND.formatted(postId));
+            throw new PostNotFoundException(NO_POST_FOUND.formatted(postId));
+        }
+        feedPostRedisService.incrementPostViews(postId);
     }
 
     private void validatePostOptional(Optional<Post> postOptional, Long id) {

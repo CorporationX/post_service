@@ -97,7 +97,13 @@ public class Post {
     @Column(name = "verified", nullable = false)
     @Builder.Default
     private boolean verified = false;
-  
+
     @Column(name = "is_corrected")
     private boolean isCorrected;
+
+    @Column(name = "views")
+    private long views;
+
+    @Column(name = "like_count")
+    private int likeCount;
 }

@@ -1,0 +1,2 @@
+ALTER TABLE comment
+    ADD COLUMN IF NOT EXISTS like_count BIGINT DEFAULT 0;

@@ -8,10 +8,14 @@ databaseChangeLog:
   - include:
       file: db/changelog/changeset/post_V004_alter_comment_add_image_keys.sql
   - include:
-      file:  db/changelog/changeset/post_V005_hashtags.sql
+      file: db/changelog/changeset/post_V005_hashtags.sql
   - include:
       file: db/changelog/changeset/post_V006__post_correction.sql
   - include:
       file: db/changelog/changeset/post_V007_comment_moderation.sql
   - include:
       file: db/changelog/changeset/post_V008__add_verified_column.sql
+  - include:
+      file: db/changelog/changeset/post_V009_add_views_and_like_count_to_post.sql
+  - include:
+      file: db/changelog/changeset/post_V010__add_like_count_to_comment.sql

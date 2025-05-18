@@ -13,13 +13,14 @@ import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.InvalidCommentContentException;
 import faang.school.postservice.exception.NotAuthorException;
 import faang.school.postservice.exception.NullEntityException;
-import faang.school.postservice.mapper.CommentRequestMapper;
-import faang.school.postservice.mapper.CommentResponseMapper;
+import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.feed.comment.FeedCommentRedisService;
+import faang.school.postservice.service.feed.post.FeedPostRedisService;
 import faang.school.postservice.service.kafka.publisher.KafkaPublisher;
 import feign.FeignException;
 import jakarta.annotation.PostConstruct;
@@ -80,12 +81,6 @@ public class CommentServiceImpl implements CommentService {
     @Value("${moderation.comments.batch-size}")
     private int banBatchSize;
 
-    @Value("${moderation.comments.max-attempts}")
-    private int userBanMaxAttempts;
-
-    @Value("${moderation.comments.backoff-delay}")
-    private int userBanBackoffDelay;
-
     @Value("${moderation.comments.thread-pool-size}")
     private int userBanThreadPoolSize;
 
@@ -95,6 +90,18 @@ public class CommentServiceImpl implements CommentService {
     @Value("${moderation.comments.ban-threshold}")
     private int userBanThreshold;
 
+    @Value("${spring.kafka.topics.user-ban}")
+    private String userBanTopic;
+
+    @Value("${spring.kafka.topics.feed.comment-create-topic}")
+    private String commentCreateTopic;
+
+    @Value("${spring.kafka.topics.feed.comment-update-topic}")
+    private String commentUpdateTopic;
+
+    @Value("${spring.kafka.topics.feed.comment-delete-topic}")
+    private String commentDeleteTopic;
+
     private static final double TOXICITY_THRESHOLD = 0.35;
     private static final int MAX_LENGTH_CHARACTER = 4096;
 
@@ -102,11 +109,12 @@ public class CommentServiceImpl implements CommentService {
     private final PostRepository postRepository;
     private final CommentAnalyzer commentAnalyzer;
     private final KafkaPublisher kafkaPublisher;
-    private final CommentRequestMapper commentRequestMapper;
-    private final CommentResponseMapper commentResponseMapper;
+    private final CommentMapper commentMapper;
     private final UserServiceClient userServiceClient;
     private final CommentEventPublisher commentEventPublisher;
     private ExecutorService executor;
+    private final FeedCommentRedisService feedCommentRedisService;
+    private final FeedPostRedisService feedPostRedisService;
 
     @PostConstruct
     public void setUp() {
@@ -167,44 +175,67 @@ public class CommentServiceImpl implements CommentService {
     }
 
     public void createComment(CommentRequestDto commentRequestDto) {
+        kafkaPublisher.send(commentCreateTopic, commentRequestDto);
+    }
+
+    public void createCommentConsumer(CommentRequestDto commentRequestDto) {
         validateCreateComment(commentRequestDto);
         Post post = getPost(commentRequestDto.getPostId());
-        Comment comment = commentRequestMapper.toComment(commentRequestDto);
+
+        Comment comment = commentMapper.toComment(commentRequestDto);
         comment.setPost(post);
+        comment.setLikes(new ArrayList<>());
         comment.setAuthorId(commentRequestDto.getAuthorId());
+
         commentRepository.save(comment);
+        feedPostRedisService.incrementPostComments(post.getId());
+        feedCommentRedisService.cacheCommentDetails(commentMapper.toFeedCommentDto(comment));
+
         log.info(INFO_CREATE_COMMENT, comment.getId(), commentRequestDto.getAuthorId(), commentRequestDto.getPostId());
         commentEventPublisher.publish(new CommentEvent(commentRequestDto.getPostId(), commentRequestDto.getAuthorId(),
                 comment.getId(), LocalDateTime.now()));
     }
 
-    public void updateComment(Long id, CommentUpdateDto commentUpdateDto) {
+    public void updateComment(CommentUpdateDto commentUpdateDto) {
+        kafkaPublisher.send(commentUpdateTopic, commentUpdateDto);
+    }
+
+    public void updateCommentConsumer(CommentUpdateDto commentUpdateDto) {
         validateContent(commentUpdateDto.getContent());
         validateId(commentUpdateDto.getAuthorId(), ERROR_NULL_AUTHOR_ID);
 
-        Comment comment = getComment(id);
+        Comment comment = getComment(commentUpdateDto.getId());
         isAuthorComment(comment, commentUpdateDto);
         comment.setContent(commentUpdateDto.getContent());
-        commentRepository.save(comment);
         comment.setVerified(false);
         comment.setVerifiedDate(null);
-        log.info(INFO_UPDATE_COMMENT, id, commentUpdateDto.getAuthorId());
+
+        commentRepository.save(comment);
+        feedCommentRedisService.cacheCommentDetails(commentMapper.toFeedCommentDto(comment));
+        log.info(INFO_UPDATE_COMMENT, commentUpdateDto.getId(), commentUpdateDto.getAuthorId());
     }
 
     public List<CommentResponseDto> getCommentsByPostId(Long postId) {
         getPost(postId);
         List<CommentResponseDto> commentResponseDto = commentRepository.findAllByPostId(postId).stream()
                 .sorted(Comparator.comparing(Comment::getCreatedAt).reversed())
-                .map(commentResponseMapper::toCommentDto)
+                .map(commentMapper::toCommentDto)
                 .toList();
         log.info(INFO_GET_COMMENTS, commentResponseDto.size(), postId);
         return commentResponseDto;
     }
 
     public void deleteComment(Long id) {
-        getComment(id);
-        commentRepository.deleteById(id);
-        log.info(INFO_DELETE_COMMENT, id);
+        kafkaPublisher.send(commentDeleteTopic, id);
+    }
+
+    public void deleteCommentConsumer(Long commentId) {
+        getComment(commentId);
+        commentRepository.deleteById(commentId);
+        Long postId = postRepository.findPostIdByCommentId(commentId);
+        feedPostRedisService.decrementPostComments(postId);
+        feedCommentRedisService.removeCommentFromCache(commentId);
+        log.info(INFO_DELETE_COMMENT, commentId);
     }
 
     private Comment getComment(Long id) {
@@ -278,7 +309,8 @@ public class CommentServiceImpl implements CommentService {
         unverifiedComments.entrySet()
                 .stream()
                 .filter(entry -> entry.getValue() >= userBanThreshold)
-                .forEach(entry -> kafkaPublisher.send(new UserBanDto(entry.getKey())));
+                .forEach(entry -> kafkaPublisher.send(
+                        userBanTopic, new UserBanDto(entry.getKey())));
     }
 
     private Mono<Void> moderateComment(Comment comment) {

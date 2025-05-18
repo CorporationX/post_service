@@ -68,4 +68,7 @@ public class Comment {
 
     @Column(name = "verified_date")
     private LocalDateTime verifiedDate;
+
+    @Column(name = "like_count")
+    private int likeCount;
 }
