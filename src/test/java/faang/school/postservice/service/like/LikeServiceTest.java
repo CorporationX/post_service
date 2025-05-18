@@ -13,7 +13,8 @@ import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.LikeService;
-import faang.school.postservice.service.feed.FeedRedisService;
+import faang.school.postservice.service.feed.comment.FeedCommentRedisService;
+import faang.school.postservice.service.feed.post.FeedPostRedisService;
 import feign.FeignException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -63,7 +64,10 @@ public class LikeServiceTest {
     private LikeService likeService;
 
     @Mock
-    private FeedRedisService feedRedisService;
+    private FeedPostRedisService feedPostRedisService;
+
+    @Mock
+    private FeedCommentRedisService feedCommentRedisService;
 
     private final long userId = 1L;
     private final long postId = 2L;
@@ -97,7 +101,7 @@ public class LikeServiceTest {
         likeService.likePostConsumer(postLikeDto);
 
         verify(likeRepository, times(1)).save(any(Like.class));
-        verify(feedRedisService, times(1)).incrementPostLikes(postId);
+        verify(feedPostRedisService, times(1)).incrementPostLikes(postId);
     }
 
     @Test
@@ -107,7 +111,7 @@ public class LikeServiceTest {
 
         assertDoesNotThrow(() -> likeService.unlikePostConsumer(postLikeDto));
         verify(likeRepository, times(1)).deleteByPostIdAndUserId(postId, userId);
-        verify(feedRedisService, times(1)).decrementPostLikes(postId);
+        verify(feedPostRedisService, times(1)).decrementPostLikes(postId);
     }
 
     @Test
@@ -121,7 +125,7 @@ public class LikeServiceTest {
         likeService.likeCommentConsumer(commentLikeDto);
 
         verify(likeRepository, times(1)).save(any(Like.class));
-        verify(feedRedisService, times(1)).incrementCommentLikes(commentId);
+        verify(feedCommentRedisService, times(1)).incrementCommentLikes(commentId);
     }
 
     @Test
@@ -131,7 +135,7 @@ public class LikeServiceTest {
 
         assertDoesNotThrow(() -> likeService.unlikeCommentConsumer(commentLikeDto));
         verify(likeRepository, times(1)).deleteByCommentIdAndUserId(commentId, userId);
-        verify(feedRedisService, times(1)).decrementCommentLikes(commentId);
+        verify(feedCommentRedisService, times(1)).decrementCommentLikes(commentId);
     }
 
     //Negative Tests
@@ -212,7 +216,7 @@ public class LikeServiceTest {
         likeService.likePostConsumer(postLikeDto);
 
         verify(likeRepository, times(1)).save(likeArgumentCaptor.capture());
-        verify(feedRedisService, times(1)).incrementPostLikes(postId);
+        verify(feedPostRedisService, times(1)).incrementPostLikes(postId);
         Like capturedLike = likeArgumentCaptor.getValue();
         assertEquals(userId, capturedLike.getUserId());
         assertEquals(postId, capturedLike.getPost().getId());

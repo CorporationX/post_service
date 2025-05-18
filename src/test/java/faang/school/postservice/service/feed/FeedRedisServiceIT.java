@@ -14,6 +14,10 @@ import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.feed.comment.FeedCommentRedisService;
+import faang.school.postservice.service.feed.comment.FeedCommentRedisServiceImpl;
+import faang.school.postservice.service.feed.post.FeedPostRedisService;
+import faang.school.postservice.service.feed.post.FeedPostRedisServiceImpl;
 import faang.school.postservice.utils.JsonUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,8 +51,10 @@ import static org.mockito.Mockito.when;
 
 @SpringBootTest(
         classes = {
-                FeedRedisService.class,
-                FeedRedisServiceImpl.class,
+                FeedPostRedisService.class,
+                FeedPostRedisServiceImpl.class,
+                FeedCommentRedisService.class,
+                FeedCommentRedisServiceImpl.class,
                 JsonUtils.class,
                 RedisConfig.class,
                 ObjectMapper.class
@@ -77,7 +83,10 @@ public class FeedRedisServiceIT {
     private CommentMapperImpl commentMapper;
 
     @Autowired
-    private FeedRedisService feedRedisService;
+    private FeedPostRedisService feedPostRedisService;
+
+    @Autowired
+    private FeedCommentRedisService feedCommentRedisService;
 
     @Autowired
     private RedisTemplate<String, String> redisTemplate;
@@ -163,7 +172,7 @@ public class FeedRedisServiceIT {
         Map<String, String> json = jsonUtils.toMap(feedPostDto);
         redisTemplate.opsForHash().putAll(postKey, json);
 
-        assertTrue(feedRedisService.isPostAvailableInCache(userId, offset));
+        assertTrue(feedPostRedisService.isPostAvailableInCache(userId, offset));
     }
 
     @Test
@@ -171,7 +180,7 @@ public class FeedRedisServiceIT {
         redisTemplate.opsForList().rightPushAll(getUserFeedPostsKey(userId, offset),
                 String.valueOf(feedPostDto.getId()));
 
-        assertFalse(feedRedisService.isPostAvailableInCache(userId, offset));
+        assertFalse(feedPostRedisService.isPostAvailableInCache(userId, offset));
     }
 
     @Test
@@ -180,12 +189,12 @@ public class FeedRedisServiceIT {
         Map<String, String> json = jsonUtils.toMap(feedPostDto);
         redisTemplate.opsForHash().putAll(postKey, json);
 
-        assertFalse(feedRedisService.isPostAvailableInCache(userId, offset));
+        assertFalse(feedPostRedisService.isPostAvailableInCache(userId, offset));
     }
 
     @Test
     public void testIsPostAvailableInCache_postAbsent() {
-        assertFalse(feedRedisService.isPostAvailableInCache(userId, offset));
+        assertFalse(feedPostRedisService.isPostAvailableInCache(userId, offset));
     }
 
     @Test
@@ -197,7 +206,7 @@ public class FeedRedisServiceIT {
         Map<String, String> json = jsonUtils.toMap(feedCommentDto);
         redisTemplate.opsForHash().putAll(commentKey, json);
 
-        assertTrue(feedRedisService.isCommentAvailableInCache(postId, offset));
+        assertTrue(feedCommentRedisService.isCommentAvailableInCache(postId, offset));
     }
 
     @Test
@@ -205,7 +214,7 @@ public class FeedRedisServiceIT {
         redisTemplate.opsForList().rightPushAll(getPostFeedCommentsKey(postId, offset),
                 String.valueOf(feedCommentDto.getId()));
 
-        assertFalse(feedRedisService.isCommentAvailableInCache(postId, offset));
+        assertFalse(feedCommentRedisService.isCommentAvailableInCache(postId, offset));
     }
 
     @Test
@@ -214,12 +223,12 @@ public class FeedRedisServiceIT {
         Map<String, String> json = jsonUtils.toMap(feedCommentDto);
         redisTemplate.opsForHash().putAll(commentKey, json);
 
-        assertFalse(feedRedisService.isCommentAvailableInCache(postId, offset));
+        assertFalse(feedCommentRedisService.isCommentAvailableInCache(postId, offset));
     }
 
     @Test
     public void testIsCommentAvailableInCache_commentAbsent() {
-        assertFalse(feedRedisService.isCommentAvailableInCache(postId, offset));
+        assertFalse(feedCommentRedisService.isCommentAvailableInCache(postId, offset));
     }
 
     @Test
@@ -231,7 +240,7 @@ public class FeedRedisServiceIT {
         Map<String, String> json = jsonUtils.toMap(feedPostDto);
         redisTemplate.opsForHash().putAll(postKey, json);
 
-        List<FeedPostDto> result = feedRedisService.loadPostsFromCache(userId, offset);
+        List<FeedPostDto> result = feedPostRedisService.loadPostsFromCache(userId, offset);
 
         assertEquals(1, result.size());
         assertEquals(feedPostDto, result.get(0));
@@ -246,7 +255,7 @@ public class FeedRedisServiceIT {
         Map<String, String> json = jsonUtils.toMap(feedCommentDto);
         redisTemplate.opsForHash().putAll(commentKey, json);
 
-        List<FeedCommentDto> result = feedRedisService.loadCommentsFromCache(userId, offset);
+        List<FeedCommentDto> result = feedCommentRedisService.loadCommentsFromCache(userId, offset);
 
         assertEquals(1, result.size());
         assertEquals(feedCommentDto, result.get(0));
@@ -254,14 +263,14 @@ public class FeedRedisServiceIT {
 
     @Test
     public void testCachePostDetailsIdForUser_saved() {
-        feedRedisService.cachePostIdForUser(userId, postId, 0);
+        feedPostRedisService.cachePostIdForUser(userId, postId, 0);
 
         assertTrue(redisTemplate.hasKey(getUserFeedPostsKey(userId, offset)));
     }
 
     @Test
     public void testCacheCommentDetailsIdForPost_saved() {
-        feedRedisService.cacheCommentIdForPost(postId, commentId, 0);
+        feedCommentRedisService.cacheCommentIdForPost(postId, commentId, 0);
 
         assertTrue(redisTemplate.hasKey(getPostFeedCommentsKey(postId, offset)));
     }
@@ -270,7 +279,7 @@ public class FeedRedisServiceIT {
     public void testCachePostDetails_saved() {
         when(userServiceClient.getUser(feedPostDto.getAuthorId())).thenReturn(userDto);
 
-        feedRedisService.cachePostDetails(feedPostDto);
+        feedPostRedisService.cachePostDetails(feedPostDto);
 
         assertTrue(redisTemplate.hasKey(getPostKey(feedPostDto.getId())));
     }
@@ -279,109 +288,109 @@ public class FeedRedisServiceIT {
     public void testRemovePostFromCache_removed() {
         when(userServiceClient.getUser(feedPostDto.getAuthorId())).thenReturn(userDto);
 
-        feedRedisService.cachePostDetails(feedPostDto);
+        feedPostRedisService.cachePostDetails(feedPostDto);
         assertTrue(redisTemplate.hasKey(getPostKey(feedPostDto.getId())));
 
-        feedRedisService.removePostFromCache(feedPostDto.getId());
+        feedPostRedisService.removePostFromCache(feedPostDto.getId());
         assertFalse(redisTemplate.hasKey(getPostKey(feedPostDto.getId())));
     }
 
     @Test
     public void testIncrementPostLikes() {
-        feedRedisService.cachePostIdForUser(userId, postId, offset);
+        feedPostRedisService.cachePostIdForUser(userId, postId, offset);
         when(userServiceClient.getUser(feedPostDto.getAuthorId())).thenReturn(userDto);
-        feedRedisService.cachePostDetails(feedPostDto);
+        feedPostRedisService.cachePostDetails(feedPostDto);
 
-        int was = feedRedisService.loadPostsFromCache(userId, offset).get(0).getLikes();
-        feedRedisService.incrementPostLikes(feedPostDto.getId());
+        int was = feedPostRedisService.loadPostsFromCache(userId, offset).get(0).getLikes();
+        feedPostRedisService.incrementPostLikes(feedPostDto.getId());
 
-        assertEquals(was + 1, feedRedisService.loadPostsFromCache(userId, offset).get(0).getLikes());
+        assertEquals(was + 1, feedPostRedisService.loadPostsFromCache(userId, offset).get(0).getLikes());
     }
 
     @Test
     public void testDecrementPostLikes() {
-        feedRedisService.cachePostIdForUser(userId, postId, offset);
+        feedPostRedisService.cachePostIdForUser(userId, postId, offset);
         when(userServiceClient.getUser(feedPostDto.getAuthorId())).thenReturn(userDto);
-        feedRedisService.cachePostDetails(feedPostDto);
+        feedPostRedisService.cachePostDetails(feedPostDto);
 
-        int was = feedRedisService.loadPostsFromCache(userId, offset).get(0).getLikes();
-        feedRedisService.decrementPostLikes(feedPostDto.getId());
+        int was = feedPostRedisService.loadPostsFromCache(userId, offset).get(0).getLikes();
+        feedPostRedisService.decrementPostLikes(feedPostDto.getId());
 
-        assertEquals(was - 1, feedRedisService.loadPostsFromCache(userId, offset).get(0).getLikes());
+        assertEquals(was - 1, feedPostRedisService.loadPostsFromCache(userId, offset).get(0).getLikes());
     }
 
     @Test
     public void testIncrementCommentLikes() {
-        feedRedisService.cacheCommentIdForPost(postId, feedCommentDto.getId(), offset);
-        feedRedisService.cacheCommentDetails(feedCommentDto);
+        feedCommentRedisService.cacheCommentIdForPost(postId, feedCommentDto.getId(), offset);
+        feedCommentRedisService.cacheCommentDetails(feedCommentDto);
 
-        int was = feedRedisService.loadCommentsFromCache(postId, offset).get(0).getLikes();
-        feedRedisService.incrementCommentLikes(feedCommentDto.getId());
+        int was = feedCommentRedisService.loadCommentsFromCache(postId, offset).get(0).getLikes();
+        feedCommentRedisService.incrementCommentLikes(feedCommentDto.getId());
 
-        assertEquals(was + 1, feedRedisService.loadCommentsFromCache(postId, offset).get(0).getLikes());
+        assertEquals(was + 1, feedCommentRedisService.loadCommentsFromCache(postId, offset).get(0).getLikes());
     }
 
     @Test
     public void testDecrementCommentLikes() {
-        feedRedisService.cacheCommentIdForPost(postId, feedCommentDto.getId(), offset);
-        feedRedisService.cacheCommentDetails(feedCommentDto);
+        feedCommentRedisService.cacheCommentIdForPost(postId, feedCommentDto.getId(), offset);
+        feedCommentRedisService.cacheCommentDetails(feedCommentDto);
 
-        int was = feedRedisService.loadCommentsFromCache(postId, offset).get(0).getLikes();
-        feedRedisService.decrementCommentLikes(feedCommentDto.getId());
+        int was = feedCommentRedisService.loadCommentsFromCache(postId, offset).get(0).getLikes();
+        feedCommentRedisService.decrementCommentLikes(feedCommentDto.getId());
 
-        assertEquals(was - 1, feedRedisService.loadCommentsFromCache(postId, offset).get(0).getLikes());
+        assertEquals(was - 1, feedCommentRedisService.loadCommentsFromCache(postId, offset).get(0).getLikes());
     }
 
     @Test
     public void testIncrementPostComments() {
         when(userServiceClient.getUser(feedPostDto.getAuthorId())).thenReturn(userDto);
-        feedRedisService.cachePostIdForUser(userId, feedPostDto.getId(), offset);
-        feedRedisService.cachePostDetails(feedPostDto);
+        feedPostRedisService.cachePostIdForUser(userId, feedPostDto.getId(), offset);
+        feedPostRedisService.cachePostDetails(feedPostDto);
 
-        int was = feedRedisService.loadPostsFromCache(userId, offset).get(0).getComments();
-        feedRedisService.incrementPostComments(feedPostDto.getId());
+        int was = feedPostRedisService.loadPostsFromCache(userId, offset).get(0).getComments();
+        feedPostRedisService.incrementPostComments(feedPostDto.getId());
 
-        assertEquals(was + 1, feedRedisService.loadPostsFromCache(userId, offset).get(0).getComments());
+        assertEquals(was + 1, feedPostRedisService.loadPostsFromCache(userId, offset).get(0).getComments());
     }
 
     @Test
     public void testDecrementPostComments() {
         when(userServiceClient.getUser(feedPostDto.getAuthorId())).thenReturn(userDto);
-        feedRedisService.cachePostIdForUser(userId, feedPostDto.getId(), offset);
-        feedRedisService.cachePostDetails(feedPostDto);
+        feedPostRedisService.cachePostIdForUser(userId, feedPostDto.getId(), offset);
+        feedPostRedisService.cachePostDetails(feedPostDto);
 
-        int was = feedRedisService.loadPostsFromCache(userId, offset).get(0).getComments();
-        feedRedisService.decrementPostComments(feedPostDto.getId());
+        int was = feedPostRedisService.loadPostsFromCache(userId, offset).get(0).getComments();
+        feedPostRedisService.decrementPostComments(feedPostDto.getId());
 
-        assertEquals(was - 1, feedRedisService.loadPostsFromCache(userId, offset).get(0).getComments());
+        assertEquals(was - 1, feedPostRedisService.loadPostsFromCache(userId, offset).get(0).getComments());
     }
 
     @Test
     public void testCacheCommentDetails() {
-        feedRedisService.cacheCommentDetails(feedCommentDto);
+        feedCommentRedisService.cacheCommentDetails(feedCommentDto);
 
         assertTrue(redisTemplate.hasKey(getCommentKey(feedCommentDto.getId())));
     }
 
     @Test
     public void testRemoveCommentFromCache_removed() {
-        feedRedisService.cacheCommentDetails(feedCommentDto);
+        feedCommentRedisService.cacheCommentDetails(feedCommentDto);
         assertTrue(redisTemplate.hasKey(getCommentKey(feedCommentDto.getId())));
 
-        feedRedisService.removeCommentFromCache(feedCommentDto.getId());
+        feedCommentRedisService.removeCommentFromCache(feedCommentDto.getId());
         assertFalse(redisTemplate.hasKey(getCommentKey(feedCommentDto.getId())));
     }
 
     @Test
     public void testIncrementPostViews() {
         when(userServiceClient.getUser(feedPostDto.getAuthorId())).thenReturn(userDto);
-        feedRedisService.cachePostIdForUser(userId, feedPostDto.getId(), offset);
-        feedRedisService.cachePostDetails(feedPostDto);
+        feedPostRedisService.cachePostIdForUser(userId, feedPostDto.getId(), offset);
+        feedPostRedisService.cachePostDetails(feedPostDto);
 
-        int was = feedRedisService.loadPostsFromCache(userId, offset).get(0).getViews();
-        feedRedisService.incrementPostViews(feedPostDto.getId());
+        int was = feedPostRedisService.loadPostsFromCache(userId, offset).get(0).getViews();
+        feedPostRedisService.incrementPostViews(feedPostDto.getId());
 
-        assertEquals(was + 1, feedRedisService.loadPostsFromCache(userId, offset).get(0).getViews());
+        assertEquals(was + 1, feedPostRedisService.loadPostsFromCache(userId, offset).get(0).getViews());
     }
 
     @Test
@@ -391,7 +400,7 @@ public class FeedRedisServiceIT {
         when(postRepository.findPublishedPostsByAuthorIds(any(Pageable.class), eq(List.of(10L))))
                 .thenReturn(new PageImpl<>(List.of(post)));
 
-        feedRedisService.preloadUserPosts(userId);
+        feedPostRedisService.preloadUserPosts(userId);
 
         assertTrue(redisTemplate.hasKey(getUserFeedPostsKey(userId, offset)));
         assertTrue(redisTemplate.hasKey(getPostKey(feedPostDto.getId())));
@@ -402,7 +411,7 @@ public class FeedRedisServiceIT {
         when(commentRepository.findByPostIdOrderByCreatedAtDesc(any(Pageable.class), eq(feedCommentDto.getPostId())))
                 .thenReturn(new PageImpl<>(List.of(comment)));
 
-        feedRedisService.preloadPostComments(feedCommentDto.getPostId());
+        feedCommentRedisService.preloadPostComments(feedCommentDto.getPostId());
 
         assertTrue(redisTemplate.hasKey(getPostFeedCommentsKey(postId, offset)));
         assertTrue(redisTemplate.hasKey(getCommentKey(feedCommentDto.getId())));

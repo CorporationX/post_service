@@ -13,7 +13,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.PostService;
-import faang.school.postservice.service.feed.FeedRedisService;
+import faang.school.postservice.service.feed.post.FeedPostRedisService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -70,7 +70,7 @@ public class PostServiceTest {
     private PostMapperImpl postMapper;
 
     @Mock
-    private FeedRedisService feedRedisService;
+    private FeedPostRedisService feedPostRedisService;
 
     private PostRequestDto postRequestDto;
     private Post post;
@@ -170,7 +170,7 @@ public class PostServiceTest {
         verify(postRepository, times(1))
                 .save(post);
 
-        verify(feedRedisService, times(1)).cachePostDetails(postMapper.toFeedPostDto(post));
+        verify(feedPostRedisService, times(1)).cachePostDetails(postMapper.toFeedPostDto(post));
     }
 
     @Test
@@ -204,7 +204,7 @@ public class PostServiceTest {
 
         post.setDeleted(true);
         verify(postRepository, times(1)).save(post);
-        verify(feedRedisService, times(1)).removePostFromCache(postId);
+        verify(feedPostRedisService, times(1)).removePostFromCache(postId);
     }
 
     @Test

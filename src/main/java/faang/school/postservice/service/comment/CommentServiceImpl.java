@@ -19,7 +19,8 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.feed.FeedRedisService;
+import faang.school.postservice.service.feed.comment.FeedCommentRedisService;
+import faang.school.postservice.service.feed.post.FeedPostRedisService;
 import faang.school.postservice.service.kafka.publisher.KafkaPublisher;
 import feign.FeignException;
 import jakarta.annotation.PostConstruct;
@@ -112,7 +113,8 @@ public class CommentServiceImpl implements CommentService {
     private final UserServiceClient userServiceClient;
     private final CommentEventPublisher commentEventPublisher;
     private ExecutorService executor;
-    private final FeedRedisService feedRedisService;
+    private final FeedCommentRedisService feedCommentRedisService;
+    private final FeedPostRedisService feedPostRedisService;
 
     @PostConstruct
     public void setUp() {
@@ -186,8 +188,8 @@ public class CommentServiceImpl implements CommentService {
         comment.setAuthorId(commentRequestDto.getAuthorId());
 
         commentRepository.save(comment);
-        feedRedisService.incrementPostComments(post.getId());
-        feedRedisService.cacheCommentDetails(commentMapper.toFeedCommentDto(comment));
+        feedPostRedisService.incrementPostComments(post.getId());
+        feedCommentRedisService.cacheCommentDetails(commentMapper.toFeedCommentDto(comment));
 
         log.info(INFO_CREATE_COMMENT, comment.getId(), commentRequestDto.getAuthorId(), commentRequestDto.getPostId());
         commentEventPublisher.publish(new CommentEvent(commentRequestDto.getPostId(), commentRequestDto.getAuthorId(),
@@ -209,7 +211,7 @@ public class CommentServiceImpl implements CommentService {
         comment.setVerifiedDate(null);
 
         commentRepository.save(comment);
-        feedRedisService.cacheCommentDetails(commentMapper.toFeedCommentDto(comment));
+        feedCommentRedisService.cacheCommentDetails(commentMapper.toFeedCommentDto(comment));
         log.info(INFO_UPDATE_COMMENT, commentUpdateDto.getId(), commentUpdateDto.getAuthorId());
     }
 
@@ -231,8 +233,8 @@ public class CommentServiceImpl implements CommentService {
         getComment(commentId);
         commentRepository.deleteById(commentId);
         Long postId = postRepository.findPostIdByCommentId(commentId);
-        feedRedisService.decrementPostComments(postId);
-        feedRedisService.removeCommentFromCache(commentId);
+        feedPostRedisService.decrementPostComments(postId);
+        feedCommentRedisService.removeCommentFromCache(commentId);
         log.info(INFO_DELETE_COMMENT, commentId);
     }
 

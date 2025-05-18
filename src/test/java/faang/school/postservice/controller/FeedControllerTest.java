@@ -1,23 +1,23 @@
 package faang.school.postservice.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import faang.school.postservice.KafkaTestConfig;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.KafkaTestConfig;
 import faang.school.postservice.config.RedisConfig;
 import faang.school.postservice.dto.comment.FeedCommentDto;
 import faang.school.postservice.dto.post.FeedPostDto;
-import faang.school.postservice.mapper.CommentMapperImpl;
-import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.feed.FeedRedisService;
-import faang.school.postservice.service.feed.FeedRedisServiceImpl;
 import faang.school.postservice.service.feed.FeedService;
 import faang.school.postservice.service.feed.FeedServiceImpl;
+import faang.school.postservice.service.feed.comment.FeedCommentRedisService;
+import faang.school.postservice.service.feed.comment.FeedCommentRedisServiceImpl;
+import faang.school.postservice.service.feed.post.FeedPostRedisService;
+import faang.school.postservice.service.feed.post.FeedPostRedisServiceImpl;
 import faang.school.postservice.service.kafka.publisher.KafkaPublisher;
 import faang.school.postservice.utils.JsonUtils;
 import org.junit.jupiter.api.AfterEach;
@@ -66,8 +66,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest(
         classes = {
-                FeedRedisService.class,
-                FeedRedisServiceImpl.class,
+                FeedPostRedisService.class,
+                FeedPostRedisServiceImpl.class,
+                FeedCommentRedisService.class,
+                FeedCommentRedisServiceImpl.class,
                 FeedController.class,
                 JsonUtils.class,
                 RedisConfig.class,
@@ -81,7 +83,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         RedisAutoConfiguration.class,
         DataSourceAutoConfiguration.class,
         HibernateJpaAutoConfiguration.class
-//KafkaAutoConfiguration.class
 })
 @EntityScan(basePackages = "faang.school.postservice.model")
 @AutoConfigureMockMvc
@@ -101,14 +102,8 @@ public class FeedControllerTest {
     @SpyBean
     private CommentRepository commentRepository;
 
-    @SpyBean
-    private PostMapperImpl postMapper;
-
-    @SpyBean
-    private CommentMapperImpl commentMapper;
-
     @Autowired
-    private FeedRedisService feedRedisService;
+    private FeedPostRedisService feedPostRedisService;
 
     @Autowired
     private RedisTemplate<String, String> redisTemplate;

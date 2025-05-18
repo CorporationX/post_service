@@ -18,7 +18,8 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.feed.FeedRedisService;
+import faang.school.postservice.service.feed.comment.FeedCommentRedisService;
+import faang.school.postservice.service.feed.post.FeedPostRedisService;
 import faang.school.postservice.service.kafka.publisher.KafkaPublisher;
 import feign.FeignException;
 import feign.Request;
@@ -102,7 +103,10 @@ class CommentServiceTest {
     private KafkaPublisher kafkaPublisher;
 
     @Mock
-    private FeedRedisService feedRedisService;
+    private FeedPostRedisService feedPostRedisService;
+
+    @Mock
+    private FeedCommentRedisService feedCommentRedisService;
 
     private static final Long POST_ID = 1L;
     private static final Long COMMENT_ID = 2L;
@@ -189,7 +193,7 @@ class CommentServiceTest {
         assertEquals(comment.getContent(), savedComment.getContent());
 
         verify(commentEventPublisher, times(1)).publish(commentEventCaptor.capture());
-        verify(feedRedisService, times(1)).incrementPostComments(commentRequestDto.getPostId());
+        verify(feedPostRedisService, times(1)).incrementPostComments(commentRequestDto.getPostId());
     }
 
     @Test
@@ -201,7 +205,7 @@ class CommentServiceTest {
         commentService.updateCommentConsumer(commentUpdateDto);
 
         verify(commentRepository, times(1)).save(commentCaptor.capture());
-        verify(feedRedisService, times(1))
+        verify(feedCommentRedisService, times(1))
                 .cacheCommentDetails(commentMapper.toFeedCommentDto(comment));
 
         assertEquals(UPDATE_CONTENT, comment.getContent());

@@ -7,6 +7,8 @@ import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.feed.comment.FeedCommentRedisService;
+import faang.school.postservice.service.feed.post.FeedPostRedisService;
 import faang.school.postservice.service.kafka.publisher.KafkaPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +28,8 @@ import java.util.concurrent.ExecutorService;
 public class FeedServiceImpl implements FeedService {
     private final UserServiceClient userServiceClient;
     private final KafkaPublisher kafkaPublisher;
-    private final FeedRedisService feedRedisService;
+    private final FeedPostRedisService feedPostRedisService;
+    private final FeedCommentRedisService feedCommentRedisService;
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final PostMapper postMapper;
@@ -50,11 +53,11 @@ public class FeedServiceImpl implements FeedService {
     public Page<FeedPostDto> getFeedPosts(Long userId, int offset) {
         List<FeedPostDto> posts;
         Pageable pageable = PageRequest.of(offset / postBatchSize, postBatchSize);
-        if (feedRedisService.isPostAvailableInCache(userId, offset)) {
-            posts = feedRedisService.loadPostsFromCache(userId, offset);
+        if (feedPostRedisService.isPostAvailableInCache(userId, offset)) {
+            posts = feedPostRedisService.loadPostsFromCache(userId, offset);
             posts.forEach(post -> {
-                if (feedRedisService.isCommentAvailableInCache(post.getId(), 0)) {
-                    feedRedisService.preloadPostComments(post.getId());
+                if (feedCommentRedisService.isCommentAvailableInCache(post.getId(), 0)) {
+                    feedCommentRedisService.preloadPostComments(post.getId());
                 }
             });
         } else {
@@ -71,8 +74,8 @@ public class FeedServiceImpl implements FeedService {
     public Page<FeedCommentDto> getFeedComments(Long postId, int offset) {
         List<FeedCommentDto> comments;
         Pageable pageable = PageRequest.of(offset / commentBatchSize, commentBatchSize);
-        if (feedRedisService.isCommentAvailableInCache(postId, offset)) {
-            comments = feedRedisService.loadCommentsFromCache(postId, offset);
+        if (feedCommentRedisService.isCommentAvailableInCache(postId, offset)) {
+            comments = feedCommentRedisService.loadCommentsFromCache(postId, offset);
         } else {
             comments = commentMapper.toFeedCommentDtoList(commentRepository
                     .findByPostIdOrderByCreatedAtDesc(pageable, postId).getContent());
@@ -97,7 +100,7 @@ public class FeedServiceImpl implements FeedService {
 
     public void heatFeedConsumer(Long userId) {
         log.info("Heating cached user id {}", userId);
-        feedRedisService.preloadUserPosts(userId);
+        feedPostRedisService.preloadUserPosts(userId);
         List<Long> followees = userServiceClient.getFollowees(userId);
         if (followees.isEmpty()) {
             return;
@@ -105,22 +108,22 @@ public class FeedServiceImpl implements FeedService {
         List<Long> postIds = postRepository.findPublishedPostIdsByAuthorIds(
                 PageRequest.of(0, postBatchSize), followees).getContent();
 
-        postIds.forEach(feedRedisService::preloadPostComments);
+        postIds.forEach(feedCommentRedisService::preloadPostComments);
     }
 
     private void heatNextPostBatch(Long userId, int offset, List<FeedPostDto> posts) {
-        feedRedisService.updateUserPostOffset(userId, offset + postBatchSize);
+        feedPostRedisService.updateUserPostOffset(userId, offset + postBatchSize);
         posts.forEach(feedPostDto -> {
-            feedRedisService.cachePostDetails(feedPostDto);
-            feedRedisService.cachePostIdForUser(userId, feedPostDto.getId(), offset + postBatchSize);
+            feedPostRedisService.cachePostDetails(feedPostDto);
+            feedPostRedisService.cachePostIdForUser(userId, feedPostDto.getId(), offset + postBatchSize);
         });
     }
 
     private void heatNextCommentBatch(Long postId, int offset, List<FeedCommentDto> comments) {
-        feedRedisService.updatePostCommentsOffset(postId, offset + postBatchSize);
+        feedCommentRedisService.updatePostCommentsOffset(postId, offset + postBatchSize);
         comments.forEach(feedPostDto -> {
-            feedRedisService.cacheCommentDetails(feedPostDto);
-            feedRedisService.cacheCommentIdForPost(postId, feedPostDto.getId(), offset + postBatchSize);
+            feedCommentRedisService.cacheCommentDetails(feedPostDto);
+            feedCommentRedisService.cacheCommentIdForPost(postId, feedPostDto.getId(), offset + postBatchSize);
         });
     }
 }

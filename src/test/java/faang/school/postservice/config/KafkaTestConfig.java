@@ -1,4 +1,4 @@
-package faang.school.postservice;
+package faang.school.postservice.config;
 
 import faang.school.postservice.controller.FeedControllerTest;
 import org.apache.kafka.clients.producer.ProducerConfig;

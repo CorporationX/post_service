@@ -9,6 +9,8 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.feed.comment.FeedCommentRedisService;
+import faang.school.postservice.service.feed.post.FeedPostRedisService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -44,7 +46,10 @@ public class FeedServiceTest {
     private UserServiceClient userServiceClient;
 
     @Mock
-    private FeedRedisService feedRedisService;
+    private FeedPostRedisService feedPostRedisService;
+
+    @Mock
+    private FeedCommentRedisService feedCommentRedisService;
 
     @Mock
     private PostRepository postRepository;
@@ -156,35 +161,35 @@ public class FeedServiceTest {
 
     @Test
     public void testGetFeedPosts_takeFromCache_commentsAvailableInCache() {
-        when(feedRedisService.isPostAvailableInCache(userId, offset)).thenReturn(true);
-        when(feedRedisService.loadPostsFromCache(userId, offset)).thenReturn(feedPostDtos);
-        when(feedRedisService.isCommentAvailableInCache(anyLong(), eq(offset))).thenReturn(true);
+        when(feedPostRedisService.isPostAvailableInCache(userId, offset)).thenReturn(true);
+        when(feedPostRedisService.loadPostsFromCache(userId, offset)).thenReturn(feedPostDtos);
+        when(feedCommentRedisService.isCommentAvailableInCache(anyLong(), eq(offset))).thenReturn(true);
 
         List<FeedPostDto> result = feedService.getFeedPosts(userId, offset).getContent();
 
         assertEquals(feedPostDtos, result);
-        verify(feedRedisService, times(2)).preloadPostComments(anyLong());
-        verify(feedRedisService, times(1)).loadPostsFromCache(userId, offset);
+        verify(feedCommentRedisService, times(2)).preloadPostComments(anyLong());
+        verify(feedPostRedisService, times(1)).loadPostsFromCache(userId, offset);
     }
 
     @Test
     public void testGetFeedPosts_takeFromCache_commentsNotAvailableInCache() {
-        when(feedRedisService.isPostAvailableInCache(userId, offset)).thenReturn(true);
-        when(feedRedisService.loadPostsFromCache(userId, offset)).thenReturn(feedPostDtos);
-        when(feedRedisService.isCommentAvailableInCache(anyLong(), eq(offset))).thenReturn(false);
+        when(feedPostRedisService.isPostAvailableInCache(userId, offset)).thenReturn(true);
+        when(feedPostRedisService.loadPostsFromCache(userId, offset)).thenReturn(feedPostDtos);
+        when(feedCommentRedisService.isCommentAvailableInCache(anyLong(), eq(offset))).thenReturn(false);
 
         List<FeedPostDto> result = feedService.getFeedPosts(userId, offset).getContent();
 
         assertEquals(feedPostDtos, result);
-        verify(feedRedisService, never()).preloadPostComments(anyLong());
-        verify(feedRedisService, times(1)).loadPostsFromCache(userId, offset);
+        verify(feedCommentRedisService, never()).preloadPostComments(anyLong());
+        verify(feedPostRedisService, times(1)).loadPostsFromCache(userId, offset);
     }
 
     @Test
     public void testGetFeedPosts_takeFromDataBase() {
         List<Long> followees = new ArrayList<>();
         followees.add(10L);
-        when(feedRedisService.isPostAvailableInCache(userId, offset)).thenReturn(false);
+        when(feedPostRedisService.isPostAvailableInCache(userId, offset)).thenReturn(false);
         when(userServiceClient.getFollowees(userId)).thenReturn(followees);
         when(postRepository.findPublishedPostsByAuthorIds(any(Pageable.class), eq(followees)))
                 .thenReturn(postPage);
@@ -192,25 +197,25 @@ public class FeedServiceTest {
         List<FeedPostDto> result = feedService.getFeedPosts(userId, offset).getContent();
 
         assertEquals(postMapper.toFeedPostDtoList(posts), result);
-        verify(feedRedisService, never()).loadPostsFromCache(userId, offset);
+        verify(feedPostRedisService, never()).loadPostsFromCache(userId, offset);
         verify(postRepository, times(1))
                 .findPublishedPostsByAuthorIds(any(Pageable.class), eq(followees));
     }
 
     @Test
     public void testGetFeedComments_takeFromCache() {
-        when(feedRedisService.isCommentAvailableInCache(postId, offset)).thenReturn(true);
-        when(feedRedisService.loadCommentsFromCache(postId, offset)).thenReturn(feedCommentDtos);
+        when(feedCommentRedisService.isCommentAvailableInCache(postId, offset)).thenReturn(true);
+        when(feedCommentRedisService.loadCommentsFromCache(postId, offset)).thenReturn(feedCommentDtos);
 
         List<FeedCommentDto> result = feedService.getFeedComments(postId, offset).getContent();
 
         assertEquals(feedCommentDtos, result);
-        verify(feedRedisService, times(1)).loadCommentsFromCache(postId, offset);
+        verify(feedCommentRedisService, times(1)).loadCommentsFromCache(postId, offset);
     }
 
     @Test
     public void testGetFeedComments_takeFromDataBase() {
-        when(feedRedisService.isCommentAvailableInCache(postId, offset)).thenReturn(false);
+        when(feedCommentRedisService.isCommentAvailableInCache(postId, offset)).thenReturn(false);
         when(commentRepository.findByPostIdOrderByCreatedAtDesc(any(Pageable.class), eq(postId)))
                 .thenReturn(commentPage);
 

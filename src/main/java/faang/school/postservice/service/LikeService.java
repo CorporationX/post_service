@@ -5,16 +5,15 @@ import faang.school.postservice.dto.ike.CommentLikeDto;
 import faang.school.postservice.dto.ike.PostLikeDto;
 import faang.school.postservice.exception.LikeException;
 import faang.school.postservice.like.TargetLike;
-import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.feed.FeedRedisService;
+import faang.school.postservice.service.feed.comment.FeedCommentRedisService;
+import faang.school.postservice.service.feed.post.FeedPostRedisService;
 import faang.school.postservice.service.kafka.publisher.KafkaPublisher;
-import faang.school.postservice.utils.JsonUtils;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,14 +36,13 @@ public class LikeService {
     public static final String BOTH_LIKE = "You cannot like a post and comment at the same time.";
     public static final String ERROR_VALIDATING_USER = "Error occurred when validating a user with id: %d.";
 
-    private final JsonUtils jsonUtils;
     private final KafkaPublisher kafkaPublisher;
     private final LikeRepository likeRepository;
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final UserServiceClient userServiceClient;
-    private final LikeMapper likeMapper;
-    private final FeedRedisService feedRedisService;
+    private final FeedPostRedisService feedPostRedisService;
+    private final FeedCommentRedisService feedCommentRedisService;
 
     @Value("${spring.kafka.topics.feed.post-like-topic}")
     private String postLikeTopic;
@@ -74,7 +72,7 @@ public class LikeService {
         Like like = buildLike(userId, post, null);
         validateLikesRepeat(post, null);
         likeRepository.save(like);
-        feedRedisService.incrementPostLikes(postId);
+        feedPostRedisService.incrementPostLikes(postId);
         log.info("User {} liked post {} !", userId, postId);
     }
 
@@ -94,7 +92,7 @@ public class LikeService {
             throw new LikeException(error);
         }
         likeRepository.deleteByPostIdAndUserId(postId, userId);
-        feedRedisService.decrementPostLikes(postId);
+        feedPostRedisService.decrementPostLikes(postId);
         log.info("User {} removed a like from a post {}", userId, postId);
     }
 
@@ -116,7 +114,7 @@ public class LikeService {
 
         Like like = buildLike(userId, null, comment);
         likeRepository.save(like);
-        feedRedisService.incrementCommentLikes(commentId);
+        feedCommentRedisService.incrementCommentLikes(commentId);
         log.info("User {} liked comment {} !", userId, commentId);
     }
 
@@ -136,7 +134,7 @@ public class LikeService {
             throw new LikeException(error);
         }
         likeRepository.deleteByCommentIdAndUserId(commentId, userId);
-        feedRedisService.decrementCommentLikes(commentId);
+        feedCommentRedisService.decrementCommentLikes(commentId);
         log.info("User {} removed a like from a comment {}", userId, commentId);
     }
 
