@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       - titan-master-stream9
+      - Yom-master-stream9
 
 jobs:
   build:
