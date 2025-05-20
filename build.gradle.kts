@@ -99,7 +99,7 @@ tasks.checkstyleTest {
 val jacocoExclude = listOf(
         "faang/school/postservice/PostServiceApp*",
         "faang/school/postservice/client/Feign*",
-//        "**/config/**",
+        "**/config/**",
         "**/model/**",
         "**/dto/**",
         "**/mapper/**",
@@ -122,7 +122,7 @@ tasks.jacocoTestReport {
 val jacocoClassExclude = listOf(
         "faang.school.postservice.PostServiceApp",
         "faang.school.postservice.client.Feign*",
-//        "faang.school.postservice.config.*",
+        "faang.school.postservice.config.*",
         "faang.school.postservice.model.*",
         "faang.school.postservice.mapper.*",
         "faang.school.postservice.controller.*",
@@ -138,7 +138,7 @@ tasks.jacocoTestCoverageVerification {
             limit {
                 counter = "LINE"
                 value = "COVEREDRATIO"
-                minimum = "0.7".toBigDecimal()
+                minimum = "0.8".toBigDecimal()
             }
         }
     }

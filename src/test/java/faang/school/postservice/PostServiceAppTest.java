@@ -8,7 +8,6 @@ class PostServiceAppTest {
 
     @Test
     public void testFail() {
-//        fail(); //
         assertTrue(true);
     }
 }
