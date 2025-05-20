@@ -97,10 +97,9 @@ tasks.checkstyleTest {
 
 
 val jacocoExclude = listOf(
-//        "com/json/student/**",
         "faang/school/postservice/PostServiceApp*",
         "faang/school/postservice/client/Feign*",
-        "**/config/**",
+//        "**/config/**",
         "**/model/**",
         "**/dto/**",
         "**/mapper/**",
@@ -121,10 +120,9 @@ tasks.jacocoTestReport {
 }
 
 val jacocoClassExclude = listOf(
-//        "com.json.student.*",
         "faang.school.postservice.PostServiceApp",
         "faang.school.postservice.client.Feign*",
-        "faang.school.postservice.config.*",
+//        "faang.school.postservice.config.*",
         "faang.school.postservice.model.*",
         "faang.school.postservice.mapper.*",
         "faang.school.postservice.controller.*",
