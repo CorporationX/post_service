@@ -102,8 +102,7 @@ val jacocoExclude = listOf(
         "**/config/**",
         "**/model/**",
         "**/dto/**",
-        "**/mapper/**",
-        "**/controller/**"
+        "**/mapper/**"
 )
 
 tasks.jacocoTestReport {
@@ -125,7 +124,6 @@ val jacocoClassExclude = listOf(
         "faang.school.postservice.config.*",
         "faang.school.postservice.model.*",
         "faang.school.postservice.mapper.*",
-        "faang.school.postservice.controller.*",
         "faang.school.postservice.dto.*"
 )
 
