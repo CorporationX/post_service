@@ -2,7 +2,7 @@ name: Post Service CI Pipeline
 
 on:
   pull_request:
-    branches: [ "chimera-master-stream10" ]
+    branches: [ "chimera-master-stream10", "feature-BJS2-77199-CI-pipeline" ]
     types: [ opened, reopened, synchronize, edited ]
 
 permissions:
