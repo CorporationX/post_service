@@ -48,7 +48,7 @@ class CommentEventPublisherTest {
     }
 
     @Test
-    void shouldPublishEventToKafka() {
+    void publish_shouldPublishEventToKafka() {
         publisher.publish(event);
 
         verify(kafkaTemplate, times(1)).send(topic, event);
