@@ -25,4 +25,5 @@ public interface PostRepository extends CrudRepository<Post, Long> {
                AND p.scheduledAt <= CURRENT_TIMESTAMP
             """)
     List<Post> findReadyToPublish();
+
 }
