@@ -1,0 +1,2 @@
+UPDATE databasechangelog SET MD5SUM = NULL
+WHERE MD5SUM IS NOT NULL;

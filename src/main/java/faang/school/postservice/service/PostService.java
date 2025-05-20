@@ -35,8 +35,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -54,6 +52,7 @@ import java.util.stream.IntStream;
 @Service
 @RequiredArgsConstructor
 public class PostService {
+
     private final PostRepository postRepository;
     private final PostMapper postMapper;
     private final ProjectServiceClient projectServiceClient;
@@ -68,6 +67,7 @@ public class PostService {
     private final HashtagAddingEventPublisher hashtagAddingPublisher;
     private final HashtagRemovingEventPublisher hashtagRemovingPublisher;
     private final HashtagServiceClient hashtagClient;
+    private final PostProcessingService postProcessingService;
 
     @Value("${batch.size}")
     private int batchSize;
@@ -88,7 +88,7 @@ public class PostService {
         for (List<Post> batch : batches) {
             CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
                 try {
-                    publishBatch(batch);
+                    postProcessingService.publishBatch(batch);
                 } catch (DataValidationException e) {
                     log.error("Ошибка валидации в списке: {}", e.getMessage());
                     throw new DataValidationException("Ошибка валидации в списке. Размер: {}", batch.size());
@@ -115,23 +115,6 @@ public class PostService {
             log.error("Ошибка при выполнении публикации", e.getCause());
             throw new AsyncPostProcessingException("Ошибка публикации постов", e.getCause());
         }
-    }
-
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void publishBatch(List<Post> batch) {
-        if (batch == null || batch.isEmpty()) {
-            log.error("в списке не содержится постов");
-            throw new DataValidationException("список постов пуст");
-        }
-
-        for (Post post : batch) {
-            post.setPublished(true);
-            post.setPublishedAt(LocalDateTime.now());
-        }
-
-        postRepository.saveAll(batch);
-        log.info("Опубликовано {} постов с {} по {} id.",
-                batch.size(), batch.get(0).getId(), batch.get(batch.size() - 1).getId());
     }
 
     public PostResponseDto create(PostDto postDto) {
