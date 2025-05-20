@@ -1,8 +1,9 @@
 plugins {
-    java
+    id("java")
     id("org.springframework.boot") version "3.0.6"
     id("io.spring.dependency-management") version "1.1.0"
     id("jacoco")
+    id("checkstyle")
 }
 
 group = "faang.school"
@@ -61,14 +62,86 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+    finalizedBy(tasks.jacocoTestReport, tasks.jacocoTestCoverageVerification)
 }
 
-tasks.withType<Test> {
-    useJUnitPlatform()
-}
+//tasks.withType < Test > {
+//    useJUnitPlatform()
+//    finalizedBy(tasks.jacocoTestReport, tasks.jacocoTestCoverageVerification)
+//}
 
-val test by tasks.getting(Test::class) { testLogging.showStandardStreams = true }
+//val test by tasks.getting(Test::class) { testLogging.showStandardStreams = true }
 
 tasks.bootJar {
     archiveFileName.set("service.jar")
+}
+
+checkstyle {
+    toolVersion = "10.17.0"
+    configFile = file("${project.rootDir}/config/checkstyle/checkstyle.xml")
+    checkstyle.enableExternalDtdLoad.set(true)
+}
+
+tasks.checkstyleMain {
+    source = fileTree("${project.rootDir}/src/main/java")
+    include("**/*.java")
+    exclude("**/resources/**")
+    classpath = files()
+}
+
+tasks.checkstyleTest {
+    source = fileTree("${project.rootDir}/src/test")
+    include("**/*.java")
+    classpath = files()
+}
+
+
+val jacocoExclude = listOf(
+//        "com/json/student/**",
+        "faang/school/postservice/PostServiceApp*",
+        "faang/school/postservice/client/Feign*",
+        "**/config/**",
+        "**/model/**",
+        "**/dto/**",
+        "**/mapper/**",
+        "**/controller/**"
+)
+
+tasks.jacocoTestReport {
+    reports {
+        xml.required.set(false)
+        csv.required.set(false)
+        html.required.set(true)
+    }
+    classDirectories.setFrom(classDirectories.files.map {
+        fileTree(it).matching {
+            exclude(jacocoExclude)
+        }
+    })
+}
+
+val jacocoClassExclude = listOf(
+//        "com.json.student.*",
+        "faang.school.postservice.PostServiceApp",
+        "faang.school.postservice.client.Feign*",
+        "faang.school.postservice.config.*",
+        "faang.school.postservice.model.*",
+        "faang.school.postservice.mapper.*",
+        "faang.school.postservice.controller.*",
+        "faang.school.postservice.dto.*"
+)
+
+tasks.jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            element = "CLASS"
+            isEnabled = true
+            excludes = jacocoClassExclude
+            limit {
+                counter = "LINE"
+                value = "COVEREDRATIO"
+                minimum = "0.7".toBigDecimal()
+            }
+        }
+    }
 }
