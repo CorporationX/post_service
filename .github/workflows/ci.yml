@@ -42,13 +42,13 @@ jobs:
         run: ./gradlew build testClasses -x test -x check -x checkstyleMain -x checkstyleTest --no-daemon
 
       - name: Test with Gradle
-        run: ./gradlew test -x testClasses --no-daemon --continue
+        run: ./gradlew test -x testClasses --no-daemon
 
       - name: Checkstyle verification
-        run: ./gradlew checkstyleMain checkstyleTest --no-daemon --continue
+        run: ./gradlew checkstyleMain checkstyleTest --no-daemon
 
       - name: Verify Test Coverage
-        run: ./gradlew jacocoTestCoverageVerification --no-daemon --continue
+        run: ./gradlew jacocoTestCoverageVerification --no-daemon
 
       - name: Archive test report
         if: always()
