@@ -2,6 +2,7 @@ package faang.school.postservice.controller.post;
 
 import faang.school.postservice.dto.post.PostCreateRequestDto;
 import faang.school.postservice.dto.post.PostResponseDto;
+import faang.school.postservice.dto.post.PostUpdateRequestDto;
 import faang.school.postservice.facade.post.PostFacade;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +38,16 @@ public class PostController {
 
         PostResponseDto response = postFacade.publishPost(postId);
         log.info("Post controller return response publish post {}", response);
+        return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("/{postId}")
+    public ResponseEntity<PostResponseDto> updatePost(@PathVariable long postId,
+                                                      @RequestBody PostUpdateRequestDto postUpdateRequestDto) {
+        log.info("Post controller accepted request update post with id {}", postId);
+
+        PostResponseDto response = postFacade.updatePost(postId, postUpdateRequestDto);
+        log.info("Post controller return response update post {}", response);
         return ResponseEntity.ok(response);
     }
 }

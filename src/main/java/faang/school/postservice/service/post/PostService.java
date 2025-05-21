@@ -1,5 +1,6 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.dto.post.PostUpdateRequestDto;
 import faang.school.postservice.exception.post.PostNotFoundException;
 import faang.school.postservice.model.post.Post;
 import faang.school.postservice.repository.post.PostRepository;
@@ -18,6 +19,15 @@ public class PostService {
     private final PostRepository postRepository;
     private final PostValidator postValidator;
 
+    @Transactional(readOnly = true)
+    public Post getPostById(long postId) {
+        return postRepository.findById(postId)
+                .orElseThrow(() -> {
+                    log.error("Post with id {} not found", postId);
+                    return new PostNotFoundException(postId);
+                });
+    }
+
     // TODO: проверка что пользователь или проект существуют
     @Transactional
     public Post createDraftPost(final Post post) {
@@ -29,8 +39,7 @@ public class PostService {
 
     @Transactional
     public Post publishPost(final long postId) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new PostNotFoundException(postId));
+        Post post = getPostById(postId);
 
         postValidator.checkPostIsNotPublished(post);
 
@@ -41,5 +50,12 @@ public class PostService {
         log.info("Post with id {} was published {}", postId, now);
 
         return post;
+    }
+
+    @Transactional
+    public Post updatePost(final Post post) {
+        Post savedPost = postRepository.save(post);
+        log.info("Post with id {} has been update", savedPost.getId());
+        return savedPost;
     }
 }
