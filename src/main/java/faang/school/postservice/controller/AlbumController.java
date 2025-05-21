@@ -29,7 +29,8 @@ public class AlbumController {
 
     @PostMapping()
     public AlbumDto createAlbum(@Valid @RequestBody AlbumDto albumDto) {
-       // userContext.setUserId(12);
+//        userContext.setUserId(12);
+        userContext.getUserId();
         return albumService.createAlbum(albumDto);
     }
 
