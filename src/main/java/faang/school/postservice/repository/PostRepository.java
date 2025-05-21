@@ -21,4 +21,41 @@ public interface PostRepository extends CrudRepository<Post, Long> {
     @Query("SELECT p FROM Post p WHERE p.published = false AND p.deleted = false AND p.scheduledAt <= CURRENT_TIMESTAMP")
     List<Post> findReadyToPublish();
 
+    @Query("""
+                SELECT p FROM Post p
+                WHERE p.authorId = :authorId
+                AND p.projectId IS NULL
+                AND p.published = false
+                AND p.deleted = false
+                ORDER BY p.createdAt DESC
+            """)
+    List<Post> findDraftsByAuthor(Long authorId);
+
+    @Query("""
+                SELECT p FROM Post p
+                WHERE p.projectId = :projectId
+                AND p.published = false
+                AND p.deleted = false
+                ORDER BY p.createdAt DESC
+            """)
+    List<Post> findDraftsByProject(Long projectId);
+
+    @Query("""
+                SELECT p FROM Post p
+                WHERE p.authorId = :authorId
+                AND p.projectId IS NULL
+                AND p.published = true
+                AND p.deleted = false
+                ORDER BY p.publishedAt DESC
+            """)
+    List<Post> findPublishedByAuthor(Long authorId);
+
+    @Query("""
+                SELECT p FROM Post p
+                WHERE p.projectId = :projectId
+                AND p.published = true
+                AND p.deleted = false
+                ORDER BY p.publishedAt DESC
+            """)
+    List<Post> findPublishedByProject(Long projectId);
 }
