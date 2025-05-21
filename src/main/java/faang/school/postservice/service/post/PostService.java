@@ -83,4 +83,35 @@ public class PostService {
                 .sorted(Comparator.comparingInt(post -> post.getCreatedAt().getSecond()))
                 .toList();
     }
+
+    // TODO: возможно кастомный запрос
+    @Transactional(readOnly = true)
+    public List<Post> getAllDraftPostsByProjectId(long projectId) {
+        return postRepository.findByProjectId(projectId).stream()
+                .filter(post -> Objects.equals(post.isDeleted(), false))
+                .filter(post -> Objects.equals(post.isPublished(), false))
+                .sorted(Comparator.comparingInt(post -> post.getCreatedAt().getSecond()))
+                .toList();
+    }
+
+    // TODO: возможно кастомный запрос
+    @Transactional(readOnly = true)
+    public List<Post> getAllPublishedPostsByUserId() {
+        long userId = userContext.getUserId();
+        return postRepository.findByAuthorId(userId).stream()
+                .filter(post -> Objects.equals(post.isDeleted(), false))
+                .filter(post -> Objects.equals(post.isPublished(), true))
+                .sorted(Comparator.comparingInt(post -> post.getPublishedAt().getSecond()))
+                .toList();
+    }
+
+    // TODO: возможно кастомный запрос
+    @Transactional(readOnly = true)
+    public List<Post> getAllPublishedPostsByProjectId(long projectId) {
+        return postRepository.findByProjectId(projectId).stream()
+                .filter(post -> Objects.equals(post.isDeleted(), false))
+                .filter(post -> Objects.equals(post.isPublished(), true))
+                .sorted(Comparator.comparingInt(post -> post.getPublishedAt().getSecond()))
+                .toList();
+    }
 }

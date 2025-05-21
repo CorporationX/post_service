@@ -74,12 +74,39 @@ public class PostController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/all/draft")
-    public ResponseEntity<List<PostResponseDto>> getAllDraftPostsByUserId() {
+    @GetMapping("/all/draft/user")
+    public ResponseEntity<List<PostResponseDto>> getAllDraftPostsForUser() {
         log.info("Post controller accepted request get all draft posts by user");
 
-        List<PostResponseDto> response = postFacade.getAllDraftPostsByUserId();
+        List<PostResponseDto> response = postFacade.getAllDraftPostsForUser();
         log.info("Post controller return response get all draft posts by user {}", response);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/all/draft/project/{projectId}")
+    public ResponseEntity<List<PostResponseDto>> getAllDraftPostsByProjectId(@PathVariable long projectId) {
+        log.info("Post controller accepted request get all draft posts by project with id {}", projectId);
+
+        List<PostResponseDto> response = postFacade.getAllDraftPostsByProjectId(projectId);
+        log.info("Post controller return response get all draft posts by project {}", response);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/all/draft/user")
+    public ResponseEntity<List<PostResponseDto>> getAllPublishedPostsForUser() {
+        log.info("Post controller accepted request get all published posts by user");
+
+        List<PostResponseDto> response = postFacade.getAllPublishedPostsForUser();
+        log.info("Post controller return response get all published posts by user {}", response);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/all/draft/project/{projectId}")
+    public ResponseEntity<List<PostResponseDto>> getAllPublishedPostsByProjectId(@PathVariable long projectId) {
+        log.info("Post controller accepted request get all published posts by project with id {}", projectId);
+
+        List<PostResponseDto> response = postFacade.getAllPublishedPostsByProjectId(projectId);
+        log.info("Post controller return response get all published posts by project {}", response);
         return ResponseEntity.ok(response);
     }
 }
