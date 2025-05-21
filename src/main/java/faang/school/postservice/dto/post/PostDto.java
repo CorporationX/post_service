@@ -1,7 +1,6 @@
 package faang.school.postservice.dto.post;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
 import lombok.Builder;
 import lombok.Data;
@@ -12,24 +11,29 @@ import java.util.List;
 @Data
 @Builder
 public class PostDto {
+    @Null(message = "Post id will be set automatically in database")
     private Long id;
 
     @NotBlank(message = "Post content could not be blank")
     private String content;
 
-    @NotNull(message = "Author id could not be null")
     private Long authorId;
 
     private Long projectId;
 
+    @Null(message = "You can only manage likes by specified messages")
     private List<Long> likeIds;
 
+    @Null(message = "You can only manage comments by specified messages")
     private List<Long> commentIds;
 
+    @Null(message = "You can only manage albums by specified messages")
     private List<Long> albumIds;
 
+    @Null(message = "You can only manage ad by specified messages")
     private Long adId;
 
+    @Null(message = "You can only manage resources by specified messages")
     private List<Long> resourceIds;
 
     @Null(message = "Published field will be set automatically")

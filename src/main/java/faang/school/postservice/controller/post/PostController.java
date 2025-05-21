@@ -1,6 +1,7 @@
 package faang.school.postservice.controller.post;
 
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.post.PostUpdateDto;
 import faang.school.postservice.service.PostService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -44,9 +45,9 @@ public class PostController {
     }
 
     @PutMapping("/{postId}")
-    public PostDto updatePost(@NotNull @PathVariable("postId") Long postId, @Valid @RequestBody PostDto postDto) {
+    public PostDto updatePost(@NotNull @PathVariable("postId") Long postId, @Valid @RequestBody PostUpdateDto postUpdateDto) {
         log.info("Updating post with id {} - Started", postId);
-        PostDto updatedPost = postService.updatePost(postId, postDto);
+        PostDto updatedPost = postService.updatePost(postId, postUpdateDto);
         log.info("Updating post with id {} - Finished", postId);
         return updatedPost;
     }

@@ -1,6 +1,7 @@
 package faang.school.postservice.mapper;
 
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.post.PostUpdateDto;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
@@ -33,7 +34,7 @@ public interface PostMapper {
 
     List<PostDto> toPostDtoList(List<Post> posts);
 
-    void update(PostDto postDto, @MappingTarget Post post);
+    void update(PostUpdateDto postUpdateDto, @MappingTarget Post post);
 
     @Named("mapLikes")
     default List<Long> mapLikesToIds(List<Like> likes) {

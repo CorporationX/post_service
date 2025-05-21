@@ -3,6 +3,7 @@ package faang.school.postservice.service.post;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.post.PostUpdateDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.PostService;
@@ -52,17 +53,17 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public PostDto updatePost(Long postId, PostDto postDto) {
-        return null;
-    }
-
-    @Override
     public PostDto createPost(PostDto postDto) {
         return null;
     }
 
     @Override
     public PostDto publishPost(Long postId) {
+        return null;
+    }
+
+    @Override
+    public PostDto updatePost(Long postId, PostUpdateDto postUpdateDto) {
         return null;
     }
 }
