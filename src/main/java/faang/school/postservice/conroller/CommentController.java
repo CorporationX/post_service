@@ -1,0 +1,40 @@
+package faang.school.postservice.conroller;
+
+import faang.school.postservice.dto.CommentDto;
+import faang.school.postservice.service.CommentService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+
+@RequiredArgsConstructor
+@RestController
+public class CommentController {
+    private final CommentService commentService;
+
+    @PostMapping("/posts/{postId}/comments")
+    public CommentDto createComment(
+            @PathVariable Long postId,
+            @RequestBody @Valid CommentDto commentDto) {
+        commentDto.setPostId(postId);
+        return commentService.createComment(commentDto);
+    }
+
+    @GetMapping("posts/{postId}/comments")
+    public List<CommentDto> getCommentsByPostId(@PathVariable Long postId) {
+        return commentService.getCommentsByPostId(postId);
+    }
+
+    @PutMapping("/posts/{commentId}/comments")
+    public CommentDto updateComment(@PathVariable Long commentId,
+                                    @RequestBody @Valid CommentDto commentDto) {
+        return commentService.updateComment(commentId, commentDto);
+    }
+
+    @DeleteMapping("/comments/{commentId}")
+    public void deleteComment(@PathVariable Long commentId) {
+        commentService.deleteComment(commentId);
+    }
+}
