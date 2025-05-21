@@ -1,5 +1,9 @@
-package faang.school.postservice.model;
+package faang.school.postservice.model.post;
 
+import faang.school.postservice.model.Album;
+import faang.school.postservice.model.Comment;
+import faang.school.postservice.model.Like;
+import faang.school.postservice.model.Resource;
 import faang.school.postservice.model.ad.Ad;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -38,10 +42,10 @@ public class Post {
     @Column(name = "content", nullable = false, length = 4096)
     private String content;
 
-    @Column(name = "author_id", nullable = false)
+    @Column(name = "author_id", updatable = false)
     private Long authorId;
 
-    @Column(name = "project_id")
+    @Column(name = "project_id", updatable = false)
     private Long projectId;
 
     @OneToMany(mappedBy = "post", orphanRemoval = true)

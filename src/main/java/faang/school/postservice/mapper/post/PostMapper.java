@@ -1,8 +1,8 @@
-package faang.school.postservice.mapper;
+package faang.school.postservice.mapper.post;
 
 import faang.school.postservice.dto.post.PostCreateRequestDto;
 import faang.school.postservice.dto.post.PostResponseDto;
-import faang.school.postservice.model.Post;
+import faang.school.postservice.model.post.Post;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
 

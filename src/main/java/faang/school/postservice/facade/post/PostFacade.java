@@ -1,10 +1,10 @@
-package faang.school.postservice.facade;
+package faang.school.postservice.facade.post;
 
 import faang.school.postservice.dto.post.PostCreateRequestDto;
 import faang.school.postservice.dto.post.PostResponseDto;
-import faang.school.postservice.mapper.PostMapper;
-import faang.school.postservice.model.Post;
-import faang.school.postservice.service.PostService;
+import faang.school.postservice.mapper.post.PostMapper;
+import faang.school.postservice.model.post.Post;
+import faang.school.postservice.service.post.PostService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -21,6 +21,14 @@ public class PostFacade {
         log.debug("Mapping PostCreateRequestDto to Post entity. DTO content: {}", postCreateRequestDto);
 
         post = postService.createDraftPost(post);
+
+        PostResponseDto postResponseDto = postMapper.toPostResponseDto(post);
+        log.debug("Mapping Post entity to PostResponseDto. Entity content: {}", post);
+        return postResponseDto;
+    }
+
+    public PostResponseDto publishPost(final long postId) {
+        Post post = postService.publishPost(postId);
 
         PostResponseDto postResponseDto = postMapper.toPostResponseDto(post);
         log.debug("Mapping Post entity to PostResponseDto. Entity content: {}", post);
