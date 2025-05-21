@@ -65,13 +65,6 @@ tasks.test {
     finalizedBy(tasks.jacocoTestReport, tasks.jacocoTestCoverageVerification)
 }
 
-//tasks.withType < Test > {
-//    useJUnitPlatform()
-//    finalizedBy(tasks.jacocoTestReport, tasks.jacocoTestCoverageVerification)
-//}
-
-//val test by tasks.getting(Test::class) { testLogging.showStandardStreams = true }
-
 tasks.bootJar {
     archiveFileName.set("service.jar")
 }
