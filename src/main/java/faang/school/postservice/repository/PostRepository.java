@@ -44,4 +44,10 @@ public interface PostRepository extends CrudRepository<Post, Long> {
 
     @Query("SELECT p FROM Post p WHERE p.verified = false")
     Stream<Post> streamByVerifiedFalse();
+
+    @Query(nativeQuery = true, value = """
+            SELECT users.id from users
+            JOIN subscription s on users.id = s.follower_id
+            WHERE s.followee_id = ?1""")
+    List<Long> findAllFollowersIdByAuthorId(long authorId);
 }

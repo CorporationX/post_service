@@ -3,12 +3,14 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.LanguageToolClient;
 import faang.school.postservice.dto.languageTool.GrammarMatch;
 import faang.school.postservice.dto.languageTool.LanguageToolResponseDto;
+import faang.school.postservice.dto.post.PostEvent;
 import faang.school.postservice.dto.post.PostRequestDto;
 import faang.school.postservice.dto.post.PostResponseDto;
 import faang.school.postservice.exception.LanguageToolException;
 import faang.school.postservice.exception.PostNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.PostEventPublisher;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.hashtags.HashtagService;
@@ -52,6 +54,7 @@ public class PostService {
     private final LikeRepository likeRepository;
     private final HashtagService hashtagService;
     private final ExecutorService threadPoolExecutor;
+    private final PostEventPublisher postEventPublisher;
 
     @Value("${posts.correction.batch-size}")
     int batchSize;
@@ -63,6 +66,9 @@ public class PostService {
         PostValidation.validatePostAuthors(postRequestDto);
         PostValidation.validatePostDraftCreation(postRequestDto);
         Post post = postRepository.save(postMapper.toPost(postRequestDto));
+        postEventPublisher.send(new PostEvent(
+                postRepository.findAllFollowersIdByAuthorId(postRequestDto.getAuthorId())
+        ));
         return postMapper.toPostResponseDto(post);
     }
 

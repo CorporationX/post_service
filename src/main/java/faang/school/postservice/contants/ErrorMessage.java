@@ -1,13 +1,12 @@
 package faang.school.postservice.contants;
 
 public class ErrorMessage {
-    public static final String ERROR_NULL_DTO_COMMENT = "CommentDto cant be null";
-    public static final String ERROR_NULL_DTO_UPDATE_COMMENT = "CommentUpdateDto cant be null";
+    public static final String FAILED_SERIALIZING_OBJECT = "Failed to serialize object";
+
     public static final String ERROR_NULL_POST_ID = "PostId cant be null";
     public static final String ERROR_NULL_AUTHOR_ID = "AuthorId cant be null";
     public static final String ERROR_NULL_COMMENT_ID = "Comment ID cant be null";
     public static final String ERROR_NULL_CONTENT = "Content cant be null";
-    public static final String ERROR_NULL_ID = "ID cant be null";
     public static final String ERROR_NOT_AUTHOR_COMMENT = "You are not the author of the comment";
     public static final String ERROR_SERIALIZE = "Failed to serialize event {}.\n";
 
