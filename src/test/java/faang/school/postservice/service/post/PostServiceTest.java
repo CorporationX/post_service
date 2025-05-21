@@ -10,6 +10,7 @@ import faang.school.postservice.exception.PostNotFoundException;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.PostEventPublisher;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.PostService;
@@ -55,6 +56,9 @@ public class PostServiceTest {
 
     @Mock
     private RestTemplate restTemplate;
+
+    @Mock
+    private PostEventPublisher postEventPublisher;
 
     @Mock
     private PostRepository postRepository;
