@@ -8,10 +8,14 @@ import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.ReportingPolicy;
 
+import java.util.List;
+
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface PostMapper {
     Post toPostEntity(final PostCreateRequestDto postCreateRequestDto);
     PostResponseDto toPostResponseDto(final Post post);
+
+    List<PostResponseDto> toPostResponseDtoList(final List<Post> posts);
 
     void update(@MappingTarget Post post, final PostUpdateRequestDto postUpdateRequestDto);
 }

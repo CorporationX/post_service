@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/posts")
@@ -69,6 +71,15 @@ public class PostController {
 
         PostResponseDto response = postFacade.getPostById(postId);
         log.info("Post controller return response get post {}", response);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/all/draft")
+    public ResponseEntity<List<PostResponseDto>> getAllDraftPostsByUserId() {
+        log.info("Post controller accepted request get all draft posts by user");
+
+        List<PostResponseDto> response = postFacade.getAllDraftPostsByUserId();
+        log.info("Post controller return response get all draft posts by user {}", response);
         return ResponseEntity.ok(response);
     }
 }

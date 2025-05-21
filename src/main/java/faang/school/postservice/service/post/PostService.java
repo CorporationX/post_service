@@ -1,5 +1,6 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.exception.post.PostNotFoundException;
 import faang.school.postservice.model.post.Post;
 import faang.school.postservice.repository.post.PostRepository;
@@ -10,6 +11,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -17,6 +21,7 @@ import java.time.LocalDateTime;
 public class PostService {
     private final PostRepository postRepository;
     private final PostValidator postValidator;
+    private final UserContext userContext;
 
     @Transactional(readOnly = true)
     public Post getPostById(long postId) {
@@ -36,6 +41,7 @@ public class PostService {
         return savedPost;
     }
 
+    // TODO: можно сделать отложенную публикацию
     @Transactional
     public Post publishPost(final long postId) {
         Post post = getPostById(postId);
@@ -65,5 +71,16 @@ public class PostService {
         post.setDeletedAt(LocalDateTime.now());
         post = postRepository.save(post);
         log.info("Post with id {} has been delete on {}", post.getId(), post.getDeletedAt());
+    }
+
+    // TODO: возможно кастомный запрос
+    @Transactional(readOnly = true)
+    public List<Post> getAllDraftPostsByUserId() {
+        long userId = userContext.getUserId();
+        return postRepository.findByAuthorId(userId).stream()
+                .filter(post -> Objects.equals(post.isDeleted(), false))
+                .filter(post -> Objects.equals(post.isPublished(), false))
+                .sorted(Comparator.comparingInt(post -> post.getCreatedAt().getSecond()))
+                .toList();
     }
 }

@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -65,5 +67,13 @@ public class PostFacade {
         log.debug("Mapping Post entity to PostResponseDto. Entity content: {}. DTO content: {}.",
                 post, postResponseDto);
         return postResponseDto;
+    }
+    public List<PostResponseDto> getAllDraftPostsByUserId() {
+        List<Post> posts = postService.getAllDraftPostsByUserId();
+
+        List<PostResponseDto> postResponseDtoList = postMapper.toPostResponseDtoList(posts);
+        log.debug("Mapping Post entity list to PostResponseDto list. Entity content: {}. DTO content: {}.",
+                posts, postResponseDtoList);
+        return postResponseDtoList;
     }
 }
