@@ -16,7 +16,7 @@ public class CommentEventPublisher {
     private final KafkaProperties producerProperties;
 
     public void publish(CommentEventDto event) {
-        String topic = producerProperties.getTopic().getCommentCreatedNotification();
+        String topic = producerProperties.getTopics().getCommentCreatedNotification();
         kafkaTemplate.send(topic, event);
         log.info("Sent CommentEventDto to topic {}: {}", topic, event);
     }

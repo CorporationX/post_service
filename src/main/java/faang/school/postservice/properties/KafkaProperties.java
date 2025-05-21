@@ -11,11 +11,11 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "spring.kafka.producer")
 public class KafkaProperties {
     private String bootstrapServers;
-    private Topic topic;
+    private Topics topics;
 
     @Getter
     @Setter
-    public static class Topic {
+    public static class Topics {
         private String commentCreatedNotification;
     }
 }

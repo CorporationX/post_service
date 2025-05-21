@@ -4,11 +4,13 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentCreateDto;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CommentUpdateDto;
+import faang.school.postservice.dto.event.CommentEventDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.service.post.PostService;
 import feign.FeignException;
@@ -30,6 +32,7 @@ public class CommentService {
     private final PostService postService;
     private final UserServiceClient userServiceClient;
     private final CommentMapper commentMapper;
+    private final CommentEventPublisher commentEventPublisher;
 
     @Transactional
     public CommentDto createComment(CommentCreateDto commentCreateDto) {
@@ -52,6 +55,14 @@ public class CommentService {
 
             Comment savedComment = commentRepository.save(comment);
             log.info("Comment created with ID: {}", savedComment.getId());
+
+            commentEventPublisher.publish(CommentEventDto.builder()
+                    .commentId(savedComment.getId())
+                    .commenterId(savedComment.getAuthorId())
+                    .postId(post.getId())
+                    .postAuthorId(post.getAuthorId())
+                    .text(savedComment.getContent())
+                    .build());
 
             return commentMapper.toDto(savedComment);
 

@@ -26,7 +26,7 @@ class CommentEventPublisherTest {
     private KafkaProperties kafkaProperties;
 
     @Mock
-    private KafkaProperties.Topic topicProperties;
+    private KafkaProperties.Topics topicsProperties;
 
     @InjectMocks
     private CommentEventPublisher publisher;
@@ -43,8 +43,8 @@ class CommentEventPublisherTest {
 
     @BeforeEach
     void setUp() {
-        when(kafkaProperties.getTopic()).thenReturn(topicProperties);
-        when(topicProperties.getCommentCreatedNotification()).thenReturn(topic);
+        when(kafkaProperties.getTopics()).thenReturn(topicsProperties);
+        when(topicsProperties.getCommentCreatedNotification()).thenReturn(topic);
     }
 
     @Test
