@@ -1,6 +1,5 @@
 package faang.school.postservice.service.post;
 
-import faang.school.postservice.dto.post.PostUpdateRequestDto;
 import faang.school.postservice.exception.post.PostNotFoundException;
 import faang.school.postservice.model.post.Post;
 import faang.school.postservice.repository.post.PostRepository;
@@ -33,7 +32,7 @@ public class PostService {
     public Post createDraftPost(final Post post) {
         postValidator.validatePost();
         Post savedPost = postRepository.save(post);
-        log.info("Post with id {} was created", savedPost.getId());
+        log.info("Post with id {} has been created", savedPost.getId());
         return savedPost;
     }
 
@@ -43,11 +42,10 @@ public class PostService {
 
         postValidator.checkPostIsNotPublished(post);
 
-        LocalDateTime now = LocalDateTime.now();
         post.setPublished(true);
-        post.setPublishedAt(now);
+        post.setPublishedAt(LocalDateTime.now());
         post = postRepository.save(post);
-        log.info("Post with id {} was published {}", postId, now);
+        log.info("Post with id {} has been published on {}", post.getId(), post.getPublishedAt());
 
         return post;
     }
@@ -57,5 +55,15 @@ public class PostService {
         Post savedPost = postRepository.save(post);
         log.info("Post with id {} has been update", savedPost.getId());
         return savedPost;
+    }
+
+    @Transactional
+    public void deletePost(long postId) {
+        Post post = getPostById(postId);
+
+        post.setDeleted(true);
+        post.setDeletedAt(LocalDateTime.now());
+        post = postRepository.save(post);
+        log.info("Post with id {} has been delete on {}", post.getId(), post.getDeletedAt());
     }
 }

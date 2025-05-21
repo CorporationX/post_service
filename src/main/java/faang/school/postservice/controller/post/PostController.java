@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -49,5 +50,15 @@ public class PostController {
         PostResponseDto response = postFacade.updatePost(postId, postUpdateRequestDto);
         log.info("Post controller return response update post {}", response);
         return ResponseEntity.ok(response);
+    }
+
+    // TODO: возмжно putch
+    @DeleteMapping("/{postId}")
+    public ResponseEntity<Void> deletePost(@PathVariable long postId) {
+        log.info("Post controller accepted request delete post with id {}", postId);
+
+        postFacade.deletePost(postId);
+        log.info("Post controller return response delete post with id {}", postId);
+        return ResponseEntity.noContent().build();
     }
 }

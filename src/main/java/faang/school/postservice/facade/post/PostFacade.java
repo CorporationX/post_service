@@ -53,4 +53,8 @@ public class PostFacade {
                 post, postResponseDto);
         return postResponseDto;
     }
+
+    public void deletePost(long postId) {
+        postService.deletePost(postId);
+    }
 }
