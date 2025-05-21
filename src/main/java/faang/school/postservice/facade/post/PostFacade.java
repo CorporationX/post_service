@@ -57,4 +57,13 @@ public class PostFacade {
     public void deletePost(long postId) {
         postService.deletePost(postId);
     }
+
+    public PostResponseDto getPostById(long postId) {
+        Post post = postService.getPostById(postId);
+
+        PostResponseDto postResponseDto = postMapper.toPostResponseDto(post);
+        log.debug("Mapping Post entity to PostResponseDto. Entity content: {}. DTO content: {}.",
+                post, postResponseDto);
+        return postResponseDto;
+    }
 }
