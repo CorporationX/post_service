@@ -2,6 +2,7 @@ package faang.school.postservice.controller.handler;
 
 import faang.school.postservice.dto.errorresponse.ErrorResponseDto;
 import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.exception.PostAlreadyPublishedException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
@@ -42,6 +43,18 @@ public class ErrorHandler {
         return new ErrorResponseDto(
                 HttpStatus.BAD_REQUEST.name(),
                 "Incorrectly made request.",
+                e.getMessage(),
+                LocalDateTime.now().format(formatter)
+        );
+    }
+
+    @ExceptionHandler(PostAlreadyPublishedException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ErrorResponseDto handlePostAlreadyPublished(PostAlreadyPublishedException e) {
+        log.error("PostAlreadyPublishedException with message {} was thrown", e.getMessage());
+        return new ErrorResponseDto(
+                HttpStatus.CONFLICT.name(),
+                "Post was already published.",
                 e.getMessage(),
                 LocalDateTime.now().format(formatter)
         );
