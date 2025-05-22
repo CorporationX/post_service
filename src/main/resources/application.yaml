@@ -39,6 +39,8 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
+      feed:
+        post-max-size: 500
   retry:
     language-tool:
       max-attempts: 4
@@ -57,6 +59,9 @@ spring:
         user-ban: "user-ban-topic"
         post-like: "post-like-event-topic"
         post: "post-topic"
+    consumer:
+      group-id:
+        post: "post-group"
 
 server:
   port: 8081

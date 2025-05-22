@@ -13,6 +13,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.data.redis.listener.ChannelTopic;
+import org.springframework.data.redis.serializer.GenericToStringSerializer;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
@@ -43,8 +44,23 @@ public class RedisConfig {
     }
 
     @Bean
+    public RedisTemplate<String, Long> longRedisTemplate(
+            RedisConnectionFactory connectionFactory) {
+        RedisTemplate<String, Long> template = new RedisTemplate<>();
+        template.setConnectionFactory(connectionFactory);
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setValueSerializer(new GenericToStringSerializer<>(Long.class));
+        return template;
+    }
+
+    @Bean
     public ZSetOperations<String, String> zSetOperations(RedisTemplate<String, String> redisTemplate) {
         return redisTemplate.opsForZSet();
+    }
+
+    @Bean
+    public ZSetOperations<String, Long> longZSetOperations(RedisTemplate<String, Long> longRedisTemplate) {
+        return longRedisTemplate.opsForZSet();
     }
 
     @Bean

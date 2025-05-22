@@ -66,9 +66,12 @@ public class PostService {
         PostValidation.validatePostAuthors(postRequestDto);
         PostValidation.validatePostDraftCreation(postRequestDto);
         Post post = postRepository.save(postMapper.toPost(postRequestDto));
-        postEventPublisher.send(new PostEvent(
-                postRepository.findAllFollowersIdByAuthorId(postRequestDto.getAuthorId())
-        ));
+        PostEvent postEvent = PostEvent.builder()
+                .postId(post.getId())
+                .authorId(post.getAuthorId())
+                .followers(postRepository.findAllFollowersIdByAuthorId(post.getAuthorId()))
+                .build();
+        postEventPublisher.send(postEvent);
         return postMapper.toPostResponseDto(post);
     }
 

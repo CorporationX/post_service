@@ -2,6 +2,7 @@ package faang.school.postservice.contants;
 
 public class ErrorMessage {
     public static final String FAILED_SERIALIZING_OBJECT = "Failed to serialize object";
+    public static final String FAILED_TO_PROCESS_EVENT = "Failed to process event";
 
     public static final String ERROR_NULL_POST_ID = "PostId cant be null";
     public static final String ERROR_NULL_AUTHOR_ID = "AuthorId cant be null";
