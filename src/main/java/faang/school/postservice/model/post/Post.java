@@ -90,7 +90,6 @@ public class Post {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    // TODO: мб есть аннотация для автоустановки
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;

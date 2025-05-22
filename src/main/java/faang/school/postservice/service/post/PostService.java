@@ -1,10 +1,12 @@
 package faang.school.postservice.service.post;
 
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.post.PostNotFoundException;
 import faang.school.postservice.model.post.Post;
 import faang.school.postservice.repository.post.PostRepository;
 import faang.school.postservice.validation.post.PostValidator;
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -41,7 +43,6 @@ public class PostService {
         return savedPost;
     }
 
-    // TODO: можно сделать отложенную публикацию
     @Transactional
     public Post publishPost(final long postId) {
         Post post = getPostById(postId);

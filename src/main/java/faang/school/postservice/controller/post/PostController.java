@@ -92,7 +92,7 @@ public class PostController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/all/draft/user")
+    @GetMapping("/all/published/user")
     public ResponseEntity<List<PostResponseDto>> getAllPublishedPostsForUser() {
         log.info("Post controller accepted request get all published posts by user");
 
@@ -101,7 +101,7 @@ public class PostController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/all/draft/project/{projectId}")
+    @GetMapping("/all/published/project/{projectId}")
     public ResponseEntity<List<PostResponseDto>> getAllPublishedPostsByProjectId(@PathVariable long projectId) {
         log.info("Post controller accepted request get all published posts by project with id {}", projectId);
 
