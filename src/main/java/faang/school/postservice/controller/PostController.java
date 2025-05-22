@@ -38,18 +38,19 @@ public class PostController {
         postValidator.validatePost(postSaveDto);
         return new ResponseEntity<>(postService.create(postSaveDto), HttpStatus.CREATED);
     }
+
     @Operation(summary = "Получить пост")
     @GetMapping(ID_PATH)
     public ResponseEntity<PostDto> getPost(@PathVariable long id) {
         return ResponseEntity.ok(postService.getPost(id));
     }
+
     @Operation(summary = "Обновить пост")
     @PutMapping(ID_PATH)
     public ResponseEntity<PostDto> update(@PathVariable long id, @NotNull @RequestBody PostSaveDto postSaveDto) {
         postValidator.validatePost(postSaveDto);
         return ResponseEntity.ok(postService.update(id, postSaveDto));
     }
-
 
     @PostMapping(PUBLISH_ID_PATH)
     public ResponseEntity<String> publish(@PathVariable long id) {
