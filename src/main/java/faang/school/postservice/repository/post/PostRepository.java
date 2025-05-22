@@ -12,7 +12,15 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     List<Post> findByAuthorId(long authorId);
 
+    List<Post> findByAuthorIdAndDeletedFalseAndPublishedFalseOrderByCreatedAtDesc(Long authorId);
+
+    List<Post> findByAuthorIdAndDeletedFalseAndPublishedTrueOrderByPublishedAtDesc(Long authorId);
+
     List<Post> findByProjectId(long projectId);
+
+    List<Post> findByProjectIdAndDeletedFalseAndPublishedFalseOrderByCreatedAtDesc(Long projectId);
+
+    List<Post> findByProjectIdAndDeletedFalseAndPublishedTrueOrderByPublishedAtDesc(Long projectId);
 
     @Query("SELECT p FROM Post p LEFT JOIN FETCH p.likes WHERE p.projectId = :projectId")
     List<Post> findByProjectIdWithLikes(long projectId);

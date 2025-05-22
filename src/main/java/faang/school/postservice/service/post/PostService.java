@@ -1,12 +1,10 @@
 package faang.school.postservice.service.post;
 
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.post.PostNotFoundException;
 import faang.school.postservice.model.post.Post;
 import faang.school.postservice.repository.post.PostRepository;
 import faang.school.postservice.validation.post.PostValidator;
-import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -74,45 +72,25 @@ public class PostService {
         log.info("Post with id {} has been delete on {}", post.getId(), post.getDeletedAt());
     }
 
-    // TODO: возможно кастомный запрос
     @Transactional(readOnly = true)
     public List<Post> getAllDraftPostsByUserId() {
         long userId = userContext.getUserId();
-        return postRepository.findByAuthorId(userId).stream()
-                .filter(post -> Objects.equals(post.isDeleted(), false))
-                .filter(post -> Objects.equals(post.isPublished(), false))
-                .sorted(Comparator.comparingInt(post -> post.getCreatedAt().getSecond()))
-                .toList();
+        return postRepository.findByAuthorIdAndDeletedFalseAndPublishedFalseOrderByCreatedAtDesc(userId);
     }
 
-    // TODO: возможно кастомный запрос
     @Transactional(readOnly = true)
     public List<Post> getAllDraftPostsByProjectId(long projectId) {
-        return postRepository.findByProjectId(projectId).stream()
-                .filter(post -> Objects.equals(post.isDeleted(), false))
-                .filter(post -> Objects.equals(post.isPublished(), false))
-                .sorted(Comparator.comparingInt(post -> post.getCreatedAt().getSecond()))
-                .toList();
+        return postRepository.findByProjectIdAndDeletedFalseAndPublishedFalseOrderByCreatedAtDesc(projectId);
     }
 
-    // TODO: возможно кастомный запрос
     @Transactional(readOnly = true)
     public List<Post> getAllPublishedPostsByUserId() {
         long userId = userContext.getUserId();
-        return postRepository.findByAuthorId(userId).stream()
-                .filter(post -> Objects.equals(post.isDeleted(), false))
-                .filter(post -> Objects.equals(post.isPublished(), true))
-                .sorted(Comparator.comparingInt(post -> post.getPublishedAt().getSecond()))
-                .toList();
+        return postRepository.findByAuthorIdAndDeletedFalseAndPublishedTrueOrderByPublishedAtDesc(userId);
     }
 
-    // TODO: возможно кастомный запрос
     @Transactional(readOnly = true)
     public List<Post> getAllPublishedPostsByProjectId(long projectId) {
-        return postRepository.findByProjectId(projectId).stream()
-                .filter(post -> Objects.equals(post.isDeleted(), false))
-                .filter(post -> Objects.equals(post.isPublished(), true))
-                .sorted(Comparator.comparingInt(post -> post.getPublishedAt().getSecond()))
-                .toList();
+        return postRepository.findByProjectIdAndDeletedFalseAndPublishedTrueOrderByPublishedAtDesc(projectId);
     }
 }
