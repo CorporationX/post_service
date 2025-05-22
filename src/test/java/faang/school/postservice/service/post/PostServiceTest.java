@@ -91,6 +91,9 @@ public class PostServiceTest {
 
     @Test
     public void testCreateDraftPost_savedDraft() {
+        when(postMapper.toPost(postRequestDto)).thenReturn(post);
+        when(postRepository.save(post)).thenReturn(post);
+
         postService.createDraftPost(postRequestDto);
 
         verify(postRepository, times(1))
