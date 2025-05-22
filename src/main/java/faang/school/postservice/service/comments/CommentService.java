@@ -1,4 +1,4 @@
-package faang.school.postservice.service;
+package faang.school.postservice.service.comments;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.CommentDto;

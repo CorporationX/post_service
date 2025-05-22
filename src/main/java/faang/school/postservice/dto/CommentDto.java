@@ -3,9 +3,11 @@ package faang.school.postservice.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
 
+@RequiredArgsConstructor
 @Data
 public class CommentDto {
     private Long id;

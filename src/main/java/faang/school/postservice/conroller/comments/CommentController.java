@@ -1,13 +1,12 @@
-package faang.school.postservice.conroller;
+package faang.school.postservice.conroller.comments;
 
 import faang.school.postservice.dto.CommentDto;
-import faang.school.postservice.service.CommentService;
+import faang.school.postservice.service.comments.CommentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
 
 @RequiredArgsConstructor
 @RestController
