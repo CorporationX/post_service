@@ -20,6 +20,24 @@ public class CommentValidator {
             throw new DataValidationException("Комментарий не может быть null");
         }
 
+        validateContentDto(commentDto);
+
+        isAuthorPresent(commentDto);
+
+        validatePostDto(commentDto);
+    }
+
+    public void validatePostDto(CommentDto commentDto) {
+        var postId = commentDto.getPostId();
+        if (postId == 0L) {
+            throw new DataValidationException("Комментарий должен относиться к посту");
+        }
+
+        postService.getPost(postId)
+                .orElseThrow(() -> new DataValidationException("Пост с ID = %d не существует".formatted(postId)));
+    }
+
+    public void validateContentDto(CommentDto commentDto) {
         var content = commentDto.getContent();
         if (content == null || content.isBlank()) {
             throw new DataValidationException("Комментарий не может быть пустым");
@@ -27,7 +45,9 @@ public class CommentValidator {
         if (content.length() > 4096) {
             throw new DataValidationException("Комментарий не может быть длиннее 4096 символов");
         }
+    }
 
+    public void isAuthorPresent(CommentDto commentDto) {
         var authorId = commentDto.getAuthorId();
         if (authorId == null) {
             throw new DataValidationException("У комментария должен быть автор");
@@ -37,14 +57,28 @@ public class CommentValidator {
         } catch (FeignException e) {
             throw new DataValidationException("Автор не существует: %s".formatted(authorId), e);
         }
+    }
 
-        var postId = commentDto.getPostId();
-        if (postId == 0L) {
-            throw new DataValidationException("Комментарий должен относиться к посту");
+    public void validateIdDto(long id, CommentDto commentDto) {
+        if (commentDto == null || commentDto.getId() == null) {
+            throw new DataValidationException("Комментарий и его ID не могут быть null");
         }
 
-        postService.getPost(postId)
-                .orElseThrow(() -> new DataValidationException("Пост с ID = %d не существует".formatted(postId)));
+        Long commentId = commentDto.getId();
+
+        if (id <= 0 || commentId <= 0) {
+            throw new DataValidationException("ID должны быть положительными числами");
+        }
+
+        if (!commentId.equals(id)) {
+            throw new DataValidationException("ID в пути и в теле запроса не совпадают");
+        }
+    }
+
+    public void validateCommentId(long id) {
+        if (id <= 0) {
+            throw new DataValidationException("ID должно быть положительным числом");
+        }
     }
 }
 

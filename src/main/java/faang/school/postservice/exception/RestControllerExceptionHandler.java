@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class RestControllerExceptionHandler {
     @ExceptionHandler(DataValidationException.class)
     public final ResponseEntity<Object> handleDataValidationException(DataValidationException exception) {
-        log.warn("Validation error: {}", exception.getMessage());
+        log.error("Validation error: {}", exception.getMessage());
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(exception.getMessage());

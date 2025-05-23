@@ -1,4 +1,4 @@
-package faang.school.postservice.сontroller;
+package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.service.comment.CommentService;
@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -31,19 +30,21 @@ public class CommentController {
     }
 
     @PutMapping("/{id}")
-    public CommentDto updateComment(@PathVariable long id, @RequestBody CommentDto commentDto){
-        //TODO валидация
-        return commentService.updateComment(id);
+    public CommentDto updateCommentContent(@PathVariable long id, @RequestBody CommentDto commentDto){
+        commentValidator.validateIdDto(id, commentDto);
+        commentValidator.validateContentDto(commentDto);
+        return commentService.updateCommentContent(id, commentDto);
     }
 
     @GetMapping("/all")
     public List<CommentDto> getAllComments (@RequestBody CommentDto commentDto) {
-
-        return ;
+        commentValidator.validatePostDto(commentDto);
+        return commentService.getAllComments(commentDto);
     }
 
     @DeleteMapping("/{id}")
     public void deleteComment(@PathVariable long id) {
-
+        commentValidator.validateCommentId(id);
+        commentService.deleteComment(id);
     }
 }

@@ -18,9 +18,11 @@ public interface CommentMapper {
 
     CommentDto toCommentDto(Comment comment);
 
-    void update(@MappingTarget Comment comment, CommentDto commentDto);
-
-    List<Comment> toEntitieList(List<CommentDto> commentDtoList);
+    default void updateCommentContent(@MappingTarget Comment comment, CommentDto commentDto) {
+        if (commentDto.getContent() != null) {
+            comment.setContent(commentDto.getContent());
+        }
+    }
 
     List<CommentDto> toCommentDtoList(List<Comment> comments);
 }
