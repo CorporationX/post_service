@@ -34,11 +34,6 @@ dependencies {
     runtimeOnly("org.postgresql:postgresql")
 
     /**
-     * Json
-     */
-    implementation ("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
-
-    /**
      * Utils & Logging
      */
     implementation("com.fasterxml.jackson.core:jackson-databind:2.14.2")

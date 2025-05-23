@@ -53,6 +53,7 @@ public class LikeService {
                 .comment(comment).build();
         likeRepository.save(like);
     }
+
     public void removeLikeFromPost(long postId, long userId) {
         validationExistsAuthor(userId);
         Post post = getPostOrThrow(postId);

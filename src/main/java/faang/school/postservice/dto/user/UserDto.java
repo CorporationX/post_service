@@ -22,4 +22,3 @@ public class UserDto {
    private List<Long> mentorIds;
    private List<Long> menteeIds;
 }
-
