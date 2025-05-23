@@ -28,6 +28,8 @@ spring:
         postViewEventPublisher: PostViewEvent_topic
         comment_channel: comment_topic
         like-event: likeEventTopic
+      ttl:
+        post: 86400
     kafka:
       bootstrap-servers: localhost:9092
       topic:
