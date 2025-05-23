@@ -2,13 +2,16 @@ package faang.school.postservice.validator.comment;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.service.post.PostService;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 @Component
+@Slf4j
 @RequiredArgsConstructor
 public class CommentValidator {
 
@@ -53,6 +56,7 @@ public class CommentValidator {
             throw new DataValidationException("У комментария должен быть автор");
         }
         try {
+            log.info("Проверяем наличие пользователя в базе...");
             userServiceClient.getUser(authorId);
         } catch (FeignException e) {
             throw new DataValidationException("Автор не существует: %s".formatted(authorId), e);
