@@ -6,6 +6,7 @@ import faang.school.postservice.exception.CommentNotFoundException;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.FileProcessException;
 import faang.school.postservice.exception.ForbiddenException;
+import faang.school.postservice.exception.KafkaPublishPostException;
 import faang.school.postservice.exception.LikeAlreadyExistException;
 import faang.school.postservice.exception.LikeNotFoundException;
 import faang.school.postservice.exception.PostDtoValidationException;
@@ -91,6 +92,13 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleFileProcessException(FileProcessException e) {
         log.error("FileProcessException", e);
+        return buildResponse(e);
+    }
+
+    @ExceptionHandler(KafkaPublishPostException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleKafkaPublishPostException(KafkaPublishPostException e) {
+        log.error("KafkaPublishPostException", e);
         return buildResponse(e);
     }
 
