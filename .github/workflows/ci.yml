@@ -4,7 +4,6 @@ on:
   pull_request:
     branches:
       - hydra-master-stream10
-      - BJS2-77478
 
 jobs:
   build:
