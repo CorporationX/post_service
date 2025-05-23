@@ -2,7 +2,9 @@ package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.service.comment.CommentService;
-import faang.school.postservice.validator.comment.CommentValidator;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,31 +22,25 @@ import java.util.List;
 @RequestMapping("/api/v1/comment")
 public class CommentController {
 
-    private final CommentValidator commentValidator;
     private final CommentService commentService;
 
     @PostMapping
-    public CommentDto createComment(@RequestBody CommentDto commentDto) {
-        commentValidator.validateDto(commentDto);
-        return commentService.createComment(commentDto);
+    public CommentDto createComment(@Valid @NotNull @RequestBody CommentDto request) {
+        return commentService.createComment(request);
     }
 
     @PutMapping("/{id}")
-    public CommentDto updateCommentContent(@PathVariable long id, @RequestBody CommentDto commentDto){
-        commentValidator.validateIdDto(id, commentDto);
-        commentValidator.validateContentDto(commentDto);
-        return commentService.updateCommentContent(id, commentDto);
+    public CommentDto updateCommentContent(@PathVariable long id, @Valid @RequestBody CommentDto request) {
+        return commentService.updateCommentContent(id, request);
     }
 
     @GetMapping("/all")
-    public List<CommentDto> getAllComments (@RequestBody CommentDto commentDto) {
-        commentValidator.validatePostDto(commentDto);
-        return commentService.getAllComments(commentDto);
+    public List<CommentDto> getAllComments(@Valid @RequestBody CommentDto request) {
+        return commentService.getAllComments(request);
     }
 
     @DeleteMapping("/{id}")
-    public void deleteComment(@PathVariable long id) {
-        commentValidator.validateCommentId(id);
+    public void deleteComment(@PathVariable @Min(1) long id) {
         commentService.deleteComment(id);
     }
 }
