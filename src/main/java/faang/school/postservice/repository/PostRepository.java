@@ -24,7 +24,6 @@ public interface PostRepository extends CrudRepository<Post, Long> {
     @Query("""
                 SELECT p FROM Post p
                 WHERE p.authorId = :authorId
-                AND p.projectId IS NULL
                 AND p.published = false
                 AND p.deleted = false
                 ORDER BY p.createdAt DESC
@@ -43,7 +42,6 @@ public interface PostRepository extends CrudRepository<Post, Long> {
     @Query("""
                 SELECT p FROM Post p
                 WHERE p.authorId = :authorId
-                AND p.projectId IS NULL
                 AND p.published = true
                 AND p.deleted = false
                 ORDER BY p.publishedAt DESC
