@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/comments")
 public class CommentController {
@@ -37,6 +39,11 @@ public class CommentController {
         commentDto.setStatus(CommentDtoStatus.UPDATE);
         validator.validate(commentDto);
         return service.update(commentDto);
+    }
+
+    @GetMapping("/post/{postId}")
+    public List<CommentDto> findByPostId(@PathVariable long postId){
+        return service.findByPostId(postId);
     }
 
     @GetMapping("/{commentId}")

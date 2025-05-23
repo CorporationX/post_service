@@ -2,6 +2,8 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.dto.comment.CommentDto;
 
+import java.util.List;
+
 public interface CommentService {
 
     public CommentDto create(long creatorId, CommentDto commentDto);
@@ -11,4 +13,6 @@ public interface CommentService {
     public CommentDto findById(long commentId);
 
     public void deleteById(long commentId);
+
+    List<CommentDto> findByPostId(long postId);
 }
