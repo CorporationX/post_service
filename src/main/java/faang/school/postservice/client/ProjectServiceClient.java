@@ -2,6 +2,7 @@ package faang.school.postservice.client;
 
 import faang.school.postservice.dto.project.ProjectDto;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,4 +17,7 @@ public interface ProjectServiceClient {
 
     @PostMapping("/projects")
     List<ProjectDto> getProjectsByIds(@RequestBody List<Long> ids);
+
+    @GetMapping("/project/{projectId}/exists")
+    ResponseEntity<Void> checkProjectExists(@PathVariable Long projectId);
 }
