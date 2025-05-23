@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -21,7 +22,7 @@ public class CommentServiceImp implements CommentService {
 
     @Override
     public CommentDto createComment(CommentDto commentDto) {
-        log.info("Начало создания комментария: %s".formatted(commentDto.getContent()));
+        log.info("Создаем комментарий: %s".formatted(commentDto.getContent()));
         Comment comment = commentMapper.toEntity(commentDto);
         return commentMapper.toCommentDto(commentRepository.save(comment));
     }
@@ -37,8 +38,10 @@ public class CommentServiceImp implements CommentService {
     @Override
     public List<CommentDto> getAllComments(CommentDto commentDto) {
         log.info("Получаем все комментарии по ID поста: %d".formatted(commentDto.getPostId()));
-        List<Comment> comments = commentRepository.findAllByPostId(commentDto.getPostId());
-        return commentMapper.toCommentDtoList(comments);
+        return commentRepository.findAllByPostId(commentDto.getPostId()).stream()
+                .sorted(Comparator.comparing(Comment::getCreatedAt).reversed())
+                .map(commentMapper::toCommentDto)
+                .toList();
     }
 
     @Override
