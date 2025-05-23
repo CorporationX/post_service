@@ -30,6 +30,8 @@ spring:
         like-event: likeEventTopic
       ttl:
         post: 86400
+        author: 86400
+
     kafka:
       bootstrap-servers: localhost:9092
       topic:

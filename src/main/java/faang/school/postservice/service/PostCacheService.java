@@ -17,7 +17,7 @@ public class PostCacheService {
     private final StringRedisTemplate stringRedisTemplate;
 
     @Value("${spring.data.redis.ttl.post}")
-    private int timeToLive;
+    private long timeToLive;
 
     private static final String POSTS_HASH_KEY = "posts";
     private static final String POSTS_ZSET_KEY = "user:feed";
@@ -29,13 +29,8 @@ public class PostCacheService {
                 post
         );
 
-        redisTemplate.expire(
-                POSTS_HASH_KEY + ":" + post.getId(),
-                timeToLive,
-                TimeUnit.SECONDS);
-
         stringRedisTemplate.opsForZSet().add(
-                POSTS_ZSET_KEY + post.getAuthorId(),
+                POSTS_ZSET_KEY + ":" + post.getId(),
                 post.getId().toString(),
                 post.getPublishedAt().toEpochMilli()
         );

@@ -5,6 +5,7 @@ import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.event.CommentEventRedis;
 import faang.school.postservice.dto.kafkaevents.CommentEvent;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.entity.CachedAuthor;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.AuthorCommentCount;
@@ -38,6 +39,7 @@ public class CommentService {
     private final CommentEventPublisher commentEventPublisher;
     private final CommentEvenRedisPublisher commentEvenRedisPublisher;
     private final CommentBanPublisher commentBanPublisher;
+    private final AuthorCacheService authorCacheService;
 
     public CommentDto createComment(long userId, long postId, CommentDto commentDto) {
         UserDto user = client.getUser(userId);
@@ -69,6 +71,11 @@ public class CommentService {
                 .build();
         commentEvenRedisPublisher.publish(commentEvent);
         log.info("Комментарий {} отправлен в топик ", savedComment);
+
+        CachedAuthor cachedAuthor = getCachedAuthor(userId);
+        authorCacheService.cacheAuthor(cachedAuthor.getAuthorId(), cachedAuthor.getUsername());
+        log.info("Автор {} помещен в кеш", cachedAuthor.getAuthorId());
+
         return mapper.toDto(savedComment);
     }
 
@@ -134,6 +141,14 @@ public class CommentService {
         if (commentDto == null) {
             throw new DataValidationException("Комментарий не может быть null");
         }
+    }
+
+    private CachedAuthor getCachedAuthor(Long userid) {
+        UserDto userDto = client.getUser(userid);
+        return CachedAuthor.builder()
+                .authorId(userid)
+                .username(userDto.username())
+                .build();
     }
 
 }

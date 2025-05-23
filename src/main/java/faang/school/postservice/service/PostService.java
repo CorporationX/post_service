@@ -7,6 +7,8 @@ import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.dto.PostResponseDto;
 import faang.school.postservice.dto.event.HashtagAddingEvent;
 import faang.school.postservice.dto.event.PostViewEvent;
+import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.entity.CachedAuthor;
 import faang.school.postservice.entity.CachedPost;
 import faang.school.postservice.exception.AsyncPostProcessingException;
 import faang.school.postservice.exception.DataValidationException;
@@ -71,6 +73,7 @@ public class PostService {
     private final HashtagRemovingEventPublisher hashtagRemovingPublisher;
     private final HashtagServiceClient hashtagClient;
     private final PostCacheService postCacheService;
+    private final AuthorCacheService authorCacheService;
 
     @Value("${batch.size}")
     private int batchSize;
@@ -186,6 +189,10 @@ public class PostService {
         postCacheService.cachePost(cachedPost);
         log.info("Пост {} отправлен в кеш", post.getId());
         log.info("Post published: {}", post);
+
+        CachedAuthor cachedAuthor = getCachedAuthor(post.getAuthorId());
+        authorCacheService.cacheAuthor(cachedAuthor.getAuthorId(), cachedAuthor.getUsername());
+        log.info("Автор {} помещен в кеш", cachedAuthor.getAuthorId());
 
         return postMapper.toResponseDto(post);
     }
@@ -329,6 +336,14 @@ public class PostService {
                 .projectId(post.getProjectId())
                 .publishedAt(Instant.from(post.getPublishedAt()))
                 .content(post.getContent())
+                .build();
+    }
+
+    private CachedAuthor getCachedAuthor(Long id) {
+        UserDto userDto = userServiceClient.getUser(id);
+        return CachedAuthor.builder()
+                .authorId(id)
+                .username(userDto.username())
                 .build();
     }
 
