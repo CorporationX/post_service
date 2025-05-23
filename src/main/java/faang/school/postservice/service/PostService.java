@@ -5,6 +5,7 @@ import faang.school.postservice.dto.post.PostOutputDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
 
 import java.util.List;
+import faang.school.postservice.model.Post;
 
 public interface PostService {
     PostOutputDto getPostById(long postId);
@@ -24,4 +25,6 @@ public interface PostService {
     PostOutputDto publishPost(long postId);
 
     PostOutputDto updatePost(long postId, PostUpdateDto postUpdateDto);
+
+    Post findById(long postId);
 }
