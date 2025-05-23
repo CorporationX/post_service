@@ -20,8 +20,8 @@ import java.util.Objects;
 public class LikeController {
     private final LikeService likeService;
 
-    @PostMapping("/post/{postId}/like")
-    public LikeDto addLikeToPost(@PathVariable Long userId, @PathVariable Long postId) {
+    @PostMapping("like/post/{postId}/user/{userId}")
+    public LikeDto addLikeToPost(@PathVariable Long postId, @PathVariable Long userId) {
         log.info("Start method addLikeToPost with postId: {} and userId: {}", postId, userId);
         validateId(userId);
         validateId(postId);
@@ -29,18 +29,19 @@ public class LikeController {
         return likeService.addLikeToPost(userId, postId);
     }
 
-    @DeleteMapping("/post/{postId}/like")
+    @DeleteMapping("like/post/{postId}/user/{userId}")
     public ResponseEntity<Void> removeLikeFromPost(@PathVariable Long postId, @PathVariable Long userId) {
         log.info("Start method removeLikeFromPost with postId: {}", postId);
         validateId(postId);
+        validateId(userId);
 
         return likeService.removeLikeFromPost(postId, userId) ?
                 new ResponseEntity<>(HttpStatus.NO_CONTENT) :
                 new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    @PostMapping("comment/{commentId}/like")
-    public LikeDto addLikeToComment(@PathVariable Long userId, @PathVariable Long commentId) {
+    @PostMapping("like/comment/{commentId}/user/{userId}")
+    public LikeDto addLikeToComment(@PathVariable Long commentId, @PathVariable Long userId) {
         log.info("Start method addLikeToComment with commentId: {} and userId: {}", commentId, userId);
         validateId(userId);
         validateId(commentId);
@@ -48,10 +49,11 @@ public class LikeController {
         return likeService.addLikeToComment(userId, commentId);
     }
 
-    @DeleteMapping("comment/{commentId}/like")
+    @DeleteMapping("like/comment/{commentId}/user/{userId}")
     public ResponseEntity<Void> removeLikeFromComment(@PathVariable Long commentId, @PathVariable Long userId) {
         log.info("Start method removeLikeFromComment with commentId: {}", commentId);
         validateId(commentId);
+        validateId(userId);
 
         return likeService.removeLikeFromComment(commentId, userId) ?
                 new ResponseEntity<>(HttpStatus.NO_CONTENT) :

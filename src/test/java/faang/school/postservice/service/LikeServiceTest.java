@@ -3,7 +3,7 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
-import faang.school.postservice.mapper.LikeMapperImpl;
+import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
@@ -42,7 +42,7 @@ class LikeServiceTest {
     @Mock
     private UserServiceClient userServiceClient;
     @Spy
-    private LikeMapperImpl likeMapper;
+    private LikeMapper likeMapper;
     @InjectMocks
     private LikeService likeService;
 
