@@ -2,7 +2,8 @@ package faang.school.postservice.service.post;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.post.PostCreateDto;
+import faang.school.postservice.dto.post.PostOutputDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
@@ -13,7 +14,6 @@ import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.PostService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,7 +21,6 @@ import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -32,13 +31,13 @@ public class PostServiceImpl implements PostService {
     private final ProjectServiceClient projectServiceClient;
 
     @Override
-    public PostDto getPostById(long postId) {
+    public PostOutputDto getPostById(long postId) {
         Post foundPost = findPostById(postId);
         return postMapper.toPostDto(foundPost);
     }
 
     @Override
-    public List<PostDto> getNotDeletedUserDrafts(long userId) {
+    public List<PostOutputDto> getNotDeletedUserDrafts(long userId) {
         findUserById(userId);
         return postRepository.findByAuthorId(userId).stream()
                 .filter(post -> !post.isDeleted() && !post.isPublished())
@@ -48,7 +47,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public List<PostDto> getNotDeletedProjectDrafts(long projectId) {
+    public List<PostOutputDto> getNotDeletedProjectDrafts(long projectId) {
         findProjectById(projectId);
         return postRepository.findByProjectId(projectId).stream()
                 .filter(post -> !post.isDeleted() && !post.isPublished())
@@ -58,7 +57,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public List<PostDto> getNotDeletedUserPublished(long userId) {
+    public List<PostOutputDto> getNotDeletedUserPublished(long userId) {
         findUserById(userId);
         return postRepository.findByAuthorId(userId).stream()
                 .filter(post -> !post.isDeleted() && post.isPublished())
@@ -68,7 +67,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public List<PostDto> getNotDeletedProjectPublished(long projectId) {
+    public List<PostOutputDto> getNotDeletedProjectPublished(long projectId) {
         findProjectById(projectId);
         return postRepository.findByProjectId(projectId).stream()
                 .filter(post -> !post.isDeleted() && post.isPublished())
@@ -78,7 +77,8 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public PostDto deletePost(long postId) {
+    @Transactional
+    public PostOutputDto deletePost(long postId) {
         Post foundPost = findPostById(postId);
         foundPost.setDeleted(true);
         Post deletedPost = postRepository.save(foundPost);
@@ -86,9 +86,10 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public PostDto createPost(PostDto postDto) {
-        Long userId = postDto.getAuthorId();
-        Long projectId = postDto.getProjectId();
+    @Transactional
+    public PostOutputDto createPost(PostCreateDto postCreateDto) {
+        Long userId = postCreateDto.getAuthorId();
+        Long projectId = postCreateDto.getProjectId();
         if ((userId == null && projectId == null) || (userId != null && projectId != null)) {
             throw new IllegalArgumentException("Invalid userId %d and project id %d".formatted(userId, projectId));
         }
@@ -97,15 +98,16 @@ public class PostServiceImpl implements PostService {
         } else {
             findProjectById(projectId);
         }
-        postDto.setDeleted(false);
-        postDto.setPublished(false);
-        Post postToCreate = postMapper.toPostEntity(postDto);
+        Post postToCreate = postMapper.toPostEntity(postCreateDto);
+        postToCreate.setDeleted(false);
+        postToCreate.setPublished(false);
         Post createdPost = postRepository.save(postToCreate);
         return postMapper.toPostDto(createdPost);
     }
 
     @Override
-    public PostDto publishPost(long postId) {
+    @Transactional
+    public PostOutputDto publishPost(long postId) {
         Post foundPost = findPostById(postId);
         if (foundPost.isPublished()) {
             throw new PostAlreadyPublishedException("Post with id %d is already published".formatted(postId));
@@ -117,7 +119,8 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public PostDto updatePost(long postId, PostUpdateDto postUpdateDto) {
+    @Transactional
+    public PostOutputDto updatePost(long postId, PostUpdateDto postUpdateDto) {
         Post foundPost = findPostById(postId);
         postMapper.update(postUpdateDto, foundPost);
         Post updatedPost = postRepository.save(foundPost);

@@ -1,6 +1,7 @@
 package faang.school.postservice.mapper;
 
-import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.post.PostCreateDto;
+import faang.school.postservice.dto.post.PostOutputDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.Comment;
@@ -23,16 +24,9 @@ public interface PostMapper {
     @Mapping(target = "albumIds", source = "albums", qualifiedByName = "mapAlbums")
     @Mapping(target = "adId", source = "ad.id")
     @Mapping(target = "resourceIds", source = "resources", qualifiedByName = "mapResources")
-    PostDto toPostDto(Post post);
+    PostOutputDto toPostDto(Post post);
 
-    @Mapping(target = "likes", ignore = true)
-    @Mapping(target = "comments", ignore = true)
-    @Mapping(target = "albums", ignore = true)
-    @Mapping(target = "resources", ignore = true)
-    @Mapping(target = "ad", ignore = true)
-    Post toPostEntity(PostDto postDto);
-
-    List<PostDto> toPostDtoList(List<Post> posts);
+    Post toPostEntity(PostCreateDto postCreateDto);
 
     void update(PostUpdateDto postUpdateDto, @MappingTarget Post post);
 

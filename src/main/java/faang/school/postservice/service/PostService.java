@@ -1,26 +1,27 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.post.PostCreateDto;
+import faang.school.postservice.dto.post.PostOutputDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
 
 import java.util.List;
 
 public interface PostService {
-    PostDto getPostById(long postId);
+    PostOutputDto getPostById(long postId);
 
-    List<PostDto> getNotDeletedUserDrafts(long userId);
+    List<PostOutputDto> getNotDeletedUserDrafts(long userId);
 
-    List<PostDto> getNotDeletedProjectDrafts(long projectId);
+    List<PostOutputDto> getNotDeletedProjectDrafts(long projectId);
 
-    List<PostDto> getNotDeletedUserPublished(long userId);
+    List<PostOutputDto> getNotDeletedUserPublished(long userId);
 
-    List<PostDto> getNotDeletedProjectPublished(long projectId);
+    List<PostOutputDto> getNotDeletedProjectPublished(long projectId);
 
-    PostDto deletePost(long postId);
+    PostOutputDto deletePost(long postId);
 
-    PostDto createPost(PostDto postDto);
+    PostOutputDto createPost(PostCreateDto postCreateDto);
 
-    PostDto publishPost(long postId);
+    PostOutputDto publishPost(long postId);
 
-    PostDto updatePost(long postId, PostUpdateDto postUpdateDto);
+    PostOutputDto updatePost(long postId, PostUpdateDto postUpdateDto);
 }
