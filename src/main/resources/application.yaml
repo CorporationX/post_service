@@ -157,3 +157,17 @@ moderation:
 scheduler:
   outbox-event:
     batch-size: 10
+feed:
+  cache:
+    ttl-seconds: 86400  # 1 день
+    max-feed-size: 500
+    max-comments: 3
+kafka:
+  bootstrap-servers: localhost:9092
+  group-id: post-service-group
+  topic: connectivity_check
+  max-poll: 100
+  topics:
+    post-created: posts
+    likes: likes
+    comments: comments

@@ -2,10 +2,7 @@ package faang.school.postservice.client;
 
 import faang.school.postservice.dto.user.UserDto;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -18,6 +15,14 @@ public interface UserServiceClient {
     @PostMapping("/users")
     List<UserDto> getUsersByIds(@RequestBody List<Long> ids);
 
-    @GetMapping("/followers/{userId}")
-    List<UserDto> getFollowersByUserId(@PathVariable long userId);
+    @GetMapping("/subscriptions/{followeeId}/followers")
+    List<UserDto> getFollowersByUserId(@PathVariable("followeeId") long userId);
+
+    @GetMapping("/subscriptions/{followeeId}/followers/ids")
+    List<Long> getFollowerIds(@PathVariable("followeeId") long userId);
+
+    @GetMapping("/users/page")
+    List<UserDto> getUsersByPage(
+            @RequestParam("page") int page,
+            @RequestParam("size") int size);
 }
