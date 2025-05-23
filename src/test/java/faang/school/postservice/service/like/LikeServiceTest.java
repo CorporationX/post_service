@@ -6,6 +6,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.service.like.implementations.LikeServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -85,7 +86,8 @@ class LikeServiceTest {
         long postId = 1L;
         Like like1 = Like.builder().userId(1L).post(new Post()).build();
         when(likeRepository.findByPostId(postId)).thenReturn(List.of(like1));
-        when(userServiceClient.getUsersByIds(List.of(1L))).thenThrow(new RuntimeException("Пользовательский сервис недоступен"));
+        when(userServiceClient.getUsersByIds(List.of(1L)))
+                .thenThrow(new RuntimeException("Пользовательский сервис недоступен"));
 
         assertThrows(RuntimeException.class, () -> likeService.getUserLikedPost(postId));
     }
