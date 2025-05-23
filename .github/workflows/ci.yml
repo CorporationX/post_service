@@ -60,11 +60,11 @@ jobs:
       - name: Run tests
         run: ./gradlew test --no-daemon
 
-      - name: Build, Test, and Validate Coverage with Gradle
-        run: ./gradlew clean build test jacocoTestReport jacocoTestCoverageVerification
-
       - name: Force fail test
         run: exit 1
+
+      - name: Build, Test, and Validate Coverage with Gradle
+        run: ./gradlew clean build test jacocoTestReport jacocoTestCoverageVerification
 
       - name: Upload JaCoCo Report
         uses: actions/upload-artifact@v4
