@@ -2,6 +2,7 @@ package faang.school.postservice.service.post.implementations;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.component.post.PostEventBatchSender;
 import faang.school.postservice.config.post.PostServiceConstants;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.project.ProjectDto;
@@ -44,7 +45,7 @@ public class PostServiceImpl implements PostService {
     private final PostMapper postMapper;
     private final ExecutorService postPublishPool;
     private final PlatformTransactionManager transactionManager;
-    private final KafkaPostProducer kafkaPostProducer;
+    private final PostEventBatchSender postEventBatchSender;
 
     public static final int POST_PUBLISH_POOL_SIZE = 10;
     private final AtomicBoolean isRunning = new AtomicBoolean(false);
@@ -158,9 +159,10 @@ public class PostServiceImpl implements PostService {
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
 
-        //kafkaPostProducer.sendPostCreatedEvent(savedPost.getId(), post.getAuthor().getId());
+        post = postRepository.saveAndFlush(post);
+        postEventBatchSender.dispatchEventsForPost(post);
 
-        return postMapper.toDto(postRepository.save(post));
+        return postMapper.toDto(post);
     }
 
     @Override

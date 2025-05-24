@@ -30,9 +30,11 @@ spring:
         calculations_channel:
           name: calculations_channel
 
-
   kafka:
     bootstrap-servers: localhost:9092
+    topic:
+      post:
+        name: posts
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
@@ -43,7 +45,34 @@ spring:
               type:
                 headers: true
             type:
-              mapping:  postCreatedEvent:faang.school.postservice.event.PostCreatedEvent
+              mapping: postFeedEvent:faang.school.urlshortenerservice.event.PostFeedEvent
+          enable:
+            idempotence: true
+          max:
+            in:
+              flight:
+                requests: 5
+          retries: 3
+
+app:
+  retry:
+    user-service:
+      max-attempts: 3
+      delay: 1000
+      multiplier: 2.0
+    kafka:
+      max-attempts: 3
+      delay: 1000
+      multiplier: 2.0
+  async:
+    post-event-executor:
+      core-pool-size: 10
+      max-pool-size: 20
+      queue-capacity: 50
+      thread-name-prefix: "PostEvent-"
+  batch:
+    max-subscribers: 1000
+    batch-size: 100
 
 server:
   port: 8081
