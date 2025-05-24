@@ -26,6 +26,7 @@ import faang.school.postservice.model.VerifiedStatus;
 import faang.school.postservice.model.ad.Ad;
 import faang.school.postservice.publisher.HashtagAddingEventPublisher;
 import faang.school.postservice.publisher.HashtagRemovingEventPublisher;
+import faang.school.postservice.publisher.KafkaPostEventPublisher;
 import faang.school.postservice.publisher.PostViewEventPublisher;
 import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.repository.CommentRepository;
@@ -77,8 +78,8 @@ public class PostService {
     private final HashtagServiceClient hashtagClient;
     private final PostCacheService postCacheService;
     private final AuthorCacheService authorCacheService;
-    private final KafkaTemplate<String, PostEvent> postEventKafkaTemplate;
     private final FollowersRepository followersRepository;
+    private final KafkaPostEventPublisher kafkaPostEventPublisher;
 
     @Value("${batch.size}")
     private int batchSize;
@@ -199,12 +200,13 @@ public class PostService {
         authorCacheService.cacheAuthor(cachedAuthor.getAuthorId(), cachedAuthor.getUsername());
         log.info("Автор {} помещен в кеш", cachedAuthor.getAuthorId());
 
-         List<Long> followersIds = followersRepository.findFollowerIdsByAuthorId(post.getAuthorId());
-        postEventKafkaTemplate.send(
-                "posts",
-                new PostEvent(post.getId(), post.getAuthorId(), Instant.from(post.getPublishedAt()), followersIds)
+        List<Long> followersIds = followersRepository.findFollowerIdsByAuthorId(post.getAuthorId());
+        kafkaPostEventPublisher.publish(
+                new PostEvent(post.getId(),
+                        post.getAuthorId(),
+                        Instant.from(post.getPublishedAt()),
+                        followersIds)
         );
-        log.debug("Отправил ивент поста {} для {} подписчиков", post.getId(), followersIds.size());
 
         return postMapper.toResponseDto(post);
     }

@@ -31,12 +31,15 @@ spring:
       ttl:
         post: 86400
         author: 86400
+      feed:
+        size: 500
 
     kafka:
       bootstrap-servers: localhost:9092
       topic:
         comment: comment_topic
         userBan: user_ban
+        posts: posts
         hashtag-adding:
           name: "hashtag-adding-topic"
           partitions: 3
