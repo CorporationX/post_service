@@ -18,6 +18,10 @@ public class KafkaTopic {
     @Value("${spring.data.kafka.topic.posts}")
     private String postPublishTopic;
 
+    @Value("${spring.data.kafka.topic.likes}")
+    private String postLikeTopic;
+
+
     @Bean
     public NewTopic comment() {
         return TopicBuilder.name(commentTopic).partitions(2).build();
@@ -31,5 +35,10 @@ public class KafkaTopic {
     @Bean
     public NewTopic postPublish() {
         return TopicBuilder.name(postPublishTopic).partitions(3).build();
+    }
+
+    @Bean
+    public NewTopic postLike() {
+        return TopicBuilder.name(postLikeTopic).partitions(3).build();
     }
 }
