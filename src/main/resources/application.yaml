@@ -22,8 +22,6 @@ spring:
       port: 6379
       host: localhost
       channels:
-        calculations_channel:
-          name: calculations_channel
         user-ban: user-ban
         postViewEventPublisher: PostViewEvent_topic
         comment_channel: comment_topic
@@ -39,6 +37,10 @@ spring:
           replicas: 1
         hashtag-removing:
           name: "hashtag-removing-topic"
+          partitions: 3
+          replicas: 1
+        posts:
+          name: "posts-topic"
           partitions: 3
           replicas: 1
       producer:

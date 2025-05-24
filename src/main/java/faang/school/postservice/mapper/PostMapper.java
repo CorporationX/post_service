@@ -17,9 +17,6 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface PostMapper {
 
-    @Mapping(target = "likes", ignore = true)
-    @Mapping(target = "comments", ignore = true)
-    @Mapping(target = "albums", ignore = true)
     @Mapping(target = "ad", ignore = true)
     @Mapping(target = "resources", ignore = true)
     @Mapping(target = "createdAt", ignore = true)

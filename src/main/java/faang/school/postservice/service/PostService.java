@@ -3,29 +3,29 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.HashtagServiceClient;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.component.RedisRepositoryCoordinator;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.dto.PostResponseDto;
 import faang.school.postservice.dto.event.HashtagAddingEvent;
 import faang.school.postservice.dto.event.PostViewEvent;
+import faang.school.postservice.dto.feed.PostPublishEvent;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.AsyncPostProcessingException;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.HashtagServiceConnectionException;
 import faang.school.postservice.exception.PostAlreadyPublishedException;
 import faang.school.postservice.exception.PostUnverifiedException;
+import faang.school.postservice.exception.UserNotFoundException;
+import faang.school.postservice.exception.UserServiceConnectionException;
 import faang.school.postservice.mapper.PostMapper;
-import faang.school.postservice.model.Album;
-import faang.school.postservice.model.Comment;
-import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.model.VerifiedStatus;
 import faang.school.postservice.model.ad.Ad;
 import faang.school.postservice.publisher.HashtagAddingEventPublisher;
 import faang.school.postservice.publisher.HashtagRemovingEventPublisher;
+import faang.school.postservice.publisher.PostEventPublisher;
 import faang.school.postservice.publisher.PostViewEventPublisher;
-import faang.school.postservice.repository.AlbumRepository;
-import faang.school.postservice.repository.CommentRepository;
-import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ResourceRepository;
 import faang.school.postservice.repository.ad.AdRepository;
@@ -34,6 +34,8 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -53,21 +55,23 @@ import java.util.stream.IntStream;
 @RequiredArgsConstructor
 public class PostService {
 
+    private static final int RETRY_DELAY = 500;
+    private static final int RETRY_MULTIPLIER = 3;
+
     private final PostRepository postRepository;
     private final PostMapper postMapper;
     private final ProjectServiceClient projectServiceClient;
     private final UserServiceClient userServiceClient;
-    private final LikeRepository likeRepository;
-    private final CommentRepository commentRepository;
     private final AdRepository adRepository;
     private final ResourceRepository resourceRepository;
-    private final AlbumRepository albumRepository;
     private final PostViewEventPublisher postViewEventPublisher;
     private final ExecutorService executorService;
     private final HashtagAddingEventPublisher hashtagAddingPublisher;
     private final HashtagRemovingEventPublisher hashtagRemovingPublisher;
     private final HashtagServiceClient hashtagClient;
     private final PostProcessingService postProcessingService;
+    private final PostEventPublisher postEventPublisher;
+    private final RedisRepositoryCoordinator redisRepositoryCoordinator;
 
     @Value("${batch.size}")
     private int batchSize;
@@ -126,20 +130,14 @@ public class PostService {
             ad = adRepository.findById(postDto.adId()).orElseThrow(
                     () -> new RuntimeException("ad not found"));
         }
-        List<Comment> comments = commentRepository.findByIdIn(postDto
-                .commentsId() != null ? postDto.commentsId() : List.of());
-        List<Like> likes = likeRepository.findByIdIn(postDto
-                .likesId() != null ? postDto.likesId() : List.of());
         List<Resource> resources = resourceRepository.findByIdIn(postDto
                 .resourcesId() != null ? postDto.resourcesId() : List.of());
-        List<Album> albums = albumRepository.findByIdIn(postDto
-                .albumsId() != null ? postDto.albumsId() : List.of());
 
         post.setAd(ad);
-        post.setComments(comments);
-        post.setLikes(likes);
+        post.setComments(new ArrayList<>());
+        post.setLikes(new ArrayList<>());
         post.setResources(resources);
-        post.setAlbums(albums);
+        post.setAlbums(new ArrayList<>());
         post.setVerifiedStatus(VerifiedStatus.PENDING);
 
         postRepository.save(post);
@@ -170,7 +168,16 @@ public class PostService {
         post.setPublishedAt(LocalDateTime.now());
         postRepository.save(post);
         log.info("Post published: {}", post);
-        return postMapper.toResponseDto(post);
+
+        PostResponseDto postDto = postMapper.toResponseDto(post);
+        redisRepositoryCoordinator.savePostToRedis(postDto);
+        UserDto author = getUserById(post.getAuthorId());
+        redisRepositoryCoordinator.saveUserToRedis(author);
+        List<Long> followerIds = getFollowerIdsByPostAuthorId(postId);
+        if (!followerIds.isEmpty()) {
+            postEventPublisher.publish(takePostPublishEvent(post.getId(), followerIds));
+        }
+        return postDto;
     }
 
     public PostResponseDto update(PostDto postDto, Long postId) {
@@ -326,5 +333,44 @@ public class PostService {
                 .map(postMapper::toResponseDto)
                 .peek(postDto -> postDto.setHashtagsId(hashtags.get(postDto.getId())))
                 .toList();
+    }
+
+    private PostPublishEvent takePostPublishEvent(Long postId, List<Long> followerIds) {
+        return PostPublishEvent.builder()
+                .postId(postId)
+                .followerIds(followerIds)
+                .build();
+    }
+
+    @Retryable(
+            retryFor = UserServiceConnectionException.class,
+            backoff = @Backoff(delay = RETRY_DELAY, multiplier = RETRY_MULTIPLIER)
+    )
+    private UserDto getUserById(Long userId) {
+        try {
+            UserDto user = userServiceClient.getUser(userId);
+            if (user == null) {
+                throw new UserNotFoundException("User with id %d not found", userId);
+            }
+            return user;
+        } catch (FeignException e) {
+            throw new UserServiceConnectionException("User server returned an error: " + e.getMessage());
+        }
+    }
+
+    @Retryable(
+            retryFor = UserServiceConnectionException.class,
+            backoff = @Backoff(delay = RETRY_DELAY, multiplier = RETRY_MULTIPLIER)
+    )
+    private List<Long> getFollowerIdsByPostAuthorId(Long authorId) {
+        try {
+            List<Long> users = userServiceClient.getFollowerIds(authorId);
+            if (users == null) {
+                throw new UserNotFoundException("Post author with id %d not found", authorId);
+            }
+            return users;
+        } catch (FeignException e) {
+            throw new UserServiceConnectionException("User server returned an error: " + e.getMessage());
+        }
     }
 }

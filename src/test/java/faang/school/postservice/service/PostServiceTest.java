@@ -3,18 +3,18 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.HashtagServiceClient;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.component.RedisRepositoryCoordinator;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.dto.PostResponseDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.PostAlreadyPublishedException;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.VerifiedStatus;
 import faang.school.postservice.publisher.HashtagAddingEventPublisher;
 import faang.school.postservice.publisher.HashtagRemovingEventPublisher;
+import faang.school.postservice.publisher.PostEventPublisher;
 import faang.school.postservice.publisher.PostViewEventPublisher;
-import faang.school.postservice.repository.AlbumRepository;
-import faang.school.postservice.repository.CommentRepository;
-import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ResourceRepository;
 import faang.school.postservice.repository.ad.AdRepository;
@@ -56,19 +56,10 @@ public class PostServiceTest {
     private UserServiceClient userServiceClient;
 
     @Mock
-    private LikeRepository likeRepository;
-
-    @Mock
-    private CommentRepository commentRepository;
-
-    @Mock
     private AdRepository adRepository;
 
     @Mock
     private ResourceRepository resourceRepository;
-
-    @Mock
-    private AlbumRepository albumRepository;
 
     @InjectMocks
     private PostService postService;
@@ -88,15 +79,28 @@ public class PostServiceTest {
     @Mock
     private HashtagServiceClient hashtagClient;
 
+    @Mock
+    private PostViewEventPublisher viewEventPublisher;
+
+    @Mock
+    private PostEventPublisher postEventPublisher;
+
+    @Mock
+    private RedisRepositoryCoordinator redisRepositoryCoordinator;
+
     @Test
     public void testPositivePublish() {
         Post post = Post.builder()
                 .id(1L)
+                .authorId(1L)
                 .verifiedStatus(VerifiedStatus.APPROVED)
                 .published(false)
                 .build();
         when(postRepository.findById(any())).thenReturn(Optional.of(post));
+        when(userServiceClient.getUser(post.getAuthorId())).thenReturn(createUserDto(post.getAuthorId()));
+        when(userServiceClient.getFollowerIds(post.getAuthorId())).thenReturn(List.of(1L, 2L, 3L));
         PostResponseDto postDto = postService.publish(post.getId());
+
         verify(postRepository, times(1)).save(post);
 
         assertEquals(post.getId(), postDto.getId());
@@ -342,9 +346,6 @@ public class PostServiceTest {
                 .authorId(1L)
                 .content("content")
                 .build();
-        when(commentRepository.findByIdIn(any())).thenReturn(List.of());
-        when(likeRepository.findByIdIn(any())).thenReturn(List.of());
-        when(albumRepository.findByIdIn(any())).thenReturn(List.of());
         when(resourceRepository.findByIdIn(any())).thenReturn(List.of());
 
         postService.create(postDto);
@@ -419,6 +420,13 @@ public class PostServiceTest {
                 .commentsId(Collections.emptyList())
                 .albumsId(Collections.emptyList())
                 .resourcesId(Collections.emptyList())
+                .build();
+    }
+
+    private UserDto createUserDto(Long id) {
+        return UserDto.builder()
+                .id(id)
+                .username("randomUsername")
                 .build();
     }
 }
