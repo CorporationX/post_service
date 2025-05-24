@@ -30,6 +30,21 @@ spring:
         calculations_channel:
           name: calculations_channel
 
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring:
+          json:
+            add:
+              type:
+                headers: true
+            type:
+              mapping:  postCreatedEvent:faang.school.postservice.event.PostCreatedEvent
+
 server:
   port: 8081
 
@@ -104,3 +119,4 @@ file-upload:
       rectangular:
         max-long-side-length: 1080
         max-short-side-length: 566
+

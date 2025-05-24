@@ -12,6 +12,7 @@ import faang.school.postservice.exception.PostScheduledProcessingException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.kafka.KafkaPostProducer;
 import faang.school.postservice.service.post.interfaces.PostService;
 import faang.school.postservice.service.post_check.interfaces.PostCheckerService;
 import lombok.RequiredArgsConstructor;
@@ -43,6 +44,7 @@ public class PostServiceImpl implements PostService {
     private final PostMapper postMapper;
     private final ExecutorService postPublishPool;
     private final PlatformTransactionManager transactionManager;
+    private final KafkaPostProducer kafkaPostProducer;
 
     public static final int POST_PUBLISH_POOL_SIZE = 10;
     private final AtomicBoolean isRunning = new AtomicBoolean(false);
@@ -155,6 +157,8 @@ public class PostServiceImpl implements PostService {
 
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
+
+        //kafkaPostProducer.sendPostCreatedEvent(savedPost.getId(), post.getAuthor().getId());
 
         return postMapper.toDto(postRepository.save(post));
     }

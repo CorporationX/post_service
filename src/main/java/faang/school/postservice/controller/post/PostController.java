@@ -10,6 +10,7 @@ import faang.school.postservice.service.post_file.interfaces.PostFileService;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
@@ -52,9 +53,11 @@ public class PostController {
     }
 
     @PostMapping("/publish")
-    public ResponseEntity<PostDto> publishPost(@RequestBody PostDto postDto) {
+    public ResponseEntity<PostDto> publishPost(@RequestBody @NotNull PostDto postDto) {
         validateId(postDto.getId());
-        return ResponseEntity.ok().body(postService.publishPost(postDto));
+        PostDto postDtoResponse = postService.publishPost(postDto);
+
+        return ResponseEntity.ok().body(postDtoResponse);
     }
 
     @PutMapping

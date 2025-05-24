@@ -9,6 +9,11 @@ group = "faang.school"
 version = "1.0"
 java.sourceCompatibility = JavaVersion.VERSION_17
 
+ext {
+    set("springKafkaVersion", "3.3.6")
+    set("kafkaVersion", "3.5.0")
+}
+
 repositories {
     mavenCentral()
 }
@@ -57,6 +62,13 @@ dependencies {
      */
     implementation("com.amazonaws:aws-java-sdk-s3:1.12.464")
     implementation("io.minio:minio:8.3.3")
+
+    /**
+     * Kafka
+     */
+    implementation("org.springframework.kafka:spring-kafka")
+    implementation("org.apache.kafka:kafka-streams")
+    testImplementation("org.springframework.kafka:spring-kafka-test")
 
     /**
      * Test containers
