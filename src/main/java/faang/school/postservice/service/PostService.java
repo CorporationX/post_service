@@ -66,12 +66,6 @@ public class PostService {
         PostValidation.validatePostAuthors(postRequestDto);
         PostValidation.validatePostDraftCreation(postRequestDto);
         Post post = postRepository.save(postMapper.toPost(postRequestDto));
-        PostEvent postEvent = PostEvent.builder()
-                .postId(post.getId())
-                .authorId(post.getAuthorId())
-                .followers(postRepository.findAllFollowersIdByAuthorId(post.getAuthorId()))
-                .build();
-        postEventPublisher.send(postEvent);
         return postMapper.toPostResponseDto(post);
     }
 
@@ -84,6 +78,12 @@ public class PostService {
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
         postRepository.save(post);
+        PostEvent postEvent = PostEvent.builder()
+                .postId(post.getId())
+                .authorId(post.getAuthorId())
+                .followers(postRepository.findAllFollowersIdByAuthorId(post.getAuthorId()))
+                .build();
+        postEventPublisher.send(postEvent);
         hashtagService.extractHashtagsFromPost(post);
         return postMapper.toPostResponseDto(post);
     }

@@ -14,16 +14,15 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class FeedRedisRepository {
     private static final String KEY_PREFIX = "user_id:";
-    private final RedisTemplate<String, Long> redisTemplate;
+    private final ZSetOperations<String, String> zSetOps;
 
     @Value("${spring.data.redis.feed.post-max-size}")
     private int postMaxSize;
 
     public void addToFeed(Long userId , Long postId) {
-        ZSetOperations<String, Long> zSetOps = redisTemplate.opsForZSet();
         String key = KEY_PREFIX + userId;
         double score = -Instant.now().toEpochMilli();
-        zSetOps.add(key, postId, score);
+        zSetOps.add(key, postId.toString(), score);
         zSetOps.removeRange(key, postMaxSize, -1);
     }
 }

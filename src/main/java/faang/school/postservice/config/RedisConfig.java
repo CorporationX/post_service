@@ -44,23 +44,8 @@ public class RedisConfig {
     }
 
     @Bean
-    public RedisTemplate<String, Long> longRedisTemplate(
-            RedisConnectionFactory connectionFactory) {
-        RedisTemplate<String, Long> template = new RedisTemplate<>();
-        template.setConnectionFactory(connectionFactory);
-        template.setKeySerializer(new StringRedisSerializer());
-        template.setValueSerializer(new GenericToStringSerializer<>(Long.class));
-        return template;
-    }
-
-    @Bean
     public ZSetOperations<String, String> zSetOperations(RedisTemplate<String, String> redisTemplate) {
         return redisTemplate.opsForZSet();
-    }
-
-    @Bean
-    public ZSetOperations<String, Long> longZSetOperations(RedisTemplate<String, Long> longRedisTemplate) {
-        return longRedisTemplate.opsForZSet();
     }
 
     @Bean

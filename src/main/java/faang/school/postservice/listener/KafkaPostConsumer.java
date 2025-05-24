@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.dto.post.PostEvent;
 import faang.school.postservice.repository.FeedRedisRepository;
+import faang.school.postservice.utils.JsonUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -18,7 +19,7 @@ import static faang.school.postservice.contants.ErrorMessage.FAILED_TO_PROCESS_E
 @RequiredArgsConstructor
 @Slf4j
 public class KafkaPostConsumer {
-    private final ObjectMapper objectMapper;
+    private final JsonUtils jsonUtils;
     private final FeedRedisRepository feedRedisRepository;
 
     @Retryable(backoff = @Backoff(delay = 100))
@@ -26,13 +27,10 @@ public class KafkaPostConsumer {
             groupId = "${spring.kafka.consumer.group-id.post}")
     public void listen(String message, Acknowledgment ack) {
         try {
-            PostEvent event = objectMapper.readValue(message, PostEvent.class);
+            PostEvent event = jsonUtils.fromJson(message, PostEvent.class);
             log.info("Post event received: {}", event);
             event.getFollowers().forEach(follower -> feedRedisRepository.addToFeed(follower, event.getPostId()));
             ack.acknowledge();
-        } catch (JsonProcessingException e) {
-            log.error(FAILED_SERIALIZING_OBJECT, e);
-            throw new RuntimeException(FAILED_SERIALIZING_OBJECT);
         } catch (Exception e) {
             log.error(FAILED_TO_PROCESS_EVENT);
             throw e;
