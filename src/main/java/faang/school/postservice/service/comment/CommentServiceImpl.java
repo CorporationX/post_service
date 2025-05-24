@@ -2,6 +2,7 @@ package faang.school.postservice.service.comment;
 
 import faang.school.postservice.client.CommentAnalyzer;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.kafka.KafkaCommentProducer;
 import faang.school.postservice.config.kafka.NotificationKafkaProducer;
 import faang.school.postservice.contants.ErrorMessage;
 import faang.school.postservice.dto.comment.CommentEvent;
@@ -111,6 +112,7 @@ public class CommentServiceImpl implements CommentService {
     private final UserServiceClient userServiceClient;
     private final CommentEventPublisher commentEventPublisher;
     private final NotificationKafkaProducer notificationKafkaProducer;
+    private final KafkaCommentProducer kafkaCommentProducer;
     private ExecutorService executor;
 
     @PostConstruct
@@ -183,8 +185,10 @@ public class CommentServiceImpl implements CommentService {
                 commentRequestDto.getAuthorId(),
                 comment.getId(),
                 LocalDateTime.now()));
-        commentEventPublisher.publish(new CommentEvent(commentRequestDto.getPostId(), commentRequestDto.getAuthorId(),
-                comment.getId(), LocalDateTime.now()));
+        CommentEvent commentEvent = new CommentEvent(commentRequestDto.getPostId(), commentRequestDto.getAuthorId(),
+                comment.getId(), LocalDateTime.now());
+        commentEventPublisher.publish(commentEvent);
+        kafkaCommentProducer.send(commentEvent);
         log.info(INFO_CREATE_COMMENT, comment.getId(), commentRequestDto.getAuthorId(), commentRequestDto.getPostId());
     }
 
