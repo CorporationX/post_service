@@ -56,6 +56,11 @@ spring:
         notification: "notification-topic"
         user-ban: "user-ban-topic"
         post-like: "post-like-event-topic"
+    listener:
+      topics:
+        news-feed-comment: "news-comment-topic"
+      groupId:
+        news-feed-group: "news-feed-group"
 
 server:
   port: 8081
