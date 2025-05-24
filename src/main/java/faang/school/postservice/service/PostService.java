@@ -11,8 +11,8 @@ import faang.school.postservice.exception.PostNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.PostEventPublisher;
-import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.ad.PostRedisRepository;
 import faang.school.postservice.service.hashtags.HashtagService;
 import faang.school.postservice.utils.validationUtils.PostValidation;
 import jakarta.transaction.Transactional;
@@ -50,8 +50,8 @@ public class PostService {
 
     private final PostMapper postMapper;
     private final PostRepository postRepository;
+    private final PostRedisRepository postRedisRepository;
     private final LanguageToolClient languageToolClient;
-    private final LikeRepository likeRepository;
     private final HashtagService hashtagService;
     private final ExecutorService threadPoolExecutor;
     private final PostEventPublisher postEventPublisher;
@@ -78,6 +78,7 @@ public class PostService {
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
         postRepository.save(post);
+        postRedisRepository.savePost(post.getId(), postMapper.toPostResponseDto(post));
         PostEvent postEvent = PostEvent.builder()
                 .postId(post.getId())
                 .authorId(post.getAuthorId())

@@ -13,7 +13,7 @@ import java.util.Set;
 @Component
 @RequiredArgsConstructor
 public class FeedRedisRepository {
-    private static final String KEY_PREFIX = "user_id:";
+    private static final String KEY_PREFIX = "feed:";
     private final ZSetOperations<String, String> zSetOps;
 
     @Value("${spring.data.redis.feed.post-max-size}")

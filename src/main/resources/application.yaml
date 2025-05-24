@@ -41,6 +41,8 @@ spring:
           name: calculations_channel
       feed:
         post-max-size: 500
+      post:
+        post-ttl-hours: 24
   retry:
     language-tool:
       max-attempts: 4

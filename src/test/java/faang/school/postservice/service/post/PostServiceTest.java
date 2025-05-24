@@ -127,7 +127,6 @@ public class PostServiceTest {
                 () -> postService.publishPost(id)
         );
         assertEquals(String.format(POST_ALREADY_PUBLISHED, post.getId()), exception.getMessage());
-
     }
 
     @Test
