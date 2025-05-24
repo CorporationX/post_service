@@ -4,6 +4,7 @@ import faang.school.postservice.dto.error.PostServiceErrorResponseDto;
 import faang.school.postservice.exception.authorization.UserUnauthorizedException;
 import faang.school.postservice.exception.post.PostAlreadyPublishedException;
 import faang.school.postservice.exception.post.PostNotFoundException;
+import faang.school.postservice.exception.post.PostNotValidException;
 import faang.school.postservice.exception.project_service_client.ProjectNotFoundException;
 import faang.school.postservice.exception.user_service_client.UserNotFoundException;
 import feign.FeignException;
@@ -24,6 +25,7 @@ import java.util.stream.Collectors;
 public class PostServiceExceptionHandler {
     private static final Map<Class<? extends Exception>, HttpStatus> httpStatusMap = Map.of(
             UserUnauthorizedException.class, HttpStatus.UNAUTHORIZED,
+            PostNotValidException.class, HttpStatus.CONFLICT,
             PostNotFoundException.class, HttpStatus.NOT_FOUND,
             PostAlreadyPublishedException.class, HttpStatus.CONFLICT,
             UserNotFoundException.class, HttpStatus.NOT_FOUND,

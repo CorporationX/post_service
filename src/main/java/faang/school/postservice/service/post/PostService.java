@@ -40,7 +40,7 @@ public class PostService {
     }
 
     @Transactional
-    public Post publishPost(final long postId) {
+    public Post publishPost(long postId) {
         Post post = getPostById(postId);
 
         postValidator.checkPostIsNotPublished(post);
