@@ -27,7 +27,7 @@ public class PostController {
         return postService.createDraft(postDto);
     }
 
-    @PostMapping("/{postId}/publish")
+    @PutMapping("/{postId}/publish")
     public PostDto publish(@PathVariable Long postId) {
         return postService.publishPost(postId);
     }
@@ -57,12 +57,12 @@ public class PostController {
         return postService.getAllDraftsByProjectId(projectId);
     }
 
-    @GetMapping("/published/user/{userId}")
+    @GetMapping("/user/{userId}")
     public List<PostDto> getUserPublished(@PathVariable Long userId) {
         return postService.getAllPostsByAuthorId(userId);
     }
 
-    @GetMapping("/published/project/{projectId}")
+    @GetMapping("/project/{projectId}")
     public List<PostDto> getProjectPublished(@PathVariable Long projectId) {
         return postService.getAllPostsByProjectId(projectId);
     }

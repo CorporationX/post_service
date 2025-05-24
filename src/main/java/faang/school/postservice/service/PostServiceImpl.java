@@ -3,7 +3,10 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.exception.AuthorNotFoundException;
 import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.exception.ExternalServiceException;
+import faang.school.postservice.exception.PostNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
@@ -36,7 +39,9 @@ public class PostServiceImpl implements PostService {
     @Transactional
     public PostDto publishPost(Long postId) {
         Post post = getExistingPost(postId);
-        validateNotAlreadyPublished(post);
+        if (post.isPublished()) {
+            throw new DataValidationException("Post with id=" + postId + " is already published");
+        }
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
         return postMapper.toDto(postRepository.save(post));
@@ -69,53 +74,52 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional(readOnly = true)
     public List<PostDto> getAllDraftsByAuthorId(Long userId) {
-        return postRepository.findDraftsByAuthor(userId)
-                .stream().map(postMapper::toDto).toList();
+        return postRepository.findDraftsByAuthor(userId).stream()
+                .map(postMapper::toDto)
+                .toList();
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<PostDto> getAllDraftsByProjectId(Long projectId) {
-        return postRepository.findDraftsByProject(projectId)
-                .stream().map(postMapper::toDto).toList();
+        return postRepository.findDraftsByProject(projectId).stream()
+                .map(postMapper::toDto)
+                .toList();
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<PostDto> getAllPostsByAuthorId(Long userId) {
-        return postRepository.findPublishedByAuthor(userId)
-                .stream().map(postMapper::toDto).toList();
+        return postRepository.findPublishedByAuthor(userId).stream()
+                .map(postMapper::toDto)
+                .toList();
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<PostDto> getAllPostsByProjectId(Long projectId) {
-        return postRepository.findPublishedByProject(projectId)
-                .stream().map(postMapper::toDto).toList();
+        return postRepository.findPublishedByProject(projectId).stream()
+                .map(postMapper::toDto)
+                .toList();
     }
 
     private Post getExistingPost(Long id) {
         return postRepository.findById(id)
-                .filter(p -> !p.isDeleted())
-                .orElseThrow(() -> new DataValidationException("Пост не найден или удалён"));
+                .filter(post -> !post.isDeleted())
+                .orElseThrow(() ->
+                        new PostNotFoundException("Post with id=" + id + " not found or has been deleted"));
     }
 
     private void validateAuthorUnchanged(Post post, PostDto dto) {
         if (!post.getAuthorId().equals(dto.authorId()) ||
                 (post.getProjectId() != null && !post.getProjectId().equals(dto.projectId()))) {
-            throw new DataValidationException("Автор поста не может быть изменён");
-        }
-    }
-
-    private void validateNotAlreadyPublished(Post post) {
-        if (post.isPublished()) {
-            throw new DataValidationException("Пост уже опубликован");
+            throw new DataValidationException("Post author cannot be changed (postId=" + post.getId() + ")");
         }
     }
 
     private void validateAuthor(Long authorId, Long projectId) {
         if ((authorId == null && projectId == null) || (authorId != null && projectId != null)) {
-            throw new DataValidationException("Автор должен быть либо user, либо project, но не оба/ни один");
+            throw new DataValidationException("Author must be either a user or a project, but not both or neither");
         }
 
         try {
@@ -124,8 +128,21 @@ public class PostServiceImpl implements PostService {
             } else {
                 projectServiceClient.getProject(projectId);
             }
-        } catch (FeignException.NotFound e) {
-            throw new DataValidationException("Указанный автор не найден");
+        } catch (FeignException e) {
+            String type = authorId != null ? "User" : "Project";
+            Long id = authorId != null ? authorId : projectId;
+
+            if (e.status() == 404) {
+                throw new AuthorNotFoundException(type + " with id=" + id + " not found");
+            } else if (e.status() >= 400 && e.status() < 500) {
+                throw new DataValidationException(
+                        type + " service returned client error (" + e.status() + ") for id=" + id);
+            } else if (e.status() >= 500) {
+                throw new ExternalServiceException(
+                        type + " service unavailable or failed (" + e.status() + ") for id=" + id);
+            } else {
+                throw new RuntimeException("Unexpected error while validating author: " + e.getMessage());
+            }
         }
     }
 }
