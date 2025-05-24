@@ -7,6 +7,7 @@ import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.dto.PostResponseDto;
 import faang.school.postservice.dto.event.HashtagAddingEvent;
 import faang.school.postservice.dto.event.PostViewEvent;
+import faang.school.postservice.dto.kafkaevents.PostEvent;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.entity.CachedAuthor;
 import faang.school.postservice.entity.CachedPost;
@@ -28,6 +29,7 @@ import faang.school.postservice.publisher.HashtagRemovingEventPublisher;
 import faang.school.postservice.publisher.PostViewEventPublisher;
 import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.repository.CommentRepository;
+import faang.school.postservice.repository.FollowersRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ResourceRepository;
@@ -37,6 +39,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -74,6 +77,8 @@ public class PostService {
     private final HashtagServiceClient hashtagClient;
     private final PostCacheService postCacheService;
     private final AuthorCacheService authorCacheService;
+    private final KafkaTemplate<String, PostEvent> postEventKafkaTemplate;
+    private final FollowersRepository followersRepository;
 
     @Value("${batch.size}")
     private int batchSize;
@@ -193,6 +198,13 @@ public class PostService {
         CachedAuthor cachedAuthor = getCachedAuthor(post.getAuthorId());
         authorCacheService.cacheAuthor(cachedAuthor.getAuthorId(), cachedAuthor.getUsername());
         log.info("Автор {} помещен в кеш", cachedAuthor.getAuthorId());
+
+         List<Long> followersIds = followersRepository.findFollowerIdsByAuthorId(post.getAuthorId());
+        postEventKafkaTemplate.send(
+                "posts",
+                new PostEvent(post.getId(), post.getAuthorId(), Instant.from(post.getPublishedAt()), followersIds)
+        );
+        log.debug("Отправил ивент поста {} для {} подписчиков", post.getId(), followersIds.size());
 
         return postMapper.toResponseDto(post);
     }

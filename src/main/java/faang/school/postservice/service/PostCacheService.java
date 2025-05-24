@@ -30,7 +30,7 @@ public class PostCacheService {
         );
 
         stringRedisTemplate.opsForZSet().add(
-                POSTS_ZSET_KEY + ":" + post.getId(),
+                POSTS_ZSET_KEY + ":" + post.getAuthorId(),
                 post.getId().toString(),
                 post.getPublishedAt().toEpochMilli()
         );
