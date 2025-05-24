@@ -25,6 +25,17 @@ spring:
         publishedPost: published_post_topic
         likedPost: liked_post_topic
 
+  kafka:
+    producer:
+      bootstrapServers: localhost:9092,localhost:9093,localhost:9094
+      acks: all
+      properties:
+        deliveryMs: 20000
+        lignerMs: 10000
+        requestTimeoutMs: 10000
+      topics:
+        commentCreatedNotification: notification.comment.created
+
 server:
   port: 8081
 
