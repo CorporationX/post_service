@@ -1,12 +1,12 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.CommentDtoStatus;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
-import faang.school.postservice.repository.PostRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -19,44 +19,38 @@ public class CommentServiceImpl implements CommentService {
 
     private CommentRepository commentRepository;
     private CommentMapper commentMapper;
-    private PostRepository postRepository;
+    private PostService postService;
+    private UserServiceClient userServiceClient;
 
-    public CommentDto create(long creatorId, CommentDto commentDto) {
-        commentDto.setAuthorId(creatorId);
+    @Override
+    public CommentDto create(CommentDto commentDto) {
+        Post post = postService.findById(commentDto.getPostId());
+        userServiceClient.getUser(commentDto.getAuthorId());
+
         commentDto.setCreatedAt(LocalDateTime.now());
         commentDto.setStatus(CommentDtoStatus.CREATED);
         Comment comment = commentMapper.toEntity(commentDto);
-        Long postId = commentDto.getPostId();
-        Post post = postRepository.findById(postId).orElseThrow(() ->
-                new EntityNotFoundException
-                (String.format("There is no post with id %d", postId)));
         comment.setPost(post);
         return commentMapper.toDto(commentRepository.save(comment));
     }
 
+    @Override
     public CommentDto update(CommentDto commentDto) {
-        Long id = commentDto.getId();
-        Comment comment = commentRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException
-                        (String.format("There is no comment with id %d", id)));
+        Comment comment = findCommentById(commentDto.getId());
         comment = commentMapper.updateEntityFromDto(commentDto, comment);
         comment.setUpdatedAt(LocalDateTime.now());
         commentDto.setStatus(CommentDtoStatus.UPDATED);
         return commentMapper.toDto(commentRepository.save(comment));
     }
 
-    public CommentDto findById(long commentId) {
-        Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new EntityNotFoundException
-                        (String.format("There is no comment with id %d", commentId)));
-        return commentMapper.toDto(comment);
+    @Override
+    public CommentDto findById (long commentId){
+        return commentMapper.toDto(findCommentById(commentId));
     }
 
-
+    @Override
     public void deleteById(long commentId) {
-        Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new EntityNotFoundException
-                        (String.format("There is no comment with id %d", commentId)));
+        Comment comment = findCommentById(commentId);
         commentRepository.delete(comment);
     }
 
@@ -65,5 +59,11 @@ public class CommentServiceImpl implements CommentService {
         return commentMapper.toListDto(commentRepository.findAllByPostId(postId).stream()
                 .sorted(Comparator.comparing(Comment::getCreatedAt))
                 .toList());
+    }
+
+    private Comment findCommentById(long commentId) {
+        return commentRepository.findById(commentId)
+                .orElseThrow(() -> new EntityNotFoundException
+                        (String.format("There is no comment with id %d", commentId)));
     }
 }

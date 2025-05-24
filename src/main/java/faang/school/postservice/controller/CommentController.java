@@ -23,15 +23,15 @@ public class CommentController {
     private CommentValidator validator;
     private CommentService service;
 
-    @PostMapping("/{creatorId}")
-    public CommentDto create(@PathVariable long creatorId, @RequestBody CommentDto commentDto){
+    @PostMapping()
+    public CommentDto create(@RequestBody CommentDto commentDto){
         commentDto.setStatus(CommentDtoStatus.CREATION);
-        if (null != commentDto.getAuthorId() || null != commentDto.getCreatedAt()) {
+        if (null != commentDto.getCreatedAt()) {
             throw new DataValidationException
-                    ("the author and createdAt fields are filled in automatically");
+                    ("the createdAt field will be filled in automatically");
         }
         validator.validate(commentDto);
-        return service.create(creatorId, commentDto);
+        return service.create(commentDto);
     }
 
     @PutMapping()

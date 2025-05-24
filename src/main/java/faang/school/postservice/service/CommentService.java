@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface CommentService {
 
-    public CommentDto create(long creatorId, CommentDto commentDto);
+    public CommentDto create(CommentDto commentDto);
 
     public CommentDto update(CommentDto commentDto);
 
