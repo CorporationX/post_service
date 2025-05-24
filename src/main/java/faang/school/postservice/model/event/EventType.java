@@ -6,7 +6,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Getter
 public enum EventType {
-    PUBLISHED_POST("publishedPost");
+    PUBLISHED_POST("publishedPost"),
+    LIKED_POST("likedPost");
 
     private final String key;
 }

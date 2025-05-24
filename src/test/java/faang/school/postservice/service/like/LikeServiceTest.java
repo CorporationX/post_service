@@ -1,10 +1,13 @@
 package faang.school.postservice.service.like;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.event.LikeEvent;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.event.EventType;
+import faang.school.postservice.publisher.LikePublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -12,16 +15,19 @@ import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class LikeServiceTest {
@@ -41,11 +47,20 @@ public class LikeServiceTest {
     @Mock
     UserServiceClient userServiceClient;
 
+    @Mock
+    LikePublisher likePublisher;
+
+    @Captor
+    ArgumentCaptor<LikeEvent> likeEventCaptor;
+
+
+
     private final long userId = 1L;
     private final long postId = 2L;
     private final long commentId = 3L;
+    private final long authorId = 1L;
     private final UserDto userDto = UserDto.builder().id(userId).build();
-    private final Post post = Post.builder().id(postId).build();
+    private final Post post = Post.builder().id(postId).authorId(authorId).build();
     private final Like likePost = Like.builder()
             .userId(userId)
             .post(post)
@@ -79,6 +94,15 @@ public class LikeServiceTest {
         likeService.likeThePost(postId, userId);
 
         Mockito.verify(likeRepository, Mockito.times(1)).save(likePost);
+        verify(likePublisher).publish(likeEventCaptor.capture());
+        LikeEvent actualEvent = likeEventCaptor.getValue();
+
+        assertEquals(userId, actualEvent.getUserId());
+        assertEquals(postId, actualEvent.getPostId());
+        assertEquals(authorId, actualEvent.getAuthorId());
+        assertEquals(EventType.LIKED_POST, actualEvent.getType());
+        assertNotNull(actualEvent.getLikedAt());
+
     }
 
     @Test

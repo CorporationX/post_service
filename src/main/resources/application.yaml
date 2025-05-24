@@ -23,6 +23,7 @@ spring:
       host: localhost
       topics:
         publishedPost: published_post_topic
+        likedPost: liked_post_topic
 
 server:
   port: 8081

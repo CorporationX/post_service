@@ -1,9 +1,13 @@
 package faang.school.postservice.service.like;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.event.LikeEvent;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.event.EventType;
+import faang.school.postservice.publisher.EventPublisher;
+import faang.school.postservice.publisher.LikePublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -12,6 +16,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,6 +27,7 @@ public class LikeService {
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final UserServiceClient userServiceClient;
+    private final LikePublisher likePublisher;
 
     public void likeThePost(long postId, long userId) {
         validationExistsAuthor(userId);
@@ -31,7 +37,13 @@ public class LikeService {
                 .userId(userId)
                 .post(post).build();
         likeRepository.save(like);
+        likePublisher.publish(LikeEvent.builder().postId(post.getId())
+                .authorId(post.getAuthorId())
+                .userId(userId)
+                .likedAt(LocalDateTime.now())
+                .type(EventType.LIKED_POST).build());
     }
+
     public void likeTheComment(long commentId, long userId) {
         validationExistsAuthor(userId);
         Comment comment = getCommentOrThrow(commentId);
@@ -41,6 +53,7 @@ public class LikeService {
                 .comment(comment).build();
         likeRepository.save(like);
     }
+
     public void removeLikeFromPost(long postId, long userId) {
         validationExistsAuthor(userId);
         Post post = getPostOrThrow(postId);
