@@ -11,9 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -32,10 +30,10 @@ public class PostService {
                 });
     }
 
-    // TODO: проверка что пользователь или проект существуют
     @Transactional
     public Post createDraftPost(final Post post) {
-        postValidator.validatePost();
+        postValidator.checkPost(post);
+
         Post savedPost = postRepository.save(post);
         log.info("Post with id {} has been created", savedPost.getId());
         return savedPost;
