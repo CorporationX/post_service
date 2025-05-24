@@ -16,6 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.LongStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -29,6 +30,7 @@ class PostEventBatchSenderTest {
 
     private Post post;
     private List<Long> subscribers;
+    private Long authorId;
 
     @Mock
     private UserServiceClient userServiceClient;
@@ -50,19 +52,21 @@ class PostEventBatchSenderTest {
                 .scheduledAt(LocalDateTime.of(2021, 7, 15, 10, 30))
                 .build();
 
-        subscribers = List.of(1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 9L, 10L, 11L, 12L);
+        subscribers = LongStream.rangeClosed(1, 12).boxed().toList();
 
         postEventBatchSender = new PostEventBatchSender(userServiceClient, postEventProducer, batchProperties);
+
+        authorId = post.getAuthorId();
     }
 
     @Test
     void testBatchSending_WhenArgsValid_SuccessfulCompletion() {
-        when(userServiceClient.getFollowerIds(post.getAuthorId())).thenReturn(subscribers);
+        when(userServiceClient.getFollowerIds(authorId)).thenReturn(subscribers);
         when(batchProperties.getBatchSizeSubscribers()).thenReturn(10);
 
         postEventBatchSender.sendBatch(post);
 
-        verify(userServiceClient).getFollowerIds(post.getAuthorId());
+        verify(userServiceClient).getFollowerIds(authorId);
 
         ArgumentCaptor<PostFeedEvent> captor = ArgumentCaptor.forClass(PostFeedEvent.class);
         verify(postEventProducer, times(2)).sendEvent(captor.capture());
@@ -70,12 +74,12 @@ class PostEventBatchSenderTest {
         PostFeedEvent postEventCaptor = captor.getValue();
 
         assertEquals(postEventCaptor.getPostId(), post.getId());
-        assertEquals(postEventCaptor.getAuthorId(), post.getAuthorId());
+        assertEquals(postEventCaptor.getAuthorId(), authorId);
     }
 
     @Test
     void testCreatePost_WhenUserSubscribersIsEmpty_ReturnIllegalArgumentException() {
-        when(userServiceClient.getFollowerIds(post.getAuthorId())).thenReturn(Collections.emptyList());
+        when(userServiceClient.getFollowerIds(authorId)).thenReturn(Collections.emptyList());
 
         postEventBatchSender.sendBatch(post);
 

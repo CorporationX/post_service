@@ -1,5 +1,7 @@
 package faang.school.postservice.config.redis;
 
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
@@ -15,7 +17,9 @@ import java.time.Duration;
 @EnableCaching
 public class RedisConfig {
     @Value("${spring.data.redis.ttl_days}")
-    private long cacheTTLDays;
+    @NotNull(message = "Cache TTL days must be specified")
+    @Min(value = 1, message = "Cache TTL days must be positive")
+    private Long cacheTTLDays;
 
     @Bean
     public RedisTemplate<String, String> redisTemplate(RedisConnectionFactory redisConnectionFactory) {

@@ -1,5 +1,7 @@
 package faang.school.postservice.config.async;
 
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,21 +11,27 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 public class AsyncConfig {
 
     @Value("${threadpool.core-pool-size}")
-    private int corePoolSize;
+    @NotNull(message = "Core pool size must be specified")
+    @Min(value = 1, message = "Core pool size must be positive")
+    private Integer corePoolSize;
 
     @Value("${threadpool.max-pool-size}")
-    private int maxPoolSize;
+    @NotNull(message = "Max pool size must be specified")
+    @Min(value = 1, message = "Max pool size must be positive")
+    private Integer maxPoolSize;
 
     @Value("${threadpool.queue-capacity}")
-    private int queueCapacity;
+    @NotNull(message = "Queue capacity must be specified")
+    @Min(value = 1, message = "Queue capacity must be positive")
+    private Integer queueCapacity;
 
     @Bean(name = "postEventExecutor")
-    public ThreadPoolTaskExecutor fileUploadTaskExecutor() {
+    public ThreadPoolTaskExecutor postEventExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(corePoolSize);
         executor.setMaxPoolSize(maxPoolSize);
         executor.setQueueCapacity(queueCapacity);
-        executor.setThreadNamePrefix("HashGeneratorAsync-");
+        executor.setThreadNamePrefix("postEventExecutor-");
         executor.initialize();
         return executor;
     }
