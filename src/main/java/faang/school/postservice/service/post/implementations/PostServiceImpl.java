@@ -6,16 +6,17 @@ import faang.school.postservice.config.post.PostServiceConstants;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.PostDtoValidationException;
 import faang.school.postservice.exception.PostNotFoundException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.batch.PostEventBatchSender;
 import faang.school.postservice.service.post.interfaces.PostService;
 import faang.school.postservice.service.post_correct.interfaces.PostCorrectService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,6 +38,7 @@ public class PostServiceImpl implements PostService {
     private final PostCorrectService postCorrectService;
     private final PostRepository postRepository;
     private final PostMapper postMapper;
+    private final PostEventBatchSender postEventBatchSender;
 
     @Override
     public Post getPostById(Long postId) {
@@ -56,17 +58,23 @@ public class PostServiceImpl implements PostService {
 
     @Override
     @Transactional
+    @CachePut(value = "posts", key = "#postId")
     public PostDto publishPost(PostDto postDto) {
         Post post = validateDataForPublication(postDto);
 
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
+        post.setUpdatedAt(LocalDateTime.now());
 
-        return postMapper.toDto(postRepository.save(post));
+        post = postRepository.saveAndFlush(post);
+        postEventBatchSender.sendBatch(post);
+
+        return postMapper.toDto(post);
     }
 
     @Override
     @Transactional
+    @CachePut(value = "posts", key = "#postDto.id")
     public PostDto updatePost(PostDto postDto) {
         Post post = getPostIfExists(postDto.getId());
 
