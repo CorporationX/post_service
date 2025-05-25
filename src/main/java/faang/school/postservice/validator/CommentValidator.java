@@ -10,12 +10,11 @@ public class CommentValidator {
 
     private List<CommentValidationFilter> validationFilters;
 
-    public CommentDto validate(CommentDto commentDto) {
+    public void validate(CommentDto commentDto) {
         for (CommentValidationFilter filter : validationFilters) {
             if(filter.isApplicable(commentDto.getStatus())){
                 filter.apply(commentDto);
             }
         }
-        return commentDto;
     }
 }

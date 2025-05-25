@@ -5,6 +5,7 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.model.CommentDtoStatus;
 import faang.school.postservice.service.CommentService;
 import faang.school.postservice.validator.CommentValidator;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -52,7 +53,8 @@ public class CommentController {
     }
 
     @DeleteMapping("/{commentId}")
-    public void deleteById(@PathVariable long commentId){
+    public ResponseEntity<Void> deleteById(@PathVariable long commentId){
         service.deleteById(commentId);
+        return ResponseEntity.noContent().build();
     }
 }
