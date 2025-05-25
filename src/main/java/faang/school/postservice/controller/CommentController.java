@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -46,7 +47,9 @@ public class CommentController {
     }
 
     @DeleteMapping("/{id}")
-    public void deleteComment(@PathVariable @Min(1) long id) {
+    public ResponseEntity<String> deleteComment(@PathVariable @Min(1) long id) {
         commentService.deleteComment(id);
+        return ResponseEntity
+                .ok("Comment with ID " + id + " has been deleted successfully.");
     }
 }

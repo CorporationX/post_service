@@ -25,6 +25,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -112,12 +113,13 @@ class CommentControllerTest {
     }
 
     @Test
-    @DisplayName("Should delete a comment by ID")
-    void deleteCommentTest_shouldCallServiceDelete() throws Exception {
+    @DisplayName("Should delete a comment by ID and return success message")
+    void deleteCommentTest_shouldReturnSuccessMessage() throws Exception {
         doNothing().when(commentService).deleteComment(1L);
 
         mockMvc.perform(delete("/api/v1/comment/1"))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(content().string("Comment with ID 1 has been deleted successfully."));
 
         verify(commentService, times(1)).deleteComment(1L);
     }
