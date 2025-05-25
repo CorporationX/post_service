@@ -1,10 +1,11 @@
 package faang.school.postservice.controller;
 
-import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.post.CreatePostDto;
+import faang.school.postservice.dto.post.ResponsePostDto;
+import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.service.PostService;
-import jakarta.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,10 +15,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -27,37 +26,39 @@ public class PostController {
 
     private final PostService postService;
 
-    @PostMapping("posts/create")
-    public ResponseEntity<PostDto> createPost(@RequestBody PostDto postDto) {
-        Post post = PostMapper.PostDtoToPost(postDto);
-        postService.createPost(post);
+    @PostMapping("posts/drafts")
+    public ResponseEntity<ResponsePostDto> createPost(@RequestBody CreatePostDto createPostDto) {
+        Post post = PostMapper.PostDtoToPost(createPostDto);
+        Post savedPost = postService.createPost(post);
+        ResponsePostDto responsePostDto = PostMapper.PostToResponsePostDto(savedPost);
         return new ResponseEntity<>(
-                postDto,
+                responsePostDto,
                 HttpStatus.OK
         );
     }
 
-    @PutMapping("posts/{postId}/publish")
-    public ResponseEntity<Long> publishPost(@PathVariable Long postId) {
-        postService.publishPost(postId);
+    @PutMapping("posts/publications/{postId}")
+    public ResponseEntity<Boolean> publishPost(@PathVariable Long postId) {
+        boolean isPublished = postService.publishPost(postId);
         return new ResponseEntity<>(
-                postId,
+                isPublished,
                 HttpStatus.OK
         );
     }
 
-    @PutMapping("posts/{postId}/update")
-    public ResponseEntity<Long> updatePost(@PathVariable Long postId, @RequestParam String content,
-                                           @Nullable @RequestParam LocalDateTime scheduledAt) {
-        postService.updatePost(postId, content, scheduledAt);
+    @PutMapping("posts/{postId}")
+    public ResponseEntity<ResponsePostDto> updatePost(@PathVariable Long postId, @RequestBody UpdatePostDto updatePostDto) {
+        Post updatedFields = PostMapper.PostDtoToPost(updatePostDto);
+        Post updatedPost = postService.updatePost(postId, updatedFields);
+        ResponsePostDto responsePostDto = PostMapper.PostToResponsePostDto(updatedPost);
         return new ResponseEntity<>(
-                postId,
+                responsePostDto,
                 HttpStatus.OK
         );
     }
 
-    @PutMapping("posts/{postId}/delete")
-    public ResponseEntity<Long> deletePost(@PathVariable Long postId) {
+    @PutMapping("posts/{postId}/deleted")
+    public ResponseEntity<Long> markPostDeleted(@PathVariable Long postId) {
         postService.deletePost(postId);
         return new ResponseEntity<>(
                 postId,
@@ -65,49 +66,53 @@ public class PostController {
         );
     }
 
-    @GetMapping("posts/{postId}/get")
-    public ResponseEntity<Post> getPostById(@PathVariable Long postId) {
+    @GetMapping("posts/{postId}")
+    public ResponseEntity<ResponsePostDto> getPostById(@PathVariable Long postId) {
         Post post = postService.getPostById(postId);
+        ResponsePostDto responsePostDto = PostMapper.PostToResponsePostDto(post);
         return new ResponseEntity<>(
-                post,
+                responsePostDto,
                 HttpStatus.OK
         );
     }
 
-    @GetMapping("/{userId}/posts/get/drafts")
-    public ResponseEntity<List<Post>> getNotDeletedDraftsByUserId(@PathVariable Long userId) {
+    @GetMapping("/{userId}/posts/drafts")
+    public ResponseEntity<List<ResponsePostDto>> getNotDeletedDraftsByUserId(@PathVariable Long userId) {
         List<Post> postList = postService.getNotDeletedDraftsByUserId(userId);
+        List<ResponsePostDto> responseList = postList.stream().map(PostMapper::PostToResponsePostDto).toList();
         return new ResponseEntity<>(
-                postList,
+                responseList,
                 HttpStatus.OK
         );
     }
 
-    @GetMapping("/posts/get/drafts/{projectId}")
-    public ResponseEntity<List<Post>> getNotDeletedDraftsByProjectId(@PathVariable Long projectId) {
+    @GetMapping("/posts/drafts/{projectId}")
+    public ResponseEntity<List<ResponsePostDto>> getNotDeletedDraftsByProjectId(@PathVariable Long projectId) {
         List<Post> postList = postService.getNotDeletedDraftsByProjectId(projectId);
+        List<ResponsePostDto> responseList = postList.stream().map(PostMapper::PostToResponsePostDto).toList();
         return new ResponseEntity<>(
-                postList,
+                responseList,
                 HttpStatus.OK
         );
     }
 
-    @GetMapping("/{userId}/posts/get/published")
-    public ResponseEntity<List<Post>> getNotDeletedPublishedByUserId(@PathVariable Long userId) {
+    @GetMapping("/{userId}/posts/publications")
+    public ResponseEntity<List<ResponsePostDto>> getNotDeletedPublishedByUserId(@PathVariable Long userId) {
         List<Post> postList = postService.getNotDeletedPublishedByUserId(userId);
+        List<ResponsePostDto> responseList = postList.stream().map(PostMapper::PostToResponsePostDto).toList();
         return new ResponseEntity<>(
-                postList,
+                responseList,
                 HttpStatus.OK
         );
     }
 
-    @GetMapping("/posts/get/published/{projectId}")
-    public ResponseEntity<List<Post>> getNotDeletedPublishedByProjectId(@PathVariable Long projectId) {
+    @GetMapping("/posts/publications/{projectId}")
+    public ResponseEntity<List<ResponsePostDto>> getNotDeletedPublishedByProjectId(@PathVariable Long projectId) {
         List<Post> postList = postService.getNotDeletedPublishedByProjectId(projectId);
+        List<ResponsePostDto> responseList = postList.stream().map(PostMapper::PostToResponsePostDto).toList();
         return new ResponseEntity<>(
-                postList,
+                responseList,
                 HttpStatus.OK
         );
     }
-
 }

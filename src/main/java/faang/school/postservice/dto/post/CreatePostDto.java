@@ -1,6 +1,5 @@
 package faang.school.postservice.dto.post;
 
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,10 +10,7 @@ import java.time.LocalDateTime;
 @Getter
 @AllArgsConstructor
 @Builder
-public class PostDto {
-    @NotNull
-    private Long postId;
-    @NotBlank
+public class CreatePostDto {
     private String content;
     @NotNull
     private Long authorId;

@@ -54,9 +54,9 @@ public class PostServiceTest {
         UserDto userDto = new UserDto(1L, "test", "test");
         ProjectDto projectDto = new ProjectDto(1L, "test");
 
-        when(postRepository.existsById(validPost.getId())).thenReturn(false);
         when(userServiceClient.getUser(validPost.getAuthorId())).thenReturn(userDto);
         when(projectServiceClient.getProject(validPost.getProjectId())).thenReturn(projectDto);
+        when(postRepository.findById(validPost.getId())).thenReturn(Optional.of(validPost));
 
         postService.createPost(validPost);
 
@@ -80,15 +80,14 @@ public class PostServiceTest {
 
     @Test
     public void testUpdatePostValid() {
-        String newContent = "Test";
-        LocalDateTime newScheduledAt = LocalDateTime.now();
+        Post post = Post.builder().content("Test").scheduledAt(LocalDateTime.now()).build();
 
         when(postRepository.findById(validPost.getId())).thenReturn(Optional.of(validPost));
 
-        postService.updatePost(validPost.getId(), newContent, newScheduledAt);
+        postService.updatePost(validPost.getId(), post);
 
-        assertEquals(newContent, validPost.getContent());
-        assertEquals(newScheduledAt, validPost.getScheduledAt());
+        assertEquals(post.getContent(), validPost.getContent());
+        assertEquals(post.getScheduledAt(), validPost.getScheduledAt());
         assertNotNull(validPost.getUpdatedAt());
         verify(postRepository, times(1)).save(validPost);
     }
