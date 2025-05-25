@@ -9,6 +9,7 @@ import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.KafkaLikeProducer;
 import faang.school.postservice.publisher.LikeEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
@@ -42,6 +43,7 @@ public class LikeService {
     private final UserContext userContext;
     private final UserServiceClient userClient;
     private final LikeEventPublisher likeEventPublisher;
+    private  final KafkaLikeProducer kafkaLikeProducer;
 
     public void putLikeOnPost(Long postId) {
         Long userId = getContextUser();
@@ -67,7 +69,13 @@ public class LikeService {
             userLock.unlock();
             Like like = likeRepository.findByPostIdAndUserId(postId, userId)
                     .orElseThrow(() -> new EntityNotFoundException("Лайк не найден"));
-            likeEventPublisher.publish(new LikeEvent(like.getId(), userId, postId));
+            LikeEvent likeEvent = LikeEvent.builder()
+                    .likeId(like.getId())
+                    .postId(postId)
+                    .authorId(userId)
+                    .build();
+            likeEventPublisher.publish(likeEvent);
+            kafkaLikeProducer.publish(likeEvent);
         }
     }
 
