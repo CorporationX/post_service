@@ -2,6 +2,7 @@ package faang.school.postservice.service.comment;
 
 import faang.school.postservice.client.CommentAnalyzer;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.kafka.KafkaCommentProducer;
 import faang.school.postservice.config.kafka.NotificationKafkaProducer;
 import faang.school.postservice.dto.comment.CommentEvent;
 import faang.school.postservice.dto.comment.CommentRequestDto;
@@ -104,6 +105,9 @@ class CommentServiceTest {
 
     @Mock
     private NotificationKafkaProducer notificationKafkaProducer;
+
+    @Mock
+    private KafkaCommentProducer kafkaCommentProducer;
 
     private static final Long POST_ID = 1L;
     private static final Long COMMENT_ID = 2L;
