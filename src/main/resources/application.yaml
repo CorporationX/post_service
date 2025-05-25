@@ -32,6 +32,13 @@ logging:
   level:
     root: info
 
+# swagger
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
 user-service:
   host: localhost
   port: 8080
