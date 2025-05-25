@@ -11,6 +11,7 @@ app:
       user_ban: user_ban
       comment-analytics: comment_analytics_topic
       like-achievement: like_achievement_topic
+    max-comment-cache: 3
   thread-pool-size: 16
 
 spring:
@@ -57,6 +58,7 @@ spring:
         user-ban: "user-ban-topic"
         post-like: "post-like-event-topic"
     listener:
+      enable-auto-commit: false
       topics:
         news-feed-comment: "news-comment-topic"
       groupId:

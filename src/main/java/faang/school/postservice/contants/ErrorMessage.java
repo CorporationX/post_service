@@ -10,6 +10,7 @@ public class ErrorMessage {
     public static final String ERROR_NULL_ID = "ID cant be null";
     public static final String ERROR_NOT_AUTHOR_COMMENT = "You are not the author of the comment";
     public static final String ERROR_SERIALIZE = "Failed to serialize event {}.\n";
+    public static final String ERROR_SERIALIZE_EVENT = "Failed to serialize event [%s]";
 
     private static final String ERROR_NOT_FOUND_USER = "User with ID %d not found in the system.\n";
     private static final String ERROR_NOT_FOUND_POST = "Post with ID %d not found in the system.\n";
