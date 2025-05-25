@@ -27,6 +27,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.internal.verification.VerificationModeFactory.times;
 
 @SpringBootTest(classes = CommentServiceImp.class)
 class CommentServiceImpTest {
@@ -65,17 +66,24 @@ class CommentServiceImpTest {
     void createCommentTest_success() {
         CommentDto request = buildCommentDto();
         Comment comment = buildComment();
+        Post post = new Post();
+        post.setId(request.getPostId());
 
         when(userServiceClient.getUser(request.getAuthorId()))
                 .thenReturn(new UserDto(request.getAuthorId(), "testuser", "testuser@example.com"));
+        when(postService.getPost(request.getPostId()))
+                .thenReturn(Optional.of(post));
         when(commentMapper.toEntity(request)).thenReturn(comment);
         when(commentRepository.save(comment)).thenReturn(comment);
         when(commentMapper.toCommentDto(comment)).thenReturn(request);
 
         CommentDto result = commentServiceImp.createComment(request);
 
+
         assertThat(result).isEqualTo(request);
+
         verify(userServiceClient).getUser(request.getAuthorId());
+        verify(postService, times(2)).getPost(request.getPostId());
         verify(commentRepository).save(comment);
     }
 
@@ -146,7 +154,7 @@ class CommentServiceImpTest {
 
         assertThatThrownBy(() -> commentServiceImp.getAllComments(request))
                 .isInstanceOf(DataValidationException.class)
-                .hasMessageContaining("There are no Post with ID:" + request.getPostId());
+                .hasMessageContaining(String.format("There are no Post with ID:%d", request.getPostId()));
     }
 
     @Test

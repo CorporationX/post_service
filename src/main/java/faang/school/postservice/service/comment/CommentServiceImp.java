@@ -5,6 +5,7 @@ import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
+import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.service.post.PostService;
 import feign.FeignException;
@@ -29,8 +30,10 @@ public class CommentServiceImp implements CommentService {
     @Override
     public CommentDto createComment(CommentDto request) {
         log.info("Create comment: %s".formatted(request.getContent()));
-        validateUser(request);
+        validate(request);
         Comment comment = commentMapper.toEntity(request);
+        Post post = getPost(request);
+        comment.setPost(post);
         return commentMapper.toCommentDto(commentRepository.save(comment));
     }
 
@@ -50,8 +53,7 @@ public class CommentServiceImp implements CommentService {
         log.info("Getting all comments by PostId: %d and AuthorId: %d"
                 .formatted(request.getPostId(), request.getAuthorId()));
 
-        validatePost(request);
-        validateUser(request);
+        validate(request);
 
         return commentRepository.findAllByPostId(request.getPostId()).stream()
                 .filter(comment -> request.getAuthorId() == null || comment.getAuthorId().equals(request.getAuthorId()))
@@ -71,20 +73,21 @@ public class CommentServiceImp implements CommentService {
                 .orElseThrow(() -> new DataValidationException("There are no comment with ID=%d".formatted(id)));
     }
 
-    private void validateUser(CommentDto commentDto) {
+    private void validate(CommentDto commentDto) {
         Long authorId = commentDto.getAuthorId();
-            try {
-                log.info("Try to find user. Sending request to user_service. User ID: %d ".formatted(authorId));
-                userServiceClient.getUser(authorId);
-                log.info("User with ID:%d is present".formatted(authorId));
-            } catch (FeignException e) {
-                throw new DataValidationException("User with ID:%d is not present".formatted(authorId), e);
-            }
+        try {
+            log.info("Try to find user. Sending request to user_service. User ID: %d ".formatted(authorId));
+            userServiceClient.getUser(authorId);
+            log.info("User with ID:%d is present".formatted(authorId));
+        } catch (FeignException e) {
+            throw new DataValidationException("User with ID:%d is not present".formatted(authorId), e);
+        }
+        getPost(commentDto);
     }
 
-    private void validatePost(CommentDto commentDto) {
+    private Post getPost(CommentDto commentDto) {
         Long postId = commentDto.getPostId();
-        postService.getPost(postId)
+        return postService.getPost(commentDto.getPostId())
                 .orElseThrow(() -> new DataValidationException("There are no Post with ID:%d.".formatted(postId)));
     }
 }
