@@ -38,7 +38,7 @@ public class PostValidator {
 
     private void checkPostAuthor(long userId) {
         try {
-            UserClientResponseDto userClientResponseDto = userServiceClient.getUser(userId);
+            UserClientResponseDto userClientResponseDto = userServiceClient.getUserById(userId);
             if (userClientResponseDto == null) {
                 throw new UserNotFoundException(userId);
             }
