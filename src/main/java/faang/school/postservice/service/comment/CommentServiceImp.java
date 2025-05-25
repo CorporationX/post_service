@@ -75,12 +75,14 @@ public class CommentServiceImp implements CommentService {
 
     private void validate(CommentDto commentDto) {
         Long authorId = commentDto.getAuthorId();
-        try {
-            log.info("Try to find user. Sending request to user_service. User ID: %d ".formatted(authorId));
-            userServiceClient.getUser(authorId);
-            log.info("User with ID:%d is present".formatted(authorId));
-        } catch (FeignException e) {
-            throw new DataValidationException("Something wrong with user_service. Error: %s".formatted(e));
+        if (authorId != null) {
+            try {
+                log.info("Try to find user. Sending request to user_service. User ID: %d ".formatted(authorId));
+                userServiceClient.getUser(authorId);
+                log.info("User with ID:%d is present".formatted(authorId));
+            } catch (FeignException e) {
+                throw new DataValidationException("Something wrong with user_service. Error: %s".formatted(e));
+            }
         }
         getPost(commentDto);
     }
