@@ -96,7 +96,7 @@ class CommentServiceImpTest {
 
         assertThatThrownBy(() -> commentServiceImp.createComment(request))
                 .isInstanceOf(DataValidationException.class)
-                .hasMessageContaining("User with ID:" + request.getAuthorId() + " is not present");
+                .hasMessageContaining("Something wrong with user_service.");
     }
 
     @Test

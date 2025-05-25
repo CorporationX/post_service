@@ -80,7 +80,7 @@ public class CommentServiceImp implements CommentService {
             userServiceClient.getUser(authorId);
             log.info("User with ID:%d is present".formatted(authorId));
         } catch (FeignException e) {
-            throw new DataValidationException("User with ID:%d is not present".formatted(authorId), e);
+            throw new DataValidationException("Something wrong with user_service. Error: %s".formatted(e));
         }
         getPost(commentDto);
     }
