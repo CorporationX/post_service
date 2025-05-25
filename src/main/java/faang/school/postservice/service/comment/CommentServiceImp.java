@@ -47,9 +47,14 @@ public class CommentServiceImp implements CommentService {
 
     @Override
     public List<CommentDto> getAllComments(CommentDto request) {
-        log.info("Getting all comments by PostId: %d".formatted(request.getPostId()));
+        log.info("Getting all comments by PostId: %d and AuthorId: %d"
+                .formatted(request.getPostId(), request.getAuthorId()));
+
         validatePost(request);
+        validateUser(request);
+
         return commentRepository.findAllByPostId(request.getPostId()).stream()
+                .filter(comment -> request.getAuthorId() == null || comment.getAuthorId().equals(request.getAuthorId()))
                 .sorted(Comparator.comparing(Comment::getCreatedAt).reversed())
                 .map(commentMapper::toCommentDto)
                 .toList();
@@ -67,15 +72,14 @@ public class CommentServiceImp implements CommentService {
     }
 
     private void validateUser(CommentDto commentDto) {
-        var authorId = commentDto.getAuthorId();
-        try {
-            log.info("Check User in DB.\n");
-            log.info("Sending request to service \"user-service\".\n");
-            userServiceClient.getUser(authorId);
-            log.info("User with ID:%d is present".formatted(authorId));
-        } catch (FeignException e) {
-            throw new DataValidationException("User with ID:%d is not present".formatted(authorId), e);
-        }
+        Long authorId = commentDto.getAuthorId();
+            try {
+                log.info("Try to find user. Sending request to user_service. User ID: %d ".formatted(authorId));
+                userServiceClient.getUser(authorId);
+                log.info("User with ID:%d is present".formatted(authorId));
+            } catch (FeignException e) {
+                throw new DataValidationException("User with ID:%d is not present".formatted(authorId), e);
+            }
     }
 
     private void validatePost(CommentDto commentDto) {

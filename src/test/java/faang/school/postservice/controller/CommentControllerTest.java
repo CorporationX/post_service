@@ -12,7 +12,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
@@ -50,8 +49,7 @@ class CommentControllerTest {
                 1L,
                 "Test content",
                 2L,
-                3L,
-                LocalDateTime.now()
+                3L
         );
     }
 
@@ -98,19 +96,14 @@ class CommentControllerTest {
     }
 
     @Test
-    @DisplayName("Should return a list of comments for the given filter")
+    @DisplayName("Should return a list of comments filtered by postId and authorId")
     void getAllCommentsTest_shouldReturnListOfComments() throws Exception {
         when(commentService.getAllComments(any(CommentDto.class))).thenReturn(List.of(commentDto));
 
         mockMvc.perform(get("/api/v1/comment/all")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                    "postId": 3,
-                                    "content": "Any",
-                                    "authorId": 2
-                                }
-                                """))
+                        .param("postId", "3")
+                        .param("authorId", "2")
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].id").value(commentDto.getId()));

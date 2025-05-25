@@ -44,7 +44,7 @@ class CommentServiceImpTest {
     private PostService postService;
 
     private CommentDto buildCommentDto() {
-        return new CommentDto(1L, "Test content", 2L, 3L, LocalDateTime.now());
+        return new CommentDto(1L, "Test content", 2L, 3L);
     }
 
     private Comment buildComment() {
