@@ -66,7 +66,7 @@ public class PostValidatorTest {
         });
 
         assertDoesNotThrow(() ->  postValidator.checkPost(post));
-        verify(userServiceClient, never()).getUserById(anyLong());
+        verify(userServiceClient, never()).getCurrentUser();
         verify(projectServiceClient, times(1)).getProject(eq(post.getProjectId()));
     }
 
