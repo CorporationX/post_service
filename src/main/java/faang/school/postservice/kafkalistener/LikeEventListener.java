@@ -1,7 +1,6 @@
 package faang.school.postservice.kafkalistener;
 
 import faang.school.postservice.dto.kafkaevents.LikeFeedEvent;
-import faang.school.postservice.entity.CachedPost;
 import faang.school.postservice.service.PostCacheService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +20,8 @@ public class LikeEventListener {
     @KafkaListener(topics = "${spring.data.kafka.topic.likes}",
                     containerFactory = "likeEventConsumerFactory")
     public void handleLikeEvent(LikeFeedEvent event, Acknowledgment acknowledgment) {
+        log.debug("Обработка лайка для поста {} (идентификатор события: {})",
+                event.postId(), event.id());
         try {
             String postKey = event.postId().toString();
             if (!postCashed(event.postId())) {
@@ -32,7 +33,7 @@ public class LikeEventListener {
                 acknowledgment.acknowledge();
             }
         } catch (Exception e) {
-            log.error("Ошибка добавления лайка для поста {}", event.id(), e);
+            log.error("Ошибка добавления лайка для поста {}", event.postId(), e);
             throw new RuntimeException(e);
         }
 

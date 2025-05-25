@@ -46,7 +46,7 @@ public class PostCacheService {
                 post.getId().toString(),
                 post.getPublishedAt().toEpochMilli()
         );
-        stringRedisTemplate.opsForZSet().removeRange(key, 0, feedSize - 1);
+        stringRedisTemplate.opsForZSet().removeRange(key, 0, -feedSize - 1);
     }
 
 }
