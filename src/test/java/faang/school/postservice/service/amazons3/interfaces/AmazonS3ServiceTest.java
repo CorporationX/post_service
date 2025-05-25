@@ -7,7 +7,6 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import faang.school.postservice.dto.file.FileMetaData;
 import faang.school.postservice.exception.FileProcessException;
-import faang.school.postservice.service.amazons3.implementations.AmazonS3ServiceImpl;
 import faang.school.postservice.service.file.implementations.ImageCompressionServiceImpl;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,7 +36,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class AmazonS3ServiceTest {
     @InjectMocks
-    private AmazonS3ServiceImpl amazonS3Service;
+    private AmazonS3Service amazonS3Service;
 
     @Mock
     AmazonS3 amazonS3Client;

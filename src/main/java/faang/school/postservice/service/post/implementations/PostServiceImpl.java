@@ -13,7 +13,6 @@ import faang.school.postservice.exception.PostScheduledProcessingException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.kafka.KafkaPostProducer;
 import faang.school.postservice.service.post.interfaces.PostService;
 import faang.school.postservice.service.post_check.interfaces.PostCheckerService;
 import lombok.RequiredArgsConstructor;
@@ -194,28 +193,28 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public List<PostDto> getAuthorPostDrafts(PostDto postDto) {
-        Long authorId = postDto.getAuthorId();
+        long authorId = postDto.getAuthorId();
         return processPosts(postRepository.findByAuthorId(authorId),
                 post -> !post.isPublished() && !post.isDeleted());
     }
 
     @Override
     public List<PostDto> getProjectPostDrafts(PostDto postDto) {
-        Long projectId = postDto.getProjectId();
+        long projectId = postDto.getProjectId();
         return processPosts(postRepository.findByProjectId(projectId),
                 post -> !post.isPublished() && !post.isDeleted());
     }
 
     @Override
     public List<PostDto> getAuthorPublishedPosts(PostDto postDto) {
-        Long authorId = postDto.getAuthorId();
+        long authorId = postDto.getAuthorId();
         return processPosts(postRepository.findByAuthorId(authorId),
                 post -> post.isPublished() && !post.isDeleted());
     }
 
     @Override
     public List<PostDto> getProjectPublishedPosts(PostDto postDto) {
-        Long projectId = postDto.getProjectId();
+        long projectId = postDto.getProjectId();
         return processPosts(postRepository.findByProjectId(projectId),
                 post -> post.isPublished() && !post.isDeleted());
     }

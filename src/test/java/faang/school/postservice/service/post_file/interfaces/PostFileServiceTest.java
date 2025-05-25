@@ -5,7 +5,7 @@ import faang.school.postservice.dto.file.FileMetaData;
 import faang.school.postservice.mapper.post_file.PostFileMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
-import faang.school.postservice.service.amazons3.implementations.AmazonS3ServiceImpl;
+import faang.school.postservice.service.amazons3.interfaces.AmazonS3Service;
 import faang.school.postservice.service.post.implementations.PostServiceImpl;
 import faang.school.postservice.service.post_file.implementations.PostFileServiceImpl;
 import faang.school.postservice.service.resource.implementations.ResourceServiceImpl;
@@ -44,7 +44,7 @@ class PostFileServiceTest {
     private ResourceServiceImpl resourceService;
 
     @Mock
-    private AmazonS3ServiceImpl amazonS3Service;
+    private AmazonS3Service amazonS3Service;
 
     @Mock
     private PostServiceImpl postService;

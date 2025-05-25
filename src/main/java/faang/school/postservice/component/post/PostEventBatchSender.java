@@ -4,6 +4,7 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.kafka.properties.BatchProperties;
 import faang.school.postservice.config.kafka.properties.RetryProperties;
 import faang.school.postservice.event.PostFeedEvent;
+import faang.school.postservice.exception.InvalidPostDataException;
 import faang.school.postservice.exception.KafkaPublishException;
 import faang.school.postservice.exception.UserServiceException;
 import faang.school.postservice.model.Post;
@@ -30,9 +31,9 @@ public class PostEventBatchSender {
 
     @Async("postEventExecutor")
     public void dispatchEventsForPost(Post post) {
-        if (post == null || post.getId() == null || post.getAuthorId() == null || post.getAuthorId() == null) {
+        if (post == null || post.getId() == null || post.getAuthorId() == null || post.getPublishedAt() == null) {
             log.error("Invalid post data for event dispatching: {}", post);
-            throw new IllegalArgumentException("Post or author data is invalid");
+            throw new InvalidPostDataException("Post or author data is invalid");
         }
 
         List<Long> subscriberIds = fetchSubscribers(post.getAuthorId());
@@ -62,14 +63,8 @@ public class PostEventBatchSender {
                 .publishedAt(post.getPublishedAt())
                 .build();
         log.debug("PostFeedEvent created: {}", event);
-
-        try {
-            postEventProducer.sendPostFeedEvent(event);
-            log.debug("PostFeedEvent send to Kafka: {}", event);
-        } catch (Exception e) {
-            log.error("Failed to send PostFeedEvent for postId {}: {}", event.getPostId(), e.getMessage());
-            throw new KafkaPublishException("Failed to send PostFeedEvent for postId " + event.getPostId(), e);
-        }
+        postEventProducer.sendPostFeedEvent(event);
+        log.debug("PostFeedEvent sent to Kafka: {}", event);
     }
 
     @Retryable(retryFor = UserServiceException.class,
@@ -90,9 +85,5 @@ public class PostEventBatchSender {
                 .mapToObj(i -> subscribers.subList(i * batchSize,
                         Math.min((i + 1) * batchSize, subscribers.size())))
                 .toList();
-    }
-
-    private String generateDeduplicationKey(Long postId) {
-        return "post-event-" + postId;
     }
 }
