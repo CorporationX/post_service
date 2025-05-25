@@ -43,6 +43,7 @@ public class PostServiceExceptionHandler {
             RemoteNotFoundException.class,
             MethodArgumentNotValidException.class,
             FeignException.class,
+            RetryableException.class
     })
     public ResponseEntity<PostServiceErrorResponseDto> handleException(Exception ex) {
         ErrorHandler handler = getErrorHandler(ex);
