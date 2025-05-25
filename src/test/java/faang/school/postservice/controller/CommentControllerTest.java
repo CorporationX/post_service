@@ -1,5 +1,6 @@
 package faang.school.postservice.controller;
 
+import faang.school.postservice.controller.comment.CommentController;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.service.CommentService;
 import faang.school.postservice.validator.CommentValidator;
@@ -19,7 +20,6 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
