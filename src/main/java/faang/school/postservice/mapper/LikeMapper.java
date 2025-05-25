@@ -13,12 +13,9 @@ import faang.school.postservice.model.Like;
         nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
         unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface LikeMapper {
-    Like toDto(LikeDto likeDto);
+    Like toEntity(LikeDto likeDto);
 
-    @Mapping(target = "commentId", source = ".")
-    LikeDto toEntity(Like like);
-
-    default Long toCommentId(Like like) {
-        return like.getComment().getId();
-    }
+    @Mapping(target = "commentId", source = "comment.id") 
+    @Mapping(target = "postId", source = "post.id")
+    LikeDto toDto(Like like);
 }

@@ -4,13 +4,18 @@ import org.springframework.stereotype.Service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.LikeDto;
 import faang.school.postservice.dto.PostDto;
+import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.exception.ExternalServiceException;
+import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
+import feign.FeignException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
@@ -21,11 +26,12 @@ public class LikeServiceImpl implements LikeService {
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final LikeRepository likeRepository;
+    private final LikeMapper likeMapper;
     private final UserContext userContext;
     private final UserServiceClient userServiceClient;
 
     @Override
-    public void putLikeToPost(long postId) {
+    public LikeDto putLikeToPost(long postId) {
         Post post = getPost(postId);
         userValidation();        
         duplicatePostLikeValidation(postId);        
@@ -35,11 +41,11 @@ public class LikeServiceImpl implements LikeService {
             .post(post)
             .build();
 
-        likeRepository.save(like);
+        return likeMapper.toDto(likeRepository.save(like));
     }
 
     @Override
-    public void putLikeToComment(long commentId) {
+    public LikeDto putLikeToComment(long commentId) {
         Comment comment = getComment(commentId);
         userValidation();
         duplicateCommentLikeValidation(commentId);
@@ -48,7 +54,8 @@ public class LikeServiceImpl implements LikeService {
             .userId(userContext.getUserId())
             .comment(comment)
             .build();
-        likeRepository.save(like);
+
+        return likeMapper.toDto(likeRepository.save(like));
     }
 
     @Override
@@ -73,16 +80,32 @@ public class LikeServiceImpl implements LikeService {
     }
 
     private void userValidation() {
-        if (userServiceClient.getUser(userContext.getUserId()) == null) {
-            throw new EntityNotFoundException(String.format(
-                "User %d is not found.", userContext.getUserId()
-            ));
+        try {
+            userServiceClient.getUser(userContext.getUserId());
+        } catch (FeignException e) {
+            if (e.status() == 404) {
+                throw new EntityNotFoundException(String.format(
+                    "User %d is not found.", userContext.getUserId()
+                ));
+            } else if (e.status() >= 400 && e.status() < 500) {
+                throw new DataValidationException(String.format(
+                    "Service returned error (%d) for user id %d.", e.status(), userContext.getUserId()
+                ));
+            } else if (e.status() >= 500) {
+                throw new ExternalServiceException(String.format(
+                    "Service unavailable or failed (%d) for user id %d.", e.status(), userContext.getUserId()
+                ));
+            } else {
+                throw new RuntimeException(String.format(
+                    "Unexpected error while validating user: %d. %s.", userContext.getUserId(), e.getMessage()
+                ));
+            }
         }
     }
 
     private void duplicatePostLikeValidation(long postId) {
         if (likeRepository.findByPostIdAndUserId(postId, userContext.getUserId()).isPresent()) {
-            throw new IllegalArgumentException(String.format(
+            throw new DataValidationException(String.format(
                 "User %d already liked post %d.", userContext.getUserId(), postId
             ));
         }
@@ -97,7 +120,7 @@ public class LikeServiceImpl implements LikeService {
 
     private void duplicateCommentLikeValidation(long commentId) {
         if (likeRepository.findByCommentIdAndUserId(commentId, userContext.getUserId()).isPresent()) {
-            throw new IllegalArgumentException(String.format(
+            throw new DataValidationException(String.format(
                 "User %d already liked comment %d.", 
                 userContext.getUserId(), commentId
             ));
