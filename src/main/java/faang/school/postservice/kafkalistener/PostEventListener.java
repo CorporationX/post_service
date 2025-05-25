@@ -26,7 +26,7 @@ public class PostEventListener {
 
     @Value("${spring.data.redis.feed.size}")
     private long feedSize;
-    private static final String POSTS_HASH_KEY = "posts";
+    private static final String POSTS_HASH_KEY = "posts:";
 
     @KafkaListener(topics = "${spring.data.kafka.topic.posts}",
                     containerFactory = "postEventListenerContainerFactory")
@@ -43,7 +43,6 @@ public class PostEventListener {
             acknowledgment.acknowledge();
             log.info("Успешно отправил ивент поста {} для {} подписчиков",
                     event.postId(), event.followers().size());
-
         } catch (EntityNotFoundException e) {
             log.error("Пост {} не найден в базе", event.postId());
         } catch (Exception e) {

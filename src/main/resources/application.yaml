@@ -33,6 +33,8 @@ spring:
         author: 86400
       feed:
         size: 500
+      comments:
+        size: 3
 
     kafka:
       bootstrap-servers: localhost:9092

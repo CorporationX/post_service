@@ -22,7 +22,7 @@ public class PostCacheService {
     @Value("${spring.data.redis.feed.size}")
     private long feedSize;
 
-    private static final String POSTS_HASH_KEY = "posts";
+    private static final String POSTS_HASH_KEY = "posts:";
     private static final String USER_FEED_KEY = "user:feed:%s";
 
     public void cachePost(CachedPost post) {
