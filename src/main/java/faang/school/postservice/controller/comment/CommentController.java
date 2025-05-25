@@ -21,8 +21,13 @@ import java.util.List;
 @RequestMapping("/api/v1/comments")
 public class CommentController {
 
-    private CommentValidator validator;
-    private CommentService service;
+    private final CommentValidator validator;
+    private final CommentService service;
+
+    public CommentController(CommentValidator validator, CommentService service) {
+        this.validator = validator;
+        this.service = service;
+    }
 
     @PostMapping()
     public CommentDto create(@RequestBody CommentDto commentDto){
