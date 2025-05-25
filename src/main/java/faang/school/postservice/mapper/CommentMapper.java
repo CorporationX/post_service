@@ -3,6 +3,7 @@ package faang.school.postservice.mapper;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.model.Comment;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.ReportingPolicy;
 
@@ -13,6 +14,7 @@ public interface CommentMapper {
 
     Comment toEntity (CommentDto dto);
 
+    @Mapping(target = "postId", source = "post.id")
     CommentDto toDto (Comment comment);
 
     List<CommentDto> toListDto (List<Comment> comments);

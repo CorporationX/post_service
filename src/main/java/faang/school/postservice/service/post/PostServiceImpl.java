@@ -127,7 +127,8 @@ public class PostServiceImpl implements PostService {
         return postMapper.toPostDto(updatedPost);
     }
 
-    private Post findPostById(long postId) {
+    @Override
+    public Post findPostById(long postId) {
         return postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("Post with id %d doesn't exist".formatted(postId)));
     }
@@ -138,12 +139,5 @@ public class PostServiceImpl implements PostService {
 
     private ProjectDto findProjectById(long projectId) {
         return projectServiceClient.getProject(projectId);
-    }
-
-    @Override
-    public Post findById(long postId) {
-        return postRepository.findById(postId).orElseThrow(() ->
-                new EntityNotFoundException
-                        (String.format("There is no post with id %d", postId)));
     }
 }
