@@ -1,6 +1,7 @@
 package faang.school.postservice.config.kafka;
 
 import faang.school.postservice.config.properties.KafkaProperties;
+import faang.school.postservice.dto.kafkaevents.CommentEvent;
 import faang.school.postservice.dto.kafkaevents.LikeFeedEvent;
 import faang.school.postservice.dto.kafkaevents.PostEvent;
 import lombok.RequiredArgsConstructor;
@@ -94,4 +95,5 @@ public class KafkaConfig {
     public KafkaTemplate<String, LikeFeedEvent> likeEventKafkaTemplate() {
         return new KafkaTemplate<>(likeEventProducerFactory());
     }
+
 }

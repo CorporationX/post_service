@@ -27,8 +27,6 @@ public class CachedPost {
     @Indexed
     private Long projectId;
     private Instant publishedAt;
-
-    private int views;
     private int likes;
     private List<CommentDto> comments;
 

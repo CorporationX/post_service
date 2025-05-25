@@ -28,7 +28,8 @@ public class PostEventListener {
     private long feedSize;
     private static final String POSTS_HASH_KEY = "posts";
 
-    @KafkaListener(topics = "${spring.data.kafka.topic.posts}")
+    @KafkaListener(topics = "${spring.data.kafka.topic.posts}",
+                    containerFactory = "postEventListenerContainerFactory")
     public void handlePostEvent(PostEvent event, Acknowledgment acknowledgment) {
         try {
             log.info("Получил ивент для поста {}", event.postId());

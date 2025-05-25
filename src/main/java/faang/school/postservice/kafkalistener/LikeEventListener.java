@@ -17,7 +17,8 @@ public class LikeEventListener {
     private final RedisTemplate<String, Object> redisTemplate;
     private static final String POSTS_HASH_KEY = "posts";
 
-    @KafkaListener(topics = "${spring.data.kafka.topic.likes}")
+    @KafkaListener(topics = "${spring.data.kafka.topic.likes}",
+                    containerFactory = "likeEventConsumerFactory")
     public void handleLikeEvent(LikeFeedEvent event) {
         try {
             String postKey = event.postId().toString();
