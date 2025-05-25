@@ -34,6 +34,11 @@ public class PostService {
     public Post createDraftPost(final Post post) {
         postValidator.checkPost(post);
 
+        if (post.getProjectId() == null) {
+            long userId = userContext.getUserId();
+            post.setAuthorId(userId);
+        }
+
         Post savedPost = postRepository.save(post);
         log.info("Post with id {} has been created", savedPost.getId());
         return savedPost;

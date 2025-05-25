@@ -22,6 +22,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Check;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -35,6 +36,7 @@ import java.util.List;
 @Builder
 @Entity
 @Table(name = "post")
+@Check(constraints = "(author_id IS NULL AND project_id IS NOT NULL) OR (author_id IS NOT NULL AND project_id IS NULL)")
 public class Post {
 
     @Id

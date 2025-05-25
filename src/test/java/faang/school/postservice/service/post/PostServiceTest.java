@@ -2,9 +2,9 @@ package faang.school.postservice.service.post;
 
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.exception.authorization.UserUnauthorizedException;
+import faang.school.postservice.exception.client.RemoteNotFoundException;
 import faang.school.postservice.exception.post.PostAlreadyPublishedException;
 import faang.school.postservice.exception.post.PostNotFoundException;
-import faang.school.postservice.exception.post.PostNotValidException;
 import faang.school.postservice.model.post.Post;
 import faang.school.postservice.repository.post.PostRepository;
 import faang.school.postservice.validation.post.PostValidator;
@@ -81,13 +81,14 @@ public class PostServiceTest {
         assertEquals(returnPost, post);
         verify(postRepository, times(1)).save(eq(post));
     }
+
     @Test
-    public void testCreateDraftPost_postNotValid() {
-        doThrow(PostNotValidException.class)
+    public void testCreateDraftPost_authorOrProjectNotFound() {
+        doThrow(RemoteNotFoundException.class)
                 .when(postValidator)
                 .checkPost(post);
 
-        assertThrows(PostNotValidException.class, () -> postService.createDraftPost(post));
+        assertThrows(RemoteNotFoundException.class, () -> postService.createDraftPost(post));
         verify(postRepository, never()).save(any());
     }
 
@@ -171,7 +172,7 @@ public class PostServiceTest {
     }
 
     @Test
-    public void testGetAllDraftPostsByUserId_userInContentNotFound() {
+    public void testGetAllDraftPostsByUserId_userInContextNotFound() {
         when(userContext.getUserId()).thenThrow(UserUnauthorizedException.class);
 
         assertThrows(UserUnauthorizedException.class, () -> postService.getAllDraftPostsByUserId());

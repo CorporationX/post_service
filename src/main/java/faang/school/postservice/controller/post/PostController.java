@@ -1,6 +1,5 @@
 package faang.school.postservice.controller.post;
 
-import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostCreateRequestDto;
 import faang.school.postservice.dto.post.PostResponseDto;
 import faang.school.postservice.dto.post.PostUpdateRequestDto;
@@ -27,7 +26,6 @@ import java.util.List;
 @Slf4j
 public class PostController {
     private final PostFacade postFacade;
-    private final UserServiceClient userServiceClient;
     @PostMapping("/draft")
     public ResponseEntity<PostResponseDto> createDraftPost
             (@RequestBody @Valid PostCreateRequestDto postCreateRequestDto) {
