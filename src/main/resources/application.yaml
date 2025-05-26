@@ -40,6 +40,11 @@ spring:
         not-like-channel:
           name: not-like-channel
 
+  kafka:
+    bootstrap-servers: "localhost:9092"
+    topic:
+      comment-topic: "comment"
+
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
