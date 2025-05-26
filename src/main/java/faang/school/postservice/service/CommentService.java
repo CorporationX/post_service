@@ -14,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class CommentService {
     private final CommentRepository commentRepository;
 
-    @Transactional(rollbackFor = Exception.class)
+    @Transactional
     public Comment getComment(Long commentId) {
         log.info("Start method getComment with commentId: {}", commentId);
         return commentRepository.findById(commentId)

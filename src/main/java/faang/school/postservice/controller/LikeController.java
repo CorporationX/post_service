@@ -10,17 +10,19 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Objects;
 
 @Slf4j
 @RestController
+@RequestMapping("/api/v1/likes/")
 @RequiredArgsConstructor
 public class LikeController {
     private final LikeService likeService;
 
-    @PostMapping("like/post/{postId}/user/{userId}")
+    @PostMapping("post/{postId}/user/{userId}")
     public LikeDto addLikeToPost(@PathVariable Long postId, @PathVariable Long userId) {
         log.info("Start method addLikeToPost with postId: {} and userId: {}", postId, userId);
         validateId(userId);
@@ -29,7 +31,7 @@ public class LikeController {
         return likeService.addLikeToPost(userId, postId);
     }
 
-    @DeleteMapping("like/post/{postId}/user/{userId}")
+    @DeleteMapping("post/{postId}/user/{userId}")
     public ResponseEntity<Void> removeLikeFromPost(@PathVariable Long postId, @PathVariable Long userId) {
         log.info("Start method removeLikeFromPost with postId: {}", postId);
         validateId(postId);
@@ -40,7 +42,7 @@ public class LikeController {
                 new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    @PostMapping("like/comment/{commentId}/user/{userId}")
+    @PostMapping("comment/{commentId}/user/{userId}")
     public LikeDto addLikeToComment(@PathVariable Long commentId, @PathVariable Long userId) {
         log.info("Start method addLikeToComment with commentId: {} and userId: {}", commentId, userId);
         validateId(userId);
@@ -49,7 +51,7 @@ public class LikeController {
         return likeService.addLikeToComment(userId, commentId);
     }
 
-    @DeleteMapping("like/comment/{commentId}/user/{userId}")
+    @DeleteMapping("comment/{commentId}/user/{userId}")
     public ResponseEntity<Void> removeLikeFromComment(@PathVariable Long commentId, @PathVariable Long userId) {
         log.info("Start method removeLikeFromComment with commentId: {}", commentId);
         validateId(commentId);

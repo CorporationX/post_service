@@ -14,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class PostService {
     private final PostRepository postRepository;
 
-    @Transactional(rollbackFor = Exception.class)
+    @Transactional
     public Post getPost(Long postId) {
         log.info("Start method getPost with postId: {}", postId);
         return postRepository.findById(postId)
