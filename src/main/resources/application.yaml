@@ -64,3 +64,5 @@ news-feed:
   posts:
     redis-ttl: 86400
     max-comments-count: 3;
+  users:
+    redis-ttl: 86400
