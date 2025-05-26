@@ -1,3 +1,4 @@
+DROP TABLE visible_albums;
 DROP TABLE post_album;
 DROP TABLE likes;
 DROP TABLE comment;
