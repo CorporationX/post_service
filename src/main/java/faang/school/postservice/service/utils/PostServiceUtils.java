@@ -18,19 +18,24 @@ public class PostServiceUtils {
     private final PostRepository postRepository;
 
     public void isAuthorOrProjectAdded(CreatePostDto createPostDto) {
-        if (createPostDto.getAuthorId() == null
-                && createPostDto.getProjectId() != null
-                && createPostDto.getProjectId() > 0) {
-            log.info("Project id was provided, checking if project exists");
-            projectService.checkProjectExist(createPostDto.getProjectId());
-        } else if (createPostDto.getAuthorId() != null
-                && createPostDto.getAuthorId() > 0
-                && createPostDto.getProjectId() == null) {
-            log.info("Author id was provided, checking if user exists");
-            userService.checkUserExist(createPostDto.getAuthorId());
+        Long authorId = createPostDto.getAuthorId();
+        Long projectId = createPostDto.getProjectId();
+
+        boolean isAuthorProvidedAndValid = (authorId != null && authorId > 0);
+        boolean isProjectProvidedAndValid = (projectId != null && projectId > 0);
+
+        if (isAuthorProvidedAndValid && isProjectProvidedAndValid) {
+            log.error("Both AuthorId ({}) and ProjectId ({}) were provided. Only one is allowed.", authorId, projectId);
+            throw new IllegalArgumentException("Both AuthorId and ProjectId were provided. Only one is allowed.");
+        } else if (isAuthorProvidedAndValid) {
+            log.info("AuthorId {} was provided, checking if user exists.", authorId);
+            userService.checkUserExist(authorId);
+        } else if (isProjectProvidedAndValid) {
+            log.info("ProjectId {} was provided, checking if project exists.", projectId);
+            projectService.checkProjectExist(projectId);
         } else {
-            log.error("AuthorId or projectId were provided both or neither");
-            throw new IllegalArgumentException("AuthorId or projectId were provided both or neither");
+            log.error("Neither AuthorId nor ProjectId were validly provided. Exactly one positive ID is required. AuthorId: {}, ProjectId: {}", authorId, projectId);
+            throw new IllegalArgumentException("Exactly one of AuthorId or ProjectId must be provided as a positive value.");
         }
     }
 

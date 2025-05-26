@@ -16,14 +16,6 @@ import java.net.SocketTimeoutException;
 @RequiredArgsConstructor
 public class ProjectService {
     private final ProjectServiceClient projectServiceClient;
-
-    @Retryable(
-            retryFor = {SocketTimeoutException.class,
-            ConnectException.class,
-            FeignException.ServiceUnavailable.class,
-            FeignException.GatewayTimeout.class},
-            backoff = @Backoff(delay = 1000, multiplier = 2)
-    )
     public void checkProjectExist(Long userId) {
         projectServiceClient.checkProjectExists(userId);
     }

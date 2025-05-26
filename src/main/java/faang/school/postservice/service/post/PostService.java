@@ -58,13 +58,13 @@ public class PostService {
         postRepository.save(post);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public PostDto getById(long postId) {
         postServiceUtils.isPostExists(postId);
         return postMapper.toPostDto(postServiceUtils.isPostExists(postId));
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public List<PostDto> getNonDeletedScratchesByAuthorId(long authorId) {
         userService.checkUserExist(authorId);
         return postMapper.toListPostDto(postRepository.findByAuthorId(authorId).stream()
@@ -73,7 +73,7 @@ public class PostService {
                 .toList());
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public List<PostDto> getNonDeletedScratchesByProjectId(long projectId) {
         projectService.checkProjectExist(projectId);
         return postMapper.toListPostDto(postRepository.findByProjectId(projectId).stream()
@@ -82,7 +82,7 @@ public class PostService {
                 .toList());
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public List<PostDto> getNonDeletedPublishedByAuthorId(Long authorId) {
         userService.checkUserExist(authorId);
         return postMapper.toListPostDto(postRepository.findByAuthorId(authorId).stream()
@@ -91,7 +91,7 @@ public class PostService {
                 .toList());
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public List<PostDto> getNonDeletedPublishedByProjectId(Long projectId) {
         projectService.checkProjectExist(projectId);
         return postMapper.toListPostDto(postRepository.findByProjectId(projectId).stream()
