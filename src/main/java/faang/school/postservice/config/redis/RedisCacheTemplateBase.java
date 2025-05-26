@@ -36,6 +36,8 @@ public abstract class RedisCacheTemplateBase<T> {
         template.setValueSerializer(serializer);
         template.setHashValueSerializer(serializer);
 
+        template.setEnableTransactionSupport(true);
+
         template.afterPropertiesSet();
 
         return template;

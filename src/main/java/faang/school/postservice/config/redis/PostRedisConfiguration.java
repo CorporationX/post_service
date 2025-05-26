@@ -9,7 +9,9 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
 
 @Configuration
-@EnableRedisRepositories(basePackages = "faang.school.postservice.repository", redisTemplateRef = "postRedisTemplate")
+@EnableRedisRepositories(
+        basePackages = "faang.school.postservice.redis_repository.post",
+        redisTemplateRef = "postRedisTemplate")
 public class PostRedisConfiguration extends RedisCacheTemplateBase<PostRedis> {
 
     public PostRedisConfiguration(RedisConfig redisConfig, ObjectMapper objectMapper) {
