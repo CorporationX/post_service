@@ -24,7 +24,7 @@ public class LikeService {
     private final CommentService commentService;
     private final UserServiceClient userServiceClient;
 
-    @Transactional(rollbackFor = Exception.class)
+    @Transactional
     public LikeDto addLikeToPost(Long userId, Long postId) {
         checkIfLikeAuthorExists(userId);
         checkIfPostIsAlreadyLiked(userId, postId);
@@ -32,12 +32,11 @@ public class LikeService {
         Like newLikeToPost = Like.builder()
                 .userId(userId)
                 .post(postService.getPost(postId))
-                .createdAt(LocalDateTime.now())
                 .build();
         return likeMapper.toDto(likeRepository.save(newLikeToPost));
     }
 
-    @Transactional(rollbackFor = Exception.class)
+    @Transactional
     public boolean removeLikeFromPost(Long postId, Long userId) {
         if (likeRepository.findByPostIdAndUserId(postId, userId).isPresent()) {
             likeRepository.deleteByPostIdAndUserId(postId, userId);
@@ -47,7 +46,7 @@ public class LikeService {
         return false;
     }
 
-    @Transactional(rollbackFor = Exception.class)
+    @Transactional
     public LikeDto addLikeToComment(Long userId, Long commentId) {
         checkIfLikeAuthorExists(userId);
         checkIfCommentIsAlreadyLiked(userId, commentId);
@@ -60,7 +59,7 @@ public class LikeService {
         return likeMapper.toDto(likeRepository.save(newLikeToComment));
     }
 
-    @Transactional(rollbackFor = Exception.class)
+    @Transactional
     public boolean removeLikeFromComment(Long commentId, Long userId) {
         if (likeRepository.findByCommentIdAndUserId(commentId, userId).isPresent()) {
             likeRepository.deleteByCommentIdAndUserId(commentId, userId);
