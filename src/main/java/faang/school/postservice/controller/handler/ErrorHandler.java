@@ -1,6 +1,6 @@
 package faang.school.postservice.controller.handler;
 
-import faang.school.postservice.dto.errorresponse.ErrorResponseDto;
+import faang.school.postservice.dto.error.ErrorResponseDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.PostAlreadyPublishedException;
 import jakarta.persistence.EntityNotFoundException;
@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 @Slf4j
 @RestControllerAdvice
@@ -23,7 +24,7 @@ public class ErrorHandler {
     @ExceptionHandler(EntityNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponseDto handleNotFound(EntityNotFoundException e) {
-        log.error("EntityNotFoundException with message {} was thrown", e.getMessage());
+        log.error("EntityNotFoundException was thrown", e);
         return new ErrorResponseDto(
                 HttpStatus.NOT_FOUND.name(),
                 "The required object was not found.",
@@ -34,12 +35,11 @@ public class ErrorHandler {
 
     @ExceptionHandler({
             MethodArgumentNotValidException.class,
-            ConstraintViolationException.class,
             DataValidationException.class
     })
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponseDto handleBadRequestExceptions(Exception e) {
-        log.error("{} with message {} was thrown", e.getClass().getSimpleName(), e.getMessage());
+        log.error("{}  was thrown", e.getClass().getSimpleName(), e);
         return new ErrorResponseDto(
                 HttpStatus.BAD_REQUEST.name(),
                 "Incorrectly made request.",
@@ -48,10 +48,25 @@ public class ErrorHandler {
         );
     }
 
+    @ExceptionHandler(ConstraintViolationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponseDto handleConstraintViolation(ConstraintViolationException e) {
+        log.error("ConstraintViolationException was thrown", e);
+        List<String> violations = e.getConstraintViolations().stream()
+                .map(violation -> String.format("%s: %s", violation.getPropertyPath(), violation.getMessage()))
+                .toList();
+        return new ErrorResponseDto(
+                HttpStatus.BAD_REQUEST.name(),
+                "Incorrectly made request.",
+                String.join("; ", violations),
+                LocalDateTime.now().format(formatter)
+        );
+    }
+
     @ExceptionHandler(PostAlreadyPublishedException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorResponseDto handlePostAlreadyPublished(PostAlreadyPublishedException e) {
-        log.error("PostAlreadyPublishedException with message {} was thrown", e.getMessage());
+        log.error("PostAlreadyPublishedException was thrown", e);
         return new ErrorResponseDto(
                 HttpStatus.CONFLICT.name(),
                 "Post was already published.",
@@ -63,7 +78,7 @@ public class ErrorHandler {
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponseDto handleException(Exception e) {
-        log.error("Exception with message {} was thrown", e.getMessage());
+        log.error("Exception was thrown", e);
         return new ErrorResponseDto(
                 HttpStatus.INTERNAL_SERVER_ERROR.name(),
                 "Something get wrong.",

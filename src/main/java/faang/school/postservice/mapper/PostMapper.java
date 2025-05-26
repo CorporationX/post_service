@@ -15,7 +15,6 @@ import org.mapstruct.Named;
 import org.mapstruct.ReportingPolicy;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Mapper(componentModel = "Spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface PostMapper {
@@ -37,7 +36,7 @@ public interface PostMapper {
         }
         return likes.stream()
                 .map(Like::getId)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Named("mapComments")
@@ -47,7 +46,7 @@ public interface PostMapper {
         }
         return comments.stream()
                 .map(Comment::getId)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Named("mapAlbums")
@@ -57,7 +56,7 @@ public interface PostMapper {
         }
         return albums.stream()
                 .map(Album::getId)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Named("mapResources")
@@ -67,6 +66,6 @@ public interface PostMapper {
         }
         return resources.stream()
                 .map(Resource::getId)
-                .collect(Collectors.toList());
+                .toList();
     }
 }

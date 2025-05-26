@@ -31,7 +31,7 @@ public class PostController {
 
     @PostMapping("/drafts")
     public PostOutputDto createPost(@Valid @RequestBody PostCreateDto postCreateDto) {
-        log.info("Creating new post draft {} - Started", postCreateDto);
+        log.debug("Creating new post draft {} - Started", postCreateDto);
         PostOutputDto createdPost = postService.createPost(postCreateDto);
         log.info("Creating new post draft {} - Finished", postCreateDto);
         return createdPost;
@@ -39,7 +39,7 @@ public class PostController {
 
     @PatchMapping("/{postId}/publish")
     public PostOutputDto publishPost(@NotNull @PathVariable("postId") Long postId) {
-        log.info("Publishing post with id {} - Started", postId);
+        log.debug("Publishing post with id {} - Started", postId);
         PostOutputDto publishedPost = postService.publishPost(postId);
         log.info("Publishing post with id {} - Finished", postId);
         return publishedPost;
@@ -47,7 +47,7 @@ public class PostController {
 
     @PutMapping("/{postId}")
     public PostOutputDto updatePost(@NotNull @PathVariable("postId") Long postId, @Valid @RequestBody PostUpdateDto postUpdateDto) {
-        log.info("Updating post with id {} - Started", postId);
+        log.debug("Updating post with id {} - Started", postId);
         PostOutputDto updatedPost = postService.updatePost(postId, postUpdateDto);
         log.info("Updating post with id {} - Finished", postId);
         return updatedPost;
@@ -55,7 +55,7 @@ public class PostController {
 
     @DeleteMapping("/{postId}")
     public PostOutputDto deletePost(@NotNull @PathVariable("postId") Long postId) {
-        log.info("Deleting post with id {} - Started", postId);
+        log.debug("Deleting post with id {} - Started", postId);
         PostOutputDto deletedPost = postService.deletePost(postId);
         log.info("Deleting post with id {} - Finished", postId);
         return deletedPost;
@@ -63,7 +63,7 @@ public class PostController {
 
     @GetMapping("/{postId}")
     public PostOutputDto getPostById(@NotNull @PathVariable("postId") Long postId) {
-        log.info("Getting post with id {} - Started", postId);
+        log.debug("Getting post with id {} - Started", postId);
         PostOutputDto foundPost = postService.getPostById(postId);
         log.info("getting post with id {} - Finished", postId);
         return foundPost;
@@ -71,7 +71,7 @@ public class PostController {
 
     @GetMapping("/drafts/users/{userId}")
     public List<PostOutputDto> getNotDeletedUserDrafts(@NotNull @PathVariable("userId") Long userId) {
-        log.info("Getting drafted posts for user with id {} - Started", userId);
+        log.debug("Getting drafted posts for user with id {} - Started", userId);
         List<PostOutputDto> userPosts = postService.getNotDeletedUserDrafts(userId);
         log.info("Getting drafted posts for user with id {} - Finished", userId);
         return userPosts;
@@ -79,23 +79,23 @@ public class PostController {
 
     @GetMapping("/drafts/projects/{projectId}")
     public List<PostOutputDto> getNotDeletedProjectDrafts(@NotNull @PathVariable("projectId") Long projectId) {
-        log.info("Getting drafted posts for project with id {} - Started", projectId);
+        log.debug("Getting drafted posts for project with id {} - Started", projectId);
         List<PostOutputDto> projectPosts = postService.getNotDeletedProjectDrafts(projectId);
         log.info("Getting drafted posts for project with id {} - Finished", projectId);
         return projectPosts;
     }
 
-    @GetMapping("/published/users/{userId}")
+    @GetMapping("/users/{userId}")
     public List<PostOutputDto> getNotDeletedUserPublished(@NotNull @PathVariable("userId") Long userId) {
-        log.info("Getting published posts for user with id {} - Started", userId);
+        log.debug("Getting published posts for user with id {} - Started", userId);
         List<PostOutputDto> userPosts = postService.getNotDeletedUserPublished(userId);
         log.info("Getting published posts for user with id {} - Finished", userId);
         return userPosts;
     }
 
-    @GetMapping("/published/projects/{projectId}")
+    @GetMapping("/projects/{projectId}")
     public List<PostOutputDto> getNotDeletedProjectPublished(@NotNull @PathVariable("projectId") Long projectId) {
-        log.info("Getting published posts for project with id {} - Started", projectId);
+        log.debug("Getting published posts for project with id {} - Started", projectId);
         List<PostOutputDto> projectPosts = postService.getNotDeletedProjectPublished(projectId);
         log.info("Getting published posts for project with id {} - Finished", projectId);
         return projectPosts;
