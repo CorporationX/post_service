@@ -4,7 +4,7 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.CommentDto;
 import faang.school.postservice.dto.LikeDto;
-import faang.school.postservice.dto.PostDto;
+import faang.school.postservice.dto.CreatePostDto;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.mapper.PostMapper;
@@ -32,28 +32,28 @@ public class LikeServiceImpl implements LikeService {
     private final UserContext userContext;
 
     @Override
-    public PostDto addLikeToPost(Long postId) {
+    public CreatePostDto addLikeToPost(Long postId) {
         long userId = getUserById();
         Post post = postService.findPostById(postId);
         if (isLikedPost(postId, userId)) {
-            return postMapper.toDto(post);
+            return postMapper.toCreatedPostDto(post);
         }
 
         Like like = likeMapper.toEntity(new LikeDto(userId, postId, null));
         like.setPost(post);
         likeRepository.save(like);
-        return postMapper.toDto(post);
+        return postMapper.toCreatedPostDto(post);
     }
 
     @Override
-    public PostDto removeLikeFromPost(Long postId) {
+    public CreatePostDto removeLikeFromPost(Long postId) {
         long userId = getUserById();
         Post post = postService.findPostById(postId);
         if (!isLikedPost(postId, userId)) {
-            return postMapper.toDto(post);
+            return postMapper.toCreatedPostDto(post);
         }
         likeRepository.deleteByPostIdAndUserId(postId, userId);
-        return postMapper.toDto(post);
+        return postMapper.toCreatedPostDto(post);
     }
 
     @Override

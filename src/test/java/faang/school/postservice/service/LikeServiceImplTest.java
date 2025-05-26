@@ -3,8 +3,8 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.CommentDto;
+import faang.school.postservice.dto.CreatePostDto;
 import faang.school.postservice.dto.LikeDto;
-import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.CommentMapperImpl;
 import faang.school.postservice.mapper.LikeMapperImpl;
@@ -88,14 +88,14 @@ public class LikeServiceImplTest {
         when(userServiceClient.getUser(userId)).thenReturn(userDto);
         when(likeRepository.findByPostIdAndUserId(postId,userId)).thenReturn(optionalLike);
 
-        PostDto postDto = likeService.addLikeToPost(postId);
+        CreatePostDto createPostDto = likeService.addLikeToPost(postId);
         verify(userContext,times(1)).getUserId();
         verify(postService,times(1)).findPostById(likeDto.postId());
         verify(userServiceClient, times(1)).getUser(userId);
         verify(likeRepository, times(1))
                 .findByPostIdAndUserId(likeDto.postId(),likeDto.userId());
         verify(likeRepository, never()).save(eq(likeMapper.toEntity(likeDto)));
-        assertNotNull(postDto);
+        assertNotNull(createPostDto);
     }
 
     @Test
@@ -109,7 +109,7 @@ public class LikeServiceImplTest {
         when(userServiceClient.getUser(userId)).thenReturn(userDto);
         when(likeRepository.findByPostIdAndUserId(postId,userId)).thenReturn(optionalLike);
 
-        PostDto postDto = likeService.addLikeToPost(postId);
+        CreatePostDto createPostDto = likeService.addLikeToPost(postId);
         verify(userContext,times(1)).getUserId();
         verify(postService,times(1)).findPostById(likeDto.postId());
         verify(userServiceClient, times(1)).getUser(userId);
@@ -120,7 +120,7 @@ public class LikeServiceImplTest {
         assertNotNull(capturedLike);
         assertEquals(userId, capturedLike.getUserId());
         assertEquals(postId, capturedLike.getPost().getId());
-        assertNotNull(postDto);
+        assertNotNull(createPostDto);
     }
 
     @Test
@@ -134,14 +134,14 @@ public class LikeServiceImplTest {
         when(userServiceClient.getUser(userId)).thenReturn(userDto);
         when(likeRepository.findByPostIdAndUserId(postId,userId)).thenReturn(optionalLike);
 
-        PostDto postDto = likeService.removeLikeFromPost(postId);
+        CreatePostDto createPostDto = likeService.removeLikeFromPost(postId);
         verify(userContext,times(1)).getUserId();
         verify(postService,times(1)).findPostById(likeDto.postId());
         verify(userServiceClient, times(1)).getUser(userId);
         verify(likeRepository, times(1))
                 .findByPostIdAndUserId(likeDto.postId(),likeDto.userId());
         verify(likeRepository, never()).deleteByPostIdAndUserId(likeDto.postId(),likeDto.userId());
-        assertNotNull(postDto);
+        assertNotNull(createPostDto);
     }
 
     @Test
@@ -156,13 +156,13 @@ public class LikeServiceImplTest {
         when(userServiceClient.getUser(userId)).thenReturn(userDto);
         when(likeRepository.findByPostIdAndUserId(postId,userId)).thenReturn(optionalLike);
 
-        PostDto postDto = likeService.removeLikeFromPost(postId);
+        CreatePostDto createPostDto = likeService.removeLikeFromPost(postId);
         verify(userContext,times(1)).getUserId();
         verify(likeRepository, times(1))
                 .deleteByPostIdAndUserId(postIdCaptor.capture(),userIdCaptor.capture());
         assertEquals(userId, userIdCaptor.getValue());
         assertEquals(postId, postIdCaptor.getValue());
-        assertNotNull(postDto);
+        assertNotNull(createPostDto);
     }
 
     @Test

@@ -1,35 +1,20 @@
 package faang.school.postservice.mapper;
 
-import faang.school.postservice.dto.PostDto;
-import faang.school.postservice.model.Album;
-import faang.school.postservice.model.Comment;
+import faang.school.postservice.dto.CreatePostDto;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.PostRedis;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface PostMapper {
 
+    CreatePostDto toCreatedPostDto(Post post);
+
+    Post toEntity(CreatePostDto dto);
+
     @Mapping(target = "amountLikes",
             expression = "java(post.getLikes() != null && !post.getLikes().isEmpty() ? post.getLikes().size() : 0)")
-    @Mapping(source = "comments", target="commentIds")
-    @Mapping(source = "albums", target = "albumIds")
-    PostDto toDto(Post post);
-
-    default List<Long> extractIdsFromComments(List<Comment> comments) {
-        return comments != null
-                ? comments.stream().map(Comment::getId).collect(Collectors.toList())
-                : Collections.emptyList();
-    }
-
-    default List<Long> extractIdsFromAlbums(List<Album> albums) {
-        return albums != null
-                ? albums.stream().map(Album::getId).toList()
-                : Collections.emptyList();
-    }
+    PostRedis toPostRedis(Post post);
 }

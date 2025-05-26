@@ -1,12 +1,12 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.dto.CommentDto;
-import faang.school.postservice.dto.PostDto;
+import faang.school.postservice.dto.CreatePostDto;
 
 public interface LikeService {
 
-    PostDto addLikeToPost(Long postId);
-    PostDto removeLikeFromPost(Long postId);
+    CreatePostDto addLikeToPost(Long postId);
+    CreatePostDto removeLikeFromPost(Long postId);
     CommentDto addLikeToComment(Long commentId);
     CommentDto removeLikeFromComment(Long commentId);
 }

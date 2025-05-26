@@ -1,5 +1,8 @@
 package faang.school.postservice;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.Banner;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -23,6 +26,18 @@ public class PostServiceApp {
         new SpringApplicationBuilder(PostServiceApp.class)
                 .bannerMode(Banner.Mode.OFF)
                 .run(args);
+    }
+
+    @Bean
+    public ObjectMapper objectMapper() {
+        var objectMapper = new ObjectMapper();
+        objectMapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
+        objectMapper.activateDefaultTyping(
+                objectMapper.getPolymorphicTypeValidator(),
+                ObjectMapper.DefaultTyping.NON_FINAL
+        );
+
+        return objectMapper;
     }
 
     @Bean

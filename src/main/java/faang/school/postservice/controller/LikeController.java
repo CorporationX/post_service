@@ -1,7 +1,7 @@
 package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.CommentDto;
-import faang.school.postservice.dto.PostDto;
+import faang.school.postservice.dto.CreatePostDto;
 import faang.school.postservice.service.LikeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -19,12 +19,12 @@ public class LikeController {
     private final LikeService likeService;
 
     @PostMapping("posts/{postId}/likes")
-    public PostDto addLikeToPost(@PathVariable Long postId) {
+    public CreatePostDto addLikeToPost(@PathVariable Long postId) {
         return likeService.addLikeToPost(postId);
     }
 
     @DeleteMapping("posts/{postId}/likes")
-    public PostDto removeLikeFromPost(@PathVariable Long postId) {
+    public CreatePostDto removeLikeFromPost(@PathVariable Long postId) {
 
         return likeService.removeLikeFromPost(postId);
     }
