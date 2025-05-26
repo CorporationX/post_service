@@ -33,6 +33,7 @@ spring:
         author: 86400
       feed:
         size: 500
+        limit: 20
       comments:
         size: 3
 

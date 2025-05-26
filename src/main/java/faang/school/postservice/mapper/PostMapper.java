@@ -2,6 +2,7 @@ package faang.school.postservice.mapper;
 
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.dto.PostResponseDto;
+import faang.school.postservice.entity.CachedPost;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
@@ -36,6 +37,8 @@ public interface PostMapper {
 
     List<PostResponseDto> toResponseDtoList(List<Post> posts);
 
+    CachedPost toCachedPost(Post post);
+
     default List<Long> mapCommentToIds(List<Comment> comments) {
         return comments != null ? comments.stream()
                 .map(Comment::getId)
@@ -58,4 +61,5 @@ public interface PostMapper {
     default Integer calculateLikeCount(List<Like> likes) {
         return likes != null ? likes.size() : 0;
     }
+
 }

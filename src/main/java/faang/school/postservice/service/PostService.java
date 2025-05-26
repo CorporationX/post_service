@@ -30,7 +30,7 @@ import faang.school.postservice.publisher.KafkaPostEventPublisher;
 import faang.school.postservice.publisher.PostViewEventPublisher;
 import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.repository.CommentRepository;
-import faang.school.postservice.repository.FollowersRepository;
+import faang.school.postservice.repository.UserRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ResourceRepository;
@@ -40,7 +40,6 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -78,7 +77,7 @@ public class PostService {
     private final HashtagServiceClient hashtagClient;
     private final PostCacheService postCacheService;
     private final AuthorCacheService authorCacheService;
-    private final FollowersRepository followersRepository;
+    private final UserRepository userRepository;
     private final KafkaPostEventPublisher kafkaPostEventPublisher;
 
     @Value("${batch.size}")
@@ -200,7 +199,7 @@ public class PostService {
         authorCacheService.cacheAuthor(cachedAuthor.getAuthorId(), cachedAuthor.getUsername());
         log.info("Автор {} помещен в кеш", cachedAuthor.getAuthorId());
 
-        List<Long> followersIds = followersRepository.findFollowerIdsByAuthorId(post.getAuthorId());
+        List<Long> followersIds = userRepository.findFollowerIdsByAuthorId(post.getAuthorId());
         kafkaPostEventPublisher.publish(
                 new PostEvent(post.getId(),
                         post.getAuthorId(),
