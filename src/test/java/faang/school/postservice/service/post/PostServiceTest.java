@@ -11,7 +11,9 @@ import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.PostEventPublisher;
+import faang.school.postservice.repository.FeedRedisRepository;
 import faang.school.postservice.repository.LikeRepository;
+import faang.school.postservice.repository.PostRedisRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.PostService;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,9 +30,14 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.LongStream;
 
 import static faang.school.postservice.service.PostService.CANT_UPDATE_DELETED_POST;
 import static faang.school.postservice.service.PostService.NO_POST_FOUND;
@@ -42,6 +49,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -56,6 +64,12 @@ public class PostServiceTest {
 
     @Mock
     private RestTemplate restTemplate;
+
+    @Mock
+    private FeedRedisRepository feedRedisRepository;
+
+    @Mock
+    private PostRedisRepository postRedisRepository;
 
     @Mock
     private PostEventPublisher postEventPublisher;
@@ -87,6 +101,7 @@ public class PostServiceTest {
         ReflectionTestUtils.setField(languageToolClient, "baseUrl", "https://api.languagetool.org/v2");
         ReflectionTestUtils.setField(postService, "threadPoolSize", 1);
         ReflectionTestUtils.setField(postService, "batchSize", 5);
+        ReflectionTestUtils.setField(postService, "postBatchSize", 20);
     }
 
     @Test
@@ -322,5 +337,80 @@ public class PostServiceTest {
 
         verify(postRepository).findReadyToPublish();
         verify(threadPoolExecutorService, times(2)).execute(any(Runnable.class));
+    }
+
+    @Test
+    void getFeed_shouldReturnFirstInRangePost_whenPostIdNull() {
+        Long userId = 1L;
+        int postBatchSize = 20;
+        Set<Long> ids = LongStream.rangeClosed(1, postBatchSize)
+                .boxed()
+                .collect(Collectors.toSet());
+
+        List<PostResponseDto> posts = IntStream.range(0, postBatchSize)
+                .mapToObj(i -> PostResponseDto.builder()
+                        .id((long) i + 1)
+                        .build())
+                .toList();
+
+        when(feedRedisRepository.getFirstInRangeByUserId(userId, postBatchSize)).thenReturn(ids);
+        when(postRedisRepository.getAllPosts(ids)).thenReturn(posts);
+
+        List<PostResponseDto> result = postService.getFeed(userId, null);
+
+        assertEquals(postBatchSize, result.size());
+    }
+
+    @Test
+    void getFeed_shouldReturnInRangeByUserIdAndPostId_whenPostIdNotNull() {
+        Long userId = 1L;
+        Long postId = 2L;
+        int postBatchSize = 20;
+        Set<Long> ids = LongStream.rangeClosed(1, postBatchSize)
+                .boxed()
+                .collect(Collectors.toSet());
+
+        List<PostResponseDto> posts = IntStream.range(0, postBatchSize)
+                .mapToObj(i -> PostResponseDto.builder()
+                        .id((long) i + 1)
+                        .build())
+                .toList();
+
+        when(feedRedisRepository.getInRangeByUserIdAndPostId(userId, postId, postBatchSize)).thenReturn(ids);
+        when(postRedisRepository.getAllPosts(ids)).thenReturn(posts);
+
+        List<PostResponseDto> result = postService.getFeed(userId, postId);
+
+        assertEquals(postBatchSize, result.size());
+    }
+
+    @Test
+    void getFeed_shouldGoToDbIfPostIdsNotFull() {
+        Long userId = 1L;
+        int postBatchSize = 20;
+        int unreturnedPostsSize = 10;
+        Set<Long> ids = LongStream.rangeClosed(1, unreturnedPostsSize)
+                .boxed()
+                .collect(Collectors.toSet());
+
+        List<Long> returnedIdsFromDb = LongStream.rangeClosed(0, unreturnedPostsSize)
+                .boxed()
+                .toList();
+
+        List<PostResponseDto> posts = IntStream.range(0, postBatchSize)
+                .mapToObj(i -> PostResponseDto.builder()
+                        .id((long) i + 1)
+                        .build())
+                .toList();
+
+        when(feedRedisRepository.getFirstInRangeByUserId(userId, postBatchSize)).thenReturn(ids);
+        when(postRedisRepository.getAllPosts(ids)).thenReturn(posts);
+        when(postRepository.findPostsBySubscriptionsAfterPost(eq(userId), anyLong(), eq(ids), eq(unreturnedPostsSize)))
+                .thenReturn(returnedIdsFromDb);
+
+        List<PostResponseDto> result = postService.getFeed(userId, null);
+
+        assertEquals(postBatchSize, result.size());
+        verify(postRepository).findPostsBySubscriptionsAfterPost(eq(userId), anyLong(), eq(ids), eq(unreturnedPostsSize));
     }
 }

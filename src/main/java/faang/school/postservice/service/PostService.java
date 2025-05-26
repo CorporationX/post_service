@@ -11,8 +11,9 @@ import faang.school.postservice.exception.PostNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.PostEventPublisher;
+import faang.school.postservice.repository.FeedRedisRepository;
+import faang.school.postservice.repository.PostRedisRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.repository.ad.PostRedisRepository;
 import faang.school.postservice.service.hashtags.HashtagService;
 import faang.school.postservice.utils.validationUtils.PostValidation;
 import jakarta.transaction.Transactional;
@@ -32,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -51,6 +53,7 @@ public class PostService {
     private final PostMapper postMapper;
     private final PostRepository postRepository;
     private final PostRedisRepository postRedisRepository;
+    private final FeedRedisRepository feedRedisRepository;
     private final LanguageToolClient languageToolClient;
     private final HashtagService hashtagService;
     private final ExecutorService threadPoolExecutor;
@@ -61,6 +64,9 @@ public class PostService {
 
     @Value("${posts.correction.thread-pool-size}")
     int threadPoolSize;
+
+    @Value("${spring.data.redis.feed.post-batch-size}")
+    private int postBatchSize;
 
     public PostResponseDto createDraftPost(PostRequestDto postRequestDto) {
         PostValidation.validatePostAuthors(postRequestDto);
@@ -214,6 +220,22 @@ public class PostService {
                         return null;
                     });
         }
+    }
+
+    public List<PostResponseDto> getFeed(Long userId, Long postId) {
+        Set<Long> postIds = postId == null
+                ? feedRedisRepository.getFirstInRangeByUserId(userId, postBatchSize)
+                : feedRedisRepository.getInRangeByUserIdAndPostId(userId, postId, postBatchSize);
+
+        if (postIds.size() < postBatchSize) {
+            int range = postBatchSize - postIds.size();
+            Long lastId = postIds.stream()
+                    .min(Long::compareTo)
+                    .orElse(postId);
+            postIds.addAll(postRepository.findPostsBySubscriptionsAfterPost(userId, lastId, postIds, range));
+        }
+
+        return postRedisRepository.getAllPosts(postIds);
     }
 
     private void validatePostOptional(Optional<Post> postOptional, Long id) {

@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 public interface PostRepository extends CrudRepository<Post, Long> {
@@ -49,5 +50,16 @@ public interface PostRepository extends CrudRepository<Post, Long> {
             SELECT users.id from users
             JOIN subscription s on users.id = s.follower_id
             WHERE s.followee_id = ?1""")
-    List<Long> findAllFollowersIdByAuthorId(long authorId);
+    List<Long> findAllFollowersIdByAuthorId(Long authorId);
+
+    @Query(nativeQuery = true, value = """
+            SELECT p.id from post p
+            JOIN subscription s on p.author_id = s.followee_id
+            WHERE s.follower_id = ?1
+            AND p.id < ?2
+            And p.id NOT IN (?3)
+            ORDER BY p.created_at DESC
+            LIMIT ?4
+            """)
+    List<Long> findPostsBySubscriptionsAfterPost(Long userId, Long lastPostId, Set<Long> existingIds, int limit);
 }

@@ -1,7 +1,5 @@
 package faang.school.postservice.listener;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.dto.post.PostEvent;
 import faang.school.postservice.repository.FeedRedisRepository;
 import faang.school.postservice.utils.JsonUtils;
@@ -13,7 +11,6 @@ import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
 
-import static faang.school.postservice.contants.ErrorMessage.FAILED_SERIALIZING_OBJECT;
 import static faang.school.postservice.contants.ErrorMessage.FAILED_TO_PROCESS_EVENT;
 
 @RequiredArgsConstructor
@@ -29,7 +26,7 @@ public class KafkaPostConsumer {
         try {
             PostEvent event = jsonUtils.fromJson(message, PostEvent.class);
             log.info("Post event received: {}", event);
-            event.getFollowers().forEach(follower -> feedRedisRepository.addToFeed(follower, event.getPostId()));
+            event.getFollowers().forEach(follower -> feedRedisRepository.save(follower, event.getPostId()));
             ack.acknowledge();
         } catch (Exception e) {
             log.error(FAILED_TO_PROCESS_EVENT);
