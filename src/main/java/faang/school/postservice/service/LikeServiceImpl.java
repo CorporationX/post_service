@@ -1,11 +1,13 @@
 package faang.school.postservice.service;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.stereotype.Service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.LikeDto;
-import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.ExternalServiceException;
 import faang.school.postservice.mapper.LikeMapper;
@@ -35,6 +37,7 @@ public class LikeServiceImpl implements LikeService {
         Post post = getPost(postId);
         userValidation();        
         duplicatePostLikeValidation(postId);        
+        relatedCommentsLikeValidation(postId);
 
         Like like = Like.builder()
             .userId(userContext.getUserId())
@@ -49,6 +52,7 @@ public class LikeServiceImpl implements LikeService {
         Comment comment = getComment(commentId);
         userValidation();
         duplicateCommentLikeValidation(commentId);
+        relatedPostsLikeValidation(comment);
 
         Like like = Like.builder()
             .userId(userContext.getUserId())
@@ -68,8 +72,20 @@ public class LikeServiceImpl implements LikeService {
     }
 
     @Override
-    public long countLikesFor(PostDto postDto) {
-        return 0;
+    public int countLikesFor(Long postId) {
+        return getPost(postId).getLikes().size();
+    }
+
+    @Override
+    public List<LikeDto> getLikesByUser() {
+        Optional<List<Like>> likes = likeRepository.findByUserId(userContext.getUserId());
+        if (likes.isEmpty()) {
+            throw new EntityNotFoundException(String.format(
+                "User %d has no likes.", userContext.getUserId()
+            ));
+        }
+
+        return likeMapper.toDtois(likes.get());
     }
 
     private Post getPost(long postId) {
@@ -123,6 +139,38 @@ public class LikeServiceImpl implements LikeService {
             throw new DataValidationException(String.format(
                 "User %d already liked comment %d.", 
                 userContext.getUserId(), commentId
+            ));
+        }
+    }
+
+    private List<Like> getUsersLikes() {
+        return likeRepository.findByUserId(userContext.getUserId()).orElse(List.of());
+    }
+
+    private void relatedCommentsLikeValidation(Long postId) {
+        List<Long> postsIds = getUsersLikes().stream()
+            .filter(like -> like.getComment() != null)
+            .map(like -> like.getComment().getPost().getId())
+            .toList();
+        
+        if (postsIds.contains(postId)) {
+            throw new DataValidationException(String.format(
+                "User %d already liked at least one comment of post %d.", 
+                userContext.getUserId(), postId
+            ));
+        }
+    }
+
+    private void relatedPostsLikeValidation(Comment comment) {
+        List<Long> postsIds = getUsersLikes().stream()
+            .filter(like -> like.getPost() != null)
+            .map(like -> like.getPost().getId())
+            .toList();
+        
+        if (postsIds.contains(comment.getPost().getId())) {
+            throw new DataValidationException(String.format(
+                "User %d already liked the post of comment %d.", 
+                userContext.getUserId(), comment.getId()
             ));
         }
     }

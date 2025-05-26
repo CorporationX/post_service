@@ -1,11 +1,13 @@
 package faang.school.postservice.service;
 
+import java.util.List;
+
 import faang.school.postservice.dto.LikeDto;
-import faang.school.postservice.dto.PostDto;
 
 public interface LikeService {
     LikeDto putLikeToPost(long postId);
     LikeDto putLikeToComment(long commentId);
     void deleteLike(long likeId);
-    long countLikesFor(PostDto postDto);
+    int countLikesFor(Long postId);
+    List<LikeDto> getLikesByUser(); 
 }

@@ -4,6 +4,7 @@ import faang.school.postservice.model.Like;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface LikeRepository extends CrudRepository<Like, Long> {
@@ -16,4 +17,6 @@ public interface LikeRepository extends CrudRepository<Like, Long> {
     Optional<Like> findByPostIdAndUserId(long postId, long userId);
 
     Optional<Like> findByCommentIdAndUserId(long commentId, long userId);
+
+    Optional<List<Like>> findByUserId(long userId);
 }

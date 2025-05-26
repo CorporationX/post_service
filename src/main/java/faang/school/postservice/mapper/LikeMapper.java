@@ -1,5 +1,7 @@
 package faang.school.postservice.mapper;
 
+import java.util.List;
+
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
@@ -18,4 +20,8 @@ public interface LikeMapper {
     @Mapping(target = "commentId", source = "comment.id") 
     @Mapping(target = "postId", source = "post.id")
     LikeDto toDto(Like like);
+
+    @Mapping(target = "commentId", source = "comment.id") 
+    @Mapping(target = "postId", source = "post.id")
+    List<LikeDto> toDtois(List<Like> likes);
 }
