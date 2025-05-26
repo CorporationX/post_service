@@ -22,6 +22,24 @@ spring:
     shutdown:
       await-termination: true
       await-termination-period: 30
+  kafka:
+    bootstrap-servers: localhost:29092
+    properties:
+      security.protocol: PLAINTEXT
+      spring.json.trusted.packages: "*"
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      retries: 3
+      batch-size: 16384
+      buffer-memory: 33554432
+
+kafka:
+  topic:
+    post-viewed-event:
+      name: "post-viewed-event"
+      partition: 1
+      replicationFactor: 1
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
