@@ -1,5 +1,6 @@
 package faang.school.postservice.event;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
@@ -18,12 +19,13 @@ import java.util.List;
 @ToString
 public class PostFeedEvent {
     @NotNull(message = "Post ID cannot be null")
-    private Long postId;
+    private final Long postId;
 
     @NotEmpty(message = "Subscriber IDs cannot be empty")
-    private List<Long> subscriberIds;
+    private final List<Long> subscriberIds;
 
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    private LocalDateTime publishedAt;
+    @JsonFormat(pattern = "dd:MM:yyyy HH:mm:ss")
+    private final LocalDateTime publishedAt;
 }

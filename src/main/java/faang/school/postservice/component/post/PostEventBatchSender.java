@@ -1,6 +1,7 @@
 package faang.school.postservice.component.post;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.component.post.event_produser.PostEventProducer;
 import faang.school.postservice.config.kafka.properties.BatchProperties;
 import faang.school.postservice.config.kafka.properties.RetryProperties;
 import faang.school.postservice.event.PostFeedEvent;
@@ -13,10 +14,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
+import org.springframework.retry.support.RetryTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.stream.IntStream;
 
 @Slf4j
@@ -27,57 +31,70 @@ public class PostEventBatchSender {
     private final UserServiceClient userServiceClient;
     private final PostEventProducer postEventProducer;
     private final BatchProperties batchProperties;
-    private final RetryProperties retryProperties;
+    private final RetryTemplate userServiceRetryTemplate;
+    private final Executor userServiceExecutor;
 
     @Async("postEventExecutor")
-    public void dispatchEventsForPost(Post post) {
+    public CompletableFuture<Void> dispatchEventsForPost(Post post) {
         if (post == null || post.getId() == null || post.getAuthorId() == null || post.getPublishedAt() == null) {
-            log.error("Invalid post data for event dispatching: {}", post);
+            log.error("Invalid post data for event dispatching: post={}", post);
             throw new InvalidPostDataException("Post or author data is invalid");
         }
 
-        List<Long> subscriberIds = fetchSubscribers(post.getAuthorId());
-        if (subscriberIds.isEmpty()) {
-            log.warn("No subscribers found for author: {}", post.getAuthorId());
-            return;
-        }
+        return fetchSubscribers(post.getAuthorId())
+                .thenCompose(subscriberIds -> {
+                    if (subscriberIds.isEmpty()) {
+                        log.warn("No subscribers found for author: authorId={}", post.getAuthorId());
+                        return CompletableFuture.completedFuture(null);
+                    }
 
-        if (subscriberIds.size() > batchProperties.getMaxSubscribers()) {
-            log.warn("Subscriber count {} exceeds maximum allowed {}, truncating", subscriberIds.size(),
-                    batchProperties.getMaxSubscribers());
-            subscriberIds = subscriberIds.subList(0, batchProperties.getMaxSubscribers());
-        }
+                    if (subscriberIds.size() > batchProperties.getMaxSubscribers()) {
+                        log.warn("Subscriber count {} exceeds maximum allowed {}, truncating", subscriberIds.size(),
+                                batchProperties.getMaxSubscribers());
+                        subscriberIds = subscriberIds.subList(0, batchProperties.getMaxSubscribers());
+                    }
 
-        List<List<Long>> batches = partitionSubscribers(subscriberIds, batchProperties.getBatchSize());
-        batches.forEach(batch -> dispatchEventBatch(post, batch));
+                    List<List<Long>> batches = partitionSubscribers(subscriberIds, batchProperties.getBatchSize());
+                    return CompletableFuture.allOf(
+                            batches.stream()
+                                    .map(batch -> dispatchEventBatch(post, batch))
+                                    .toArray(CompletableFuture[]::new)
+                    );
+                })
+                .exceptionally(throwable -> {
+                    log.error("Failed to process events for post: postId={}, error={}", post.getId(), throwable.getMessage());
+                    return null;
+                });
     }
 
-    @Retryable(retryFor = KafkaPublishException.class,
-            maxAttemptsExpression = "#{@retryProperties.kafka.maxAttempts}",
-            backoff = @Backoff(delayExpression = "#{@retryProperties.kafka.delay}",
-                    multiplierExpression = "#{@retryProperties.kafka.multiplier}"))
-    private void dispatchEventBatch(Post post, List<Long> subscribers) {
+    @Async("postEventExecutor")
+    private CompletableFuture<Void> dispatchEventBatch(Post post, List<Long> subscribers) {
         PostFeedEvent event = PostFeedEvent.builder()
                 .postId(post.getId())
                 .subscriberIds(subscribers)
                 .publishedAt(post.getPublishedAt())
                 .build();
-        log.debug("PostFeedEvent created: {}", event);
-        postEventProducer.sendPostFeedEvent(event);
-        log.debug("PostFeedEvent sent to Kafka: {}", event);
+        log.debug("Created PostFeedEvent: event={}", event);
+
+        return postEventProducer.sendPostFeedEvent(event)
+                .thenRun(() -> log.debug("Successfully sent PostFeedEvent to Kafka: event={}", event))
+                .exceptionally(throwable -> {
+                    log.error("Failed to send PostFeedEvent: postId={}, error={}", event.getPostId(), throwable.getMessage());
+                    throw new KafkaPublishException("Failed to send PostFeedEvent for postId " + event.getPostId(), throwable);
+                });
     }
 
-    @Retryable(retryFor = UserServiceException.class,
-            maxAttemptsExpression = "#{@retryProperties.userService.maxAttempts}",
-            backoff = @Backoff(delayExpression = "#{@retryProperties.userService.delay}",
-                    multiplierExpression = "#{@retryProperties.userService.multiplier}"))
-    private List<Long> fetchSubscribers(Long authorId) {
-        try {
-            return userServiceClient.getFollowerIds(authorId);
-        } catch (FeignException e) {
-            log.error("Failed to fetch subscribers for author {}: {}", authorId, e.getMessage());
-            throw new UserServiceException("Failed to fetch subscribers for author " + authorId, e);
-        }
+    private CompletableFuture<List<Long>> fetchSubscribers(Long authorId) {
+        return CompletableFuture.supplyAsync(() -> userServiceRetryTemplate.execute(context -> {
+            try {
+                List<Long> subscribers = userServiceClient.getFollowerIds(authorId);
+                log.info("Successfully fetched subscribers for author: authorId={}", authorId);
+                return subscribers;
+            } catch (FeignException e) {
+                log.error("Failed to fetch subscribers for author: authorId={}, error={}", authorId, e.getMessage());
+                throw new UserServiceException("Failed to fetch subscribers for author " + authorId, e);
+            }
+        }), userServiceExecutor);
     }
 
     private List<List<Long>> partitionSubscribers(List<Long> subscribers, int batchSize) {

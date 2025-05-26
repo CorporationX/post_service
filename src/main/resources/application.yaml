@@ -64,15 +64,21 @@ app:
       max-attempts: 3
       delay: 1000
       multiplier: 2.0
-  async:
-    post-event-executor:
-      core-pool-size: 10
-      max-pool-size: 20
-      queue-capacity: 50
-      thread-name-prefix: "PostEvent-"
   batch:
     max-subscribers: 1000
     batch-size: 100
+
+thread-pools:
+  post-event-executor:
+    core-pool-size: 50
+    max-pool-size: 100
+    queue-capacity: 1000
+    thread-name-prefix: "PostEvent-"
+  user-service-executor:
+    core-pool-size: 20
+    max-pool-size: 50
+    queue-capacity: 1000
+    thread-name-prefix: "UserService-"
 
 server:
   port: 8081

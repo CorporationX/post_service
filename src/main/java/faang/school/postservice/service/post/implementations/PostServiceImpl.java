@@ -18,6 +18,7 @@ import faang.school.postservice.service.post_check.interfaces.PostCheckerService
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.ListUtils;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
@@ -27,8 +28,10 @@ import org.springframework.transaction.support.TransactionTemplate;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
@@ -48,6 +51,9 @@ public class PostServiceImpl implements PostService {
 
     public static final int POST_PUBLISH_POOL_SIZE = 10;
     private final AtomicBoolean isRunning = new AtomicBoolean(false);
+
+    private static final int EVENT_QUEUE_SIZE = 10000;
+    private final BlockingQueue<Post> eventQueue = new LinkedBlockingQueue<>(EVENT_QUEUE_SIZE);
 
     @Override
     public CompletableFuture<Void> publishScheduledPosts() {
@@ -154,14 +160,28 @@ public class PostServiceImpl implements PostService {
     @Transactional
     public PostDto publishPost(PostDto postDto) {
         Post post = validateDataForPublication(postDto);
-
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
 
-        post = postRepository.saveAndFlush(post);
-        postEventBatchSender.dispatchEventsForPost(post);
+        Post savedPost = postRepository.saveAndFlush(post);
+        PostDto resultDto = postMapper.toDto(savedPost);
 
-        return postMapper.toDto(post);
+        eventQueue.offer(savedPost);
+        log.info("Post queued for event dispatching: postId={}", savedPost.getId());
+        return resultDto;
+    }
+
+    @Scheduled(fixedRate = 1000)
+    public void processEventQueue() {
+        Post post = eventQueue.poll();
+        if (post != null) {
+            postEventBatchSender.dispatchEventsForPost(post)
+                    .thenRun(() -> log.info("Successfully dispatched events for post: postId={}", post.getId()))
+                    .exceptionally(throwable -> {
+                        log.error("Failed to dispatch events for post: postId={}, error={}", post.getId(), throwable.getMessage());
+                        return null;
+                    });
+        }
     }
 
     @Override
