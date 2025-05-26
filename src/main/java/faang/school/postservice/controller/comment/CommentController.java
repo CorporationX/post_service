@@ -6,7 +6,6 @@ import faang.school.postservice.dto.comment.CommentForUpdateDto;
 import faang.school.postservice.dto.comment.CommentOutputDto;
 import faang.school.postservice.model.CommentDtoStatus;
 import faang.school.postservice.service.CommentService;
-//import faang.school.postservice.validator.CommentValidator;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.http.ResponseEntity;
@@ -35,13 +34,11 @@ public class CommentController {
 
     @PostMapping()
     public CommentOutputDto create(@Valid @RequestBody CommentForCreationDto commentDto) {
-        commentDto.setStatus(CommentDtoStatus.CREATION);
         return service.create(commentDto);
     }
 
     @PatchMapping()
     public CommentDto update(@Valid @RequestBody CommentForUpdateDto commentDto) {
-        commentDto.setStatus(CommentDtoStatus.UPDATE);
         return service.update(commentDto);
     }
 

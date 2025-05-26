@@ -33,7 +33,7 @@ public class CommentServiceImpl implements CommentService {
     private PostService postService;
     @Autowired
     private UserServiceClient userServiceClient;
-
+    @Autowired
     private UserContext userContext;
 
     @Override
@@ -41,8 +41,8 @@ public class CommentServiceImpl implements CommentService {
         Post post = postService.findPostById(commentDto.getPostId());
         long userId = userContext.getUserId();
         userServiceClient.getUser(userId);
-        commentDto.setStatus(CommentDtoStatus.CREATED);
         Comment comment = commentMapper.toEntity(commentDto);
+        comment.setAuthorId(userId);
         comment.setCreatedAt(LocalDateTime.now());
         comment.setPost(post);
         return commentMapper.toDto(commentRepository.save(comment));
@@ -52,7 +52,6 @@ public class CommentServiceImpl implements CommentService {
     public CommentOutputDto update(CommentForUpdateDto commentDto) {
         Comment existingComment = findCommentById(commentDto.getId());
         validateCommentAuthor(existingComment);
-        commentDto.setStatus(CommentDtoStatus.UPDATED);
         Comment comment = commentMapper.updateEntityFromDto(commentDto, existingComment);
         comment.setUpdatedAt(LocalDateTime.now());
         comment = commentRepository.save(comment);

@@ -21,6 +21,4 @@ public class CommentForUpdateDto extends CommentDto{
     @NotNull(message = "Content cannot be null")
     @Size(min = 1, max = 4096, message = "Content cannot be empty")
     private String content;
-
-    private CommentDtoStatus status;
 }

@@ -23,6 +23,4 @@ public class CommentForCreationDto extends CommentDto{
     @Size(min = 1, max = 4096, message = "Content cannot be empty")
     @NotBlank(message = "Content cannot be blank")
     private String content;
-
-    private CommentDtoStatus status;
 }

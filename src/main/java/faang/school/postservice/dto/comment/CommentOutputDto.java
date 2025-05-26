@@ -18,7 +18,6 @@ import java.util.List;
 public class CommentOutputDto extends CommentDto{
 
     private Long id;
-    private CommentDtoStatus status;
     private Long postId;
     private String content;
     private Long authorId;
