@@ -4,6 +4,7 @@ import faang.school.postservice.exception.AuthorNotFoundException;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.ExternalServiceException;
 import faang.school.postservice.exception.PostNotFoundException;
+
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
