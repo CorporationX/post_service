@@ -15,6 +15,7 @@ import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.service.CommentService;
 import faang.school.postservice.service.PostService;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +23,7 @@ import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 
+@Slf4j
 @Service
 public class CommentServiceImpl implements CommentService {
 
@@ -45,7 +47,10 @@ public class CommentServiceImpl implements CommentService {
         comment.setAuthorId(userId);
         comment.setCreatedAt(LocalDateTime.now());
         comment.setPost(post);
-        return commentMapper.toDto(commentRepository.save(comment));
+        Comment saved = commentRepository.save(comment);
+        log.info("Creating a comment by user {} for post with id {} - Finished"
+                , userContext.getUserId(), commentDto.getPostId());
+        return commentMapper.toDto(saved);
     }
 
     @Override
@@ -54,20 +59,14 @@ public class CommentServiceImpl implements CommentService {
         validateCommentAuthor(existingComment);
         Comment comment = commentMapper.updateEntityFromDto(commentDto, existingComment);
         comment.setUpdatedAt(LocalDateTime.now());
-        comment = commentRepository.save(comment);
-        return commentMapper.toDto(comment);
-    }
-
-    private void validateCommentAuthor(Comment existingComment) {
-        long userId = userContext.getUserId();
-        userServiceClient.getUser(userId);
-        if(existingComment.getAuthorId() != userId){
-            throw new DataValidationException("Comment can be changed only by their authors");
-        }
+        Comment updated = commentRepository.save(comment);
+        log.info("Update a comment with id {} by user {} - Finished"
+                , commentDto.getId(), userContext.getUserId());
+        return commentMapper.toDto(updated);
     }
 
     @Override
-    public CommentOutputDto findById (long commentId){
+    public CommentOutputDto findById(long commentId) {
         return commentMapper.toDto(findCommentById(commentId));
     }
 
@@ -75,6 +74,8 @@ public class CommentServiceImpl implements CommentService {
     public void deleteById(long commentId) {
         Comment comment = findCommentById(commentId);
         commentRepository.delete(comment);
+        log.info("A comment with id {} has been deleted by user {}"
+                , commentId, userContext.getUserId());
     }
 
     @Override
@@ -88,5 +89,13 @@ public class CommentServiceImpl implements CommentService {
         return commentRepository.findById(commentId)
                 .orElseThrow(() -> new EntityNotFoundException
                         (String.format("There is no comment with id %d", commentId)));
+    }
+
+    private void validateCommentAuthor(Comment existingComment) {
+        long userId = userContext.getUserId();
+        userServiceClient.getUser(userId);
+        if(existingComment.getAuthorId() != userId){
+            throw new DataValidationException("Comment can be changed only by their authors");
+        }
     }
 }
