@@ -1,6 +1,7 @@
-package faang.school.postservice.config.kafka;
+package faang.school.postservice.kafka;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import faang.school.postservice.config.kafka.AbstractKafkaProducer;
 import faang.school.postservice.dto.comment.CommentEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
