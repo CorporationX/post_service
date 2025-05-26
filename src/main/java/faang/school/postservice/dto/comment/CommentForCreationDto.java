@@ -24,8 +24,5 @@ public class CommentForCreationDto extends CommentDto{
     @NotBlank(message = "Content cannot be blank")
     private String content;
 
-    @NotNull(message = "Author ID cannot be null")
-    private Long authorId;
-
     private CommentDtoStatus status;
 }

@@ -1,10 +1,12 @@
 package faang.school.postservice.service.comment;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CommentForCreationDto;
 import faang.school.postservice.dto.comment.CommentForUpdateDto;
 import faang.school.postservice.dto.comment.CommentOutputDto;
+import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.CommentDtoStatus;
@@ -32,10 +34,13 @@ public class CommentServiceImpl implements CommentService {
     @Autowired
     private UserServiceClient userServiceClient;
 
+    private UserContext userContext;
+
     @Override
     public CommentOutputDto create(CommentForCreationDto commentDto) {
         Post post = postService.findPostById(commentDto.getPostId());
-        userServiceClient.getUser(commentDto.getAuthorId());
+        long userId = userContext.getUserId();
+        userServiceClient.getUser(userId);
         commentDto.setStatus(CommentDtoStatus.CREATED);
         Comment comment = commentMapper.toEntity(commentDto);
         comment.setCreatedAt(LocalDateTime.now());
@@ -46,11 +51,20 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public CommentOutputDto update(CommentForUpdateDto commentDto) {
         Comment existingComment = findCommentById(commentDto.getId());
+        validateCommentAuthor(existingComment);
         commentDto.setStatus(CommentDtoStatus.UPDATED);
         Comment comment = commentMapper.updateEntityFromDto(commentDto, existingComment);
         comment.setUpdatedAt(LocalDateTime.now());
         comment = commentRepository.save(comment);
         return commentMapper.toDto(comment);
+    }
+
+    private void validateCommentAuthor(Comment existingComment) {
+        long userId = userContext.getUserId();
+        userServiceClient.getUser(userId);
+        if(existingComment.getAuthorId() != userId){
+            throw new DataValidationException("Comment can be changed only by their authors");
+        }
     }
 
     @Override
