@@ -9,16 +9,6 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class CommentDto {
-    private Long id;
+public abstract class CommentDto {
     private CommentDtoStatus status;
-    private Long postId;
-    private String content;
-    private Long authorId;
-    private LocalDateTime createdAt;
-    private List<Integer> likeIds;
 }

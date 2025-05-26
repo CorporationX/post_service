@@ -2,6 +2,9 @@ package faang.school.postservice.service.comment;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.comment.CommentForCreationDto;
+import faang.school.postservice.dto.comment.CommentForUpdateDto;
+import faang.school.postservice.dto.comment.CommentOutputDto;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.CommentDtoStatus;
@@ -30,29 +33,28 @@ public class CommentServiceImpl implements CommentService {
     private UserServiceClient userServiceClient;
 
     @Override
-    public CommentDto create(CommentDto commentDto) {
+    public CommentOutputDto create(CommentForCreationDto commentDto) {
         Post post = postService.findPostById(commentDto.getPostId());
         userServiceClient.getUser(commentDto.getAuthorId());
-
-        commentDto.setCreatedAt(LocalDateTime.now());
         commentDto.setStatus(CommentDtoStatus.CREATED);
         Comment comment = commentMapper.toEntity(commentDto);
+        comment.setCreatedAt(LocalDateTime.now());
         comment.setPost(post);
         return commentMapper.toDto(commentRepository.save(comment));
     }
 
     @Override
-    public CommentDto update(CommentDto commentDto) {
+    public CommentOutputDto update(CommentForUpdateDto commentDto) {
         Comment existingComment = findCommentById(commentDto.getId());
+        commentDto.setStatus(CommentDtoStatus.UPDATED);
         Comment comment = commentMapper.updateEntityFromDto(commentDto, existingComment);
         comment.setUpdatedAt(LocalDateTime.now());
-        commentDto.setStatus(CommentDtoStatus.UPDATED);
         comment = commentRepository.save(comment);
         return commentMapper.toDto(comment);
     }
 
     @Override
-    public CommentDto findById (long commentId){
+    public CommentOutputDto findById (long commentId){
         return commentMapper.toDto(findCommentById(commentId));
     }
 
@@ -63,7 +65,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public List<CommentDto> findByPostId(long postId) {
+    public List<CommentOutputDto> findByPostId(long postId) {
         return commentMapper.toListDto(commentRepository.findAllByPostId(postId).stream()
                 .sorted(Comparator.comparing(Comment::getCreatedAt))
                 .toList());

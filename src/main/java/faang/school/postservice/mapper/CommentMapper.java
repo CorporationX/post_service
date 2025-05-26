@@ -1,6 +1,9 @@
 package faang.school.postservice.mapper;
 
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.comment.CommentForCreationDto;
+import faang.school.postservice.dto.comment.CommentForUpdateDto;
+import faang.school.postservice.dto.comment.CommentOutputDto;
 import faang.school.postservice.model.Comment;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -12,12 +15,12 @@ import java.util.List;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface CommentMapper {
 
-    Comment toEntity (CommentDto dto);
+    Comment toEntity (CommentForCreationDto dto);
 
     @Mapping(target = "postId", source = "post.id")
-    CommentDto toDto (Comment comment);
+    CommentOutputDto toDto (Comment comment);
 
-    List<CommentDto> toListDto (List<Comment> comments);
+    List<CommentOutputDto> toListDto (List<Comment> comments);
 
-    Comment updateEntityFromDto(CommentDto dto, @MappingTarget Comment entity);
+    Comment updateEntityFromDto(CommentForUpdateDto dto, @MappingTarget Comment entity);
 }
