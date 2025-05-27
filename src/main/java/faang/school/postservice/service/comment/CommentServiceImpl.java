@@ -2,8 +2,6 @@ package faang.school.postservice.service.comment;
 
 import faang.school.postservice.client.CommentAnalyzer;
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.config.kafka.KafkaCommentProducer;
-import faang.school.postservice.config.kafka.NotificationKafkaProducer;
 import faang.school.postservice.contants.ErrorMessage;
 import faang.school.postservice.dto.comment.CommentEvent;
 import faang.school.postservice.dto.comment.CommentRequestDto;
@@ -15,6 +13,8 @@ import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.InvalidCommentContentException;
 import faang.school.postservice.exception.NotAuthorException;
 import faang.school.postservice.exception.NullEntityException;
+import faang.school.postservice.kafka.KafkaCommentProducer;
+import faang.school.postservice.kafka.NotificationKafkaProducer;
 import faang.school.postservice.mapper.CommentRequestMapper;
 import faang.school.postservice.mapper.CommentResponseMapper;
 import faang.school.postservice.model.Comment;
