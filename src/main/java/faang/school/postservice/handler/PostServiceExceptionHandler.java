@@ -3,8 +3,11 @@ package faang.school.postservice.handler;
 import faang.school.postservice.dto.error.PostServiceErrorResponseDto;
 import faang.school.postservice.exception.authorization.UserUnauthorizedException;
 import faang.school.postservice.exception.client.RemoteNotFoundException;
+import faang.school.postservice.exception.comment.CommentNotFoundException;
+import faang.school.postservice.exception.like.LikeAlreadyExistsException;
 import faang.school.postservice.exception.post.PostAlreadyPublishedException;
 import faang.school.postservice.exception.post.PostNotFoundException;
+import faang.school.postservice.exception.user.UserNotFoundException;
 import feign.FeignException;
 import feign.RetryableException;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +32,11 @@ public class PostServiceExceptionHandler {
             RemoteNotFoundException.class, HttpStatus.NOT_FOUND,
             MethodArgumentNotValidException.class, HttpStatus.BAD_REQUEST,
             FeignException.class, HttpStatus.BAD_GATEWAY,
-            RetryableException.class, HttpStatus.BAD_GATEWAY
+            RetryableException.class, HttpStatus.BAD_GATEWAY,
+            CommentNotFoundException.class, HttpStatus.NOT_FOUND,
+            UserNotFoundException.class, HttpStatus.NOT_FOUND,
+            LikeAlreadyExistsException.class, HttpStatus.CONFLICT
+
     );
     private static final Map<Class<? extends Exception>, ErrorHandler> errorHandlers = Map.of(
             MethodArgumentNotValidException.class, ex ->
@@ -43,7 +50,10 @@ public class PostServiceExceptionHandler {
             RemoteNotFoundException.class,
             MethodArgumentNotValidException.class,
             FeignException.class,
-            RetryableException.class
+            RetryableException.class,
+            CommentNotFoundException.class,
+            UserNotFoundException.class,
+            LikeAlreadyExistsException.class
     })
     public ResponseEntity<PostServiceErrorResponseDto> handleException(Exception ex) {
         ErrorHandler handler = getErrorHandler(ex);

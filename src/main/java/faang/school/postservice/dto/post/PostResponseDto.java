@@ -16,4 +16,5 @@ public class PostResponseDto {
     private Long projectId;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private Long likeCount;
 }

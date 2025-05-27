@@ -6,6 +6,7 @@ import faang.school.postservice.dto.post.PostResponseDto;
 import faang.school.postservice.dto.post.PostUpdateRequestDto;
 import faang.school.postservice.model.post.Post;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.ReportingPolicy;
 
@@ -17,9 +18,14 @@ public interface PostMapper {
 
     Post toPostEntity(PostCreateProjectRequestDto postCreateProjectRequestDto);
 
+    @Mapping(target = "likeCount", expression = "java(mapLikeCount(post))")
     PostResponseDto toPostResponseDto(Post post);
 
     List<PostResponseDto> toPostResponseDtoList(List<Post> posts);
 
     void update(@MappingTarget Post post, PostUpdateRequestDto postUpdateRequestDto);
+
+    default long mapLikeCount(Post post) {
+        return post.getLikes() != null ? post.getLikes().size() : 0L;
+    }
 }
