@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.event.LikeEventDto;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.like.LikeEvent;
 import faang.school.postservice.dto.post.PostDto;
@@ -18,6 +19,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.model.outbox.EventStatus;
 import faang.school.postservice.model.outbox.EventType;
 import faang.school.postservice.model.outbox.OutboxEvent;
+import faang.school.postservice.producer.KafkaLikeProducer;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.service.outbox.OutboxEventService;
 import faang.school.postservice.validator.CommentValidator;
@@ -52,6 +54,7 @@ public class LikeService {
     private final PostService postService;
     private final OutboxEventService outboxEventService;
     private final ObjectMapper objectMapper;
+    private final KafkaLikeProducer likeProducer;
 
     public List<UserDto> getAllUsersWhoLikedPost(Long postId) {
         Post post = postValidator.getPostById(postId);
@@ -74,19 +77,27 @@ public class LikeService {
     @Transactional
     public LikeDto likePost(Long postId) {
         Long userId = validateAndGetUserId();
+
         likeRepository.findByPostIdAndUserId(postId, userId).ifPresent(like -> {
             log.warn("User with id %d is already liked post with id %d".formatted(userId, postId));
             throw new UserAlreadyLikedException("User is already liked post");
         });
+
         Like like = Like.builder()
                 .userId(userId)
                 .post(postValidator.getPostById(postId))
                 .build();
-        likeRepository.save(like);
+        like = likeRepository.save(like);
 
         LikeEvent likeEvent = getLikeEvent(postId, userId, false);
         OutboxEvent outboxEvent = buildOutboxEvent(likeEvent, EventType.LIKE_CREATED);
         outboxEventService.saveOutboxEvent(outboxEvent);
+
+        likeProducer.sendLikeEvent(LikeEventDto.builder()
+                .postId(postId)
+                .userId(like.getUserId())
+                .timestamp(System.currentTimeMillis())
+                .build());
 
         return likeMapper.toLikeDto(like);
     }
@@ -146,9 +157,9 @@ public class LikeService {
                 .orElseThrow(() -> {
                     log.warn("Like by user with id %d on comment with id %d does not exist"
                             .formatted(userId, commentId));
-                       return new EntityNotFoundException(
-                        "Like by user with id %d on comment with id %d does not exist"
-                                .formatted(userId, commentId));
+                    return new EntityNotFoundException(
+                            "Like by user with id %d on comment with id %d does not exist"
+                                    .formatted(userId, commentId));
                 });
         likeRepository.delete(like);
         return likeMapper.toLikeDto(like);

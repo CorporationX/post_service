@@ -5,16 +5,12 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @Builder
-public class CommentEvent {
-    private Long authorId;
+public class LikeEventDto {
     private Long postId;
-    private Long commentId;
-    private String text;
-    private LocalDateTime createdAt;
+    private Long userId;
+    private Long timestamp;
 }

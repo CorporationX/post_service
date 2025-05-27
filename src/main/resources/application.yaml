@@ -154,6 +154,37 @@ moderation:
   queue-capacity: 50
   cron: "0 0 3 * * *"  # каждый день в 03:00   0 0 3 * * *
   chunk-size: 100     # количество комментов в одном потоке
+
 scheduler:
   outbox-event:
     batch-size: 10
+
+feed:
+  cache:
+    ttl-seconds: 86400  # 1 день
+    max-feed-size: 500
+    max-comments: 3
+  heater:
+    page-size: 100
+
+kafka:
+  bootstrap-servers: localhost:9092
+  group-id: post-service-group
+  topic: connectivity_check
+  max-poll: 100
+  topics:
+    post-created: posts
+    likes: likes
+    comments: comments
+
+executor:
+  feed:
+    core-pool-size: 4
+    max-pool-size: 10
+    queue-capacity: 500
+    thread-name-prefix: feed-updater-
+  feed-heater:
+    core-pool-size: 10
+    max-pool-size: 20
+    queue-capacity: 1000
+    thread-name-prefix: feed-heater-

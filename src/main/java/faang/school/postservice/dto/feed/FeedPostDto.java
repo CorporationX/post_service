@@ -1,4 +1,4 @@
-package faang.school.postservice.dto.event;
+package faang.school.postservice.dto.feed;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,10 +11,13 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class CommentEvent {
+public class FeedPostDto {
+    private Long id;
     private Long authorId;
-    private Long postId;
-    private Long commentId;
+    private Long projectId;
+    private Long likes;
+    private LocalDateTime scheduleAt;
+    private String authorName;
     private String text;
-    private LocalDateTime createdAt;
+    private Long likeCount;
 }
