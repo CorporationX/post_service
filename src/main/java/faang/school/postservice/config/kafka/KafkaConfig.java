@@ -14,6 +14,7 @@ import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
+import org.springframework.kafka.listener.ContainerProperties;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -31,8 +32,8 @@ public class KafkaConfig {
         config.put(ProducerConfig.ACKS_CONFIG, kafkaProperties.producer().acks());
         config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        config.put(ProducerConfig.RETRIES_CONFIG, kafkaProperties.producer().retries());
         config.put(ProducerConfig.RETRY_BACKOFF_MS_CONFIG, kafkaProperties.producer().retryBackoffMs());
+        config.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, kafkaProperties.producer().enableIdempotence());
         return new DefaultKafkaProducerFactory<>(config);
     }
 
@@ -57,6 +58,7 @@ public class KafkaConfig {
         ConcurrentKafkaListenerContainerFactory<String, String> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
+        factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
         return factory;
     }
 }

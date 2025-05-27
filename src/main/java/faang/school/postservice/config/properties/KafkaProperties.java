@@ -16,8 +16,8 @@ public record KafkaProperties(
 
     public record Producer(
             String acks,
-            int retries,
-            int retryBackoffMs
+            int retryBackoffMs,
+            boolean enableIdempotence
     ) {
     }
 }

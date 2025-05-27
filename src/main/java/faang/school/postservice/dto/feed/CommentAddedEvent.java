@@ -5,8 +5,10 @@ import lombok.Builder;
 import java.time.LocalDateTime;
 
 @Builder
-public record PostPublishEvent(
+public record CommentAddedEvent(
+        Long id,
         Long postId,
         Long authorId,
-        LocalDateTime publishedAt
+        String content,
+        LocalDateTime createdAt
 ) {}

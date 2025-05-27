@@ -1,6 +1,6 @@
 package faang.school.postservice.controller;
 
-import faang.school.postservice.dto.PostDto;
+import faang.school.postservice.dto.PostResponseDto;
 import faang.school.postservice.service.FeedService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,7 +18,7 @@ public class FeedController {
     private final FeedService feedService;
 
     @GetMapping
-    public List<PostDto> getFeed(@RequestParam Long postId) {
+    public List<PostResponseDto> getFeed(@RequestParam Long postId) {
         return feedService.getFeed(postId);
     }
 }

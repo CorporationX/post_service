@@ -26,6 +26,12 @@ spring:
         postViewEventPublisher: PostViewEvent_topic
         comment_channel: comment_topic
         like-event: likeEventTopic
+      ttl-days-posts: 1
+      ttl-days-users: 1
+      object-cache-options:
+        posts-count: 500
+        comments-count: 3
+        returning-posts-count: 20
     kafka:
       bootstrap-servers: localhost:9092
       topic:
@@ -39,14 +45,42 @@ spring:
           name: "hashtag-removing-topic"
           partitions: 3
           replicas: 1
+        followers-request:
+          name: "post-followers-topic"
+          partitions: 3
+          replicas: 1
         posts:
           name: "posts-topic"
           partitions: 3
           replicas: 1
+        comment-added:
+          name: "comment-added-topic"
+          partitions: 3
+          replicas: 1
+        like-added:
+          name: "like-added-topic"
+          partitions: 3
+          replicas: 1
+        like-removed:
+          name: "like-removed-topic"
+          partitions: 3
+          replicas: 1
+        posts-view:
+          name: "post-view-topic"
+          partitions: 3
+          replicas: 1
+        author-request:
+          name: "author-request-topic"
+          partitions: 3
+          replicas: 1
+        author-response:
+          name: "author-response-topic"
+          partitions: 3
+          replicas: 1
       producer:
-        retries: 3
         retry-backoff-ms: 1000
         acks: all
+        enable-idempotence: true
       consumer:
         group-id: post-group
         auto-offset-reset: earliest

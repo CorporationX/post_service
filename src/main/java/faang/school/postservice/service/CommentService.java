@@ -13,6 +13,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.CommentBanPublisher;
 import faang.school.postservice.publisher.CommentEvenRedisPublisher;
 import faang.school.postservice.publisher.CommentEventPublisher;
+import faang.school.postservice.publisher.KafkaEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
@@ -29,15 +30,18 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class CommentService {
+
     private static final int MAX_NOT_VERIFIED_COMMENTS = 5;
+    private static final int MAX_LENGTH = 4096;
+
     private final CommentRepository repository;
     private final CommentMapper mapper;
     private final PostRepository postRepository;
     private final UserServiceClient client;
-    private static final int MAX_LENGTH = 4096;
     private final CommentEventPublisher commentEventPublisher;
     private final CommentEvenRedisPublisher commentEvenRedisPublisher;
     private final CommentBanPublisher commentBanPublisher;
+    private final List<KafkaEventPublisher<?>> kafkaNewsFeedPublishers;
 
     public CommentDto createComment(long userId, long postId, CommentDto commentDto) {
         UserDto user = client.getUser(userId);
@@ -69,6 +73,8 @@ public class CommentService {
                 .build();
         commentEvenRedisPublisher.publish(commentEvent);
         log.info("Комментарий {} отправлен в топик ", savedComment);
+
+        //TODO: отправка коммента в Kafka
         return mapper.toDto(savedComment);
     }
 
@@ -87,7 +93,7 @@ public class CommentService {
     }
 
     public List<CommentDto> getAllComments(long postId) {
-        Post post = postRepository.findById(postId)
+        postRepository.findById(postId)
                 .orElseThrow(() -> new DataValidationException("Пост не найден"));
 
         return repository.findAllByPostId(postId).stream()

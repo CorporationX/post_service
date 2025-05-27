@@ -2,6 +2,8 @@ package faang.school.postservice.mapper;
 
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.dto.PostResponseDto;
+import faang.school.postservice.dto.feed.PostPublishEvent;
+import faang.school.postservice.dto.redis.PostRedisDto;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
@@ -30,6 +32,11 @@ public interface PostMapper {
     @Mapping(target = "resourcesId", expression = "java(mapResourceToIds(post.getResources()))")
     @Mapping(target = "hashtagsId", ignore = true)
     PostResponseDto toResponseDto(Post post);
+
+    PostRedisDto toRedisDto(PostResponseDto postResponseDto);
+
+    @Mapping(target = "postId", source = "id")
+    PostPublishEvent toPublishEvent(PostRedisDto postRedisDto);
 
     List<PostResponseDto> toResponseDtoList(List<Post> posts);
 

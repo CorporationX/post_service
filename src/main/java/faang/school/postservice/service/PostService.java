@@ -9,14 +9,12 @@ import faang.school.postservice.dto.PostResponseDto;
 import faang.school.postservice.dto.event.HashtagAddingEvent;
 import faang.school.postservice.dto.event.PostViewEvent;
 import faang.school.postservice.dto.feed.PostPublishEvent;
-import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.dto.redis.PostRedisDto;
 import faang.school.postservice.exception.AsyncPostProcessingException;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.HashtagServiceConnectionException;
 import faang.school.postservice.exception.PostAlreadyPublishedException;
 import faang.school.postservice.exception.PostUnverifiedException;
-import faang.school.postservice.exception.UserNotFoundException;
-import faang.school.postservice.exception.UserServiceConnectionException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
@@ -24,7 +22,7 @@ import faang.school.postservice.model.VerifiedStatus;
 import faang.school.postservice.model.ad.Ad;
 import faang.school.postservice.publisher.HashtagAddingEventPublisher;
 import faang.school.postservice.publisher.HashtagRemovingEventPublisher;
-import faang.school.postservice.publisher.PostEventPublisher;
+import faang.school.postservice.publisher.KafkaEventPublisher;
 import faang.school.postservice.publisher.PostViewEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ResourceRepository;
@@ -34,8 +32,6 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -55,9 +51,6 @@ import java.util.stream.IntStream;
 @RequiredArgsConstructor
 public class PostService {
 
-    private static final int RETRY_DELAY = 500;
-    private static final int RETRY_MULTIPLIER = 3;
-
     private final PostRepository postRepository;
     private final PostMapper postMapper;
     private final ProjectServiceClient projectServiceClient;
@@ -70,8 +63,8 @@ public class PostService {
     private final HashtagRemovingEventPublisher hashtagRemovingPublisher;
     private final HashtagServiceClient hashtagClient;
     private final PostProcessingService postProcessingService;
-    private final PostEventPublisher postEventPublisher;
     private final RedisRepositoryCoordinator redisRepositoryCoordinator;
+    private final List<KafkaEventPublisher<?>> kafkaNewsFeedPublishers;
 
     @Value("${batch.size}")
     private int batchSize;
@@ -103,6 +96,8 @@ public class PostService {
             }, executorService);
 
             futures.add(future);
+
+            //TODO: дублирование логики отправки в Kafka метода publish
         }
 
         try {
@@ -170,13 +165,11 @@ public class PostService {
         log.info("Post published: {}", post);
 
         PostResponseDto postDto = postMapper.toResponseDto(post);
-        redisRepositoryCoordinator.savePostToRedis(postDto);
-        UserDto author = getUserById(post.getAuthorId());
-        redisRepositoryCoordinator.saveUserToRedis(author);
-        List<Long> followerIds = getFollowerIdsByPostAuthorId(postId);
-        if (!followerIds.isEmpty()) {
-            postEventPublisher.publish(takePostPublishEvent(post.getId(), followerIds));
-        }
+        PostRedisDto postRedisDto = postMapper.toRedisDto(postDto);
+        PostPublishEvent postPublishEvent = postMapper.toPublishEvent(postRedisDto);
+        //TODO: обработка сохранения в Redis
+        redisRepositoryCoordinator.addPostToCache(postRedisDto);
+        //TODO: публикация events в Kafka
         return postDto;
     }
 
@@ -206,6 +199,8 @@ public class PostService {
         PostResponseDto response = postMapper.toResponseDto(post);
         List<Long> hashtags = hashtagClient.getHashtagsIdsByPostId(postId);
         response.setHashtagsId(hashtags);
+
+        //TODO: отправка просмотра поста в Kafka + продублировать на следующие методы
         return response;
     }
 
@@ -335,42 +330,11 @@ public class PostService {
                 .toList();
     }
 
-    private PostPublishEvent takePostPublishEvent(Long postId, List<Long> followerIds) {
+    private PostPublishEvent takePostPublishEvent(PostResponseDto postDto) {
         return PostPublishEvent.builder()
-                .postId(postId)
-                .followerIds(followerIds)
+                .postId(postDto.getId())
+                .authorId(postDto.getAuthorId())
+                .publishedAt(postDto.getPublishedAt())
                 .build();
-    }
-
-    @Retryable(
-            retryFor = UserServiceConnectionException.class,
-            backoff = @Backoff(delay = RETRY_DELAY, multiplier = RETRY_MULTIPLIER)
-    )
-    private UserDto getUserById(Long userId) {
-        try {
-            UserDto user = userServiceClient.getUser(userId);
-            if (user == null) {
-                throw new UserNotFoundException("User with id %d not found", userId);
-            }
-            return user;
-        } catch (FeignException e) {
-            throw new UserServiceConnectionException("User server returned an error: " + e.getMessage());
-        }
-    }
-
-    @Retryable(
-            retryFor = UserServiceConnectionException.class,
-            backoff = @Backoff(delay = RETRY_DELAY, multiplier = RETRY_MULTIPLIER)
-    )
-    private List<Long> getFollowerIdsByPostAuthorId(Long authorId) {
-        try {
-            List<Long> users = userServiceClient.getFollowerIds(authorId);
-            if (users == null) {
-                throw new UserNotFoundException("Post author with id %d not found", authorId);
-            }
-            return users;
-        } catch (FeignException e) {
-            throw new UserServiceConnectionException("User server returned an error: " + e.getMessage());
-        }
     }
 }

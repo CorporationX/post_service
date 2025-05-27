@@ -1,7 +1,7 @@
 package faang.school.postservice.publisher;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import faang.school.postservice.config.properties.PostsTopicProperties;
+import faang.school.postservice.config.properties.FollowersRequestTopicProperties;
 import faang.school.postservice.dto.feed.PostPublishEvent;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
@@ -9,17 +9,17 @@ import org.springframework.stereotype.Component;
 @Component
 public class PostEventPublisher extends AbstractEventPublisher implements KafkaEventPublisher<PostPublishEvent> {
 
-    private final PostsTopicProperties postsTopicProperties;
+    private final FollowersRequestTopicProperties followersRequestTopicProperties;
 
     public PostEventPublisher(KafkaTemplate<String, String> kafkaTemplate,
                               ObjectMapper objectMapper,
-                              PostsTopicProperties postsTopicProperties) {
+                              FollowersRequestTopicProperties followersRequestTopicProperties) {
         super(kafkaTemplate, objectMapper);
-        this.postsTopicProperties = postsTopicProperties;
+        this.followersRequestTopicProperties = followersRequestTopicProperties;
     }
 
     @Override
     public void publish(PostPublishEvent event) {
-        sendMessage(event, postsTopicProperties.name());
+        sendMessage(event, followersRequestTopicProperties.name());
     }
 }

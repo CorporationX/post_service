@@ -9,6 +9,7 @@ import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.KafkaEventPublisher;
 import faang.school.postservice.publisher.LikeEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
@@ -17,9 +18,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -42,6 +43,7 @@ public class LikeService {
     private final UserContext userContext;
     private final UserServiceClient userClient;
     private final LikeEventPublisher likeEventPublisher;
+    private final List<KafkaEventPublisher<?>> kafkaNewsFeedPublishers;
 
     public void putLikeOnPost(Long postId) {
         Long userId = getContextUser();
@@ -63,6 +65,8 @@ public class LikeService {
 
             addLikeOnDatabase(userId, post, null);
             printMessageAddLike(postId);
+
+            //TODO: отправка добавления лайка в Kafka
         } finally {
             userLock.unlock();
             Like like = likeRepository.findByPostIdAndUserId(postId, userId)
@@ -84,6 +88,8 @@ public class LikeService {
             }
             likeRepository.deleteByPostIdAndUserId(postId, userId);
             printMessageRemoveLike(postId);
+
+            //TODO: отправка удаления лайка в Kafka
         } finally {
             userLock.unlock();
         }
