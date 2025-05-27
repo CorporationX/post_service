@@ -42,13 +42,8 @@ public class LikeService {
     private final Utils utils;
 
     public LikeCommentResponseDto addComment(LikeCommentRequestDto likeDto) {
-        log.debug("like comment dto: {}", likeDto);
-        // проверить наличие пользователя
         validateUser(likeDto.userId());
-
-        // проверить наличие комментария
         Comment comment = commentService.findCommentById(likeDto.commentId());
-        // проверить есть ли лайк от этого пользователя на этот комментарий
         likeRepository.findByCommentIdAndUserId(likeDto.commentId(), likeDto.userId())
                 .ifPresent(like -> {
                     throw new LikeExistsException(USER_LIKED_THIS_COMMENT);
@@ -57,7 +52,6 @@ public class LikeService {
                 .userId(likeDto.userId())
                 .comment(comment)
                 .build();
-
         Like resultLike = likeRepository.save(like);
         return mapper.toCommentResponseDto(resultLike);
     }
@@ -72,13 +66,8 @@ public class LikeService {
     }
 
     public LikePostResponseDto addPost(LikePostRequestDto likeDto) {
-        log.debug("like post dto: {}", likeDto);
-        // проверить наличие пользователя
         validateUser(likeDto.userId());
-
-        // проверить наличие поста
         Post post = postService.findPostById(likeDto.postId());
-        // проверить есть ли лайк от этого пользователя на этот пост
         likeRepository.findByPostIdAndUserId(likeDto.postId(), likeDto.userId())
                 .ifPresent(like -> {
                     throw new LikeExistsException(USER_LIKED_THIS_POST);
@@ -87,7 +76,6 @@ public class LikeService {
                 .userId(likeDto.userId())
                 .post(post)
                 .build();
-
         Like resultLike = likeRepository.save(like);
         return mapper.toPostResponseDto(resultLike);
     }
@@ -98,14 +86,12 @@ public class LikeService {
                 .orElseThrow(() -> new LikeNotFoundException(
                         utils.format(POST_LIKE_NOT_FOUND, likeDto.userId(), likeDto.postId())));
         return mapper.toPostResponseDto(like);
-
     }
 
     private void validateUser(Long userId) {
         userContext.setUserId(userId);
         try {
             UserDto user = userService.getUser(userId);
-            log.debug("resieved user: {}", user);
         } catch (FeignException.NotFound fe) {
             log.error("{}", fe.getMessage(), fe);
             StringBuilder errorMessage = new StringBuilder();
@@ -119,5 +105,4 @@ public class LikeService {
             throw new LikeNotFoundException(e.getMessage());
         }
     }
-
 }

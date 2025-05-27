@@ -4,11 +4,11 @@ import faang.school.postservice.exception.CommentNotFoundException;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.util.Utils;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class CommentService {
     public static final String COMMENT_BY_ID_NOT_FOUND = "Comment by id [{}] not found";
 

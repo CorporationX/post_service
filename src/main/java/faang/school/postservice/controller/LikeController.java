@@ -8,7 +8,7 @@ import faang.school.postservice.service.LikeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,49 +18,45 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @RestController
-@Tag(name = "Example API", description = "API for Post Service")
-@AllArgsConstructor
+@Tag(name = "Post Service API", description = "API for Post Service")
+@RequiredArgsConstructor
 @RequestMapping("/likes")
 public class LikeController {
     private final LikeService likeService;
 
-    // добавление нового поста пользователя
     @PostMapping("/post")
-    @Operation(summary = "Add user post", description = "Add user post")
+    @Operation(summary = "Add user like to post", description = "Add user like to post")
     public LikePostResponseDto addPost(
-        @Valid @RequestBody LikePostRequestDto likePostRequestDto
+            @Valid @RequestBody LikePostRequestDto likePostRequestDto
     ) {
-        log.debug("add post request: {}", likePostRequestDto);
+        log.debug("add like to post request: {}", likePostRequestDto);
         return likeService.addPost(likePostRequestDto);
     }
 
-    // удаление поста пользователя
     @DeleteMapping("/post")
-    @Operation(summary = "Delete user post", description = "Delete user post")
+    @Operation(summary = "Delete user like from post", description = "Delete user like from post")
     public LikePostResponseDto deletePost(
-        @Valid @RequestBody LikePostRequestDto likePostRequestDto
+            @Valid @RequestBody LikePostRequestDto likePostRequestDto
     ) {
-        log.debug("delete post request: {}", likePostRequestDto);
+        log.debug("delete like from post request: {}", likePostRequestDto);
         return likeService.deletePost(likePostRequestDto);
     }
 
-    // добавление нового комментария пользователя
     @PostMapping("/comment")
-    @Operation(summary = "Add new user comment", description = "Add new user comment")
+    @Operation(summary = "Add user like to comment", description = "Add user like to comment")
     public LikeCommentResponseDto addComment(
-        @Valid @RequestBody LikeCommentRequestDto likeCommentDto
+            @Valid @RequestBody LikeCommentRequestDto likeCommentDto
     ) {
-        log.debug("add comment request: {}", likeCommentDto);
+        log.debug("add like to comment request: {}", likeCommentDto);
         return likeService.addComment(likeCommentDto);
     }
 
-    // удаление комментария пользователя
     @DeleteMapping("/comment")
-    @Operation(summary = "Delete user comment", description = "Delete user comment")
+    @Operation(summary = "Delete user like from comment", description = "Delete user like from comment")
     public LikeCommentResponseDto deleteComment(
-        @Valid @RequestBody LikeCommentRequestDto likeCommentDto
+            @Valid @RequestBody LikeCommentRequestDto likeCommentDto
     ) {
-        log.debug("delete comment request: {}", likeCommentDto);
+        log.debug("delete like from comment request: {}", likeCommentDto);
         return likeService.deleteComment(likeCommentDto);
     }
 }

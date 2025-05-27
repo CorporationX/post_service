@@ -26,7 +26,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @ExtendWith(MockitoExtension.class)
 class LikeControllerTest {
-
     private static final Long ID = 10L;
     private static final Long USER_ID = 20L;
     private static final Long POST_ID = 30L;
@@ -38,7 +37,6 @@ class LikeControllerTest {
 
     @Mock
     private LikeService likeService;
-
     @InjectMocks
     private LikeController likeController;
 

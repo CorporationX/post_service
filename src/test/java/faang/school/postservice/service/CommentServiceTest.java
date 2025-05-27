@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -17,15 +16,14 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class CommentServiceTest {
-
     @Mock
     private CommentRepository commentRepository;
     @Spy
     private Utils utils;
-
     @InjectMocks
     private CommentService commentService;
 
@@ -36,7 +34,8 @@ class CommentServiceTest {
                 .id(commentId)
                 .content("mock comment")
                 .build();
-        Mockito.when(commentRepository.findById(commentId)).thenReturn(Optional.ofNullable(mockComment));
+
+        when(commentRepository.findById(commentId)).thenReturn(Optional.ofNullable(mockComment));
 
         Comment actualComment = commentService.findCommentById(commentId);
         assertNotNull(actualComment);
@@ -48,7 +47,8 @@ class CommentServiceTest {
     public void findCommentByIdFail() {
         Long commentId = 10L;
         String expected = utils.format(CommentService.COMMENT_BY_ID_NOT_FOUND, commentId);
-        Mockito.when(commentRepository.findById(commentId)).thenReturn(Optional.empty());
+
+        when(commentRepository.findById(commentId)).thenReturn(Optional.empty());
 
         CommentNotFoundException result = assertThrows(
                 CommentNotFoundException.class, () -> commentService.findCommentById(commentId));

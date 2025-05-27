@@ -1,6 +1,6 @@
 package faang.school.postservice.rest;
 
-import faang.school.postservice.dto.ErrorResponseDto;
+import faang.school.postservice.exception.ErrorResponseDto;
 import faang.school.postservice.exception.LikeExistsException;
 import faang.school.postservice.exception.LikeNotFoundException;
 import faang.school.postservice.exception.PostNotFoundException;
@@ -77,5 +77,4 @@ public class ExceptionApiHandler {
             .status(HttpStatus.TOO_MANY_REQUESTS)
             .body(new ErrorResponseDto(exception.getMessage()));
     }
-
 }

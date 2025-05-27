@@ -10,7 +10,6 @@ import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.LikeExistsException;
 import faang.school.postservice.exception.LikeNotFoundException;
 import faang.school.postservice.exception.UserNotFoundException;
-import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.mapper.LikeMapperImpl;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
@@ -18,10 +17,11 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.util.Utils;
 import feign.FeignException;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
@@ -46,10 +46,10 @@ class LikeServiceTest {
     private static final Long COMMENT_ID = 30L;
     private static final Long POST_ID = 50L;
 
-
-    private final Utils utils = new Utils();
-    private final LikeMapper mapper = new LikeMapperImpl();
-
+    @Spy
+    private Utils utils;
+    @Spy
+    private LikeMapperImpl mapper;
     @Mock
     private LikeRepository likeRepository;
     @Mock
@@ -60,14 +60,8 @@ class LikeServiceTest {
     private PostService postService;
     @Mock
     private CommentService commentService;
+    @InjectMocks
     private LikeService likeService;
-
-    @BeforeEach
-    public void setUp() {
-        likeService = new LikeService(
-                likeRepository, userService, userContext, postService, commentService, mapper, utils
-        );
-    }
 
     @Test
     public void testAddLikeCommentSuccess() {
@@ -132,8 +126,6 @@ class LikeServiceTest {
 
     @Test
     public void testDeleteLikeCommentButLikeIsMissing() {
-        final String expectedError = utils.format(LikeService.COMMENT_LIKE_NOT_FOUND, USER_ID, COMMENT_ID);
-
         LikeCommentRequestDto requestDto = getLikeCommentRequestDto();
         UserDto userDto = getUserDto();
 
@@ -144,6 +136,7 @@ class LikeServiceTest {
         LikeNotFoundException resultException = assertThrows(LikeNotFoundException.class,
                 () -> likeService.deleteComment(requestDto));
 
+        String expectedError = utils.format(LikeService.COMMENT_LIKE_NOT_FOUND, USER_ID, COMMENT_ID);
         assertEquals(expectedError, resultException.getMessage());
     }
 
@@ -153,6 +146,7 @@ class LikeServiceTest {
         UserDto userDto = getUserDto();
         Post post = getPost();
         Like resultEntity = getLikeEntity(null, post);
+
         when(userService.getUser(USER_ID)).thenReturn(userDto);
         when(postService.findPostById(POST_ID)).thenReturn(post);
         when(likeRepository.findByPostIdAndUserId(POST_ID, USER_ID)).thenReturn(Optional.empty());
@@ -173,6 +167,7 @@ class LikeServiceTest {
         UserDto userDto = getUserDto();
         Post post = getPost();
         Like resultEntity = getLikeEntity(null, post);
+
         when(userService.getUser(USER_ID)).thenReturn(userDto);
         when(postService.findPostById(POST_ID)).thenReturn(post);
         when(likeRepository.findByPostIdAndUserId(POST_ID, USER_ID))
@@ -208,8 +203,6 @@ class LikeServiceTest {
 
     @Test
     public void testDeleteLikePostButLikeIsMissing() {
-        final String expectedError = utils.format(LikeService.POST_LIKE_NOT_FOUND, USER_ID, POST_ID);
-
         LikePostRequestDto requestDto = getLikePostRequestDto();
         UserDto userDto = getUserDto();
 
@@ -220,12 +213,14 @@ class LikeServiceTest {
         LikeNotFoundException resultException = assertThrows(LikeNotFoundException.class,
                 () -> likeService.deletePost(requestDto));
 
+        String expectedError = utils.format(LikeService.POST_LIKE_NOT_FOUND, USER_ID, POST_ID);
         assertEquals(expectedError, resultException.getMessage());
     }
 
     @Test
     public void testDeleteLikePostButUserIsMissing() {
         LikePostRequestDto requestDto = getLikePostRequestDto();
+
         when(userService.getUser(USER_ID)).thenThrow(FeignException.NotFound.class);
 
         FeignException.NotFound userNotFoundException = assertThrows(
@@ -235,7 +230,7 @@ class LikeServiceTest {
 
         verify(likeRepository, times(0))
                 .deleteByPostIdAndUserId(any(Long.class), any(Long.class));
-        final String expectedError = utils.format(LikeService.USER_NOT_FOUND, USER_ID);
+        String expectedError = utils.format(LikeService.USER_NOT_FOUND, USER_ID);
         assertEquals(expectedError, resultException.getMessage());
     }
 

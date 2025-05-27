@@ -123,6 +123,7 @@ val jacocoClassExclude = listOf(
         "faang.school.postservice.config.*",
         "faang.school.postservice.model.*",
         "faang.school.postservice.mapper.*",
+        "faang.school.postservice.exception.ErrorResponseDto*",
         "faang.school.postservice.dto.*"
 )
 

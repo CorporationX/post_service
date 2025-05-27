@@ -14,7 +14,4 @@ public interface LikeMapper {
 
     @Mapping(target = "commentId", source = "comment.id")
     LikeCommentResponseDto toCommentResponseDto(Like like);
-
-    //    LikeCommentResponseDto toCommentResponseDto(LikeCommentRequestDto requestDto);
-
 }
