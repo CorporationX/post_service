@@ -19,6 +19,19 @@ tasks.jacocoTestReport {
         html.required.set(true)
         csv.required.set(false)
     }
+
+    classDirectories.setFrom(
+        fileTree(buildDir) {
+            include ("**/faang/school/postservice/**")
+            exclude ("**/faang/school/postservice/dto/**" )
+            exclude ("**/faang/school/postservice/mapper/**")
+            exclude ("**/faang/school/postservice/config/**")
+            exclude ("**/faang/school/postservice/exception/**")
+            exclude ("**/faang/school/postservice/model/**")
+            exclude ("**/faang/school/postservice/repository/**")
+            exclude ("**/faang/school/postservice/client/**")
+        }
+    )
 }
 
 tasks.jacocoTestCoverageVerification {
