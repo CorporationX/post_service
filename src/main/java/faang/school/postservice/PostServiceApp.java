@@ -1,6 +1,5 @@
 package faang.school.postservice;
 
-import faang.school.postservice.config.kafka.properties.AsyncProperties;
 import faang.school.postservice.config.kafka.properties.BatchProperties;
 import faang.school.postservice.config.kafka.properties.RetryProperties;
 import faang.school.postservice.config.kafka.properties.ThreadPoolProperties;
@@ -16,7 +15,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 @EnableFeignClients(basePackages = "faang.school.postservice.client")
 @EnableRetry
-@EnableConfigurationProperties({AsyncProperties.class, BatchProperties.class, RetryProperties.class, ThreadPoolProperties.class})
+@EnableConfigurationProperties({BatchProperties.class, RetryProperties.class, ThreadPoolProperties.class})
 public class PostServiceApp {
     public static void main(String[] args) {
         new SpringApplicationBuilder(PostServiceApp.class)

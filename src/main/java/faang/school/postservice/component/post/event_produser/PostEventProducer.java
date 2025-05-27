@@ -28,7 +28,8 @@ public class PostEventProducer extends AbstractEventProducer<PostFeedEvent> {
         return sendEvent(postTopic, event)
                 .thenRun(() -> log.debug("Successfully sent PostFeedEvent: event={}", event))
                 .exceptionally(throwable -> {
-                    log.error("Failed to send PostFeedEvent: postId={}, error={}", event.getPostId(), throwable.getMessage());
+                    log.error("Failed to send PostFeedEvent: postId={}, error={}", event.getPostId(),
+                            throwable.getMessage());
                     throw new KafkaPublishException("Failed to send event", throwable);
                 });
     }

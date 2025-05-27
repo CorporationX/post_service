@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -53,6 +54,8 @@ public class PostServiceImpl implements PostService {
     private final AtomicBoolean isRunning = new AtomicBoolean(false);
 
     private static final int EVENT_QUEUE_SIZE = 10000;
+    public static final int POST_PUBLISH_SCHEDULED_TIME_MS = 100;
+    public static final int POST_PUBLISH_SCHEDULED_BATCH_SIZE = 50;
     private final BlockingQueue<Post> eventQueue = new LinkedBlockingQueue<>(EVENT_QUEUE_SIZE);
 
     @Override
@@ -171,16 +174,30 @@ public class PostServiceImpl implements PostService {
         return resultDto;
     }
 
-    @Scheduled(fixedRate = 1000)
+    @Scheduled(fixedRate = POST_PUBLISH_SCHEDULED_TIME_MS)
     public void processEventQueue() {
-        Post post = eventQueue.poll();
-        if (post != null) {
-            postEventBatchSender.dispatchEventsForPost(post)
-                    .thenRun(() -> log.info("Successfully dispatched events for post: postId={}", post.getId()))
-                    .exceptionally(throwable -> {
-                        log.error("Failed to dispatch events for post: postId={}, error={}", post.getId(), throwable.getMessage());
-                        return null;
-                    });
+        List<Post> batch = new ArrayList<>();
+        for (int i = 0; i < POST_PUBLISH_SCHEDULED_BATCH_SIZE && !eventQueue.isEmpty(); i++) {
+            Post post = eventQueue.poll();
+            if (post != null) {
+                batch.add(post);
+            }
+        }
+
+        if (!batch.isEmpty()) {
+            CompletableFuture.allOf(
+                    batch.stream()
+                            .map(post -> postEventBatchSender.dispatchEventsForPost(post)
+                                    .thenRun(() -> log.info("Successfully dispatched events for post: postId={}",
+                                            post.getId()))
+                                    .exceptionally(throwable -> {
+                                        log.error("Failed to dispatch events for post: postId={}, error={}",
+                                                post.getId(),
+                                                throwable.getMessage());
+                                        return null;
+                                    }))
+                            .toArray(CompletableFuture[]::new)
+            );
         }
     }
 

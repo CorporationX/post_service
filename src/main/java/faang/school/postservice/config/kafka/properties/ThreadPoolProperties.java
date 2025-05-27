@@ -8,7 +8,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class ThreadPoolProperties {
 
     private ExecutorProperties postEventExecutor;
-    private ExecutorProperties userServiceExecutor;
 
     @Data
     public static class ExecutorProperties {

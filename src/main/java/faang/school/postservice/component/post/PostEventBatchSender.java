@@ -3,7 +3,6 @@ package faang.school.postservice.component.post;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.component.post.event_produser.PostEventProducer;
 import faang.school.postservice.config.kafka.properties.BatchProperties;
-import faang.school.postservice.config.kafka.properties.RetryProperties;
 import faang.school.postservice.event.PostFeedEvent;
 import faang.school.postservice.exception.InvalidPostDataException;
 import faang.school.postservice.exception.KafkaPublishException;
@@ -12,15 +11,12 @@ import faang.school.postservice.model.Post;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
 import java.util.stream.IntStream;
 
 @Slf4j
@@ -32,7 +28,6 @@ public class PostEventBatchSender {
     private final PostEventProducer postEventProducer;
     private final BatchProperties batchProperties;
     private final RetryTemplate userServiceRetryTemplate;
-    private final Executor userServiceExecutor;
 
     @Async("postEventExecutor")
     public CompletableFuture<Void> dispatchEventsForPost(Post post) {
@@ -62,7 +57,8 @@ public class PostEventBatchSender {
                     );
                 })
                 .exceptionally(throwable -> {
-                    log.error("Failed to process events for post: postId={}, error={}", post.getId(), throwable.getMessage());
+                    log.error("Failed to process events for post: postId={}, error={}", post.getId(),
+                            throwable.getMessage());
                     return null;
                 });
     }
@@ -79,11 +75,14 @@ public class PostEventBatchSender {
         return postEventProducer.sendPostFeedEvent(event)
                 .thenRun(() -> log.debug("Successfully sent PostFeedEvent to Kafka: event={}", event))
                 .exceptionally(throwable -> {
-                    log.error("Failed to send PostFeedEvent: postId={}, error={}", event.getPostId(), throwable.getMessage());
-                    throw new KafkaPublishException("Failed to send PostFeedEvent for postId " + event.getPostId(), throwable);
+                    log.error("Failed to send PostFeedEvent: postId={}, error={}",
+                            event.getPostId(), throwable.getMessage());
+                    throw new KafkaPublishException("Failed to send PostFeedEvent for postId " + event.getPostId(),
+                            throwable);
                 });
     }
 
+    @Async("postEventExecutor")
     private CompletableFuture<List<Long>> fetchSubscribers(Long authorId) {
         return CompletableFuture.supplyAsync(() -> userServiceRetryTemplate.execute(context -> {
             try {
@@ -94,7 +93,7 @@ public class PostEventBatchSender {
                 log.error("Failed to fetch subscribers for author: authorId={}, error={}", authorId, e.getMessage());
                 throw new UserServiceException("Failed to fetch subscribers for author " + authorId, e);
             }
-        }), userServiceExecutor);
+        }));
     }
 
     private List<List<Long>> partitionSubscribers(List<Long> subscribers, int batchSize) {

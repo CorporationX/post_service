@@ -107,7 +107,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(AIIntegrationException.class)
-    public ErrorResponse handleAIIntegrationException(AIIntegrationException e) {
+    public ErrorResponse handleAiIntegrationException(AIIntegrationException e) {
         log.error("AIIntegrationException", e);
         return buildResponse(e);
     }

@@ -52,16 +52,4 @@ public class RetryConfig {
         executor.initialize();
         return executor;
     }
-
-    @Bean(name = "userServiceExecutor")
-    public Executor userServiceExecutor() {
-        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        ThreadPoolProperties.ExecutorProperties props = threadPoolProperties.getUserServiceExecutor();
-        executor.setCorePoolSize(props.getCorePoolSize());
-        executor.setMaxPoolSize(props.getMaxPoolSize());
-        executor.setQueueCapacity(props.getQueueCapacity());
-        executor.setThreadNamePrefix(props.getThreadNamePrefix());
-        executor.initialize();
-        return executor;
-    }
 }
