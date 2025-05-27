@@ -21,7 +21,7 @@ public interface UserServiceClient {
     @GetMapping("/subscriptions/{followeeId}/followers/ids")
     List<Long> getFollowerIds(@PathVariable("followeeId") long userId);
 
-    @GetMapping("/users/page")
+    @GetMapping("/users")
     List<UserDto> getUsersByPage(
             @RequestParam("page") int page,
             @RequestParam("size") int size);

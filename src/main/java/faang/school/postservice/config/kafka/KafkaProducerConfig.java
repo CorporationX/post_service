@@ -1,8 +1,11 @@
 package faang.school.postservice.config.kafka;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import faang.school.postservice.dto.event.LikeEventDto;
+import faang.school.postservice.dto.event.PostCreatedEvent;
+import faang.school.postservice.producer.GenericKafkaProducer;
 import faang.school.postservice.properties.KafkaProperties;
 import lombok.RequiredArgsConstructor;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.context.annotation.Bean;
@@ -26,7 +29,6 @@ public class KafkaProducerConfig {
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaProps.getBootstrapServers());
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, kafkaProps.getMaxPoll());
         props.put(ProducerConfig.RETRIES_CONFIG, Integer.MAX_VALUE);
         props.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, true);
         return new DefaultKafkaProducerFactory<>(props);
@@ -35,5 +37,17 @@ public class KafkaProducerConfig {
     @Bean
     public KafkaTemplate<String, String> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
+    }
+
+    @Bean
+    public GenericKafkaProducer<PostCreatedEvent> postCreatedProducer(KafkaTemplate<String, String> kafkaTemplate,
+                                                                      ObjectMapper objectMapper) {
+        return new GenericKafkaProducer<>(kafkaTemplate, objectMapper);
+    }
+
+    @Bean
+    public GenericKafkaProducer<LikeEventDto> likeEventProducer(KafkaTemplate<String, String> kafkaTemplate,
+                                                                ObjectMapper objectMapper) {
+        return new GenericKafkaProducer<>(kafkaTemplate, objectMapper);
     }
 }

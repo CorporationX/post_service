@@ -21,10 +21,18 @@ public class KafkaCommentProducer {
         try {
             String json = objectMapper.writeValueAsString(event);
             String topic = kafkaProperties.getTopics().getComments();
-            kafkaTemplate.send(topic, json);
-            log.info("CommentEvent для поста {}", event.getPostId());
+
+            kafkaTemplate.send(topic, json)
+                    .thenAccept(result ->
+                            log.info("✅ Successfully sent CommentEvent for post {}", event.getPostId())
+                    )
+                    .exceptionally(ex -> {
+                        log.error("❌ Failed to send CommentEvent for post {}", event.getPostId(), ex);
+                        return null;
+                    });
+
         } catch (Exception e) {
-            log.error("❌ Не удалось отправить CommentEvent", e);
+            log.error("❌ Failed to serialize CommentEvent for post {}", event.getPostId(), e);
         }
     }
 }

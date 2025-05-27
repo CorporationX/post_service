@@ -1,6 +1,7 @@
 package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.post.CreatePostRequest;
+import faang.school.postservice.dto.post.PostResponseDto;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.service.PostCorrecter;
 import faang.school.postservice.service.PostService;
@@ -26,9 +27,8 @@ public class PostController {
         return ResponseEntity.ok().body("Posts have been spell checked");
     }
 
-    @PostMapping("/create")
-    public ResponseEntity<Post> createPost(@Valid @RequestBody CreatePostRequest request) {
-        Post createdPost = postService.createPost(request);
-        return ResponseEntity.ok(createdPost);
+    @PostMapping
+    public ResponseEntity<PostResponseDto> createPost(@Valid @RequestBody CreatePostRequest request) {
+        return ResponseEntity.ok(postService.createPost(request));
     }
 }

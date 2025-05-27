@@ -15,11 +15,11 @@ public class FeedHeaterInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        log.info("Инициализация: запуск прогрева фидов при старте приложения");
+        log.info("Initialization: starting feed warming on application startup");
         try {
             feedHeater.heatFeeds();
         } catch (Exception e) {
-            log.error("Ошибка при автозапуске прогрева фидов", e);
+            log.error("Error occurred during automatic feed warming on startup", e);
         }
     }
 }

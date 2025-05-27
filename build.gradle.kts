@@ -75,10 +75,10 @@ dependencies {
     testImplementation("org.assertj:assertj-core:3.24.2")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("com.github.Hakky54:log-captor:2.7.2")
+
     /**
      * Kafka
      */
-
     implementation ("org.springframework.kafka:spring-kafka")
 }
 

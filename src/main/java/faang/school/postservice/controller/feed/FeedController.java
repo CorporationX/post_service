@@ -1,7 +1,7 @@
 package faang.school.postservice.controller.feed;
 
 import faang.school.postservice.dto.feed.FeedPostDto;
-import faang.school.postservice.service.feed.FeedService;
+import faang.school.postservice.service.feed.FeedRetrievalService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,16 +16,15 @@ import java.util.List;
 @RequiredArgsConstructor
 public class FeedController {
 
-    private final FeedService feedService;
+    private final FeedRetrievalService feedRetrievalService;
 
     @GetMapping
     public ResponseEntity<List<FeedPostDto>> getFeed(
-            @RequestParam(name = "after", required = false) Long afterPostId,
+            @RequestParam(name = "cursorPostId", required = false) Long cursorPostId,
             @RequestParam(defaultValue = "20") int limit,
-            @RequestParam(name = "userId")  Long userId
+            @RequestParam(name = "userId") Long userId
     ) {
-
-        List<FeedPostDto> feed = feedService.getFeed(userId, afterPostId, limit);
+        List<FeedPostDto> feed = feedRetrievalService.getFeed(userId, cursorPostId, limit);
         return ResponseEntity.ok(feed);
     }
 

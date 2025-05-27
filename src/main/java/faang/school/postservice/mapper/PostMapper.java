@@ -2,6 +2,7 @@ package faang.school.postservice.mapper;
 
 import faang.school.postservice.dto.post.CreatePostRequest;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.post.PostResponseDto;
 import faang.school.postservice.model.Post;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -13,7 +14,6 @@ public interface PostMapper {
     @Mapping(target = "likes", expression = "java(post.getLikes() != null ? (long)post.getLikes().size() : 0)")
     @Mapping(target = "scheduleAt", ignore = true)
     PostDto toDto(Post post);
-
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "likes", ignore = true)
@@ -33,4 +33,7 @@ public interface PostMapper {
     @Mapping(target = "projectId", source = "projectId")
     @Mapping(target = "content", source = "content")
     Post toEntity(CreatePostRequest request);
+
+    @Mapping(target = "likes", expression = "java(post.getLikes() != null ? (long)post.getLikes().size() : 0)")
+    PostResponseDto toResponseDto(Post post);
 }

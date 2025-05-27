@@ -6,7 +6,7 @@ import faang.school.postservice.dto.redis.PostRedisDto;
 import faang.school.postservice.dto.redis.UserRedisDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.properties.FeedCacheProperties;
+import faang.school.postservice.properties.feed.FeedCacheProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -23,7 +23,11 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class FeedServiceImpl implements FeedService {
+public class FeedServiceImpl implements
+        FeedRetrievalService,
+        FeedManagementService,
+        FeedCacheService,
+        FeedAsyncUpdater {
 
     private final RedisTemplate<String, Object> redisTemplate;
     private final FeedCacheProperties feedCacheProperties;
@@ -42,15 +46,15 @@ public class FeedServiceImpl implements FeedService {
     }
 
     @Override
-    public List<FeedPostDto> getFeed(Long userId, Long afterPostId, int limit) {
+    public List<FeedPostDto> getFeed(Long userId, Long cursorPostId, int limit) {
         String feedKey = FEED_KEY_PREFIX + userId;
 
         Set<Object> postIds;
 
-        if (afterPostId == null) {
+        if (cursorPostId == null) {
             postIds = redisTemplate.opsForZSet().reverseRange(feedKey, 0, limit - 1);
         } else {
-            Double score = redisTemplate.opsForZSet().score(feedKey, afterPostId);
+            Double score = redisTemplate.opsForZSet().score(feedKey, cursorPostId);
             if (score == null) {
                 return Collections.emptyList();
             }
@@ -63,27 +67,9 @@ public class FeedServiceImpl implements FeedService {
                 .collect(Collectors.toList());
     }
 
-    public void cachePost(Post post) {
-        PostRedisDto dto = PostRedisDto.builder()
-                .id(post.getId())
-                .authorId(post.getAuthorId())
-                .text(post.getContent())
-                .projectId(post.getProjectId())
-                .likeCount((long) post.getLikes().size())
-                .createdAt(post.getCreatedAt())
-                .build();
-        redisTemplate.opsForValue().set("post:" + post.getId(), dto, Duration.ofDays(1));
-    }
-
-    public void cacheAuthor(Long authorId) {
-        if (!redisTemplate.hasKey("user:" + authorId)) {
-            UserDto user = userServiceClient.getUser(authorId);
-            UserRedisDto dto = UserRedisDto.builder()
-                    .id(user.id())
-                    .name(user.username())
-                    .build();
-            redisTemplate.opsForValue().set("user:" + authorId, dto, Duration.ofDays(1));
-        }
+    public void cachePostAndAuthor(Post post) {
+        cachePost(post);
+        cacheAuthor(post.getAuthorId());
     }
 
     public void rebuildFeed(Long userId, List<Long> postIds) {
@@ -93,6 +79,22 @@ public class FeedServiceImpl implements FeedService {
 
         for (Long postId : postIds) {
             redisTemplate.opsForZSet().add(key, postId, score--);
+        }
+    }
+
+    @Override
+    @Async("feedTaskExecutor")
+    public void addPostChunkToFeeds(Long postId, Long timestamp, List<Long> chunk) {
+        for (Long subscriberId : chunk) {
+            String feedKey = FEED_KEY_PREFIX + subscriberId;
+            try {
+                redisTemplate.opsForZSet().add(feedKey, postId, timestamp);
+
+                long maxFeedSize = feedCacheProperties.getMaxFeedSize();
+                redisTemplate.opsForZSet().removeRange(feedKey, 0, -(maxFeedSize + 1));
+            } catch (Exception e) {
+                log.error("Не удалось добавить пост {} в фид {}", postId, subscriberId, e);
+            }
         }
     }
 
@@ -127,18 +129,26 @@ public class FeedServiceImpl implements FeedService {
                 .build();
     }
 
-    @Async("feedTaskExecutor")
-    public void addPostChunkToFeeds(Long postId, Long timestamp, List<Long> chunk) {
-        for (Long subscriberId : chunk) {
-            String feedKey = FEED_KEY_PREFIX + subscriberId;
-            try {
-                redisTemplate.opsForZSet().add(feedKey, postId, timestamp);
+    private void cachePost(Post post) {
+        PostRedisDto dto = PostRedisDto.builder()
+                .id(post.getId())
+                .authorId(post.getAuthorId())
+                .text(post.getContent())
+                .projectId(post.getProjectId())
+                .likeCount((long) post.getLikes().size())
+                .createdAt(post.getCreatedAt())
+                .build();
+        redisTemplate.opsForValue().set("post:" + post.getId(), dto, Duration.ofDays(1));
+    }
 
-                long maxFeedSize = feedCacheProperties.getMaxFeedSize();
-                redisTemplate.opsForZSet().removeRange(feedKey, 0, -(maxFeedSize + 1));
-            } catch (Exception e) {
-                log.error("Не удалось добавить пост {} в фид {}", postId, subscriberId, e);
-            }
+    private void cacheAuthor(Long authorId) {
+        if (!redisTemplate.hasKey("user:" + authorId)) {
+            UserDto user = userServiceClient.getUser(authorId);
+            UserRedisDto dto = UserRedisDto.builder()
+                    .id(user.id())
+                    .name(user.username())
+                    .build();
+            redisTemplate.opsForValue().set("user:" + authorId, dto, Duration.ofDays(1));
         }
     }
 }

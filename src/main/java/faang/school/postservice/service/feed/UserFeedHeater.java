@@ -3,7 +3,7 @@ package faang.school.postservice.service.feed;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.properties.FeedCacheProperties;
+import faang.school.postservice.properties.feed.FeedCacheProperties;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +19,8 @@ public class UserFeedHeater {
 
     private final UserServiceClient userServiceClient;
     private final PostRepository postRepository;
-    private final FeedService feedService;
+    private final FeedCacheService feedCacheService;
+    private final FeedManagementService feedManagementService;
     private final FeedCacheProperties feedCacheProperties;
 
 
@@ -35,15 +36,14 @@ public class UserFeedHeater {
                     .toList();
 
             for (Post post : posts) {
-                feedService.cachePost(post);
-                feedService.cacheAuthor(post.getAuthorId());
+                feedCacheService.cachePostAndAuthor(post);
             }
 
             List<Long> postIds = posts.stream()
                     .map(Post::getId)
                     .toList();
 
-            feedService.rebuildFeed(user.id(), postIds);
+            feedManagementService.rebuildFeed(user.id(), postIds);
 
         } catch (Exception e) {
             log.error("❌ Ошибка прогрева фида user {}", user.id(), e);

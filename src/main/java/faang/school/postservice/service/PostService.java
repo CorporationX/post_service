@@ -5,6 +5,7 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.ModerationProperties;
 import faang.school.postservice.dto.event.PostCreatedEvent;
 import faang.school.postservice.dto.post.CreatePostRequest;
+import faang.school.postservice.dto.post.PostResponseDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.PostPublishingException;
 import faang.school.postservice.mapper.PostMapper;
@@ -15,6 +16,7 @@ import faang.school.postservice.service.moderation.AsyncModerationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.ListUtils;
+import org.springframework.http.ResponseEntity;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Async;
@@ -69,7 +71,7 @@ public class PostService {
     }
 
     @Transactional
-    public Post createPost(CreatePostRequest request) {
+    public PostResponseDto createPost(CreatePostRequest request) {
         try {
             userServiceClient.getUser(request.getAuthorId());
         } catch (Exception e) {
@@ -93,7 +95,7 @@ public class PostService {
 
         kafkaPostProducer.sendPostCreatedEvent(event);
 
-        return post;
+        return postMapper.toResponseDto(post);
     }
 
     public Post getPost(Long postId) {
