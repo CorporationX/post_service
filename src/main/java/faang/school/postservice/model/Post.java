@@ -102,5 +102,5 @@ public class Post {
     private boolean isCorrected;
 
     @Column(name = "views")
-    private int views;
+    private long views;
 }
