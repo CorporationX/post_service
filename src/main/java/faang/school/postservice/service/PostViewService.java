@@ -1,6 +1,6 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.config.kafka.KafkaPostViewProducer;
+import faang.school.postservice.service.publisher.KafkaPostViewProducer;
 import faang.school.postservice.event.PostViewEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

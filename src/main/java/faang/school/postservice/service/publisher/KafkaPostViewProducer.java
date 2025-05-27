@@ -1,6 +1,7 @@
-package faang.school.postservice.config.kafka;
+package faang.school.postservice.service.publisher;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import faang.school.postservice.config.kafka.AbstractKafkaProducer;
 import faang.school.postservice.event.PostViewEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,6 +25,7 @@ public class KafkaPostViewProducer extends AbstractKafkaProducer {
     public void sendPostViewEvent(
             PostViewEvent postViewEvent
     ) {
+        log.info("Sending post view event: {}", postViewEvent);
         send(postViewTopic, postViewEvent);
     }
 }
