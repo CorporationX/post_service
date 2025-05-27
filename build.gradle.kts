@@ -119,6 +119,7 @@ tasks.jacocoTestReport {
 val jacocoClassExclude = listOf(
         "faang.school.postservice.PostServiceApp",
         "faang.school.postservice.client.Feign*",
+        "faang.school.postservice.rest.ExceptionApiHandler",
         "faang.school.postservice.config.*",
         "faang.school.postservice.model.*",
         "faang.school.postservice.mapper.*",
