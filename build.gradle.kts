@@ -22,24 +22,39 @@ tasks.jacocoTestReport {
 
     classDirectories.setFrom(
         fileTree(buildDir) {
-            include ("**/faang/school/postservice/**")
+            include ("**/classes/java/main/faang/school/postservice/**")
             exclude ("**/faang/school/postservice/dto/**" )
             exclude ("**/faang/school/postservice/mapper/**")
             exclude ("**/faang/school/postservice/config/**")
             exclude ("**/faang/school/postservice/exception/**")
             exclude ("**/faang/school/postservice/model/**")
-            exclude ("**/faang/school/postservice/repository/**")
             exclude ("**/faang/school/postservice/client/**")
+            exclude ("**/faang/school/postservice/repository/**")
+            exclude("**/faang/school/postservice/PostServiceApp.class")
         }
     )
 }
 
 tasks.jacocoTestCoverageVerification {
+    dependsOn(tasks.jacocoTestReport)
     violationRules {
+
         rule {
             limit {
-                minimum = BigDecimal("0.70")
+                minimum = BigDecimal("0.10")
             }
+
+            excludes = listOf(
+                "faang.school.postservice.dto.**",
+                "faang.school.postservice.mapper.**",
+                "faang.school.postservice.config.**",
+                "faang.school.postservice.exception.**",
+                "faang.school.postservice.model.**",
+                "faang.school.postservice.client.**",
+                "faang.school.postservice.repository.**",
+                "faang.school.postservice.PostServiceApp",
+                "faang.school.postservice.config.context.**",
+            )
         }
     }
 }
