@@ -100,3 +100,7 @@ posts:
 
   publishing:
     cron: "0 0 * * * *"
+
+ttl:
+  comment-cache:
+    ttl-seconds: 86400

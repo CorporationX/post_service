@@ -21,6 +21,7 @@ import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.publisher.KafkaPublisher;
+import faang.school.postservice.service.redis.AuthorCacheService;
 import feign.FeignException;
 import feign.Request;
 import org.junit.jupiter.api.BeforeEach;
@@ -88,6 +89,8 @@ class CommentServiceTest {
     private UserServiceClient userServiceClient;
     @Mock
     private CommentEventPublisher commentEventPublisher;
+    @Mock
+    private AuthorCacheService authorCacheService;
 
     @Spy
     private CommentResponseMapper commentResponseMapper = Mappers.getMapper(CommentResponseMapper.class);
