@@ -3,6 +3,7 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.event.CommentEventRedis;
+import faang.school.postservice.dto.feed.CommentAddedEvent;
 import faang.school.postservice.dto.kafkaevents.CommentEvent;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
@@ -10,10 +11,11 @@ import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.AuthorCommentCount;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.AuthorRequestEventPublisher;
+import faang.school.postservice.publisher.CommentAddedEventPublisher;
 import faang.school.postservice.publisher.CommentBanPublisher;
 import faang.school.postservice.publisher.CommentEvenRedisPublisher;
 import faang.school.postservice.publisher.CommentEventPublisher;
-import faang.school.postservice.publisher.KafkaEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
@@ -41,7 +43,8 @@ public class CommentService {
     private final CommentEventPublisher commentEventPublisher;
     private final CommentEvenRedisPublisher commentEvenRedisPublisher;
     private final CommentBanPublisher commentBanPublisher;
-    private final List<KafkaEventPublisher<?>> kafkaNewsFeedPublishers;
+    private final CommentAddedEventPublisher commentAddedEventPublisher;
+    private final AuthorRequestEventPublisher authorRequestEventPublisher;
 
     public CommentDto createComment(long userId, long postId, CommentDto commentDto) {
         UserDto user = client.getUser(userId);
@@ -74,7 +77,8 @@ public class CommentService {
         commentEvenRedisPublisher.publish(commentEvent);
         log.info("Комментарий {} отправлен в топик ", savedComment);
 
-        //TODO: отправка коммента в Kafka
+        commentAddedEventPublisher.publish(createCommentAddedEvent(commentDto, savedComment.getCreatedAt()));
+        authorRequestEventPublisher.publish(userId);
         return mapper.toDto(savedComment);
     }
 
@@ -142,4 +146,13 @@ public class CommentService {
         }
     }
 
+    private CommentAddedEvent createCommentAddedEvent(CommentDto commentDto, LocalDateTime createdAt) {
+        return CommentAddedEvent.builder()
+                .id(commentDto.id())
+                .authorId(commentDto.authorId())
+                .postId(commentDto.postId())
+                .content(commentDto.content())
+                .createdAt(createdAt)
+                .build();
+    }
 }

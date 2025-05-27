@@ -1,13 +1,16 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.feed.CommentAddedEvent;
 import faang.school.postservice.dto.kafkaevents.CommentEvent;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
-import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.AuthorRequestEventPublisher;
+import faang.school.postservice.publisher.CommentAddedEventPublisher;
 import faang.school.postservice.publisher.CommentEvenRedisPublisher;
 import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
@@ -19,7 +22,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Value;
 
 import java.util.List;
 import java.util.Optional;
@@ -60,8 +62,11 @@ public class CommentServiceTest {
     @Mock
     private CommentEvenRedisPublisher commentEvenRedisPublisher;
 
-    @Value("${app.settings.max-length}")
-    private int maxLength;
+    @Mock
+    private CommentAddedEventPublisher commentAddedEventPublisher;
+
+    @Mock
+    private AuthorRequestEventPublisher authorRequestEventPublisher;
 
     @InjectMocks
     private CommentService service;
@@ -84,6 +89,8 @@ public class CommentServiceTest {
         when(repository.save(any(Comment.class))).thenReturn(successComment);
         when(mapper.toDto(successComment)).thenReturn(goodDto);
         doNothing().when(commentEventPublisher).publish(any(CommentEvent.class));
+        doNothing().when(commentAddedEventPublisher).publish(any(CommentAddedEvent.class));
+        doNothing().when(authorRequestEventPublisher).publish(any(Long.class));
 
         CommentDto result;
         result = service.createComment(1L, 1L, goodDto);

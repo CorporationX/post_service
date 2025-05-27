@@ -115,6 +115,14 @@ thread-pool:
   author-ban:
     size: 2
     shutdown-timeout-seconds: 30
+  post-after-publisher:
+    core-pool-size: 5
+    max-pool-size: 8
+    keep-alive-seconds: 60
+    allow-core-thread-timeout: false
+    thread-name-prefix: PostAfterPublisherExecutor-
+    wait-for-tasks-to-complete-on-shutdown: true
+    await-termination-seconds: 30
 
 batch:
   size: 1000

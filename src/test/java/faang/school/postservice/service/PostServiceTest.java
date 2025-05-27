@@ -15,6 +15,7 @@ import faang.school.postservice.publisher.HashtagAddingEventPublisher;
 import faang.school.postservice.publisher.HashtagRemovingEventPublisher;
 import faang.school.postservice.publisher.PostEventPublisher;
 import faang.school.postservice.publisher.PostViewEventPublisher;
+import faang.school.postservice.publisher.PostsViewEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ResourceRepository;
 import faang.school.postservice.repository.ad.AdRepository;
@@ -87,6 +88,12 @@ public class PostServiceTest {
 
     @Mock
     private RedisRepositoryCoordinator redisRepositoryCoordinator;
+
+    @Mock
+    private PostProcessingService postProcessingService;
+
+    @Mock
+    private PostsViewEventPublisher postsViewEventPublisher;
 
     @Test
     public void testPositivePublish() {
@@ -174,7 +181,7 @@ public class PostServiceTest {
                 .id(1L)
                 .build();
         when(postRepository.findById(1L)).thenReturn(Optional.of(post));
-        PostResponseDto dto = postService.getPost(post.getId(),1L);
+        PostResponseDto dto = postService.getPost(post.getId(), 1L);
         assertEquals(post.getId(), dto.getId());
     }
 
@@ -199,7 +206,7 @@ public class PostServiceTest {
         List<Post> posts = List.of(post, post1, post2);
 
         when(postRepository.findByAuthorId(1L)).thenReturn(posts);
-        List<PostResponseDto> list = postService.findDraftsByAuthorId(1L,1L);
+        List<PostResponseDto> list = postService.findDraftsByAuthorId(1L, 1L);
 
         assertEquals(1, list.size());
         assertEquals(post.getId(), list.get(0).getId().intValue());
@@ -212,7 +219,7 @@ public class PostServiceTest {
         List<Post> posts = Collections.emptyList();
 
         when(postRepository.findByAuthorId(1L)).thenReturn(posts);
-        List<PostResponseDto> list = postService.findDraftsByAuthorId(1L,1L);
+        List<PostResponseDto> list = postService.findDraftsByAuthorId(1L, 1L);
 
         assertEquals(0, list.size());
         assertTrue(list.isEmpty());
@@ -239,7 +246,7 @@ public class PostServiceTest {
         List<Post> posts = List.of(post, post1, post2);
 
         when(postRepository.findByProjectId(1L)).thenReturn(posts);
-        List<PostResponseDto> list = postService.findDraftsByProjectId(1L,1L);
+        List<PostResponseDto> list = postService.findDraftsByProjectId(1L, 1L);
 
         assertEquals(1, list.size());
         assertEquals(post.getId(), list.get(0).getId().intValue());
@@ -252,7 +259,7 @@ public class PostServiceTest {
         List<Post> posts = Collections.emptyList();
 
         when(postRepository.findByProjectId(1L)).thenReturn(posts);
-        List<PostResponseDto> list = postService.findDraftsByProjectId(1L,1L);
+        List<PostResponseDto> list = postService.findDraftsByProjectId(1L, 1L);
 
         assertEquals(0, list.size());
         assertTrue(list.isEmpty());
@@ -279,7 +286,7 @@ public class PostServiceTest {
         List<Post> posts = List.of(post, post1, post2);
 
         when(postRepository.findByAuthorId(1L)).thenReturn(posts);
-        List<PostResponseDto> list = postService.findPublishedByAuthorId(1L,1L);
+        List<PostResponseDto> list = postService.findPublishedByAuthorId(1L, 1L);
 
         assertEquals(1, list.size());
         assertEquals(post.getId(), list.get(0).getId().intValue());
@@ -292,7 +299,7 @@ public class PostServiceTest {
         List<Post> posts = Collections.emptyList();
 
         when(postRepository.findByAuthorId(1L)).thenReturn(posts);
-        List<PostResponseDto> list = postService.findPublishedByAuthorId(1L,1L);
+        List<PostResponseDto> list = postService.findPublishedByAuthorId(1L, 1L);
 
         assertEquals(0, list.size());
         assertTrue(list.isEmpty());
@@ -319,7 +326,7 @@ public class PostServiceTest {
         List<Post> posts = List.of(post, post1, post2);
 
         when(postRepository.findByProjectId(1L)).thenReturn(posts);
-        List<PostResponseDto> list = postService.findPublishedByProjectId(1L,1L);
+        List<PostResponseDto> list = postService.findPublishedByProjectId(1L, 1L);
 
         assertEquals(1, list.size());
         assertEquals(post.getId(), list.get(0).getId().intValue());
@@ -332,7 +339,7 @@ public class PostServiceTest {
         List<Post> posts = Collections.emptyList();
 
         when(postRepository.findByProjectId(1L)).thenReturn(posts);
-        List<PostResponseDto> list = postService.findPublishedByProjectId(1L,1L);
+        List<PostResponseDto> list = postService.findPublishedByProjectId(1L, 1L);
 
         assertEquals(0, list.size());
         assertTrue(list.isEmpty());

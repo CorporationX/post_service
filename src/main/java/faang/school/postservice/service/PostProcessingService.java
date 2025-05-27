@@ -1,10 +1,19 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.component.RedisRepositoryCoordinator;
+import faang.school.postservice.dto.PostResponseDto;
+import faang.school.postservice.dto.feed.PostPublishEvent;
+import faang.school.postservice.dto.redis.PostRedisDto;
 import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.AuthorRequestEventPublisher;
+import faang.school.postservice.publisher.PostEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationContext;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +27,11 @@ import java.util.List;
 public class PostProcessingService {
 
     private final PostRepository postRepository;
+    private final RedisRepositoryCoordinator redisRepositoryCoordinator;
+    private final PostEventPublisher postEventPublisher;
+    private final AuthorRequestEventPublisher authorRequestEventPublisher;
+    private final PostMapper postMapper;
+    private final ApplicationContext applicationContext;
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void publishBatch(List<Post> batch) {
@@ -34,5 +48,24 @@ public class PostProcessingService {
         postRepository.saveAll(batch);
         log.info("Опубликовано {} постов с {} по {} id.",
                 batch.size(), batch.get(0).getId(), batch.get(batch.size() - 1).getId());
+    }
+
+    @Async("postPublisherExecutor")
+    public void processPostsAfterPublish(List<PostResponseDto> postDtoList) {
+        PostProcessingService proxy = applicationContext.getBean(PostProcessingService.class);
+        postDtoList.forEach(proxy::processPostAfterPublish);
+    }
+
+    @Async("postPublisherExecutor")
+    public void processPostAfterPublish(PostResponseDto postDto) {
+        try {
+            PostRedisDto postRedisDto = postMapper.toRedisDto(postDto);
+            redisRepositoryCoordinator.addPostToCache(postRedisDto);
+            PostPublishEvent postPublishEvent = postMapper.toPublishEvent(postRedisDto);
+            postEventPublisher.publish(postPublishEvent);
+            authorRequestEventPublisher.publish(postPublishEvent.authorId());
+        } catch (Exception e) {
+            log.error("Failed to process post ID {}: {}\n{}", postDto.getId(), e.getMessage(), e.getStackTrace());
+        }
     }
 }

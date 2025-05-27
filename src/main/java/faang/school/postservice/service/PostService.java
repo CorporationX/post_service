@@ -3,13 +3,10 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.HashtagServiceClient;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.component.RedisRepositoryCoordinator;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.dto.PostResponseDto;
 import faang.school.postservice.dto.event.HashtagAddingEvent;
 import faang.school.postservice.dto.event.PostViewEvent;
-import faang.school.postservice.dto.feed.PostPublishEvent;
-import faang.school.postservice.dto.redis.PostRedisDto;
 import faang.school.postservice.exception.AsyncPostProcessingException;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.HashtagServiceConnectionException;
@@ -22,8 +19,8 @@ import faang.school.postservice.model.VerifiedStatus;
 import faang.school.postservice.model.ad.Ad;
 import faang.school.postservice.publisher.HashtagAddingEventPublisher;
 import faang.school.postservice.publisher.HashtagRemovingEventPublisher;
-import faang.school.postservice.publisher.KafkaEventPublisher;
 import faang.school.postservice.publisher.PostViewEventPublisher;
+import faang.school.postservice.publisher.PostsViewEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ResourceRepository;
 import faang.school.postservice.repository.ad.AdRepository;
@@ -63,8 +60,7 @@ public class PostService {
     private final HashtagRemovingEventPublisher hashtagRemovingPublisher;
     private final HashtagServiceClient hashtagClient;
     private final PostProcessingService postProcessingService;
-    private final RedisRepositoryCoordinator redisRepositoryCoordinator;
-    private final List<KafkaEventPublisher<?>> kafkaNewsFeedPublishers;
+    private final PostsViewEventPublisher postsViewEventPublisher;
 
     @Value("${batch.size}")
     private int batchSize;
@@ -96,8 +92,7 @@ public class PostService {
             }, executorService);
 
             futures.add(future);
-
-            //TODO: дублирование логики отправки в Kafka метода publish
+            postProcessingService.processPostsAfterPublish(postMapper.toResponseDtoList(batch));
         }
 
         try {
@@ -165,11 +160,7 @@ public class PostService {
         log.info("Post published: {}", post);
 
         PostResponseDto postDto = postMapper.toResponseDto(post);
-        PostRedisDto postRedisDto = postMapper.toRedisDto(postDto);
-        PostPublishEvent postPublishEvent = postMapper.toPublishEvent(postRedisDto);
-        //TODO: обработка сохранения в Redis
-        redisRepositoryCoordinator.addPostToCache(postRedisDto);
-        //TODO: публикация events в Kafka
+        postProcessingService.processPostAfterPublish(postDto);
         return postDto;
     }
 
@@ -200,7 +191,7 @@ public class PostService {
         List<Long> hashtags = hashtagClient.getHashtagsIdsByPostId(postId);
         response.setHashtagsId(hashtags);
 
-        //TODO: отправка просмотра поста в Kafka + продублировать на следующие методы
+        postsViewEventPublisher.publish(postId);
         return response;
     }
 
@@ -325,16 +316,9 @@ public class PostService {
                 .sorted(Comparator.comparing(Post::getPublishedAt).reversed())
                 .peek(post -> postViewEventPublisher.published(
                         new PostViewEvent(post.getId(), userId, id, LocalDateTime.now())))
+                .peek(post -> postsViewEventPublisher.publish(post.getId()))
                 .map(postMapper::toResponseDto)
                 .peek(postDto -> postDto.setHashtagsId(hashtags.get(postDto.getId())))
                 .toList();
-    }
-
-    private PostPublishEvent takePostPublishEvent(PostResponseDto postDto) {
-        return PostPublishEvent.builder()
-                .postId(postDto.getId())
-                .authorId(postDto.getAuthorId())
-                .publishedAt(postDto.getPublishedAt())
-                .build();
     }
 }

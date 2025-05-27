@@ -9,8 +9,9 @@ import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.publisher.KafkaEventPublisher;
+import faang.school.postservice.publisher.LikeAddedEventPublisher;
 import faang.school.postservice.publisher.LikeEventPublisher;
+import faang.school.postservice.publisher.LikeRemovedEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -18,7 +19,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -43,6 +43,8 @@ public class LikeService {
     private final UserContext userContext;
     private final UserServiceClient userClient;
     private final LikeEventPublisher likeEventPublisher;
+    private final LikeAddedEventPublisher likeAddedEventPublisher;
+    private final LikeRemovedEventPublisher likeRemovedEventPublisher;
 
     public void putLikeOnPost(Long postId) {
         Long userId = getContextUser();
@@ -65,7 +67,7 @@ public class LikeService {
             addLikeOnDatabase(userId, post, null);
             printMessageAddLike(postId);
 
-            //TODO: отправка добавления лайка в Kafka
+            likeAddedEventPublisher.publish(postId);
         } finally {
             userLock.unlock();
             Like like = likeRepository.findByPostIdAndUserId(postId, userId)
@@ -88,7 +90,7 @@ public class LikeService {
             likeRepository.deleteByPostIdAndUserId(postId, userId);
             printMessageRemoveLike(postId);
 
-            //TODO: отправка удаления лайка в Kafka
+            likeRemovedEventPublisher.publish(postId);
         } finally {
             userLock.unlock();
         }
