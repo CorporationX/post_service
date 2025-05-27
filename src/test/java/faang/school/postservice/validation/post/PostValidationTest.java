@@ -38,7 +38,7 @@ public class PostValidationTest {
     public void testValidatePostDoesNotExist() {
         boolean existPost = false;
         assertThrows(DataValidationException.class,
-                () -> PostValidation.validatePostDoesNotExist(existPost));
+                () -> PostValidation.validatePostExists(existPost));
     }
 
 }

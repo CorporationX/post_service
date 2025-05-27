@@ -2,6 +2,7 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validation.post.PostValidation;
@@ -23,13 +24,17 @@ public class PostService {
     private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
+    private final UserContext userContext;
 
     @Transactional
     public Post createPost(Post post) {
+        long userId = userContext.getUserId();
+        post.setAuthorId(userId);
         PostValidation.validateNotNullAuthor(post);
         PostValidation.validateNotNullContent(post);
-        userServiceClient.getUser(post.getAuthorId());
+        userServiceClient.getUser(userId);
         executeIfNotNull(post.getProjectId(), () -> projectServiceClient.getProject(post.getProjectId()));
+
         postRepository.save(post);
         return getValidPostOrThrowException(post.getId());
     }
@@ -37,27 +42,29 @@ public class PostService {
     @Transactional
     public boolean publishPost(Long postId) {
         Post post = getValidPostOrThrowException(postId);
+
         PostValidation.validateNotAlreadyPublishedPost(post);
+
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
         postRepository.save(post);
-
-        return getValidPostOrThrowException(postId).isPublished();
+        return post.isPublished();
     }
 
     @Transactional
     public Post updatePost(Long postId, Post updateFields) {
         Post post = getValidPostOrThrowException(postId);
+
         post.setUpdatedAt(LocalDateTime.now());
         post.setContent(updateFields.getContent());
         setIfNotNull(updateFields.getScheduledAt(), post::setScheduledAt);
-        postRepository.save(post);
-        return getValidPostOrThrowException(postId);
+        return postRepository.save(post);
     }
 
     @Transactional
     public void deletePost(Long postId) {
         Post post = getValidPostOrThrowException(postId);
+
         PostValidation.validateNotAlreadyDeletedPost(post);
         post.setDeleted(true);
         postRepository.save(post);
@@ -69,28 +76,28 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public List<Post> getNotDeletedDraftsByUserId(Long userId) {
-        return postRepository.findNonDeletedDraftsByAuthorId(userId);
+    public List<Post> getAllDraftsByAuthorId(Long authorId) {
+        return postRepository.findDraftsByAuthorId(authorId);
     }
 
     @Transactional(readOnly = true)
-    public List<Post> getNotDeletedDraftsByProjectId(Long projectId) {
-        return postRepository.findNonDeletedDraftsByProjectId(projectId);
+    public List<Post> getAllDraftsByProjectId(Long projectId) {
+        return postRepository.findDraftsByProjectId(projectId);
     }
 
     @Transactional(readOnly = true)
-    public List<Post> getNotDeletedPublishedByUserId(Long userId) {
-        return postRepository.findNonDeletedPublishedByAuthorId(userId);
+    public List<Post> getAllPublishedByAuthorId(Long authorId) {
+        return postRepository.findPublishedByAuthorId(authorId);
     }
 
     @Transactional(readOnly = true)
-    public List<Post> getNotDeletedPublishedByProjectId(Long projectId) {
-        return postRepository.findNonDeletedPublishedByProjectId(projectId);
+    public List<Post> getAllPublishedByProjectId(Long projectId) {
+        return postRepository.findPublishedByProjectId(projectId);
     }
 
     private Post getValidPostOrThrowException(Long postId) {
         Optional<Post> postOptional = postRepository.findById(postId);
-        PostValidation.validatePostDoesNotExist(postOptional.isPresent());
+        PostValidation.validatePostExists(postOptional.isPresent());
         return postOptional.get();
     }
 }

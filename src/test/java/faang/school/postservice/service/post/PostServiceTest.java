@@ -2,6 +2,7 @@ package faang.school.postservice.service.post;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.model.Post;
@@ -37,6 +38,9 @@ public class PostServiceTest {
     @Mock
     private ProjectServiceClient projectServiceClient;
 
+    @Mock
+    private UserContext userContext;
+
     @InjectMocks
     private PostService postService;
 
@@ -54,6 +58,7 @@ public class PostServiceTest {
         UserDto userDto = new UserDto(1L, "test", "test");
         ProjectDto projectDto = new ProjectDto(1L, "test");
 
+        when(userContext.getUserId()).thenReturn(validPost.getAuthorId());
         when(userServiceClient.getUser(validPost.getAuthorId())).thenReturn(userDto);
         when(projectServiceClient.getProject(validPost.getProjectId())).thenReturn(projectDto);
         when(postRepository.findById(validPost.getId())).thenReturn(Optional.of(validPost));

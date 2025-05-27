@@ -15,7 +15,7 @@ public class PostValidation {
         }
     }
 
-    public static void validatePostDoesNotExist(boolean isExist) {
+    public static void validatePostExists(boolean isExist) {
         if (!isExist) {
             throw new DataValidationException("Post with such id does not exist");
         }

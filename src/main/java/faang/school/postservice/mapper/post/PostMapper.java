@@ -1,29 +1,27 @@
 package faang.school.postservice.mapper.post;
 
-import faang.school.postservice.dto.post.CreatePostDto;
+import faang.school.postservice.dto.post.PostCreateDto;
 import faang.school.postservice.dto.post.ResponsePostDto;
-import faang.school.postservice.dto.post.UpdatePostDto;
+import faang.school.postservice.dto.post.PostUpdateDto;
 import faang.school.postservice.model.Post;
 
 public class PostMapper {
 
-    public static Post PostDtoToPost(CreatePostDto createPostDto) {
+    public static Post postUpdateDtoToPost(PostCreateDto postCreateDto) {
         return Post.builder()
-                .authorId(createPostDto.getAuthorId())
-                .projectId(createPostDto.getProjectId())
-                .content(createPostDto.getContent())
+                .projectId(postCreateDto.getProjectId())
+                .content(postCreateDto.getContent())
                 .build();
     }
 
-    public static CreatePostDto PostToCreatePostDto(Post post) {
-        return CreatePostDto.builder()
-                .authorId(post.getAuthorId())
+    public static PostCreateDto postToCreatePostDto(Post post) {
+        return PostCreateDto.builder()
                 .projectId(post.getProjectId())
                 .content(post.getContent())
                 .build();
     }
 
-    public static Post PostDtoToPost(ResponsePostDto responsePostDto) {
+    public static Post postResponseDtoToPost(ResponsePostDto responsePostDto) {
         return Post.builder()
                 .id(responsePostDto.getPostId())
                 .authorId(responsePostDto.getAuthorId())
@@ -33,7 +31,7 @@ public class PostMapper {
                 .build();
     }
 
-    public static ResponsePostDto PostToResponsePostDto(Post post) {
+    public static ResponsePostDto postToResponsePostDto(Post post) {
         return ResponsePostDto.builder()
                 .postId(post.getId())
                 .authorId(post.getAuthorId())
@@ -43,15 +41,15 @@ public class PostMapper {
                 .build();
     }
 
-    public static Post PostDtoToPost(UpdatePostDto updatePostDto) {
+    public static Post postUpdateDtoToPost(PostUpdateDto postUpdateDto) {
         return Post.builder()
-                .content(updatePostDto.getContent())
-                .scheduledAt(updatePostDto.getScheduledAt())
+                .content(postUpdateDto.getContent())
+                .scheduledAt(postUpdateDto.getScheduledAt())
                 .build();
     }
 
-    public static UpdatePostDto PostToUpdatePostDto(Post post) {
-        return UpdatePostDto.builder()
+    public static PostUpdateDto postToUpdatePostDto(Post post) {
+        return PostUpdateDto.builder()
                 .content(post.getContent())
                 .scheduledAt(post.getScheduledAt())
                 .build();

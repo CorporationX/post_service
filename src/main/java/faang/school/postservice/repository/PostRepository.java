@@ -23,29 +23,29 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     @Query(nativeQuery = true, value = """
             SELECT * FROM Post p
-             WHERE p.published = false AND p.deleted = false AND p.author_id = :authorId
-              ORDER BY p.created_at DESC
+            WHERE p.published = false AND p.deleted = false AND p.author_id = :authorId
+            ORDER BY p.created_at DESC
             """)
-    List<Post> findNonDeletedDraftsByAuthorId(Long authorId);
+    List<Post> findDraftsByAuthorId(Long authorId);
 
     @Query(nativeQuery = true, value = """
             SELECT * FROM Post p
-             WHERE p.published = false AND p.deleted = false AND p.project_id = :projectId
-              ORDER BY p.created_at DESC
+            WHERE p.published = false AND p.deleted = false AND p.project_id = :projectId
+            ORDER BY p.created_at DESC
             """)
-    List<Post> findNonDeletedDraftsByProjectId(Long projectId);
+    List<Post> findDraftsByProjectId(Long projectId);
 
     @Query(nativeQuery = true, value = """
             SELECT * FROM Post p
-             WHERE p.published = true AND p.deleted = false AND p.author_id = :authorId
-              ORDER BY p.published_at DESC
+            WHERE p.published = true AND p.deleted = false AND p.author_id = :authorId
+            ORDER BY p.published_at DESC
             """)
-    List<Post> findNonDeletedPublishedByAuthorId(Long authorId);
+    List<Post> findPublishedByAuthorId(Long authorId);
 
     @Query(nativeQuery = true, value = """
             SELECT * FROM Post p
-             WHERE p.published = true AND p.deleted = false AND p.project_id = :projectId
-              ORDER BY p.published_at DESC
+            WHERE p.published = true AND p.deleted = false AND p.project_id = :projectId
+            ORDER BY p.published_at DESC
             """)
-    List<Post> findNonDeletedPublishedByProjectId(Long projectId);
+    List<Post> findPublishedByProjectId(Long projectId);
 }

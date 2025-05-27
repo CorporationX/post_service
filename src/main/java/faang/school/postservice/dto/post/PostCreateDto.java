@@ -10,8 +10,9 @@ import java.time.LocalDateTime;
 @Getter
 @AllArgsConstructor
 @Builder
-public class UpdatePostDto {
+public class PostCreateDto {
     @NotNull
     private String content;
+    private Long projectId;
     private LocalDateTime scheduledAt;
 }
