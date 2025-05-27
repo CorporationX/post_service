@@ -8,7 +8,6 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -18,23 +17,23 @@ public class CommentService {
     private final CommentValidation commentValidation;
     private final PostRepository postRepository;
 
-    public void createComment(Comment comment) {
+    public Comment createComment(Comment comment) {
         commentValidation.validateLengthContentComment(comment);
         commentValidation.validateAuthorExists(comment);
         commentValidation.validatePostExists(comment);
-        commentRepository.save(comment);
+
+        return commentRepository.save(comment);
     }
 
-    public void updateComment(Comment updateComment) {
+    public Comment updateComment(Comment updateComment) {
         commentValidation.validateLengthContentComment(updateComment);
         commentValidation.validatePostExists(updateComment);
         commentValidation.validateAuthorExists(updateComment);
-
         Comment comment = getComment(updateComment.getId());
         commentValidation.validateCommentEqualsUpdateComment(comment, updateComment);
 
         comment.setContent(updateComment.getContent());
-        commentRepository.save(comment);
+        return commentRepository.save(comment);
     }
 
     public List<Comment> getAllComment(long postId) {

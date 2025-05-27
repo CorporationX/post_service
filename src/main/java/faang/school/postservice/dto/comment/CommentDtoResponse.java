@@ -16,4 +16,5 @@ public class CommentDtoResponse {
     private Long authorId;
     private String content;
     private String createData;
+    private String updateData;
 }

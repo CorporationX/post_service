@@ -11,17 +11,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class UpdateCommentDto {
+public class CommentUpdateDto {
 
     @NotNull
     private Long commentId;
     @NotBlank
-    private Long postId;
-    @NotBlank
-    private Long authorId;
-    @NotBlank
     private String content;
-    //todo добавить приклепленные изображения
-
-
 }

@@ -1,8 +1,8 @@
 package faang.school.postservice.service.comment;
 
+import faang.school.postservice.dto.comment.CommentCreateDto;
 import faang.school.postservice.dto.comment.CommentDtoResponse;
-import faang.school.postservice.dto.comment.CreateCommentDto;
-import faang.school.postservice.dto.comment.UpdateCommentDto;
+import faang.school.postservice.dto.comment.CommentUpdateDto;
 import faang.school.postservice.mapper.comment.MapperComment;
 import faang.school.postservice.model.Comment;
 import lombok.RequiredArgsConstructor;
@@ -13,26 +13,28 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class CommentServiceFacade {
-    //todo доработать
-
     private final MapperComment mapperComment;
     private final CommentService commentService;
 
-    public void createComment(CreateCommentDto commentDto) {
+    public CommentDtoResponse createComment(CommentCreateDto commentDto) {
         Comment comment = mapperComment.fromCreatDtoToEntity(commentDto);
-        commentService.createComment(comment);
+        Comment commentCreate = commentService.createComment(comment);
+
+        return mapperComment.fromEntityToDto(commentCreate);
     }
 
-    public void updateComment(UpdateCommentDto commentDto) {
+    public CommentDtoResponse updateComment(CommentUpdateDto commentDto) {
         Comment comment = mapperComment.fromUpdateDtoToEntity(commentDto);
-        commentService.updateComment(comment);
+        Comment commentUpdate = commentService.updateComment(comment);
+
+        return mapperComment.fromEntityToDto(commentUpdate);
     }
 
     public List<CommentDtoResponse> getAllComment(long postId) {
         List<Comment> comments = commentService.getAllComment(postId);
 
         return comments.stream()
-                .map(mapperComment::fromEntityToModifiedDto)
+                .map(mapperComment::fromEntityToDto)
                 .toList();
     }
 

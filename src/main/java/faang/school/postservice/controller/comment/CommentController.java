@@ -1,8 +1,8 @@
 package faang.school.postservice.controller.comment;
 
+import faang.school.postservice.dto.comment.CommentCreateDto;
 import faang.school.postservice.dto.comment.CommentDtoResponse;
-import faang.school.postservice.dto.comment.CreateCommentDto;
-import faang.school.postservice.dto.comment.UpdateCommentDto;
+import faang.school.postservice.dto.comment.CommentUpdateDto;
 import faang.school.postservice.service.comment.CommentServiceFacade;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -22,19 +22,16 @@ import java.util.List;
 public class CommentController {
     private final CommentServiceFacade commentServiceF;
 
-    //todo разобраться с возвращаемыми данными в контроллере
-    //todo валидация Dto разбраться
-
     @PostMapping("/comments")
-    public ResponseEntity<Void> createComment(@RequestBody CreateCommentDto commentDto) {
-        commentServiceF.createComment(commentDto);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<CommentDtoResponse> createComment(@RequestBody CommentCreateDto commentDto) {
+        CommentDtoResponse commentDtoResponse = commentServiceF.createComment(commentDto);
+        return ResponseEntity.ok(commentDtoResponse);
     }
 
     @PutMapping("/comments/{commentId}")
-    public ResponseEntity<Void> updateComment(@RequestBody UpdateCommentDto commentDto) {
-        commentServiceF.updateComment(commentDto);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<CommentDtoResponse> updateComment(@RequestBody CommentUpdateDto commentDto) {
+        CommentDtoResponse commentDtoResponse = commentServiceF.updateComment(commentDto);
+        return ResponseEntity.ok(commentDtoResponse);
     }
 
     @GetMapping("/comments")
