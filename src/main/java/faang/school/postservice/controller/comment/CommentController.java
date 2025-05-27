@@ -33,14 +33,14 @@ public class CommentController {
     private final CommentService service;
     private final UserContext userContext;
 
-    @PostMapping()
+    @PostMapping
     public CommentOutputDto create(@Valid @RequestBody CommentForCreationDto commentDto) {
         log.info("Creating a comment by user {} for post with id {} - Started"
                 , userContext.getUserId(), commentDto.getPostId());
         return service.create(commentDto);
     }
 
-    @PatchMapping()
+    @PatchMapping
     public CommentDto update(@Valid @RequestBody CommentForUpdateDto commentDto) {
         log.info("Update a comment with id {} by user {} - Started"
                 , commentDto.getId(), userContext.getUserId());

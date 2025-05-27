@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 
 @EqualsAndHashCode(callSuper = false)
 @Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class CommentForUpdateDto extends CommentDto{

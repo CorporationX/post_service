@@ -78,10 +78,7 @@ class CommentControllerTest {
 
     @Test
     void testCreate() throws Exception {
-        CommentForCreationDto commentDto = CommentForCreationDto.builder()
-                .content("Comment 1")
-                .postId(postId)
-                .build();
+        CommentForCreationDto commentDto = new CommentForCreationDto(postId, "Comment 1");
 
         outputDto = commentMapper.toDto(comment1);
         when(service.create(any(CommentForCreationDto.class))).thenReturn(outputDto);
@@ -97,10 +94,7 @@ class CommentControllerTest {
 
     @Test
     void testUpdate() throws Exception {
-        CommentForUpdateDto commentDto = CommentForUpdateDto.builder()
-                .id(commentId1)
-                .content("Updated comment")
-                .build();
+        CommentForUpdateDto commentDto = new CommentForUpdateDto(commentId1, "Updated comment");
         comment1.setContent("Updated comment");
         outputDto = commentMapper.toDto(comment1);
 
