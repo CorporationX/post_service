@@ -97,8 +97,6 @@ public class PostServiceTest {
                 .published(false)
                 .build();
         when(postRepository.findById(any())).thenReturn(Optional.of(post));
-        when(userServiceClient.getUser(post.getAuthorId())).thenReturn(createUserDto(post.getAuthorId()));
-        when(userServiceClient.getFollowerIds(post.getAuthorId())).thenReturn(List.of(1L, 2L, 3L));
         PostResponseDto postDto = postService.publish(post.getId());
 
         verify(postRepository, times(1)).save(post);

@@ -43,7 +43,6 @@ public class LikeService {
     private final UserContext userContext;
     private final UserServiceClient userClient;
     private final LikeEventPublisher likeEventPublisher;
-    private final List<KafkaEventPublisher<?>> kafkaNewsFeedPublishers;
 
     public void putLikeOnPost(Long postId) {
         Long userId = getContextUser();
