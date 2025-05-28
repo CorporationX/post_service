@@ -76,24 +76,12 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public List<Post> getAllDraftPostsByUserId() {
-        long userId = userContext.getUserId();
-        return postRepository.findByAuthorIdAndDeletedFalseAndPublishedFalseOrderByCreatedAtDesc(userId);
+    public List<Post> getAllDraftPosts(Long userId, Long projectId) {
+        return postRepository.findAllDraftPostsByUserOrProject(userId, projectId);
     }
 
     @Transactional(readOnly = true)
-    public List<Post> getAllDraftPostsByProjectId(long projectId) {
-        return postRepository.findByProjectIdAndDeletedFalseAndPublishedFalseOrderByCreatedAtDesc(projectId);
-    }
-
-    @Transactional(readOnly = true)
-    public List<Post> getAllPublishedPostsByUserId() {
-        long userId = userContext.getUserId();
-        return postRepository.findByAuthorIdAndDeletedFalseAndPublishedTrueOrderByPublishedAtDesc(userId);
-    }
-
-    @Transactional(readOnly = true)
-    public List<Post> getAllPublishedPostsByProjectId(long projectId) {
-        return postRepository.findByProjectIdAndDeletedFalseAndPublishedTrueOrderByPublishedAtDesc(projectId);
+    public List<Post> getAllPublishedPosts(Long userId, Long projectId) {
+        return postRepository.findAllPublishedPostsByUserOrProject(userId, projectId);
     }
 }

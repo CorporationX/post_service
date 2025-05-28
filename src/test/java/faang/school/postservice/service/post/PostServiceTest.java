@@ -1,7 +1,6 @@
 package faang.school.postservice.service.post;
 
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.exception.authorization.UserUnauthorizedException;
 import faang.school.postservice.exception.client.RemoteNotFoundException;
 import faang.school.postservice.exception.post.PostAlreadyPublishedException;
 import faang.school.postservice.exception.post.PostNotFoundException;
@@ -157,74 +156,58 @@ public class PostServiceTest {
     }
 
     @Test
-    public void testGetAllDraftPostsByUserId_successfully() {
-        long userId = 1L;
+    public void testGetAllDraftPosts_byUserId() {
+        Long userId = 1L;
 
-        when(userContext.getUserId()).thenReturn(userId);
-        when(postRepository.findByAuthorIdAndDeletedFalseAndPublishedFalseOrderByCreatedAtDesc(eq(userId)))
+        when(postRepository.findAllDraftPostsByUserOrProject(eq(userId), eq(null)))
                 .thenReturn(List.of(post));
 
-        List<Post> posts = postService.getAllDraftPostsByUserId();
+        List<Post> posts = postService.getAllDraftPosts(userId, null);
 
         assertTrue(posts.contains(post));
         verify(postRepository, times(1))
-                .findByAuthorIdAndDeletedFalseAndPublishedFalseOrderByCreatedAtDesc(eq(userId));
+                .findAllDraftPostsByUserOrProject(eq(userId), eq(null));
     }
 
     @Test
-    public void testGetAllDraftPostsByUserId_userInContextNotFound() {
-        when(userContext.getUserId()).thenThrow(UserUnauthorizedException.class);
+    public void testGetAllDraftPosts_byProjectId() {
+        Long projectId = 2L;
 
-        assertThrows(UserUnauthorizedException.class, () -> postService.getAllDraftPostsByUserId());
-    }
-
-    @Test
-    public void testGetAllDraftPostsByProjectId() {
-        long projectId = 1L;
-
-        when(postRepository.findByProjectIdAndDeletedFalseAndPublishedFalseOrderByCreatedAtDesc(eq(projectId)))
+        when(postRepository.findAllDraftPostsByUserOrProject(eq(null), eq(projectId)))
                 .thenReturn(List.of(post));
 
-        List<Post> posts = postService.getAllDraftPostsByProjectId(projectId);
+        List<Post> posts = postService.getAllDraftPosts(null, projectId);
 
         assertTrue(posts.contains(post));
         verify(postRepository, times(1))
-                .findByProjectIdAndDeletedFalseAndPublishedFalseOrderByCreatedAtDesc(eq(projectId));
+                .findAllDraftPostsByUserOrProject(eq(null), eq(projectId));
     }
 
     @Test
-    public void testGetAllPublishedPostsByUserId_successfully() {
-        long userId = 1L;
+    public void testGetAllPublishedPosts_byUserId() {
+        Long userId = 1L;
 
-        when(userContext.getUserId()).thenReturn(userId);
-        when(postRepository.findByAuthorIdAndDeletedFalseAndPublishedTrueOrderByPublishedAtDesc(eq(userId)))
+        when(postRepository.findAllPublishedPostsByUserOrProject(eq(userId), eq(null)))
                 .thenReturn(List.of(post));
 
-        List<Post> posts = postService.getAllPublishedPostsByUserId();
+        List<Post> posts = postService.getAllPublishedPosts(userId, null);
 
         assertTrue(posts.contains(post));
         verify(postRepository, times(1))
-                .findByAuthorIdAndDeletedFalseAndPublishedTrueOrderByPublishedAtDesc(eq(userId));
+                .findAllPublishedPostsByUserOrProject(eq(userId), eq(null));
     }
 
     @Test
-    public void testGetAllPublishedPostsByUserId_userInContextNotFound() {
-        when(userContext.getUserId()).thenThrow(UserUnauthorizedException.class);
+    public void testGetAllPublishedPosts_byProjectId() {
+        Long projectId = 2L;
 
-        assertThrows(UserUnauthorizedException.class, () -> postService.getAllPublishedPostsByUserId());
-    }
-
-    @Test
-    public void testGetAllPublishedPostsByProjectId() {
-        long projectId = 1L;
-
-        when(postRepository.findByProjectIdAndDeletedFalseAndPublishedTrueOrderByPublishedAtDesc(eq(projectId)))
+        when(postRepository.findAllPublishedPostsByUserOrProject(eq(null), eq(projectId)))
                 .thenReturn(List.of(post));
 
-        List<Post> posts = postService.getAllPublishedPostsByProjectId(projectId);
+        List<Post> posts = postService.getAllPublishedPosts(null, projectId);
 
         assertTrue(posts.contains(post));
         verify(postRepository, times(1))
-                .findByProjectIdAndDeletedFalseAndPublishedTrueOrderByPublishedAtDesc(eq(projectId));
+                .findAllPublishedPostsByUserOrProject(eq(null), eq(projectId));
     }
 }

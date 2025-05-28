@@ -68,8 +68,9 @@ public class PostFacade {
                 post, postResponseDto);
         return postResponseDto;
     }
-    public List<PostResponseDto> getAllDraftPostsForUser() {
-        List<Post> posts = postService.getAllDraftPostsByUserId();
+
+    public List<PostResponseDto> getAllDraftPosts(Long userId, Long projectId) {
+        List<Post> posts = postService.getAllDraftPosts(userId, projectId);
 
         List<PostResponseDto> postResponseDtoList = postMapper.toPostResponseDtoList(posts);
         log.debug("Mapping Post entity list to PostResponseDto list. Entity content: {}. DTO content: {}.",
@@ -77,26 +78,8 @@ public class PostFacade {
         return postResponseDtoList;
     }
 
-    public List<PostResponseDto> getAllDraftPostsByProjectId(long projectId) {
-        List<Post> posts = postService.getAllDraftPostsByProjectId(projectId);
-
-        List<PostResponseDto> postResponseDtoList = postMapper.toPostResponseDtoList(posts);
-        log.debug("Mapping Post entity list to PostResponseDto list. Entity content: {}. DTO content: {}.",
-                posts, postResponseDtoList);
-        return postResponseDtoList;
-    }
-
-    public List<PostResponseDto> getAllPublishedPostsForUser() {
-        List<Post> posts = postService.getAllPublishedPostsByUserId();
-
-        List<PostResponseDto> postResponseDtoList = postMapper.toPostResponseDtoList(posts);
-        log.debug("Mapping Post entity list to PostResponseDto list. Entity content: {}. DTO content: {}.",
-                posts, postResponseDtoList);
-        return postResponseDtoList;
-    }
-
-    public List<PostResponseDto> getAllPublishedPostsByProjectId(long projectId) {
-        List<Post> posts = postService.getAllPublishedPostsByProjectId(projectId);
+    public List<PostResponseDto> getAllPublishedPosts(Long userId, Long projectId) {
+        List<Post> posts = postService.getAllPublishedPosts(userId, projectId);
 
         List<PostResponseDto> postResponseDtoList = postMapper.toPostResponseDtoList(posts);
         log.debug("Mapping Post entity list to PostResponseDto list. Entity content: {}. DTO content: {}.",
