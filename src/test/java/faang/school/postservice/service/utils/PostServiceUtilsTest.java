@@ -76,8 +76,8 @@ class PostServiceUtilsTest {
 
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
                     () -> postServiceUtils.isAuthorOrProjectAdded(createPostDto));
-            assertEquals("AuthorId or projectId were provided both or neither", exception.getMessage());
-
+            assertEquals("Exactly one of AuthorId or ProjectId must be provided as a positive value.",
+                    exception.getMessage());
             verifyNoInteractions(userServiceMock);
             verifyNoInteractions(projectServiceMock);
         }
