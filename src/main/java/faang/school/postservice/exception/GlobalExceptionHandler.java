@@ -48,7 +48,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({
             HashtagServiceConnectionException.class,
             AsyncPostProcessingException.class,
-            UserServiceConnectionException.class
+            UserServiceConnectionException.class,
+            PageOverflowException.class
     })
     public ResponseEntity<ErrorResponse> handleExceptionsWithStatusInternalServerError(Exception ex) {
         return ResponseEntity.status(INTERNAL_SERVER_ERROR).body(getErrorResponse(ex));

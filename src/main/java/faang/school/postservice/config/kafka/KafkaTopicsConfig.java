@@ -3,6 +3,8 @@ package faang.school.postservice.config.kafka;
 import faang.school.postservice.config.properties.AuthorRequestTopicProperties;
 import faang.school.postservice.config.properties.AuthorResponseTopicProperties;
 import faang.school.postservice.config.properties.CommentAddedTopicProperties;
+import faang.school.postservice.config.properties.FeedUsersResponseTopicProperties;
+import faang.school.postservice.config.properties.FeedWarmupTopicProperties;
 import faang.school.postservice.config.properties.FollowersRequestTopicProperties;
 import faang.school.postservice.config.properties.HashtagAddingTopicProperties;
 import faang.school.postservice.config.properties.HashtagRemovingTopicProperties;
@@ -30,6 +32,8 @@ public class KafkaTopicsConfig {
     private final PostsViewTopicProperties postsViewTopic;
     private final AuthorRequestTopicProperties authorRequestTopic;
     private final AuthorResponseTopicProperties authorResponseTopic;
+    private final FeedUsersResponseTopicProperties feedUsersResponseTopic;
+    private final FeedWarmupTopicProperties feedWarmupTopic;
 
     @Bean
     public NewTopic hashtagAddingTopic() {
@@ -99,6 +103,20 @@ public class KafkaTopicsConfig {
         return createTopic(authorResponseTopic.name(),
                 authorResponseTopic.partitions(),
                 authorResponseTopic.replicas());
+    }
+
+    @Bean
+    public NewTopic feedUsersResponseTopic() {
+        return createTopic(feedUsersResponseTopic.name(),
+                feedUsersResponseTopic.partitions(),
+                feedUsersResponseTopic.replicas());
+    }
+
+    @Bean
+    public NewTopic feedWarmupTopic() {
+        return createTopic(feedWarmupTopic.name(),
+                feedWarmupTopic.partitions(),
+                feedWarmupTopic.replicas());
     }
 
     private NewTopic createTopic(String name, int partitions, int replicas) {

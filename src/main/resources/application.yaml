@@ -77,6 +77,14 @@ spring:
           name: "author-response-topic"
           partitions: 3
           replicas: 1
+        feed-warmup:
+          name: "feed-warmup-topic"
+          partitions: 3
+          replicas: 1
+        feed-users-response:
+          name: "feed-users-response-topic"
+          partitions: 3
+          replicas: 1
       producer:
         retry-backoff-ms: 1000
         acks: all
@@ -126,6 +134,7 @@ thread-pool:
 
 batch:
   size: 1000
+  users-per-page: 1000
 
 cron:
   delete-expired-posts: 0 49 15 * * FRI
