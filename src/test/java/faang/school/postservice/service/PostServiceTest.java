@@ -6,15 +6,19 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.dto.PostResponseDto;
 import faang.school.postservice.exception.PostAlreadyPublishedException;
+import faang.school.postservice.mapper.PostCacheMapper;
+import faang.school.postservice.mapper.PostCacheMapperImpl;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.VerifiedStatus;
 import faang.school.postservice.publisher.HashtagAddingEventPublisher;
 import faang.school.postservice.publisher.HashtagRemovingEventPublisher;
 import faang.school.postservice.publisher.PostViewEventPublisher;
+import faang.school.postservice.redisModel.PostCache;
 import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
+import faang.school.postservice.repository.PostCacheRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ResourceRepository;
 import faang.school.postservice.repository.ad.AdRepository;
@@ -87,6 +91,12 @@ public class PostServiceTest {
 
     @Mock
     private HashtagServiceClient hashtagClient;
+
+    @Spy
+    private PostCacheMapperImpl postCacheMapper;
+
+    @Mock
+    private  PostCacheRepository postCacheRepository;
 
     @Test
     public void testPositivePublish() {
