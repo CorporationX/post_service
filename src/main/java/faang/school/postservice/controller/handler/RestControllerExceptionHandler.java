@@ -4,6 +4,7 @@ import faang.school.postservice.exception.AuthorNotFoundException;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.ExternalServiceException;
 import faang.school.postservice.exception.PostNotFoundException;
+import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,6 +43,12 @@ public class RestControllerExceptionHandler {
     public ResponseEntity<ErrorResponse> handleUnexpectedException(RuntimeException e) {
         log.error("Unexpected error: {}", e.getMessage(), e);
         return buildErrorResponse("Unexpected server error", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(FeignException.class)
+    public ResponseEntity<ErrorResponse> handleFeignException(FeignException e) {
+        log.error("Feign exception occurred: {}", e.getMessage(), e);
+        return buildErrorResponse("External service is unavailable", HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     private ResponseEntity<ErrorResponse> buildErrorResponse(String message, HttpStatus status) {

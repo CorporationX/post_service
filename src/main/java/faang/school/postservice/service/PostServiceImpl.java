@@ -3,14 +3,11 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.exception.AuthorNotFoundException;
 import faang.school.postservice.exception.DataValidationException;
-import faang.school.postservice.exception.ExternalServiceException;
 import faang.school.postservice.exception.PostNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
-import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -121,28 +118,10 @@ public class PostServiceImpl implements PostService {
         if ((authorId == null && projectId == null) || (authorId != null && projectId != null)) {
             throw new DataValidationException("Author must be either a user or a project, but not both or neither");
         }
-
-        try {
-            if (authorId != null) {
-                userServiceClient.getUser(authorId);
-            } else {
-                projectServiceClient.getProject(projectId);
-            }
-        } catch (FeignException e) {
-            String type = authorId != null ? "User" : "Project";
-            Long id = authorId != null ? authorId : projectId;
-
-            if (e.status() == 404) {
-                throw new AuthorNotFoundException(type + " with id=" + id + " not found");
-            } else if (e.status() >= 400 && e.status() < 500) {
-                throw new DataValidationException(
-                        type + " service returned client error (" + e.status() + ") for id=" + id);
-            } else if (e.status() >= 500) {
-                throw new ExternalServiceException(
-                        type + " service unavailable or failed (" + e.status() + ") for id=" + id);
-            } else {
-                throw new RuntimeException("Unexpected error while validating author: " + e.getMessage());
-            }
+        if (authorId != null) {
+            userServiceClient.getUser(authorId);
+        } else {
+            projectServiceClient.getProject(projectId);
         }
     }
 }

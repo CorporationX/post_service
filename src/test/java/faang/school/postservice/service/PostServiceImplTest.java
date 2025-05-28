@@ -4,11 +4,12 @@ import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.exception.AuthorNotFoundException;
 import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.exception.PostNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
-import feign.FeignException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -73,15 +74,17 @@ public class PostServiceImplTest {
     @Test
     void testValidateAuthor_whenUserNotFound_thenThrowsException() {
         PostDto dto = new PostDto(null, "text", 99L, null);
-        when(userServiceClient.getUser(99L)).thenThrow(FeignException.NotFound.class);
-        assertThrows(DataValidationException.class, () -> postService.createDraft(dto));
+        when(userServiceClient.getUser(99L))
+                .thenThrow(new AuthorNotFoundException("User not found"));
+        assertThrows(AuthorNotFoundException.class, () -> postService.createDraft(dto));
     }
 
     @Test
     void testValidateAuthor_whenProjectNotFound_thenThrowsException() {
         PostDto dto = new PostDto(null, "text", null, 77L);
-        when(projectServiceClient.getProject(77L)).thenThrow(FeignException.NotFound.class);
-        assertThrows(DataValidationException.class, () -> postService.createDraft(dto));
+        when(projectServiceClient.getProject(77L))
+                .thenThrow(new AuthorNotFoundException("Project not found"));
+        assertThrows(AuthorNotFoundException.class, () -> postService.createDraft(dto));
     }
 
     @Test
@@ -147,9 +150,9 @@ public class PostServiceImplTest {
     }
 
     @Test
-    void testGetPost_whenFound_thenThrowsException() {
+    void testGetPost_whenNotFound_thenThrowsException() {
         when(postRepository.findById(1L)).thenReturn(Optional.empty());
-        assertThrows(DataValidationException.class, () -> postService.getPost(1L));
+        assertThrows(PostNotFoundException.class, () -> postService.getPost(1L));
     }
 
     @Test
