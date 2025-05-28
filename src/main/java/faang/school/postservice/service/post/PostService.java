@@ -52,6 +52,7 @@ public class PostService {
     private final PostValidator postValidator;
     private final PostModerationAsyncHandler postModerationAsyncHandler;
     private final ModerationConfig postModerationConfig;
+    private final PostKafkaEventPublisher postKafkaEventPublisher;
 
     /**
      * Создает черновик поста на основе переданного DTO.
@@ -87,6 +88,9 @@ public class PostService {
 
         publishPost.setPublished(true);
         publishPost.setPublishedAt(LocalDateTime.now());
+        publishPost = postRepository.save(publishPost);
+
+        postKafkaEventPublisher.putPostToKafka(publishPost);
 
         return postMapper.toViewDto(publishPost);
     }

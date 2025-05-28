@@ -11,6 +11,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.post.PostModerationAsyncHandler;
 import faang.school.postservice.service.post.PostService;
+import faang.school.postservice.service.post.PostKafkaEventPublisher;
 import faang.school.postservice.validation.PostValidator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,9 +29,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -53,6 +52,8 @@ public class PostServiceTest {
     private PostModerationAsyncHandler postModerationAsyncHandler;
     @Mock
     private ModerationConfig postModerationConfig;
+    @Mock
+    private PostKafkaEventPublisher postKafkaEventPublisher;
 
     @InjectMocks
     private PostService postService;
@@ -99,6 +100,7 @@ public class PostServiceTest {
 
         when(postRepository.findById(postId))
                 .thenReturn(Optional.of(post));
+        when(postRepository.save(post)).thenReturn(post);
         when(postMapper.toViewDto(post)).thenReturn(postViewDto);
         PostViewDto result = postService.publishPost(postId);
 
@@ -106,6 +108,7 @@ public class PostServiceTest {
 
         verify(postMapper, Mockito.times(1)).toViewDto(post);
         verify(postRepository, Mockito.times(1)).findById(postId);
+        verify(postKafkaEventPublisher, Mockito.times(1)).putPostToKafka(post);
     }
 
     @Test
