@@ -2,6 +2,7 @@ package faang.school.postservice.mapper;
 
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.model.Comment;
+import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.redisModel.PostCache;
 import org.mapstruct.Mapper;
@@ -15,10 +16,10 @@ import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring")
 public interface PostCacheMapper {
-    @Mapping(target = "authorId", source = "author.id")
-    @Mapping(target = "projectId", source = "project.id")
-    @Mapping(target = "postId", source = "project.id")
-    @Mapping(target = "likeCount", expression = "java(mapLatestComments(post.getComments()))")
+    @Mapping(target = "postId", source = "id")
+    @Mapping(target = "latestComments", expression = "java(mapLatestComments(post.getComments()))")
+    @Mapping(target = "likeCount", source = "likes", qualifiedByName = "calculateLikeCount")
+    @Mapping(target = "ttl", ignore = true)
     PostCache toCache(Post post);
 
     Post toEntity(PostCache postCache);
@@ -45,4 +46,9 @@ public interface PostCacheMapper {
                 .build();
         return dto;
     }
+    @Named("calculateLikeCount")
+    default Integer calculateLikeCount(List<Like> likes) {
+        return likes != null ? likes.size() : 0;
+    }
 }
+

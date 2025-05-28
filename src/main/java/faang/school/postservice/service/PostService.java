@@ -12,6 +12,7 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.HashtagServiceConnectionException;
 import faang.school.postservice.exception.PostAlreadyPublishedException;
 import faang.school.postservice.exception.PostUnverifiedException;
+import faang.school.postservice.mapper.PostCacheMapper;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.Comment;
@@ -23,9 +24,11 @@ import faang.school.postservice.model.ad.Ad;
 import faang.school.postservice.publisher.HashtagAddingEventPublisher;
 import faang.school.postservice.publisher.HashtagRemovingEventPublisher;
 import faang.school.postservice.publisher.PostViewEventPublisher;
+import faang.school.postservice.redisModel.PostCache;
 import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
+import faang.school.postservice.repository.PostCacheRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ResourceRepository;
 import faang.school.postservice.repository.ad.AdRepository;
@@ -48,6 +51,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @Slf4j
@@ -68,12 +72,17 @@ public class PostService {
     private final HashtagAddingEventPublisher hashtagAddingPublisher;
     private final HashtagRemovingEventPublisher hashtagRemovingPublisher;
     private final HashtagServiceClient hashtagClient;
+    private final PostCacheMapper postCacheMapper;
+    private final PostCacheRepository postCacheRepository;
 
     @Value("${batch.size}")
     private int batchSize;
 
     @Value("${thread-pool.publish-timeout}")
     private int threadTimeout;
+
+    @Value("${spring.data.redis.cacheTtl}")
+    private Long ttl;
 
     public void publishScheduledPosts() {
         List<Post> readyPosts = postRepository.findReadyToPublish();
@@ -132,6 +141,10 @@ public class PostService {
         postRepository.saveAll(batch);
         log.info("Опубликовано {} постов с {} по {} id.",
                 batch.size(), batch.get(0).getId(), batch.get(batch.size() - 1).getId());
+        postCacheRepository.saveAll(toListCaches(batch, ttl));
+        log.info("Захэшированно {} постов с {} по {} id.",
+                batch.size(), batch.get(0).getId(), batch.get(batch.size() - 1).getId());
+
     }
 
     public PostResponseDto create(PostDto postDto) {
@@ -186,7 +199,12 @@ public class PostService {
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
         postRepository.save(post);
-        log.info("Post published: {}", post);
+        log.info("Post published: {}", post.getId());
+        PostCache postCache = postCacheMapper.toCache(post);
+        postCache.setTtl(ttl);
+        postCacheRepository.save(postCache);
+        log.info("Post is cached: {}", post.getId());
+
         return postMapper.toResponseDto(post);
     }
 
@@ -343,5 +361,15 @@ public class PostService {
                 .map(postMapper::toResponseDto)
                 .peek(postDto -> postDto.setHashtagsId(hashtags.get(postDto.getId())))
                 .toList();
+    }
+
+    public List<PostCache> toListCaches(List<Post> posts, Long ttl) {
+        return posts.stream()
+                .map(post -> {
+                    PostCache cache = postCacheMapper.toCache(post);  // Базовый маппинг
+                    cache.setTtl(ttl);
+                    return cache;
+                })
+                .collect(Collectors.toList());
     }
 }
