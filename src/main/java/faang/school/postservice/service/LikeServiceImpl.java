@@ -48,6 +48,7 @@ public class LikeServiceImpl implements LikeService {
         userServiceClient.getUser(userId);
 
         likeRepository.deleteByPostIdAndUserId(postId, userId);
+
     }
 
 
