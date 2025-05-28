@@ -4,6 +4,7 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ public class CommentValidation {
 
     private final UserServiceClient userServiceClient;
     private final PostRepository postRepository;
+    private final CommentRepository commentRepository;
 
 
     public void validateLengthContentComment(Comment comment) {
@@ -26,7 +28,8 @@ public class CommentValidation {
             throw new DataValidationException("the length of the comment is empty");
         }
         if (content.length() > MAX_LENGTH_CONTENT) {
-            throw new DataValidationException("the length of the comment is more than 4096 characters");
+            throw new DataValidationException(
+                    "the length of the comment is more than %d characters".formatted(MAX_LENGTH_CONTENT));
         }
     }
 
@@ -48,8 +51,18 @@ public class CommentValidation {
         if (null == post) {
             throw new DataValidationException("the comment is not linked to the post");
         }
-        long postId = post.getId();
-        postRepository.findById(postId)
-                .orElseThrow(() -> new EntityNotFoundException("the post was not found in the database"));
+        validatePostExistsById(post.getId());
+    }
+
+    public void validatePostExistsById(long postId) {
+        if (!postRepository.existsById(postId)) {
+            throw new EntityNotFoundException(("the post does not exists %d".formatted(postId)));
+        }
+    }
+
+    public void validateCommentExists(long commentId) {
+        if (!commentRepository.existsById(commentId)) {
+            throw new EntityNotFoundException(("the comment does not exists %d".formatted(commentId)));
+        }
     }
 }

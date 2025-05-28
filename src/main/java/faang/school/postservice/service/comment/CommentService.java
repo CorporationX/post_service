@@ -2,11 +2,11 @@ package faang.school.postservice.service.comment;
 
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.repository.CommentRepository;
-import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validation.comment.CommentValidation;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -15,8 +15,8 @@ import java.util.List;
 public class CommentService {
     private final CommentRepository commentRepository;
     private final CommentValidation commentValidation;
-    private final PostRepository postRepository;
 
+    @Transactional
     public Comment createComment(Comment comment) {
         commentValidation.validateLengthContentComment(comment);
         commentValidation.validateAuthorExists(comment);
@@ -25,28 +25,29 @@ public class CommentService {
         return commentRepository.save(comment);
     }
 
+    @Transactional
     public Comment updateComment(Comment updateComment) {
+        long commentId = updateComment.getId();
+        String content = updateComment.getContent();
+        Comment comment = getComment(commentId);
         commentValidation.validateLengthContentComment(updateComment);
-        commentValidation.validatePostExists(updateComment);
+        commentValidation.validatePostExists(comment);
         commentValidation.validateAuthorExists(updateComment);
-        Comment comment = getComment(updateComment.getId());
         commentValidation.validateCommentEqualsUpdateComment(comment, updateComment);
 
-        comment.setContent(updateComment.getContent());
+        comment.setContent(content);
         return commentRepository.save(comment);
     }
 
-    public List<Comment> getAllComment(long postId) {
-        if (!postRepository.existsById(postId)) {
-            throw new EntityNotFoundException(("the post does not exists %d".formatted(postId)));
-        }
+    @Transactional(readOnly = true)
+    public List<Comment> getAllComments(long postId) {
+        commentValidation.validatePostExistsById(postId);
         return commentRepository.findAllByPostId(postId);
     }
 
+    @Transactional
     public void deleteComment(long commentId) {
-        if (!commentRepository.existsById(commentId)) {
-            throw new EntityNotFoundException(("the comment does not exists %d".formatted(commentId)));
-        }
+        commentValidation.validateCommentExists(commentId);
         commentRepository.deleteById(commentId);
     }
 

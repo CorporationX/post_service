@@ -5,6 +5,7 @@ import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,11 +24,15 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class CommentValidationTest {
-    public static final long POST_ID = 1L;
-    public static final long USER_ID = 2L;
+    private static final long POST_ID = 1L;
+    private static final long USER_ID = 2L;
+    private static final long COMMENT_ID = 3L;
 
     @Mock
     private PostRepository postRepository;
+
+    @Mock
+    private CommentRepository commentRepository;
 
     @Mock
     private UserServiceClient userServiceClient;
@@ -110,10 +115,10 @@ class CommentValidationTest {
         post.setId(POST_ID);
         comment.setPost(post);
 
-        when(postRepository.findById(POST_ID)).thenReturn(Optional.of(post));
+        when(postRepository.existsById(POST_ID)).thenReturn(true);
 
         assertDoesNotThrow(() -> commentValidation.validatePostExists(comment));
-        verify(postRepository).findById(POST_ID);
+        verify(postRepository).existsById(POST_ID);
     }
 
     @Test
@@ -122,16 +127,24 @@ class CommentValidationTest {
         post.setId(POST_ID);
         comment.setPost(post);
 
-        when(postRepository.findById(POST_ID)).thenReturn(Optional.empty());
+        when(postRepository.existsById(POST_ID)).thenReturn(false);
 
         assertThrows(EntityNotFoundException.class,
                 () -> commentValidation.validatePostExists(comment));
-        verify(postRepository).findById(POST_ID);
+        verify(postRepository).existsById(POST_ID);
     }
 
     @Test
     void testValidatePostExistsWhenPostIsNull() {
         assertThrows(DataValidationException.class,
                 () -> commentValidation.validatePostExists(comment));
+    }
+
+    @Test
+    void testValidateCommentExistsWhenCommentNoExists() {
+        when(commentRepository.existsById(COMMENT_ID)).thenReturn(false);
+
+        assertThrows(EntityNotFoundException.class,
+                () -> commentValidation.validateCommentExists(COMMENT_ID));
     }
 }

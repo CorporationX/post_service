@@ -30,8 +30,8 @@ public class CommentServiceFacade {
         return mapperComment.fromEntityToDto(commentUpdate);
     }
 
-    public List<CommentDtoResponse> getAllComment(long postId) {
-        List<Comment> comments = commentService.getAllComment(postId);
+    public List<CommentDtoResponse> getAllComments(long postId) {
+        List<Comment> comments = commentService.getAllComments(postId);
 
         return comments.stream()
                 .map(mapperComment::fromEntityToDto)
