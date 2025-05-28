@@ -15,6 +15,7 @@ import faang.school.postservice.mapper.ResourceMapperImpl;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
+import faang.school.postservice.repository.AuthorCacheRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ResourceRepository;
 import io.minio.MinioClient;
@@ -96,6 +97,9 @@ class PostServiceImplTest {
 
     @Mock
     private UserServiceClient userServiceClient;
+
+    @Mock
+    private AuthorCacheRepository authorCacheRepository;
 
     @InjectMocks
     private PostServiceImpl postService;

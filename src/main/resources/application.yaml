@@ -109,6 +109,10 @@ app:
       max-posts-per-time: 10
   dictionary:
     post-dictionary-path: /dictionary/post-forbidden-words.txt
+  cache:
+    authors:
+      ttl: 86400 #24 hours
+      key-prefix: "post-authors"
 
 s3:
   endpoint: http://localhost:9000
