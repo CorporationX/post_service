@@ -13,7 +13,7 @@ public class KafkaCommentProducer extends AbstractKafkaProducer<CommentCreateEve
     @Value("${spring.kafka.topic.comment-topic}")
     private String commentTopic;
 
-    public KafkaCommentProducer(KafkaTemplate<String, Object> kafkaTemplate) {
+    public KafkaCommentProducer(KafkaTemplate<String, CommentCreateEvent> kafkaTemplate) {
         super(kafkaTemplate);
     }
 

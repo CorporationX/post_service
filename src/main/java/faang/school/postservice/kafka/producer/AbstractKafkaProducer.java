@@ -8,7 +8,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 @RequiredArgsConstructor
 public abstract class AbstractKafkaProducer<T> {
 
-    private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final KafkaTemplate<String, T> kafkaTemplate;
 
     protected void publishEvent(String topic, T event) {
         kafkaTemplate.send(topic, event)
