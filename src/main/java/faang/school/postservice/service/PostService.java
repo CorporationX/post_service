@@ -363,10 +363,10 @@ public class PostService {
                 .toList();
     }
 
-    public List<PostCache> toListCaches(List<Post> posts, Long ttl) {
+    private List<PostCache> toListCaches(List<Post> posts, Long ttl) {
         return posts.stream()
                 .map(post -> {
-                    PostCache cache = postCacheMapper.toCache(post);  // Базовый маппинг
+                    PostCache cache = postCacheMapper.toCache(post);
                     cache.setTtl(ttl);
                     return cache;
                 })
