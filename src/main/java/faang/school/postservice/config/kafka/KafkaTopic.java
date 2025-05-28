@@ -15,6 +15,7 @@ public class KafkaTopic {
     @Value("${spring.data.kafka.topic.userBan}")
     private String userBanTopic;
 
+
     @Bean
     public NewTopic comment() {
         return TopicBuilder.name(commentTopic).partitions(2).build();
@@ -25,3 +26,4 @@ public class KafkaTopic {
         return TopicBuilder.name(userBanTopic).partitions(1).build();
     }
 }
+

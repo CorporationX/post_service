@@ -16,6 +16,4 @@ public class ScheduledPostPublisher {
     public void publishScheduledPosts() {
         postService.publishScheduledPosts();
     }
-
-
 }

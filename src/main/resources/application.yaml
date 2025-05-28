@@ -42,6 +42,10 @@ spring:
           name: "hashtag-removing-topic"
           partitions: 3
           replicas: 1
+        likes:
+          name: likesTopic
+          partitions: 3
+          replicas: 1
       producer:
         retries: 3
         retry-backoff-ms: 1000
