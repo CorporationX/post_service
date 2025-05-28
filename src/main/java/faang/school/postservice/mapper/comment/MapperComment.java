@@ -15,8 +15,8 @@ public interface MapperComment {
 
     @Mapping(target = "commentId", source = "id")
     @Mapping(target = "postId", source = "post")
-    @Mapping(target = "createData", source = "createdAt", dateFormat = "dd.MM.yyyy")
-    @Mapping(target = "updateData", source = "updatedAt", dateFormat = "dd.MM.yyyy")
+    @Mapping(target = "createData", source = "createdAt", dateFormat = "dd.MM.yyyy HH:mm:ss")
+    @Mapping(target = "updateData", source = "updatedAt", dateFormat = "dd.MM.yyyy HH:mm:ss")
     CommentDtoResponse fromEntityToDto(Comment comment);
 
     @Mapping(source = "postId", target = "post.id")

@@ -19,29 +19,29 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/comments")
 public class CommentController {
     private final CommentServiceFacade commentServiceF;
 
-    @PostMapping("/comments")
+    @PostMapping
     public ResponseEntity<CommentDtoResponse> createComment(@RequestBody CommentCreateDto commentDto) {
         CommentDtoResponse commentDtoResponse = commentServiceF.createComment(commentDto);
         return ResponseEntity.ok(commentDtoResponse);
     }
 
-    @PutMapping("/comments")
+    @PutMapping
     public ResponseEntity<CommentDtoResponse> updateComment(@RequestBody CommentUpdateDto commentDto) {
         CommentDtoResponse commentDtoResponse = commentServiceF.updateComment(commentDto);
         return ResponseEntity.ok(commentDtoResponse);
     }
 
-    @GetMapping("/comments/{postId}")
+    @GetMapping("/{postId}")
     public ResponseEntity<List<CommentDtoResponse>> getAllComments(@PathVariable long postId) {
         List<CommentDtoResponse> commentDtoResponseList = commentServiceF.getAllComments(postId);
         return ResponseEntity.ok(commentDtoResponseList);
     }
 
-    @DeleteMapping("/comments/{commentId}")
+    @DeleteMapping("/{commentId}")
     public ResponseEntity<Long> deleteComment(@PathVariable long commentId) {
         commentServiceF.deleteComment(commentId);
         return ResponseEntity.ok(commentId);
