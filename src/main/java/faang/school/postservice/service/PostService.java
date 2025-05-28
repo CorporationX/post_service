@@ -29,7 +29,10 @@ public class PostService {
     @Transactional
     public Post createPost(Post post) {
         long userId = userContext.getUserId();
+        boolean isExist = postRepository.existsById(post.getId());
+
         post.setAuthorId(userId);
+        PostValidation.validatePostDoesNotExist(isExist);
         PostValidation.validateNotNullAuthor(post);
         PostValidation.validateNotNullContent(post);
         userServiceClient.getUser(userId);
