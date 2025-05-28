@@ -34,7 +34,7 @@ public class LikeSystemService {
 
         if (post.getLikes().stream()
                 .anyMatch(like -> Objects.equals(like.getUserId(), likeDto.userId()))) {
-            throw new IllegalArgumentException("The like is already worth it");
+            throw new IllegalArgumentException("Post already has like on it");
         }//Проверка на "стоит уже лайк на посте или нет"
 
 
@@ -72,9 +72,9 @@ public class LikeSystemService {
 
         userServiceClient.getUser(likeDto.userId(), "12345");//Проверка на наличие юзера в системе, не работает метод
 
-        if(comment.getLikes().stream()
-                .anyMatch(like -> Objects.equals(like.getUserId(), likeDto.userId()))){
-            throw new IllegalArgumentException("The like is already worth it");
+        if (comment.getLikes().stream()
+                .anyMatch(like -> Objects.equals(like.getUserId(), likeDto.userId()))) {
+            throw new IllegalArgumentException("Comment already has like on it");
         }//Стоит ли лайк на комменте или нет
 
         if (comment.getPost().getLikes().stream()

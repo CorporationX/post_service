@@ -23,7 +23,7 @@ public class LikeSystemController {
     }
 
     @DeleteMapping(path = "/post/{id}")
-    public LikeDto deleteLikePost(@PathVariable("id") Long id){
+    public LikeDto deleteLikePost(@PathVariable Long id){
         return likeSystemService.deleteLikePost(id);
     }
 
@@ -33,7 +33,7 @@ public class LikeSystemController {
     }
 
     @DeleteMapping(path = "/comment/{id}")
-    public LikeDto deleteLikeComment(@PathVariable("id") Long id){
+    public LikeDto deleteLikeComment(@PathVariable Long id){
         return likeSystemService.deleteLikeComment(id);
     }
 }

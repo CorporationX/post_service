@@ -41,7 +41,7 @@ class LikeSystemServiceTest {
     private LikeSystemService likeSystemService;
 
     @Test
-    void addLikePostTestPostWillBeLiked(){
+    void addLikePostTestPostAlreadyHasLiked() {
         long id = 1L;
         Like like = Like.builder()
                 .userId(id)
@@ -59,11 +59,11 @@ class LikeSystemServiceTest {
 
         when(postService.getPostById(dto.postId())).thenReturn(post);
 
-        assertThrows(IllegalArgumentException.class, ()->likeSystemService.addLikePost(dto));
+        assertThrows(IllegalArgumentException.class, () -> likeSystemService.addLikePost(dto));
     }
 
     @Test
-    void addLikePostTestCommentWillBeLikesByUser(){
+    void addLikePostTestCommentWillHaveLikesByUser() {
         long id = 1L;
         long userId = 2L;
         Like like = Like.builder()
@@ -84,11 +84,11 @@ class LikeSystemServiceTest {
 
         when(postService.getPostById(dto.postId())).thenReturn(post);
 
-        assertThrows(IllegalArgumentException.class, ()->likeSystemService.addLikePost(dto));
+        assertThrows(IllegalArgumentException.class, () -> likeSystemService.addLikePost(dto));
     }
 
     @Test
-    void addLikePostTest(){
+    void addLikePostTest() {
         long id = 1L;
         long userId = 2L;
         long userIdNewLike = 3L;
@@ -118,17 +118,17 @@ class LikeSystemServiceTest {
     }
 
     @Test
-    void deleteLikePostLikeNotExist(){
+    void deleteLikePostLikeNotExist() {
         long id = -1L;
 
         when(likeRepository.findById(id))
                 .thenThrow(new IllegalArgumentException("The like with id = " + id + " does not exist"));
 
-        assertThrows(IllegalArgumentException.class, ()->likeSystemService.deleteLikePost(id));
+        assertThrows(IllegalArgumentException.class, () -> likeSystemService.deleteLikePost(id));
     }
 
     @Test
-    void deleteLikePostLikeExist(){
+    void deleteLikePostLikeExist() {
         long id = 1L;
         Post post = Post.builder()
                 .likes(new ArrayList<>())
@@ -149,7 +149,7 @@ class LikeSystemServiceTest {
     }
 
     @Test
-    void addLikeCommentTestCommentWillBeLiked(){
+    void addLikeCommentTestCommentAlreadyHasLiked() {
         long id = 1L;
         Like like = Like.builder()
                 .userId(id)
@@ -164,11 +164,11 @@ class LikeSystemServiceTest {
 
         when(commentService.getCommentById(dto.commentId())).thenReturn(comment);
 
-        assertThrows(IllegalArgumentException.class, ()->likeSystemService.addLikeComment(dto));
+        assertThrows(IllegalArgumentException.class, () -> likeSystemService.addLikeComment(dto));
     }
 
     @Test
-    void addLikeCommentTestPostWillBeLikesByUser(){
+    void addLikeCommentTestPostWillHaveLikesByUser() {
         long id = 1L;
         long userId = 2L;
         Like like = Like.builder()
@@ -188,11 +188,11 @@ class LikeSystemServiceTest {
         comment.setPost(post);
         when(commentService.getCommentById(any())).thenReturn(comment);
 
-        assertThrows(IllegalArgumentException.class, ()->likeSystemService.addLikeComment(dto));
+        assertThrows(IllegalArgumentException.class, () -> likeSystemService.addLikeComment(dto));
     }
 
     @Test
-    void addLikeCommentTest(){
+    void addLikeCommentTest() {
         long id = 1L;
 
         LikeDto dto = LikeDto.builder()
@@ -222,17 +222,17 @@ class LikeSystemServiceTest {
     }
 
     @Test
-    void deleteLikeCommentLikeNotExist(){
+    void deleteLikeCommentLikeNotExist() {
         long id = -1L;
 
         when(likeRepository.findById(id))
                 .thenThrow(new IllegalArgumentException("The like with id = " + id + " does not exist"));
 
-        assertThrows(IllegalArgumentException.class, ()->likeSystemService.deleteLikeComment(id));
+        assertThrows(IllegalArgumentException.class, () -> likeSystemService.deleteLikeComment(id));
     }
 
     @Test
-    void deleteLikeCommentLikeExist(){
+    void deleteLikeCommentLikeExist() {
         long id = 1L;
         Comment comment = Comment.builder()
                 .likes(new ArrayList<>())
