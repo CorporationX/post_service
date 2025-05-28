@@ -31,8 +31,8 @@ public class CommentService {
         String content = updateComment.getContent();
         Comment comment = getComment(commentId);
         commentValidation.validateLengthContentComment(updateComment);
-        commentValidation.validatePostExists(comment);
         commentValidation.validateAuthorExists(updateComment);
+        commentValidation.validatePostExists(comment);
         commentValidation.validateCommentEqualsUpdateComment(comment, updateComment);
 
         comment.setContent(content);

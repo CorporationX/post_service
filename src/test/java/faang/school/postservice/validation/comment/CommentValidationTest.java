@@ -1,7 +1,6 @@
 package faang.school.postservice.validation.comment;
 
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
@@ -15,9 +14,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
