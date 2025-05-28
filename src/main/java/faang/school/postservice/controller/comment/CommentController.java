@@ -17,31 +17,37 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/comments")
 public class CommentController {
     private final CommentServiceFacade commentServiceF;
 
-    @PostMapping
+    @PostMapping(produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<CommentDtoResponse> createComment(@RequestBody CommentCreateDto commentDto) {
         CommentDtoResponse commentDtoResponse = commentServiceF.createComment(commentDto);
         return ResponseEntity.ok(commentDtoResponse);
     }
 
-    @PutMapping
+    @PutMapping(produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<CommentDtoResponse> updateComment(@RequestBody CommentUpdateDto commentDto) {
         CommentDtoResponse commentDtoResponse = commentServiceF.updateComment(commentDto);
         return ResponseEntity.ok(commentDtoResponse);
     }
 
-    @GetMapping("/{postId}")
+    @GetMapping(
+            value = "/{postId}",
+            produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<List<CommentDtoResponse>> getAllComments(@PathVariable long postId) {
         List<CommentDtoResponse> commentDtoResponseList = commentServiceF.getAllComments(postId);
         return ResponseEntity.ok(commentDtoResponseList);
     }
 
-    @DeleteMapping("/{commentId}")
+    @DeleteMapping(
+            value = "/{commentId}",
+            produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<Long> deleteComment(@PathVariable long commentId) {
         commentServiceF.deleteComment(commentId);
         return ResponseEntity.ok(commentId);
