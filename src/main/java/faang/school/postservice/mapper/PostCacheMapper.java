@@ -22,8 +22,6 @@ public interface PostCacheMapper {
     @Mapping(target = "ttl", ignore = true)
     PostCache toCache(Post post);
 
-    Post toEntity(PostCache postCache);
-
     @Named("mapLatestComments")
     default List<CommentDto> mapLatestComments(List<Comment> comments) {
         if (comments == null || comments.isEmpty()) {
