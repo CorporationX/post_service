@@ -26,6 +26,7 @@ public class LikeServiceImpl implements LikeService {
                 -> new EntityNotFoundException("Post was not found"));
 
         userServiceClient.getUser(userId);
+
         if (post
                 .getLikes()
                 .stream()
