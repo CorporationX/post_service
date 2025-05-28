@@ -28,7 +28,10 @@ public class LikeServiceImpl implements LikeService {
                 -> new EntityNotFoundException("Post was not found"));
 
         userServiceClient.getUser(userId);
-        if (post.getLikes().stream().anyMatch(like -> like.getUserId().equals(userId))) {
+        if (post
+                .getLikes()
+                .stream()
+                .anyMatch(like -> like.getUserId().equals(userId))) {
             throw new IllegalArgumentException("Like already exists");
         }
         Like like = Like.builder()
@@ -40,20 +43,20 @@ public class LikeServiceImpl implements LikeService {
 
     @Override
     public void removeLikePost(Long postId, Long userId) {
-        Post post = postRepository.findById(postId).orElseThrow(()
-                -> new EntityNotFoundException("Post was not found"));
+        if(!postRepository.existsById(postId)){
+            throw new EntityNotFoundException("Post was not found");
+        }
 
         userServiceClient.getUser(userId);
-        Like like = likeRepository.findByPostIdAndUserId(postId, userId)
-                .orElseThrow(() -> new EntityNotFoundException("Like was not found"));
-            likeRepository.deleteByPostIdAndUserId(postId, userId);
+
+        likeRepository.deleteByPostIdAndUserId(postId, userId);
     }
 
 
     @Override
     public void addLikeComment(Long commentId, Long userId) {
         Comment comment = commentRepository.findById(commentId).orElseThrow(()
-            -> new EntityNotFoundException("Comment was not found"));
+                -> new EntityNotFoundException("Comment was not found"));
 
         userServiceClient.getUser(userId);
         if (comment.getLikes().stream().anyMatch(like -> like.getUserId().equals(userId))) {
@@ -70,12 +73,12 @@ public class LikeServiceImpl implements LikeService {
 
     @Override
     public void removeLikeComment(Long commentId, Long userId) {
-        Comment comment = commentRepository.findById(commentId).orElseThrow(()
-                -> new EntityNotFoundException("Comment was not found"));
+        if(!commentRepository.existsById(commentId)) {
+            throw new EntityNotFoundException("Comment was not found");
+        }
 
         userServiceClient.getUser(userId);
-        Like like = likeRepository.findByPostIdAndUserId(commentId, userId)
-                .orElseThrow(() -> new EntityNotFoundException("Like was not found"));
+
         likeRepository.deleteByPostIdAndUserId(commentId, userId);
 
 
