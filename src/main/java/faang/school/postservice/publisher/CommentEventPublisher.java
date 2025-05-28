@@ -1,7 +1,7 @@
 package faang.school.postservice.publisher;
 
-import faang.school.postservice.config.properties.RedisProperties;
-import faang.school.postservice.dto.event.CommentEvent;
+import faang.school.postservice.properties.RedisProperties;
+import faang.school.postservice.event.CommentEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.RedisConnectionFailureException;

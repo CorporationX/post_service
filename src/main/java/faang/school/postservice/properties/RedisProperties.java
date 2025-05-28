@@ -1,4 +1,4 @@
-package faang.school.postservice.config.properties;
+package faang.school.postservice.properties;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;

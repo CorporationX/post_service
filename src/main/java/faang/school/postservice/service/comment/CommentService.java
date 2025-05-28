@@ -3,10 +3,11 @@ package faang.school.postservice.service.comment;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.ModerationProperties;
 import faang.school.postservice.dto.comment.CommentDto;
-import faang.school.postservice.dto.event.CommentEvent;
+import faang.school.postservice.event.CommentEvent;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.moderation.ModerationDictionaryComment;
+import faang.school.postservice.producer.KafkaCommentProducer;
 import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.validator.CommentValidator;
@@ -33,24 +34,16 @@ import java.util.stream.Stream;
 public class CommentService {
 
     private final CommentRepository commentRepository;
-
     private final PostValidator postValidator;
-
     private final UserServiceClient userServiceClient;
-
     private final CommentMapper commentMapper;
-
     private final CommentValidator commentValidator;
-
     private final ImageService imageService;
-
     private final CommentEventPublisher commentEventPublisher;
-
     private final ModerationDictionaryComment moderationDictionaryComment;
-
     private final ModerationProperties moderationProperties;
-
     private final TaskExecutor asyncModerationExecutor;
+    private final KafkaCommentProducer commentProducer;
 
     public CommentDto createComment(Long postId, CommentDto commentDto) {
         commentValidator.validateCommentDto(commentDto);
@@ -65,6 +58,16 @@ public class CommentService {
         CommentDto resultDto = commentMapper.toCommentDto(comment);
 
         publishCommentEvent(resultDto);
+
+        commentProducer.sendCommentEvent(
+                CommentEvent.builder()
+                        .postId(postId)
+                        .commentId(comment.getId())
+                        .text(comment.getContent())
+                        .authorId(comment.getAuthorId())
+                        .createdAt(comment.getCreatedAt())
+                        .build()
+        );
 
         return resultDto;
     }
@@ -149,7 +152,7 @@ public class CommentService {
     }
 
     @Transactional
-    private void processChunk(List<Comment> chunk) {
+    protected void processChunk(List<Comment> chunk) {
         for (Comment comment : chunk) {
             boolean hasBadWords = moderationDictionaryComment.containsBadWords(comment.getContent());
             comment.setVerified(!hasBadWords);
@@ -176,8 +179,10 @@ public class CommentService {
                 dto.getAuthorId(),
                 dto.getPostId(),
                 dto.getId(),
-                dto.getContent()
+                dto.getContent(),
+                LocalDateTime.now()
         );
+
         commentEventPublisher.publish(event);
     }
 }

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.event.LikeEventDto;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.like.LikeEvent;
 import faang.school.postservice.dto.post.PostDto;
@@ -18,6 +19,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.model.outbox.EventStatus;
 import faang.school.postservice.model.outbox.EventType;
 import faang.school.postservice.model.outbox.OutboxEvent;
+import faang.school.postservice.producer.KafkaLikeProducer;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.service.outbox.OutboxEventService;
 import faang.school.postservice.validator.CommentValidator;
@@ -50,6 +52,7 @@ public class LikeService {
     private final LikeMapper likeMapper;
     private final PostMapper postMapper;
     private final PostService postService;
+    private final KafkaLikeProducer likeProducer;
     private final OutboxEventService outboxEventService;
     private final ObjectMapper objectMapper;
 
@@ -82,11 +85,17 @@ public class LikeService {
                 .userId(userId)
                 .post(postValidator.getPostById(postId))
                 .build();
-        likeRepository.save(like);
+        like = likeRepository.save(like);
 
         LikeEvent likeEvent = getLikeEvent(postId, userId, false);
         OutboxEvent outboxEvent = buildOutboxEvent(likeEvent, EventType.LIKE_CREATED);
         outboxEventService.saveOutboxEvent(outboxEvent);
+
+        likeProducer.sendLikeEvent(LikeEventDto.builder()
+                .postId(postId)
+                .userId(like.getUserId())
+                .timestamp(System.currentTimeMillis())
+                .build());
 
         return likeMapper.toLikeDto(like);
     }
@@ -146,9 +155,9 @@ public class LikeService {
                 .orElseThrow(() -> {
                     log.warn("Like by user with id %d on comment with id %d does not exist"
                             .formatted(userId, commentId));
-                       return new EntityNotFoundException(
-                        "Like by user with id %d on comment with id %d does not exist"
-                                .formatted(userId, commentId));
+                    return new EntityNotFoundException(
+                            "Like by user with id %d on comment with id %d does not exist"
+                                    .formatted(userId, commentId));
                 });
         likeRepository.delete(like);
         return likeMapper.toLikeDto(like);
