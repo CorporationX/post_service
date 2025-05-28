@@ -15,6 +15,7 @@ public record PostDto(
         @NotNull
         Long authorId,
         List<Long> likeIds,
-        List<Long> commentIds
+        List<Long> commentIds,
+        Long countLike
 ) {
 }
