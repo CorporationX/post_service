@@ -99,6 +99,8 @@ tasks.jacocoTestReport {
         fileTree(it).apply {
             exclude(
                 "**/client/**",
+                "**/mapper/**",
+                "**/entity/**",
                 "**/config/**",
                 "**/dto/**",
                 "**/model/**",
