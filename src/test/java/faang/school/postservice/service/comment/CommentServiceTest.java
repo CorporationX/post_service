@@ -5,6 +5,7 @@ import faang.school.postservice.config.ModerationProperties;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.event.CommentEvent;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.kafka.producer.KafkaCommentProducer;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
@@ -56,6 +57,9 @@ public class CommentServiceTest {
 
     @Mock
     private CommentEventPublisher commentEventPublisher;
+
+    @Mock
+    private KafkaCommentProducer kafkaCommentProducer;
 
     @InjectMocks
     private CommentService commentService;
@@ -112,6 +116,7 @@ public class CommentServiceTest {
         when(commentMapper.toCommentDto(comment)).thenReturn(commentDto);
         doNothing().when(commentEventPublisher).publish(any(CommentEvent.class));
         when(commentRepository.save(any(Comment.class))).thenReturn(comment);
+        doNothing().when(kafkaCommentProducer).publishCommentEvent(any());
 
         CommentDto result = commentService.createComment(1L, commentDto);
 
@@ -119,6 +124,7 @@ public class CommentServiceTest {
         assertEquals(commentDto.getContent(), result.getContent());
         verify(commentRepository, times(1)).save(any(Comment.class));
         verify(commentEventPublisher, times(1)).publish(any(CommentEvent.class));
+        verify(kafkaCommentProducer, times(1)).publishCommentEvent(any());
     }
 
     @Test

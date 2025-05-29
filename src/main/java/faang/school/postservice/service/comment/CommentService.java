@@ -2,8 +2,10 @@ package faang.school.postservice.service.comment;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.ModerationProperties;
+import faang.school.postservice.dto.comment.CommentCreateEvent;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.event.CommentEvent;
+import faang.school.postservice.kafka.producer.KafkaCommentProducer;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.moderation.ModerationDictionaryComment;
@@ -51,6 +53,7 @@ public class CommentService {
     private final ModerationProperties moderationProperties;
 
     private final TaskExecutor asyncModerationExecutor;
+    private final KafkaCommentProducer kafkaCommentProducer;
 
     public CommentDto createComment(Long postId, CommentDto commentDto) {
         commentValidator.validateCommentDto(commentDto);
@@ -66,7 +69,20 @@ public class CommentService {
 
         publishCommentEvent(resultDto);
 
+        CommentCreateEvent commentCreateEvent = buildCommentCreateEvent(postId, commentDto);
+
+        kafkaCommentProducer.publishCommentEvent(commentCreateEvent);
+
         return resultDto;
+    }
+
+    private CommentCreateEvent buildCommentCreateEvent(Long postId, CommentDto commentDto) {
+        return CommentCreateEvent.builder()
+                .postId(postId)
+                .commentId(commentDto.getId())
+                .authorId(commentDto.getAuthorId())
+                .createdAt(commentDto.getCreatedAt())
+                .build();
     }
 
     public CommentDto updateComment(Long commentId, CommentDto commentDto) {
