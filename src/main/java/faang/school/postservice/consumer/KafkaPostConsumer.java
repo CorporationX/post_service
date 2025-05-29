@@ -17,7 +17,6 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class KafkaPostConsumer {
-
     private final RedisTemplate<String, String> redisTemplate;
     private final PostService postService;
     private final ObjectMapper objectMapper;
@@ -76,4 +75,3 @@ public class KafkaPostConsumer {
         }
     }
 }
-
