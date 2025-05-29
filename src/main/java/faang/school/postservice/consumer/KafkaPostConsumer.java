@@ -3,7 +3,7 @@ package faang.school.postservice.consumer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.dto.post.PostPublishDto;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.service.PostService;
+import faang.school.postservice.service.post.PostService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
