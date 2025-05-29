@@ -7,6 +7,7 @@ import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.event.EventType;
 import faang.school.postservice.publisher.EventPublisher;
+import faang.school.postservice.publisher.KafkaLikePublisher;
 import faang.school.postservice.publisher.LikePublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
@@ -28,6 +29,7 @@ public class LikeService {
     private final CommentRepository commentRepository;
     private final UserServiceClient userServiceClient;
     private final LikePublisher likePublisher;
+    private final KafkaLikePublisher kafkaLikePublisher;
 
     public void likeThePost(long postId, long userId) {
         validationExistsAuthor(userId);
@@ -37,11 +39,16 @@ public class LikeService {
                 .userId(userId)
                 .post(post).build();
         likeRepository.save(like);
-        likePublisher.publish(LikeEvent.builder().postId(post.getId())
+
+        LikeEvent event = LikeEvent.builder()
+                .postId(post.getId())
                 .authorId(post.getAuthorId())
                 .userId(userId)
                 .likedAt(LocalDateTime.now())
-                .type(EventType.LIKED_POST).build());
+                .type(EventType.LIKED_POST).build();
+
+        likePublisher.publish(event);
+        kafkaLikePublisher.publish(event);
     }
 
     public void likeTheComment(long commentId, long userId) {

@@ -7,6 +7,7 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.event.EventType;
+import faang.school.postservice.publisher.KafkaLikePublisher;
 import faang.school.postservice.publisher.LikePublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
@@ -49,6 +50,9 @@ public class LikeServiceTest {
 
     @Mock
     LikePublisher likePublisher;
+
+    @Mock
+    KafkaLikePublisher kafkaLikePublisher;
 
     @Captor
     ArgumentCaptor<LikeEvent> likeEventCaptor;
@@ -93,8 +97,8 @@ public class LikeServiceTest {
 
         likeService.likeThePost(postId, userId);
 
-        Mockito.verify(likeRepository, Mockito.times(1)).save(likePost);
-        verify(likePublisher).publish(likeEventCaptor.capture());
+        verify(likeRepository, times(1)).save(any(Like.class));
+        verify(kafkaLikePublisher, times(1)).publish(likeEventCaptor.capture());
         LikeEvent actualEvent = likeEventCaptor.getValue();
 
         assertEquals(userId, actualEvent.getUserId());

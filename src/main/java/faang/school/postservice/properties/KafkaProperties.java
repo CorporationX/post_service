@@ -17,5 +17,6 @@ public class KafkaProperties {
     @Setter
     public static class Topics {
         private String commentCreatedNotification;
+        private String likedPost;
     }
 }

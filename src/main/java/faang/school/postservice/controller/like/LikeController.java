@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 @RestController
 @RequiredArgsConstructor
 @Validated
-@RequestMapping("/like")
+@RequestMapping("/api/v1/like")
 public class LikeController {
     private final LikeService likeService;
     private static final String MESSAGE = "cannot be less than 1";

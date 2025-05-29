@@ -1,23 +1,23 @@
 package faang.school.postservice.publisher;
 
-import faang.school.postservice.dto.event.CommentEventDto;
+import faang.school.postservice.dto.event.LikeEvent;
 import faang.school.postservice.properties.KafkaProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-@Slf4j
+@Component
 @RequiredArgsConstructor
-@Service
-public class CommentEventPublisher {
+@Slf4j
+public class KafkaLikePublisher {
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private final KafkaProperties kafkaProperties;
 
-    public void publish(CommentEventDto event) {
-        String topic = kafkaProperties.getTopics().getCommentCreatedNotification();
+    public void publish(LikeEvent event) {
+        String topic = kafkaProperties.getTopics().getLikedPost();
         kafkaTemplate.send(topic, event);
-        log.info("Sent CommentEventDto to topic {}: {}", topic, event);
+        log.info("Sent LikeEvent to topic {}: {}", topic, event);
     }
 }
