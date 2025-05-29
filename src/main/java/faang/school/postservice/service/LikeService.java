@@ -11,10 +11,8 @@ import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.KafkaLikeProducer;
 import faang.school.postservice.publisher.LikeEventPublisher;
-import faang.school.postservice.redisModel.PostCache;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
-import faang.school.postservice.repository.PostCacheRepository;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -45,7 +43,6 @@ public class LikeService {
     private final UserServiceClient userClient;
     private final LikeEventPublisher likeEventPublisher;
     private final KafkaLikeProducer kafkaLikeProducer;
-    private final PostCacheRepository  postCacheRepository;
 
     public void putLikeOnPost(Long postId) {
         Long userId = getContextUser();
@@ -87,10 +84,6 @@ public class LikeService {
             kafkaLikeProducer.publish(likeEvent);
             log.info("Событие лайка отправлено в Kafka для поста с ID {}", postId);
         }
-    }
-//TODO метод для проверки удалить потом не нужное
-    public void like() {
-        kafkaLikeProducer.publish(new LikeEvent(1, userContext.getUserId(), 4));
     }
 
     public void removeLikeAtPost(Long postId) {

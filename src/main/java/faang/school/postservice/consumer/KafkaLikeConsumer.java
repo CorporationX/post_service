@@ -14,21 +14,18 @@ public class KafkaLikeConsumer {
 
     private final RedisTemplate<String, Object> redisTemplate;
 
-    @KafkaListener(topics = "likesTopic",groupId ="post-group",containerFactory = "kafkaListenerContainerFactoryJson")
+    @KafkaListener(topics = "likesTopic", groupId = "post-group", containerFactory = "kafkaListenerContainerFactoryJson")
     public void consumeLike(LikeEvent event) {
         log.info("Event received: {}", event);
         String key = "posts:" + event.getPostId();
 
         Boolean exists = redisTemplate.hasKey(key);
-        log.info("exists: " + exists);
         if (exists == null || !exists) {
             log.warn("Post {} not found in Redis", event.getPostId());
             return;
         }
-        log.info("Post {} found in Redis", event.getPostId());
 
         Long newLikeCount = redisTemplate.opsForHash().increment(key, "likeCount", 1);
-
         log.info("Post {} like count updated to {}", event.getPostId(), newLikeCount);
 
     }

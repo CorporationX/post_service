@@ -2,6 +2,7 @@ package faang.school.postservice.publisher;
 
 import com.redis.testcontainers.RedisContainer;
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.config.redis.RedisConfig;
 import faang.school.postservice.controller.PostController;
 import faang.school.postservice.dto.event.PostViewEvent;
 import faang.school.postservice.model.Post;
@@ -14,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
