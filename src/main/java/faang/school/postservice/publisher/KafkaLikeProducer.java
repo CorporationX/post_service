@@ -1,6 +1,7 @@
 package faang.school.postservice.publisher;
 
 import faang.school.postservice.dto.event.LikeEvent;
+import faang.school.postservice.exception.DataValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,13 +13,16 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class KafkaLikeProducer implements KafkaEventPublisher<LikeEvent> {
 
-    private final KafkaTemplate<String,LikeEvent> kafkaTemplate;
+    private final KafkaTemplate<String, LikeEvent> kafkaTemplate;
 
     @Value("${spring.data.kafka.topic.likes.name}")
     private String topic;
 
     @Override
     public void publish(LikeEvent event) {
+        if (event == null) {
+            throw new DataValidationException("Нельзя послать пустое событие");
+        }
         kafkaTemplate.send(topic, event);
         log.info("Published event {}", event);
     }
