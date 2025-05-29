@@ -13,5 +13,6 @@ public class LikePublishKafkaEvent {
 
     private long likeId;
     private long postId;
+    private long authorId;
     private LikeEventType likeEventType;
 }

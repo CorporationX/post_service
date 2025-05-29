@@ -51,6 +51,7 @@ public class LikeServiceImpl implements LikeService {
         kafkaLikeProducer.sendEvent(LikePublishKafkaEvent.builder()
                 .likeId(like.getId())
                 .postId(post.getId())
+                .authorId(userId)
                 .likeEventType(LikeEventType.ADD)
                 .build());
 
