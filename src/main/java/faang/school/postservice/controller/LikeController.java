@@ -1,8 +1,10 @@
 package faang.school.postservice.controller;
 
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.dto.LikeViewDto;
-import faang.school.postservice.service.LikeService;
+import faang.school.postservice.dto.like.LikeViewDto;
+import faang.school.postservice.service.like.LikeService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,16 +38,20 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/likes")
 @RequiredArgsConstructor
 @Validated
+@Tag(
+        name = "Like Controller",
+        description = "Контроллер для работы с лайками постов и комментариев. " +
+                "Все методы требуют аутентификации пользователя."
+)
 public class LikeController {
     private final LikeService likeService;
     private final UserContext userContext;
 
-    /**
-     * Добавляет лайк к посту.
-     *
-     * @param postId Идентификатор поста, к которому добавляется лайк.
-     * @return Объект {@link LikeViewDto}, содержащий информацию о добавленном лайке.
-     */
+    @Operation(
+            summary = "Добавляет лайк к посту.",
+            description = "Параметры: postId - идентификатор поста, к которому добавляется лайк. " +
+                    "Возвращает LikeViewDto, содержащий информацию о добавленном лайке."
+    )
     @PostMapping("/posts/{postId}")
     public LikeViewDto likePost(@PathVariable
                                 @NotNull Long postId) {
@@ -53,12 +59,11 @@ public class LikeController {
         return likeService.likePost(postId, userId);
     }
 
-    /**
-     * Удаляет лайк с поста.
-     *
-     * @param postId идентификатор поста, с которого нужно удалить лайк
-     * @return {@link ResponseEntity} с пустым телом и статусом {@code 204 No Content}
-     */
+    @Operation(
+            summary = "Удаляет лайк с поста.",
+            description = "Параметры: postId - идентификатор поста, с которого нужно удалить лайк. " +
+                    "Возвращает ResponseEntity, с пустым телом и статусом 204."
+    )
     @DeleteMapping("/posts/{postId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public ResponseEntity<Void> unlikePost(@PathVariable
@@ -68,12 +73,11 @@ public class LikeController {
         return ResponseEntity.noContent().build();
     }
 
-    /**
-     * Добавляет лайк к комментарию.
-     *
-     * @param commentId Идентификатор комментария, к которому добавляется лайк.
-     * @return Объект {@link LikeViewDto}, содержащий информацию о добавленном лайке.
-     */
+    @Operation(
+            summary = "Добавляет лайк к комментарию.",
+            description = "Параметры: commentId - идентификатор комментария, к которому добавляется лайк. " +
+                    "Возвращает LikeViewDto, содержащий информацию о добавленном лайке."
+    )
     @PostMapping("/comments/{commentId}")
     public LikeViewDto likeComment(@PathVariable
                                    @NotNull Long commentId) {
@@ -81,12 +85,11 @@ public class LikeController {
         return likeService.likeComment(commentId, userId);
     }
 
-    /**
-     * Удаляет лайк с комментария.
-     *
-     * @param commentId Идентификатор комментария, с которого удаляется лайк.
-     * @return {@link ResponseEntity} с пустым телом и статусом {@code 204 No Content}
-     */
+    @Operation(
+            summary = "Удаляет лайк с комментария.",
+            description = "Параметры: commentId - идентификатор комментария, с которого удаляется лайк. " +
+                    "Возвращает ResponseEntity с пустым телом и статусом 204."
+    )
     @DeleteMapping("/comments/{commentId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public ResponseEntity<Void> unlikeComment(@PathVariable

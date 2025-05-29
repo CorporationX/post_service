@@ -8,6 +8,8 @@ import java.util.List;
 
 public interface PostRepository extends CrudRepository<Post, Long> {
 
+    List<Post> findAllByVerifiedAtIsNull();
+
     List<Post> findByAuthorId(long authorId);
 
     List<Post> findByProjectId(long projectId);

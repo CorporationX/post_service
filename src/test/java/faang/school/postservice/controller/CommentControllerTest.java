@@ -5,7 +5,7 @@ import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CommentCreateDto;
 import faang.school.postservice.dto.comment.CommentViewDto;
 import faang.school.postservice.exception.EntityNotFoundException;
-import faang.school.postservice.service.CommentService;
+import faang.school.postservice.service.comment.CommentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

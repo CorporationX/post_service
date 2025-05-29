@@ -1,21 +1,27 @@
-package faang.school.postservice.service;
+package faang.school.postservice.service.like;
 
-import faang.school.postservice.dto.LikeViewDto;
+import faang.school.postservice.dto.like.LikeViewDto;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.LikeRepository;
+import faang.school.postservice.service.comment.CommentService;
+import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.validation.LikeValidator;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class LikeServiceTest {
@@ -29,6 +35,8 @@ public class LikeServiceTest {
     private LikeValidator likeValidator;
     @Mock
     private CommentService commentService;
+    @Mock
+    private LikeNotificationService likeNotificationService;
 
     @InjectMocks
     private LikeService likeService;
@@ -48,57 +56,58 @@ public class LikeServiceTest {
 
     @Test
     @DisplayName("Добавление лайка к посту - успешный сценарий")
-    public void givenValidPostAndUserWhenLikePostThenReturnLikeViewDto() {
+    public void givenValidPostAndUser_WhenLikePost_ThenReturnLikeViewDto() {
         likeViewDto.setPostId(postId);
-        Mockito.when(postService.getPostEntity(postId)).thenReturn(postEntity);
-        Mockito.when(likeRepository.save(Mockito.any(Like.class))).thenReturn(likeEntity);
-        Mockito.when(likeMapper.toDto(likeEntity)).thenReturn(likeViewDto);
+        when(postService.getPostEntity(postId)).thenReturn(postEntity);
+        when(likeRepository.save(any(Like.class))).thenReturn(likeEntity);
+        when(likeMapper.toDto(likeEntity)).thenReturn(likeViewDto);
 
         LikeViewDto result = likeService.likePost(postId, userId);
-        Assertions.assertNotNull(result);
+        assertNotNull(result);
 
-        Mockito.verify(likeValidator).validateForAddingPostLike(postId, userId);
-        Mockito.verify(postService).getPostEntity(postId);
-        Mockito.verify(likeRepository).save(Mockito.any(Like.class));
-        Mockito.verify(likeMapper).toDto(likeEntity);
+        verify(likeValidator).validateForAddingPostLike(postId, userId);
+        verify(postService).getPostEntity(postId);
+        verify(likeRepository).save(any(Like.class));
+        verify(likeNotificationService).publishUserLikeEvent(postEntity, userId);
+        verify(likeMapper).toDto(likeEntity);
     }
 
     @Test
     @DisplayName("Удаление лайка с поста - успешный сценарий")
-    public void givenValidPostAndUserWhenUnlikePostThenLikeIsDeleted() {
+    public void givenValidPostAndUser_WhenUnlikePost_ThenLikeIsDeleted() {
         likeService.unlikePost(postId, userId);
 
-        Mockito.verify(likeValidator, Mockito.times(1))
+        verify(likeValidator, times(1))
                 .validateForRemovingPostLike(postId, userId);
-        Mockito.verify(likeRepository, Mockito.times(1))
+        verify(likeRepository, times(1))
                 .deleteByPostIdAndUserId(postId, userId);
     }
 
     @Test
     @DisplayName("Добавление лайка к комментарию - успешный сценарий")
-    public void givenValidPostAndUserWhenLikeCommentThenReturnLikeViewDto() {
+    public void givenValidPostAndUser_WhenLikeComment_ThenReturnLikeViewDto() {
         likeViewDto.setCommentId(commentId);
-        Mockito.when(commentService.getCommentById(commentId)).thenReturn(commentEntity);
-        Mockito.when(likeRepository.save(Mockito.any(Like.class))).thenReturn(likeEntity);
-        Mockito.when(likeMapper.toDto(likeEntity)).thenReturn(likeViewDto);
+        when(commentService.getCommentById(commentId)).thenReturn(commentEntity);
+        when(likeRepository.save(any(Like.class))).thenReturn(likeEntity);
+        when(likeMapper.toDto(likeEntity)).thenReturn(likeViewDto);
 
         LikeViewDto result = likeService.likeComment(commentId, userId);
-        Assertions.assertNotNull(result);
+        assertNotNull(result);
 
-        Mockito.verify(likeValidator).validateForAddingCommentLike(commentId, userId);
-        Mockito.verify(commentService).getCommentById(commentId);
-        Mockito.verify(likeRepository).save(Mockito.any(Like.class));
-        Mockito.verify(likeMapper).toDto(likeEntity);
+        verify(likeValidator).validateForAddingCommentLike(commentId, userId);
+        verify(commentService).getCommentById(commentId);
+        verify(likeRepository).save(any(Like.class));
+        verify(likeMapper).toDto(likeEntity);
     }
 
     @Test
     @DisplayName("Удаление лайка с комментария - успешный сценарий")
-    public void givenValidPostAndUserWhenUnlikeCommentThenLikeIsDeleted() {
+    public void givenValidPostAndUser_WhenUnlikeComment_ThenLikeIsDeleted() {
         likeService.unlikeComment(commentId, userId);
 
-        Mockito.verify(likeValidator, Mockito.times(1))
+        verify(likeValidator, times(1))
                 .validateForRemovingCommentLike(commentId, userId);
-        Mockito.verify(likeRepository, Mockito.times(1))
+        verify(likeRepository, times(1))
                 .deleteByCommentIdAndUserId(commentId, userId);
     }
 }

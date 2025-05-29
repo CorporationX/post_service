@@ -6,6 +6,9 @@ import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.ImageProcessingException;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.service.comment.CommentImageService;
+import faang.school.postservice.service.comment.CommentService;
+import faang.school.postservice.service.s3.S3StorageService;
 import faang.school.postservice.service.util.ImageProcessor;
 import faang.school.postservice.service.util.ProcessedImages;
 import faang.school.postservice.validation.CommentValidator;
@@ -63,7 +66,7 @@ public class CommentImageServiceTest {
     private ProcessedImages processedImages;
 
     @BeforeEach
-    void setUp() throws IOException {
+    void setUp() {
         imageFile = new MockMultipartFile(
                 "file", "test.jpg", "image/jpeg", new byte[1024]);
 

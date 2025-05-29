@@ -1,4 +1,4 @@
-package faang.school.postservice.config;
+package faang.school.postservice.config.executor;
 
 import lombok.Getter;
 import lombok.Setter;

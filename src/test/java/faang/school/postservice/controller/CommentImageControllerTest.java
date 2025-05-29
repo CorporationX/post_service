@@ -3,7 +3,7 @@ package faang.school.postservice.controller;
 import faang.school.postservice.dto.comment.CommentViewDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
-import faang.school.postservice.service.CommentImageService;
+import faang.school.postservice.service.comment.CommentImageService;
 import faang.school.postservice.validation.ValidateImage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

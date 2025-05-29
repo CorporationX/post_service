@@ -12,6 +12,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Mapper(componentModel = "spring")
@@ -38,14 +39,27 @@ public interface PostMapper {
     void update(PostUpdateDto source, @MappingTarget Post target);
 
     default long getTotalLikes(List<Like> likes) {
-        return likes.size();
+        if (likes != null) {
+            return likes.size();
+        }
+        return 0;
     }
 
     default List<Long> getCommentIds(List<Comment> comments) {
-        return comments.stream().map(Comment::getId).toList();
+        if (comments != null) {
+            return comments.stream()
+                    .map(Comment::getId)
+                    .toList();
+        }
+        return new ArrayList<>();
     }
 
     default List<Long> getResourcesIds(List<Resource> resources) {
-        return resources.stream().map(Resource::getId).toList();
+        if (resources != null) {
+            return resources.stream()
+                    .map(Resource::getId)
+                    .toList();
+        }
+        return new ArrayList<>();
     }
 }

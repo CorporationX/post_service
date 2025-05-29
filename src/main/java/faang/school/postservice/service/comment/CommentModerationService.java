@@ -1,4 +1,4 @@
-package faang.school.postservice.service;
+package faang.school.postservice.service.comment;
 
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.repository.CommentRepository;

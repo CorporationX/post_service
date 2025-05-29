@@ -9,3 +9,7 @@ databaseChangeLog:
       file: db/changelog/changeset/post_V004_alter_comment_add_image_keys.sql
   - include:
       file: db/changelog/changeset/post_V005_alter_comment_add_verified_fields.sql
+  - include:
+      file: db/changelog/changeset/post_V006_add_analytics.sql
+  - include:
+      file: db/changelog/changeset/post_V005_verified_fields.sql

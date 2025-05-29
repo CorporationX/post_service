@@ -3,7 +3,7 @@ package faang.school.postservice.controller;
 import faang.school.postservice.dto.post.PostCreateDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
 import faang.school.postservice.dto.post.PostViewDto;
-import faang.school.postservice.service.PostService;
+import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.validation.PostValidator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

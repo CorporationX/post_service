@@ -27,6 +27,8 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
+        post_like_channel:
+          name: post_like_events
 
 server:
   port: 8081
@@ -67,7 +69,7 @@ moderation:
   cron:
     expression: 0 0 0 * * ?
   dictionary:
-    path: "dictionary-for-moderation-comment.txt"
+    path: "dictionary-for-moderation.txt"
     batch:
       size: 1000
 

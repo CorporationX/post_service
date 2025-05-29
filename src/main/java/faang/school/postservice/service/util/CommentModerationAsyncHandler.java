@@ -1,8 +1,8 @@
 package faang.school.postservice.service.util;
 
-import faang.school.postservice.dictionary.comment.ModerationDictionary;
+import faang.school.postservice.dictionary.ModerationDictionary;
 import faang.school.postservice.model.Comment;
-import faang.school.postservice.service.CommentModerationService;
+import faang.school.postservice.service.comment.CommentModerationService;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
