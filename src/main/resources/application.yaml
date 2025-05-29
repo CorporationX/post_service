@@ -71,6 +71,7 @@ spring:
         notification: "notification-topic"
         user-ban: "user-ban-topic"
         post-like: "post-like-event-topic"
+        news-feed-comment: "news-comment-topic"
     listener:
       enable-auto-commit: false
       topics:
