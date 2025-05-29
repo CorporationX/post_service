@@ -1,4 +1,4 @@
-name: CI
+name: CI pipeline Kraken
 
 on:
   pull_request:
