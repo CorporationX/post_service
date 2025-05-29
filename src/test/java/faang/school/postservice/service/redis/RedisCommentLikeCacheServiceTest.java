@@ -1,7 +1,7 @@
 package faang.school.postservice.service.redis;
 
 import faang.school.postservice.dto.LikeDto;
-import faang.school.postservice.service.LikeServiceInterfaceImpl;
+import faang.school.postservice.service.LikeDbService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -45,7 +45,7 @@ class RedisCommentLikeCacheServiceTest {
     private RedisTemplate<String, String> redisTemplate;
 
     @Mock
-    private LikeServiceInterfaceImpl likeService;
+    private LikeDbService likeDbService;
 
     @Mock
     private ValueOperations<String, String> valueOperations;
@@ -98,31 +98,31 @@ class RedisCommentLikeCacheServiceTest {
     @Test
     void testFetchTotalLikesCountFromDb() {
         long expectedCount = 10L;
-        when(likeService.getLikesCountByCommentId(commentId)).thenReturn(expectedCount);
+        when(likeDbService.getLikesCountByCommentId(commentId)).thenReturn(expectedCount);
 
         long actualCount = redisCommentLikeCacheService.fetchTotalLikesCountFromDb(commentId);
 
         assertEquals(expectedCount, actualCount);
-        verify(likeService).getLikesCountByCommentId(commentId);
+        verify(likeDbService).getLikesCountByCommentId(commentId);
     }
 
     @Test
     void testFetchTotalLikesCountFromDb_NullCommentId() {
         assertThrows(IllegalArgumentException.class,
                 () -> redisCommentLikeCacheService.fetchTotalLikesCountFromDb(null));
-        verify(likeService, never()).getLikesCountByCommentId(any());
+        verify(likeDbService, never()).getLikesCountByCommentId(any());
     }
 
     @Test
     void testFetchLikesPageFromDb() {
         Pageable pageable = PageRequest.of(0, 10);
         Page<LikeDto> expectedPage = new PageImpl<>(Collections.emptyList());
-        when(likeService.getLikesPageByCommentId(commentId, pageable)).thenReturn(expectedPage);
+        when(likeDbService.getLikesPageByCommentId(commentId, pageable)).thenReturn(expectedPage);
 
         Page<LikeDto> actualPage = redisCommentLikeCacheService.fetchLikesPageFromDb(commentId, pageable);
 
         assertEquals(expectedPage, actualPage);
-        verify(likeService).getLikesPageByCommentId(commentId, pageable);
+        verify(likeDbService).getLikesPageByCommentId(commentId, pageable);
     }
 
     @Test
@@ -136,7 +136,7 @@ class RedisCommentLikeCacheServiceTest {
 
         assertEquals(5L, totalLikes);
         verify(valueOperations).get(countKey);
-        verify(likeService, never()).getLikesCountByCommentId(anyLong());
+        verify(likeDbService, never()).getLikesCountByCommentId(anyLong());
         verify(valueOperations, never()).set(anyString(), anyString(), any(Duration.class));
     }
 
@@ -146,13 +146,13 @@ class RedisCommentLikeCacheServiceTest {
         long dbCount = 15L;
         when(redisTemplate.opsForValue()).thenReturn(valueOperations);
         when(valueOperations.get(countKey)).thenReturn(null);
-        when(likeService.getLikesCountByCommentId(commentId)).thenReturn(dbCount);
+        when(likeDbService.getLikesCountByCommentId(commentId)).thenReturn(dbCount);
 
         long totalLikes = redisCommentLikeCacheService.getTotalLikesCount(commentId);
 
         assertEquals(dbCount, totalLikes);
         verify(valueOperations).get(countKey);
-        verify(likeService).getLikesCountByCommentId(commentId);
+        verify(likeDbService).getLikesCountByCommentId(commentId);
         verify(valueOperations).set(countKey, String.valueOf(dbCount), Duration.ofMinutes(likesCacheTtlMinutes));
     }
 
@@ -162,13 +162,13 @@ class RedisCommentLikeCacheServiceTest {
         long dbCount = 25L;
         when(redisTemplate.opsForValue()).thenReturn(valueOperations);
         when(valueOperations.get(countKey)).thenReturn("not_a_number");
-        when(likeService.getLikesCountByCommentId(commentId)).thenReturn(dbCount);
+        when(likeDbService.getLikesCountByCommentId(commentId)).thenReturn(dbCount);
 
         long totalLikes = redisCommentLikeCacheService.getTotalLikesCount(commentId);
 
         assertEquals(dbCount, totalLikes);
         verify(valueOperations).get(countKey);
-        verify(likeService).getLikesCountByCommentId(commentId);
+        verify(likeDbService).getLikesCountByCommentId(commentId);
         verify(valueOperations).set(countKey, String.valueOf(dbCount), Duration.ofMinutes(likesCacheTtlMinutes));
     }
 
@@ -177,7 +177,7 @@ class RedisCommentLikeCacheServiceTest {
         long totalLikes = redisCommentLikeCacheService.getTotalLikesCount(null);
         assertEquals(0L, totalLikes);
         verify(valueOperations, never()).get(any());
-        verify(likeService, never()).getLikesCountByCommentId(any());
+        verify(likeDbService, never()).getLikesCountByCommentId(any());
     }
 
     @Test
@@ -197,7 +197,7 @@ class RedisCommentLikeCacheServiceTest {
         verify(redisTemplate).expire(eq(zsetKey), any(Duration.class));
         verify(valueOperations).increment(countKey);
         verify(redisTemplate).expire(eq(countKey), any(Duration.class));
-        verify(likeService, never()).getLikesCountByCommentId(anyLong());
+        verify(likeDbService, never()).getLikesCountByCommentId(anyLong());
     }
 
     @Test
@@ -216,13 +216,13 @@ class RedisCommentLikeCacheServiceTest {
                 .thenReturn(false);
         when(valueOperations.get(countKey))
                 .thenReturn(null);
-        when(likeService.getLikesCountByCommentId(commentId)).thenReturn(dbCount);
+        when(likeDbService.getLikesCountByCommentId(commentId)).thenReturn(dbCount);
 
         redisCommentLikeCacheService.addLikeToCache(commentId, userId, timestamp);
 
         verify(zSetOperations).add(zsetKey, String.valueOf(userId), (double) timestamp);
         verify(redisTemplate).expire(eq(zsetKey), any(Duration.class));
-        verify(likeService, times(2)).getLikesCountByCommentId(commentId);
+        verify(likeDbService, times(2)).getLikesCountByCommentId(commentId);
         verify(valueOperations, times(2)).set(eq(countKey), eq(String.valueOf(dbCount)), any(Duration.class));
         verify(valueOperations, never()).increment(countKey);
     }
@@ -273,7 +273,7 @@ class RedisCommentLikeCacheServiceTest {
         verify(redisTemplate).expire(eq(zsetKey), any(Duration.class));
         verify(valueOperations).decrement(countKey);
         verify(redisTemplate).expire(eq(countKey), any(Duration.class));
-        verify(likeService, never()).getLikesCountByCommentId(anyLong());
+        verify(likeDbService, never()).getLikesCountByCommentId(anyLong());
     }
 
     @Test
@@ -286,14 +286,14 @@ class RedisCommentLikeCacheServiceTest {
         when(redisTemplate.opsForValue()).thenReturn(valueOperations);
         when(zSetOperations.remove(zsetKey, String.valueOf(userId))).thenReturn(1L);
         when(redisTemplate.hasKey(countKey)).thenReturn(false);
-        when(likeService.getLikesCountByCommentId(commentId)).thenReturn(dbCount);
+        when(likeDbService.getLikesCountByCommentId(commentId)).thenReturn(dbCount);
 
         redisCommentLikeCacheService.removeLikeFromCache(commentId, userId);
 
         verify(zSetOperations).remove(zsetKey, String.valueOf(userId));
         verify(redisTemplate).expire(eq(zsetKey), any(Duration.class));
         verify(valueOperations, never()).decrement(countKey);
-        verify(likeService).getLikesCountByCommentId(commentId);
+        verify(likeDbService).getLikesCountByCommentId(commentId);
         verify(valueOperations).set(countKey, String.valueOf(dbCount), Duration.ofMinutes(likesCacheTtlMinutes));
     }
 

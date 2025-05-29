@@ -1,7 +1,7 @@
 package faang.school.postservice.service.redis;
 
 import faang.school.postservice.dto.LikeDto;
-import faang.school.postservice.service.LikeServiceInterfaceImpl;
+import faang.school.postservice.service.LikeDbService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -44,7 +44,7 @@ class RedisPostLikeCacheServiceTest {
     private RedisTemplate<String, String> redisTemplate;
 
     @Mock
-    private LikeServiceInterfaceImpl likeService;
+    private LikeDbService likeDbService;
 
     @Mock
     private ValueOperations<String, String> valueOperations;
@@ -99,26 +99,26 @@ class RedisPostLikeCacheServiceTest {
     @Test
     void testFetchTotalLikesCountFromDb() {
         long expectedCount = 10L;
-        when(likeService.getLikesCountByPostId(postId))
+        when(likeDbService.getLikesCountByPostId(postId))
                 .thenReturn(expectedCount);
 
         long actualCount = redisPostLikeCacheService.fetchTotalLikesCountFromDb(postId);
 
         assertEquals(expectedCount, actualCount);
-        verify(likeService).getLikesCountByPostId(postId);
+        verify(likeDbService).getLikesCountByPostId(postId);
     }
 
     @Test
     void testFetchLikesPageFromDb() {
         Pageable pageable = PageRequest.of(0, 10);
         Page<LikeDto> expectedPage = new PageImpl<>(Collections.emptyList());
-        when(likeService.getLikesPageByPostId(postId, pageable))
+        when(likeDbService.getLikesPageByPostId(postId, pageable))
                 .thenReturn(expectedPage);
 
         Page<LikeDto> actualPage = redisPostLikeCacheService.fetchLikesPageFromDb(postId, pageable);
 
         assertEquals(expectedPage, actualPage);
-        verify(likeService).getLikesPageByPostId(postId, pageable);
+        verify(likeDbService).getLikesPageByPostId(postId, pageable);
     }
 
     @Test
@@ -134,7 +134,7 @@ class RedisPostLikeCacheServiceTest {
 
         assertEquals(5L, totalLikes);
         verify(valueOperations).get(countKey);
-        verify(likeService, never()).getLikesCountByPostId(anyLong()); // Should not call DB
+        verify(likeDbService, never()).getLikesCountByPostId(anyLong()); // Should not call DB
         verify(valueOperations, never()).set(anyString(), anyString(), any(Duration.class));
     }
 
@@ -146,14 +146,14 @@ class RedisPostLikeCacheServiceTest {
                 .thenReturn(valueOperations);
         when(valueOperations.get(countKey))
                 .thenReturn(null);
-        when(likeService.getLikesCountByPostId(postId))
+        when(likeDbService.getLikesCountByPostId(postId))
                 .thenReturn(dbCount);
 
         long totalLikes = redisPostLikeCacheService.getTotalLikesCount(postId);
 
         assertEquals(dbCount, totalLikes);
         verify(valueOperations).get(countKey);
-        verify(likeService).getLikesCountByPostId(postId);
+        verify(likeDbService).getLikesCountByPostId(postId);
         verify(valueOperations).set(countKey, String.valueOf(dbCount), Duration.ofMinutes(likesCacheTtlMinutes));
     }
 
@@ -165,14 +165,14 @@ class RedisPostLikeCacheServiceTest {
                 .thenReturn(valueOperations);
         when(valueOperations.get(countKey))
                 .thenReturn("not_a_number");
-        when(likeService.getLikesCountByPostId(postId))
+        when(likeDbService.getLikesCountByPostId(postId))
                 .thenReturn(dbCount);
 
         long totalLikes = redisPostLikeCacheService.getTotalLikesCount(postId);
 
         assertEquals(dbCount, totalLikes);
         verify(valueOperations).get(countKey);
-        verify(likeService).getLikesCountByPostId(postId);
+        verify(likeDbService).getLikesCountByPostId(postId);
         verify(valueOperations).set(countKey, String.valueOf(dbCount), Duration.ofMinutes(likesCacheTtlMinutes));
     }
     @Test
@@ -180,7 +180,7 @@ class RedisPostLikeCacheServiceTest {
         long totalLikes = redisPostLikeCacheService.getTotalLikesCount(null);
         assertEquals(0L, totalLikes);
         verify(valueOperations, never()).get(any());
-        verify(likeService, never()).getLikesCountByPostId(any());
+        verify(likeDbService, never()).getLikesCountByPostId(any());
     }
 
 
@@ -205,7 +205,7 @@ class RedisPostLikeCacheServiceTest {
         verify(redisTemplate).expire(eq(zsetKey), any(Duration.class));
         verify(valueOperations).increment(countKey);
         verify(redisTemplate).expire(eq(countKey), any(Duration.class));
-        verify(likeService, never()).getLikesCountByPostId(anyLong());
+        verify(likeDbService, never()).getLikesCountByPostId(anyLong());
     }
 
     @Test
@@ -225,7 +225,7 @@ class RedisPostLikeCacheServiceTest {
                 .thenReturn(false);
         when(valueOperations.get(countKey))
                 .thenReturn(null);
-        when(likeService.getLikesCountByPostId(postId))
+        when(likeDbService.getLikesCountByPostId(postId))
                 .thenReturn(dbCount);
 
         redisPostLikeCacheService.addLikeToCache(postId, userId, timestamp);
@@ -233,7 +233,7 @@ class RedisPostLikeCacheServiceTest {
         verify(zSetOperations).add(zsetKey, String.valueOf(userId), (double) timestamp);
         verify(redisTemplate).expire(eq(zsetKey), any(Duration.class));
 
-        verify(likeService, times(2)).getLikesCountByPostId(postId); // Once for getTotalLikesCount, once for cacheTotalLikesCount
+        verify(likeDbService, times(2)).getLikesCountByPostId(postId); // Once for getTotalLikesCount, once for cacheTotalLikesCount
         verify(valueOperations, times(2)).set(eq(countKey), eq(String.valueOf(dbCount)), any(Duration.class));
         verify(valueOperations, never()).increment(countKey);
     }
@@ -289,7 +289,7 @@ class RedisPostLikeCacheServiceTest {
         verify(redisTemplate).expire(eq(zsetKey), any(Duration.class));
         verify(valueOperations).decrement(countKey);
         verify(redisTemplate).expire(eq(countKey), any(Duration.class));
-        verify(likeService, never()).getLikesCountByPostId(anyLong());
+        verify(likeDbService, never()).getLikesCountByPostId(anyLong());
     }
 
     @Test
@@ -306,7 +306,7 @@ class RedisPostLikeCacheServiceTest {
                 .thenReturn(1L);
         when(redisTemplate.hasKey(countKey))
                 .thenReturn(false);
-        when(likeService.getLikesCountByPostId(postId))
+        when(likeDbService.getLikesCountByPostId(postId))
                 .thenReturn(dbCount);
 
         redisPostLikeCacheService.removeLikeFromCache(postId, userId);
@@ -314,7 +314,7 @@ class RedisPostLikeCacheServiceTest {
         verify(zSetOperations).remove(zsetKey, String.valueOf(userId));
         verify(redisTemplate).expire(eq(zsetKey), any(Duration.class));
         verify(valueOperations, never()).decrement(countKey);
-        verify(likeService).getLikesCountByPostId(postId);
+        verify(likeDbService).getLikesCountByPostId(postId);
         verify(valueOperations).set(countKey, String.valueOf(dbCount), Duration.ofMinutes(likesCacheTtlMinutes));
     }
 
