@@ -1,7 +1,7 @@
 spring:
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5433/postgres
+    url: jdbc:postgresql://localhost:5432/postgres
     username: user
     password: password
 
@@ -21,41 +21,9 @@ spring:
     redis:
       port: 6379
       host: localhost
-      cacheTtl: 86000
       channels:
         calculations_channel:
           name: calculations_channel
-        user-ban: user-ban
-        postViewEventPublisher: PostViewEvent_topic
-        comment_channel: comment_topic
-        like-event: likeEventTopic
-    kafka:
-      bootstrap-servers: localhost:9092
-      topic:
-        comment: comment_topic
-        userBan: user_ban
-        hashtag-adding:
-          name: "hashtag-adding-topic"
-          partitions: 3
-          replicas: 1
-        hashtag-removing:
-          name: "hashtag-removing-topic"
-          partitions: 3
-          replicas: 1
-        likes:
-          name: likesTopic
-          partitions: 3
-          replicas: 1
-      producer:
-        retries: 3
-        retry-backoff-ms: 1000
-        acks: all
-      consumer:
-        group-id: post-group
-        auto-offset-reset: earliest
-
-  profiles:
-    active: local
 
 server:
   port: 8081
@@ -73,25 +41,9 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
-hashtag-service:
-  host: localhost
-  port: 8090
 
 thread-pool:
   delete-expired-posts-max-threads: 3
-  publish-posts-max-threads: 10
-  publish-timeout: 3
-  author-ban:
-    size: 2
-    shutdown-timeout-seconds: 30
-
-batch:
-  size: 1000
 
 cron:
-  delete-expired-posts: 0 49 15 * * FRI
-  author-ban: 0 0 0 * * *
-  comment-ban: 0 13 18 * * FRI
-
-ban-properties:
-  value-rejected-posts: 5
+  delete-expired-posts: 0 49 18 * * FRI
