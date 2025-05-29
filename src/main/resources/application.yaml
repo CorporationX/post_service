@@ -40,6 +40,20 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
+      key-prefix:
+        comment: "post:%d:comment"
+      script:
+        commentCache: >
+          local key = KEYS[1]
+          local score = tonumber(ARGV[1])
+          local value = ARGV[2]
+          local maxSize = tonumber(ARGV[3])
+          redis.call('ZADD', key, score, value)
+          local size = redis.call('ZCARD', key)
+          if size > maxSize then
+              redis.call('ZREMRANGEBYRANK', key, 0, size - maxSize - 1)
+          end
+          return nil
   retry:
     language-tool:
       max-attempts: 4

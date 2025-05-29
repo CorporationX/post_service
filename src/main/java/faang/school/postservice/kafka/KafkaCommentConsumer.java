@@ -26,10 +26,11 @@ public class KafkaCommentConsumer {
             CommentEvent event = jsonUtils.fromJson(message, CommentEvent.class);
             redisCommentService.saveComment(event);
             log.info("Received message {}", event);
-            ack.acknowledge();
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             log.error("Failed to process Kafka message: {}", message, e);
             throw new KafkaConsumerException(String.format(FAILED_TO_DESERIALIZE_EVENT, CommentEvent.class.getSimpleName()));
+        } finally {
+            ack.acknowledge();
         }
     }
 }
