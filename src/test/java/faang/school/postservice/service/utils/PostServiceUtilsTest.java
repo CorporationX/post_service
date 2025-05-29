@@ -98,7 +98,7 @@ class PostServiceUtilsTest {
                     .build();
             when(postRepositoryMock.findById(postId)).thenReturn(Optional.of(expectedPost));
 
-            Post actualPost = postServiceUtils.isPostExists(postId);
+            Post actualPost = postServiceUtils.checkPostExists(postId);
 
             assertNotNull(actualPost);
             assertEquals(expectedPost, actualPost);
@@ -112,7 +112,7 @@ class PostServiceUtilsTest {
             when(postRepositoryMock.findById(postId)).thenReturn(Optional.empty());
 
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                    () -> postServiceUtils.isPostExists(postId));
+                    () -> postServiceUtils.checkPostExists(postId));
             assertEquals("Post not found", exception.getMessage());
 
             verify(postRepositoryMock).findById(postId);

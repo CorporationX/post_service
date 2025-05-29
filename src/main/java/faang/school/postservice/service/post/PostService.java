@@ -11,7 +11,9 @@ import faang.school.postservice.service.utils.PostServiceUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
@@ -35,7 +37,7 @@ public class PostService {
 
     @Transactional
     public PostDto publishPost(long postId) {
-        Post post = postServiceUtils.isPostExists(postId);
+        Post post = postServiceUtils.checkPostExists(postId);
         if (post.isPublished()) {
             throw new IllegalArgumentException("Post is already published");
         }
@@ -46,22 +48,22 @@ public class PostService {
 
     @Transactional
     public PostDto update(long postId, String content) {
-        Post post = postServiceUtils.isPostExists(postId);
+        Post post = postServiceUtils.checkPostExists(postId);
         post.setContent(content);
         return postMapper.toPostDto(postRepository.save(post));
     }
 
     @Transactional
     public void delete(long postId) {
-        Post post = postServiceUtils.isPostExists(postId);
+        Post post = postServiceUtils.checkPostExists(postId);
         post.setDeleted(true);
         postRepository.save(post);
     }
 
     @Transactional(readOnly = true)
     public PostDto getById(long postId) {
-        postServiceUtils.isPostExists(postId);
-        return postMapper.toPostDto(postServiceUtils.isPostExists(postId));
+        postServiceUtils.checkPostExists(postId);
+        return postMapper.toPostDto(postServiceUtils.checkPostExists(postId));
     }
 
     @Transactional(readOnly = true)
