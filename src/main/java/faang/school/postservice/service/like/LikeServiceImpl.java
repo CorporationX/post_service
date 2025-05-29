@@ -5,7 +5,7 @@ import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.LikedException;
 import faang.school.postservice.model.Like;
-import faang.school.postservice.repository.CommentRepository;
+import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validation.comment.CommentValidation;
@@ -24,9 +24,10 @@ public class LikeServiceImpl implements LikeService{
     private final LikeRepository likeRepository;
     private final UserServiceClient userServiceClient;
     private final UserContext userContext;
+    private final PostRepository postRepository;
     @Override
     public Like likeThePost(Like like, long postId) {
-        UserDto user = userServiceClient.getUser(userContext.getUserId());
+        UserDto user = existenceCheckUser();
         PostValidation.existenceCheckThePost(postId);
         Optional<Like> likeOptional = likeRepository.findByPostIdAndUserId(postId, user.id());
         Like optionalLike = likeOptional.get();
@@ -39,15 +40,14 @@ public class LikeServiceImpl implements LikeService{
 
     @Override
     public void deleteLikeThePost(long postId) {
-         UserDto userDto = userServiceClient.getUser(userContext.getUserId());
-         Optional<Like> likeOptional = likeRepository.findByPostIdAndUserId(postId, userDto.id());
-         Like like = likeOptional.get();
-         likeRepository.deleteById(like.getId());
+        UserDto user = existenceCheckUser();
+
+         likeRepository.deleteByPostIdAndUserId(postId, user.id());
     }
 
     @Override
     public Like likeTheComment(Like like, long commentId) {
-        UserDto user = userServiceClient.getUser(userContext.getUserId());
+        UserDto user = existenceCheckUser();
         CommentValidation.existenceCheckTheComment(commentId);
         Optional<Like> likeOptional = likeRepository.findByCommentIdAndUserId(commentId, user.id());
         Like likeResult = likeOptional.get();
@@ -60,9 +60,23 @@ public class LikeServiceImpl implements LikeService{
 
     @Override
     public void deleteLikeTheComment(long commentId) {
-        UserDto user = userServiceClient.getUser(userContext.getUserId());
-        Optional<Like> likeOptional = likeRepository.findByCommentIdAndUserId(commentId, user.id());
-        Like like = likeOptional.get();
-        likeRepository.deleteById(like.getId());
+        UserDto user = existenceCheckUser();
+
+        likeRepository.deleteByCommentIdAndUserId(commentId, user.id());
+    }
+
+    @Override
+    public long countTheLikeForPost(long postId) {
+        Optional<Post> posts = postRepository.findById(postId);
+        int countLike = 0;
+        if(posts.isPresent()) {
+            Post post = posts.get();
+            countLike = post.getLikes().size();
+        }
+        return countLike;
+    }
+
+    private UserDto existenceCheckUser(){
+        return userServiceClient.getUser(userContext.getUserId());
     }
 }

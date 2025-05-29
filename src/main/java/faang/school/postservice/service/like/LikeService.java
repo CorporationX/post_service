@@ -7,4 +7,5 @@ public interface LikeService {
     void deleteLikeThePost(long postId);
     Like likeTheComment(Like like, long commentId);
     void deleteLikeTheComment(long commentId);
+    long countTheLikeForPost(long postId);
 }

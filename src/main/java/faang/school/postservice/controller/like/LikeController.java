@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -58,5 +59,11 @@ public class LikeController {
     public ResponseEntity<Void> deleteLikeForComment(@PathVariable("comment_id") long commentId) {
         likeService.deleteLikeTheComment(commentId);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/count_like/{post_id}")
+    public ResponseEntity<Long> getCountLike(@PathVariable("post_id") long postId) {
+        long countLike = likeService.countTheLikeForPost(postId);
+        return ResponseEntity.ok().body(countLike);
     }
 }
