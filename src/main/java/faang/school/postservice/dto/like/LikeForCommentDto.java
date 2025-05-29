@@ -12,5 +12,5 @@ public class LikeForCommentDto {
     private long userId;
     private long commentId;
 
-
+    private LocalDateTime createdAt;
 }

@@ -9,5 +9,5 @@ import lombok.Setter;
 @RequiredArgsConstructor
 public class LikeDto {
     private long id;
-    private long UserId;
+    private long userId;
 }

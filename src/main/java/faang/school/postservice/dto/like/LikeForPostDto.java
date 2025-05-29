@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 @Setter
 @RequiredArgsConstructor
 public class LikeForPostDto {
-    private long UserId;
+    private long userId;
     private long postId;
+    private LocalDateTime createdAt;
 }
