@@ -1,10 +1,9 @@
-package faang.school.postservice;
+package faang.school.postservice.consumer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import faang.school.postservice.consumer.KafkaPostConsumer;
 import faang.school.postservice.dto.post.PostPublishDto;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.service.PostService;
+import faang.school.postservice.service.post.PostService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
