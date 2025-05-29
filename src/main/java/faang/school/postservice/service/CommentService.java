@@ -3,7 +3,7 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.event.CommentEventRedis;
-import faang.school.postservice.dto.feed.CommentAddedEvent;
+import faang.school.postservice.dto.feed.CommentRedisEvent;
 import faang.school.postservice.dto.kafkaevents.CommentEvent;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
@@ -36,8 +36,8 @@ public class CommentService {
     private static final int MAX_NOT_VERIFIED_COMMENTS = 5;
     private static final int MAX_LENGTH = 4096;
 
-    private final CommentRepository repository;
-    private final CommentMapper mapper;
+    private final CommentRepository commentRepository;
+    private final CommentMapper commentMapper;
     private final PostRepository postRepository;
     private final UserServiceClient client;
     private final CommentEventPublisher commentEventPublisher;
@@ -55,9 +55,9 @@ public class CommentService {
                 .orElseThrow(() -> new DataValidationException("Пост с id %d не найден", postId));
         validateNullCommentDto(commentDto);
         validateCommentContent(commentDto);
-        Comment commentForSave = mapper.toEntity(commentDto);
+        Comment commentForSave = commentMapper.toEntity(commentDto);
         commentForSave.setPost(post);
-        Comment savedComment = repository.save(commentForSave);
+        Comment savedComment = commentRepository.save(commentForSave);
         log.info("Комментарий {} успешно опубликован", savedComment.getId());
 
         commentEventPublisher.publish(new CommentEvent(
@@ -77,44 +77,45 @@ public class CommentService {
         commentEvenRedisPublisher.publish(commentEvent);
         log.info("Комментарий {} отправлен в топик ", savedComment);
 
-        commentAddedEventPublisher.publish(createCommentAddedEvent(commentDto, savedComment.getCreatedAt()));
+        CommentDto commentResponseDto = commentMapper.toDto(savedComment);
+        commentAddedEventPublisher.publish(createCommentAddedEvent(commentResponseDto));
         authorRequestEventPublisher.publish(userId);
-        return mapper.toDto(savedComment);
+        return commentResponseDto;
     }
 
     public CommentDto editComment(CommentDto commentDto, long commentId, String content) {
-        Comment targetComment = repository.findById(commentId)
+        Comment targetComment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new DataValidationException("Комментарий %d не найден", commentId));
 
         validateNullCommentDto(commentDto);
         validateCommentContent(commentDto);
         targetComment.setContent(content);
 
-        repository.save(targetComment);
+        commentRepository.save(targetComment);
         log.info("Комментарий {} успешно отредактирован", commentId);
 
-        return mapper.toDto(targetComment);
+        return commentMapper.toDto(targetComment);
     }
 
     public List<CommentDto> getAllComments(long postId) {
         postRepository.findById(postId)
                 .orElseThrow(() -> new DataValidationException("Пост не найден"));
 
-        return repository.findAllByPostId(postId).stream()
+        return commentRepository.findAllByPostId(postId).stream()
                 .sorted(Comparator.comparing(Comment::getCreatedAt))
-                .map(mapper::toDto)
+                .map(commentMapper::toDto)
                 .toList();
     }
 
     public void deleteComment(long commentId) {
-        repository.findById(commentId)
+        commentRepository.findById(commentId)
                 .orElseThrow(() -> new DataValidationException("Комментарий %d не найден", commentId));
         log.info("Комментарий {} успешно удален", commentId);
-        repository.deleteById(commentId);
+        commentRepository.deleteById(commentId);
     }
 
     public void findNotVerifiedComments() {
-        List<Long> usersForBan = repository.findNotVerifiedComments().stream()
+        List<Long> usersForBan = commentRepository.findNotVerifiedComments().stream()
                 .collect(Collectors.toMap(AuthorCommentCount::getAuthorId, AuthorCommentCount::getCount))
                 .entrySet().stream()
                 .filter(entry -> entry.getValue() >= MAX_NOT_VERIFIED_COMMENTS)
@@ -124,6 +125,14 @@ public class CommentService {
         if (!usersForBan.isEmpty()) {
             commentBanPublisher.publish(usersForBan);
         }
+    }
+
+    public List<CommentDto> sendCommentsEventByPostId(Long postId, int limit) {
+        List<Comment> comments = commentRepository.findByPostId(postId, limit);
+        List<CommentDto> commentDtoList = commentMapper.toDtoList(comments);
+        commentDtoList.forEach(comment ->
+                commentAddedEventPublisher.publish(createCommentAddedEvent(comment)));
+        return commentDtoList;
     }
 
     private void validateCommentContent(CommentDto commentDto) {
@@ -146,13 +155,13 @@ public class CommentService {
         }
     }
 
-    private CommentAddedEvent createCommentAddedEvent(CommentDto commentDto, LocalDateTime createdAt) {
-        return CommentAddedEvent.builder()
+    private CommentRedisEvent createCommentAddedEvent(CommentDto commentDto) {
+        return CommentRedisEvent.builder()
                 .id(commentDto.id())
                 .authorId(commentDto.authorId())
                 .postId(commentDto.postId())
                 .content(commentDto.content())
-                .createdAt(createdAt)
+                .createdAt(commentDto.createdAt())
                 .build();
     }
 }

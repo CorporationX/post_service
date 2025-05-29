@@ -1,7 +1,7 @@
 spring:
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/postgres
+    url: jdbc:postgresql://localhost:5432/postgres?reWriteBatchedInserts=true
     username: user
     password: password
 
@@ -13,6 +13,9 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        jdbc.batch_size: 1000
+        order_inserts: true
+        order_updates: true
 
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
@@ -131,15 +134,25 @@ thread-pool:
     thread-name-prefix: PostAfterPublisherExecutor-
     wait-for-tasks-to-complete-on-shutdown: true
     await-termination-seconds: 30
+  view-count-updater:
+    core-pool-size: 1
+    max-pool-size: 1
+    thread-name-prefix: ViewCountUpdaterExecutor-
 
 batch:
   size: 1000
   users-per-page: 1000
+  users-forming-feed: 50
+  post-view-changed: 500
+
+processors-setting:
+  released-processors: 2
 
 cron:
   delete-expired-posts: 0 49 15 * * FRI
   author-ban: 0 0 0 * * *
   comment-ban: 0 13 18 * * FRI
+  update-view-count: 0 0/30 * * * *
 
 ban-properties:
   value-rejected-posts: 5

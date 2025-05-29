@@ -5,7 +5,7 @@ import lombok.Builder;
 import java.time.LocalDateTime;
 
 @Builder
-public record CommentAddedEvent(
+public record CommentRedisEvent(
         Long id,
         Long postId,
         Long authorId,

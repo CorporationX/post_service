@@ -4,6 +4,7 @@ import faang.school.postservice.model.AuthorCommentCount;
 import faang.school.postservice.model.Comment;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -20,4 +21,12 @@ public interface CommentRepository extends CrudRepository<Comment, Long> {
             GROUP BY author_id
             """)
     List<AuthorCommentCount> findNotVerifiedComments();
+
+    @Query(nativeQuery = true, value = """
+        SELECT c FROM comment c
+        WHERE c.post_id = :postId
+        ORDER BY c.created_at DESC
+        LIMIT :limit
+    """)
+    List<Comment> findByPostId(@Param("postId") Long postId, @Param("limit") int limit);
 }

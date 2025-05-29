@@ -16,6 +16,7 @@ public final class PostResponseDto {
     private final Long authorId;
     private final Long projectId;
     private final Integer likeCount;
+    private final Long viewCount;
     private final List<Long> commentsId;
     private final List<Long> albumsId;
     private final Long adId;

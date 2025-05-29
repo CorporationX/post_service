@@ -1,7 +1,7 @@
 package faang.school.postservice.listener;
 
-import faang.school.postservice.component.RedisRepositoryCoordinator;
 import faang.school.postservice.dto.feed.PostFollowersEvent;
+import faang.school.postservice.repository.FeedRedisRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 public class PostEventListener {
 
     private final AbstractEventListener abstractEventListener;
-    private final RedisRepositoryCoordinator coordinator;
+    private final FeedRedisRepository feedRedisRepository;
 
     @KafkaListener(
             topics = "${spring.data.kafka.topic.posts.name}",
@@ -20,6 +20,6 @@ public class PostEventListener {
     )
     public void receive(String message, Acknowledgment ack) {
         abstractEventListener.receiveAndHandle(message, PostFollowersEvent.class,
-                coordinator::addPostsForFollowersOnCache, ack);
+                feedRedisRepository::addPostsForFollowersToFeed, ack);
     }
 }

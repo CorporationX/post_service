@@ -1,6 +1,6 @@
 package faang.school.postservice.listener;
 
-import faang.school.postservice.component.RedisRepositoryCoordinator;
+import faang.school.postservice.repository.PostRedisRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
@@ -11,13 +11,13 @@ import org.springframework.stereotype.Component;
 public class PostsViewEventListener {
 
     private final AbstractEventListener abstractEventListener;
-    private final RedisRepositoryCoordinator coordinator;
+    private final PostRedisRepository postRedisRepository;
 
     @KafkaListener(
             topics = "${spring.data.kafka.topic.posts-view.name}",
             groupId = "${spring.data.kafka.consumer.group-id}"
     )
     public void receive(String message, Acknowledgment ack) {
-        abstractEventListener.receiveAndHandle(message, Long.class, coordinator::addPostViewOnCache, ack);
+        abstractEventListener.receiveAndHandle(message, Long.class, postRedisRepository::incrementViews, ack);
     }
 }

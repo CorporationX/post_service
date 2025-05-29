@@ -3,7 +3,6 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.HashtagServiceClient;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.component.RedisRepositoryCoordinator;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.dto.PostResponseDto;
 import faang.school.postservice.dto.user.UserDto;
@@ -85,9 +84,6 @@ public class PostServiceTest {
 
     @Mock
     private PostEventPublisher postEventPublisher;
-
-    @Mock
-    private RedisRepositoryCoordinator redisRepositoryCoordinator;
 
     @Mock
     private PostProcessingService postProcessingService;
@@ -422,6 +418,7 @@ public class PostServiceTest {
                 .id(id)
                 .content(content)
                 .likeCount(0)
+                .viewCount(0L)
                 .commentsId(Collections.emptyList())
                 .albumsId(Collections.emptyList())
                 .resourcesId(Collections.emptyList())

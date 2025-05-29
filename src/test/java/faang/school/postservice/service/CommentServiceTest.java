@@ -2,7 +2,7 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
-import faang.school.postservice.dto.feed.CommentAddedEvent;
+import faang.school.postservice.dto.feed.CommentRedisEvent;
 import faang.school.postservice.dto.kafkaevents.CommentEvent;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
@@ -89,7 +89,7 @@ public class CommentServiceTest {
         when(repository.save(any(Comment.class))).thenReturn(successComment);
         when(mapper.toDto(successComment)).thenReturn(goodDto);
         doNothing().when(commentEventPublisher).publish(any(CommentEvent.class));
-        doNothing().when(commentAddedEventPublisher).publish(any(CommentAddedEvent.class));
+        doNothing().when(commentAddedEventPublisher).publish(any(CommentRedisEvent.class));
         doNothing().when(authorRequestEventPublisher).publish(any(Long.class));
 
         CommentDto result;

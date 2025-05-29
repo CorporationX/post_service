@@ -2,7 +2,7 @@ package faang.school.postservice.repository;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import faang.school.postservice.dto.feed.CommentAddedEvent;
+import faang.school.postservice.dto.feed.CommentRedisEvent;
 import faang.school.postservice.dto.redis.PostRedisDto;
 import faang.school.postservice.exception.JsonDeserializationException;
 import faang.school.postservice.exception.JsonSerializationException;
@@ -18,7 +18,9 @@ import org.springframework.stereotype.Repository;
 
 import java.time.ZoneOffset;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Slf4j
@@ -26,6 +28,8 @@ import java.util.Set;
 @CacheConfig(cacheNames = "posts")
 @RequiredArgsConstructor
 public class PostRedisRepository {
+
+    private static final Long DEFAULT_RETURNING_VALUE = -1L;
 
     private final ObjectMapper objectMapper;
     private final RedisTemplate<String, Object> redisTemplate;
@@ -45,7 +49,7 @@ public class PostRedisRepository {
         return null;
     }
 
-    public void addComment(CommentAddedEvent commentDto) {
+    public void addComment(CommentRedisEvent commentDto) {
         String key = "post:" + commentDto.postId() + ":comments";
         String value = serialize(commentDto);
         long score = commentDto.createdAt().toInstant(ZoneOffset.UTC).getEpochSecond();
@@ -59,7 +63,7 @@ public class PostRedisRepository {
         );
     }
 
-    public List<CommentAddedEvent> getComments(Long postId) {
+    public List<CommentRedisEvent> getComments(Long postId) {
         String key = "post:" + postId + ":comments";
         Set<Object> raw = redisTemplate.opsForZSet().range(key, 0, -1);
         if (raw == null || raw.isEmpty()) {
@@ -78,9 +82,9 @@ public class PostRedisRepository {
         redisTemplate.opsForValue().decrement("post:" + postId + ":likes");
     }
 
-    public Long getLikes(Long postId) {
+    public Integer getLikes(Long postId) {
         Object value = redisTemplate.opsForValue().get("post:" + postId + ":likes");
-        return parseValue(value);
+        return parseIntegerValue(value);
     }
 
     public void incrementViews(Long postId) {
@@ -89,13 +93,42 @@ public class PostRedisRepository {
 
     public Long getViews(Long postId) {
         Object value = redisTemplate.opsForValue().get("post:" + postId + ":views");
-        return parseValue(value);
+        return parseLongValue(value);
     }
 
-    private Long parseValue(Object value) {
+    public Map<Long, Long> getAllViewCounts() {
+        Set<String> keys = redisTemplate.keys("post:*:views");
+        Map<Long, Long> result = new HashMap<>();
+
+        keys.forEach(key -> {
+            Long postId = Long.valueOf(key.replace("post:", "").replace(":views", ""));
+            Object value = redisTemplate.opsForValue().get(key);
+            if (value != null) {
+                result.put(postId, Long.valueOf((String) value));
+            }
+        });
+
+        return result;
+    }
+
+    public void addPostLikes(Long postId, long count) {
+        redisTemplate.opsForValue().set("post:" + postId + ":likes", count);
+    }
+
+    public void addPostViews(Long postId, long count) {
+        redisTemplate.opsForValue().set("post:" + postId + ":views", count);
+    }
+
+    private Long parseLongValue(Object value) {
         return value == null
-                ? 0L
+                ? DEFAULT_RETURNING_VALUE
                 : Long.parseLong(value.toString());
+    }
+
+    private Integer parseIntegerValue(Object value) {
+        return value == null
+                ? DEFAULT_RETURNING_VALUE.intValue()
+                : Integer.parseInt(value.toString());
     }
 
     private String serialize(Object object) {
@@ -106,9 +139,9 @@ public class PostRedisRepository {
         }
     }
 
-    private CommentAddedEvent deserialize(String json) {
+    private CommentRedisEvent deserialize(String json) {
         try {
-            return objectMapper.readValue(json, CommentAddedEvent.class);
+            return objectMapper.readValue(json, CommentRedisEvent.class);
         } catch (JsonProcessingException e) {
             throw new JsonDeserializationException("Deserialization json %s to comment object error", json);
         }

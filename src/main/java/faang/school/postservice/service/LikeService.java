@@ -138,6 +138,10 @@ public class LikeService {
         }
     }
 
+    public int getCountLikesOnPost(Long postId) {
+        return likeRepository.countByPostId(postId);
+    }
+
     private void validateEntityId(Long entityId) {
         Objects.requireNonNull(entityId, "Invalid like target id value");
     }

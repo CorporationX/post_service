@@ -1,7 +1,7 @@
 package faang.school.postservice.controller;
 
 import faang.school.postservice.component.FeedHeater;
-import faang.school.postservice.dto.PostResponseDto;
+import faang.school.postservice.dto.feed.PostFeedResponse;
 import faang.school.postservice.service.FeedService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +22,7 @@ public class FeedController {
     private final FeedHeater feedHeater;
 
     @GetMapping
-    public List<PostResponseDto> getFeed(@RequestParam Long postId) {
+    public List<PostFeedResponse> getFeed(@RequestParam Long postId) {
         return feedService.getFeed(postId);
     }
 

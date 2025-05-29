@@ -21,6 +21,7 @@ import faang.school.postservice.publisher.HashtagAddingEventPublisher;
 import faang.school.postservice.publisher.HashtagRemovingEventPublisher;
 import faang.school.postservice.publisher.PostViewEventPublisher;
 import faang.school.postservice.publisher.PostsViewEventPublisher;
+import faang.school.postservice.repository.PostRedisRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ResourceRepository;
 import faang.school.postservice.repository.ad.AdRepository;
@@ -30,12 +31,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -61,12 +64,16 @@ public class PostService {
     private final HashtagServiceClient hashtagClient;
     private final PostProcessingService postProcessingService;
     private final PostsViewEventPublisher postsViewEventPublisher;
+    private final PostRedisRepository postRedisRepository;
 
     @Value("${batch.size}")
     private int batchSize;
 
     @Value("${thread-pool.publish-timeout}")
     private int threadTimeout;
+
+    @Value("${batch.post-view-changed}")
+    private int batchPostViewChanged;
 
     public void publishScheduledPosts() {
         List<Post> readyPosts = postRepository.findReadyToPublish();
@@ -233,6 +240,34 @@ public class PostService {
 
     public List<PostResponseDto> getPostsByIds(List<Long> postIds) {
         return postMapper.toResponseDtoList(postRepository.findAllByIdIn(postIds));
+    }
+
+    public List<Post> getPostsByAuthorIds(Set<Long> authorIds) {
+        return postRepository.findPostsByAuthorIds(authorIds);
+    }
+
+    public long getPostViewCount(Long postId) {
+        return postRepository.findViewsCountById(postId);
+    }
+
+    @Transactional
+    public void updateViewCount() {
+        Map<Long, Long> viewCounts = postRedisRepository.getAllViewCounts();
+        List<Long> allIds = new ArrayList<>(viewCounts.keySet());
+
+        for (int i = 0; i < allIds.size(); i += batchPostViewChanged) {
+            List<Long> postIds = allIds.subList(i, Math.min(i + batchPostViewChanged, allIds.size()));
+            List<Post> posts = postRepository.findPostsByIdIn(postIds);
+
+            posts.forEach(post -> {
+                Long redisViewCount = viewCounts.get(post.getId());
+                if (redisViewCount != null) {
+                    post.setViewCount(redisViewCount);
+                }
+            });
+
+            postRepository.saveAll(posts);
+        }
     }
 
     private void validateContent(PostDto postDto) {

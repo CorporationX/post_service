@@ -14,4 +14,10 @@ public class RedisScriptConfig {
         Resource scriptSource = new ClassPathResource("lua/add_and_trim_zset.lua");
         return RedisScript.of(scriptSource, Boolean.class);
     }
+
+    @Bean
+    public RedisScript<Boolean> addMultipleAndTrimZSetScript() {
+        Resource scriptSource = new ClassPathResource("lua/add_multiple_and_trim_zset.lua");
+        return RedisScript.of(scriptSource, Boolean.class);
+    }
 }
