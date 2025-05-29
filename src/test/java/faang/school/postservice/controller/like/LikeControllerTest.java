@@ -32,7 +32,7 @@ class LikeControllerTest {
 
     @Test
     void likeThePost_shouldCallLikeService() throws Exception {
-        mockMvc.perform(put("/like/post/" + postId + "/user/" + userId)
+        mockMvc.perform(put("/api/v1/like/post/" + postId + "/user/" + userId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
@@ -41,21 +41,21 @@ class LikeControllerTest {
 
     @Test
     void likeThePost_shouldReturnBadRequestWhenPostIdIsLessThanOne() throws Exception {
-        mockMvc.perform(put("/like/post/" + invalidId + "/user/" + userId)
+        mockMvc.perform(put("/api/v1/like/post/" + invalidId + "/user/" + userId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     void likeThePost_shouldReturnBadRequestWhenUserIdIsLessThanOne() throws Exception {
-        mockMvc.perform(put("/like/post/" + postId + "/user/" + invalidId)
+        mockMvc.perform(put("/api/v1/like/post/" + postId + "/user/" + invalidId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     void likeTheComment_shouldCallLikeService() throws Exception {
-        mockMvc.perform(put("/like/comment/" + commentId + "/user/" + userId)
+        mockMvc.perform(put("/api/v1/like/comment/" + commentId + "/user/" + userId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
@@ -64,21 +64,21 @@ class LikeControllerTest {
 
     @Test
     void likeTheComment_shouldReturnBadRequestWhenCommentIdIsLessThanOne() throws Exception {
-        mockMvc.perform(put("/like/comment/" + invalidId + "/user/" + userId)
+        mockMvc.perform(put("/api/v1/like/comment/" + invalidId + "/user/" + userId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     void likeTheComment_shouldReturnBadRequestWhenUserIdIsLessThanOne() throws Exception {
-        mockMvc.perform(put("/like/comment/" + commentId + "/user/" + invalidId)
+        mockMvc.perform(put("/api/v1/like/comment/" + commentId + "/user/" + invalidId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     void removeLikeFromPost_shouldCallLikeService() throws Exception {
-        mockMvc.perform(delete("/like/post/" + postId + "/user/" + userId)
+        mockMvc.perform(delete("/api/v1/like/post/" + postId + "/user/" + userId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
@@ -87,21 +87,21 @@ class LikeControllerTest {
 
     @Test
     void removeLikeFromPost_shouldReturnBadRequestWhenPostIdIsLessThanOne() throws Exception {
-        mockMvc.perform(delete("/like/post/" + invalidId + "/user/" + userId)
+        mockMvc.perform(delete("/api/v1/like/post/" + invalidId + "/user/" + userId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     void removeLikeFromPost_shouldReturnBadRequestWhenCommentIdIsLessThanOne() throws Exception {
-        mockMvc.perform(delete("/like/post/" + postId + "/user/" + invalidId)
+        mockMvc.perform(delete("/api/v1/like/post/" + postId + "/user/" + invalidId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     void removeLikeFromComment_shouldCallLikeService() throws Exception {
-        mockMvc.perform(delete("/like/comment/" + commentId + "/user/" + userId)
+        mockMvc.perform(delete("/api/v1/like/comment/" + commentId + "/user/" + userId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
@@ -110,14 +110,14 @@ class LikeControllerTest {
 
     @Test
     void removeLikeFromComment_shouldReturnBadRequestWhenCommentIdIsLessThanOne() throws Exception {
-        mockMvc.perform(delete("/like/comment/" + invalidId + "/user/" + userId)
+        mockMvc.perform(delete("/api/v1/like/comment/" + invalidId + "/user/" + userId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     void removeLikeFromComment_shouldReturnBadRequestWhenUserIdIsLessThanOne() throws Exception {
-        mockMvc.perform(delete("/like/comment/" + commentId + "/user/" + invalidId)
+        mockMvc.perform(delete("/api/v1/like/comment/" + commentId + "/user/" + invalidId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
     }
