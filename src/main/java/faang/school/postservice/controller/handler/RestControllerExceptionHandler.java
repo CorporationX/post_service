@@ -6,6 +6,7 @@ import faang.school.postservice.exception.ExternalServiceException;
 import faang.school.postservice.exception.PostNotFoundException;
 
 import jakarta.persistence.EntityNotFoundException;
+import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -50,6 +51,12 @@ public class RestControllerExceptionHandler {
     public ResponseEntity<ErrorResponse> handleEntityNotFoundException(EntityNotFoundException e) {
         log.error("Error: {}", e.getMessage(), e);
         return buildErrorResponse(e.getMessage(), HttpStatus.NOT_FOUND);
+    }
+  
+    @ExceptionHandler(FeignException.class)
+    public ResponseEntity<ErrorResponse> handleFeignException(FeignException e) {
+        log.error("Feign exception occurred: {}", e.getMessage(), e);
+        return buildErrorResponse("External service is unavailable", HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     private ResponseEntity<ErrorResponse> buildErrorResponse(String message, HttpStatus status) {
