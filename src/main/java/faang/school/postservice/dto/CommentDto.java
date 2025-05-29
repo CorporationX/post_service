@@ -1,6 +1,7 @@
 package faang.school.postservice.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ public class CommentDto {
     @NotBlank(message = "Comment content cannot be empty")
     @Size(max = 4096, message = "Comment content is too long (max 4096)")
     private String content;
+    @NotNull(message = "Author must be specified")
     private Long authorId;
     private LocalDateTime createdAt; // Readonly
 }

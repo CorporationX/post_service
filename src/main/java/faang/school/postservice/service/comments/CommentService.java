@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -47,20 +48,16 @@ public class CommentService {
                 .toList();
     }
 
+    @Transactional
     public CommentDto updateComment(Long commentId, CommentDto commentDto) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new IllegalArgumentException("No comment found"));
 
-        if (commentDto.getAuthorId() != null && !comment.getAuthorId().equals(commentDto.getAuthorId())) {
+        if (commentDto.getAuthorId() != null && !Objects.equals(comment.getAuthorId(), commentDto.getAuthorId())) {
             throw new IllegalArgumentException("You cannot change the author of the comment");
         }
 
-        if (commentDto.getPostId() != null && !comment.getPost().getId().equals(commentDto.getPostId())) {
-            throw new IllegalArgumentException("You cannot change the post of the comment");
-        }
-
         comment.setContent(commentDto.getContent());
-        commentRepository.save(comment);
         return commentMapper.toDto(comment);
     }
 

@@ -3,7 +3,9 @@ package faang.school.postservice.conroller.comments;
 import faang.school.postservice.dto.CommentDto;
 import faang.school.postservice.service.comments.CommentService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,7 +17,7 @@ public class CommentController {
 
     @PostMapping("/posts/{postId}/comments")
     public CommentDto createComment(
-            @PathVariable Long postId,
+            @PathVariable @Min(1) Long postId,
             @RequestBody @Valid CommentDto commentDto) {
         commentDto.setPostId(postId);
         return commentService.createComment(commentDto);
@@ -33,7 +35,8 @@ public class CommentController {
     }
 
     @DeleteMapping("/comments/{commentId}")
-    public void deleteComment(@PathVariable Long commentId) {
+    public ResponseEntity<Void> deleteComment(@PathVariable Long commentId) {
         commentService.deleteComment(commentId);
+        return ResponseEntity.noContent().build();
     }
 }
