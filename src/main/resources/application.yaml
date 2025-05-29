@@ -57,6 +57,7 @@ spring:
         user-ban: "user-ban-topic"
         post-like: "post-like-event-topic"
         news-feed-comment: "news-comment-topic"
+        like: "likes_topic"
 
 server:
   port: 8081
