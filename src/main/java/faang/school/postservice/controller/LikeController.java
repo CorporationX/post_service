@@ -1,25 +1,25 @@
 package faang.school.postservice.controller;
 
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.likesystem.LikeDto;
-import faang.school.postservice.service.LikeSystemService;
-import jakarta.validation.Valid;
+import faang.school.postservice.service.LikeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/like")
-public class LikeSystemController {
-    private final LikeSystemService likeSystemService;
+public class LikeController {
+    private final UserContext userContext;
+    private final LikeService likeSystemService;
 
-    @PostMapping(path = "/post")
-    public LikeDto addLikePost(@Valid @RequestBody LikeDto likeDto){
-        return likeSystemService.addLikePost(likeDto);
+    @PostMapping(path = "/post/{postId}")
+    public LikeDto addLikePost(@PathVariable Long postId){
+        return likeSystemService.addLikePost(postId, userContext.getUserId());
     }
 
     @DeleteMapping(path = "/post/{id}")
@@ -27,9 +27,9 @@ public class LikeSystemController {
         return likeSystemService.deleteLikePost(id);
     }
 
-    @PostMapping(path = "/comment")
-    public LikeDto addLikeComment(@Valid @RequestBody LikeDto likeDto){
-        return likeSystemService.addLikeComment(likeDto);
+    @PostMapping(path = "/comment/{commentId}")
+    public LikeDto addLikeComment(@PathVariable Long commentId){
+        return likeSystemService.addLikeComment(commentId, userContext.getUserId());
     }
 
     @DeleteMapping(path = "/comment/{id}")

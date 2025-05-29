@@ -16,7 +16,7 @@ import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
-public class LikeSystemService {
+public class LikeService {
 
     private final LikeRepository likeRepository;
     private final CommentService commentService;
@@ -26,28 +26,18 @@ public class LikeSystemService {
     private final LikeMapper likeMapper;
 
     @Transactional
-    public LikeDto addLikePost(LikeDto likeDto) {
-        Post post = postService.getPostById(likeDto.postId());
+    public LikeDto addLikePost(Long postId, Long userId) {
+        Post post = postService.getPostById(postId);
         //Проверка на наличие поста в системе
 
-        userServiceClient.getUser(likeDto.userId(), "12345");//Проверка на наличие юзера в системе, не работает метод
+        userServiceClient.getUser(userId);//Проверка на наличие юзера в системе
 
         if (post.getLikes().stream()
-                .anyMatch(like -> Objects.equals(like.getUserId(), likeDto.userId()))) {
+                .anyMatch(like -> Objects.equals(like.getUserId(), userId))) {
             throw new IllegalArgumentException("Post already has like on it");
         }//Проверка на "стоит уже лайк на посте или нет"
 
-
-        post.getComments()
-                .forEach(comment -> {
-                    if (comment.getLikes().stream()
-                            .anyMatch(like -> Objects.equals(like.getUserId(), likeDto.userId()))) {
-                        throw new IllegalArgumentException("You can't like a post and a comment at the same time");
-                    }
-                });
-        //Проверка на то, что нет лайка от этого пользователя в комментариях
-
-        Like like = createPostLike(post, likeDto.userId());
+        Like like = createPostLike(post, userId);
         post.getLikes().add(like);
         likeRepository.save(like);
 
@@ -66,24 +56,18 @@ public class LikeSystemService {
     }
 
     @Transactional
-    public LikeDto addLikeComment(LikeDto likeDto) {
-        Comment comment = commentService.getCommentById(likeDto.commentId());
+    public LikeDto addLikeComment(Long commentId, Long userId) {
+        Comment comment = commentService.getCommentById(commentId);
         //Проверка на наличие комментария в системе
 
-        userServiceClient.getUser(likeDto.userId(), "12345");//Проверка на наличие юзера в системе, не работает метод
+        userServiceClient.getUser(userId);//Проверка на наличие юзера в системе
 
         if (comment.getLikes().stream()
-                .anyMatch(like -> Objects.equals(like.getUserId(), likeDto.userId()))) {
+                .anyMatch(like -> Objects.equals(like.getUserId(), userId))) {
             throw new IllegalArgumentException("Comment already has like on it");
         }//Стоит ли лайк на комменте или нет
 
-        if (comment.getPost().getLikes().stream()
-                .anyMatch(like -> Objects.equals(like.getUserId(), likeDto.userId()))) {
-            throw new IllegalArgumentException("Like the post");
-        }
-        //Проверка на то, что нет лайка от этого пользователя на посте
-
-        Like like = createCommentLike(comment, likeDto.userId());
+        Like like = createCommentLike(comment, userId);
         comment.getLikes().add(like);
         likeRepository.save(like);
 
