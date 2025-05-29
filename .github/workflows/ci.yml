@@ -6,13 +6,35 @@ on:
       - 'kraken-master-stream10'
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: action/checkout@v3
-      - name: set up JDK 17
+      - uses: action/checkout@v4
+
+      - name: Set up JDK
         uses: action/setup-java@v3
         with:
           java-version: 17
-      - name: Build with Gradle
-        run: ./gradlew build
+          distribution: 'temurin'
+
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+
+      - name: Run tests with Gradle
+        run: ./gradlew.bat test
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-reports
+          path: |
+            **/build/reports/tests
+            **/build/test-results
+      
