@@ -1,7 +1,9 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.KafkaProducers.KafkaCommentProducer;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.comment.CommentSendEvent;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.CommentMapper;
@@ -21,9 +23,10 @@ import java.util.List;
 @Slf4j
 public class CommentService {
     private final CommentRepository repository;
-    private final CommentMapper mapper;
+    private final CommentMapper commentMapper;
     private final PostRepository postRepository;
     private final UserServiceClient client;
+    private final KafkaCommentProducer kafkaCommentProducer;
     private static final int MAX_LENGTH = 4096;
 
     public CommentDto createComment(long userId, long postId, CommentDto commentDto) {
@@ -35,10 +38,18 @@ public class CommentService {
                 .orElseThrow(() -> new DataValidationException("Пост с id %d не найден", postId));
         validateNullCommentDto(commentDto);
         validateCommentContent(commentDto);
-        Comment commentForSave = mapper.toEntity(commentDto);
+        Comment commentForSave = commentMapper.toEntity(commentDto);
         Comment savedComment = repository.save(commentForSave);
         log.info("Комментарий {} успешно опубликован", savedComment.getId());
-        return mapper.toDto(savedComment);
+
+        CommentSendEvent commentEvent = CommentSendEvent.builder()
+                .authorId(userId)
+                .postId(post.getId())
+                .commentId(savedComment.getId())
+                .build();
+        kafkaCommentProducer.sendCommentCreatedEvent(commentEvent);
+
+        return commentMapper.toDto(savedComment);
     }
 
     public CommentDto editComment(CommentDto commentDto, long commentId, String content) {
@@ -52,7 +63,7 @@ public class CommentService {
         repository.save(targetComment);
         log.info("Комментарий {} успешно отредактирован", commentId);
 
-        return mapper.toDto(targetComment);
+        return commentMapper.toDto(targetComment);
     }
 
     public List<CommentDto> getAllComments(long postId) {
@@ -61,7 +72,7 @@ public class CommentService {
 
         return repository.findAllByPostId(postId).stream()
                 .sorted(Comparator.comparing(Comment::getCreatedAt))
-                .map(mapper::toDto)
+                .map(commentMapper::toDto)
                 .toList();
     }
 

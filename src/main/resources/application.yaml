@@ -4,6 +4,11 @@ spring:
     url: jdbc:postgresql://localhost:5432/postgres
     username: user
     password: password
+  kafka:
+    bootstrap-servers: localhost:29092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
@@ -47,3 +52,8 @@ thread-pool:
 
 cron:
   delete-expired-posts: 0 49 18 * * FRI
+
+app:
+  kafka:
+    topic:
+      comments: comments
