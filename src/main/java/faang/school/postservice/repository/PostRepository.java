@@ -1,12 +1,12 @@
 package faang.school.postservice.repository;
 
 import faang.school.postservice.model.Post;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
 
-public interface PostRepository extends CrudRepository<Post, Long> {
+public interface PostRepository extends JpaRepository<Post, Long> {
 
     List<Post> findByAuthorId(long authorId);
 
@@ -21,4 +21,31 @@ public interface PostRepository extends CrudRepository<Post, Long> {
     @Query("SELECT p FROM Post p WHERE p.published = false AND p.deleted = false AND p.scheduledAt <= CURRENT_TIMESTAMP")
     List<Post> findReadyToPublish();
 
+    @Query(nativeQuery = true, value = """
+            SELECT * FROM Post p
+            WHERE p.published = false AND p.deleted = false AND p.author_id = :authorId
+            ORDER BY p.created_at DESC
+            """)
+    List<Post> findDraftsByAuthorId(Long authorId);
+
+    @Query(nativeQuery = true, value = """
+            SELECT * FROM Post p
+            WHERE p.published = false AND p.deleted = false AND p.project_id = :projectId
+            ORDER BY p.created_at DESC
+            """)
+    List<Post> findDraftsByProjectId(Long projectId);
+
+    @Query(nativeQuery = true, value = """
+            SELECT * FROM Post p
+            WHERE p.published = true AND p.deleted = false AND p.author_id = :authorId
+            ORDER BY p.published_at DESC
+            """)
+    List<Post> findPublishedByAuthorId(Long authorId);
+
+    @Query(nativeQuery = true, value = """
+            SELECT * FROM Post p
+            WHERE p.published = true AND p.deleted = false AND p.project_id = :projectId
+            ORDER BY p.published_at DESC
+            """)
+    List<Post> findPublishedByProjectId(Long projectId);
 }
