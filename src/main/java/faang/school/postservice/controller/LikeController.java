@@ -24,7 +24,9 @@ public class LikeController {
 
     @PostMapping("post/{postId}/user/{userId}")
     public LikeDto addLikeToPost(@PathVariable Long postId, @PathVariable Long userId) {
-        log.info("Start method addLikeToPost with postId: {} and userId: {}", postId, userId);
+        log.info("Start method addLikeToPost with postId: {} and userId: {}",
+                postId,
+                userId);
         validateId(userId);
         validateId(postId);
 
