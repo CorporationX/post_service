@@ -117,14 +117,15 @@ tasks.jacocoTestReport {
 }
 
 val jacocoClassExclude = listOf(
-        "faang.school.postservice.PostServiceApp",
-        "faang.school.postservice.client.Feign*",
-        "faang.school.postservice.rest.ExceptionApiHandler",
         "faang.school.postservice.config.*",
         "faang.school.postservice.model.*",
+        "faang.school.postservice.dto.*",
         "faang.school.postservice.mapper.*",
-        "faang.school.postservice.exception.ErrorResponseDto*",
-        "faang.school.postservice.dto.*"
+        "faang.school.postservice.exception.ErrorResponse",
+        "faang.school.postservice.exception.UnauthorizedException",
+        "faang.school.postservice.PostServiceApp",
+        "faang.school.postservice.client.Feign*",
+        "faang.school.postservice.rest.ExceptionApiHandler"
 )
 
 tasks.jacocoTestCoverageVerification {

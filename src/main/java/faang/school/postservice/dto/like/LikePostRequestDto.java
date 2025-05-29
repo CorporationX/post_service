@@ -5,9 +5,7 @@ import lombok.Builder;
 
 @Builder
 public record LikePostRequestDto(
-    @NotNull(message = "user is empty")
-    Long userId,
-    @NotNull(message = "post is empty")
-    Long postId
+        @NotNull(message = "the link to the post is missing")
+        Long postId
 ) {
 }

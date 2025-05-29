@@ -1,28 +1,33 @@
 package faang.school.postservice.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.like.LikeCommentRequestDto;
-import faang.school.postservice.dto.like.LikeCommentResponseDto;
+import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.like.LikePostRequestDto;
-import faang.school.postservice.dto.like.LikePostResponseDto;
+import faang.school.postservice.mapper.LikeMapperImpl;
 import faang.school.postservice.service.LikeService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static org.hamcrest.Matchers.hasSize;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 
 @ExtendWith(MockitoExtension.class)
 class LikeControllerTest {
@@ -31,12 +36,15 @@ class LikeControllerTest {
     private static final Long POST_ID = 30L;
     private static final Long COMMENT_ID = 40L;
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
     private MockMvc mockMvc;
-
+    @Spy
+    private ObjectMapper objectMapper;
     @Mock
     private LikeService likeService;
+    @Mock
+    private UserContext userContext;
+    @Spy
+    private LikeMapperImpl mapper;
     @InjectMocks
     private LikeController likeController;
 
@@ -46,11 +54,13 @@ class LikeControllerTest {
     }
 
     @Test
-    public void testLikePostSuccess() throws Exception {
+    public void testAddLikePostSuccess() throws Exception {
         LikePostRequestDto requestDto = getPostRequestDto();
-        LikePostResponseDto expectedDto = getPostResponseDto();
+        LikeDto likeDto = getRequestLikePostDto();
+        LikeDto resultLikeDto = getResponseLikePostDto();
 
-        Mockito.when(likeService.addPost(requestDto)).thenReturn(expectedDto);
+        when(userContext.getUserId()).thenReturn(USER_ID);
+        when(likeService.addPost(likeDto)).thenReturn(resultLikeDto);
 
         mockMvc.perform(post("/likes/post")
                         .content(objectMapper.writeValueAsString(requestDto))
@@ -58,7 +68,7 @@ class LikeControllerTest {
                         .accept(MediaType.APPLICATION_JSON)
                 )
                 .andDo(print())
-                .andExpect(status().isOk())
+                .andExpect(status().is(201))
                 .andExpect(jsonPath("$.*", hasSize(3)))
                 .andExpect(jsonPath("$.id").value(ID))
                 .andExpect(jsonPath("$.userId").value(USER_ID))
@@ -66,11 +76,12 @@ class LikeControllerTest {
     }
 
     @Test
-    public void testRemoveLikePostSuccess() throws Exception {
+    public void testDeleteLikePostSuccess() throws Exception {
         LikePostRequestDto requestDto = getPostRequestDto();
-        LikePostResponseDto expectedDto = getPostResponseDto();
+        LikeDto likeDto = getRequestLikePostDto();
 
-        Mockito.when(likeService.deletePost(requestDto)).thenReturn(expectedDto);
+        when(userContext.getUserId()).thenReturn(USER_ID);
+        doNothing().when(likeService).deletePost(likeDto);
 
         mockMvc.perform(delete("/likes/post")
                         .content(objectMapper.writeValueAsString(requestDto))
@@ -78,19 +89,18 @@ class LikeControllerTest {
                         .accept(MediaType.APPLICATION_JSON)
                 )
                 .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.*", hasSize(3)))
-                .andExpect(jsonPath("$.id").value(ID))
-                .andExpect(jsonPath("$.userId").value(USER_ID))
-                .andExpect(jsonPath("$.postId").value(POST_ID));
+                .andExpect(status().is(204))
+                .andExpect(content().string(""));
     }
 
     @Test
     public void testAddUserCommentSuccess() throws Exception {
         LikeCommentRequestDto requestDto = getCommentRequestDto();
-        LikeCommentResponseDto expectedDto = getCommentResponseDto();
+        LikeDto likeDto = getRequestLikeCommentDto();
+        LikeDto resultLikeDto = getResponseLikeCommentDto();
 
-        Mockito.when(likeService.addComment(requestDto)).thenReturn(expectedDto);
+        when(userContext.getUserId()).thenReturn(USER_ID);
+        when(likeService.addComment(likeDto)).thenReturn(resultLikeDto);
 
         mockMvc.perform(post("/likes/comment")
                         .content(objectMapper.writeValueAsString(requestDto))
@@ -98,7 +108,7 @@ class LikeControllerTest {
                         .accept(MediaType.APPLICATION_JSON)
                 )
                 .andDo(print())
-                .andExpect(status().isOk())
+                .andExpect(status().is(201))
                 .andExpect(jsonPath("$.*", hasSize(3)))
                 .andExpect(jsonPath("$.id").value(ID))
                 .andExpect(jsonPath("$.userId").value(USER_ID))
@@ -108,9 +118,10 @@ class LikeControllerTest {
     @Test
     public void testRemoveUserCommentSuccess() throws Exception {
         LikeCommentRequestDto requestDto = getCommentRequestDto();
-        LikeCommentResponseDto expectedDto = getCommentResponseDto();
+        LikeDto likeDto = getRequestLikeCommentDto();
 
-        Mockito.when(likeService.deleteComment(requestDto)).thenReturn(expectedDto);
+        when(userContext.getUserId()).thenReturn(USER_ID);
+        doNothing().when(likeService).deleteComment(likeDto);
 
         mockMvc.perform(delete("/likes/comment")
                         .content(objectMapper.writeValueAsString(requestDto))
@@ -118,38 +129,47 @@ class LikeControllerTest {
                         .accept(MediaType.APPLICATION_JSON)
                 )
                 .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.*", hasSize(3)))
-                .andExpect(jsonPath("$.id").value(ID))
-                .andExpect(jsonPath("$.userId").value(USER_ID))
-                .andExpect(jsonPath("$.commentId").value(COMMENT_ID));
-    }
-
-    private LikePostResponseDto getPostResponseDto() {
-        return LikePostResponseDto.builder()
-                .id(ID)
-                .userId(USER_ID)
-                .postId(POST_ID)
-                .build();
+                .andExpect(status().is(204))
+                .andExpect(content().string(""));
     }
 
     private LikePostRequestDto getPostRequestDto() {
         return LikePostRequestDto.builder()
-                .userId(USER_ID)
                 .postId(POST_ID)
-                .build();
-    }
-
-    private LikeCommentResponseDto getCommentResponseDto() {
-        return LikeCommentResponseDto.builder()
-                .id(ID)
-                .userId(USER_ID)
-                .commentId(COMMENT_ID)
                 .build();
     }
 
     private LikeCommentRequestDto getCommentRequestDto() {
         return LikeCommentRequestDto.builder()
+                .commentId(COMMENT_ID)
+                .build();
+    }
+
+    private LikeDto getRequestLikePostDto() {
+        return LikeDto.builder()
+                .userId(USER_ID)
+                .postId(POST_ID)
+                .build();
+    }
+
+    private LikeDto getResponseLikePostDto() {
+        return LikeDto.builder()
+                .id(ID)
+                .userId(USER_ID)
+                .postId(POST_ID)
+                .build();
+    }
+
+    private LikeDto getRequestLikeCommentDto() {
+        return LikeDto.builder()
+                .userId(USER_ID)
+                .commentId(COMMENT_ID)
+                .build();
+    }
+
+    private LikeDto getResponseLikeCommentDto() {
+        return LikeDto.builder()
+                .id(ID)
                 .userId(USER_ID)
                 .commentId(COMMENT_ID)
                 .build();

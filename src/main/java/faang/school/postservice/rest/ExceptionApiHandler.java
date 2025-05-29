@@ -1,80 +1,104 @@
 package faang.school.postservice.rest;
 
-import faang.school.postservice.exception.ErrorResponseDto;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
+import faang.school.postservice.exception.CommentNotFoundException;
+import faang.school.postservice.exception.ErrorResponse;
 import faang.school.postservice.exception.LikeExistsException;
 import faang.school.postservice.exception.LikeNotFoundException;
 import faang.school.postservice.exception.PostNotFoundException;
+import faang.school.postservice.exception.UnauthorizedException;
 import faang.school.postservice.exception.UserNotFoundException;
-import faang.school.postservice.util.Utils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Slf4j
 @RestControllerAdvice
 @RequiredArgsConstructor
 public class ExceptionApiHandler {
-    private final Utils utils;
-
-    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<ErrorResponseDto> mismatchException(MethodArgumentTypeMismatchException exception) {
-        log.error("{}", exception.getMessage(), exception);
-        return ResponseEntity
-            .status(HttpStatus.METHOD_NOT_ALLOWED)
-            .body(new ErrorResponseDto(exception.getMessage()));
-    }
+    private final ObjectMapper objectMapper;
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponseDto> argumentNotValidException(MethodArgumentNotValidException exception) {
-        String errorMessage = exception.getBindingResult()
-            .getFieldErrors()
-            .stream()
-            .map(error -> utils.format("'{}': {}", error.getField(), error.getDefaultMessage()))
-            .collect(Collectors.joining("; "));
-        log.error("{}", exception.getMessage(), exception);
-        return ResponseEntity
-            .status(HttpStatus.BAD_REQUEST)
-            .body(new ErrorResponseDto(errorMessage));
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handlerMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+        Map<String, String> result = e.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .collect(Collectors.toMap(
+                        FieldError::getField,
+                        error -> Objects.requireNonNullElse(error.getDefaultMessage(), "")
+                ));
+        log.error("handlerMethodArgumentNotValidException: {}", e.getMessage(), e);
+        return result;
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
+    public ErrorResponse handlerMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e) {
+        return getErrorResponse("handlerMethodArgumentTypeMismatchException", e);
+    }
+
+    @ExceptionHandler(UnrecognizedPropertyException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleUnrecognizedPropertyException(UnrecognizedPropertyException e) {
+        return getErrorResponse("handleUnrecognizedPropertyException", e);
     }
 
     @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<String> userNotFoundException(UserNotFoundException exception) {
-        //todo: преобразовать строку в json. достать значение атрибута errorMessage
-        // и создать из него объект ErrorResponseDto
-        log.error("{}", exception.getMessage(), exception);
-        return ResponseEntity
-            .status(HttpStatus.NOT_FOUND)
-            .body(exception.getMessage());
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handlerUserNotFoundException(UserNotFoundException e) {
+        return getErrorResponse("handlerUserNotFoundException", e);
     }
 
     @ExceptionHandler(LikeNotFoundException.class)
-    public ResponseEntity<ErrorResponseDto> likeNotFoundException(LikeNotFoundException exception) {
-        log.error("{}", exception.getMessage(), exception);
-        return ResponseEntity
-            .status(HttpStatus.NOT_FOUND)
-            .body(new ErrorResponseDto(exception.getMessage()));
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handlerLikeNotFoundException(LikeNotFoundException e) {
+        return getErrorResponse("handlerLikeNotFoundException", e);
     }
 
     @ExceptionHandler(PostNotFoundException.class)
-    public ResponseEntity<ErrorResponseDto> postNotFoundException(PostNotFoundException exception) {
-        log.error("{}", exception.getMessage(), exception);
-        return ResponseEntity
-            .status(HttpStatus.NOT_FOUND)
-            .body(new ErrorResponseDto(exception.getMessage()));
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handlerPostNotFoundException(PostNotFoundException e) {
+        return getErrorResponse("handlerPostNotFoundException", e);
+    }
+
+    @ExceptionHandler(CommentNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handlerCommentNotFoundException(CommentNotFoundException e) {
+        return getErrorResponse("handlerCommentNotFoundException", e);
     }
 
     @ExceptionHandler(LikeExistsException.class)
-    public ResponseEntity<ErrorResponseDto> likeExistsException(LikeExistsException exception) {
-        log.error("{}", exception.getMessage(), exception);
-        return ResponseEntity
-            .status(HttpStatus.TOO_MANY_REQUESTS)
-            .body(new ErrorResponseDto(exception.getMessage()));
+    @ResponseStatus(HttpStatus.TOO_MANY_REQUESTS)
+    public ErrorResponse handlerLikeExistsException(LikeExistsException e) {
+        return getErrorResponse("handlerLikeExistsException", e);
+    }
+
+    @ExceptionHandler(UnauthorizedException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ErrorResponse handlerUnauthorizedException(UnauthorizedException e) {
+        return getErrorResponse("handlerUnauthorizedException", e);
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
+    public ErrorResponse handlerRuntimeException(RuntimeException e) {
+        return getErrorResponse("handlerRuntimeException", e);
+    }
+
+    private ErrorResponse getErrorResponse(String exceptionLabel, Exception e) {
+        log.error("{}: {}", exceptionLabel, e.getMessage(), e);
+        return new ErrorResponse(e.getMessage());
     }
 }

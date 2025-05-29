@@ -1,12 +1,10 @@
 package faang.school.postservice.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.dto.like.LikeCommentRequestDto;
-import faang.school.postservice.dto.like.LikeCommentResponseDto;
-import faang.school.postservice.dto.like.LikePostRequestDto;
-import faang.school.postservice.dto.like.LikePostResponseDto;
-import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.dto.like.LikeDto;
+import faang.school.postservice.exception.ErrorResponse;
 import faang.school.postservice.exception.LikeExistsException;
 import faang.school.postservice.exception.LikeNotFoundException;
 import faang.school.postservice.exception.UserNotFoundException;
@@ -21,8 +19,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.nio.charset.StandardCharsets;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -35,74 +31,88 @@ public class LikeService {
 
     private final LikeRepository likeRepository;
     private final UserServiceClient userService;
-    private final UserContext userContext;
     private final PostService postService;
     private final CommentService commentService;
     private final LikeMapper mapper;
     private final Utils utils;
+    private final ObjectMapper objectMapper;
 
-    public LikeCommentResponseDto addComment(LikeCommentRequestDto likeDto) {
+    public LikeDto addComment(LikeDto likeDto) {
         validateUser(likeDto.userId());
         Comment comment = commentService.findCommentById(likeDto.commentId());
         likeRepository.findByCommentIdAndUserId(likeDto.commentId(), likeDto.userId())
                 .ifPresent(like -> {
                     throw new LikeExistsException(USER_LIKED_THIS_COMMENT);
                 });
-        Like like = Like.builder()
-                .userId(likeDto.userId())
-                .comment(comment)
-                .build();
-        Like resultLike = likeRepository.save(like);
-        return mapper.toCommentResponseDto(resultLike);
+        Like like = likeRepository.save(getLike(likeDto, comment));
+        return mapper.toDto(like);
     }
 
-    public LikeCommentResponseDto deleteComment(LikeCommentRequestDto likeDto) {
+    public void deleteComment(LikeDto likeDto) {
         validateUser(likeDto.userId());
-        Like like = likeRepository.deleteByCommentIdAndUserId(likeDto.commentId(), likeDto.userId())
+        likeRepository.deleteByCommentIdAndUserId(likeDto.commentId(), likeDto.userId())
                 .orElseThrow(() -> new LikeNotFoundException(
-                        utils.format(COMMENT_LIKE_NOT_FOUND, likeDto.userId(), likeDto.commentId()))
-                );
-        return mapper.toCommentResponseDto(like);
+                        utils.format(COMMENT_LIKE_NOT_FOUND, likeDto.userId(), likeDto.commentId())));
     }
 
-    public LikePostResponseDto addPost(LikePostRequestDto likeDto) {
+    public LikeDto addPost(LikeDto likeDto) {
         validateUser(likeDto.userId());
         Post post = postService.findPostById(likeDto.postId());
         likeRepository.findByPostIdAndUserId(likeDto.postId(), likeDto.userId())
                 .ifPresent(like -> {
                     throw new LikeExistsException(USER_LIKED_THIS_POST);
                 });
-        Like like = Like.builder()
+        Like like = likeRepository.save(getLike(likeDto, post));
+        return mapper.toDto(like);
+    }
+
+    public void deletePost(LikeDto likeDto) {
+        validateUser(likeDto.userId());
+        likeRepository.deleteByPostIdAndUserId(likeDto.postId(), likeDto.userId())
+                .orElseThrow(() -> new LikeNotFoundException(
+                        utils.format(POST_LIKE_NOT_FOUND, likeDto.userId(), likeDto.postId())));
+    }
+
+
+    private Like getLike(LikeDto likeDto, Comment comment) {
+        return Like.builder()
+                .userId(likeDto.userId())
+                .comment(comment)
+                .build();
+    }
+
+    private Like getLike(LikeDto likeDto, Post post) {
+        return Like.builder()
                 .userId(likeDto.userId())
                 .post(post)
                 .build();
-        Like resultLike = likeRepository.save(like);
-        return mapper.toPostResponseDto(resultLike);
-    }
-
-    public LikePostResponseDto deletePost(LikePostRequestDto likeDto) {
-        validateUser(likeDto.userId());
-        Like like = likeRepository.deleteByPostIdAndUserId(likeDto.postId(), likeDto.userId())
-                .orElseThrow(() -> new LikeNotFoundException(
-                        utils.format(POST_LIKE_NOT_FOUND, likeDto.userId(), likeDto.postId())));
-        return mapper.toPostResponseDto(like);
     }
 
     private void validateUser(Long userId) {
-        userContext.setUserId(userId);
         try {
-            UserDto user = userService.getUser(userId);
-        } catch (FeignException.NotFound fe) {
-            log.error("{}", fe.getMessage(), fe);
-            StringBuilder errorMessage = new StringBuilder();
-            fe.responseBody()
-                    .ifPresentOrElse(
-                            byteBuffer -> errorMessage.append(StandardCharsets.UTF_8.decode(byteBuffer)),
-                            () -> errorMessage.append(utils.format(USER_NOT_FOUND, userId)));
-            throw new UserNotFoundException(errorMessage.toString());
-        } catch (RuntimeException e) {
-            log.error("{}", e.getMessage(), e);
-            throw new LikeNotFoundException(e.getMessage());
+            userService.checkUser(userId);
+        } catch (FeignException fe) {
+            log.error("FeignException.status is: [{}]", fe.status());
+            log.error("validateUser: {}", fe.getMessage(), fe);
+            StringBuilder resultMessage = new StringBuilder();
+            if (fe.status() == -1) {
+                resultMessage.append(utils.format(USER_NOT_FOUND, userId));
+            } else {
+                String feignExceptionMessage = fe.contentUTF8();
+                if (feignExceptionMessage != null) {
+                    try {
+                        ErrorResponse errorResponse = objectMapper.readValue(
+                                feignExceptionMessage, ErrorResponse.class);
+                        resultMessage.append(errorResponse.getErrorMessage());
+                    } catch (JsonProcessingException e) {
+                        log.error("validateUser.JsonProcessingException: {}", e.getMessage(), e);
+                        resultMessage.append(utils.format(USER_NOT_FOUND, userId));
+                    }
+                } else {
+                    resultMessage.append(utils.format(USER_NOT_FOUND, userId));
+                }
+            }
+            throw new UserNotFoundException(resultMessage.toString());
         }
     }
 }

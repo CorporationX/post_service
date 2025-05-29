@@ -61,4 +61,20 @@ public class Comment {
 
     @Column(name = "small_image_file_key")
     private String smallImageFileKey;
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("Comment{");
+        sb.append("id=").append(id);
+        sb.append(", content='").append(content).append('\'');
+        sb.append(", authorId=").append(authorId);
+        //sb.append(", post=").append(post);
+        sb.append(", createdAt=").append(createdAt);
+        sb.append(", updatedAt=").append(updatedAt);
+        sb.append(", largeImageFileKey='").append(largeImageFileKey).append('\'');
+        sb.append(", smallImageFileKey='").append(smallImageFileKey).append('\'');
+        sb.append(", likes.count=").append(likes.size());
+        sb.append('}');
+        return sb.toString();
+    }
 }

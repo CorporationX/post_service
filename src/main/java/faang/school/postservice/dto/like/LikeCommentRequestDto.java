@@ -5,9 +5,7 @@ import lombok.Builder;
 
 @Builder
 public record LikeCommentRequestDto(
-    @NotNull(message = "the link to the user is missing")
-    Long userId,
-    @NotNull(message = "the link to the comment is missing ")
-    Long commentId
+        @NotNull(message = "the link to the comment is missing")
+        Long commentId
 ) {
 }

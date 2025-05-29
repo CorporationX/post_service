@@ -1,12 +1,15 @@
 package faang.school.postservice.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.dto.like.LikeCommentRequestDto;
-import faang.school.postservice.dto.like.LikeCommentResponseDto;
+import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.like.LikePostRequestDto;
-import faang.school.postservice.dto.like.LikePostResponseDto;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.exception.ErrorResponse;
 import faang.school.postservice.exception.LikeExistsException;
 import faang.school.postservice.exception.LikeNotFoundException;
 import faang.school.postservice.exception.UserNotFoundException;
@@ -17,9 +20,9 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.util.Utils;
 import feign.FeignException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -30,6 +33,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -60,24 +66,33 @@ class LikeServiceTest {
     private PostService postService;
     @Mock
     private CommentService commentService;
-    @InjectMocks
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
     private LikeService likeService;
+
+    @BeforeEach
+    public void setUp() {
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        likeService = new LikeService(
+                likeRepository, userService, postService, commentService, mapper, utils, objectMapper);
+    }
 
     @Test
     public void testAddLikeCommentSuccess() {
-        LikeCommentRequestDto requestDto = getLikeCommentRequestDto();
-        UserDto userDto = getUserDto();
+        LikeDto likeDto = getLikeDto(COMMENT_ID, null);
         Comment comment = getComment();
         Like resultEntity = getLikeEntity(comment, null);
 
-        when(userService.getUser(USER_ID)).thenReturn(userDto);
+        doNothing().when(userService).checkUser(USER_ID);
         when(commentService.findCommentById(COMMENT_ID)).thenReturn(comment);
         when(likeRepository.findByCommentIdAndUserId(COMMENT_ID, USER_ID)).thenReturn(Optional.empty());
         when(likeRepository.save(any(Like.class))).thenReturn(resultEntity);
 
-        LikeCommentResponseDto responseDto = likeService.addComment(requestDto);
+        LikeDto responseDto = likeService.addComment(likeDto);
 
-        verify(likeRepository, times(1)).save(any(Like.class));
+        verify(likeRepository).save(any(Like.class));
         assertNotNull(responseDto);
         assertNotNull(responseDto.id());
         assertEquals(USER_ID, responseDto.userId());
@@ -86,12 +101,11 @@ class LikeServiceTest {
 
     @Test
     public void testAddLikeCommentAndLikeExists() {
-        LikeCommentRequestDto requestDto = getLikeCommentRequestDto();
-        UserDto userDto = getUserDto();
+        LikeDto requestDto = getLikeDto(COMMENT_ID, null);
         Comment comment = getComment();
         Like resultEntity = getLikeEntity(comment, null);
 
-        when(userService.getUser(USER_ID)).thenReturn(userDto);
+        doNothing().when(userService).checkUser(USER_ID);
         when(commentService.findCommentById(COMMENT_ID)).thenReturn(comment);
         when(likeRepository.findByCommentIdAndUserId(COMMENT_ID, USER_ID))
                 .thenReturn(Optional.ofNullable(resultEntity));
@@ -105,31 +119,24 @@ class LikeServiceTest {
 
     @Test
     public void testDeleteLikeCommentSuccess() {
-        LikeCommentRequestDto requestDto = getLikeCommentRequestDto();
-        UserDto userDto = getUserDto();
+        LikeDto requestDto = getLikeDto(COMMENT_ID, null);
         Comment comment = getComment();
         Like resultEntity = getLikeEntity(comment, null);
 
-        when(userService.getUser(USER_ID)).thenReturn(userDto);
+        doNothing().when(userService).checkUser(USER_ID);
         when(likeRepository.deleteByCommentIdAndUserId(COMMENT_ID, USER_ID))
                 .thenReturn(Optional.ofNullable(resultEntity));
 
-        LikeCommentResponseDto responseDto = likeService.deleteComment(requestDto);
+        likeService.deleteComment(requestDto);
 
-        verify(likeRepository, times(1))
-                .deleteByCommentIdAndUserId(any(Long.class), any(Long.class));
-        assertNotNull(responseDto);
-        assertEquals(LIKE_ENTITY_ID, responseDto.id());
-        assertEquals(USER_ID, responseDto.userId());
-        assertEquals(COMMENT_ID, responseDto.commentId());
+        verify(likeRepository).deleteByCommentIdAndUserId(any(Long.class), any(Long.class));
     }
 
     @Test
     public void testDeleteLikeCommentButLikeIsMissing() {
-        LikeCommentRequestDto requestDto = getLikeCommentRequestDto();
-        UserDto userDto = getUserDto();
+        LikeDto requestDto = getLikeDto(COMMENT_ID, null);
 
-        when(userService.getUser(USER_ID)).thenReturn(userDto);
+        doNothing().when(userService).checkUser(USER_ID);
         when(likeRepository.deleteByCommentIdAndUserId(COMMENT_ID, USER_ID))
                 .thenReturn(Optional.empty());
 
@@ -142,19 +149,18 @@ class LikeServiceTest {
 
     @Test
     public void testAddLikePostSuccess() {
-        LikePostRequestDto requestDto = getLikePostRequestDto();
-        UserDto userDto = getUserDto();
+        LikeDto requestDto = getLikeDto(null, POST_ID);
         Post post = getPost();
         Like resultEntity = getLikeEntity(null, post);
 
-        when(userService.getUser(USER_ID)).thenReturn(userDto);
+        doNothing().when(userService).checkUser(USER_ID);
         when(postService.findPostById(POST_ID)).thenReturn(post);
         when(likeRepository.findByPostIdAndUserId(POST_ID, USER_ID)).thenReturn(Optional.empty());
         when(likeRepository.save(any(Like.class))).thenReturn(resultEntity);
 
-        LikePostResponseDto responseDto = likeService.addPost(requestDto);
+        LikeDto responseDto = likeService.addPost(requestDto);
 
-        verify(likeRepository, times(1)).save(any(Like.class));
+        verify(likeRepository).save(any(Like.class));
         assertNotNull(responseDto);
         assertNotNull(responseDto.id());
         assertEquals(USER_ID, responseDto.userId());
@@ -163,12 +169,11 @@ class LikeServiceTest {
 
     @Test
     public void testAddLikePostAndLikeExists() {
-        LikePostRequestDto requestDto = getLikePostRequestDto();
-        UserDto userDto = getUserDto();
+        LikeDto requestDto = getLikeDto(null, POST_ID);
         Post post = getPost();
         Like resultEntity = getLikeEntity(null, post);
 
-        when(userService.getUser(USER_ID)).thenReturn(userDto);
+        doNothing().when(userService).checkUser(USER_ID);
         when(postService.findPostById(POST_ID)).thenReturn(post);
         when(likeRepository.findByPostIdAndUserId(POST_ID, USER_ID))
                 .thenReturn(Optional.ofNullable(resultEntity));
@@ -182,31 +187,24 @@ class LikeServiceTest {
 
     @Test
     public void testDeleteLikePostSuccess() {
-        LikePostRequestDto requestDto = getLikePostRequestDto();
-        UserDto userDto = getUserDto();
+        LikeDto requestDto = getLikeDto(null, POST_ID);
         Post post = getPost();
         Like resultEntity = getLikeEntity(null, post);
 
-        when(userService.getUser(USER_ID)).thenReturn(userDto);
+        doNothing().when(userService).checkUser(USER_ID);
         when(likeRepository.deleteByPostIdAndUserId(POST_ID, USER_ID))
                 .thenReturn(Optional.ofNullable(resultEntity));
 
-        LikePostResponseDto responseDto = likeService.deletePost(requestDto);
+        likeService.deletePost(requestDto);
 
-        verify(likeRepository, times(1))
-                .deleteByPostIdAndUserId(any(Long.class), any(Long.class));
-        assertNotNull(responseDto);
-        assertEquals(LIKE_ENTITY_ID, responseDto.id());
-        assertEquals(USER_ID, responseDto.userId());
-        assertEquals(POST_ID, responseDto.postId());
+        verify(likeRepository).deleteByPostIdAndUserId(any(Long.class), any(Long.class));
     }
 
     @Test
     public void testDeleteLikePostButLikeIsMissing() {
-        LikePostRequestDto requestDto = getLikePostRequestDto();
-        UserDto userDto = getUserDto();
+        LikeDto requestDto = getLikeDto(null, POST_ID);
 
-        when(userService.getUser(USER_ID)).thenReturn(userDto);
+        doNothing().when(userService).checkUser(USER_ID);
         when(likeRepository.deleteByPostIdAndUserId(POST_ID, USER_ID))
                 .thenReturn(Optional.empty());
 
@@ -218,13 +216,68 @@ class LikeServiceTest {
     }
 
     @Test
-    public void testDeleteLikePostButUserIsMissing() {
-        LikePostRequestDto requestDto = getLikePostRequestDto();
+    public void testDeleteLikePostButUserIsMissing() throws JsonProcessingException {
+        LikeDto requestDto = getLikeDto(null, POST_ID);
+        FeignException feignException = mock(FeignException.class);
+        ErrorResponse errorResponse = new ErrorResponse(utils.format(LikeService.USER_NOT_FOUND, USER_ID));
 
-        when(userService.getUser(USER_ID)).thenThrow(FeignException.NotFound.class);
+        when(feignException.status()).thenReturn(404);
+        when(feignException.contentUTF8())
+                .thenReturn(objectMapper.writeValueAsString(errorResponse));
+        doThrow(feignException).when(userService).checkUser(USER_ID);
+        UserNotFoundException resultException = assertThrows(UserNotFoundException.class,
+                () -> likeService.deletePost(requestDto));
 
-        FeignException.NotFound userNotFoundException = assertThrows(
-                FeignException.NotFound.class, () -> userService.getUser(USER_ID));
+        verify(likeRepository, times(0))
+                .deleteByPostIdAndUserId(any(Long.class), any(Long.class));
+        String expectedError = utils.format(LikeService.USER_NOT_FOUND, USER_ID);
+        assertEquals(expectedError, resultException.getMessage());
+    }
+
+    @Test
+    public void testWhenExceptionMessageIsEmpty() throws JsonProcessingException {
+        LikeDto requestDto = getLikeDto(null, POST_ID);
+        FeignException feignException = mock(FeignException.class);
+        ErrorResponse errorResponse = new ErrorResponse(utils.format(LikeService.USER_NOT_FOUND, USER_ID));
+
+        when(feignException.status()).thenReturn(404);
+        when(feignException.contentUTF8()).thenReturn(null);
+        doThrow(feignException).when(userService).checkUser(USER_ID);
+        UserNotFoundException resultException = assertThrows(UserNotFoundException.class,
+                () -> likeService.deletePost(requestDto));
+
+        verify(likeRepository, times(0))
+                .deleteByPostIdAndUserId(any(Long.class), any(Long.class));
+        String expectedError = utils.format(LikeService.USER_NOT_FOUND, USER_ID);
+        assertEquals(expectedError, resultException.getMessage());
+    }
+
+    @Test
+    public void testWhenExceptionMessageIsNotJson() throws JsonProcessingException {
+        LikeDto requestDto = getLikeDto(null, POST_ID);
+        FeignException feignException = mock(FeignException.class);
+        ErrorResponse errorResponse = new ErrorResponse(utils.format(LikeService.USER_NOT_FOUND, USER_ID));
+
+        when(feignException.status()).thenReturn(404);
+        when(feignException.contentUTF8()).thenReturn("simple error message");
+        doThrow(feignException).when(userService).checkUser(USER_ID);
+        UserNotFoundException resultException = assertThrows(UserNotFoundException.class,
+                () -> likeService.deletePost(requestDto));
+
+        verify(likeRepository, times(0))
+                .deleteByPostIdAndUserId(any(Long.class), any(Long.class));
+        String expectedError = utils.format(LikeService.USER_NOT_FOUND, USER_ID);
+        assertEquals(expectedError, resultException.getMessage());
+    }
+
+    @Test
+    public void testWhenServerIsUnavailable() throws JsonProcessingException {
+        LikeDto requestDto = getLikeDto(null, POST_ID);
+        FeignException feignException = mock(FeignException.class);
+        ErrorResponse errorResponse = new ErrorResponse(utils.format(LikeService.USER_NOT_FOUND, USER_ID));
+
+        when(feignException.status()).thenReturn(-1);
+        doThrow(feignException).when(userService).checkUser(USER_ID);
         UserNotFoundException resultException = assertThrows(UserNotFoundException.class,
                 () -> likeService.deletePost(requestDto));
 
@@ -248,16 +301,16 @@ class LikeServiceTest {
                 .build();
     }
 
-    private LikeCommentRequestDto getLikeCommentRequestDto() {
-        return LikeCommentRequestDto.builder()
+    private LikeDto getLikeDto(Long commentId, Long postId) {
+        return LikeDto.builder()
                 .userId(USER_ID)
-                .commentId(COMMENT_ID)
+                .postId(postId)
+                .commentId(commentId)
                 .build();
     }
 
     private LikePostRequestDto getLikePostRequestDto() {
         return LikePostRequestDto.builder()
-                .userId(USER_ID)
                 .postId(POST_ID)
                 .build();
     }
