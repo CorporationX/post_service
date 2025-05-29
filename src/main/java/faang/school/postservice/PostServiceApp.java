@@ -1,16 +1,18 @@
 package faang.school.postservice;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import faang.school.postservice.config.ModerationProperties;
-import faang.school.postservice.config.properties.RedisProperties;
+import faang.school.postservice.properties.KafkaProperties;
+import faang.school.postservice.properties.RedisProperties;
+import faang.school.postservice.properties.feed.FeedCacheProperties;
+import faang.school.postservice.properties.feed.FeedExecutorProperties;
+import faang.school.postservice.properties.feed.FeedHeaterExecutorProperties;
+import faang.school.postservice.properties.feed.FeedHeaterProperties;
 import org.springframework.boot.Banner;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.openfeign.EnableFeignClients;
-import org.springframework.context.annotation.Bean;
+import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -19,9 +21,15 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 @EnableAsync
 @EnableRetry
+@EnableKafka
 @EnableFeignClients(basePackages = "faang.school.postservice.client")
 @EnableConfigurationProperties({
+        FeedExecutorProperties.class,
+        FeedHeaterExecutorProperties.class,
         ModerationProperties.class,
+        FeedCacheProperties.class,
+        KafkaProperties.class,
+        FeedHeaterProperties.class,
         RedisProperties.class
 })
 public class PostServiceApp {
@@ -29,13 +37,5 @@ public class PostServiceApp {
         new SpringApplicationBuilder(PostServiceApp.class)
                 .bannerMode(Banner.Mode.OFF)
                 .run(args);
-    }
-
-    @Bean
-    public ObjectMapper objectMapper() {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
-        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        return objectMapper;
     }
 }

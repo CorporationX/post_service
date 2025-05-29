@@ -1,5 +1,8 @@
 package faang.school.postservice.config.redis;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -21,6 +24,15 @@ public class RedisConfig {
 
     private final RedisProperties redisProperties;
 
+    // 1. Добавляем бин ObjectMapper с поддержкой Java Time
+    @Bean
+    public ObjectMapper objectMapper() {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule()); // Регистрируем модуль для Java 8 Date/Time
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS); // Отключаем запись дат как timestamp
+        return mapper;
+    }
+
     @Bean
     JedisConnectionFactory jedisConnectionFactory() {
         RedisStandaloneConfiguration redisConfig = new RedisStandaloneConfiguration();
@@ -41,12 +53,25 @@ public class RedisConfig {
         return new JedisConnectionFactory(redisConfig, clientConfig);
     }
 
+    // 2. Модифицируем RedisTemplate для использования кастомного ObjectMapper
     @Bean
-    RedisTemplate<String, Object> redisTemplate(JedisConnectionFactory jedisConnectionFactory) {
+    RedisTemplate<String, Object> redisTemplate(
+            JedisConnectionFactory jedisConnectionFactory,
+            ObjectMapper objectMapper) { // Инжектируем наш ObjectMapper
+
+        // Создаем сериализатор с кастомным ObjectMapper
+        GenericJackson2JsonRedisSerializer serializer =
+                new GenericJackson2JsonRedisSerializer(objectMapper);
+
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(jedisConnectionFactory);
         template.setKeySerializer(new StringRedisSerializer());
-        template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+        template.setValueSerializer(serializer);
+
+        // 3. Добавляем сериализаторы для хэшей (важно!)
+        template.setHashKeySerializer(new StringRedisSerializer());
+        template.setHashValueSerializer(serializer);
+
         return template;
     }
 

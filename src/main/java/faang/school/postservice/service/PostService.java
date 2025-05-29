@@ -1,10 +1,17 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.config.ModerationProperties;
 import com.google.common.collect.Lists;
+import faang.school.postservice.client.SubscriptionServiceClient;
+import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.ModerationProperties;
+import faang.school.postservice.dto.post.CreatePostRequest;
+import faang.school.postservice.dto.post.PostResponseDto;
+import faang.school.postservice.event.PostCreatedEvent;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.PostPublishingException;
+import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.KafkaPostProducer;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.moderation.AsyncModerationService;
 import lombok.RequiredArgsConstructor;
@@ -17,9 +24,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.time.LocalDateTime;
 
 @Slf4j
 @Service
@@ -32,6 +39,10 @@ public class PostService {
     private final PostRepository postRepository;
     private final AsyncModerationService asyncModerationService;
     private final ModerationProperties moderationProperties;
+    private final UserServiceClient userServiceClient;
+    private final SubscriptionServiceClient subscriptionServiceClient;
+    private final PostMapper postMapper;
+    private final KafkaPostProducer kafkaPostProducer;
 
     private static final int BATCH_SIZE = 1000;
 
@@ -60,6 +71,34 @@ public class PostService {
                 });
     }
 
+    @Transactional
+    public PostResponseDto createPost(CreatePostRequest request) {
+        try {
+            userServiceClient.getUser(request.getAuthorId());
+        } catch (Exception e) {
+            log.warn("Author with ID {} not found in user service: {}", request.getAuthorId(), e.getMessage());
+            throw new EntityNotFoundException("Author", request.getAuthorId());
+        }
+
+        Post post = postMapper.toEntity(request);
+        post = postRepository.save(post);
+
+        List<Long> subscriberIds = subscriptionServiceClient.getFolloweeIds(post.getAuthorId());
+
+        PostCreatedEvent event = PostCreatedEvent.builder()
+                .postId(post.getId())
+                .text(post.getContent())
+                .authorId(post.getAuthorId())
+                .projectId(post.getProjectId())
+                .timestamp(System.currentTimeMillis())
+                .subscriberIds(subscriberIds)
+                .build();
+
+        kafkaPostProducer.sendPostCreatedEvent(event);
+
+        return postMapper.toResponseDto(post);
+    }
+
     public Post getPost(Long postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException(POST, postId));
@@ -68,7 +107,7 @@ public class PostService {
         return post;
     }
 
-    @Retryable(value = Exception.class, maxAttempts = 3, backoff = @Backoff(delay = 2000, multiplier = 2))
+    @Retryable(retryFor = Exception.class, backoff = @Backoff(delay = 2000, multiplier = 2))
     public void correctUnpublishedPosts() {
         List<Post> posts = postRepository.findReadyToPublish();
 
@@ -85,7 +124,7 @@ public class PostService {
 
     @Async("fileUploadTaskExecutor")
     @Transactional
-    public  CompletableFuture<Void> publishSchedulePosts() {
+    public CompletableFuture<Void> publishSchedulePosts() {
         List<Post> postsToPublish = postRepository.findReadyToPublish();
 
         if (postsToPublish.isEmpty()) {

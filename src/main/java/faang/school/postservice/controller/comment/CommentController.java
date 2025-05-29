@@ -1,8 +1,6 @@
 package faang.school.postservice.controller.comment;
 
 import faang.school.postservice.dto.comment.CommentDto;
-import faang.school.postservice.dto.event.CommentEvent;
-import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.service.comment.CommentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 

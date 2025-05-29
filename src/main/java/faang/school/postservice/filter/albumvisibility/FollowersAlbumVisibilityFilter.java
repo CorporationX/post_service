@@ -1,6 +1,6 @@
 package faang.school.postservice.filter.albumvisibility;
 
-import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.client.SubscriptionServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.album.AlbumResponseDto;
 import faang.school.postservice.dto.user.UserDto;
@@ -21,12 +21,12 @@ public class FollowersAlbumVisibilityFilter implements AlbumVisibilityFilter {
 
     private final AlbumMapper albumMapper;
     private final UserContext userContext;
-    private final UserServiceClient userServiceClient;
+    private final SubscriptionServiceClient subscriptionServiceClient;
 
     @Override
     public AlbumResponseDto apply(Album album) {
         long userId = userContext.getUserId();
-        List<UserDto> followers = userServiceClient.getFollowersByUserId(album.getAuthorId());
+        List<UserDto> followers = subscriptionServiceClient.getFolloweeByUserId(album.getAuthorId());
         boolean isUserFollower = followers.stream()
                 .map(UserDto::id)
                 .anyMatch(followerId -> followerId != null && followerId == userId);
