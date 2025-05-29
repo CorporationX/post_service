@@ -15,7 +15,6 @@ repositories {
     mavenCentral()
 }
 
-
 dependencies {
     /**
      * Spring boot starters
@@ -27,9 +26,10 @@ dependencies {
     implementation("org.springframework.retry:spring-retry")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.cloud:spring-cloud-starter-openfeign:4.0.2")
-    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.cloud:spring-cloud-starter-consul-config")
-    implementation ("org.springframework.cloud:spring-cloud-starter-loadbalancer")
+    implementation("org.springframework.cloud:spring-cloud-starter-consul-discovery")
+    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
     /**
      * Database
@@ -37,16 +37,6 @@ dependencies {
     implementation("org.liquibase:liquibase-core")
     implementation("redis.clients:jedis:4.3.2")
     runtimeOnly("org.postgresql:postgresql")
-
-    /**
-     * S3 Service
-     */
-    implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:3.1.1")
-
-    /**
-     * Tika
-     */
-    implementation("org.apache.tika:tika-core:2.9.2")
 
     /**
      * Utils & Logging
@@ -68,11 +58,6 @@ dependencies {
     testImplementation("com.redis.testcontainers:testcontainers-redis-junit-jupiter:1.4.6")
 
     /**
-     * Documentation
-     */
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0")
-
-    /**
      * Tests
      */
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.9.2")
@@ -86,6 +71,7 @@ dependencyManagement {
     }
 }
 
+
 tasks.test {
     useJUnitPlatform()
     finalizedBy(tasks.jacocoTestReport, tasks.jacocoTestCoverageVerification)
@@ -95,8 +81,46 @@ tasks.withType<Test> {
     useJUnitPlatform()
 }
 
-val test by tasks.getting(Test::class) { testLogging.showStandardStreams = true }
-
 tasks.bootJar {
     archiveFileName.set("service.jar")
+}
+
+val jacocoReportIncludes = listOf(
+    "faang/school/postservice/service/**"
+)
+
+val jacocoVerificationIncludes = listOf(
+    "faang.school.postservice.service.**"
+)
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+    reports {
+        xml.required.set(false)
+        csv.required.set(false)
+        html.required.set(true)
+    }
+    classDirectories.setFrom(files(classDirectories.files.map {
+        fileTree(it).matching {
+            include(jacocoReportIncludes)
+        }
+    }))
+}
+
+tasks.jacocoTestCoverageVerification {
+    dependsOn(tasks.jacocoTestReport)
+    violationRules {
+        rule {
+            element = "BUNDLE"
+            isEnabled = true
+
+            includes = jacocoVerificationIncludes
+
+            limit {
+                counter = "LINE"
+                value = "COVEREDRATIO"
+                minimum = "0.7".toBigDecimal()
+            }
+        }
+    }
 }
