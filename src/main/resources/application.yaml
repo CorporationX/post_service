@@ -39,6 +39,8 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
+      key-prefix:
+        author-cache: newsfeed:authors
   retry:
     language-tool:
       max-attempts: 4
