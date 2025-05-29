@@ -11,7 +11,6 @@ import faang.school.postservice.publisher.EventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.LikeService;
 import faang.school.postservice.service.publisher.KafkaPublisher;
 import feign.FeignException;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,7 +24,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 
-import static faang.school.postservice.service.LikeService.ALREADY_LIKED;
+import static faang.school.postservice.service.like.LikeService.ALREADY_LIKED;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;

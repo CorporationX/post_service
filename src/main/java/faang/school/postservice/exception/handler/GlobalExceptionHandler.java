@@ -2,6 +2,7 @@ package faang.school.postservice.exception.handler;
 
 import faang.school.postservice.exception.InvalidPostAuthorsException;
 import faang.school.postservice.exception.LanguageToolException;
+import faang.school.postservice.exception.LikeOptimisticLockException;
 import faang.school.postservice.exception.PostNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -58,5 +59,19 @@ public class GlobalExceptionHandler {
                 .property("service", "PostService")
                 .build();
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(LikeOptimisticLockException.class)
+    public ResponseEntity<ErrorResponse> handleLikeOptimisticLockException(LikeOptimisticLockException exception) {
+        String message = "The post's like count is currently being updated by multiple users. " +
+                "Please try your action again in a moment.";
+
+        ErrorResponse errorResponse = ErrorResponse.builder(exception, HttpStatus.CONFLICT, exception.getMessage())
+                .title("Concurrent Update Conflict")
+                .detail(message)
+                .property("service", "LikeService")
+                .build();
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
     }
 }
