@@ -1,9 +1,9 @@
 package faang.school.postservice.consumer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import faang.school.postservice.event.CommentEvent;
 import faang.school.postservice.dto.redis.CommentRedisDto;
 import faang.school.postservice.dto.redis.PostRedisDto;
+import faang.school.postservice.event.CommentEvent;
 import faang.school.postservice.properties.feed.FeedCacheProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -31,10 +31,11 @@ public class KafkaCommentConsumer extends AbstractKafkaConsumer<CommentEvent> {
 
     @Override
     protected void handleEvent(CommentEvent event) {
-        String key = "post:" + event.getPostId();
+        long postId = event.getPostId();
+        String key = "post:" + postId;
         PostRedisDto post = (PostRedisDto) redisTemplate.opsForValue().get(key);
         if (post == null) {
-            log.warn("Post {} not found in Redis for comment {}", event.getPostId(), event.getCommentId());
+            log.warn("Post {} not found in Redis for comment {}", postId, event.getCommentId());
             return;
         }
 
@@ -55,12 +56,12 @@ public class KafkaCommentConsumer extends AbstractKafkaConsumer<CommentEvent> {
         }
 
         redisTemplate.opsForValue().set(key, post, Duration.ofSeconds(feedCacheProperties.getTtlSeconds()));
+        log.info("Successfully updated comments for post {}", postId);
     }
 
     @Override
     protected void logError(Exception e) {
         log.error("Error processing CommentEvent", e);
     }
-
 
 }

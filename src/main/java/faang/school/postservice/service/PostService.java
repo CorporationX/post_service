@@ -1,6 +1,7 @@
 package faang.school.postservice.service;
 
 import com.google.common.collect.Lists;
+import faang.school.postservice.client.SubscriptionServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.ModerationProperties;
 import faang.school.postservice.dto.post.CreatePostRequest;
@@ -39,6 +40,7 @@ public class PostService {
     private final AsyncModerationService asyncModerationService;
     private final ModerationProperties moderationProperties;
     private final UserServiceClient userServiceClient;
+    private final SubscriptionServiceClient subscriptionServiceClient;
     private final PostMapper postMapper;
     private final KafkaPostProducer kafkaPostProducer;
 
@@ -75,13 +77,13 @@ public class PostService {
             userServiceClient.getUser(request.getAuthorId());
         } catch (Exception e) {
             log.warn("Author with ID {} not found in user service: {}", request.getAuthorId(), e.getMessage());
-            throw new EntityNotFoundException(String.format("Author with ID %d not found in user service: ", request.getAuthorId()));
+            throw new EntityNotFoundException("Author", request.getAuthorId());
         }
 
         Post post = postMapper.toEntity(request);
         post = postRepository.save(post);
 
-        List<Long> subscriberIds = userServiceClient.getFollowerIds(post.getAuthorId());
+        List<Long> subscriberIds = subscriptionServiceClient.getFolloweeIds(post.getAuthorId());
 
         PostCreatedEvent event = PostCreatedEvent.builder()
                 .postId(post.getId())
@@ -105,7 +107,7 @@ public class PostService {
         return post;
     }
 
-    @Retryable(value = Exception.class, maxAttempts = 3, backoff = @Backoff(delay = 2000, multiplier = 2))
+    @Retryable(retryFor = Exception.class, backoff = @Backoff(delay = 2000, multiplier = 2))
     public void correctUnpublishedPosts() {
         List<Post> posts = postRepository.findReadyToPublish();
 

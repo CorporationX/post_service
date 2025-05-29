@@ -29,16 +29,19 @@ public class KafkaLikeConsumer extends AbstractKafkaConsumer<LikeEventDto> {
 
     @Override
     protected void handleEvent(LikeEventDto event) {
-        String key = "post:" + event.getPostId();
+        Long postId = event.getPostId();
+        String key = "post:" + postId;
         PostRedisDto post = (PostRedisDto) redisTemplate.opsForValue().get(key);
 
         if (post == null) {
-            log.warn("Post {} not found in Redis", event.getPostId());
+            log.warn("Post {} not found in Redis", postId);
             return;
         }
 
-        post.setLikeCount(post.getLikeCount() + 1);
+        Long currentLikes = post.getLikeCount();
+        post.setLikeCount(currentLikes + 1);
         redisTemplate.opsForValue().set(key, post, Duration.ofSeconds(feedCacheProperties.getTtlSeconds()));
+        log.info("Updated like count to {} for post {}", currentLikes, postId);
     }
 
     @Override

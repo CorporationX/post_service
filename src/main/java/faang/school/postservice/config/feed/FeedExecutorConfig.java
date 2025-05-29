@@ -21,7 +21,7 @@ public class FeedExecutorConfig {
         );
     }
 
-    @Bean("feedHeaterExecutor")
+    @Bean(name = "feedHeaterExecutor")
     public Executor feedHeaterExecutor(FeedHeaterExecutorProperties properties) {
         return createExecutor(
                 properties.getCorePoolSize(),

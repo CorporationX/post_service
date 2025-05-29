@@ -93,7 +93,7 @@ public class LikeService {
 
         likeProducer.sendLikeEvent(LikeEventDto.builder()
                 .postId(postId)
-                .userId(like.getUserId())
+                .userId(userId)
                 .timestamp(System.currentTimeMillis())
                 .build());
 

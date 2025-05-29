@@ -27,14 +27,13 @@ import java.util.stream.Collectors;
 public class FeedServiceImpl implements
         FeedRetrievalService,
         FeedManagementService,
-        FeedCacheService,
-        FeedAsyncUpdater {
+        FeedCacheService {
+
+    private static final String FEED_KEY_PREFIX = "feed:";
 
     private final RedisTemplate<String, Object> redisTemplate;
     private final FeedCacheProperties feedCacheProperties;
     private final UserServiceClient userServiceClient;
-
-    private static final String FEED_KEY_PREFIX = "feed:";
 
     @Override
     public void addPostToFeeds(Long postId, Long timestamp, List<Long> subscriberIds) {
@@ -59,10 +58,15 @@ public class FeedServiceImpl implements
             if (score == null) {
                 return Collections.emptyList();
             }
-            postIds = redisTemplate.opsForZSet().reverseRangeByScore(feedKey, score - 1, 0, 0, limit);
+            postIds = redisTemplate.opsForZSet().reverseRangeByScore(
+                    feedKey, 0, score - 1, 0, limit
+            );
         }
 
-        assert postIds != null;
+        if (postIds == null) {
+            log.warn("Post IDs are null for user feed {}", userId);
+            return Collections.emptyList();
+        }
         return postIds.stream()
                 .map(id -> getPostWithAuthor((Long) id))
                 .filter(Objects::nonNull)
@@ -87,19 +91,24 @@ public class FeedServiceImpl implements
         });
     }
 
-    @Override
     @Async("feedTaskExecutor")
-    public void addPostChunkToFeeds(Long postId, Long timestamp, List<Long> chunk) {
-        for (Long subscriberId : chunk) {
-            String feedKey = FEED_KEY_PREFIX + subscriberId;
-            try {
-                redisTemplate.opsForZSet().add(feedKey, postId, timestamp);
+    void addPostChunkToFeeds(Long postId, Long timestamp, List<Long> chunk) {
+        try {
+            redisTemplate.executePipelined((RedisCallback<Object>) connection -> {
+                for (Long subscriberId : chunk) {
+                    String feedKey = FEED_KEY_PREFIX + subscriberId;
+                    byte[] keyBytes = feedKey.getBytes();
+                    byte[] postIdBytes = postId.toString().getBytes();
 
-                long maxFeedSize = feedCacheProperties.getMaxFeedSize();
-                redisTemplate.opsForZSet().removeRange(feedKey, 0, -(maxFeedSize + 1));
-            } catch (Exception e) {
-                log.error("Failed to add post {} to feed {}", postId, subscriberId, e);
-            }
+                    connection.zAdd(keyBytes, timestamp, postIdBytes);
+                    
+                    long maxSize = feedCacheProperties.getMaxFeedSize();
+                    connection.zRemRange(keyBytes, 0, -(maxSize + 1));
+                }
+                return null;
+            });
+        } catch (Exception e) {
+            log.error("Failed to add post {} to {} feeds", postId, chunk.size(), e);
         }
     }
 

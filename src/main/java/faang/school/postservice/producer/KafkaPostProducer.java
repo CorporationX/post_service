@@ -9,11 +9,13 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class KafkaPostProducer {
 
+    private static final String EVENT_TYPE = "PostCreatedEvent";
+
     private final GenericKafkaProducer<PostCreatedEvent> producer;
     private final KafkaProperties kafkaProperties;
 
     public void sendPostCreatedEvent(PostCreatedEvent event) {
         String topic = kafkaProperties.getTopics().getPostCreated();
-        producer.sendEvent(topic, event.getPostId().toString(), event, "PostCreatedEvent");
+        producer.sendEvent(topic, event.getPostId().toString(), event, EVENT_TYPE);
     }
 }

@@ -18,21 +18,24 @@ public class KafkaCommentProducer {
     private final KafkaProperties kafkaProperties;
 
     public void sendCommentEvent(CommentEvent event) {
+
+        final Long postId = event.getPostId();
+
         try {
             String json = objectMapper.writeValueAsString(event);
             String topic = kafkaProperties.getTopics().getComments();
 
             kafkaTemplate.send(topic, json)
                     .thenAccept(result ->
-                            log.info("Successfully sent CommentEvent for post {}", event.getPostId())
+                            log.info("Successfully sent CommentEvent for post {}", postId)
                     )
                     .exceptionally(ex -> {
-                        log.error("Failed to send CommentEvent for post {}", event.getPostId(), ex);
+                        log.error("Failed to send CommentEvent for post {}", postId, ex);
                         return null;
                     });
 
         } catch (Exception e) {
-            log.error("Failed to serialize CommentEvent for post {}", event.getPostId(), e);
+            log.error("Failed to serialize CommentEvent for post {}", postId, e);
         }
     }
 }

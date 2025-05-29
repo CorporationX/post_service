@@ -21,8 +21,7 @@ public class FeedHeater {
     private final FeedHeaterProperties heaterProperties;
 
     @Retryable(
-            value = Exception.class,
-            maxAttempts = 3,
+            retryFor = Exception.class,
             backoff = @Backoff(delay = 3000)
     )
     public void heatFeeds() {
