@@ -81,3 +81,5 @@ news-feed:
     kafka-publish-batch-size: 1000
   users:
     redis-ttl: 86400
+  likes:
+    topic: likes
