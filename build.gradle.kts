@@ -59,8 +59,10 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
 
+
 tasks.test {
     useJUnitPlatform()
+    finalizedBy(tasks.jacocoTestReport, tasks.jacocoTestCoverageVerification)
 }
 
 tasks.withType<Test> {
@@ -72,3 +74,53 @@ val test by tasks.getting(Test::class) { testLogging.showStandardStreams = true 
 tasks.bootJar {
     archiveFileName.set("service.jar")
 }
+
+val jacocoExclude = listOf(
+    "faang/school/postservice/PostServiceApp*",
+    "faang/school/postservice/client/Feign*",
+    "**/config/**",
+    "**/model/**",
+    "**/dto/**",
+    "**/mapper/**"
+)
+
+tasks.jacocoTestReport {
+    reports {
+        xml.required.set(false)
+        csv.required.set(false)
+        html.required.set(true)
+    }
+    classDirectories.setFrom(classDirectories.files.map {
+        fileTree(it).matching {
+            exclude(jacocoExclude)
+        }
+    })
+}
+
+val jacocoClassExclude = listOf(
+    "faang.school.postservice.PostServiceApp",
+    "faang.school.postservice.client.Feign*",
+    "faang.school.postservice.rest.ExceptionApiHandler",
+    "faang.school.postservice.config.*",
+    "faang.school.postservice.model.*",
+    "faang.school.postservice.mapper.*",
+    "faang.school.postservice.exception.ErrorResponseDto*",
+    "faang.school.postservice.dto.*"
+)
+
+tasks.jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            element = "CLASS"
+            isEnabled = true
+            excludes = jacocoClassExclude
+            limit {
+                counter = "LINE"
+                value = "COVEREDRATIO"
+                minimum = "0.7".toBigDecimal()
+            }
+        }
+    }
+}
+
+
