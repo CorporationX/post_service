@@ -20,7 +20,8 @@ public class CommentFacade {
 
     public CommentDto create(CommentCreateDto dto) {
         Comment comment = commentMapper.toEntityFromCreateDto(dto);
-        Comment createdComment = commentService.create(comment);
+        Long postId = comment.getPost().getId();
+        Comment createdComment = commentService.create(postId, comment);
 
         return commentMapper.toDto(createdComment);
     }
@@ -33,10 +34,9 @@ public class CommentFacade {
         return commentMapper.toDto(updatedEvent);
     }
 
-    public List<CommentDto> getAll(Long postId) {
-        return commentService.getAll(postId).stream()
-                .map(commentMapper::toDto)
-                .toList();
+    public List<CommentDto> getAllByPostId(Long postId) {
+        List<Comment> comments = commentService.getAllByPostId(postId);
+        return commentMapper.toDtoList(comments);
     }
 
     public void delete(long id) {

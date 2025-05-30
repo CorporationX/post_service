@@ -16,5 +16,5 @@ public class CommentUpdateDto {
 
     @NotBlank
     @Size(max = 4096)
-    private String text;
+    private String content;
 }

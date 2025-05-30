@@ -28,14 +28,15 @@ public class CommentService {
     private final UserContext userContext;
 
     @Transactional
-    public Comment create(Comment comment) {
+    public Comment create(long postId, Comment comment) {
         commentValidator.validateCommentAuthor(comment.getAuthorId());
 
-        Long postId = comment.getPost().getId();
         Post post = postService.getById(postId);
         comment.setPost(post);
 
-        return commentRepository.save(comment);
+        Comment savedComment = commentRepository.save(comment);
+        log.debug("Создан комментарий с id={}", comment.getId());
+        return savedComment;
     }
 
     @Transactional
@@ -45,7 +46,9 @@ public class CommentService {
             throw new CommentValidationException("Обновление разрешено только автору комментария");
         }
 
-        return commentRepository.save(comment);
+        Comment updatedComment = commentRepository.save(comment);
+        log.debug("Обновлен комментарий с id={}", comment.getId());
+        return updatedComment;
     }
 
     @Transactional(readOnly = true)
@@ -56,7 +59,7 @@ public class CommentService {
     }
 
     @Transactional(readOnly = true)
-    public List<Comment> getAll(Long postId) {
+    public List<Comment> getAllByPostId(Long postId) {
         return commentRepository.findAllByPostId(postId).stream()
                 .sorted(Comparator.comparing(Comment::getCreatedAt).reversed())
                 .collect(Collectors.toList());
@@ -64,6 +67,11 @@ public class CommentService {
 
     @Transactional
     public void delete(Long commentId) {
+        if (!commentRepository.existsById(commentId)) {
+            throw new CommentValidationException(String.format("Комментарий с id=%d не найден и не может быть удален", commentId));
+        }
+
         commentRepository.deleteById(commentId);
+        log.debug("Комментарий с id={} успешно удален", commentId);
     }
 }
