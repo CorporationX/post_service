@@ -11,7 +11,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PostPublishDto implements Serializable {
-    private long postId;
-    private long authorId;
+    private Long postId;
+    private Long authorId;
     private List<Long> subscribersIds;
 }
