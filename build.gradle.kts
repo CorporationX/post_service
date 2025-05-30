@@ -3,6 +3,7 @@ plugins {
     id("org.springframework.boot") version "3.0.6"
     id("io.spring.dependency-management") version "1.1.0"
     id("jacoco")
+    id("checkstyle")
 }
 
 group = "faang.school"
@@ -71,4 +72,10 @@ val test by tasks.getting(Test::class) { testLogging.showStandardStreams = true 
 
 tasks.bootJar {
     archiveFileName.set("service.jar")
+}
+
+checkstyle {
+    toolVersion = "10.12.1" // Актуальная версия
+    configFile = file("config/checkstyle/checkstyle.xml") // Путь к конфигу
+    isIgnoreFailures = false // Остановить сборку при ошибках
 }
