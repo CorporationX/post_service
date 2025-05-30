@@ -75,55 +75,45 @@ tasks.withType<Test> {
     useJUnitPlatform()
 }
 
-val test by tasks.getting(Test::class) { testLogging.showStandardStreams = true }
-
 tasks.bootJar {
     archiveFileName.set("service.jar")
 }
 
-val jacocoExclude = listOf(
-    "faang/school/postservice/PostServiceApp*",
-    "faang/school/postservice/client/Feign*",
-    "**/config/**",
-    "**/model/**",
-    "**/dto/**",
-    "**/mapper/**"
+val jacocoReportIncludes = listOf(
+    "faang/school/postservice/service/**"
+)
+
+val jacocoVerificationIncludes = listOf(
+    "faang.school.postservice.service.**"
 )
 
 tasks.jacocoTestReport {
+    dependsOn(tasks.test)
     reports {
         xml.required.set(false)
         csv.required.set(false)
         html.required.set(true)
     }
-    classDirectories.setFrom(classDirectories.files.map {
+    classDirectories.setFrom(files(classDirectories.files.map {
         fileTree(it).matching {
-            exclude(jacocoExclude)
+            include(jacocoReportIncludes)
         }
-    })
+    }))
 }
 
-val jacocoClassExclude = listOf(
-    "faang.school.postservice.PostServiceApp",
-    "faang.school.postservice.client.Feign*",
-    "faang.school.postservice.rest.ExceptionApiHandler",
-    "faang.school.postservice.config.*",
-    "faang.school.postservice.model.*",
-    "faang.school.postservice.mapper.*",
-    "faang.school.postservice.exception.ErrorResponseDto*",
-    "faang.school.postservice.dto.*"
-)
-
 tasks.jacocoTestCoverageVerification {
+    dependsOn(tasks.jacocoTestReport)
     violationRules {
         rule {
             element = "CLASS"
             isEnabled = true
-            excludes = jacocoClassExclude
+
+            includes = jacocoVerificationIncludes
+
             limit {
                 counter = "LINE"
                 value = "COVEREDRATIO"
-                minimum = "0.7".toBigDecimal()
+                minimum = "0.8".toBigDecimal()
             }
         }
     }

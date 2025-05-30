@@ -1,29 +1,19 @@
-package faang.school.postservice.dto.post;
+package faang.school.postservice.dto.comment;
 
-import jakarta.validation.constraints.NotBlank;
-import lombok.Builder;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
-@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class PostDto {
+public class CommentDto {
     private Long id;
-
-    @NotBlank
     private String content;
-
     private Long authorId;
-    private Long projectId;
-
-    private Boolean published;
-    private LocalDateTime publishedAt;
     private List<Long> likesIds;
+    private Long postId;
     private Integer likeCount;
 }
