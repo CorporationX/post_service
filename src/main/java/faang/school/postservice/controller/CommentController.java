@@ -6,7 +6,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,25 +30,19 @@ public class CommentController {
         return commentService.createComment(request);
     }
 
-    @PutMapping("/{id}")
-    public CommentDto updateCommentContent(@PathVariable long id, @Valid @RequestBody CommentDto request) {
-        return commentService.updateCommentContent(id, request);
+    @PutMapping
+    public CommentDto updateCommentContent(@Valid @RequestBody CommentDto request) {
+        return commentService.updateCommentContent(request);
     }
 
     @GetMapping("/all")
     public List<CommentDto> getAllComments(
-            @RequestParam Long postId,
-            @RequestParam(required = false) Long authorId) {
-        CommentDto filter = new CommentDto();
-        filter.setPostId(postId);
-        filter.setAuthorId(authorId);
-        return commentService.getAllComments(filter);
+            @RequestParam Long postId) {
+        return commentService.getAllComments(postId);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteComment(@PathVariable @Min(1) long id) {
+    public void deleteComment(@PathVariable @Min(1) long id) {
         commentService.deleteComment(id);
-        return ResponseEntity
-                .ok("Comment with ID " + id + " has been deleted successfully.");
     }
 }

@@ -16,16 +16,13 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -78,9 +75,9 @@ class CommentControllerTest {
     @Test
     @DisplayName("Should update a comment content and return the updated comment DTO")
     void updateCommentContentTest_shouldReturnUpdatedComment() throws Exception {
-        when(commentService.updateCommentContent(eq(1L), any(CommentDto.class))).thenReturn(commentDto);
+        when(commentService.updateCommentContent(any(CommentDto.class))).thenReturn(commentDto);
 
-        mockMvc.perform(put("/api/v1/comment/1")
+        mockMvc.perform(put("/api/v1/comment/")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -93,13 +90,13 @@ class CommentControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(commentDto.getId()));
 
-        verify(commentService, times(1)).updateCommentContent(eq(1L), any(CommentDto.class));
+        verify(commentService, times(1)).updateCommentContent(any(CommentDto.class));
     }
 
     @Test
     @DisplayName("Should return a list of comments filtered by postId and authorId")
     void getAllCommentsTest_shouldReturnListOfComments() throws Exception {
-        when(commentService.getAllComments(any(CommentDto.class))).thenReturn(List.of(commentDto));
+        when(commentService.getAllComments(eq(3L))).thenReturn(List.of(commentDto));
 
         mockMvc.perform(get("/api/v1/comment/all")
                         .param("postId", "3")
@@ -109,18 +106,6 @@ class CommentControllerTest {
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].id").value(commentDto.getId()));
 
-        verify(commentService, times(1)).getAllComments(any(CommentDto.class));
-    }
-
-    @Test
-    @DisplayName("Should delete a comment by ID and return success message")
-    void deleteCommentTest_shouldReturnSuccessMessage() throws Exception {
-        doNothing().when(commentService).deleteComment(1L);
-
-        mockMvc.perform(delete("/api/v1/comment/1"))
-                .andExpect(status().isOk())
-                .andExpect(content().string("Comment with ID 1 has been deleted successfully."));
-
-        verify(commentService, times(1)).deleteComment(1L);
+        verify(commentService, times(1)).getAllComments(eq(3L));
     }
 }

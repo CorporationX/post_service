@@ -1,6 +1,5 @@
 package faang.school.postservice.service.comment;
 
-import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.comment.CommentMapper;
@@ -8,7 +7,8 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.service.post.PostService;
-import feign.FeignException;
+import faang.school.postservice.service.validation.UserValidationService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -23,40 +23,35 @@ public class CommentServiceImp implements CommentService {
 
     private final CommentRepository commentRepository;
     private final CommentMapper commentMapper;
-    private final UserServiceClient userServiceClient;
     private final PostService postService;
+    private final UserValidationService userValidationService;
 
 
     @Override
     public CommentDto createComment(CommentDto request) {
         log.info("Create comment: %s".formatted(request.getContent()));
-        validate(request);
+        Post post = validateRequestAndGetPost(request);
         Comment comment = commentMapper.toEntity(request);
-        Post post = getPost(request);
         comment.setPost(post);
         return commentMapper.toCommentDto(commentRepository.save(comment));
     }
 
     @Override
-    public CommentDto updateCommentContent(long id, CommentDto request) {
-        if (!request.getId().equals(id)) {
-            throw new DataValidationException("The IDs in the path and in the request body do not match.");
-        }
-        log.info("Update comment with ID: %d".formatted(request.getPostId()));
-        Comment comment = findCommentById(id);
+    public CommentDto updateCommentContent(CommentDto request) {
+        Long commentId = request.getId();
+        Long postId = request.getPostId();
+        log.info("Update comment with ID: %d".formatted(postId));
+        Comment comment = findCommentById(commentId);
         commentMapper.updateCommentContent(comment, request);
         return commentMapper.toCommentDto(commentRepository.save(comment));
     }
 
     @Override
-    public List<CommentDto> getAllComments(CommentDto request) {
-        log.info("Getting all comments by PostId: %d and AuthorId: %d"
-                .formatted(request.getPostId(), request.getAuthorId()));
-
-        validate(request);
-
-        return commentRepository.findAllByPostId(request.getPostId()).stream()
-                .filter(comment -> request.getAuthorId() == null || comment.getAuthorId().equals(request.getAuthorId()))
+    public List<CommentDto> getAllComments(Long postId) {
+        log.info("Getting all comments by PostId: %d.".formatted(postId));
+        Post post = getPost(postId);
+        log.info("PostId with id: %d is present.".formatted(post.getId()));
+        return commentRepository.findAllByPostId(postId).stream()
                 .sorted(Comparator.comparing(Comment::getCreatedAt).reversed())
                 .map(commentMapper::toCommentDto)
                 .toList();
@@ -64,8 +59,9 @@ public class CommentServiceImp implements CommentService {
 
     @Override
     public void deleteComment(long id) {
-        log.info("Delete comment with ID=%d ".formatted(id));
-        commentRepository.delete(findCommentById(id));
+        log.info("Delete comment with ID=%d. ".formatted(id));
+        commentRepository.deleteById(id);
+        log.info("Comment with ID=%d deleted successfully.".formatted(id));
     }
 
     private Comment findCommentById(long id) {
@@ -73,23 +69,16 @@ public class CommentServiceImp implements CommentService {
                 .orElseThrow(() -> new DataValidationException("There are no comment with ID=%d".formatted(id)));
     }
 
-    private void validate(CommentDto commentDto) {
+    private Post validateRequestAndGetPost(CommentDto commentDto) {
         Long authorId = commentDto.getAuthorId();
         if (authorId != null) {
-            try {
-                log.info("Try to find user. Sending request to user_service. User ID: %d ".formatted(authorId));
-                userServiceClient.getUser(authorId);
-                log.info("User with ID:%d is present".formatted(authorId));
-            } catch (FeignException e) {
-                throw new DataValidationException("Something wrong with user_service. Error: %s".formatted(e));
-            }
+            userValidationService.validateUserExists(authorId);
         }
-        getPost(commentDto);
+        return getPost(commentDto.getPostId());
     }
 
-    private Post getPost(CommentDto commentDto) {
-        Long postId = commentDto.getPostId();
-        return postService.getPost(commentDto.getPostId())
-                .orElseThrow(() -> new DataValidationException("There are no Post with ID:%d.".formatted(postId)));
+    private Post getPost(Long postId) {
+        return postService.getPost(postId)
+                .orElseThrow(() -> new EntityNotFoundException("There are no Post with ID:%d.".formatted(postId)));
     }
 }
