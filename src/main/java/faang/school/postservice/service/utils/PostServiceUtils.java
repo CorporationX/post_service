@@ -39,7 +39,7 @@ public class PostServiceUtils {
         }
     }
 
-    public Post checkPostExists(Long postId) {
+    public Post isPostExists(Long postId) {
         return postRepository.findById(postId).orElseThrow(
                 () -> new IllegalArgumentException("Post not found"));
     }

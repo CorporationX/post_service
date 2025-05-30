@@ -5,6 +5,8 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.post.PostMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.project.ProjectService;
+import faang.school.postservice.service.user.UserService;
 import faang.school.postservice.service.utils.PostServiceUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -74,7 +76,7 @@ class PostServiceTest {
         @Test
         void testPublishPostFalseFromStart() {
             testPost.setPublished(false);
-            when(postServiceUtils.checkPostExists(anyLong())).thenReturn(testPost);
+            when(postServiceUtils.isPostExists(anyLong())).thenReturn(testPost);
             when(postRepository.save(testPost)).thenReturn(testPost);
 
             PostDto postDto = postService.publishPost(1L);
@@ -87,7 +89,7 @@ class PostServiceTest {
     @Test
     void testPublishPostTrueFromStart() {
             testPost.setPublished(true);
-        when(postServiceUtils.checkPostExists(1L)).thenReturn(testPost);
+        when(postServiceUtils.isPostExists(1L)).thenReturn(testPost);
         assertThrows(IllegalArgumentException.class,
                 () -> postService.publishPost(1L));
         }
@@ -95,7 +97,7 @@ class PostServiceTest {
         @Test
         void testUpdate() {
             String content = "Updated content";
-            when(postServiceUtils.checkPostExists(anyLong())).thenReturn(testPost);
+            when(postServiceUtils.isPostExists(anyLong())).thenReturn(testPost);
 
             postService.update(1L, content);
             assertEquals(content, testPost.getContent());
