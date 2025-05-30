@@ -1,6 +1,7 @@
 package faang.school.postservice.mapper;
 
 import faang.school.postservice.dto.PostDto;
+import faang.school.postservice.dto.PostResponseDto;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
@@ -26,18 +27,14 @@ public interface PostMapper {
     Post toEntity(PostDto postDto);
 
     @Mapping(target = "likeCount", source = "likes", qualifiedByName = "calculateLikeCount")
-    @Mapping(target = "likesId", expression = "java(mapLikeToIds(post.getLikes()))")
     @Mapping(target = "commentsId", expression = "java(mapCommentToIds(post.getComments()))")
     @Mapping(target = "albumsId", expression = "java(mapAlbumToIds(post.getAlbums()))")
     @Mapping(source = "ad.id", target = "adId")
     @Mapping(target = "resourcesId", expression = "java(mapResourceToIds(post.getResources()))")
-    PostDto toDto(Post post);
+    @Mapping(target = "hashtagsId", ignore = true)
+    PostResponseDto toResponseDto(Post post);
 
-    default List<Long> mapLikeToIds(List<Like> likes) {
-        return likes != null ? likes.stream()
-                .map(Like::getId)
-                .toList() : Collections.emptyList();
-    }
+    List<PostResponseDto> toResponseDtoList(List<Post> posts);
 
     default List<Long> mapCommentToIds(List<Comment> comments) {
         return comments != null ? comments.stream()

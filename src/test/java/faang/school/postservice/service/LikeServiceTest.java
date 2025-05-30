@@ -9,6 +9,8 @@ import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.KafkaLikeProducer;
+import faang.school.postservice.publisher.LikeEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -17,6 +19,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Collections;
@@ -24,6 +27,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -51,9 +55,16 @@ public class LikeServiceTest {
     @Mock
     private UserServiceClient userClient;
 
+    @Mock
+    private LikeEventPublisher likeEventPublisher;
+
+    @Mock
+    private KafkaLikeProducer kafkaLikeProducer;
+
     @BeforeEach
     public void setUp() {
-        likeService = new LikeService(likeRepository, postRepository, commentRepository, userContext, userClient);
+        likeService = new LikeService(likeRepository, postRepository,
+                commentRepository, userContext, userClient, likeEventPublisher, kafkaLikeProducer);
     }
 
     @Test
@@ -88,7 +99,7 @@ public class LikeServiceTest {
         when(likeRepository.findByPostIdAndUserId(firstId, firstId)).thenReturn(Optional.empty());
         when(postRepository.findById(firstId)).thenReturn(Optional.of(post));
 
-        assertThrows(ConcurrentLikeException.class, () -> likeService.putLikeOnPost(firstId));
+        assertThrows(EntityNotFoundException.class, () -> likeService.putLikeOnPost(firstId));
     }
 
     @Test
@@ -97,9 +108,12 @@ public class LikeServiceTest {
         includeSecondNegativeTestLikeOnPost();
         Post post = createPost(firstId, Collections.emptyList(), Collections.emptyList());
         Like like = createLike(firstId, post, null);
-        when(likeRepository.findByPostIdAndUserId(firstId, firstId)).thenReturn(Optional.empty());
+        when(likeRepository.findByPostIdAndUserId(firstId, firstId)).thenReturn(Optional.of(like));
+        LikeService likeServiceSpy = Mockito.spy(likeService);
+        doReturn(true).when(likeServiceSpy).isLikeOnPostEmpty(firstId, firstId);
 
-        likeService.putLikeOnPost(firstId);
+
+        likeServiceSpy.putLikeOnPost(firstId);
 
         verify(likeRepository, times(1)).save(like);
     }

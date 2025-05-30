@@ -22,6 +22,7 @@ public record PostDto(
         boolean published,
         LocalDateTime publishedAt,
         LocalDateTime scheduledAt,
-        boolean deleted
+        boolean deleted,
+        List<String> hashtagsName
 ) {
 }

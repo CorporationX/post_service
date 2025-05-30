@@ -33,7 +33,7 @@ jobs:
       run: ./gradlew build
 
     - name: Step 5 - Run tests with Gradle
-      run: ./gradlew test
+      run: ./gradlew clean test
 
     - name: Step 6 - Generate Jacoco report
       run: ./gradlew jacocoTestReport

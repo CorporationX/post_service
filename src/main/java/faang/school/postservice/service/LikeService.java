@@ -2,12 +2,15 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.event.LikeEvent;
 import faang.school.postservice.exception.ConcurrentLikeException;
 import faang.school.postservice.exception.DuplicateEntityException;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.KafkaLikeProducer;
+import faang.school.postservice.publisher.LikeEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -38,15 +41,20 @@ public class LikeService {
     private final CommentRepository commentRepository;
     private final UserContext userContext;
     private final UserServiceClient userClient;
+    private final LikeEventPublisher likeEventPublisher;
+    private final KafkaLikeProducer kafkaLikeProducer;
 
     public void putLikeOnPost(Long postId) {
         Long userId = getContextUser();
         ReentrantLock userLock = getUserLock(userId);
         userLock.lock();
         try {
+            log.info("Пользователь с ID {} пытается поставить лайк на пост с ID {}", userId, postId);
             validateEntityId(postId);
+            log.info("ID поста {} валиден", postId);
             Post post = postRepository.findById(postId).orElseThrow(() ->
                     new EntityNotFoundException(NOT_FOUND_ENTITY_MESSAGE, POST_ENTITY_NAME, postId));
+            log.info("Пост с ID {} найден", postId);
 
             if (!isLikeOnPostEmpty(postId, userId)) {
                 throw new DuplicateEntityException(EXISTS_ENTITY_MESSAGE,
@@ -59,8 +67,22 @@ public class LikeService {
 
             addLikeOnDatabase(userId, post, null);
             printMessageAddLike(postId);
+            log.info("Пользователь с ID {} успешно поставил лайк на пост с ID {}", userId, postId);
+
         } finally {
             userLock.unlock();
+            log.info("Разблокировка пользователя с ID {}", userId);
+            Like like = likeRepository.findByPostIdAndUserId(postId, userId)
+                    .orElseThrow(() -> new EntityNotFoundException("Лайк не найден"));
+            LikeEvent likeEvent = LikeEvent.builder()
+                    .likeId(like.getId())
+                    .postId(postId)
+                    .authorId(userId)
+                    .build();
+            likeEventPublisher.publish(likeEvent);
+            log.info("Событие лайка опубликовано для поста с ID {}", postId);
+            kafkaLikeProducer.publish(likeEvent);
+            log.info("Событие лайка отправлено в Kafka для поста с ID {}", postId);
         }
     }
 
@@ -160,7 +182,7 @@ public class LikeService {
         return userClient.getUser(userContext.getUserId()).id();
     }
 
-    private boolean isLikeOnPostEmpty(Long postId, Long userId) {
+    boolean isLikeOnPostEmpty(Long postId, Long userId) {
         return likeRepository.findByPostIdAndUserId(postId, userId).isEmpty();
     }
 

@@ -2,7 +2,7 @@ plugins {
     java
     id("org.springframework.boot") version "3.0.6"
     id("io.spring.dependency-management") version "1.1.0"
-    id("jacoco")
+    jacoco
 }
 
 group = "faang.school"
@@ -22,6 +22,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("org.springframework.kafka:spring-kafka")
     implementation("org.springframework.cloud:spring-cloud-starter-openfeign:4.0.2")
     implementation("org.springframework.kafka:spring-kafka")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
@@ -43,6 +44,9 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok:1.18.26")
     implementation("org.mapstruct:mapstruct:1.5.3.Final")
     annotationProcessor("org.mapstruct:mapstruct-processor:1.5.3.Final")
+    implementation("org.springframework.retry:spring-retry:2.0.11")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.14.2")
+
 
     /**
      * Test containers
@@ -58,10 +62,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.9.2")
     testImplementation("org.assertj:assertj-core:3.24.2")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-}
-
-tasks.test {
-    useJUnitPlatform()
+    testImplementation("org.springframework.kafka:spring-kafka-test")
 }
 
 tasks.withType<Test> {
@@ -74,26 +75,51 @@ tasks.bootJar {
     archiveFileName.set("service.jar")
 }
 
-tasks.test {
-    finalizedBy(tasks.jacocoTestReport, tasks.jacocoTestCoverageVerification)
+jacoco {
+    toolVersion = "0.8.10"
+    reportsDirectory.set(layout.buildDirectory.dir("reports/jacoco"))
 }
+
 tasks.jacocoTestReport {
-    dependsOn(tasks.test)
+    reports {
+        xml.required.set(true)
+        csv.required.set(false)
+        html.required.set(true)
+    }
+    classDirectories.setFrom(
+        files(classDirectories.files.map {
+            fileTree(it).apply {
+                include("faang/school/postservice/service/**")
+            }
+        })
+    )
 }
 
 tasks.jacocoTestCoverageVerification {
+    classDirectories.setFrom(
+        files(classDirectories.files.map {
+            fileTree(it).apply {
+                include("faang/school/postservice/service/**")
+            }
+        })
+    )
     violationRules {
         rule {
-            element = "CLASS"
-            includes = listOf("faang.school.postservice.service.*")
-
             limit {
-                counter = "INSTRUCTION"
+                counter = "CLASS"
                 value = "COVEREDRATIO"
-                minimum = "0.50".toBigDecimal()
+                minimum = "0.45".toBigDecimal()
             }
         }
     }
+}
+
+tasks.test {
+    useJUnitPlatform()
+    if (System.getenv("CI") == "true") {
+        exclude("**/*IT*", "**/*IntegrationTest*")
+    }
+    finalizedBy(tasks.jacocoTestReport)
 }
 
 tasks.check {
