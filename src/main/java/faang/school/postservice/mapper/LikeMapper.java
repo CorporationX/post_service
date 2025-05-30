@@ -23,5 +23,5 @@ public interface LikeMapper {
 
     @Mapping(target = "commentId", source = "comment.id") 
     @Mapping(target = "postId", source = "post.id")
-    List<LikeDto> toDtois(List<Like> likes);
+    List<LikeDto> toDtos(List<Like> likes);
 }

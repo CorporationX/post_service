@@ -2,7 +2,6 @@ package faang.school.postservice.controller.like;
 
 import java.util.List;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,14 +34,17 @@ public class LikeController {
 
     @DeleteMapping("/{likeId}")
     public void deleteLike(@PathVariable long likeId) {
-        try {
-            likeService.deleteLike(likeId);
-        } catch (Exception e) {
-            log.error("Exception occurred: {}.", e.getMessage());
-            ResponseEntity.badRequest().body(e.getMessage());
-        };
-        
-        ResponseEntity.status(HttpStatus.NO_CONTENT);
+        likeService.deleteLike(likeId);
+    }
+
+    @DeleteMapping("/forPost/{postId}")
+    public void deleteLikeForPost(@PathVariable long postId) {
+        likeService.deleteLikeForPost(postId);
+    }
+
+    @DeleteMapping("/forPost/{commentId}")
+    public void deleteLikeForComment(@PathVariable long commentId) {
+        likeService.deleteLikeForComment(commentId);
     }
 
     @GetMapping("/my")

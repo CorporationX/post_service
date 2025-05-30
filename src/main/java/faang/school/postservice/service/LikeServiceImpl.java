@@ -64,16 +64,22 @@ public class LikeServiceImpl implements LikeService {
 
     @Override
     public void deleteLike(long likeId) {
-        likeRepository.findById(likeId).orElseThrow(
-            () -> new EntityNotFoundException(String.format(
-                "Like %d is not found.", likeId
-            )));
         likeRepository.deleteById(likeId);
     }
 
     @Override
     public int countLikesFor(Long postId) {
         return getPost(postId).getLikes().size();
+    }
+    
+    @Override
+    public void deleteLikeForPost(long postId) {
+        likeRepository.deleteByPostIdAndUserId(postId, userContext.getUserId());
+    }
+
+    @Override
+    public void deleteLikeForComment(long postId) {
+        likeRepository.deleteByCommentIdAndUserId(postId, userContext.getUserId());
     }
 
     @Override
@@ -85,7 +91,7 @@ public class LikeServiceImpl implements LikeService {
             ));
         }
 
-        return likeMapper.toDtois(likes.get());
+        return likeMapper.toDtos(likes.get());
     }
 
     private Post getPost(long postId) {
