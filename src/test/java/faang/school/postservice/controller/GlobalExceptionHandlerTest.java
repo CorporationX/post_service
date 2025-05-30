@@ -3,6 +3,7 @@ package faang.school.postservice.controller;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.ImageProcessingException;
+import faang.school.postservice.exception.KafkaPostPublisherException;
 import feign.FeignException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -110,7 +111,20 @@ public class GlobalExceptionHandlerTest {
 
         response = globalExceptionHandler.handleFeignException(exception);
 
-        Assertions.assertEquals(404, response.getStatusCodeValue());
+        Assertions.assertEquals(404, response.getStatusCode().value());
         Assertions.assertEquals("External service error: Not found", response.getBody());
     }
+
+
+    @DisplayName("Обработка NullPointerException: должен возвращать статус BAD_REQUEST и сообщение о незаполненном поле")
+    @Test
+    void givenKafkaPostPublisherExceptionWhenGlobalExceptionHandelThenInternalServerError() {
+        KafkaPostPublisherException exception = new KafkaPostPublisherException("test message", new Throwable("test"));
+
+        response = globalExceptionHandler.handleKafkaPostPublisherException(exception);
+
+        Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        Assertions.assertEquals("Kafka post publisher error: test message", response.getBody());
+    }
+
 }

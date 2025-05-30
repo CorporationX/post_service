@@ -1,9 +1,6 @@
 package faang.school.postservice.controller;
 
-import faang.school.postservice.exception.DataValidationException;
-import faang.school.postservice.exception.EntityNotFoundException;
-import faang.school.postservice.exception.ImageProcessingException;
-import faang.school.postservice.exception.ModerationException;
+import faang.school.postservice.exception.*;
 import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -123,6 +120,22 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(exception.status())
                 .body(String.format("External service error: %s", exception.getMessage()));
+    }
+
+    /**
+     * Обрабатывает исключения PostToKafkaSender при взаимодействии с Kafka.
+     * <p>
+     * Логирует предупреждение и возвращает ответ со статусом 400 (Bad Request).
+     *
+     * @param exception исключение которое было выброшено
+     * @return ResponseEntity с HTTP-статусом 500 и сообщением об ошибке
+     */
+    @ExceptionHandler(KafkaPostPublisherException.class)
+    public ResponseEntity<String> handleKafkaPostPublisherException(KafkaPostPublisherException exception) {
+        log.error("Kafka exception: {}", exception.getMessage(), exception);
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(String.format("Kafka post publisher error: %s", exception.getMessage()));
     }
 
     /**
