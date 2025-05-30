@@ -3,8 +3,7 @@ package faang.school.postservice.controller.like;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.like.LikeForCommentDto;
 import faang.school.postservice.dto.like.LikeForPostDto;
-import faang.school.postservice.mapper.like.LikeMapperForComment;
-import faang.school.postservice.mapper.like.LikeMapperForPost;
+import faang.school.postservice.mapper.like.LikeMapper;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.service.like.LikeService;
 import lombok.RequiredArgsConstructor;
@@ -21,47 +20,45 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/like")
+@RequestMapping("/api/v1/likes")
 public class LikeController {
     private final LikeService likeService;
-    private final LikeMapperForPost likeMapperForPost;
-    private final LikeMapperForComment likeMapperForComment;
 
-    @PostMapping("/like_post/{post_id}")
+    @PostMapping("/{post_id}/post")
     public ResponseEntity<LikeDto> createLikeForPost(@RequestBody LikeForPostDto likeForPostDto,
-                                              @PathVariable("post_id") long postId) {
-        Like like = likeMapperForPost.toLike(likeForPostDto);
+                                                     @PathVariable("post_id") long postId) {
+        Like like = LikeMapper.likeCreateDtoToLike(likeForPostDto);
         Like saveLike = likeService.likeThePost(like, postId);
-        LikeDto likeDto = likeMapperForPost.toDto(saveLike);
+        LikeDto likeDto = LikeMapper.likeToResponseLikeDto(saveLike);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(likeDto);
     }
 
-    @PostMapping("/like_comment/{comment_id}")
+    @PostMapping("/{comment_id}/comment")
     public ResponseEntity<LikeDto> createLikeForComment(@RequestBody LikeForCommentDto likeForCommentDto,
                                                         @PathVariable("comment_id") long commentId) {
-        Like like = likeMapperForComment.toLike(likeForCommentDto);
+        Like like = LikeMapper.likeForCommentToLike(likeForCommentDto);
         Like saveLike = likeService.likeTheComment(like, commentId);
-        LikeDto likeDto = likeMapperForComment.toDto(saveLike);
+        LikeDto likeDto = LikeMapper.likeToResponseLikeDto(saveLike);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(likeDto);
     }
 
-    @DeleteMapping("/like_post/{post_id}")
+    @DeleteMapping("/{post_id}/post")
     public ResponseEntity<Void> deleteLikeForPost(@PathVariable("post_id") long postId) {
         likeService.deleteLikeThePost(postId);
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/like_comment/{comment_id}")
+    @DeleteMapping("/{comment_id}/comment")
     public ResponseEntity<Void> deleteLikeForComment(@PathVariable("comment_id") long commentId) {
         likeService.deleteLikeTheComment(commentId);
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/count_like/{post_id}")
+    @GetMapping("/{post_id}/count_like")
     public ResponseEntity<Long> getCountLike(@PathVariable("post_id") long postId) {
         long countLike = likeService.countTheLikeForPost(postId);
         return ResponseEntity.ok().body(countLike);

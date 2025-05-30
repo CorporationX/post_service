@@ -1,23 +1,19 @@
 package faang.school.postservice.service.like;
 
-import faang.school.postservice.PostServiceApp;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.exception.LikedException;
-import faang.school.postservice.exception.PostNotFoundException;
+import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
-import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.PostService;
-import faang.school.postservice.validation.comment.CommentValidation;
-import faang.school.postservice.validation.post.PostValidation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -29,19 +25,21 @@ public class LikeServiceImpl implements LikeService {
     private final UserServiceClient userServiceClient;
     private final UserContext userContext;
     private final PostService postService;
+    private final CommentRepository commentRepository;
 
     @Override
+    @Transactional
     public Like likeThePost(Like like, long postId) {
         UserDto user = existenceCheckUser();
         Post post = postService.getPostById(postId);
         Optional<Like> likeOptional = likeRepository.findByPostIdAndUserId(post.getId(), user.id());
-        if (likeOptional.isPresent()) {
-            Like existingLike = likeOptional.get();
-            if (existingLike.getPost().getId() == postId) {
-                throw new LikedException("The Post already has a Like");
-            }
-        }
-        return likeRepository.save(like);
+        Like existingLike = likeOptional.orElseGet(() -> {
+            Like newLike = new Like();
+            newLike.setPost(post);
+            newLike.setUserId(user.id());
+            return newLike;
+        });
+        return likeRepository.save(existingLike);
     }
 
     @Override
@@ -51,16 +49,18 @@ public class LikeServiceImpl implements LikeService {
     }
 
     @Override
+    @Transactional
     public Like likeTheComment(Like like, long commentId) {
         UserDto user = existenceCheckUser();
-        CommentValidation.existenceCheckTheComment(commentId);
+        Optional<Comment> comment = commentRepository.findById(commentId);
         Optional<Like> likeOptional = likeRepository.findByCommentIdAndUserId(commentId, user.id());
-        Like likeResult = likeOptional.get();
-        if (likeResult.getComment().getId() == commentId) {
-            throw new LikedException("The Comment already has a Like");
-        } else {
-            return likeRepository.save(like);
-        }
+        Like likeResult = likeOptional.orElseGet(() -> {
+            Like newLike = new Like();
+            newLike.setComment(comment.get());
+            newLike.setUserId(user.id());
+            return newLike;
+        });
+        return likeRepository.save(likeResult);
     }
 
     @Override
@@ -71,13 +71,14 @@ public class LikeServiceImpl implements LikeService {
     }
 
     @Override
+    @Transactional
     public long countTheLikeForPost(long postId) {
         Post posts = postService.getPostById(postId);
 
         return posts.getLikes().size();
     }
 
-    private UserDto existenceCheckUser() {
+    protected UserDto existenceCheckUser() {
         return userServiceClient.getUser(userContext.getUserId());
     }
 }
