@@ -5,7 +5,6 @@ import faang.school.postservice.exception.authorization.UserUnauthorizedExceptio
 import faang.school.postservice.exception.client.RemoteNotFoundException;
 import faang.school.postservice.exception.post.PostAlreadyPublishedException;
 import faang.school.postservice.exception.post.PostNotFoundException;
-import faang.school.postservice.exception.validation.ValidationRequestException;
 import feign.FeignException;
 import feign.RetryableException;
 import lombok.extern.slf4j.Slf4j;
@@ -28,7 +27,6 @@ public class PostServiceExceptionHandler {
             PostNotFoundException.class, HttpStatus.NOT_FOUND,
             PostAlreadyPublishedException.class, HttpStatus.CONFLICT,
             RemoteNotFoundException.class, HttpStatus.NOT_FOUND,
-            ValidationRequestException.class, HttpStatus.BAD_REQUEST,
             MethodArgumentNotValidException.class, HttpStatus.BAD_REQUEST,
             FeignException.class, HttpStatus.BAD_GATEWAY,
             RetryableException.class, HttpStatus.BAD_GATEWAY
@@ -43,7 +41,6 @@ public class PostServiceExceptionHandler {
             PostNotFoundException.class,
             PostAlreadyPublishedException.class,
             RemoteNotFoundException.class,
-            ValidationRequestException.class,
             MethodArgumentNotValidException.class,
             FeignException.class,
             RetryableException.class

@@ -7,6 +7,8 @@ import faang.school.postservice.repository.post.PostRepository;
 import faang.school.postservice.validation.post.PostValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -76,12 +78,46 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public List<Post> getAllDraftPosts(Long userId, Long projectId) {
-        return postRepository.findAllDraftPostsByUserOrProject(userId, projectId);
+    public List<Post> getAllDraftPostsByUserId(Long userId) {
+        Post post = new Post();
+        post.setPublished(false);
+        post.setDeleted(false);
+        post.setAuthorId(userId);
+        Example<Post> example = Example.of(post);
+
+        return postRepository.findAll(example, Sort.by("createdAt").descending());
     }
 
     @Transactional(readOnly = true)
-    public List<Post> getAllPublishedPosts(Long userId, Long projectId) {
-        return postRepository.findAllPublishedPostsByUserOrProject(userId, projectId);
+    public List<Post> getAllDraftPostsByProjectId(Long projectId) {
+        Post post = new Post();
+        post.setPublished(false);
+        post.setDeleted(false);
+        post.setProjectId(projectId);
+        Example<Post> example = Example.of(post);
+
+        return postRepository.findAll(example, Sort.by("createdAt").descending());
+    }
+
+    @Transactional(readOnly = true)
+    public List<Post> getAllPublishedPostsByUserId(Long userId) {
+        Post post = new Post();
+        post.setPublished(true);
+        post.setDeleted(false);
+        post.setAuthorId(userId);
+        Example<Post> example = Example.of(post);
+
+        return postRepository.findAll(example, Sort.by("publishedAt").descending());
+    }
+
+    @Transactional(readOnly = true)
+    public List<Post> getAllPublishedPostsByProjectId(Long projectId) {
+        Post post = new Post();
+        post.setPublished(true);
+        post.setDeleted(false);
+        post.setProjectId(projectId);
+        Example<Post> example = Example.of(post);
+
+        return postRepository.findAll(example, Sort.by("publishedAt").descending());
     }
 }

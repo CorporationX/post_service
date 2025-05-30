@@ -15,6 +15,7 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Sort;
 
 import java.util.List;
 import java.util.Optional;
@@ -24,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
@@ -106,6 +108,7 @@ public class PostServiceTest {
         assertNotNull(savedPost.getPublishedAt());
         verify(postRepository, times(1)).save(eq(post));
     }
+
     @Test
     public void testPublishPost_postNotFound() {
         when(postRepository.findById(eq(post.getId()))).thenReturn(Optional.empty());
@@ -113,6 +116,7 @@ public class PostServiceTest {
         assertThrows(PostNotFoundException.class, () -> postService.publishPost(post.getId()));
         verify(postRepository, never()).save(any());
     }
+
     @Test
     public void testPublishPost_postAlreadyPublished() {
         when(postRepository.findById(eq(post.getId()))).thenReturn(Optional.of(post));
@@ -123,6 +127,7 @@ public class PostServiceTest {
         assertThrows(PostAlreadyPublishedException.class, () -> postService.publishPost(post.getId()));
         verify(postRepository, never()).save(any());
     }
+
     @Test
     public void testUpdatePost() {
         when(postRepository.save(eq(post))).thenReturn(post);
@@ -156,58 +161,86 @@ public class PostServiceTest {
     }
 
     @Test
-    public void testGetAllDraftPosts_byUserId() {
+    public void testGetAllDraftPostsByUserId() {
         Long userId = 1L;
+        Sort sort = Sort.by("createdAt").descending();
 
-        when(postRepository.findAllDraftPostsByUserOrProject(eq(userId), eq(null)))
-                .thenReturn(List.of(post));
+        when(postRepository.findAll(argThat(actualExample ->
+                actualExample.getProbe().getAuthorId().equals(userId)
+                        && !actualExample.getProbe().isPublished()
+                        && !actualExample.getProbe().isDeleted()
+        ), eq(sort))).thenReturn(List.of(post));
 
-        List<Post> posts = postService.getAllDraftPosts(userId, null);
+        List<Post> posts = postService.getAllDraftPostsByUserId(userId);
 
+        assertNotNull(posts);
         assertTrue(posts.contains(post));
-        verify(postRepository, times(1))
-                .findAllDraftPostsByUserOrProject(eq(userId), eq(null));
+        verify(postRepository, times(1)).findAll(argThat(actualExample ->
+                actualExample.getProbe().getAuthorId().equals(userId)
+                        && !actualExample.getProbe().isPublished()
+                        && !actualExample.getProbe().isDeleted()), eq(sort));
     }
 
     @Test
-    public void testGetAllDraftPosts_byProjectId() {
+    public void testGetAllDraftPostsByProjectId() {
         Long projectId = 2L;
+        Sort sort = Sort.by("createdAt").descending();
 
-        when(postRepository.findAllDraftPostsByUserOrProject(eq(null), eq(projectId)))
-                .thenReturn(List.of(post));
+        when(postRepository.findAll(argThat(actualExample ->
+                actualExample.getProbe().getProjectId().equals(projectId)
+                        && !actualExample.getProbe().isPublished()
+                        && !actualExample.getProbe().isDeleted()
+        ), eq(sort))).thenReturn(List.of(post));
 
-        List<Post> posts = postService.getAllDraftPosts(null, projectId);
+        List<Post> posts = postService.getAllDraftPostsByProjectId(projectId);
 
+        assertNotNull(posts);
         assertTrue(posts.contains(post));
-        verify(postRepository, times(1))
-                .findAllDraftPostsByUserOrProject(eq(null), eq(projectId));
+        verify(postRepository, times(1)).findAll(argThat(actualExample ->
+                actualExample.getProbe().getProjectId().equals(projectId)
+                        && !actualExample.getProbe().isPublished()
+                        && !actualExample.getProbe().isDeleted()), eq(sort));
     }
 
     @Test
-    public void testGetAllPublishedPosts_byUserId() {
+    public void testGetAllPublishedPostsByUserId() {
         Long userId = 1L;
+        Sort sort = Sort.by("publishedAt").descending();
 
-        when(postRepository.findAllPublishedPostsByUserOrProject(eq(userId), eq(null)))
-                .thenReturn(List.of(post));
+        when(postRepository.findAll(argThat(actualExample ->
+                actualExample.getProbe().getAuthorId().equals(userId)
+                        && actualExample.getProbe().isPublished()
+                        && !actualExample.getProbe().isDeleted()
+        ), eq(sort))).thenReturn(List.of(post));
 
-        List<Post> posts = postService.getAllPublishedPosts(userId, null);
+        List<Post> posts = postService.getAllPublishedPostsByUserId(userId);
 
+        assertNotNull(posts);
         assertTrue(posts.contains(post));
-        verify(postRepository, times(1))
-                .findAllPublishedPostsByUserOrProject(eq(userId), eq(null));
+        verify(postRepository, times(1)).findAll(argThat(actualExample ->
+                actualExample.getProbe().getAuthorId().equals(userId)
+                        && actualExample.getProbe().isPublished()
+                        && !actualExample.getProbe().isDeleted()), eq(sort));
     }
 
     @Test
-    public void testGetAllPublishedPosts_byProjectId() {
+    public void testGetAllPublishedPostsByProjectId() {
         Long projectId = 2L;
+        Sort sort = Sort.by("publishedAt").descending();
 
-        when(postRepository.findAllPublishedPostsByUserOrProject(eq(null), eq(projectId)))
-                .thenReturn(List.of(post));
+        when(postRepository.findAll(argThat(actualExample ->
+                actualExample.getProbe().getProjectId().equals(projectId)
+                        && actualExample.getProbe().isPublished()
+                        && !actualExample.getProbe().isDeleted()
+        ), eq(sort))).thenReturn(List.of(post));
 
-        List<Post> posts = postService.getAllPublishedPosts(null, projectId);
+        List<Post> posts = postService.getAllPublishedPostsByProjectId(projectId);
 
+        assertNotNull(posts);
         assertTrue(posts.contains(post));
-        verify(postRepository, times(1))
-                .findAllPublishedPostsByUserOrProject(eq(null), eq(projectId));
+        verify(postRepository, times(1)).findAll(argThat(actualExample ->
+                actualExample.getProbe().getProjectId().equals(projectId)
+                        && actualExample.getProbe().isPublished()
+                        && !actualExample.getProbe().isDeleted()), eq(sort));
     }
 }

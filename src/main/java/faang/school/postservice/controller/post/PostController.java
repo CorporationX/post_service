@@ -3,7 +3,6 @@ package faang.school.postservice.controller.post;
 import faang.school.postservice.dto.post.PostCreateRequestDto;
 import faang.school.postservice.dto.post.PostResponseDto;
 import faang.school.postservice.dto.post.PostUpdateRequestDto;
-import faang.school.postservice.exception.validation.ValidationRequestException;
 import faang.school.postservice.facade.post.PostFacade;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +27,7 @@ import java.util.List;
 @Slf4j
 public class PostController {
     private final PostFacade postFacade;
+
     @PostMapping("/draft")
     public ResponseEntity<PostResponseDto> createDraftPost
             (@RequestBody @Valid PostCreateRequestDto postCreateRequestDto) {
@@ -35,7 +35,7 @@ public class PostController {
 
         PostResponseDto response = postFacade.createDraftPost(postCreateRequestDto);
         log.debug("Post controller return response create draft post {}", response);
-        return new ResponseEntity<>(response, HttpStatus.CREATED) ;
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @PatchMapping("/{postId}/publish")
@@ -75,33 +75,42 @@ public class PostController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/draft")
-    public ResponseEntity<List<PostResponseDto>> getAllDraftPosts(@RequestParam(required = false) Long userId,
-                                                                  @RequestParam(required = false) Long projectId) {
-        log.debug("Post controller accepted request get all draft posts by user id {} or project id {}",
-                userId, projectId);
+    @GetMapping("/drafts/user")
+    public ResponseEntity<List<PostResponseDto>> getAllDraftPostsByUserId(@RequestParam Long userId) {
+        log.debug("Post controller accepted request get all draft posts by user id {}", userId);
 
-        if ((userId == null && projectId == null) || (userId != null && projectId != null)) {
-            throw new ValidationRequestException("Exactly one of userId or projectId must be provided");
-        }
 
-        List<PostResponseDto> response = postFacade.getAllDraftPosts(userId, projectId);
-        log.debug("Post controller return response get all draft posts {}", response);
+        List<PostResponseDto> response = postFacade.getAllDraftPostsByUserId(userId);
+        log.debug("Post controller return response get all draft posts for user with id {} {}", userId, response);
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/published")
-    public ResponseEntity<List<PostResponseDto>> getAllPublishedPosts(@RequestParam(required = false) Long userId,
-                                                                      @RequestParam(required = false) Long projectId) {
-        log.debug("Post controller accepted request get all published posts by user id {} or project id {}",
-                userId, projectId);
+    @GetMapping("/drafts/project")
+    public ResponseEntity<List<PostResponseDto>> getAllDraftPostsByProjectId(@RequestParam Long projectId) {
+        log.debug("Post controller accepted request get all draft posts by project id {}", projectId);
 
-        if ((userId == null && projectId == null) || (userId != null && projectId != null)) {
-            throw new ValidationRequestException("Exactly one of userId or projectId must be provided");
-        }
+        List<PostResponseDto> response = postFacade.getAllDraftPostsByProjectId(projectId);
+        log.debug("Post controller return response get all draft posts for project with id {} {}",
+                projectId, response);
+        return ResponseEntity.ok(response);
+    }
 
-        List<PostResponseDto> response = postFacade.getAllPublishedPosts(userId, projectId);
-        log.debug("Post controller return response get all published posts {}", response);
+    @GetMapping("/published/user")
+    public ResponseEntity<List<PostResponseDto>> getAllPublishedPostsByUserId(@RequestParam Long userId) {
+        log.debug("Post controller accepted request get all published posts by user id {}", userId);
+
+        List<PostResponseDto> response = postFacade.getAllPublishedPostsByUserId(userId);
+        log.debug("Post controller return response get all published posts for user with id {} {}", userId, response);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/published/project")
+    public ResponseEntity<List<PostResponseDto>> getAllPublishedPosts(@RequestParam Long projectId) {
+        log.debug("Post controller accepted request get all published posts by project id {}", projectId);
+
+        List<PostResponseDto> response = postFacade.getAllPublishedPostsByProjectId(projectId);
+        log.debug("Post controller return response get all published posts for project with id {} {}",
+                projectId, response);
         return ResponseEntity.ok(response);
     }
 }

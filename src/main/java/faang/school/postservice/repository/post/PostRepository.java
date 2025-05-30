@@ -14,26 +14,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     List<Post> findByAuthorId(long authorId);
 
-    @Query(nativeQuery = true, value = """
-            SELECT p
-            FROM post p
-            WHERE p.published = false
-            AND p.deleted = false
-            AND (p.user_id = :user_id OR p.project_id = :project_id)
-            ORDER BY created_at DESC
-            """)
-    List<Post> findAllDraftPostsByUserOrProject(@Param("user_id") Long userId, @Param("project_id") Long projectId);
-
-    @Query(nativeQuery = true, value = """
-            SELECT p
-            FROM post p
-            WHERE p.published = true
-            AND p.deleted = false
-            AND (p.user_id = :user_id OR p.project_id = :project_id)
-            ORDER BY published_at DESC
-            """)
-    List<Post> findAllPublishedPostsByUserOrProject(@Param("user_id") Long userId, @Param("project_id") Long projectId);
-
     List<Post> findByProjectId(long projectId);
 
     @EntityGraph(attributePaths = "likes", type = EntityGraph.EntityGraphType.FETCH)
