@@ -2,6 +2,7 @@ package faang.school.postservice.service.like;
 
 import faang.school.postservice.dto.like.LikePostEvent;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.KafkaLikeProducer;
 import faang.school.postservice.publisher.LikeEventPublisher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -20,6 +21,8 @@ import static org.mockito.Mockito.verify;
 public class LikeNotificationServiceTest {
     @Mock
     private LikeEventPublisher likeEventPublisher;
+    @Mock
+    private KafkaLikeProducer kafkaLikeProducer;
 
     @InjectMocks
     private LikeNotificationService likeNotificationService;
@@ -42,6 +45,7 @@ public class LikeNotificationServiceTest {
         likeNotificationService.publishUserLikeEvent(post, LIKER_ID);
 
         verify(likeEventPublisher, times(1)).publish(any(LikePostEvent.class));
+        verify(kafkaLikeProducer, times(1)).sendMessage(any(LikePostEvent.class));
     }
 
     @Test
@@ -50,5 +54,6 @@ public class LikeNotificationServiceTest {
         likeNotificationService.publishUserLikeEvent(post, LIKER_ID);
 
         verify(likeEventPublisher, never()).publish(any());
+        verify(kafkaLikeProducer, never()).sendMessage(any());
     }
 }
