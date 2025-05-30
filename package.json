@@ -1,0 +1,6 @@
+{
+  "scripts": {
+    "test": "jest",
+    "start": "node index.js"
+  }
+}
