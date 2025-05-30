@@ -1,6 +1,7 @@
 package faang.school.postservice.publisher;
 
 import faang.school.postservice.dto.kafkaevents.LikeFeedEvent;
+import faang.school.postservice.exception.KafkaEventPublishException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,11 +19,11 @@ public class KafkaLikeEventPublisher {
 
     public void publish(LikeFeedEvent event) {
         try {
-            log.info("Ивент {} отправлен. {} поставил лайк на пост {}", event.id(), event.authorId(), event.postId());
             kafkaTemplate.send(postLikeTopic, event);
+            log.info("Ивент {} отправлен. {} поставил лайк на пост {}", event.id(), event.authorId(), event.postId());
         } catch (Exception e) {
             log.error("Ошибка отправки ивента {}", event.id());
-            throw new RuntimeException("Не удалось отправить ивент", e);
+            throw new KafkaEventPublishException("Не удалось отправить ивент", e);
         }
     }
 }

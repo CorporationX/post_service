@@ -37,8 +37,6 @@ public interface PostMapper {
 
     List<PostResponseDto> toResponseDtoList(List<Post> posts);
 
-    CachedPost toCachedPost(Post post);
-
     default List<Long> mapCommentToIds(List<Comment> comments) {
         return comments != null ? comments.stream()
                 .map(Comment::getId)

@@ -3,6 +3,7 @@ package faang.school.postservice.kafkalistener;
 import faang.school.postservice.dto.kafkaevents.PostEvent;
 import faang.school.postservice.entity.CachedPost;
 import faang.school.postservice.exception.EntityNotFoundException;
+import faang.school.postservice.exception.KafkaEventListenException;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.PostCacheService;
@@ -24,8 +25,6 @@ public class PostEventListener {
     private final RedisTemplate<String, Object> redisTemplate;
     private final PostRepository postRepository;
 
-    @Value("${spring.data.redis.feed.size}")
-    private long feedSize;
     private static final String POSTS_HASH_KEY = "posts:";
 
     @KafkaListener(topics = "${spring.data.kafka.topic.posts}",
@@ -36,7 +35,7 @@ public class PostEventListener {
 
             CachedPost post = getOrLoadPost(event.postId());
 
-            event.followers().parallelStream().forEach(followerId -> {
+            event.followers().forEach(followerId -> {
                 postCacheService.addToUserFeed(post, followerId);
             });
 
@@ -47,6 +46,7 @@ public class PostEventListener {
             log.error("Пост {} не найден в базе", event.postId());
         } catch (Exception e) {
             log.error("Ошибка отправка ивента поста {}", event.postId(), e);
+            throw new KafkaEventListenException("Ошибка обработки ивента", e);
         }
     }
 

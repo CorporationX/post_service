@@ -1,6 +1,7 @@
 package faang.school.postservice.publisher;
 
 import faang.school.postservice.dto.kafkaevents.PostEvent;
+import faang.school.postservice.exception.KafkaEventPublishException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,7 +26,7 @@ public class KafkaPostEventPublisher {
             log.info("Событие о посте {} отправлено {} пользователям", event.postId(), event.followers().size());
         } catch (Exception e) {
             log.error("Не удалось отправить событие о посте {}", event.postId());
-            throw new RuntimeException("Не удалось отправить событие", e);
+            throw new KafkaEventPublishException("Не удалось отправить событие", e);
         }
 
     }

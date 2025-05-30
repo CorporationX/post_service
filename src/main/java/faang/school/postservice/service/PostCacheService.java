@@ -17,7 +17,7 @@ public class PostCacheService {
     private final StringRedisTemplate stringRedisTemplate;
 
     @Value("${spring.data.redis.ttl.post}")
-    private long timeToLive;
+    private long ttl;
 
     @Value("${spring.data.redis.feed.size}")
     private long feedSize;
@@ -34,7 +34,7 @@ public class PostCacheService {
 
         redisTemplate.expire(
                 POSTS_HASH_KEY + post.getId().toString(),
-                timeToLive,
+                ttl,
                 TimeUnit.SECONDS
         );
     }

@@ -2,6 +2,7 @@ package faang.school.postservice.kafkalistener;
 
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.kafkaevents.CommentEvent;
+import faang.school.postservice.exception.KafkaEventListenException;
 import faang.school.postservice.service.PostCacheService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -47,6 +48,7 @@ public class CommentEventListener {
             }
         } catch (Exception e) {
             log.error("Ошибка доставки ивента комментария {} для поста {}", event.id(), event.postId(), e);
+            throw new KafkaEventListenException("Ошибка обработки ивента", e);
         }
 
 

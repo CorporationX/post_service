@@ -1,6 +1,7 @@
 package faang.school.postservice.kafkalistener;
 
 import faang.school.postservice.dto.kafkaevents.LikeFeedEvent;
+import faang.school.postservice.exception.KafkaEventListenException;
 import faang.school.postservice.service.PostCacheService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +35,7 @@ public class LikeEventListener {
             }
         } catch (Exception e) {
             log.error("Ошибка добавления лайка для поста {}", event.postId(), e);
-            throw new RuntimeException(e);
+            throw new KafkaEventListenException("Ошибка обработки ивента", e);
         }
 
     }

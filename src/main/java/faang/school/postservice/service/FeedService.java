@@ -55,12 +55,11 @@ public class FeedService {
     private List<CachedPost> fillFeedFromDataBase() {
         List<Long> followees = userRepository.findFolloweesIdsByUserId(context.getUserId());
 
-        List<CachedPost> preparedPosts =  followees
+        List<Post> preparedPosts =  followees
                 .stream()
                 .map(postRepository::findByAuthorId)
                 .flatMap(List::stream)
-                .map(mapper::toCachedPost)
-                .toList();
+                .toList(); // Замапить
 
         return null;
     }
