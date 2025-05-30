@@ -58,6 +58,16 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.9.2")
     testImplementation("org.assertj:assertj-core:3.24.2")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+
+    /**
+     *Amazon S3
+     */
+    implementation("com.amazonaws:aws-java-sdk-s3:1.12.481")
+
+    /**
+     * Formating images
+     */
+    implementation("net.coobird:thumbnailator:0.4.14")
 }
 
 tasks.test {
