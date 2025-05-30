@@ -10,8 +10,8 @@ import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
+import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.CommentService;
-import faang.school.postservice.service.PostService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,58 +28,60 @@ public class CommentServiceImpl implements CommentService {
 
     private final CommentRepository commentRepository;
     private final CommentMapper commentMapper;
-    private final PostService postService;
+    private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
     private final UserContext userContext;
 
     @Override
-    public CommentOutputDto create(CommentForCreationDto commentDto) {
-        Post post = postService.findPostById(commentDto.getPostId());
+    public CommentOutputDto createComment(CommentForCreationDto commentDto) {
+        Long postId = commentDto.getPostId();
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException("Post with id %d doesn't exist".formatted(postId)));
         long userId = userContext.getUserId();
         userServiceClient.getUser(userId);
-        Comment comment = commentMapper.toEntity(commentDto);
-        comment.setAuthorId(userId);
-        comment.setCreatedAt(LocalDateTime.now());
-        comment.setPost(post);
-        Comment saved = commentRepository.save(comment);
+        Comment commentEntity = commentMapper.toEntity(commentDto);
+        commentEntity.setAuthorId(userId);
+        commentEntity.setCreatedAt(LocalDateTime.now());
+        commentEntity.setPost(post);
+        Comment savedComment = commentRepository.save(commentEntity);
         log.info("Creating a comment by user {} for post with id {} - Finished"
                 , userContext.getUserId(), commentDto.getPostId());
-        return commentMapper.toDto(saved);
+        return commentMapper.toDto(savedComment);
     }
 
     @Override
-    public CommentOutputDto update(CommentForUpdateDto commentDto) {
-        Comment existingComment = findCommentById(commentDto.getId());
+    public CommentOutputDto updateComment(CommentForUpdateDto commentDto) {
+        Comment existingComment = findById(commentDto.getId());
         validateCommentAuthor(existingComment);
-        Comment comment = commentMapper.updateEntityFromDto(commentDto, existingComment);
-        comment.setUpdatedAt(LocalDateTime.now());
-        Comment updated = commentRepository.save(comment);
+        Comment commentEntity = commentMapper.updateEntityFromDto(commentDto, existingComment);
+        commentEntity.setUpdatedAt(LocalDateTime.now());
+        Comment updatedComment = commentRepository.save(commentEntity);
         log.info("Update a comment with id {} by user {} - Finished"
                 , commentDto.getId(), userContext.getUserId());
-        return commentMapper.toDto(updated);
+        return commentMapper.toDto(updatedComment);
     }
 
     @Override
-    public CommentOutputDto findById(long commentId) {
-        return commentMapper.toDto(findCommentById(commentId));
+    public CommentOutputDto findCommentById(long commentId) {
+        return commentMapper.toDto(findById(commentId));
     }
 
     @Override
-    public void deleteById(long commentId) {
-        Comment comment = findCommentById(commentId);
-        commentRepository.delete(comment);
+    public void deleteCommentById(long commentId) {
+        commentRepository.deleteById(commentId);
         log.info("A comment with id {} has been deleted by user {}"
                 , commentId, userContext.getUserId());
     }
 
     @Override
-    public List<CommentOutputDto> findByPostId(long postId) {
-        return commentMapper.toListDto(commentRepository.findAllByPostId(postId).stream()
+    public List<CommentOutputDto> findCommentByPostId(long postId) {
+        List<Comment> commentList = commentRepository.findAllByPostId(postId).stream()
                 .sorted(Comparator.comparing(Comment::getCreatedAt))
-                .toList());
+                .toList();
+        return commentMapper.toListDto(commentList);
     }
 
-    private Comment findCommentById(long commentId) {
+    private Comment findById(long commentId) {
         return commentRepository.findById(commentId)
                 .orElseThrow(() -> new EntityNotFoundException
                         (String.format("There is no comment with id %d", commentId)));
@@ -87,9 +89,9 @@ public class CommentServiceImpl implements CommentService {
 
     private void validateCommentAuthor(Comment existingComment) {
         long userId = userContext.getUserId();
-        userServiceClient.getUser(userId);
-        if(existingComment.getAuthorId() != userId){
+        if (existingComment.getAuthorId() != userId) {
             throw new DataValidationException("Comment can be changed only by their authors");
         }
+        userServiceClient.getUser(userId);
     }
 }

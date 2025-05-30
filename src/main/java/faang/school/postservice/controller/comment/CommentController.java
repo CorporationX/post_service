@@ -37,35 +37,35 @@ public class CommentController {
     public CommentOutputDto create(@Valid @RequestBody CommentForCreationDto commentDto) {
         log.info("Creating a comment by user {} for post with id {} - Started"
                 , userContext.getUserId(), commentDto.getPostId());
-        return service.create(commentDto);
+        return service.createComment(commentDto);
     }
 
     @PatchMapping
     public CommentDto update(@Valid @RequestBody CommentForUpdateDto commentDto) {
         log.info("Update a comment with id {} by user {} - Started"
                 , commentDto.getId(), userContext.getUserId());
-        return service.update(commentDto);
+        return service.updateComment(commentDto);
     }
 
     @GetMapping("/post/{postId}")
     public List<CommentOutputDto> findByPostId(@NotNull @PathVariable long postId) {
         log.info("Searching for a list of comments for post with id {} by user {} - Started"
                 , postId, userContext.getUserId());
-        return service.findByPostId(postId);
+        return service.findCommentByPostId(postId);
     }
 
     @GetMapping("/{commentId}")
     public CommentDto findById(@NotNull @PathVariable long commentId) {
         log.info("Searching for a comment with id {} by user {} - Started"
                 , commentId, userContext.getUserId());
-        return service.findById(commentId);
+        return service.findCommentById(commentId);
     }
 
     @DeleteMapping("/{commentId}")
     public ResponseEntity<Void> deleteById(@NotNull @PathVariable long commentId) {
         log.info("Deleting a comment with id {} by user {} - Started"
                 , commentId, userContext.getUserId());
-        service.deleteById(commentId);
+        service.deleteCommentById(commentId);
         return ResponseEntity.noContent().build();
     }
 }

@@ -14,12 +14,12 @@ import java.util.List;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface CommentMapper {
 
-    Comment toEntity (CommentForCreationDto dto);
+    Comment toEntity(CommentForCreationDto dto);
 
     @Mapping(target = "postId", source = "post.id")
-    CommentOutputDto toDto (Comment comment);
+    CommentOutputDto toDto(Comment comment);
 
-    List<CommentOutputDto> toListDto (List<Comment> comments);
+    List<CommentOutputDto> toListDto(List<Comment> comments);
 
     Comment updateEntityFromDto(CommentForUpdateDto dto, @MappingTarget Comment entity);
 }
