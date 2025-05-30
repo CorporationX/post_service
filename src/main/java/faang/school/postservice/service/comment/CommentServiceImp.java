@@ -1,12 +1,14 @@
 package faang.school.postservice.service.comment;
 
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
-import faang.school.postservice.service.post.PostService;
+
+import faang.school.postservice.service.PostService;
 import faang.school.postservice.service.validation.UserValidationService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -49,8 +51,8 @@ public class CommentServiceImp implements CommentService {
     @Override
     public List<CommentDto> getAllComments(Long postId) {
         log.info("Getting all comments by PostId: %d.".formatted(postId));
-        Post post = getPost(postId);
-        log.info("PostId with id: %d is present.".formatted(post.getId()));
+        PostDto post = postService.getPost(postId);
+        log.info("PostId with id: %d is present.".formatted(post.id()));
         return commentRepository.findAllByPostId(postId).stream()
                 .sorted(Comparator.comparing(Comment::getCreatedAt).reversed())
                 .map(commentMapper::toCommentDto)
@@ -74,11 +76,6 @@ public class CommentServiceImp implements CommentService {
         if (authorId != null) {
             userValidationService.validateUserExists(authorId);
         }
-        return getPost(commentDto.getPostId());
-    }
-
-    private Post getPost(Long postId) {
-        return postService.getPost(postId)
-                .orElseThrow(() -> new EntityNotFoundException("There are no Post with ID:%d.".formatted(postId)));
+        return postService.getExistingPost(commentDto.getPostId());
     }
 }

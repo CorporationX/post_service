@@ -1,6 +1,7 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.model.Post;
 
 import java.util.List;
 
@@ -23,4 +24,6 @@ public interface PostService {
     List<PostDto> getAllPostsByAuthorId(Long authorId);
 
     List<PostDto> getAllPostsByProjectId(Long projectId);
+
+    Post getExistingPost(Long postId);
 }
