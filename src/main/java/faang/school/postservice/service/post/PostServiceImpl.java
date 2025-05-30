@@ -127,7 +127,7 @@ public class PostServiceImpl implements PostService {
         return postMapper.toPostDto(updatedPost);
     }
 
-    public Post findPostById(long postId) {
+    private Post findPostById(long postId) {
         return postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("Post with id %d doesn't exist".formatted(postId)));
     }

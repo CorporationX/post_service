@@ -8,13 +8,13 @@ import java.util.List;
 
 public interface CommentService {
 
-    public CommentOutputDto create(CommentForCreationDto commentDto);
+    CommentOutputDto createComment(CommentForCreationDto commentDto);
 
-    public CommentOutputDto update(CommentForUpdateDto commentDto);
+    CommentOutputDto updateComment(CommentForUpdateDto commentDto);
 
-    public CommentOutputDto findById(long commentId);
+    CommentOutputDto findCommentById(long commentId);
 
-    public void deleteById(long commentId);
+    void deleteCommentById(long commentId);
 
-    List<CommentOutputDto> findByPostId(long postId);
+    List<CommentOutputDto> findCommentByPostId(long postId);
 }

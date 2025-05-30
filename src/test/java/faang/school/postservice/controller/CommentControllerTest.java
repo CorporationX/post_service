@@ -81,7 +81,7 @@ class CommentControllerTest {
         CommentForCreationDto commentDto = new CommentForCreationDto(postId, "Comment 1");
 
         outputDto = commentMapper.toDto(comment1);
-        when(service.create(any(CommentForCreationDto.class))).thenReturn(outputDto);
+        when(service.createComment(any(CommentForCreationDto.class))).thenReturn(outputDto);
 
         mockMvc.perform(post("/api/v1/comments")
                         .contentType("application/json")
@@ -89,7 +89,7 @@ class CommentControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", is("Comment 1")));
 
-        verify(service).create(any(CommentForCreationDto.class));
+        verify(service).createComment(any(CommentForCreationDto.class));
     }
 
     @Test
@@ -98,7 +98,7 @@ class CommentControllerTest {
         comment1.setContent("Updated comment");
         outputDto = commentMapper.toDto(comment1);
 
-        when(service.update(any(CommentForUpdateDto.class))).thenReturn(outputDto);
+        when(service.updateComment(any(CommentForUpdateDto.class))).thenReturn(outputDto);
 
         mockMvc.perform(patch("/api/v1/comments")
                         .contentType("application/json")
@@ -106,7 +106,7 @@ class CommentControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", is("Updated comment")));
 
-        verify(service).update(any(CommentForUpdateDto.class));
+        verify(service).updateComment(any(CommentForUpdateDto.class));
     }
 
     @Test
@@ -114,7 +114,7 @@ class CommentControllerTest {
         List<CommentOutputDto> expectedComments =
                 commentMapper.toListDto(Arrays.asList(comment1, comment2));
 
-        when(service.findByPostId(postId)).thenReturn(expectedComments);
+        when(service.findCommentByPostId(postId)).thenReturn(expectedComments);
 
         mockMvc.perform(get("/api/v1/comments/post/{postId}", postId))
                 .andExpect(status().isOk())
@@ -126,7 +126,7 @@ class CommentControllerTest {
     @Test
     void testFindById() throws Exception {
         outputDto = commentMapper.toDto(comment1);
-        when(service.findById(commentId1)).thenReturn(outputDto);
+        when(service.findCommentById(commentId1)).thenReturn(outputDto);
 
         mockMvc.perform(get("/api/v1/comments/{commentId1}", commentId1))
                 .andExpect(status().isOk())
@@ -138,6 +138,6 @@ class CommentControllerTest {
         mockMvc.perform(delete("/api/v1/comments/{commentId1}", commentId1))
                 .andExpect(status().isNoContent());
 
-        verify(service).deleteById(commentId1);
+        verify(service).deleteCommentById(commentId1);
     }
 }
