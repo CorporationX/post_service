@@ -3,6 +3,7 @@ package faang.school.postservice.service;
 import faang.school.postservice.dto.post.PostCreateDto;
 import faang.school.postservice.dto.post.PostOutputDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
+import faang.school.postservice.model.Post;
 
 import java.util.List;
 
