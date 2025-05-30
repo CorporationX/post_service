@@ -9,27 +9,24 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        node-version: [ 10.x, 8.x ]
     steps:
-      - uses: actions/checkout@v1
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
-        with:
-          node-version: ${{ matrix.node-version }}
-      - name: yarn install
-        run: |
-          yarn install
-      - name: yarn test
-        run: |
-          yarn test
-        env:
-            CI: true
+      - uses: actions/checkout@v4
 
-      - name: yarn build
-        run: |
-            yarn run build --if-present
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
+      - name: Build with Gradle
+        run: ./gradlew build
+
+      - name: Run tests
+        run: ./gradlew test
 
       #    steps:
       #      - uses: action/checkout@v1
