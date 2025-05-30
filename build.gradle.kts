@@ -3,7 +3,7 @@ plugins {
     id("org.springframework.boot") version "3.0.6"
     id("io.spring.dependency-management") version "1.1.0"
     id("jacoco")
-    id("checkstyle")
+    id("checkstyle")  // Добавляем плагин Checkstyle
 }
 
 group = "faang.school"
@@ -75,7 +75,16 @@ tasks.bootJar {
 }
 
 checkstyle {
-    toolVersion = "10.12.1" // Актуальная версия
-    configFile = file("config/checkstyle/checkstyle.xml") // Путь к конфигу
-    isIgnoreFailures = false // Остановить сборку при ошибках
+    toolVersion = "10.12.1"  // Актуальная версия Checkstyle
+    configFile = rootProject.file("config/checkstyle/checkstyle.xml")
+    isIgnoreFailures = false  // Остановить сборку при ошибках стиля
+    maxWarnings = 0  // Не допускать warnings
+}
+
+tasks.withType<Checkstyle>().configureEach {
+    reports {
+        xml.required.set(false)
+        html.required.set(true)
+        html.outputLocation.set(file("${buildDir}/reports/checkstyle/${name}.html"))
+    }
 }
