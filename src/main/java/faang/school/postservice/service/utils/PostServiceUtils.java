@@ -1,6 +1,7 @@
 package faang.school.postservice.service.utils;
 
 import faang.school.postservice.dto.post.CreatePostDto;
+import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.project.ProjectService;
@@ -26,7 +27,7 @@ public class PostServiceUtils {
 
         if (isAuthorProvidedAndValid && isProjectProvidedAndValid) {
             log.error("Both AuthorId ({}) and ProjectId ({}) were provided. Only one is allowed.", authorId, projectId);
-            throw new IllegalArgumentException("Both AuthorId and ProjectId were provided. Only one is allowed.");
+            throw new DataValidationException("Both AuthorId and ProjectId were provided. Only one is allowed.");
         } else if (isAuthorProvidedAndValid) {
             log.info("AuthorId {} was provided, checking if user exists.", authorId);
             userService.checkUserExist(authorId);
@@ -35,12 +36,13 @@ public class PostServiceUtils {
             projectService.checkProjectExist(projectId);
         } else {
             log.error("Neither AuthorId nor ProjectId were validly provided. Exactly one positive ID is required. AuthorId: {}, ProjectId: {}", authorId, projectId);
-            throw new IllegalArgumentException("Exactly one of AuthorId or ProjectId must be provided as a positive value.");
+            throw new DataValidationException("Exactly one of AuthorId or ProjectId must be provided as a positive value.");
         }
     }
 
-    public Post isPostExists(Long postId) {
+    public Post getPost(Long postId) {
+        log.info("Start method getPost with postId: {}", postId);
         return postRepository.findById(postId).orElseThrow(
-                () -> new IllegalArgumentException("Post not found"));
+                () -> new DataValidationException("Post not found"));
     }
 }

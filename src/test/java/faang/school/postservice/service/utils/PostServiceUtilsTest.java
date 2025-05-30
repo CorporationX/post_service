@@ -1,6 +1,7 @@
 package faang.school.postservice.service.utils;
 
 import faang.school.postservice.dto.post.CreatePostDto;
+import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.project.ProjectService;
@@ -67,14 +68,14 @@ class PostServiceUtilsTest {
         }
 
         @Test
-        void whenBothAuthorIdAndProjectIdNull_thenThrowsIllegalArgumentException() {
+        void whenBothAuthorIdAndProjectIdNull_thenThrowsDataValidationException() {
             createPostDto = CreatePostDto.builder()
                     .authorId(null)
                     .projectId(null)
                     .content("test content")
                     .build();
 
-            IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+            DataValidationException exception = assertThrows(DataValidationException.class,
                     () -> postServiceUtils.isAuthorOrProjectAdded(createPostDto));
             assertEquals("Exactly one of AuthorId or ProjectId must be provided as a positive value.",
                     exception.getMessage());
@@ -98,7 +99,7 @@ class PostServiceUtilsTest {
                     .build();
             when(postRepositoryMock.findById(postId)).thenReturn(Optional.of(expectedPost));
 
-            Post actualPost = postServiceUtils.isPostExists(postId);
+            Post actualPost = postServiceUtils.getPost(postId);
 
             assertNotNull(actualPost);
             assertEquals(expectedPost, actualPost);
@@ -111,8 +112,8 @@ class PostServiceUtilsTest {
             Long postId = 2L;
             when(postRepositoryMock.findById(postId)).thenReturn(Optional.empty());
 
-            IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                    () -> postServiceUtils.isPostExists(postId));
+            DataValidationException exception = assertThrows(DataValidationException.class,
+                    () -> postServiceUtils.getPost(postId));
             assertEquals("Post not found", exception.getMessage());
 
             verify(postRepositoryMock).findById(postId);
