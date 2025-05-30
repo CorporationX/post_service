@@ -1,46 +1,65 @@
 name: CI pipeline Kraken
 
-on: [push, pull_request]
- # pull_request:
+on: [ push, pull_request ]
+  # pull_request:
   #  branches:
-   #   - 'kraken-master-stream10'
-#  push:
-#    branches:
-#      - ''
+#   - 'kraken-master-stream10'
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        node-version: [ 10.x, 8.x ]
     steps:
-      - uses: action/checkout@v1
-      - name: Set up JDK
-        uses: action/setup-java@v3
+      - uses: actions/checkout@v1
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
         with:
-          java-version: 17
-          distribution: 'temurin'
+          node-version: ${{ matrix.node-version }}
+      - name: yarn install
+        run: |
+          yarn install
+      - name: yarn test
+        run: |
+          yarn test
+        env:
+            CI: true
 
-  test:
-    runs-on: ubuntu-latest
+      - name: yarn build
+        run: |
+            yarn run build --if-present
 
-    steps:
-      - name: Cache Gradle dependencies
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-            key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-
-      - name: Run tests with Gradle
-        run: ./gradlew.bat test
-
-      - name: Upload test reports
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: test-reports
-          path: |
-            **/build/reports/tests
-            **/build/test-results
+      #    steps:
+      #      - uses: action/checkout@v1
+      #      - name: Set up JDK
+      #        uses: action/setup-java@v3
+      #        with:
+      #          java-version: 17
+      #          distribution: 'temurin'
+      #
+      #  test:
+      #    runs-on: ubuntu-latest
+      #
+      #    steps:
+      #      - name: Cache Gradle dependencies
+      #        uses: actions/cache@v3
+      #        with:
+      #          path: |
+      #            ~/.gradle/caches
+      #            ~/.gradle/wrapper
+      #            key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+      #
+      #      - name: Run tests with Gradle
+      #        run: ./gradlew.bat test
+      #
+      #      - name: Upload test reports
+      #        if: always()
+      #        uses: actions/upload-artifact@v3
+      #        with:
+      #          name: test-reports
+      #          path: |
+      #            **/build/reports/tests
+      #            **/build/test-results
       
