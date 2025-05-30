@@ -1,9 +1,12 @@
 name: CI pipeline Kraken
 
-on:
-  pull_request:
-    branches:
-      - 'kraken-master-stream10'
+on: [push, pull_request]
+ # pull_request:
+  #  branches:
+   #   - 'kraken-master-stream10'
+#  push:
+#    branches:
+#      - ''
 
 jobs:
   test:
