@@ -7,9 +7,8 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface CommentMapper {
+    @Mapping(target = "post.id", source = "postId")
     Comment toEntity(CommentDto commentDto);
-
-    @Mapping(target = "likeCount",
-            expression = "java(comment.getLikes() != null ? comment.getLikes().size() : 0)")
+    @Mapping(target = "postId", source = "post.id")
     CommentDto toDto(Comment comment);
 }

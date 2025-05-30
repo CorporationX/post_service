@@ -1,13 +1,15 @@
 package faang.school.postservice.service.comments;
 
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.dto.CommentDto;
+import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,6 +17,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CommentService {
@@ -63,5 +66,12 @@ public class CommentService {
 
     public void deleteComment(Long commentId) {
         commentRepository.deleteById(commentId);
+    }
+
+    @Transactional
+    public Comment getComment(Long commentId) {
+        log.info("Start method getComment with commentId: {}", commentId);
+        return commentRepository.findById(commentId)
+                .orElseThrow(() -> new DataValidationException("Comment not found!"));
     }
 }

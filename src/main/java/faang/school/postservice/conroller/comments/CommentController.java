@@ -1,6 +1,6 @@
 package faang.school.postservice.conroller.comments;
 
-import faang.school.postservice.dto.CommentDto;
+import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.service.comments.CommentService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
