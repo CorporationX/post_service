@@ -17,3 +17,5 @@ databaseChangeLog:
       file: db/changelog/changeset/post_V007__comment_verification_fields.sql
   - include:
       file: db/changelog/changeset/post_V007_create_outbox_event_table.sql
+  - include:
+      file: db/changelog/changeset/post_V008_create_outbox_feed_event_table.sql

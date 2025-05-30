@@ -6,6 +6,7 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.like.LikeEvent;
+import faang.school.postservice.dto.newsfeed.KafkaLikeEvent;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.EventSerialiizationExeption;
@@ -18,6 +19,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.model.outbox.EventStatus;
 import faang.school.postservice.model.outbox.EventType;
 import faang.school.postservice.model.outbox.OutboxEvent;
+import faang.school.postservice.newsfeed.producer.OutboxLikeProducer;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.service.outbox.OutboxEventService;
 import faang.school.postservice.validator.CommentValidator;
@@ -29,6 +31,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -52,6 +55,7 @@ public class LikeService {
     private final PostService postService;
     private final OutboxEventService outboxEventService;
     private final ObjectMapper objectMapper;
+    private final OutboxLikeProducer outboxLikeProducer;
 
     public List<UserDto> getAllUsersWhoLikedPost(Long postId) {
         Post post = postValidator.getPostById(postId);
@@ -74,6 +78,7 @@ public class LikeService {
     @Transactional
     public LikeDto likePost(Long postId) {
         Long userId = validateAndGetUserId();
+        Post post = postValidator.getPostById(postId);
         likeRepository.findByPostIdAndUserId(postId, userId).ifPresent(like -> {
             log.warn("User with id %d is already liked post with id %d".formatted(userId, postId));
             throw new UserAlreadyLikedException("User is already liked post");
@@ -87,6 +92,15 @@ public class LikeService {
         LikeEvent likeEvent = getLikeEvent(postId, userId, false);
         OutboxEvent outboxEvent = buildOutboxEvent(likeEvent, EventType.LIKE_CREATED);
         outboxEventService.saveOutboxEvent(outboxEvent);
+
+        KafkaLikeEvent kafkaLikeEvent = KafkaLikeEvent.builder()
+                .postId(postId)
+                .userId(userId)
+                .authorId(post.getAuthorId())
+                .timestamp(Instant.now().toEpochMilli())
+                .build();
+        outboxLikeProducer.saveToOutbox(kafkaLikeEvent);
+        log.info("KafkaLikeEvent for post {} by user {} sent to feed outbox", postId, userId);
 
         return likeMapper.toLikeDto(like);
     }

@@ -4,7 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import faang.school.postservice.config.ModerationProperties;
+import faang.school.postservice.config.properties.FeedProperties;
+import faang.school.postservice.config.properties.FeedRedisProperties;
+import faang.school.postservice.config.properties.KafkaProperties;
 import faang.school.postservice.config.properties.RedisProperties;
+import faang.school.postservice.config.properties.TaskExecutorProperties;
 import org.springframework.boot.Banner;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -22,7 +26,11 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableFeignClients(basePackages = "faang.school.postservice.client")
 @EnableConfigurationProperties({
         ModerationProperties.class,
-        RedisProperties.class
+        RedisProperties.class,
+        TaskExecutorProperties.class,
+        KafkaProperties.class,
+        FeedRedisProperties.class,
+        FeedProperties.class
 })
 public class PostServiceApp {
     public static void main(String[] args) {

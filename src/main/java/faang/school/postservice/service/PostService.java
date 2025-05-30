@@ -1,12 +1,18 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.config.ModerationProperties;
 import com.google.common.collect.Lists;
-import faang.school.postservice.exception.EntityNotFoundException;
+import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.ModerationProperties;
+import faang.school.postservice.dto.newsfeed.KafkaPostEvent;
+import faang.school.postservice.dto.newsfeed.post.CreatePostRequest;
+import faang.school.postservice.dto.newsfeed.post.PostResponseDto;
 import faang.school.postservice.exception.PostPublishingException;
+import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.newsfeed.producer.OutboxPostProducer;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.moderation.AsyncModerationService;
+import faang.school.postservice.exception.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.ListUtils;
@@ -17,9 +23,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.time.LocalDateTime;
 
 @Slf4j
 @Service
@@ -32,8 +38,39 @@ public class PostService {
     private final PostRepository postRepository;
     private final AsyncModerationService asyncModerationService;
     private final ModerationProperties moderationProperties;
+    private final UserServiceClient userServiceClient;
+    private final PostMapper postMapper;
+    private final OutboxPostProducer outboxPostProducer;
 
     private static final int BATCH_SIZE = 1000;
+
+    @Transactional
+    public PostResponseDto createPost(CreatePostRequest request) {
+        try {
+            userServiceClient.getUser(request.getAuthorId());
+        } catch (Exception e) {
+            log.warn("Author with ID {} not found in user service: {}", request.getAuthorId(), e.getMessage());
+            throw new EntityNotFoundException("Author ID not found in user service", request.getAuthorId());
+        }
+
+        Post post = postMapper.toEntity(request);
+        post = postRepository.save(post);
+
+        List<Long> subscriberIds = userServiceClient.getFollowerIds(post.getAuthorId());
+
+        KafkaPostEvent kafkaPostEvent = KafkaPostEvent.builder()
+                .postId(post.getId())
+                .userId(post.getAuthorId())
+                .content(post.getContent())
+                .publishedAt(post.getCreatedAt())
+                .subscribersIds(subscriberIds)
+                .build();
+        outboxPostProducer.saveToOutbox(kafkaPostEvent);
+        log.info("KafkaPostEvent for post {} by author {} sent to feed outbox", post.getId(), post.getAuthorId());
+
+        return postMapper.toResponseDto(post);
+    }
+
 
     @Transactional(propagation = Propagation.REQUIRED)
     public void moderateAllUnverifiedPosts() {
@@ -62,7 +99,7 @@ public class PostService {
 
     public Post getPost(Long postId) {
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new EntityNotFoundException(POST, postId));
+                .orElseThrow(() -> new faang.school.postservice.exception.EntityNotFoundException(POST, postId));
 
         log.info("Get post with id {}", postId);
         return post;
