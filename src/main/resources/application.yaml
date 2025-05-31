@@ -58,6 +58,10 @@ spring:
         post-like: "post-like-event-topic"
         news-feed-comment: "news-comment-topic"
         post-view: "post-view-topic"
+    consumers:
+      post-view: "post-view-consumer"
+    listener:
+      ack-mode: MANUAL
 
 server:
   port: 8081
