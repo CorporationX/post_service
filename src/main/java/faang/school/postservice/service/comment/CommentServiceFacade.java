@@ -33,12 +33,10 @@ public class CommentServiceFacade {
     public List<CommentDtoResponse> getAllComments(long postId) {
         List<Comment> comments = commentService.getAllComments(postId);
 
-        return comments.stream()
-                .map(mapperComment::fromEntityToDto)
-                .toList();
+        return mapperComment.fromDtoListToEntityList(comments);
     }
 
-    public void deleteComment(long commentId) {
-        commentService.deleteComment(commentId);
+    public void deleteComment(long commentId, long authorId) {
+        commentService.deleteComment(commentId, authorId);
     }
 }

@@ -9,6 +9,8 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 
+import java.util.List;
+
 @Mapper(componentModel = "spring",
         unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface MapperComment {
@@ -24,6 +26,8 @@ public interface MapperComment {
 
     @Mapping(target = "id", source = "commentId")
     Comment fromUpdateDtoToEntity(CommentUpdateDto dto);
+
+    List<CommentDtoResponse> fromDtoListToEntityList(List<Comment> comments);
 
     default Long mapPostToId(Post post) {
         if (post == null) {

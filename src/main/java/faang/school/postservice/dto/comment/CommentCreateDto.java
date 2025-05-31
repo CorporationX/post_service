@@ -12,9 +12,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class CommentCreateDto {
 
-    @NotBlank
     private Long postId;
-    @NotBlank
     private Long authorId;
     @NotBlank
     private String content;
