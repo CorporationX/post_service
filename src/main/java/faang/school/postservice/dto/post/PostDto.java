@@ -1,5 +1,4 @@
-package faang.school.postservice.dto.comment;
-
+package faang.school.postservice.dto.post;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -8,7 +7,7 @@ import lombok.Builder;
 import java.util.List;
 
 @Builder
-public record CommentDto(
+public record PostDto(
         @NotNull
         Long id,
         @NotBlank
@@ -16,7 +15,7 @@ public record CommentDto(
         @NotNull
         Long authorId,
         List<Long> likeIds,
-        @NotNull
-        Long postId
+        List<Long> commentIds,
+        Long countLike
 ) {
 }
