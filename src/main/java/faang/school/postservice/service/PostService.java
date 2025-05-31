@@ -2,10 +2,14 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.config.ModerationProperties;
 import com.google.common.collect.Lists;
+import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.EntityNotFoundException;
+import faang.school.postservice.exception.PostDtoValidationException;
 import faang.school.postservice.exception.PostPublishingException;
+import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.batch.PostEventBatchSender;
 import faang.school.postservice.service.moderation.AsyncModerationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +36,8 @@ public class PostService {
     private final PostRepository postRepository;
     private final AsyncModerationService asyncModerationService;
     private final ModerationProperties moderationProperties;
+    private final PostMapper postMapper;
+    private final PostEventBatchSender postEventBatchSender;
 
     private static final int BATCH_SIZE = 1000;
 
@@ -109,6 +115,22 @@ public class PostService {
         });
     }
 
+    @Transactional
+    @Async("fileUploadTaskExecutor")
+    public PostDto publishPost(PostDto postDto) {
+        Post post = validateDataForPublication(postDto);
+
+        post.setPublished(true);
+        post.setPublishedAt(LocalDateTime.now());
+        post.setUpdatedAt(LocalDateTime.now());
+
+        post = postRepository.saveAndFlush(post);
+        postEventBatchSender.sendBatch(post);
+
+        return postMapper.toDto(post);
+    }
+
+
     private void publishBatch(List<Post> batch) {
         try {
             batch.forEach(post -> {
@@ -122,5 +144,23 @@ public class PostService {
                     String.format("Failed to publish batch of size %d. Reason: %s",
                             batch.size(), e.getMessage()), e);
         }
+    }
+
+    private Post validateDataForPublication(PostDto postDto) {
+        Post post = postRepository.findById(postDto.getId()).orElseThrow(() ->
+                new PostDtoValidationException(String.format("Post with ID %d does not exist", postDto.getId()))
+        );
+
+        if (post.isDeleted()) {
+            throw new PostDtoValidationException(String.format(
+                    "The post with ID %d removed", postDto.getId()));
+        }
+
+        if (post.isPublished()) {
+            throw new PostDtoValidationException(String.format(
+                    "The post with ID %d has already been published", postDto.getId()));
+        }
+
+        return post;
     }
 }
