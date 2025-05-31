@@ -98,7 +98,6 @@ tasks.checkstyleTest {
 val jacocoExclude = listOf(
         "faang/school/postservice/PostServiceApp*",
         "faang/school/postservice/client/Feign*",
-        "**/config/**",
         "**/model/**",
         "**/dto/**",
         "**/mapper/**"
@@ -122,10 +121,8 @@ val jacocoClassExclude = listOf(
         "faang.school.postservice.model.*",
         "faang.school.postservice.dto.*",
         "faang.school.postservice.mapper.*",
-        "faang.school.postservice.exception.ErrorResponse",
         "faang.school.postservice.PostServiceApp",
-        "faang.school.postservice.client.Feign*",
-        "faang.school.postservice.rest.ExceptionApiHandler"
+        "faang.school.postservice.client.Feign*"
 )
 
 tasks.jacocoTestCoverageVerification {

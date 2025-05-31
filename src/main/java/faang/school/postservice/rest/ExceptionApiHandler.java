@@ -1,6 +1,5 @@
 package faang.school.postservice.rest;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import faang.school.postservice.exception.CommentNotFoundException;
 import faang.school.postservice.exception.ErrorResponse;
@@ -9,6 +8,7 @@ import faang.school.postservice.exception.LikeNotFoundException;
 import faang.school.postservice.exception.PostNotFoundException;
 import faang.school.postservice.exception.UnauthorizedException;
 import faang.school.postservice.exception.UserNotFoundException;
+import faang.school.postservice.util.Utils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -27,20 +27,22 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 @RequiredArgsConstructor
 public class ExceptionApiHandler {
-    private final ObjectMapper objectMapper;
+    public static final String RUNTIME_ERROR = "Runtime error, see log";
+    private final Utils utils;
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map<String, String> handlerMethodArgumentNotValidException(MethodArgumentNotValidException e) {
-        Map<String, String> result = e.getBindingResult()
-                .getFieldErrors()
-                .stream()
-                .collect(Collectors.toMap(
-                        FieldError::getField,
-                        error -> Objects.requireNonNullElse(error.getDefaultMessage(), "")
-                ));
-        log.error("handlerMethodArgumentNotValidException: {}", e.getMessage(), e);
-        return result;
+    public ErrorResponse handlerMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+        Map<String, String> detail = e.getBindingResult()
+            .getFieldErrors()
+            .stream()
+            .collect(Collectors.toMap(
+                FieldError::getField,
+                error -> Objects.requireNonNullElse(error.getDefaultMessage(), "")
+            ));
+        String errorMessage = utils.format("Validation failed with {} errors",
+            e.getBindingResult().getFieldErrors().size());
+        return getErrorResponse("handlerMethodArgumentNotValidException", errorMessage, detail, e);
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
@@ -51,7 +53,7 @@ public class ExceptionApiHandler {
 
     @ExceptionHandler(UnrecognizedPropertyException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleUnrecognizedPropertyException(UnrecognizedPropertyException e) {
+    public ErrorResponse handlerUnrecognizedPropertyException(UnrecognizedPropertyException e) {
         return getErrorResponse("handleUnrecognizedPropertyException", e);
     }
 
@@ -94,11 +96,26 @@ public class ExceptionApiHandler {
     @ExceptionHandler(RuntimeException.class)
     @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
     public ErrorResponse handlerRuntimeException(RuntimeException e) {
-        return getErrorResponse("handlerRuntimeException", e);
+        return getErrorResponse("handlerRuntimeException", RUNTIME_ERROR, e);
     }
 
     private ErrorResponse getErrorResponse(String exceptionLabel, Exception e) {
         log.error("{}: {}", exceptionLabel, e.getMessage(), e);
         return new ErrorResponse(e.getMessage());
+    }
+
+    private ErrorResponse getErrorResponse(String exceptionLabel, String errorMessage, Exception e) {
+        log.error("{}: {}", exceptionLabel, e.getMessage(), e);
+        return new ErrorResponse(errorMessage);
+    }
+
+    private ErrorResponse getErrorResponse(
+        String exceptionLabel,
+        String errorMessage,
+        Map<String, String> detail,
+        Exception e
+    ) {
+        log.error("{}: {}", exceptionLabel, e.getMessage(), e);
+        return new ErrorResponse(errorMessage, detail);
     }
 }

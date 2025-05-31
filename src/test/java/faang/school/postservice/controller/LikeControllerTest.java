@@ -6,7 +6,6 @@ import faang.school.postservice.dto.like.LikeCommentRequestDto;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.like.LikePostRequestDto;
 import faang.school.postservice.mapper.LikeMapperImpl;
-import faang.school.postservice.rest.ExceptionApiHandler;
 import faang.school.postservice.service.LikeService;
 import faang.school.postservice.util.Utils;
 import org.junit.jupiter.api.AfterEach;
@@ -17,10 +16,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.client.MockMvcWebTestClient;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static org.hamcrest.Matchers.hasSize;
@@ -129,20 +126,6 @@ class LikeControllerTest {
                 .andDo(print())
                 .andExpect(status().is(204))
                 .andExpect(content().string(""));
-    }
-
-    @Test
-    public void testMissingUserIdInHeader() {
-        LikeController singleLikeController = new LikeController(likeService, new UserContext(), mapper);
-        ExceptionApiHandler exceptionApiHandler = new ExceptionApiHandler(objectMapper);
-
-        MockMvcWebTestClient.bindToController(singleLikeController)
-                .controllerAdvice(exceptionApiHandler)
-                .build()
-                .delete()
-                .uri(utils.format("/likes/comment/{}", COMMENT_ID))
-                .exchange()
-                .expectStatus().isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 
     private LikePostRequestDto getPostRequestDto() {

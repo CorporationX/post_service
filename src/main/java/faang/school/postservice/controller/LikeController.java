@@ -6,6 +6,7 @@ import faang.school.postservice.dto.like.LikeCommentResponseDto;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.like.LikePostRequestDto;
 import faang.school.postservice.dto.like.LikePostResponseDto;
+import faang.school.postservice.dto.like.TestLikeDto;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.service.LikeService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -72,6 +73,16 @@ public class LikeController {
         log.debug("delete like from comment. commentId: {}", commentId);
         LikeDto likeDto = getCommentLikeDto(commentId);
         likeService.deleteComment(likeDto);
+    }
+
+    /**
+     * Как только в сервисе появятся dto с несколькими обязательными параметрами, то этот метод можно будет удалить.
+     * Он нужен для тестирования MethodArgumentNotValidException
+     */
+    @PostMapping("/test")
+    @ResponseStatus(HttpStatus.OK)
+    public void testPostDto(@Valid @RequestBody TestLikeDto testLikeDto) {
+        log.debug("test TestLikeDto: {}", testLikeDto);
     }
 
     private LikeDto getLikeDto(LikePostRequestDto likePostRequestDto) {
