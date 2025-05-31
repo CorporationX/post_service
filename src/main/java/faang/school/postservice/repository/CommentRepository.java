@@ -29,4 +29,15 @@ public interface CommentRepository extends CrudRepository<Comment, Long> {
         LIMIT :limit
     """)
     List<Comment> findByPostId(@Param("postId") Long postId, @Param("limit") int limit);
+
+    @Query(nativeQuery = true, value = """
+        SELECT * FROM (
+            SELECT c.*,
+                ROW_NUMBER() OVER (PARTITION BY c.post_id ORDER BY c.created_at DESC) AS rn
+            FROM comment c
+            WHERE c.post_id IN (:postIds)
+        ) ranked
+        WHERE rn <= :limit
+    """)
+    List<Comment> findCommentsByPostIds(@Param("postId") List<Long> postIds, @Param("limit") int limit);
 }

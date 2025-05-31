@@ -1,5 +1,6 @@
 package faang.school.postservice.repository;
 
+import faang.school.postservice.dto.feed.ViewCountDto;
 import faang.school.postservice.model.Post;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
@@ -41,7 +42,10 @@ public interface PostRepository extends CrudRepository<Post, Long> {
     """)
     List<Post> findPostsByAuthorIds(@Param("authorIds") Collection<Long> authorIds);
 
-    long findViewsCountById(long postId);
-
-    List<Post> findPostsByIdIn(List<Long> postIds);
+    @Query("""
+        SELECT new faang.school.postservice.dto.feed.ViewCountDto(p.id, p.viewCount)
+        FROM Post p
+        WHERE p.id IN :postIds
+    """)
+    List<ViewCountDto> findViewsByPostIds(@Param("postIds") List<Long> postIds);
 }

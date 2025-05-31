@@ -45,6 +45,8 @@ public interface PostMapper {
     @Mapping(target = "author", ignore = true)
     PostFeedResponse responseToFeedResponse(PostResponseDto postResponseDto);
 
+    List<PostFeedResponse> responsesToFeedResponses(List<PostResponseDto> postResponseDtoList);
+
     @Mapping(target = "likeCount", ignore = true)
     @Mapping(target = "viewCount", ignore = true)
     @Mapping(target = "comments", ignore = true)

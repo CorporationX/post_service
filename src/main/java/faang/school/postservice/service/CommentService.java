@@ -127,12 +127,24 @@ public class CommentService {
         }
     }
 
-    public List<CommentDto> sendCommentsEventByPostId(Long postId, int limit) {
+    public void getCommentsByPostId(Long postId, int limit) {
         List<Comment> comments = commentRepository.findByPostId(postId, limit);
-        List<CommentDto> commentDtoList = commentMapper.toDtoList(comments);
+        List<CommentDto> commentDtoList = comments.stream()
+                .map(commentMapper::toDto)
+                .sorted(Comparator.comparing(CommentDto::createdAt))
+                .toList();
+        sendCommentsEvent(commentDtoList);
+    }
+
+    public void sendCommentsEvent(List<CommentDto> commentDtoList) {
         commentDtoList.forEach(comment ->
                 commentAddedEventPublisher.publish(createCommentAddedEvent(comment)));
-        return commentDtoList;
+    }
+
+    public Map<Long, List<CommentDto>> getCommentsByPostIds(List<Long> postIds, int limit) {
+        return commentRepository.findCommentsByPostIds(postIds, limit).stream()
+                .map(commentMapper::toDto)
+                .collect(Collectors.groupingBy(CommentDto::postId));
     }
 
     private void validateCommentContent(CommentDto commentDto) {

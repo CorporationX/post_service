@@ -74,7 +74,7 @@ public class FeedHeater {
 
         if (pageCount > Integer.MAX_VALUE) {
             throw new PageOverflowException("Too many pages: %d. ", pageCount +
-                    "Please, the number of users per page in the setting");
+                    "Please, change the number of users per page in the setting");
         }
 
         for (int page = 0; page < (int) pageCount; page++) {
@@ -146,19 +146,28 @@ public class FeedHeater {
 
         List<PostResponseDto> responseDtoList = postMapper.toResponseDtoList(posts);
         List<PostRedisDto> redisDtoList = postMapper.toRedisDtoList(responseDtoList);
-        redisDtoList.forEach(postRedisRepository::savePost);
+        postRedisRepository.savePostsBatch(redisDtoList);
 
         authorIds.forEach(authorRequestEventPublisher::publish);
 
         posts.forEach(post -> {
             Long postId = post.getId();
-            commentService.sendCommentsEventByPostId(postId, maxCommentsCount);
+            commentService.getCommentsByPostId(postId, maxCommentsCount);
         });
 
-        responseDtoList.forEach(post -> {
-            postRedisRepository.addPostLikes(post.getId(), post.getLikeCount());
-            postRedisRepository.addPostViews(post.getId(), post.getViewCount());
-        });
+        Map<Long, Integer> likes = responseDtoList.stream()
+                .collect(Collectors.toMap(
+                        PostResponseDto::getId,
+                        PostResponseDto::getLikeCount
+                ));
+        Map<Long, Long> views = responseDtoList.stream()
+                .collect(Collectors.toMap(
+                        PostResponseDto::getId,
+                        PostResponseDto::getViewCount
+                ));
+
+        postRedisRepository.addPostLikesBatch(likes);
+        postRedisRepository.addPostViewsBatch(views);
 
         userFeeds.forEach((userId, listRedisDto) -> {
             if (!listRedisDto.isEmpty()) {

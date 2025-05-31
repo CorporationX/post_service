@@ -11,7 +11,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.stereotype.Repository;
@@ -19,9 +18,12 @@ import org.springframework.stereotype.Repository;
 import java.time.ZoneOffset;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Repository
@@ -29,7 +31,10 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class PostRedisRepository {
 
-    private static final Long DEFAULT_RETURNING_VALUE = -1L;
+    private static final String KEY_PREFIX = "post:";
+    private static final String COMMENT_POSTFIX = ":comments";
+    private static final String LIKE_POSTFIX = ":likes";
+    private static final String VIEW_POSTFIX = ":views";
 
     private final ObjectMapper objectMapper;
     private final RedisTemplate<String, Object> redisTemplate;
@@ -43,14 +48,35 @@ public class PostRedisRepository {
         return postDto;
     }
 
-    @Cacheable(key = "#postId", unless = "#result == null")
-    public PostRedisDto findById(Long postId) {
-        log.warn("Not found cache with post id {}", postId);
-        return null;
+    public void savePostsBatch(List<PostRedisDto> posts) {
+        Map<String, PostRedisDto> keyValueMap = posts.stream()
+                .collect(Collectors.toMap(post -> "posts::" + post.id(), Function.identity()));
+        redisTemplate.opsForValue().multiSet(keyValueMap);
+    }
+
+    public Map<Long, PostRedisDto> findByIds(List<Long> postIds) {
+        List<String> keys = postIds.stream()
+                .map(id -> "posts::" + id)
+                .toList();
+
+        List<Object> cachedObjects = redisTemplate.opsForValue().multiGet(keys);
+
+        Map<Long, PostRedisDto> result = new LinkedHashMap<>();
+        if (cachedObjects != null) {
+            int size = Math.min(postIds.size(), cachedObjects.size());
+            for (int i = 0; i < size; i++) {
+                Object cachedObject = cachedObjects.get(i);
+                if (cachedObject instanceof PostRedisDto dto) {
+                    result.put(postIds.get(i), dto);
+                }
+            }
+        }
+
+        return result;
     }
 
     public void addComment(CommentRedisEvent commentDto) {
-        String key = "post:" + commentDto.postId() + ":comments";
+        String key = KEY_PREFIX + commentDto.postId() + COMMENT_POSTFIX;
         String value = serialize(commentDto);
         long score = commentDto.createdAt().toInstant(ZoneOffset.UTC).getEpochSecond();
 
@@ -64,7 +90,7 @@ public class PostRedisRepository {
     }
 
     public List<CommentRedisEvent> getComments(Long postId) {
-        String key = "post:" + postId + ":comments";
+        String key = KEY_PREFIX + postId + COMMENT_POSTFIX;
         Set<Object> raw = redisTemplate.opsForZSet().range(key, 0, -1);
         if (raw == null || raw.isEmpty()) {
             return Collections.emptyList();
@@ -74,34 +100,68 @@ public class PostRedisRepository {
                 .toList();
     }
 
+    public Map<Long, List<CommentRedisEvent>> getCommentsByIds(List<Long> postIds) {
+        Map<Long, List<CommentRedisEvent>> result = new HashMap<>();
+        postIds.forEach(id -> result.put(id, getComments(id)));
+
+        return result;
+    }
+
     public void incrementLikes(Long postId) {
-        redisTemplate.opsForValue().increment("post:" + postId + ":likes");
+        redisTemplate.opsForValue().increment(KEY_PREFIX + postId + LIKE_POSTFIX);
     }
 
     public void decrementLikes(Long postId) {
-        redisTemplate.opsForValue().decrement("post:" + postId + ":likes");
+        redisTemplate.opsForValue().decrement(KEY_PREFIX + postId + LIKE_POSTFIX);
     }
 
-    public Integer getLikes(Long postId) {
-        Object value = redisTemplate.opsForValue().get("post:" + postId + ":likes");
-        return parseIntegerValue(value);
+    public Map<Long, Integer> getLikesByIds(List<Long> postIds) {
+        List<Object> cachedObjects = findObjectsByIds(postIds, LIKE_POSTFIX);
+
+        Map<Long, Integer> result = new LinkedHashMap<>();
+        if (cachedObjects != null) {
+            int size = Math.min(postIds.size(), cachedObjects.size());
+            for (int i = 0; i < size; i++) {
+                result.put(postIds.get(i), Integer.parseInt(cachedObjects.get(i).toString()));
+            }
+        }
+
+        return result;
+    }
+
+    public void addPostLikesBatch(Map<Long, Integer> likes) {
+        Map<String, Integer> keyValueMap = likes.entrySet().stream()
+                .collect(Collectors.toMap(
+                        e -> KEY_PREFIX + e.getKey() + LIKE_POSTFIX,
+                        Map.Entry::getValue)
+                );
+        redisTemplate.opsForValue().multiSet(keyValueMap);
     }
 
     public void incrementViews(Long postId) {
-        redisTemplate.opsForValue().increment("post:" + postId + ":views");
+        redisTemplate.opsForValue().increment(KEY_PREFIX + postId + VIEW_POSTFIX);
     }
 
-    public Long getViews(Long postId) {
-        Object value = redisTemplate.opsForValue().get("post:" + postId + ":views");
-        return parseLongValue(value);
+    public Map<Long, Long> getViewsByIds(List<Long> postIds) {
+        List<Object> cachedObjects = findObjectsByIds(postIds, VIEW_POSTFIX);
+
+        Map<Long, Long> result = new LinkedHashMap<>();
+        if (cachedObjects != null) {
+            int size = Math.min(postIds.size(), cachedObjects.size());
+            for (int i = 0; i < size; i++) {
+                result.put(postIds.get(i), Long.parseLong(cachedObjects.get(i).toString()));
+            }
+        }
+
+        return result;
     }
 
     public Map<Long, Long> getAllViewCounts() {
-        Set<String> keys = redisTemplate.keys("post:*:views");
+        Set<String> keys = redisTemplate.keys(KEY_PREFIX + "*" + VIEW_POSTFIX);
         Map<Long, Long> result = new HashMap<>();
 
         keys.forEach(key -> {
-            Long postId = Long.valueOf(key.replace("post:", "").replace(":views", ""));
+            Long postId = Long.valueOf(key.replace(KEY_PREFIX, "").replace(VIEW_POSTFIX, ""));
             Object value = redisTemplate.opsForValue().get(key);
             if (value != null) {
                 result.put(postId, Long.valueOf((String) value));
@@ -111,24 +171,13 @@ public class PostRedisRepository {
         return result;
     }
 
-    public void addPostLikes(Long postId, long count) {
-        redisTemplate.opsForValue().set("post:" + postId + ":likes", count);
-    }
-
-    public void addPostViews(Long postId, long count) {
-        redisTemplate.opsForValue().set("post:" + postId + ":views", count);
-    }
-
-    private Long parseLongValue(Object value) {
-        return value == null
-                ? DEFAULT_RETURNING_VALUE
-                : Long.parseLong(value.toString());
-    }
-
-    private Integer parseIntegerValue(Object value) {
-        return value == null
-                ? DEFAULT_RETURNING_VALUE.intValue()
-                : Integer.parseInt(value.toString());
+    public void addPostViewsBatch(Map<Long, Long> views) {
+        Map<String, Long> keyValueMap = views.entrySet().stream()
+                .collect(Collectors.toMap(
+                        entry -> KEY_PREFIX + entry.getKey() + VIEW_POSTFIX,
+                        Map.Entry::getValue)
+                );
+        redisTemplate.opsForValue().multiSet(keyValueMap);
     }
 
     private String serialize(Object object) {
@@ -145,5 +194,13 @@ public class PostRedisRepository {
         } catch (JsonProcessingException e) {
             throw new JsonDeserializationException("Deserialization json %s to comment object error", json);
         }
+    }
+
+    private List<Object> findObjectsByIds(List<Long> ids, String postKey) {
+        List<String> keys = ids.stream()
+                .map(id -> KEY_PREFIX + id + postKey)
+                .toList();
+
+        return redisTemplate.opsForValue().multiGet(keys);
     }
 }

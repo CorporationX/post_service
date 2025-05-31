@@ -3,6 +3,7 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.event.LikeEvent;
+import faang.school.postservice.dto.feed.LikeCountDto;
 import faang.school.postservice.exception.ConcurrentLikeException;
 import faang.school.postservice.exception.DuplicateEntityException;
 import faang.school.postservice.exception.EntityNotFoundException;
@@ -19,10 +20,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -138,8 +141,12 @@ public class LikeService {
         }
     }
 
-    public int getCountLikesOnPost(Long postId) {
-        return likeRepository.countByPostId(postId);
+    public Map<Long, Integer> getCountsLikesByPostIds(List<Long> postIds) {
+        return likeRepository.countLikesByPostIds(postIds).stream()
+                .collect(Collectors.toMap(
+                        LikeCountDto::postId,
+                        LikeCountDto::likeCount
+                ));
     }
 
     private void validateEntityId(Long entityId) {

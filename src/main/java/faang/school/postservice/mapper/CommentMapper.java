@@ -16,6 +16,4 @@ public interface CommentMapper {
     List<CommentDto> toDtoList(List<Comment> comments);
 
     CommentDto eventToDto(CommentRedisEvent event);
-
-    List<CommentDto> eventListToDtoList(List<CommentRedisEvent> eventList);
 }

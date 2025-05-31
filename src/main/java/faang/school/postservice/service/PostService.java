@@ -7,6 +7,7 @@ import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.dto.PostResponseDto;
 import faang.school.postservice.dto.event.HashtagAddingEvent;
 import faang.school.postservice.dto.event.PostViewEvent;
+import faang.school.postservice.dto.feed.ViewCountDto;
 import faang.school.postservice.exception.AsyncPostProcessingException;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.HashtagServiceConnectionException;
@@ -44,6 +45,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @Slf4j
@@ -246,8 +248,12 @@ public class PostService {
         return postRepository.findPostsByAuthorIds(authorIds);
     }
 
-    public long getPostViewCount(Long postId) {
-        return postRepository.findViewsCountById(postId);
+    public Map<Long, Long> getCountViewsByPostIds(List<Long> postIds) {
+        return postRepository.findViewsByPostIds(postIds).stream()
+                .collect(Collectors.toMap(
+                        ViewCountDto::postId,
+                        ViewCountDto::viewCount)
+                );
     }
 
     @Transactional
@@ -257,7 +263,7 @@ public class PostService {
 
         for (int i = 0; i < allIds.size(); i += batchPostViewChanged) {
             List<Long> postIds = allIds.subList(i, Math.min(i + batchPostViewChanged, allIds.size()));
-            List<Post> posts = postRepository.findPostsByIdIn(postIds);
+            List<Post> posts = postRepository.findAllByIdIn(postIds);
 
             posts.forEach(post -> {
                 Long redisViewCount = viewCounts.get(post.getId());
