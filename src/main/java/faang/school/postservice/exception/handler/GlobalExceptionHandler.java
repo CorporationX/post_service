@@ -8,12 +8,14 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.FileProcessException;
 import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.exception.JsonNotReadException;
+import faang.school.postservice.exception.KafkaPublishException;
 import faang.school.postservice.exception.LikeAlreadyExistException;
 import faang.school.postservice.exception.LikeNotFoundException;
 import faang.school.postservice.exception.PostDtoValidationException;
 import faang.school.postservice.exception.PostIdMismatchException;
 import faang.school.postservice.exception.PostNotCorrectedException;
 import faang.school.postservice.exception.PostNotFoundException;
+import faang.school.postservice.exception.UserServiceException;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -105,7 +107,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(AIIntegrationException.class)
-    public ErrorResponse handleAIIntegrationException(AIIntegrationException e) {
+    public ErrorResponse handleAiIntegrationException(AIIntegrationException e) {
         log.error("AIIntegrationException", e);
         return buildResponse(e);
     }
@@ -123,12 +125,26 @@ public class GlobalExceptionHandler {
         return buildResponse(e);
     }
 
+    @ExceptionHandler(UserServiceException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleUserServiceException(UserServiceException e) {
+        log.error("UserServiceException occurred", e);
+        return buildResponse(e);
+    }
+
+    @ExceptionHandler(KafkaPublishException.class)
+    @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
+    public ErrorResponse handleKafkaPublishException(KafkaPublishException e) {
+        log.error("KafkaPublishException occurred", e);
+        return buildResponse(e);
+    }
+
     private ErrorResponse buildResponse(Exception e) {
         log.error(e.getClass().getSimpleName(), e);
         return ErrorResponse.builder()
-                .timeStamp(LocalDateTime.now())
-                .error(e.getClass().getName())
                 .message(e.getMessage())
+                .error(e.getClass().getName())
+                .timeStamp(LocalDateTime.now())
                 .build();
     }
 }

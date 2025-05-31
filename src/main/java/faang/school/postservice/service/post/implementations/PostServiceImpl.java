@@ -2,6 +2,8 @@ package faang.school.postservice.service.post.implementations;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.component.post.PostEventBatchSender;
+import faang.school.postservice.config.kafka.properties.EventQueueProperties;
 import faang.school.postservice.config.post.PostServiceConstants;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.project.ProjectDto;
@@ -14,9 +16,11 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.post.interfaces.PostService;
 import faang.school.postservice.service.post_check.interfaces.PostCheckerService;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.ListUtils;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
@@ -24,11 +28,14 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 
@@ -43,9 +50,19 @@ public class PostServiceImpl implements PostService {
     private final PostMapper postMapper;
     private final ExecutorService postPublishPool;
     private final PlatformTransactionManager transactionManager;
+    private final PostEventBatchSender postEventBatchSender;
+    private final EventQueueProperties eventQueueProperties;
 
     public static final int POST_PUBLISH_POOL_SIZE = 10;
     private final AtomicBoolean isRunning = new AtomicBoolean(false);
+
+    private BlockingQueue<Post> eventQueue;
+
+    @PostConstruct
+    public void initQueue() {
+        this.eventQueue = new LinkedBlockingQueue<>(eventQueueProperties.getQueueSize());
+        log.debug("Event queue initialized with size: {}", eventQueueProperties.getQueueSize());
+    }
 
     @Override
     public CompletableFuture<Void> publishScheduledPosts() {
@@ -152,11 +169,36 @@ public class PostServiceImpl implements PostService {
     @Transactional
     public PostDto publishPost(PostDto postDto) {
         Post post = validateDataForPublication(postDto);
-
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
 
-        return postMapper.toDto(postRepository.save(post));
+        Post savedPost = postRepository.saveAndFlush(post);
+        PostDto resultDto = postMapper.toDto(savedPost);
+
+        eventQueue.offer(savedPost);
+        log.info("Post queued for event dispatching: postId={}", savedPost.getId());
+        return resultDto;
+    }
+
+    @Scheduled(fixedRateString = "${app.event-queue.scheduled-time-ms}")
+    public void processEventQueue() {
+        List<Post> batch = new ArrayList<>();
+        eventQueue.drainTo(batch, eventQueueProperties.getBatchSize());
+
+        if (!batch.isEmpty()) {
+            CompletableFuture.allOf(
+                    batch.stream()
+                            .map(post -> postEventBatchSender.dispatchEventsForPost(post)
+                                    .thenRun(() -> log.info("Successfully dispatched events for post: postId={}",
+                                            post.getId()))
+                                    .exceptionally(throwable -> {
+                                        log.error("Failed to dispatch events for post: postId={}, error={}",
+                                                post.getId(), throwable.getMessage());
+                                        return null;
+                                    }))
+                            .toArray(CompletableFuture[]::new)
+            ).join();
+        }
     }
 
     @Override
@@ -188,28 +230,28 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public List<PostDto> getAuthorPostDrafts(PostDto postDto) {
-        Long authorId = postDto.getAuthorId();
+        long authorId = postDto.getAuthorId();
         return processPosts(postRepository.findByAuthorId(authorId),
                 post -> !post.isPublished() && !post.isDeleted());
     }
 
     @Override
     public List<PostDto> getProjectPostDrafts(PostDto postDto) {
-        Long projectId = postDto.getProjectId();
+        long projectId = postDto.getProjectId();
         return processPosts(postRepository.findByProjectId(projectId),
                 post -> !post.isPublished() && !post.isDeleted());
     }
 
     @Override
     public List<PostDto> getAuthorPublishedPosts(PostDto postDto) {
-        Long authorId = postDto.getAuthorId();
+        long authorId = postDto.getAuthorId();
         return processPosts(postRepository.findByAuthorId(authorId),
                 post -> post.isPublished() && !post.isDeleted());
     }
 
     @Override
     public List<PostDto> getProjectPublishedPosts(PostDto postDto) {
-        Long projectId = postDto.getProjectId();
+        long projectId = postDto.getProjectId();
         return processPosts(postRepository.findByProjectId(projectId),
                 post -> post.isPublished() && !post.isDeleted());
     }

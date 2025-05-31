@@ -8,7 +8,7 @@ import faang.school.postservice.exception.FileProcessException;
 import faang.school.postservice.mapper.post_file.PostFileMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
-import faang.school.postservice.service.amazons3.implementations.AmazonS3ServiceImpl;
+import faang.school.postservice.service.amazons3.interfaces.AmazonS3Service;
 import faang.school.postservice.service.post.interfaces.PostService;
 import faang.school.postservice.service.post_file.interfaces.PostFileService;
 import faang.school.postservice.service.resource.interfaces.ResourceService;
@@ -34,7 +34,7 @@ public class PostFileServiceImpl implements PostFileService {
     private final PostFileValidator postFileValidator;
     private final PostService postService;
     private final ResourceService resourceService;
-    private final AmazonS3ServiceImpl amazonS3Service;
+    private final AmazonS3Service amazonS3Service;
 
     @Override
     @Transactional

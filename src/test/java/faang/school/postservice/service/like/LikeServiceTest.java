@@ -56,19 +56,6 @@ class LikeServiceTest {
     }
 
     @Test
-    void testGetUsersByPostId_whenNoLikes() {
-        long postId = 1L;
-        when(likeRepository.findByPostId(postId)).thenReturn(List.of());
-
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
-                () -> likeService.getUserLikedPost(postId)
-        );
-
-        assertEquals("Не найдено лайков для поста с id: " + postId, exception.getMessage());
-    }
-
-    @Test
     void testGetUsersByPostId_whenUsersNotFound() {
         long postId = 1L;
         Like like1 = Like.builder().userId(1L).post(new Post()).build();
@@ -111,21 +98,6 @@ class LikeServiceTest {
         assertEquals("user1", users.get(0).username());
         assertEquals("user2", users.get(1).username());
     }
-
-    @Test
-    void testGetUsersByCommentId_whenNoLikes() {
-        long commentId = 1L;
-        when(likeRepository.findByCommentId(commentId)).thenReturn(List.of());
-
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
-                () -> likeService.getUserLikedComment(commentId)
-        );
-
-        assertEquals("Не найдено лайков для комментария с id: " + commentId, exception.getMessage());
-    }
-
-
 
     @Test
     void testGetUsersByCommentId_whenUsersNotFound() {

@@ -59,6 +59,13 @@ dependencies {
     implementation("io.minio:minio:8.3.3")
 
     /**
+     * Kafka
+     */
+    implementation("org.springframework.kafka:spring-kafka:3.3.6")
+    implementation("org.apache.kafka:kafka-streams")
+    testImplementation("org.springframework.kafka:spring-kafka-test")
+
+    /**
      * Test containers
      */
     implementation(platform("org.testcontainers:testcontainers-bom:1.17.6"))

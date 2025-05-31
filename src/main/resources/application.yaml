@@ -30,6 +30,55 @@ spring:
         calculations_channel:
           name: calculations_channel
 
+  kafka:
+    bootstrap-servers: localhost:9092
+    topic:
+      post:
+        name: posts
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring:
+          json:
+            add:
+              type:
+                headers: true
+            type:
+              mapping: postFeedEvent:faang.school.urlshortenerservice.event.PostFeedEvent
+          enable:
+            idempotence: true
+          max:
+            in:
+              flight:
+                requests: 5
+          retries: 3
+
+app:
+  retry:
+    user-service:
+      max-attempts: 3
+      delay: 1000
+      multiplier: 2.0
+    kafka:
+      max-attempts: 3
+      delay: 1000
+      multiplier: 2.0
+  batch:
+    max-subscribers: 1000
+    batch-size: 100
+  event-queue:
+    queue-size: 10000
+    scheduled-time-ms: 100
+    batch-size: 50
+
+thread-pools:
+  post-event-executor:
+    core-pool-size: 50
+    max-pool-size: 100
+    queue-capacity: 1000
+    thread-name-prefix: "PostEvent-"
+
 server:
   port: 8081
 
@@ -104,3 +153,4 @@ file-upload:
       rectangular:
         max-long-side-length: 1080
         max-short-side-length: 566
+

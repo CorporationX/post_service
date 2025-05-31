@@ -42,7 +42,7 @@ public class PostController {
     private final PostFileService postFileService;
 
     @PostMapping
-    public ResponseEntity<PostDto> createPostDraft(@RequestBody PostDto postDto) {
+    public ResponseEntity<PostDto> createPostDraft(@RequestBody @NotNull PostDto postDto) {
         if (postDto.getContent() == null || postDto.getContent().isBlank()) {
             throw new PostDtoValidationException(
                     "The content of the post must not be empty");
@@ -52,13 +52,15 @@ public class PostController {
     }
 
     @PostMapping("/publish")
-    public ResponseEntity<PostDto> publishPost(@RequestBody PostDto postDto) {
+    public ResponseEntity<PostDto> publishPost(@RequestBody @NotNull PostDto postDto) {
         validateId(postDto.getId());
-        return ResponseEntity.ok().body(postService.publishPost(postDto));
+        PostDto postDtoResponse = postService.publishPost(postDto);
+
+        return ResponseEntity.ok().body(postDtoResponse);
     }
 
     @PutMapping
-    public ResponseEntity<PostDto> updatePost(@RequestBody PostDto postDto) {
+    public ResponseEntity<PostDto> updatePost(@RequestBody @NotNull PostDto postDto) {
         validateId(postDto.getId());
         if (postDto.getContent() == null || postDto.getContent().isBlank()) {
             throw new PostDtoValidationException(
@@ -68,13 +70,13 @@ public class PostController {
     }
 
     @PostMapping("/delete")
-    public ResponseEntity<PostDto> deletePost(@RequestBody PostDto postDto) {
+    public ResponseEntity<PostDto> deletePost(@RequestBody @NotNull PostDto postDto) {
         validateId(postDto.getId());
         return ResponseEntity.ok().body(postService.deletePost(postDto));
     }
 
     @PostMapping("/get")
-    public ResponseEntity<PostDto> getPost(@RequestBody PostDto postDto) {
+    public ResponseEntity<PostDto> getPost(@RequestBody @NotNull PostDto postDto) {
         validateId(postDto.getId());
         return ResponseEntity.ok().body(postService.getPost(postDto));
     }
@@ -86,7 +88,7 @@ public class PostController {
     }
 
     @PostMapping("/author/drafts")
-    public ResponseEntity<List<PostDto>> getAuthorPostDrafts(@RequestBody PostDto postDto) {
+    public ResponseEntity<List<PostDto>> getAuthorPostDrafts(@RequestBody @NotNull PostDto postDto) {
         validateId(postDto.getAuthorId());
         return ResponseEntity.ok().body(postService.getAuthorPostDrafts(postDto));
     }
@@ -100,7 +102,7 @@ public class PostController {
     }
 
     @PostMapping("/project/drafts")
-    public ResponseEntity<List<PostDto>> getProjectPostDrafts(@RequestBody PostDto postDto) {
+    public ResponseEntity<List<PostDto>> getProjectPostDrafts(@RequestBody @NotNull PostDto postDto) {
         validateId(postDto.getProjectId());
         return ResponseEntity.ok().body(postService.getProjectPostDrafts(postDto));
     }
@@ -113,7 +115,7 @@ public class PostController {
     }
 
     @PostMapping("/author/published")
-    public ResponseEntity<List<PostDto>> getAuthorPosts(@RequestBody PostDto postDto) {
+    public ResponseEntity<List<PostDto>> getAuthorPosts(@RequestBody @NotNull PostDto postDto) {
         validateId(postDto.getAuthorId());
         return ResponseEntity.ok().body(postService.getAuthorPublishedPosts(postDto));
     }
@@ -127,7 +129,7 @@ public class PostController {
     }
 
     @PostMapping("/project/published")
-    public ResponseEntity<List<PostDto>> getProjectPosts(@RequestBody PostDto postDto) {
+    public ResponseEntity<List<PostDto>> getProjectPosts(@RequestBody @NotNull PostDto postDto) {
         validateId(postDto.getProjectId());
         return ResponseEntity.ok().body(postService.getProjectPublishedPosts(postDto));
     }
