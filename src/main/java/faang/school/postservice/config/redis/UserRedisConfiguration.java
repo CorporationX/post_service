@@ -1,7 +1,7 @@
 package faang.school.postservice.config.redis;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import faang.school.postservice.model.PostRedis;
+import faang.school.postservice.model.UserRedis;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -10,16 +10,16 @@ import org.springframework.data.redis.repository.configuration.EnableRedisReposi
 
 @Configuration
 @EnableRedisRepositories(
-        basePackages = "faang.school.postservice.redis_repository.post",
-        redisTemplateRef = "postRedisTemplate")
-public class PostRedisConfiguration extends RedisCacheTemplateBase<PostRedis> {
+        basePackages = "faang.school.postservice.redis_repository.user",
+        redisTemplateRef = "userRedisTemplate")
+public class UserRedisConfiguration extends RedisCacheTemplateBase<UserRedis> {
 
-    public PostRedisConfiguration(RedisConfig redisConfig, ObjectMapper objectMapper) {
+    public UserRedisConfiguration(RedisConfig redisConfig, ObjectMapper objectMapper) {
         super(redisConfig, objectMapper);
     }
 
     @Bean
-    public RedisTemplate<String, PostRedis> postRedisTemplate(RedisConnectionFactory connectionFactory) {
+    public RedisTemplate<String, UserRedis> userRedisTemplate(RedisConnectionFactory connectionFactory) {
         return getRedisTemplate(connectionFactory);
     }
 }

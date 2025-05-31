@@ -3,13 +3,16 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.CreatePostDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.AuthorNotFoundException;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
+import faang.school.postservice.mapper.UserMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.RedisUserBanTopicPublisher;
-import faang.school.postservice.repository.PostRedisRepository;
+import faang.school.postservice.redis_repository.post.PostRedisRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.redis_repository.user.UserRedisRepository;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +20,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
+import java.text.MessageFormat;
 import java.util.List;
 
 @Slf4j
@@ -25,7 +29,9 @@ import java.util.List;
 public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
     private final PostMapper postMapper;
+    private final UserMapper userMapper;
     private final PostRedisRepository postRedisRepository;
+    private final UserRedisRepository userRedisRepository;
 
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
@@ -38,17 +44,26 @@ public class PostServiceImpl implements PostService {
     @Value("${news-feed.posts.redis-ttl:86400}")
     private long postRedisTtl;
 
+    @Value("${news-feed.users.redis-ttl:86400}")
+    private long userRedisTtl;
+
     public CreatePostDto create(CreatePostDto createPostDto) {
         validateContent(createPostDto);
-        validateAuthor(createPostDto.authorId(), createPostDto.projectId());
+        var userDto = validateAuthor(createPostDto.authorId(), createPostDto.projectId());
         var post = postMapper.toEntity(createPostDto);
 
         postRepository.save(post);
         log.info("Post created: {}", post);
 
-        var postRedis = postMapper.toPostRedis(post);
-        postRedis.setTimeToLive(postRedisTtl);
-        postRedisRepository.save(postRedis);
+        if (userDto != null) {
+            var postRedis = postMapper.toPostRedis(post);
+            postRedis.setTimeToLive(postRedisTtl);
+            postRedisRepository.save(postRedis);
+
+            var userRedis = userMapper.toUserRedis(userDto);
+            userRedis.setTimeToLive(userRedisTtl);
+            userRedisRepository.save(userRedis);
+        }
 
         return postMapper.toCreatedPostDto(post);
     }
@@ -77,7 +92,7 @@ public class PostServiceImpl implements PostService {
         }
     }
 
-    private void validateAuthor(Long authorId, Long projectId) {
+    private UserDto validateAuthor(Long authorId, Long projectId) {
         boolean isProject = projectId != null;
         boolean isUser = authorId != null;
 
@@ -85,21 +100,22 @@ public class PostServiceImpl implements PostService {
             throw new IllegalArgumentException("Only one author must be specified: either the user or the project.");
         }
 
-        if (isProject && !existsProject(projectId)) {
-            throw new AuthorNotFoundException("Project with ID " + projectId + " does not exist.");
+        if (isProject) {
+            if (!existsProject(projectId)) {
+                throw new AuthorNotFoundException("Project with ID %d does not exist.".formatted(projectId));
+            }
+
+            return null;
         }
 
-        if (isUser && !existsUser(authorId)) {
-            throw new AuthorNotFoundException("Author with ID " + authorId + " does not exist.");
-        }
+        return getUser(authorId);
     }
 
-    private boolean existsUser(Long authorId) {
+    private UserDto getUser(Long authorId) {
         try {
-            userServiceClient.getUser(authorId);
-            return true;
+            return userServiceClient.getUser(authorId);
         } catch (FeignException e) {
-            return false;
+            throw new AuthorNotFoundException(MessageFormat.format("Author with ID {0} does not exist.", authorId));
         }
     }
 
