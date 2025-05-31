@@ -6,7 +6,10 @@ import faang.school.postservice.dto.like.LikeCommentRequestDto;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.like.LikePostRequestDto;
 import faang.school.postservice.mapper.LikeMapperImpl;
+import faang.school.postservice.rest.ExceptionApiHandler;
 import faang.school.postservice.service.LikeService;
+import faang.school.postservice.util.Utils;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,8 +17,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.client.MockMvcWebTestClient;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static org.hamcrest.Matchers.hasSize;
@@ -36,12 +41,13 @@ class LikeControllerTest {
     private static final Long POST_ID = 30L;
     private static final Long COMMENT_ID = 40L;
 
+    private final Utils utils = new Utils();
     private MockMvc mockMvc;
     @Spy
     private ObjectMapper objectMapper;
     @Mock
     private LikeService likeService;
-    @Mock
+    @Spy
     private UserContext userContext;
     @Spy
     private LikeMapperImpl mapper;
@@ -50,7 +56,13 @@ class LikeControllerTest {
 
     @BeforeEach
     public void setUp() {
+        userContext.setUserId(USER_ID);
         mockMvc = MockMvcBuilders.standaloneSetup(likeController).build();
+    }
+
+    @AfterEach
+    public void cleanUp() {
+        userContext.clear();
     }
 
     @Test
@@ -59,7 +71,6 @@ class LikeControllerTest {
         LikeDto likeDto = getRequestLikePostDto();
         LikeDto resultLikeDto = getResponseLikePostDto();
 
-        when(userContext.getUserId()).thenReturn(USER_ID);
         when(likeService.addPost(likeDto)).thenReturn(resultLikeDto);
 
         mockMvc.perform(post("/likes/post")
@@ -77,17 +88,11 @@ class LikeControllerTest {
 
     @Test
     public void testDeleteLikePostSuccess() throws Exception {
-        LikePostRequestDto requestDto = getPostRequestDto();
         LikeDto likeDto = getRequestLikePostDto();
 
-        when(userContext.getUserId()).thenReturn(USER_ID);
         doNothing().when(likeService).deletePost(likeDto);
 
-        mockMvc.perform(delete("/likes/post")
-                        .content(objectMapper.writeValueAsString(requestDto))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                )
+        mockMvc.perform(delete(utils.format("/likes/post/{}", POST_ID)))
                 .andDo(print())
                 .andExpect(status().is(204))
                 .andExpect(content().string(""));
@@ -99,7 +104,6 @@ class LikeControllerTest {
         LikeDto likeDto = getRequestLikeCommentDto();
         LikeDto resultLikeDto = getResponseLikeCommentDto();
 
-        when(userContext.getUserId()).thenReturn(USER_ID);
         when(likeService.addComment(likeDto)).thenReturn(resultLikeDto);
 
         mockMvc.perform(post("/likes/comment")
@@ -116,21 +120,29 @@ class LikeControllerTest {
     }
 
     @Test
-    public void testRemoveUserCommentSuccess() throws Exception {
-        LikeCommentRequestDto requestDto = getCommentRequestDto();
+    public void testDeleteUserCommentSuccess() throws Exception {
         LikeDto likeDto = getRequestLikeCommentDto();
 
-        when(userContext.getUserId()).thenReturn(USER_ID);
         doNothing().when(likeService).deleteComment(likeDto);
 
-        mockMvc.perform(delete("/likes/comment")
-                        .content(objectMapper.writeValueAsString(requestDto))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                )
+        mockMvc.perform(delete(utils.format("/likes/comment/{}", COMMENT_ID)))
                 .andDo(print())
                 .andExpect(status().is(204))
                 .andExpect(content().string(""));
+    }
+
+    @Test
+    public void testMissingUserIdInHeader() {
+        LikeController singleLikeController = new LikeController(likeService, new UserContext(), mapper);
+        ExceptionApiHandler exceptionApiHandler = new ExceptionApiHandler(objectMapper);
+
+        MockMvcWebTestClient.bindToController(singleLikeController)
+                .controllerAdvice(exceptionApiHandler)
+                .build()
+                .delete()
+                .uri(utils.format("/likes/comment/{}", COMMENT_ID))
+                .exchange()
+                .expectStatus().isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 
     private LikePostRequestDto getPostRequestDto() {

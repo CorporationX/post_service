@@ -22,6 +22,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
     implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.cloud:spring-cloud-starter-openfeign:4.0.2")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
@@ -122,7 +123,6 @@ val jacocoClassExclude = listOf(
         "faang.school.postservice.dto.*",
         "faang.school.postservice.mapper.*",
         "faang.school.postservice.exception.ErrorResponse",
-        "faang.school.postservice.exception.UnauthorizedException",
         "faang.school.postservice.PostServiceApp",
         "faang.school.postservice.client.Feign*",
         "faang.school.postservice.rest.ExceptionApiHandler"

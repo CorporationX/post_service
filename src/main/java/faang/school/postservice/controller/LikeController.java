@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -43,14 +44,12 @@ public class LikeController {
         return likeMapper.toPostResponseDto(resultLikeDto);
     }
 
-    @DeleteMapping("/post")
+    @DeleteMapping("/post/{postId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Delete user like from post", description = "Delete user like from post")
-    public void deletePost(
-            @Valid @RequestBody LikePostRequestDto likePostRequestDto
-    ) {
-        log.debug("delete like from post request: {}", likePostRequestDto);
-        LikeDto likeDto = getLikeDto(likePostRequestDto);
+    public void deletePost(@PathVariable Long postId) {
+        log.debug("delete like from post. postId={}", postId);
+        LikeDto likeDto = getPostLikeDto(postId);
         likeService.deletePost(likeDto);
     }
 
@@ -66,14 +65,12 @@ public class LikeController {
         return likeMapper.toCommentResponseDto(resultLikeDto);
     }
 
-    @DeleteMapping("/comment")
+    @DeleteMapping("/comment/{commentId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Delete user like from comment", description = "Delete user like from comment")
-    public void deleteComment(
-            @Valid @RequestBody LikeCommentRequestDto likeCommentRequestDto
-    ) {
-        log.debug("delete like from comment request: {}", likeCommentRequestDto);
-        LikeDto likeDto = getLikeDto(likeCommentRequestDto);
+    public void deleteComment(@PathVariable Long commentId) {
+        log.debug("delete like from comment. commentId: {}", commentId);
+        LikeDto likeDto = getCommentLikeDto(commentId);
         likeService.deleteComment(likeDto);
     }
 
@@ -88,6 +85,20 @@ public class LikeController {
         return LikeDto.builder()
                 .userId(userContext.getUserId())
                 .commentId(likeCommentRequestDto.commentId())
+                .build();
+    }
+
+    private LikeDto getPostLikeDto(Long postId) {
+        return LikeDto.builder()
+                .userId(userContext.getUserId())
+                .postId(postId)
+                .build();
+    }
+
+    private LikeDto getCommentLikeDto(Long commentId) {
+        return LikeDto.builder()
+                .userId(userContext.getUserId())
+                .commentId(commentId)
                 .build();
     }
 }
