@@ -1,6 +1,5 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.newsfeed.KafkaPostViewEvent;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.newsfeed.producer.OutboxPostViewProducer;
@@ -9,6 +8,7 @@ import faang.school.postservice.validator.UserValidator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,13 +18,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class PostViewService {
 
     private final PostRepository postRepository;
-    private final UserContext userContext;
     private final UserValidator userValidator;
     private final OutboxPostViewProducer outboxPostViewProducer;
 
+    @Async
     @Transactional
-    public void recordPostView(Long postId) {
-        Long userId = userContext.getUserId();
+    public void recordPostView(Long postId, Long userId) {
         userValidator.validateUserExist(userId);
 
         Post post = postRepository.findById(postId)

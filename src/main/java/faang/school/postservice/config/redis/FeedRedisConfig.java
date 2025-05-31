@@ -26,18 +26,18 @@ public class FeedRedisConfig {
 
     @Bean
     public LettuceConnectionFactory lettuceConnectionFactory() {
-        log.info("Creating LettuceConnectionFactory with standalone configuration and connection pool");
+        log.info("Configuring Redis Lettuce connection to: {}:{}",
+                feedRedisProperties.getHost(), feedRedisProperties.getPort());
         var factory = new LettuceConnectionFactory(
                 createRedisStandaloneConfiguration(),
                 createLettuceClientConfiguration());
-        log.info("LettuceConnectionFactory created for host={}, port={}",
-                feedRedisProperties.getHost(), feedRedisProperties.getPort());
+        log.debug("LettuceConnectionFactory for feed Redis created");
         return factory;
     }
 
     @Bean(name = "feedRedisTemplate")
     public RedisTemplate<String, Object> feedRedisTemplate(LettuceConnectionFactory connectionFactory) {
-        log.info("Creating RedisTemplate using LettuceConnectionFactory");
+        log.debug("Creating RedisTemplate...");
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         var stringSerializer = new StringRedisSerializer();
         var jsonSerializer = new GenericJackson2JsonRedisSerializer();
@@ -47,41 +47,41 @@ public class FeedRedisConfig {
         template.setValueSerializer(jsonSerializer);
         template.setHashValueSerializer(jsonSerializer);
         template.setEnableTransactionSupport(true);
-        log.info("RedisTemplate configured successfully and ready to use");
+        log.debug("RedisTemplate configured successfully");
         return template;
     }
 
     @Bean
     public StringRedisTemplate stringRedisTemplate(LettuceConnectionFactory lettuceConnectionFactory) {
-        log.info("Creating StringRedisTemplate using LettuceConnectionFactory");
+        log.debug("Creating StringRedisTemplate...");
         StringRedisTemplate template = new StringRedisTemplate();
         template.setConnectionFactory(lettuceConnectionFactory);
-        log.info("StringRedisTemplate configured successfully");
+        log.debug("StringRedisTemplate configured successfully");
         return template;
     }
 
     private RedisStandaloneConfiguration createRedisStandaloneConfiguration() {
         String host = feedRedisProperties.getHost();
         Integer port = feedRedisProperties.getPort();
-        log.info("Creating Redis connection factory for {}:{}", host, port);
+        log.debug("Creating RedisStandaloneConfiguration for {}:{}", host, port);
         return new RedisStandaloneConfiguration(host, port);
     }
 
     private LettuceClientConfiguration createLettuceClientConfiguration() {
         Long timeout = feedRedisProperties.getTimeout();
-        log.info("Creating LettuceClientConfiguration with timeout {} ms and connection pool", timeout);
+        log.debug("Creating LettuceClientConfiguration with timeout {} ms and connection pool", timeout);
         var config = LettucePoolingClientConfiguration.builder()
                 .poolConfig(createLettucePoolConfig())
                 .commandTimeout(Duration.ofMillis(timeout))
                 .shutdownTimeout(Duration.ofMillis(timeout))
                 .build();
-        log.info("LettuceClientConfiguration created");
+        log.debug("LettuceClientConfiguration created");
         return config;
     }
 
     private GenericObjectPoolConfig<?> createLettucePoolConfig() {
         FeedRedisProperties.LettucePool pool = feedRedisProperties.getLettucePool();
-        log.info("Configuring GenericObjectPoolConfig: maxTotal={}, maxIdle={}, minIdle={}, maxWait={}ms",
+        log.debug("Configuring Lettuce Pool: maxTotal={}, maxIdle={}, minIdle={}, maxWait={}ms",
                 pool.getMaxTotal(), pool.getMaxIdle(), pool.getMinIdle(), pool.getMaxWait());
         var poolConfig = new GenericObjectPoolConfig<>();
         poolConfig.setMaxTotal(pool.getMaxTotal());

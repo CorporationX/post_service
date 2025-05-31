@@ -7,6 +7,7 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.redis.RedisKeyConstants;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,22 +34,46 @@ public class FeedService {
     private final UserContext userContext;
     private final UserServiceClient userServiceClient;
 
-    private static final String FEED_KEY_PREFIX = "feed:";
-
     public List<PostDto> getFeed(int page, int size) {
         Long userId = userContext.getUserId();
+
+        if (!userExists(userId)) {
+            return Collections.emptyList();
+        }
+
+        List<Long> postIds = fetchPostIdsFromCache(userId, page, size);
+        if (postIds.isEmpty()) {
+            log.info("No post IDs found in cache for user {} or feed is empty.", userId);
+            return Collections.emptyList();
+        }
+
+        List<Post> posts = fetchPostsByIds(postIds);
+        if (posts.isEmpty()) {
+            log.warn("No posts found in repository for IDs: {}. Cache might be stale.", postIds);
+            return Collections.emptyList();
+        }
+
+        List<PostDto> postDtos = mapPostsToDtoAndPreserveOrder(posts, postIds);
+        log.info("Retrieved {} posts for feed of user {}", postDtos.size(), userId);
+        return postDtos;
+    }
+
+    private boolean userExists(Long userId) {
         try {
             UserDto user = userServiceClient.getUser(userId);
             if (user == null) {
                 log.warn("User with id {} not found via UserServiceClient", userId);
-                return Collections.emptyList();
+                return false;
             }
+            return true;
         } catch (Exception e) {
             log.error("Error fetching user {} from UserServiceClient: {}", userId, e.getMessage());
-            return Collections.emptyList();
+            return false;
         }
+    }
 
-        String feedKey = FEED_KEY_PREFIX + userId;
+    private List<Long> fetchPostIdsFromCache(Long userId, int page, int size) {
+        String feedKey = RedisKeyConstants.FEED_KEY_PREFIX.getValue() + userId;
         long start = (long) page * size;
         long end = start + size - 1;
 
@@ -56,44 +81,46 @@ public class FeedService {
                 .reverseRangeWithScores(feedKey, start, end);
 
         if (feedItemsWithScores == null || feedItemsWithScores.isEmpty()) {
-            log.info("Feed for user {} is empty or not found in cache.", userId);
+            log.info("Feed for user {} is empty or not found in cache at page {}, size {}.", userId, page, size);
             return Collections.emptyList();
         }
+        return mapFeedItemsToPostIds(feedItemsWithScores, userId);
+    }
 
-        List<Long> postIds = feedItemsWithScores.stream()
-                .map(item -> {
-                    if (item.getValue() instanceof KafkaTimePostIdEvent event) {
-                        return event.id();
-                    } else if (item.getValue() instanceof Number num) {
-                        return num.longValue();
-                    }
-
-                    log.warn("Unexpected object type in feed for user {}: {}",
-                            userId, Objects.requireNonNull(item.getValue()).getClass().getName());
-                    return null;
-                })
-                .filter(java.util.Objects::nonNull)
+    private List<Long> mapFeedItemsToPostIds(Set<ZSetOperations.TypedTuple<Object>> feedItemsWithScores, Long userId) {
+        return feedItemsWithScores.stream()
+                .map(item -> convertFeedItemToPostId(item.getValue(), userId))
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
+    }
 
+    private Long convertFeedItemToPostId(Object feedItemValue, Long userId) {
+        if (feedItemValue instanceof KafkaTimePostIdEvent event) {
+            return event.id();
+        } else if (feedItemValue instanceof Number num) {
+            return num.longValue();
+        }
+        log.warn("Unexpected object type in feed for user {}: {}",
+                userId, feedItemValue != null ? feedItemValue.getClass().getName() : "null");
+        return null;
+    }
+
+    private List<Post> fetchPostsByIds(List<Long> postIds) {
         if (postIds.isEmpty()) {
             return Collections.emptyList();
         }
-
         Iterable<Post> postsIterable = postRepository.findAllById(postIds);
+        return StreamSupport.stream(postsIterable.spliterator(), false).toList();
+    }
 
-        List<Post> posts = StreamSupport.stream(postsIterable.spliterator(), false)
-                .toList();
-
+    private List<PostDto> mapPostsToDtoAndPreserveOrder(List<Post> posts, List<Long> orderedPostIds) {
         Map<Long, Post> postMap = posts.stream()
                 .collect(Collectors.toMap(Post::getId, post -> post));
 
-        List<PostDto> postDtos = postIds.stream()
+        return orderedPostIds.stream()
                 .map(postMap::get)
-                .filter(java.util.Objects::nonNull)
+                .filter(Objects::nonNull)
                 .map(postMapper::toDto)
-                .toList();
-
-        log.info("Retrieved {} posts for feed of user {}", postDtos.size(), userId);
-        return postDtos;
+                .collect(Collectors.toList());
     }
 }

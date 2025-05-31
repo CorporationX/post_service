@@ -23,24 +23,24 @@ import java.util.concurrent.TimeUnit;
 public class RedisReconnectionService {
 
     private final StringRedisTemplate stringRedisTemplate;
-    private final CacheWarmerService cacheWarmerService;
+    private final CacheWarmer cacheWarmer;
     private final RedisReconnectionProperties redisReconnectionProperties;
     private final ThreadPoolTaskScheduler scheduler;
 
+    private final Object reconnectionLock = new Object();
+    private ScheduledFuture<?> reconnectionScheduledFuture;
+
     public RedisReconnectionService(
             StringRedisTemplate stringRedisTemplate,
-            CacheWarmerService cacheWarmerService,
+            CacheWarmer cacheWarmer,
             RedisReconnectionProperties redisReconnectionProperties,
             @Qualifier("redisReconnectionScheduler") ThreadPoolTaskScheduler scheduler
     ) {
         this.stringRedisTemplate = stringRedisTemplate;
-        this.cacheWarmerService = cacheWarmerService;
+        this.cacheWarmer = cacheWarmer;
         this.redisReconnectionProperties = redisReconnectionProperties;
         this.scheduler = scheduler;
     }
-
-    private final Object reconnectionLock = new Object();
-    private ScheduledFuture<?> reconnectionScheduledFuture;
 
     @Scheduled(fixedRateString = "#{@redisReconnectionProperties.healthCheckScheduler.fixedRateMs}")
     public void scheduledConnectionCheck() {
@@ -67,19 +67,6 @@ public class RedisReconnectionService {
         }
     }
 
-    public void pingConnection() {
-        try {
-            stringRedisTemplate.execute((RedisCallback<String>) connection -> {
-                connection.ping();
-                return null;
-            });
-            log.debug("Redis ping successful");
-        } catch (RedisConnectionException ex) {
-            log.error("Redis ping failed", ex);
-            throw ex;
-        }
-    }
-
     @Retryable(
             retryFor = {RedisUnavailableException.class},
             backoff = @Backoff(
@@ -100,7 +87,7 @@ public class RedisReconnectionService {
 
             if (size != null && size < redisReconnectionProperties.getMinCacheKeys()) {
                 log.info("Redis cache is empty after reconnection. Warming up cache...");
-                cacheWarmerService.warmUpCache();
+                cacheWarmer.warmUpCache();
             }
         } catch (RedisConnectionException ex) {
             log.error("Redis reconnection failed");
@@ -114,6 +101,19 @@ public class RedisReconnectionService {
         log.error("Redis reconnection attempts exhausted. Switching to scheduled retry mode", ex);
         setRedisUnavailable(true);
         startReconnectionTaskIfNeeded();
+    }
+
+    private void pingConnection() {
+        try {
+            stringRedisTemplate.execute((RedisCallback<String>) connection -> {
+                connection.ping();
+                return null;
+            });
+            log.debug("Redis ping successful");
+        } catch (RedisConnectionException ex) {
+            log.error("Redis ping failed", ex);
+            throw ex;
+        }
     }
 
     private void startReconnectionTaskIfNeeded() {

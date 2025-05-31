@@ -176,6 +176,11 @@ task-executor:
     thread-name-prefix: "scheduled-task-"
     daemon: true
     wait-for-tasks-to-complete-on-shutdown: true
+  outbox-event-publisher-task:
+    core-pool-size: 4
+    max-pool-size: 8
+    queue-capacity: 50
+    thread-name-prefix: "outbox-event-publisher-"
 
 comment-img:
   max-size-bytes: 5242880
@@ -222,3 +227,10 @@ feed:
   post-ttl: 259200
   event-id-ttl: 3600
   cache-warmer-user-batch-size: 50
+
+outbox:
+  publisher:
+    threshold-days: 7
+    page-size: 20
+    interval: 5000
+    cleanup-cron: "0 0 3 * * *"

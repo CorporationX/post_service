@@ -1,9 +1,11 @@
 package faang.school.postservice.config.properties;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -28,11 +30,11 @@ public class FeedRedisProperties {
     private Long timeout;
 
     @NotNull
+    @Valid
     private LettucePool lettucePool = new LettucePool();
 
     @Getter
     @Setter
-    @Validated
     public static class LettucePool {
 
         @NotNull
@@ -40,15 +42,15 @@ public class FeedRedisProperties {
         private Integer maxTotal;
 
         @NotNull
-        @Min(0)
+        @PositiveOrZero
         private Integer maxIdle;
 
         @NotNull
-        @Min(0)
+        @PositiveOrZero
         private Integer minIdle;
 
         @NotNull
-        @Min(0)
+        @PositiveOrZero
         private Integer maxWait;
     }
 }

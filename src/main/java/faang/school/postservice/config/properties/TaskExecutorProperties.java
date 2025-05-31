@@ -1,5 +1,6 @@
 package faang.school.postservice.config.properties;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -16,17 +17,23 @@ import org.springframework.validation.annotation.Validated;
 public class TaskExecutorProperties {
 
     @NotNull
+    @Valid
     private FileUpload fileUpload;
 
     @NotNull
+    @Valid
     private RedisReconnect redisReconnect;
 
     @NotNull
+    @Valid
     private ScheduledTask scheduledTask;
+
+    @NotNull
+    @Valid
+    private OutboxEventPublisherTask outboxEventPublisherTask;
 
     @Getter
     @Setter
-    @Validated
     public static class FileUpload {
 
         @NotNull
@@ -44,7 +51,6 @@ public class TaskExecutorProperties {
 
     @Getter
     @Setter
-    @Validated
     public static class RedisReconnect {
 
         @NotNull
@@ -70,7 +76,6 @@ public class TaskExecutorProperties {
 
     @Getter
     @Setter
-    @Validated
     public static class ScheduledTask {
 
         @NotNull
@@ -89,5 +94,25 @@ public class TaskExecutorProperties {
 
         @NotNull
         private Boolean waitForTasksToCompleteOnShutdown;
+    }
+
+    @Getter
+    @Setter
+    public static class OutboxEventPublisherTask {
+
+        @NotNull
+        @Min(1)
+        private Integer corePoolSize;
+
+        @NotNull
+        @Min(1)
+        private Integer maxPoolSize;
+
+        @NotNull
+        @PositiveOrZero
+        private Integer queueCapacity;
+
+        @NotBlank
+        private String threadNamePrefix;
     }
 }

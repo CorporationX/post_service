@@ -1,8 +1,10 @@
 package faang.school.postservice.service;
 
 import com.google.common.collect.Lists;
+import faang.school.postservice.client.SubscriptionClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.ModerationProperties;
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.newsfeed.KafkaPostEvent;
 import faang.school.postservice.dto.newsfeed.post.CreatePostRequest;
 import faang.school.postservice.dto.newsfeed.post.PostResponseDto;
@@ -39,8 +41,11 @@ public class PostService {
     private final AsyncModerationService asyncModerationService;
     private final ModerationProperties moderationProperties;
     private final UserServiceClient userServiceClient;
+    private final SubscriptionClient subscriptionClient;
     private final PostMapper postMapper;
     private final OutboxPostProducer outboxPostProducer;
+    private final PostViewService postViewService;
+    private final UserContext userContext;
 
     private static final int BATCH_SIZE = 1000;
 
@@ -56,7 +61,7 @@ public class PostService {
         Post post = postMapper.toEntity(request);
         post = postRepository.save(post);
 
-        List<Long> subscriberIds = userServiceClient.getFollowerIds(post.getAuthorId());
+        List<Long> subscriberIds = subscriptionClient.getFollowerIds(post.getAuthorId());
 
         KafkaPostEvent kafkaPostEvent = KafkaPostEvent.builder()
                 .postId(post.getId())
@@ -103,6 +108,23 @@ public class PostService {
 
         log.info("Get post with id {}", postId);
         return post;
+    }
+
+    public PostResponseDto getPostForUserViewing(Long postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new faang.school.postservice.exception.EntityNotFoundException(POST, postId));
+
+        Long currentUserId = userContext.getUserIdOptional()
+                .orElseThrow(() -> new IllegalStateException("User ID not found in context for recording post view"));
+
+        try {
+            postViewService.recordPostView(postId, currentUserId);
+            log.debug("Post view recording initiated for post ID: {}", postId);
+        } catch (Exception e) {
+            log.error("Failed to record post view for post ID: {}. Error: {}", postId, e.getMessage());
+        }
+
+        return postMapper.toResponseDto(post);
     }
 
     @Retryable(value = Exception.class, maxAttempts = 3, backoff = @Backoff(delay = 2000, multiplier = 2))

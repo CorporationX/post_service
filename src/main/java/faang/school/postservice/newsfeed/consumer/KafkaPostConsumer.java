@@ -30,14 +30,22 @@ public class KafkaPostConsumer extends AbstractKafkaConsumer<KafkaPostEvent> {
                 event.publishedAt().toInstant(ZoneOffset.UTC).toEpochMilli()
         );
 
-        for (Long subscriberId : subscribersIds) {
+        subscribersIds.forEach(subscriberId -> {
             try {
                 redisCacheService.addToFeed(subscriberId, timePostIdEvent);
             } catch (Exception e) {
                 log.error("Failed to add post {} to feed for subscriber {} due to: {}",
                         event.postId(), subscriberId, e.getMessage(), e);
             }
+        });
+
+        try {
+            redisCacheService.addToFeed(event.userId(), timePostIdEvent);
+        } catch (Exception e) {
+            log.error("Failed to add post {} to feed for author {} due to: {}",
+                    event.postId(), event.userId(), e.getMessage(), e);
         }
+
         log.info("Distributed post {} to {} subscribers' feeds.", event.postId(), subscribersIds.size());
         redisCacheService.addToFeed(event.userId(), timePostIdEvent);
     }

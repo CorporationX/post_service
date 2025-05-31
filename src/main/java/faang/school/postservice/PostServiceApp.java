@@ -7,6 +7,7 @@ import faang.school.postservice.config.ModerationProperties;
 import faang.school.postservice.config.properties.FeedProperties;
 import faang.school.postservice.config.properties.FeedRedisProperties;
 import faang.school.postservice.config.properties.KafkaProperties;
+import faang.school.postservice.config.properties.OutboxEventPublisherProperties;
 import faang.school.postservice.config.properties.RedisProperties;
 import faang.school.postservice.config.properties.TaskExecutorProperties;
 import org.springframework.boot.Banner;
@@ -15,11 +16,13 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Bean;
+import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
+@EnableKafka
 @EnableScheduling
 @EnableAsync
 @EnableRetry
@@ -30,7 +33,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
         TaskExecutorProperties.class,
         KafkaProperties.class,
         FeedRedisProperties.class,
-        FeedProperties.class
+        FeedProperties.class,
+        OutboxEventPublisherProperties.class
 })
 public class PostServiceApp {
     public static void main(String[] args) {

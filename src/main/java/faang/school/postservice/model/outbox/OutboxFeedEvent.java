@@ -4,8 +4,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import lombok.AllArgsConstructor;
@@ -29,6 +29,7 @@ import java.util.UUID;
 public class OutboxFeedEvent {
 
     @Id
+    @GeneratedValue
     @Column(name = "id", nullable = false)
     private UUID id;
 
@@ -47,7 +48,7 @@ public class OutboxFeedEvent {
     private String payload;
 
     @Column(name = "processed", nullable = false)
-    private boolean processed;
+    private boolean processed = false;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -59,15 +60,4 @@ public class OutboxFeedEvent {
     @Version
     @Column(name = "version")
     private Long version;
-
-    @PrePersist
-    protected void onCreate() {
-        if (id == null) {
-            id = UUID.randomUUID();
-        }
-        if (createdAt == null) {
-            createdAt = LocalDateTime.now();
-        }
-        processed = false;
-    }
 }

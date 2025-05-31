@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
@@ -19,9 +18,22 @@ public class TaskExecutorConfig {
     @Bean
     public ThreadPoolTaskExecutor taskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(taskExecutorProperties.getFileUpload().getCorePoolSize());
-        executor.setMaxPoolSize(taskExecutorProperties.getFileUpload().getMaxPoolSize());
-        executor.setQueueCapacity(taskExecutorProperties.getFileUpload().getQueueCapacity());
+        var props = taskExecutorProperties.getFileUpload();
+        executor.setCorePoolSize(props.getCorePoolSize());
+        executor.setMaxPoolSize(props.getMaxPoolSize());
+        executor.setQueueCapacity(props.getQueueCapacity());
+        executor.initialize();
+        return executor;
+    }
+
+    @Bean(name = "outboxEventPublisherExecutor")
+    public ThreadPoolTaskExecutor outboxEventPublisherExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        var props = taskExecutorProperties.getOutboxEventPublisherTask();
+        executor.setCorePoolSize(props.getCorePoolSize());
+        executor.setMaxPoolSize(props.getMaxPoolSize());
+        executor.setQueueCapacity(props.getQueueCapacity());
+        executor.setThreadNamePrefix(props.getThreadNamePrefix());
         executor.initialize();
         return executor;
     }
@@ -29,26 +41,27 @@ public class TaskExecutorConfig {
     @Bean(name = "redisReconnectionScheduler")
     public ThreadPoolTaskScheduler redisReconnectionScheduler() {
         ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
-        scheduler.setPoolSize(1);
-        scheduler.setThreadNamePrefix("redis-reconnect-");
-        scheduler.setDaemon(true);
-        scheduler.setRemoveOnCancelPolicy(true);
+        var props = taskExecutorProperties.getRedisReconnect();
+        scheduler.setPoolSize(props.getPoolSize());
+        scheduler.setThreadNamePrefix(props.getThreadNamePrefix());
+        scheduler.setDaemon(props.getDaemon());
+        scheduler.setRemoveOnCancelPolicy(props.getRemoveOnCancelPolicy());
         scheduler.setErrorHandler(t -> log.error("Error in Redis reconnection task", t));
-        scheduler.setWaitForTasksToCompleteOnShutdown(true);
-        scheduler.setAwaitTerminationSeconds(10);
+        scheduler.setWaitForTasksToCompleteOnShutdown(props.getWaitForTasksToCompleteOnShutdown());
+        scheduler.setAwaitTerminationSeconds(props.getAwaitTerminationSeconds());
         return scheduler;
     }
 
-    @Bean
-    @Primary
-    public ThreadPoolTaskScheduler taskScheduler() {
+    @Bean(name = "scheduledTaskScheduler")
+    public ThreadPoolTaskScheduler scheduledTaskScheduler() {
         ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
-        scheduler.setPoolSize(8);
-        scheduler.setThreadNamePrefix("scheduled-task-");
-        scheduler.setDaemon(true);
+        var props = taskExecutorProperties.getScheduledTask();
+        scheduler.setPoolSize(props.getPoolSize());
+        scheduler.setThreadNamePrefix(props.getThreadNamePrefix());
+        scheduler.setDaemon(props.getDaemon());
         scheduler.setErrorHandler(t -> log.error("Error in scheduled task", t));
-        scheduler.setWaitForTasksToCompleteOnShutdown(true);
-        scheduler.setAwaitTerminationSeconds(10);
+        scheduler.setWaitForTasksToCompleteOnShutdown(props.getWaitForTasksToCompleteOnShutdown());
+        scheduler.setAwaitTerminationSeconds(props.getAwaitTerminationSeconds());
         return scheduler;
     }
 }

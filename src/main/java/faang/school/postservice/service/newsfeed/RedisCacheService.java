@@ -6,6 +6,7 @@ import faang.school.postservice.dto.newsfeed.KafkaLikeEvent;
 import faang.school.postservice.dto.newsfeed.KafkaPostViewEvent;
 import faang.school.postservice.dto.newsfeed.KafkaTimePostIdEvent;
 import faang.school.postservice.exception.RedisCacheException;
+import faang.school.postservice.model.redis.RedisKeyConstants;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -22,15 +23,8 @@ public class RedisCacheService {
     private final RedisTemplate<String, Object> feedRedisTemplate;
     private final FeedProperties feedProperties;
 
-    private static final String FEED_KEY_PREFIX = "feed:";
-    private static final String POST_KEY_PREFIX = "post:";
-    private static final String LIKES_SUFFIX = ":likes";
-    private static final String VIEWS_SUFFIX = ":views";
-    private static final String COMMENTS_SUFFIX = ":comments";
-    private static final String PROCESSED_PREFIX = "processed:";
-
     public void addToFeed(Long userId, KafkaTimePostIdEvent event) {
-        String key = FEED_KEY_PREFIX + userId;
+        String key = RedisKeyConstants.FEED_KEY_PREFIX.getValue() + userId;
         try {
             feedRedisTemplate.opsForZSet().add(key, event.id(), event.publishedAt());
             feedRedisTemplate.opsForZSet().removeRange(key, 0, -feedProperties.getMaxFeedSize() - 1);
@@ -42,7 +36,8 @@ public class RedisCacheService {
     }
 
     public void addLikeToPost(KafkaLikeEvent like) {
-        String key = POST_KEY_PREFIX + like.postId() + LIKES_SUFFIX;
+        String key = RedisKeyConstants.POST_KEY_PREFIX.getValue() +
+                like.postId() + RedisKeyConstants.LIKES_SUFFIX.getValue();
         try {
             feedRedisTemplate.opsForSet().add(key, like.userId());
             feedRedisTemplate.expire(key, feedProperties.getPostTtl(), TimeUnit.SECONDS);
@@ -53,7 +48,8 @@ public class RedisCacheService {
     }
 
     public void addViewToPost(KafkaPostViewEvent view) {
-        String key = POST_KEY_PREFIX + view.postId() + VIEWS_SUFFIX;
+        String key = RedisKeyConstants.POST_KEY_PREFIX.getValue() +
+                view.postId() + RedisKeyConstants.VIEWS_SUFFIX.getValue();
         try {
             feedRedisTemplate.opsForHyperLogLog().add(key, view.userId());
             feedRedisTemplate.expire(key, feedProperties.getPostTtl(), TimeUnit.SECONDS);
@@ -64,7 +60,8 @@ public class RedisCacheService {
     }
 
     public void addCommentToPost(KafkaCommentEvent comment) {
-        String key = POST_KEY_PREFIX + comment.postId() + COMMENTS_SUFFIX;
+        String key = RedisKeyConstants.POST_KEY_PREFIX.getValue() +
+                comment.postId() + RedisKeyConstants.COMMENTS_SUFFIX.getValue();
         try {
             feedRedisTemplate.opsForList().leftPush(key, comment);
             feedRedisTemplate.opsForList().trim(key, 0, feedProperties.getMaxComments() - 1);
@@ -76,7 +73,7 @@ public class RedisCacheService {
     }
 
     public boolean isAlreadyProcessed(UUID eventId) {
-        String key = PROCESSED_PREFIX + eventId;
+        String key = RedisKeyConstants.PROCESSED_PREFIX.getValue() + eventId;
         try {
             Boolean result = feedRedisTemplate.opsForValue().setIfAbsent(key, "1",
                     feedProperties.getEventIdTtl(), TimeUnit.SECONDS);
@@ -88,7 +85,7 @@ public class RedisCacheService {
     }
 
     public void markAsProcessed(UUID eventId) {
-        String key = PROCESSED_PREFIX + eventId;
+        String key = RedisKeyConstants.PROCESSED_PREFIX.getValue() + eventId;
         try {
             feedRedisTemplate.opsForValue().set(key, "1", feedProperties.getEventIdTtl(), TimeUnit.SECONDS);
         } catch (Exception e) {

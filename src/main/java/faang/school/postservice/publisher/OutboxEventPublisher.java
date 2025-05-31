@@ -1,64 +1,68 @@
 package faang.school.postservice.publisher;
 
+import faang.school.postservice.config.properties.OutboxEventPublisherProperties;
 import faang.school.postservice.exception.OutboxPublishException;
-import faang.school.postservice.mapper.OutboxEventMapper;
 import faang.school.postservice.model.outbox.OutboxFeedEvent;
 import faang.school.postservice.repository.outbox.OutboxRepository;
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 @Component
-@RequiredArgsConstructor
 @Slf4j
 public class OutboxEventPublisher {
 
-    private static final int THRESHOLD_DAYS = 7;
-    private static final int PAGE_SIZE = 30;
-    private static final int MAX_PARALLELISM = 10;
-
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private final OutboxRepository outboxRepository;
-    private final OutboxEventMapper outboxEventMapper;
+    private final ThreadPoolTaskExecutor executor;
+    private final OutboxEventPublisherProperties properties;
 
-    private final ExecutorService executor = Executors.newFixedThreadPool(MAX_PARALLELISM);
+    public OutboxEventPublisher(KafkaTemplate<String, Object> kafkaTemplate,
+                                OutboxRepository outboxRepository,
+                                @Qualifier("outboxEventPublisherExecutor") ThreadPoolTaskExecutor executor,
+                                OutboxEventPublisherProperties properties) {
+        this.kafkaTemplate = kafkaTemplate;
+        this.outboxRepository = outboxRepository;
+        this.executor = executor;
+        this.properties = properties;
+    }
 
-    @Scheduled(fixedDelayString = "${outbox.publisher.interval:5000}")
+    @Scheduled(fixedDelayString = "#{@outboxPublisherProperties.interval}")
     @Transactional
     public void publishEvents() {
         int pageNumber = 0;
         List<OutboxFeedEvent> eventsPage;
         do {
-            Pageable pageable = PageRequest.of(pageNumber, PAGE_SIZE);
+            Pageable pageable = PageRequest.of(pageNumber, properties.getPageSize());
             eventsPage = outboxRepository.findUnprocessedEvents(pageable);
             if (!eventsPage.isEmpty()) {
                 log.info("Publishing {} events from page {}", eventsPage.size(), pageNumber);
                 List<CompletableFuture<Void>> futures = eventsPage.stream()
-                        .map(event -> CompletableFuture.runAsync(() -> processSingleEvent(event), executor))
+                        .map(event -> CompletableFuture.runAsync(() ->
+                                processSingleEvent(event), executor))
                         .toList();
                 CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
             }
             pageNumber++;
-        } while (eventsPage.size() == PAGE_SIZE);
+        } while (eventsPage.size() == properties.getPageSize());
     }
 
-    @Scheduled(cron = "${outbox.cleanup.cron:0 0 3 * * *}")
+    @Scheduled(cron = "#{@outboxPublisherProperties.cleanupCron}")
     @Transactional
     public void cleanupProcessedEvents() {
-        LocalDateTime threshold = LocalDateTime.now().minusDays(THRESHOLD_DAYS);
+        LocalDateTime threshold = LocalDateTime.now().minusDays(properties.getThresholdDays());
         int deleted = outboxRepository.deleteOldProcessed(threshold);
         log.info("Deleted {} old processed outbox events older than {}", deleted, threshold);
     }
@@ -81,7 +85,7 @@ public class OutboxEventPublisher {
     }
 
     private String resolveTopic(OutboxFeedEvent event) {
-        return outboxEventMapper.mapToTopic(event);
+        return event.getAggregateType().getTopic();
     }
 
     private String resolveKey(OutboxFeedEvent event) {

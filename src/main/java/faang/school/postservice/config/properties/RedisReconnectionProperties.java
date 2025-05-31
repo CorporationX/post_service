@@ -1,5 +1,6 @@
 package faang.school.postservice.config.properties;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -37,11 +38,11 @@ public class RedisReconnectionProperties {
     private String redisUnavailableKey;
 
     @NotNull
+    @Valid
     private Retry retry;
 
     @Getter
     @Setter
-    @Validated
     public static class Retry {
 
         @NotNull
@@ -54,11 +55,11 @@ public class RedisReconnectionProperties {
     }
 
     @NotNull
+    @Valid
     private HealthCheckScheduler healthCheckScheduler;
 
     @Getter
     @Setter
-    @Validated
     public static class HealthCheckScheduler {
 
         @NotNull
