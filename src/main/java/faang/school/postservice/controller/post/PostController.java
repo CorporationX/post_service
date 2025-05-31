@@ -36,7 +36,7 @@ public class PostController {
 
         PostResponseDto response = postFacade.createDraftPostForCurrentUser(postCreateUserRequestDto);
         log.debug("Post controller return response create draft post for user {}", response);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PostMapping("/draft/project/{projectId}")
@@ -46,7 +46,7 @@ public class PostController {
 
         PostResponseDto response = postFacade.createDraftPostForProject(postCreateProjectRequestDto);
         log.debug("Post controller return response create draft post for project {}", response);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PatchMapping("/{postId}/publish")
