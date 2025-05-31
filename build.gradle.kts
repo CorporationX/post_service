@@ -34,6 +34,11 @@ dependencies {
     runtimeOnly("org.postgresql:postgresql")
 
     /**
+     * S3 Service
+     */
+    implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:3.1.1")
+
+    /**
      * Utils & Logging
      */
     implementation("com.fasterxml.jackson.core:jackson-databind:2.14.2")

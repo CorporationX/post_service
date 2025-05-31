@@ -18,7 +18,7 @@ public class PostMediaService {
     private final S3Client s3Client;
 
     public PostDto addImages(Long postId, MultipartFile file) {
-        Post post = postServiceUtils.checkPostExists(postId);
+        Post post = postServiceUtils.getPost(postId);
 
 //        BigInteger newStorageSize = post.getStorageSize().add(BigInteger.valueOf(file.getSize()));
 //        checkStorageSizeExceeded(newStorageSize, post.getMaxStorageSize());

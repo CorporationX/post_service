@@ -1,8 +1,9 @@
 package faang.school.postservice.service.s3;
 
-import com.amazonaws.services.s3.model.ObjectMetadata;
 import faang.school.postservice.model.Resource;
+import io.awspring.cloud.s3.ObjectMetadata;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -12,6 +13,7 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 import java.io.InputStream;
 import java.io.IOException;
@@ -22,7 +24,8 @@ import java.io.IOException;
 public class S3Service {
     private final S3Client s3Client;
 
-    private static final String BUCKET_NAME = "post-bucket"; 
+    @Value("${cloud.aws.s3.bucket-name}")
+    private String bucketName;
 
     public Resource uploadFile(MultipartFile file, String folder) {
         long fileSize = file.getSize();
@@ -30,27 +33,26 @@ public class S3Service {
         String mediaKey = String.format("%s/%s.%s", folder, UUID.randomUUID(), extension);
         
         try (InputStream inputStream = file.getInputStream()) {
-            ObjectMetadata metadata = new ObjectMetadata();
-            metadata.setContentLength(fileSize);
-            metadata.setContentType(file.getContentType());
-
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-                    .bucket(BUCKET_NAME)
+                    .bucket(bucketName)
                     .key(mediaKey)
+                    .contentType(file.getContentType())
+                    .contentLength(file.getSize())
                     .build();
 
-            RequestBody requestBody = RequestBody.fromInputStream(inputStream, fileSize);
-            s3Client.putObject(putObjectRequest, requestBody);
+            s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(inputStream, fileSize));
             log.info("File uploaded successfully to S3: {}", mediaKey);
         } catch (IOException e) {
             log.error("Failed to upload file to S3", e);
             throw new RuntimeException("Failed to upload file", e);
         }
+
         return Resource.builder()
                 .key(mediaKey)
                 .size(fileSize)
                 .name(file.getOriginalFilename())
                 .type(file.getContentType())
+                .createdAt(LocalDateTime.now())
                 .build();
     }
 }
