@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 
-@FeignClient(name = "user-service", url = "${user-service.host}:${user-service.port}")
+@FeignClient(name = "user-service", contextId = "userServiceClient", url = "${user-service.host}:${user-service.port}")
 public interface UserServiceClient {
 
     @GetMapping("/users/{userId}")
@@ -17,10 +17,4 @@ public interface UserServiceClient {
 
     @PostMapping("/users")
     List<UserDto> getUsersByIds(@RequestBody List<Long> ids);
-
-    @GetMapping("/users/subscription/followers/{followeeId}/count")
-    Long getFollowersCount(@PathVariable("followeeId") long userId);
-
-    @GetMapping("/users/subscription/followers/{followeeId}/ids")
-    List<Long> getFollowerIds(@PathVariable("followeeId") long userId);
 }

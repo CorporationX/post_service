@@ -1,7 +1,6 @@
 package faang.school.postservice.component.post.event_produser;
 
 import faang.school.postservice.event.PostFeedEvent;
-import faang.school.postservice.exception.KafkaPublishException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -25,13 +24,7 @@ public class PostEventProducer extends AbstractEventProducer<PostFeedEvent> {
     }
 
     public CompletableFuture<Void> sendPostFeedEvent(PostFeedEvent event) {
-        return sendEvent(postTopic, event)
-                .thenRun(() -> log.debug("Successfully sent PostFeedEvent: event={}", event))
-                .exceptionally(throwable -> {
-                    log.error("Failed to send PostFeedEvent: postId={}, error={}", event.getPostId(),
-                            throwable.getMessage());
-                    throw new KafkaPublishException("Failed to send event", throwable);
-                });
+        return sendEvent(postTopic, event);
     }
 
     @Override

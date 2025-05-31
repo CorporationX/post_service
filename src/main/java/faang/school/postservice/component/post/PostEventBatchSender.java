@@ -1,11 +1,10 @@
 package faang.school.postservice.component.post;
 
-import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.client.SubscriptionServiceClient;
 import faang.school.postservice.component.post.event_produser.PostEventProducer;
 import faang.school.postservice.config.kafka.properties.BatchProperties;
 import faang.school.postservice.event.PostFeedEvent;
 import faang.school.postservice.exception.InvalidPostDataException;
-import faang.school.postservice.exception.KafkaPublishException;
 import faang.school.postservice.exception.UserServiceException;
 import faang.school.postservice.model.Post;
 import feign.FeignException;
@@ -24,17 +23,22 @@ import java.util.stream.IntStream;
 @RequiredArgsConstructor
 public class PostEventBatchSender {
 
-    private final UserServiceClient userServiceClient;
+    private final SubscriptionServiceClient subscriptionServiceClient;
     private final PostEventProducer postEventProducer;
     private final BatchProperties batchProperties;
     private final RetryTemplate userServiceRetryTemplate;
 
-    @Async("postEventExecutor")
-    public CompletableFuture<Void> dispatchEventsForPost(Post post) {
+    private void validatePost(Post post) {
         if (post == null || post.getId() == null || post.getAuthorId() == null || post.getPublishedAt() == null) {
             log.error("Invalid post data for event dispatching: post={}", post);
             throw new InvalidPostDataException("Post or author data is invalid");
         }
+    }
+
+    @Async("postEventExecutor")
+    public CompletableFuture<Void> dispatchEventsForPost(Post post) {
+
+        validatePost(post);
 
         return fetchSubscribers(post.getAuthorId())
                 .thenCompose(subscriberIds -> {
@@ -63,7 +67,6 @@ public class PostEventBatchSender {
                 });
     }
 
-    @Async("postEventExecutor")
     private CompletableFuture<Void> dispatchEventBatch(Post post, List<Long> subscribers) {
         PostFeedEvent event = PostFeedEvent.builder()
                 .postId(post.getId())
@@ -72,21 +75,13 @@ public class PostEventBatchSender {
                 .build();
         log.debug("Created PostFeedEvent: event={}", event);
 
-        return postEventProducer.sendPostFeedEvent(event)
-                .thenRun(() -> log.debug("Successfully sent PostFeedEvent to Kafka: event={}", event))
-                .exceptionally(throwable -> {
-                    log.error("Failed to send PostFeedEvent: postId={}, error={}",
-                            event.getPostId(), throwable.getMessage());
-                    throw new KafkaPublishException("Failed to send PostFeedEvent for postId " + event.getPostId(),
-                            throwable);
-                });
+        return postEventProducer.sendPostFeedEvent(event);
     }
 
-    @Async("postEventExecutor")
     private CompletableFuture<List<Long>> fetchSubscribers(Long authorId) {
         return CompletableFuture.supplyAsync(() -> userServiceRetryTemplate.execute(context -> {
             try {
-                List<Long> subscribers = userServiceClient.getFollowerIds(authorId);
+                List<Long> subscribers = subscriptionServiceClient.getFollowerIds(authorId);
                 log.info("Successfully fetched subscribers for author: authorId={}", authorId);
                 return subscribers;
             } catch (FeignException e) {
