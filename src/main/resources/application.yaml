@@ -37,8 +37,13 @@ spring:
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      max-attempts: 3
+      interval-between-attempts: 1000
       properties:
-        spring.json.trusted.packages: faang.school.postservice.events.*
+        spring:
+          json:
+            trusted:
+              packages: faang.school.postservice.events.*
 
 server:
   port: 8081
@@ -83,3 +88,7 @@ news-feed:
     redis-ttl: 86400
   likes:
     topic: likes
+  feed:
+    redis-ttl: 86400
+    max-redis-feed-size: 500
+    thread-pool-size: -1
