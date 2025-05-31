@@ -3,6 +3,7 @@ package faang.school.postservice.service.post.implementations;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.component.post.PostEventBatchSender;
+import faang.school.postservice.config.kafka.properties.EventQueueProperties;
 import faang.school.postservice.config.post.PostServiceConstants;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.project.ProjectDto;
@@ -15,6 +16,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.post.interfaces.PostService;
 import faang.school.postservice.service.post_check.interfaces.PostCheckerService;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.ListUtils;
@@ -49,14 +51,18 @@ public class PostServiceImpl implements PostService {
     private final ExecutorService postPublishPool;
     private final PlatformTransactionManager transactionManager;
     private final PostEventBatchSender postEventBatchSender;
+    private final EventQueueProperties eventQueueProperties;
 
     public static final int POST_PUBLISH_POOL_SIZE = 10;
     private final AtomicBoolean isRunning = new AtomicBoolean(false);
 
-    private static final int EVENT_QUEUE_SIZE = 10000;
-    public static final int POST_PUBLISH_SCHEDULED_TIME_MS = 100;
-    public static final int POST_PUBLISH_SCHEDULED_BATCH_SIZE = 50;
-    private final BlockingQueue<Post> eventQueue = new LinkedBlockingQueue<>(EVENT_QUEUE_SIZE);
+    private BlockingQueue<Post> eventQueue;
+
+    @PostConstruct
+    public void initQueue() {
+        this.eventQueue = new LinkedBlockingQueue<>(eventQueueProperties.getQueueSize());
+        log.debug("Event queue initialized with size: {}", eventQueueProperties.getQueueSize());
+    }
 
     @Override
     public CompletableFuture<Void> publishScheduledPosts() {
@@ -174,15 +180,10 @@ public class PostServiceImpl implements PostService {
         return resultDto;
     }
 
-    @Scheduled(fixedRate = POST_PUBLISH_SCHEDULED_TIME_MS)
+    @Scheduled(fixedRateString = "${app.event-queue.scheduled-time-ms}")
     public void processEventQueue() {
         List<Post> batch = new ArrayList<>();
-        for (int i = 0; i < POST_PUBLISH_SCHEDULED_BATCH_SIZE && !eventQueue.isEmpty(); i++) {
-            Post post = eventQueue.poll();
-            if (post != null) {
-                batch.add(post);
-            }
-        }
+        eventQueue.drainTo(batch, eventQueueProperties.getBatchSize());
 
         if (!batch.isEmpty()) {
             CompletableFuture.allOf(
@@ -192,12 +193,11 @@ public class PostServiceImpl implements PostService {
                                             post.getId()))
                                     .exceptionally(throwable -> {
                                         log.error("Failed to dispatch events for post: postId={}, error={}",
-                                                post.getId(),
-                                                throwable.getMessage());
+                                                post.getId(), throwable.getMessage());
                                         return null;
                                     }))
                             .toArray(CompletableFuture[]::new)
-            );
+            ).join();
         }
     }
 

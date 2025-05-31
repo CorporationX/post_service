@@ -9,14 +9,12 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.ToString;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
 @Builder
-@ToString
 public class PostFeedEvent {
     @NotNull(message = "Post ID cannot be null")
     private final Long postId;

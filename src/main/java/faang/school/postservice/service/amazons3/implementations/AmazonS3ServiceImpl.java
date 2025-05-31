@@ -9,7 +9,7 @@ import com.amazonaws.services.s3.model.S3Object;
 import faang.school.postservice.dto.file.FileMetaData;
 import faang.school.postservice.exception.FileProcessException;
 import faang.school.postservice.service.amazons3.interfaces.AmazonS3Service;
-import faang.school.postservice.service.file.implementations.ImageCompressionServiceImpl;
+import faang.school.postservice.service.file.interfaces.ImageCompressionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
@@ -29,7 +29,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class AmazonS3ServiceImpl implements AmazonS3Service {
     private static final String IMAGE_TYPE = "image";
     private final AmazonS3 amazonS3Client;
-    private final ImageCompressionServiceImpl imageCompressionService;
+    private final ImageCompressionService imageCompressionService;
     @Value("${s3.bucket-name}")
     private String bucketName;
 

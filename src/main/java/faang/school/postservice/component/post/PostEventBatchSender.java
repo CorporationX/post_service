@@ -14,6 +14,7 @@ import org.springframework.retry.support.RetryTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.IntStream;
@@ -37,34 +38,41 @@ public class PostEventBatchSender {
 
     @Async("postEventExecutor")
     public CompletableFuture<Void> dispatchEventsForPost(Post post) {
-
         validatePost(post);
 
         return fetchSubscribers(post.getAuthorId())
-                .thenCompose(subscriberIds -> {
-                    if (subscriberIds.isEmpty()) {
-                        log.warn("No subscribers found for author: authorId={}", post.getAuthorId());
-                        return CompletableFuture.completedFuture(null);
-                    }
-
-                    if (subscriberIds.size() > batchProperties.getMaxSubscribers()) {
-                        log.warn("Subscriber count {} exceeds maximum allowed {}, truncating", subscriberIds.size(),
-                                batchProperties.getMaxSubscribers());
-                        subscriberIds = subscriberIds.subList(0, batchProperties.getMaxSubscribers());
-                    }
-
-                    List<List<Long>> batches = partitionSubscribers(subscriberIds, batchProperties.getBatchSize());
-                    return CompletableFuture.allOf(
-                            batches.stream()
-                                    .map(batch -> dispatchEventBatch(post, batch))
-                                    .toArray(CompletableFuture[]::new)
-                    );
-                })
+                .thenCompose(subscriberIds -> validateAndPrepareSubscribers(
+                        post.getAuthorId(), subscriberIds))
+                .thenCompose(preparedSubscribers -> dispatchBatches(post, preparedSubscribers))
                 .exceptionally(throwable -> {
                     log.error("Failed to process events for post: postId={}, error={}", post.getId(),
                             throwable.getMessage());
                     return null;
                 });
+    }
+
+    private CompletableFuture<Void> dispatchBatches(Post post, List<Long> subscribers) {
+        List<List<Long>> batches = partitionSubscribers(subscribers, batchProperties.getBatchSize());
+        return CompletableFuture.allOf(
+                batches.stream()
+                        .map(batch -> dispatchEventBatch(post, batch))
+                        .toArray(CompletableFuture[]::new)
+        );
+    }
+
+    private CompletableFuture<List<Long>> validateAndPrepareSubscribers(Long authorId, List<Long> subscriberIds) {
+        if (subscriberIds.isEmpty()) {
+            log.warn("No subscribers found for author: authorId={}", authorId);
+            return CompletableFuture.completedFuture(Collections.emptyList());
+        }
+
+        if (subscriberIds.size() > batchProperties.getMaxSubscribers()) {
+            log.warn("Subscriber count {} exceeds maximum allowed {}, truncating", subscriberIds.size(),
+                    batchProperties.getMaxSubscribers());
+            subscriberIds = subscriberIds.subList(0, batchProperties.getMaxSubscribers());
+        }
+
+        return CompletableFuture.completedFuture(subscriberIds);
     }
 
     private CompletableFuture<Void> dispatchEventBatch(Post post, List<Long> subscribers) {
@@ -91,7 +99,7 @@ public class PostEventBatchSender {
         }));
     }
 
-    private List<List<Long>> partitionSubscribers(List<Long> subscribers, int batchSize) {
+    private List<List<Long>> partitionSubscribers(List<Long> subscribers, Integer batchSize) {
         return IntStream.range(0, (subscribers.size() + batchSize - 1) / batchSize)
                 .mapToObj(i -> subscribers.subList(i * batchSize,
                         Math.min((i + 1) * batchSize, subscribers.size())))

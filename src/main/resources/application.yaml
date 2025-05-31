@@ -67,6 +67,10 @@ app:
   batch:
     max-subscribers: 1000
     batch-size: 100
+  event-queue:
+    queue-size: 10000
+    scheduled-time-ms: 100
+    batch-size: 50
 
 thread-pools:
   post-event-executor:

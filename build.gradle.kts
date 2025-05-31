@@ -9,11 +9,6 @@ group = "faang.school"
 version = "1.0"
 java.sourceCompatibility = JavaVersion.VERSION_17
 
-ext {
-    set("springKafkaVersion", "3.3.6")
-    set("kafkaVersion", "3.5.0")
-}
-
 repositories {
     mavenCentral()
 }
@@ -66,7 +61,7 @@ dependencies {
     /**
      * Kafka
      */
-    implementation("org.springframework.kafka:spring-kafka")
+    implementation("org.springframework.kafka:spring-kafka:3.3.6")
     implementation("org.apache.kafka:kafka-streams")
     testImplementation("org.springframework.kafka:spring-kafka-test")
 

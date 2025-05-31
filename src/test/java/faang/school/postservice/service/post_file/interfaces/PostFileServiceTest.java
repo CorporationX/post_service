@@ -2,7 +2,6 @@ package faang.school.postservice.service.post_file.interfaces;
 
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.file.FileMetaData;
-import faang.school.postservice.mapper.post_file.PostFileMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.service.amazons3.interfaces.AmazonS3Service;
@@ -15,7 +14,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -31,8 +29,6 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class PostFileServiceTest {
-    @Spy
-    private PostFileMapperImpl postFileMapper;
 
     @Mock
     UserContext userContext;
