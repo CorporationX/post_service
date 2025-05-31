@@ -113,6 +113,12 @@ app:
     authors:
       ttl: 86400 #24 hours
       key-prefix: "post-authors"
+    posts:
+      ttl: 86400
+      key-prefix: "posts"
+      value: "views"
+    consumer:
+      group-id: post-view-consumers
 
 s3:
   endpoint: http://localhost:9000
