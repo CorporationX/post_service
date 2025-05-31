@@ -55,8 +55,7 @@ public class CommentService {
     public CommentDto updateComment(Long commentId, CommentDto commentDto) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new IllegalArgumentException("No comment found"));
-
-        if (commentDto.getAuthorId() != null && !Objects.equals(comment.getAuthorId(), commentDto.getAuthorId())) {
+        if (!Objects.equals(comment.getAuthorId(), commentDto.getAuthorId())) {
             throw new IllegalArgumentException("You cannot change the author of the comment");
         }
 

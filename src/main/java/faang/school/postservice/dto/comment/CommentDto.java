@@ -18,6 +18,7 @@ public class CommentDto {
     @NotBlank(message = "Comment content cannot be empty")
     @Size(max = 4096, message = "Comment content is too long (max 4096)")
     private String content;
+    @NotNull
     private Long authorId;
     private List<Long> likesIds;
     private Long postId;
