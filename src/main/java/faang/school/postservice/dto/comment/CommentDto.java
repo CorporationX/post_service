@@ -7,16 +7,5 @@ import lombok.Builder;
 
 import java.util.List;
 
-@Builder
-public record CommentDto(
-        @NotNull
-        Long id,
-        @NotBlank
-        String content,
-        @NotNull
-        Long authorId,
-        List<Long> likeIds,
-        @NotNull
-        Long postId
-) {
+public abstract class CommentDto{
 }

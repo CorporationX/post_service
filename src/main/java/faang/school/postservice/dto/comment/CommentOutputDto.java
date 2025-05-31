@@ -11,6 +11,7 @@ import java.util.List;
 
 @EqualsAndHashCode(callSuper = false)
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class CommentOutputDto extends CommentDto{
@@ -21,5 +22,5 @@ public class CommentOutputDto extends CommentDto{
     private Long authorId;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private List<Integer> likeIds;
+    private List<Long> likeIds;
 }

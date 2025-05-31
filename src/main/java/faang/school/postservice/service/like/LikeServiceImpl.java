@@ -1,4 +1,4 @@
-package faang.school.postservice.service;
+package faang.school.postservice.service.like;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.model.Comment;
@@ -7,6 +7,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.LikeService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
