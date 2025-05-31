@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class PostCreateRequestDto {
+public class PostCreateProjectRequestDto {
     @NotBlank(message = "Content is mandatory")
     @Size(max = 4096, message = "Max length content — 4096 char")
     private String content;

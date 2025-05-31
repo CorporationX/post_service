@@ -1,6 +1,7 @@
 package faang.school.postservice.mapper.post;
 
-import faang.school.postservice.dto.post.PostCreateRequestDto;
+import faang.school.postservice.dto.post.PostCreateProjectRequestDto;
+import faang.school.postservice.dto.post.PostCreateUserRequestDto;
 import faang.school.postservice.dto.post.PostResponseDto;
 import faang.school.postservice.dto.post.PostUpdateRequestDto;
 import faang.school.postservice.model.post.Post;
@@ -12,10 +13,13 @@ import java.util.List;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface PostMapper {
-    Post toPostEntity(final PostCreateRequestDto postCreateRequestDto);
-    PostResponseDto toPostResponseDto(final Post post);
+    Post toPostEntity(PostCreateUserRequestDto postCreateUserRequestDto);
 
-    List<PostResponseDto> toPostResponseDtoList(final List<Post> posts);
+    Post toPostEntity(PostCreateProjectRequestDto postCreateProjectRequestDto);
 
-    void update(@MappingTarget Post post, final PostUpdateRequestDto postUpdateRequestDto);
+    PostResponseDto toPostResponseDto(Post post);
+
+    List<PostResponseDto> toPostResponseDtoList(List<Post> posts);
+
+    void update(@MappingTarget Post post, PostUpdateRequestDto postUpdateRequestDto);
 }

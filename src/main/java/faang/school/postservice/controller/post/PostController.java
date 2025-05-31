@@ -1,6 +1,7 @@
 package faang.school.postservice.controller.post;
 
-import faang.school.postservice.dto.post.PostCreateRequestDto;
+import faang.school.postservice.dto.post.PostCreateProjectRequestDto;
+import faang.school.postservice.dto.post.PostCreateUserRequestDto;
 import faang.school.postservice.dto.post.PostResponseDto;
 import faang.school.postservice.dto.post.PostUpdateRequestDto;
 import faang.school.postservice.facade.post.PostFacade;
@@ -28,13 +29,23 @@ import java.util.List;
 public class PostController {
     private final PostFacade postFacade;
 
-    @PostMapping("/draft")
-    public ResponseEntity<PostResponseDto> createDraftPost
-            (@RequestBody @Valid PostCreateRequestDto postCreateRequestDto) {
-        log.debug("Post controller accepted request create draft post {}", postCreateRequestDto);
+    @PostMapping("/draft/user/me")
+    public ResponseEntity<PostResponseDto> createDraftPostForCurrentUser
+            (@RequestBody @Valid PostCreateUserRequestDto postCreateUserRequestDto) {
+        log.debug("Post controller accepted request create draft post for user {}", postCreateUserRequestDto);
 
-        PostResponseDto response = postFacade.createDraftPost(postCreateRequestDto);
-        log.debug("Post controller return response create draft post {}", response);
+        PostResponseDto response = postFacade.createDraftPostForCurrentUser(postCreateUserRequestDto);
+        log.debug("Post controller return response create draft post for user {}", response);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+
+    @PostMapping("/draft/project/{projectId}")
+    public ResponseEntity<PostResponseDto> createDraftPostForProject
+            (@RequestBody @Valid PostCreateProjectRequestDto postCreateProjectRequestDto) {
+        log.debug("Post controller accepted request create draft post for project {}", postCreateProjectRequestDto);
+
+        PostResponseDto response = postFacade.createDraftPostForProject(postCreateProjectRequestDto);
+        log.debug("Post controller return response create draft post for project {}", response);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 

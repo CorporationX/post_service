@@ -1,6 +1,7 @@
 package faang.school.postservice.facade.post;
 
-import faang.school.postservice.dto.post.PostCreateRequestDto;
+import faang.school.postservice.dto.post.PostCreateProjectRequestDto;
+import faang.school.postservice.dto.post.PostCreateUserRequestDto;
 import faang.school.postservice.dto.post.PostResponseDto;
 import faang.school.postservice.dto.post.PostUpdateRequestDto;
 import faang.school.postservice.mapper.post.PostMapper;
@@ -19,12 +20,12 @@ public class PostFacade {
     private final PostService postService;
     private final PostMapper postMapper;
 
-    public PostResponseDto createDraftPost(final PostCreateRequestDto postCreateRequestDto) {
-        Post post = postMapper.toPostEntity(postCreateRequestDto);
-        log.debug("Mapping PostCreateRequestDto to Post entity. DTO content: {}. Entity content: {}",
-                postCreateRequestDto, post);
+    public PostResponseDto createDraftPostForCurrentUser(PostCreateUserRequestDto postCreateUserRequestDto) {
+        Post post = postMapper.toPostEntity(postCreateUserRequestDto);
+        log.debug("Mapping PostCreateUserRequestDto to Post entity. DTO content: {}. Entity content: {}",
+                postCreateUserRequestDto, post);
 
-        post = postService.createDraftPost(post);
+        post = postService.createDraftPostForCurrentUser(post);
 
         PostResponseDto postResponseDto = postMapper.toPostResponseDto(post);
         log.debug("Mapping Post entity to PostResponseDto. Entity content: {}. DTO content: {}.",
@@ -32,7 +33,20 @@ public class PostFacade {
         return postResponseDto;
     }
 
-    public PostResponseDto publishPost(final long postId) {
+    public PostResponseDto createDraftPostForProject(PostCreateProjectRequestDto postCreateProjectRequestDto) {
+        Post post = postMapper.toPostEntity(postCreateProjectRequestDto);
+        log.debug("Mapping PostCreateProjectRequestDto to Post entity. DTO content: {}. Entity content: {}",
+                postCreateProjectRequestDto, post);
+
+        post = postService.createDraftPostForProject(post);
+
+        PostResponseDto postResponseDto = postMapper.toPostResponseDto(post);
+        log.debug("Mapping Post entity to PostResponseDto. Entity content: {}. DTO content: {}.",
+                post, postResponseDto);
+        return postResponseDto;
+    }
+
+    public PostResponseDto publishPost(long postId) {
         Post post = postService.publishPost(postId);
 
         PostResponseDto postResponseDto = postMapper.toPostResponseDto(post);
@@ -41,7 +55,7 @@ public class PostFacade {
         return postResponseDto;
     }
 
-    public PostResponseDto updatePost(long postId, final PostUpdateRequestDto postUpdateRequestDto) {
+    public PostResponseDto updatePost(long postId, PostUpdateRequestDto postUpdateRequestDto) {
         Post post = postService.getPostById(postId);
 
         postMapper.update(post, postUpdateRequestDto);
@@ -69,7 +83,7 @@ public class PostFacade {
         return postResponseDto;
     }
 
-    public List<PostResponseDto> getAllDraftPostsByUserId(Long userId) {
+    public List<PostResponseDto> getAllDraftPostsByUserId(long userId) {
         List<Post> posts = postService.getAllDraftPostsByUserId(userId);
 
         List<PostResponseDto> postResponseDtoList = postMapper.toPostResponseDtoList(posts);
@@ -78,7 +92,7 @@ public class PostFacade {
         return postResponseDtoList;
     }
 
-    public List<PostResponseDto> getAllDraftPostsByProjectId(Long projectId) {
+    public List<PostResponseDto> getAllDraftPostsByProjectId(long projectId) {
         List<Post> posts = postService.getAllDraftPostsByProjectId(projectId);
 
         List<PostResponseDto> postResponseDtoList = postMapper.toPostResponseDtoList(posts);
@@ -87,7 +101,7 @@ public class PostFacade {
         return postResponseDtoList;
     }
 
-    public List<PostResponseDto> getAllPublishedPostsByUserId(Long userId) {
+    public List<PostResponseDto> getAllPublishedPostsByUserId(long userId) {
         List<Post> posts = postService.getAllPublishedPostsByUserId(userId);
 
         List<PostResponseDto> postResponseDtoList = postMapper.toPostResponseDtoList(posts);
@@ -96,7 +110,7 @@ public class PostFacade {
         return postResponseDtoList;
     }
 
-    public List<PostResponseDto> getAllPublishedPostsByProjectId(Long projectId) {
+    public List<PostResponseDto> getAllPublishedPostsByProjectId(long projectId) {
         List<Post> posts = postService.getAllPublishedPostsByProjectId(projectId);
 
         List<PostResponseDto> postResponseDtoList = postMapper.toPostResponseDtoList(posts);

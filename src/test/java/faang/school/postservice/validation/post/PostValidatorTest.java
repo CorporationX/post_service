@@ -4,7 +4,6 @@ import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.project.ProjectClientResponseDto;
 import faang.school.postservice.dto.user.UserClientResponseDto;
-import faang.school.postservice.exception.authorization.UserUnauthorizedException;
 import faang.school.postservice.exception.client.RemoteNotFoundException;
 import faang.school.postservice.exception.post.PostAlreadyPublishedException;
 import faang.school.postservice.model.post.Post;
@@ -42,20 +41,29 @@ public class PostValidatorTest {
     }
 
     @Test
-    public void testCheckPost_AuthorFound() {
+    public void testCheckPostForCurrentUser_AuthorFound() {
         when(userServiceClient.getCurrentUser()).thenAnswer(invocation -> {
             UserClientResponseDto userDto = new UserClientResponseDto();
             userDto.setId(1L);
             return userDto;
         });
 
-        assertDoesNotThrow(() ->  postValidator.checkPost(post));
+        assertDoesNotThrow(() ->  postValidator.checkPostForCurrentUser());
         verify(userServiceClient, times(1)).getCurrentUser();
         verify(projectServiceClient, never()).getProject(anyLong());
     }
 
     @Test
-    public void testCheckPost_ProjectFound() {
+    public void testCheckPostForCurrentUser_AuthorNotFound() {
+        when(userServiceClient.getCurrentUser()).thenThrow(RemoteNotFoundException.class);
+
+        assertThrows(RemoteNotFoundException.class, () -> postValidator.checkPostForCurrentUser());
+        verify(userServiceClient, times(1)).getCurrentUser();
+        verify(projectServiceClient, never()).getProject(anyLong());
+    }
+
+    @Test
+    public void testCheckPostForProject_ProjectFound() {
         post.setProjectId(2L);
 
         when(projectServiceClient.getProject(eq(post.getProjectId()))).thenAnswer(invocation -> {
@@ -65,36 +73,18 @@ public class PostValidatorTest {
             return projectDto;
         });
 
-        assertDoesNotThrow(() ->  postValidator.checkPost(post));
+        assertDoesNotThrow(() ->  postValidator.checkPostForProject(post.getProjectId()));
         verify(userServiceClient, never()).getCurrentUser();
         verify(projectServiceClient, times(1)).getProject(eq(post.getProjectId()));
     }
 
     @Test
-    public void testCheckPost_AuthorInContextNotFound() {
-        when(userServiceClient.getCurrentUser()).thenThrow(UserUnauthorizedException.class);
-
-        assertThrows(UserUnauthorizedException.class, () -> postValidator.checkPost(post));
-        verify(userServiceClient, times(1)).getCurrentUser();
-        verify(projectServiceClient, never()).getProject(anyLong());
-    }
-
-    @Test
-    public void testCheckPost_AuthorNotFound() {
-        when(userServiceClient.getCurrentUser()).thenThrow(RemoteNotFoundException.class);
-
-        assertThrows(RemoteNotFoundException.class, () -> postValidator.checkPost(post));
-        verify(userServiceClient, times(1)).getCurrentUser();
-        verify(projectServiceClient, never()).getProject(anyLong());
-    }
-
-    @Test
-    public void testCheckPost_ProjectNotFound() {
+    public void testCheckPostForProject_ProjectNotFound() {
         post.setProjectId(2L);
 
         when(projectServiceClient.getProject(eq(post.getProjectId()))).thenThrow(RemoteNotFoundException.class);
 
-        assertThrows(RemoteNotFoundException.class, () -> postValidator.checkPost(post));
+        assertThrows(RemoteNotFoundException.class, () -> postValidator.checkPostForProject(post.getProjectId()));
         verify(userServiceClient, never()).getCurrentUser();
         verify(projectServiceClient, times(1)).getProject(eq(post.getProjectId()));
     }

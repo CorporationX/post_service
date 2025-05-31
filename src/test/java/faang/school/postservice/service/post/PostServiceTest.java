@@ -1,6 +1,7 @@
 package faang.school.postservice.service.post;
 
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.exception.authorization.UserUnauthorizedException;
 import faang.school.postservice.exception.client.RemoteNotFoundException;
 import faang.school.postservice.exception.post.PostAlreadyPublishedException;
 import faang.school.postservice.exception.post.PostNotFoundException;
@@ -74,22 +75,60 @@ public class PostServiceTest {
     }
 
     @Test
-    public void testCreateDraftPost_successfully() {
+    public void testCreateDraftPostForCurrentUser_successfully() {
+        post.setAuthorId(1L);
+
+        when(userContext.getUserId()).thenReturn(post.getAuthorId());
         when(postRepository.save(eq(post))).thenReturn(post);
 
-        Post returnPost = postService.createDraftPost(post);
+        Post returnPost = postService.createDraftPostForCurrentUser(post);
 
         assertEquals(returnPost, post);
         verify(postRepository, times(1)).save(eq(post));
     }
 
     @Test
-    public void testCreateDraftPost_authorOrProjectNotFound() {
+    public void testCreateDraftPostForCurrentUser_userUnauthorized() {
+        when(userContext.getUserId()).thenThrow(UserUnauthorizedException.class);
+
+        assertThrows(UserUnauthorizedException.class, () -> postService.createDraftPostForCurrentUser(post));
+        verify(postRepository, never()).save(any());
+    }
+
+    @Test
+    public void testCreateDraftPostForCurrentUser_authorNotFound() {
+        post.setAuthorId(1L);
+
+        when(userContext.getUserId()).thenReturn(post.getAuthorId());
         doThrow(RemoteNotFoundException.class)
                 .when(postValidator)
-                .checkPost(post);
+                .checkPostForCurrentUser();
 
-        assertThrows(RemoteNotFoundException.class, () -> postService.createDraftPost(post));
+        assertThrows(RemoteNotFoundException.class, () -> postService.createDraftPostForCurrentUser(post));
+        verify(postRepository, never()).save(any());
+    }
+
+    @Test
+    public void testCreateDraftPostForProject_successfully() {
+        post.setProjectId(2L);
+
+        when(postRepository.save(eq(post))).thenReturn(post);
+
+        Post returnPost = postService.createDraftPostForProject(post);
+
+        assertEquals(returnPost, post);
+        verify(postRepository, times(1)).save(eq(post));
+    }
+
+    @Test
+    public void testCreateDraftPostForProject_projectNotFound() {
+        post.setProjectId(2L);
+
+        doThrow(RemoteNotFoundException.class)
+                .when(postValidator)
+                .checkPostForProject(post.getProjectId());
+
+        assertThrows(RemoteNotFoundException.class, () -> postService.createDraftPostForProject(post));
         verify(postRepository, never()).save(any());
     }
 

@@ -33,13 +33,20 @@ public class PostService {
     }
 
     @Transactional
-    public Post createDraftPost(final Post post) {
-        postValidator.checkPost(post);
+    public Post createDraftPostForCurrentUser(Post post) {
+        long userId = userContext.getUserId();
+        post.setAuthorId(userId);
 
-        if (post.getProjectId() == null) {
-            long userId = userContext.getUserId();
-            post.setAuthorId(userId);
-        }
+        postValidator.checkPostForCurrentUser();
+
+        Post savedPost = postRepository.save(post);
+        log.info("Post with id {} has been created", savedPost.getId());
+        return savedPost;
+    }
+
+    @Transactional
+    public Post createDraftPostForProject(Post post) {
+        postValidator.checkPostForProject(post.getProjectId());
 
         Post savedPost = postRepository.save(post);
         log.info("Post with id {} has been created", savedPost.getId());
@@ -78,7 +85,7 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public List<Post> getAllDraftPostsByUserId(Long userId) {
+    public List<Post> getAllDraftPostsByUserId(long userId) {
         Post post = new Post();
         post.setPublished(false);
         post.setDeleted(false);
@@ -89,7 +96,7 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public List<Post> getAllDraftPostsByProjectId(Long projectId) {
+    public List<Post> getAllDraftPostsByProjectId(long projectId) {
         Post post = new Post();
         post.setPublished(false);
         post.setDeleted(false);
@@ -100,7 +107,7 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public List<Post> getAllPublishedPostsByUserId(Long userId) {
+    public List<Post> getAllPublishedPostsByUserId(long userId) {
         Post post = new Post();
         post.setPublished(true);
         post.setDeleted(false);
@@ -111,7 +118,7 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public List<Post> getAllPublishedPostsByProjectId(Long projectId) {
+    public List<Post> getAllPublishedPostsByProjectId(long projectId) {
         Post post = new Post();
         post.setPublished(true);
         post.setDeleted(false);

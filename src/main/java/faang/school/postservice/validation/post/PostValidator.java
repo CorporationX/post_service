@@ -15,14 +15,12 @@ public class PostValidator {
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
 
-    public void checkPost(Post post) {
-        Long projectId = post.getProjectId();
+    public void checkPostForCurrentUser() {
+        userServiceClient.getCurrentUser();
+    }
 
-        if (projectId == null) {
-            userServiceClient.getCurrentUser();
-        } else {
-            projectServiceClient.getProject(projectId);
-        }
+    public void checkPostForProject(Long projectId) {
+        projectServiceClient.getProject(projectId);
     }
 
     public void checkPostIsNotPublished(Post post) {
