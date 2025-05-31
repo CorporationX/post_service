@@ -7,8 +7,8 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.event.EventType;
-import faang.school.postservice.publisher.KafkaLikePublisher;
-import faang.school.postservice.publisher.LikePublisher;
+import faang.school.postservice.publisher.EventPublisher;
+import faang.school.postservice.publisher.KafkaEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -23,7 +23,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -49,15 +48,13 @@ public class LikeServiceTest {
     UserServiceClient userServiceClient;
 
     @Mock
-    LikePublisher likePublisher;
+    EventPublisher eventPublisher;
 
     @Mock
-    KafkaLikePublisher kafkaLikePublisher;
+    KafkaEventPublisher kafkaEventPublisher;
 
     @Captor
     ArgumentCaptor<LikeEvent> likeEventCaptor;
-
-
 
     private final long userId = 1L;
     private final long postId = 2L;
@@ -87,7 +84,6 @@ public class LikeServiceTest {
             Comment.builder().build()
     );
 
-
     @Test
     void likeThePost_shouldLikePost() {
         when(userServiceClient.getUser(userId)).thenReturn(userDto);
@@ -98,7 +94,8 @@ public class LikeServiceTest {
         likeService.likeThePost(postId, userId);
 
         verify(likeRepository, times(1)).save(any(Like.class));
-        verify(kafkaLikePublisher, times(1)).publish(likeEventCaptor.capture());
+        verify(kafkaEventPublisher, times(1))
+                .publish(eq(EventType.LIKED_POST), likeEventCaptor.capture());
         LikeEvent actualEvent = likeEventCaptor.getValue();
 
         assertEquals(userId, actualEvent.getUserId());

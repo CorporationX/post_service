@@ -22,8 +22,8 @@ spring:
       port: 6379
       host: localhost
       topics:
-        publishedPost: published_post_topic
-        likedPost: liked_post_topic
+        PUBLISHED_POST: published_post_topic
+        LIKED_POST: liked_post_topic
 
   kafka:
     producer:
@@ -34,8 +34,8 @@ spring:
         lignerMs: 10000
         requestTimeoutMs: 10000
       topics:
-        commentCreatedNotification: notification.comment.created
-        likedPost: notification.post.liked
+        LIKED_POST: notification.post.liked
+        COMMENT_CREATED: notification.comment.created
 
 server:
   port: 8081
