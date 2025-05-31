@@ -4,9 +4,12 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.ModerationProperties;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.event.CommentEvent;
+import faang.school.postservice.dto.newsfeed.KafkaCommentEvent;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
+import faang.school.postservice.model.Post;
 import faang.school.postservice.moderation.ModerationDictionaryComment;
+import faang.school.postservice.newsfeed.producer.OutboxCommentProducer;
 import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.validator.CommentValidator;
@@ -33,38 +36,41 @@ import java.util.stream.Stream;
 public class CommentService {
 
     private final CommentRepository commentRepository;
-
     private final PostValidator postValidator;
-
     private final UserServiceClient userServiceClient;
-
     private final CommentMapper commentMapper;
-
     private final CommentValidator commentValidator;
-
     private final ImageService imageService;
-
     private final CommentEventPublisher commentEventPublisher;
-
     private final ModerationDictionaryComment moderationDictionaryComment;
-
     private final ModerationProperties moderationProperties;
-
     private final TaskExecutor asyncModerationExecutor;
+    private final OutboxCommentProducer outboxCommentProducer;
 
     public CommentDto createComment(Long postId, CommentDto commentDto) {
         commentValidator.validateCommentDto(commentDto);
-
-        postValidator.getPostById(postId);
-
+        Post post = postValidator.getPostById(postId);
         validateUserId(commentDto.getAuthorId());
 
         Comment comment = commentMapper.toComment(commentDto);
+        comment.setPost(post);
         comment = commentRepository.save(comment);
         comment = saveCommentWithImage(commentDto, comment);
         CommentDto resultDto = commentMapper.toCommentDto(comment);
 
         publishCommentEvent(resultDto);
+
+        KafkaCommentEvent kafkaCommentEvent = KafkaCommentEvent.builder()
+                .commentId(resultDto.getId())
+                .postId(postId)
+                .userId(resultDto.getAuthorId())
+                .authorId(post.getAuthorId())
+                .content(resultDto.getContent())
+                .createdAt(comment.getCreatedAt())
+                .build();
+        outboxCommentProducer.saveToOutbox(kafkaCommentEvent);
+        log.info("KafkaCommentEvent for comment {} on post {} by user {} sent to feed outbox",
+                resultDto.getId(), postId, resultDto.getAuthorId());
 
         return resultDto;
     }

@@ -21,16 +21,59 @@ spring:
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
 
+  kafka:
+    bootstrap-servers: "localhost:9092"
+    topic:
+      posts: "posts"
+      post-views: "postViews"
+      likes: "likes"
+      comments: "comments"
+      partitions: 48
+      replicas: 3
+      retention-ms: "86400000"
+      cleanup-policy: "delete"
+      min-in-sync-replicas: "2"
+      unclean-leader-election: "false"
+    consumer:
+      group-id: "post-consumer-group"
+      enable-auto-commit: false
+      auto-offset-reset: "earliest"
+    producer:
+      acks: "all"
+      idempotence: true
+      retries: 3
+      max-in-flight-requests: 5
+      compression-type: "zstd"
+
   data:
     redis:
       port: 6379
       host: localhost
+      timeout: 100
       jedis:
         pool:
           max-active: 10
           max-idle: 5
           min-idle: 1
           max-wait: 2000
+      lettuce-pool:
+        max-total: 20
+        max-idle: 10
+        min-idle: 2
+        max-wait: 3000
+      health-checker:
+        min-cache-keys: 5
+        redis-unavailable-ttl-sec: 300
+        reconnection-interval-sec: 2
+        initial-delay-sec: 0
+        redis-unavailable-key: "redis:unavailable"
+        retry:
+          delay-ms: 1000
+          multiplier: 2
+        health-check-scheduler:
+          fixed-rate-ms: 30000
+        executor:
+          await-termination-sec: 5
       channels:
         comment: comment_channel
         calculations_channel:
@@ -120,6 +163,24 @@ task-executor:
     core-pool-size: 10
     max-pool-size: 20
     queue-capacity: 50
+  redis-reconnect:
+    pool-size: 1
+    await-termination-seconds: 10
+    thread-name-prefix: "redis-reconnect-"
+    daemon: true
+    remove-on-cancel-policy: true
+    wait-for-tasks-to-complete-on-shutdown: true
+  scheduled-task:
+    pool-size: 8
+    await-termination-seconds: 10
+    thread-name-prefix: "scheduled-task-"
+    daemon: true
+    wait-for-tasks-to-complete-on-shutdown: true
+  outbox-event-publisher-task:
+    core-pool-size: 4
+    max-pool-size: 8
+    queue-capacity: 50
+    thread-name-prefix: "outbox-event-publisher-"
 
 comment-img:
   max-size-bytes: 5242880
@@ -154,6 +215,22 @@ moderation:
   queue-capacity: 50
   cron: "0 0 3 * * *"  # каждый день в 03:00   0 0 3 * * *
   chunk-size: 100     # количество комментов в одном потоке
+
 scheduler:
   outbox-event:
     batch-size: 10
+
+feed:
+  max-feed-size: 1000
+  max-comments: 50
+  feed-ttl: 86400
+  post-ttl: 259200
+  event-id-ttl: 3600
+  cache-warmer-user-batch-size: 50
+
+outbox:
+  publisher:
+    threshold-days: 7
+    page-size: 20
+    interval: 5000
+    cleanup-cron: "0 0 3 * * *"

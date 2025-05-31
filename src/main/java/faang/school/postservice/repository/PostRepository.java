@@ -3,6 +3,7 @@ package faang.school.postservice.repository;
 import faang.school.postservice.model.Post;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -23,4 +24,16 @@ public interface PostRepository extends CrudRepository<Post, Long> {
 
     @Query("SELECT p FROM Post p WHERE p.verifiedAt IS NULL")
     List<Post> findByVerifiedAtIsNull();
+
+    @Query(value = """
+        SELECT * FROM post p
+        WHERE p.author_id IN (:authorIds)
+        AND p.published = true
+        ORDER BY p.published_at DESC
+        LIMIT :limit
+        """, nativeQuery = true)
+    List<Post> findRecentPublishedPostsByAuthorIds(
+            @Param("authorIds") List<Long> authorIds,
+            @Param("limit") int limit
+    );
 }
