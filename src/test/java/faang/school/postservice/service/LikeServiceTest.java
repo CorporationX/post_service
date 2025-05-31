@@ -9,6 +9,7 @@ import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.service.comments.CommentService;
+import faang.school.postservice.service.utils.PostServiceUtils;
 import feign.FeignException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,7 +38,7 @@ class LikeServiceTest {
     @Mock
     private LikeRepository likeRepository;
     @Mock
-    private PostService postService;
+    private PostServiceUtils postServiceUtils;
     @Mock
     private CommentService commentService;
     @Mock
@@ -80,7 +81,7 @@ class LikeServiceTest {
         when(userServiceClient.getUser(anyLong())).thenReturn(userDto);
         when(likeRepository.findByPostIdAndUserId(anyLong(), anyLong()))
                 .thenReturn(Optional.empty());
-        when(postService.getPost(anyLong())).thenReturn(Mockito.mock(Post.class));
+        when(postServiceUtils.getPost(anyLong())).thenReturn(Mockito.mock(Post.class));
         when(likeRepository.save(any())).thenReturn(likeEntity);
 
         assertNotNull(likeRepository.save(any()));

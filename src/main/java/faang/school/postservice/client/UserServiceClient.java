@@ -1,15 +1,28 @@
 package faang.school.postservice.client;
 
 import faang.school.postservice.dto.user.UserDto;
+import feign.FeignException;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.http.ResponseEntity;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import java.net.ConnectException;
+import java.net.SocketTimeoutException;
 import java.util.List;
 
 @FeignClient(name = "user-service", url = "${user-service.host}:${user-service.port}")
+@Retryable(
+        retryFor = {SocketTimeoutException.class,
+                ConnectException.class,
+                FeignException.ServiceUnavailable.class,
+                FeignException.GatewayTimeout.class},
+        backoff = @Backoff(delay = 1000, multiplier = 2)
+)
 public interface UserServiceClient {
 
     @GetMapping("/users/{userId}")
@@ -17,4 +30,7 @@ public interface UserServiceClient {
 
     @PostMapping("/users")
     List<UserDto> getUsersByIds(@RequestBody List<Long> ids);
+
+    @GetMapping("/users/{userId}/exists")
+    ResponseEntity<Void> checkUserExists(Long userId);
 }
