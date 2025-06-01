@@ -48,8 +48,6 @@ class CommentServiceTest {
     @Mock
     private PostRepository postRepository;
 
-    private CommentValidation commentValidation;
-
     @InjectMocks
     private CommentService commentService;
 
@@ -61,7 +59,7 @@ class CommentServiceTest {
 
     @BeforeEach
     void setUp() {
-        commentValidation = new CommentValidation(postRepository);
+        CommentValidation commentValidation = new CommentValidation(postRepository);
         commentService = new CommentService(
                 userServiceClient,
                 commentRepository,
