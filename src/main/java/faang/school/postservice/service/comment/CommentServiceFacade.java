@@ -16,16 +16,14 @@ public class CommentServiceFacade {
     private final MapperComment mapperComment;
     private final CommentService commentService;
 
-    public CommentDtoResponse createComment(CommentCreateDto commentDto) {
-        Comment comment = mapperComment.fromCreatDtoToEntity(commentDto);
-        Comment commentCreate = commentService.createComment(comment);
+    public CommentDtoResponse createComment(long postId, String content) {
+        Comment commentCreate = commentService.createComment(postId, content);
 
         return mapperComment.fromEntityToDto(commentCreate);
     }
 
-    public CommentDtoResponse updateComment(CommentUpdateDto commentDto) {
-        Comment comment = mapperComment.fromUpdateDtoToEntity(commentDto);
-        Comment commentUpdate = commentService.updateComment(comment);
+    public CommentDtoResponse updateComment(long commentId, String content) {
+        Comment commentUpdate = commentService.updateComment(commentId, content);
 
         return mapperComment.fromEntityToDto(commentUpdate);
     }

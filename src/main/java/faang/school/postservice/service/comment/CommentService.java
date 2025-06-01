@@ -4,7 +4,9 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.model.Comment;
+import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
+import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validation.comment.CommentValidation;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -20,29 +22,36 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final CommentValidation commentValidation;
     private final UserContext userContext;
+    private final PostRepository postRepository;
 
     @Transactional
-    public Comment createComment(Comment comment) {
-        long authorId = comment.getAuthorId();
-        long postId = comment.getPost().getId();
-        String content = comment.getContent();
+    public Comment createComment(long postId, String content) {
+        long authorId = userContext.getUserId();
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException("the post was not found in the database"));
         UserDto userDto = userServiceClient.getUser(authorId);
 
         commentValidation.validateLengthContentComment(content);
         commentValidation.checkAuthorEqualsUser(authorId, userDto.id());
-        commentValidation.validatePostExists(postId);
+
+        Comment comment = Comment.builder()
+                .authorId(authorId)
+                .post(post)
+                .content(content)
+                .build();
 
         return commentRepository.save(comment);
     }
 
     @Transactional
-    public Comment updateComment(Comment updateComment) {
-        long commentId = updateComment.getId();
-        String newContent = updateComment.getContent();
+    public Comment updateComment(long commentId, String newContent) {
+
         Comment comment = getComment(commentId);
+        long authorId = userContext.getUserId();
 
         commentValidation.validateLengthContentComment(newContent);
         commentValidation.checkContentNotEquals(comment.getContent(), newContent);
+        commentValidation.checkAuthorEqualsUser(authorId, comment.getAuthorId());
 
         comment.setContent(newContent);
         return commentRepository.save(comment);
@@ -51,7 +60,7 @@ public class CommentService {
     @Transactional(readOnly = true)
     public List<Comment> getAllComments(long postId) {
         List<Comment> comments = commentRepository.findAllByPostId(postId);
-        if(comments.isEmpty()) {
+        if (comments.isEmpty()) {
             commentValidation.validatePostExists(postId);
         }
         return comments;
@@ -61,6 +70,7 @@ public class CommentService {
     public void deleteComment(long commentId) {
         long userId = userContext.getUserId();
         Comment comment = getComment(commentId);
+
         commentValidation.checkAuthorEqualsUser(userId, comment.getAuthorId());
 
         commentRepository.deleteById(commentId);

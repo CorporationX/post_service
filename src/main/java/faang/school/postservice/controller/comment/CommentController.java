@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -23,15 +24,17 @@ import java.util.List;
 public class CommentController {
     private final CommentServiceFacade commentServiceF;
 
-    @PostMapping
-    public ResponseEntity<CommentDtoResponse> createComment(@RequestBody CommentCreateDto commentDto) {
-        CommentDtoResponse commentDtoResponse = commentServiceF.createComment(commentDto);
+    @PostMapping("/post/{postId}")
+    public ResponseEntity<CommentDtoResponse> createComment(@PathVariable long postId, @RequestParam String content) {
+        CommentDtoResponse commentDtoResponse = commentServiceF.createComment(postId, content);
         return ResponseEntity.ok(commentDtoResponse);
     }
 
-    @PatchMapping
-    public ResponseEntity<CommentDtoResponse> updateComment(@RequestBody CommentUpdateDto commentDto) {
-        CommentDtoResponse commentDtoResponse = commentServiceF.updateComment(commentDto);
+    // todo проверить на null Long
+
+    @PatchMapping("/{commentId}")
+    public ResponseEntity<CommentDtoResponse> updateComment(@PathVariable long commentId, String newContent) {
+        CommentDtoResponse commentDtoResponse = commentServiceF.updateComment(commentId, newContent);
         return ResponseEntity.ok(commentDtoResponse);
     }
 

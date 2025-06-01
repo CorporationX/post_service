@@ -13,7 +13,6 @@ import lombok.NoArgsConstructor;
 public class CommentCreateDto {
 
     private Long postId;
-    private Long authorId;
     @NotBlank
     private String content;
 }
