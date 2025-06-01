@@ -61,10 +61,16 @@ spring:
         notification: "notification-topic"
         user-ban: "user-ban-topic"
         post-like: "post-like-event-topic"
+        news-feed-comment: "news-comment-topic"
+        post-view: "post-view-topic"
         post: "post-topic"
     consumer:
       group-id:
         post: "post-group"
+    consumers:
+      post-view: "post-view-consumer"
+    listener:
+      ack-mode: MANUAL
 
 server:
   port: 8081
