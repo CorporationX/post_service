@@ -19,6 +19,6 @@ public class RedisProperties {
     private Map<String, String> topics;
 
     public String getTopic(@NonNull EventType eventType) {
-        return topics.get(eventType.getKey());
+        return topics.get(eventType.name());
     }
 }

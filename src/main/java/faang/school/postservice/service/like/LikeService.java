@@ -1,12 +1,14 @@
 package faang.school.postservice.service.like;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.event.EventDto;
 import faang.school.postservice.dto.event.LikeEvent;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.event.EventType;
 import faang.school.postservice.publisher.EventPublisher;
+import faang.school.postservice.publisher.KafkaEventPublisher;
 import faang.school.postservice.publisher.LikePublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
@@ -27,7 +29,9 @@ public class LikeService {
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final UserServiceClient userServiceClient;
-    private final LikePublisher likePublisher;
+    private final EventPublisher redisPublisher; // для Redis
+    private final KafkaEventPublisher kafkaPublisher; // общий Kafka-публикатор
+
 
     public void likeThePost(long postId, long userId) {
         validationExistsAuthor(userId);
@@ -37,11 +41,26 @@ public class LikeService {
                 .userId(userId)
                 .post(post).build();
         likeRepository.save(like);
-        likePublisher.publish(LikeEvent.builder().postId(post.getId())
+
+        EventType eventType = EventType.LIKED_POST;
+
+        LikeEvent likeEvent = LikeEvent.builder()
+                .postId(postId)
                 .authorId(post.getAuthorId())
                 .userId(userId)
                 .likedAt(LocalDateTime.now())
-                .type(EventType.LIKED_POST).build());
+                .type(eventType)
+                .build();
+
+        redisPublisher.publish(
+                EventDto.builder()
+                        .eventId(like.getId())
+                        .authorId(post.getAuthorId())
+                        .eventType(eventType)
+                        .build()
+        );
+
+        kafkaPublisher.publish(eventType, likeEvent);
     }
 
     public void likeTheComment(long commentId, long userId) {
