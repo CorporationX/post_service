@@ -1,4 +1,4 @@
-package faang.school.postservice.controller;
+package faang.school.postservice.controller.like;
 
 import faang.school.postservice.service.LikeService;
 import lombok.RequiredArgsConstructor;
@@ -25,10 +25,12 @@ public class LikeController {
 
     @PostMapping("/comment/{commentId}/user/{userId}")
     public void addLikeComment(@PathVariable Long commentId, @PathVariable Long userId) {
+        likeService.addLikeComment(commentId, userId);
     }
 
     @DeleteMapping("/comment/{commentId}/user/{userId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void removeLikeComment(@PathVariable Long commentId, @PathVariable Long userId) {
+        likeService.removeLikeComment(commentId, userId);
     }
 }
