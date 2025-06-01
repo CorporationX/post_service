@@ -1,7 +1,6 @@
 package faang.school.postservice.validation.comment;
 
 import faang.school.postservice.exception.DataValidationException;
-import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;

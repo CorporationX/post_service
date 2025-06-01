@@ -27,8 +27,6 @@ public class CommentController {
         return ResponseEntity.ok(commentDtoResponse);
     }
 
-    // todo проверить на null Long
-
     @PatchMapping("/{commentId}")
     public ResponseEntity<CommentDtoResponse> updateComment(@PathVariable long commentId, String newContent) {
         CommentDtoResponse commentDtoResponse = commentServiceF.updateComment(commentId, newContent);

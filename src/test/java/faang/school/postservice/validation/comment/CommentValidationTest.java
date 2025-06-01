@@ -1,7 +1,6 @@
 package faang.school.postservice.validation.comment;
 
 import faang.school.postservice.exception.DataValidationException;
-import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.Test;
@@ -19,15 +18,10 @@ import static org.mockito.Mockito.when;
 class CommentValidationTest {
     private static final long POST_ID = 1L;
     private static final long USER_ID = 2L;
-    private static final long COMMENT_ID = 3L;
     private static final String CONTENT = "content";
 
     @Mock
     private PostRepository postRepository;
-
-    @Mock
-    private CommentRepository commentRepository;
-
 
     @InjectMocks
     private CommentValidation commentValidation;
