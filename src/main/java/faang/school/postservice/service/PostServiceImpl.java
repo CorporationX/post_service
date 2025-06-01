@@ -152,7 +152,7 @@ public class PostServiceImpl implements PostService {
                 .toList();
     }
 
-    private Post getExistingPost(Long id) {
+    public Post getExistingPost(Long id) {
         return postRepository.findById(id)
                 .filter(post -> !post.isDeleted())
                 .orElseThrow(() ->
