@@ -10,6 +10,7 @@ import faang.school.postservice.exception.NotFoundException;
 import faang.school.postservice.exception.PostNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.repository.AuthorCacheRepository;
 import faang.school.postservice.repository.PostRepository;
 import io.minio.BucketExistsArgs;
 import io.minio.MakeBucketArgs;
@@ -76,6 +77,7 @@ public class PostServiceImpl implements PostService {
     private final PostModerationDictionaryImpl moderationDictionary;
     private final RedisTemplate<String, Object> redisTemplate;
     private final ChannelTopic channelTopic;
+    private final AuthorCacheRepository authorCacheRepository;
 
     @Value("${app.scheduling.post.max-posts-per-time}")
     private int limitToModerate;
@@ -114,6 +116,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    @Transactional
     public PostDto publishPost(Long postId) {
         Post post = postRepository.findById(postId).orElseThrow(() -> new NotFoundException(POST_NOT_EXIST));
         if (post.isPublished()) {
@@ -122,6 +125,7 @@ public class PostServiceImpl implements PostService {
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
         post = postRepository.save(post);
+        authorCacheRepository.saveAuthor(postId, post.getAuthorId());
         return postMapper.toDto(post);
     }
 
