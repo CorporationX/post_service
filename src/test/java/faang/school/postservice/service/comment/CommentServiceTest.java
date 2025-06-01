@@ -1,15 +1,19 @@
 package faang.school.postservice.service.comment;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
+import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validation.comment.CommentValidation;
 import jakarta.persistence.EntityNotFoundException;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -18,11 +22,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import static org.junit.Assert.assertSame;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -37,23 +44,39 @@ class CommentServiceTest {
     private CommentRepository commentRepository;
 
     @Mock
-    private CommentValidation commentValidation;
+    private UserServiceClient userServiceClient;
 
     @Mock
-    private UserServiceClient userServiceClient;
+    private UserContext userContext;
+
+    @Mock
+    private PostRepository postRepository;
+
+    private CommentValidation commentValidation;
 
     @InjectMocks
     private CommentService commentService;
 
     private Comment comment;
-    private Comment commentNew;
+    private Comment commentSaved;
     private UserDto userDto;
+    private Post post;
+
 
     @BeforeEach
     void setUp() {
-        Post post = new Post();
+        commentValidation = new CommentValidation(postRepository);
+        commentService = new CommentService(
+                userServiceClient,
+                commentRepository,
+                commentValidation,
+                userContext,
+                postRepository);
+
+        post = new Post();
         post.setId(POST_ID);
-        commentNew = Comment.builder()
+
+        commentSaved = Comment.builder()
                 .id(COMMENT_ID)
                 .authorId(USER_ID)
                 .post(post)
@@ -70,46 +93,59 @@ class CommentServiceTest {
 
     @Test
     void testCreateCommentWhenCommentCreated() {
+        when(userContext.getUserId()).thenReturn(USER_ID);
+        when(postRepository.findById(POST_ID)).thenReturn(Optional.of(post));
         when(userServiceClient.getUser(USER_ID)).thenReturn(userDto);
-        doNothing().when(commentValidation).validateLengthContentComment(CONTENT);
-        doNothing().when(commentValidation).checkAuthorEqualsUser(USER_ID, USER_ID);
-        doNothing().when(commentValidation).validatePostExists(POST_ID);
-        when(commentRepository.save(comment)).thenReturn(commentNew);
+        when(commentRepository.save(comment)).thenReturn(commentSaved);
 
-        Comment result = commentService.createComment(comment);
+        ArgumentCaptor<Comment> commentCaptor = ArgumentCaptor.forClass(Comment.class);
 
+        Comment result = commentService.createComment(POST_ID, CONTENT);
+
+        verify(commentRepository).save(commentCaptor.capture());
         assertEquals(COMMENT_ID, result.getId());
-        verify(commentValidation).validateLengthContentComment(CONTENT);
-        verify(commentValidation).checkAuthorEqualsUser(USER_ID, USER_ID);
-        verify(commentValidation).validatePostExists(POST_ID);
+        assertEquals(commentSaved.getAuthorId(), commentCaptor.getValue().getAuthorId());
+        verify(userContext).getUserId();
+        verify(postRepository).findById(POST_ID);
         verify(userServiceClient).getUser(USER_ID);
-        verify(commentRepository).save(comment);
+    }
+
+    @Test
+    void testCreateCommentWhenPostNotFound() {
+        when(userContext.getUserId()).thenReturn(USER_ID);
+        when(postRepository.findById(POST_ID)).thenReturn(Optional.empty());
+
+        assertThrows(EntityNotFoundException.class,
+                () -> commentService.createComment(POST_ID, CONTENT));
+        verify(userContext).getUserId();
+        verify(postRepository).findById(POST_ID);
+        verify(userServiceClient, never()).getUser(USER_ID);
+        verify(commentRepository, never()).save(comment);
     }
 
     @Test
     void testUpdateCommentWhenCommentUpdated() {
         String otherContent = CONTENT + "other";
-        commentNew.setContent(otherContent);
+        Comment commentNewContent = comment;
+        commentNewContent.setId(COMMENT_ID);
+        commentNewContent.setContent(otherContent);
 
-        when(commentRepository.findById(COMMENT_ID)).thenReturn(Optional.of(commentNew));
-        doNothing().when(commentValidation).validateLengthContentComment(otherContent);
-        doNothing().when(commentValidation).checkContentNotEquals(anyString(), anyString());
-        when(commentRepository.save(commentNew)).thenReturn(commentNew);
+        ArgumentCaptor<Comment> commentCaptor = ArgumentCaptor.forClass(Comment.class);
+        when(userContext.getUserId()).thenReturn(USER_ID);
+        when(commentRepository.findById(COMMENT_ID)).thenReturn(Optional.of(commentSaved));
+        when(commentRepository.save(commentSaved)).thenReturn(commentNewContent);
 
-        Comment result = commentService.updateComment(commentNew);
+        Comment result = commentService.updateComment(COMMENT_ID, otherContent);
 
-        assertEquals(commentNew.getId(), result.getId());
-        assertEquals(commentNew.getContent(), result.getContent());
-        verify(commentValidation).validateLengthContentComment(otherContent);
-        verify(commentValidation).checkContentNotEquals(anyString(), anyString());
-        verify(commentRepository).save(commentNew);
+        assertEquals(commentSaved.getId(), result.getId());
+        assertEquals(commentSaved.getContent(), result.getContent());
+        verify(userContext).getUserId();
+        verify(commentRepository).save(commentCaptor.capture());
     }
 
     @Test
     void testGetAllCommentWhenPostExists() {
-        List<Comment> comments = List.of(comment, commentNew);
-
-        doNothing().when(commentValidation).validatePostExists(POST_ID);
+        List<Comment> comments = List.of(comment, commentSaved);
         when(commentRepository.findAllByPostId(POST_ID)).thenReturn(comments);
 
         List<Comment> result = commentService.getAllComments(POST_ID);
@@ -117,39 +153,36 @@ class CommentServiceTest {
         assertEquals(comments.get(0).getId(), result.get(0).getId());
         assertEquals(comments.get(1).getId(), result.get(1).getId());
         assertEquals(comments.size(), result.size());
-        verify(commentValidation).validatePostExists(POST_ID);
         verify(commentRepository).findAllByPostId(POST_ID);
     }
 
 
     @Test
     void testGetAllCommentWhenListCommentsEmpty() {
-        doNothing().when(commentValidation).validatePostExists(POST_ID);
         when(commentRepository.findAllByPostId(POST_ID)).thenReturn(Collections.emptyList());
+        when(postRepository.existsById(POST_ID)).thenReturn(true);
 
         List<Comment> result = commentService.getAllComments(POST_ID);
 
         assertEquals(Collections.emptyList(), result);
-        verify(commentValidation).validatePostExists(POST_ID);
         verify(commentRepository).findAllByPostId(POST_ID);
+        verify(postRepository).existsById(POST_ID);
     }
 
     @Test
     void testDeleteCommentWhenCommentExists() {
-        doNothing().when(commentValidation).checkAuthorEqualsUser(USER_ID, USER_ID);
-        when(commentRepository.findById(COMMENT_ID)).thenReturn(Optional.of(commentNew));
+        when(userContext.getUserId()).thenReturn(USER_ID);
+        when(commentRepository.findById(COMMENT_ID)).thenReturn(Optional.of(commentSaved));
         doNothing().when(commentRepository).deleteById(COMMENT_ID);
 
         assertDoesNotThrow(() -> commentService.deleteComment(COMMENT_ID));
-        verify(commentValidation).validateCommentExists(COMMENT_ID);
-        verify(commentValidation).checkAuthorEqualsUser(USER_ID, USER_ID);
+        verify(userContext).getUserId();
         verify(commentRepository).deleteById(COMMENT_ID);
     }
 
     @Test
     void testGetCommentWhenCommentNotExists() {
         when(commentRepository.findById(COMMENT_ID)).thenReturn(Optional.empty());
-
         assertThrows(EntityNotFoundException.class,
                 () -> commentService.getComment(COMMENT_ID));
     }

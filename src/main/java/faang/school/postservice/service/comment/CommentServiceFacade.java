@@ -1,8 +1,6 @@
 package faang.school.postservice.service.comment;
 
-import faang.school.postservice.dto.comment.CommentCreateDto;
 import faang.school.postservice.dto.comment.CommentDtoResponse;
-import faang.school.postservice.dto.comment.CommentUpdateDto;
 import faang.school.postservice.mapper.comment.MapperComment;
 import faang.school.postservice.model.Comment;
 import lombok.RequiredArgsConstructor;

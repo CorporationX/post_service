@@ -107,11 +107,4 @@ class CommentValidationTest {
                 () -> commentValidation.validatePostExists(null));
     }
 
-    @Test
-    void testValidateCommentExistsWhenCommentNoExists() {
-        when(commentRepository.existsById(COMMENT_ID)).thenReturn(false);
-
-        assertThrows(EntityNotFoundException.class,
-                () -> commentValidation.validateCommentExists(COMMENT_ID));
-    }
 }

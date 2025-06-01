@@ -45,7 +45,6 @@ public class CommentService {
 
     @Transactional
     public Comment updateComment(long commentId, String newContent) {
-
         Comment comment = getComment(commentId);
         long authorId = userContext.getUserId();
 

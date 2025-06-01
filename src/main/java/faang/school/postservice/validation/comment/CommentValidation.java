@@ -15,8 +15,6 @@ public class CommentValidation {
     public static final int MAX_LENGTH_CONTENT = 4096;
 
     private final PostRepository postRepository;
-    private final CommentRepository commentRepository;
-
 
     public void validateLengthContentComment(String content) {
         if (content.isEmpty()) {
@@ -52,12 +50,6 @@ public class CommentValidation {
         }
         if (!postRepository.existsById(postId)) {
             throw new EntityNotFoundException(("the post does not exists %d".formatted(postId)));
-        }
-    }
-
-    public void validateCommentExists(long commentId) {
-        if (!commentRepository.existsById(commentId)) {
-            throw new EntityNotFoundException(("the comment does not exists %d".formatted(commentId)));
         }
     }
 }
