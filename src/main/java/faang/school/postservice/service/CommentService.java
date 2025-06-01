@@ -3,6 +3,7 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.event.CommentEventRedis;
+import faang.school.postservice.dto.feed.CommentRedisEvent;
 import faang.school.postservice.dto.kafkaevents.CommentEvent;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
@@ -10,6 +11,8 @@ import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.AuthorCommentCount;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.AuthorRequestEventPublisher;
+import faang.school.postservice.publisher.CommentAddedEventPublisher;
 import faang.school.postservice.publisher.CommentBanPublisher;
 import faang.school.postservice.publisher.CommentEvenRedisPublisher;
 import faang.school.postservice.publisher.CommentEventPublisher;
@@ -29,15 +32,19 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class CommentService {
+
     private static final int MAX_NOT_VERIFIED_COMMENTS = 5;
-    private final CommentRepository repository;
-    private final CommentMapper mapper;
+    private static final int MAX_LENGTH = 4096;
+
+    private final CommentRepository commentRepository;
+    private final CommentMapper commentMapper;
     private final PostRepository postRepository;
     private final UserServiceClient client;
-    private static final int MAX_LENGTH = 4096;
     private final CommentEventPublisher commentEventPublisher;
     private final CommentEvenRedisPublisher commentEvenRedisPublisher;
     private final CommentBanPublisher commentBanPublisher;
+    private final CommentAddedEventPublisher commentAddedEventPublisher;
+    private final AuthorRequestEventPublisher authorRequestEventPublisher;
 
     public CommentDto createComment(long userId, long postId, CommentDto commentDto) {
         UserDto user = client.getUser(userId);
@@ -48,9 +55,9 @@ public class CommentService {
                 .orElseThrow(() -> new DataValidationException("Пост с id %d не найден", postId));
         validateNullCommentDto(commentDto);
         validateCommentContent(commentDto);
-        Comment commentForSave = mapper.toEntity(commentDto);
+        Comment commentForSave = commentMapper.toEntity(commentDto);
         commentForSave.setPost(post);
-        Comment savedComment = repository.save(commentForSave);
+        Comment savedComment = commentRepository.save(commentForSave);
         log.info("Комментарий {} успешно опубликован", savedComment.getId());
 
         commentEventPublisher.publish(new CommentEvent(
@@ -69,42 +76,46 @@ public class CommentService {
                 .build();
         commentEvenRedisPublisher.publish(commentEvent);
         log.info("Комментарий {} отправлен в топик ", savedComment);
-        return mapper.toDto(savedComment);
+
+        CommentDto commentResponseDto = commentMapper.toDto(savedComment);
+        commentAddedEventPublisher.publish(createCommentAddedEvent(commentResponseDto));
+        authorRequestEventPublisher.publish(userId);
+        return commentResponseDto;
     }
 
     public CommentDto editComment(CommentDto commentDto, long commentId, String content) {
-        Comment targetComment = repository.findById(commentId)
+        Comment targetComment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new DataValidationException("Комментарий %d не найден", commentId));
 
         validateNullCommentDto(commentDto);
         validateCommentContent(commentDto);
         targetComment.setContent(content);
 
-        repository.save(targetComment);
+        commentRepository.save(targetComment);
         log.info("Комментарий {} успешно отредактирован", commentId);
 
-        return mapper.toDto(targetComment);
+        return commentMapper.toDto(targetComment);
     }
 
     public List<CommentDto> getAllComments(long postId) {
-        Post post = postRepository.findById(postId)
+        postRepository.findById(postId)
                 .orElseThrow(() -> new DataValidationException("Пост не найден"));
 
-        return repository.findAllByPostId(postId).stream()
+        return commentRepository.findAllByPostId(postId).stream()
                 .sorted(Comparator.comparing(Comment::getCreatedAt))
-                .map(mapper::toDto)
+                .map(commentMapper::toDto)
                 .toList();
     }
 
     public void deleteComment(long commentId) {
-        repository.findById(commentId)
+        commentRepository.findById(commentId)
                 .orElseThrow(() -> new DataValidationException("Комментарий %d не найден", commentId));
         log.info("Комментарий {} успешно удален", commentId);
-        repository.deleteById(commentId);
+        commentRepository.deleteById(commentId);
     }
 
     public void findNotVerifiedComments() {
-        List<Long> usersForBan = repository.findNotVerifiedComments().stream()
+        List<Long> usersForBan = commentRepository.findNotVerifiedComments().stream()
                 .collect(Collectors.toMap(AuthorCommentCount::getAuthorId, AuthorCommentCount::getCount))
                 .entrySet().stream()
                 .filter(entry -> entry.getValue() >= MAX_NOT_VERIFIED_COMMENTS)
@@ -114,6 +125,26 @@ public class CommentService {
         if (!usersForBan.isEmpty()) {
             commentBanPublisher.publish(usersForBan);
         }
+    }
+
+    public void getCommentsByPostId(Long postId, int limit) {
+        List<Comment> comments = commentRepository.findByPostId(postId, limit);
+        List<CommentDto> commentDtoList = comments.stream()
+                .map(commentMapper::toDto)
+                .sorted(Comparator.comparing(CommentDto::createdAt))
+                .toList();
+        sendCommentsEvent(commentDtoList);
+    }
+
+    public void sendCommentsEvent(List<CommentDto> commentDtoList) {
+        commentDtoList.forEach(comment ->
+                commentAddedEventPublisher.publish(createCommentAddedEvent(comment)));
+    }
+
+    public Map<Long, List<CommentDto>> getCommentsByPostIds(List<Long> postIds, int limit) {
+        return commentRepository.findCommentsByPostIds(postIds, limit).stream()
+                .map(commentMapper::toDto)
+                .collect(Collectors.groupingBy(CommentDto::postId));
     }
 
     private void validateCommentContent(CommentDto commentDto) {
@@ -136,4 +167,13 @@ public class CommentService {
         }
     }
 
+    private CommentRedisEvent createCommentAddedEvent(CommentDto commentDto) {
+        return CommentRedisEvent.builder()
+                .id(commentDto.id())
+                .authorId(commentDto.authorId())
+                .postId(commentDto.postId())
+                .content(commentDto.content())
+                .createdAt(commentDto.createdAt())
+                .build();
+    }
 }

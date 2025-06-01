@@ -2,6 +2,9 @@ package faang.school.postservice.mapper;
 
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.dto.PostResponseDto;
+import faang.school.postservice.dto.feed.PostFeedResponse;
+import faang.school.postservice.dto.feed.PostPublishEvent;
+import faang.school.postservice.dto.redis.PostRedisDto;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
@@ -17,9 +20,6 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface PostMapper {
 
-    @Mapping(target = "likes", ignore = true)
-    @Mapping(target = "comments", ignore = true)
-    @Mapping(target = "albums", ignore = true)
     @Mapping(target = "ad", ignore = true)
     @Mapping(target = "resources", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
@@ -34,7 +34,26 @@ public interface PostMapper {
     @Mapping(target = "hashtagsId", ignore = true)
     PostResponseDto toResponseDto(Post post);
 
+    PostRedisDto toRedisDto(PostResponseDto postResponseDto);
+
+    @Mapping(target = "postId", source = "id")
+    PostPublishEvent toPublishEvent(PostRedisDto postRedisDto);
+
     List<PostResponseDto> toResponseDtoList(List<Post> posts);
+
+    @Mapping(target = "comments", ignore = true)
+    @Mapping(target = "author", ignore = true)
+    PostFeedResponse responseToFeedResponse(PostResponseDto postResponseDto);
+
+    List<PostFeedResponse> responsesToFeedResponses(List<PostResponseDto> postResponseDtoList);
+
+    @Mapping(target = "likeCount", ignore = true)
+    @Mapping(target = "viewCount", ignore = true)
+    @Mapping(target = "comments", ignore = true)
+    @Mapping(target = "author", ignore = true)
+    PostFeedResponse redisEventToFeedResponse(PostRedisDto postRedisDto);
+
+    List<PostRedisDto> toRedisDtoList(List<PostResponseDto> postResponseDtoList);
 
     default List<Long> mapCommentToIds(List<Comment> comments) {
         return comments != null ? comments.stream()

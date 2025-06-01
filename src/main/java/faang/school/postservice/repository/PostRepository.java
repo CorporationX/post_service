@@ -1,10 +1,12 @@
 package faang.school.postservice.repository;
 
+import faang.school.postservice.dto.feed.ViewCountDto;
 import faang.school.postservice.model.Post;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
 import java.util.List;
 
 public interface PostRepository extends CrudRepository<Post, Long> {
@@ -32,4 +34,18 @@ public interface PostRepository extends CrudRepository<Post, Long> {
     List<Long> findAuthorIdsWithMinRejectedPosts(@Param("minRejectedPosts") int minRejectedPosts);
 
     List<Post> findAllByIdIn(List<Long> ids);
+
+    @Query("""
+        SELECT p FROM Post p
+        WHERE p.authorId IN :authorIds
+        ORDER BY p.publishedAt DESC
+    """)
+    List<Post> findPostsByAuthorIds(@Param("authorIds") Collection<Long> authorIds);
+
+    @Query("""
+        SELECT new faang.school.postservice.dto.feed.ViewCountDto(p.id, p.viewCount)
+        FROM Post p
+        WHERE p.id IN :postIds
+    """)
+    List<ViewCountDto> findViewsByPostIds(@Param("postIds") List<Long> postIds);
 }

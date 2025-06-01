@@ -1,7 +1,7 @@
 spring:
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/postgres
+    url: jdbc:postgresql://localhost:5432/postgres?reWriteBatchedInserts=true
     username: user
     password: password
 
@@ -9,10 +9,13 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: none
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         format_sql: true
+        jdbc.batch_size: 1000
+        order_inserts: true
+        order_updates: true
 
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
@@ -22,12 +25,16 @@ spring:
       port: 6379
       host: localhost
       channels:
-        calculations_channel:
-          name: calculations_channel
         user-ban: user-ban
         postViewEventPublisher: PostViewEvent_topic
         comment_channel: comment_topic
         like-event: likeEventTopic
+      ttl-days-posts: 1
+      ttl-days-users: 1
+      object-cache-options:
+        posts-count: 500
+        comments-count: 3
+        returning-posts-count: 20
     kafka:
       bootstrap-servers: localhost:9092
       topic:
@@ -41,10 +48,50 @@ spring:
           name: "hashtag-removing-topic"
           partitions: 3
           replicas: 1
+        followers-request:
+          name: "post-followers-topic"
+          partitions: 3
+          replicas: 1
+        posts:
+          name: "posts-topic"
+          partitions: 3
+          replicas: 1
+        comment-added:
+          name: "comment-added-topic"
+          partitions: 3
+          replicas: 1
+        like-added:
+          name: "like-added-topic"
+          partitions: 3
+          replicas: 1
+        like-removed:
+          name: "like-removed-topic"
+          partitions: 3
+          replicas: 1
+        posts-view:
+          name: "post-view-topic"
+          partitions: 3
+          replicas: 1
+        author-request:
+          name: "author-request-topic"
+          partitions: 3
+          replicas: 1
+        author-response:
+          name: "author-response-topic"
+          partitions: 3
+          replicas: 1
+        feed-warmup:
+          name: "feed-warmup-topic"
+          partitions: 3
+          replicas: 1
+        feed-users-response:
+          name: "feed-users-response-topic"
+          partitions: 3
+          replicas: 1
       producer:
-        retries: 3
         retry-backoff-ms: 1000
         acks: all
+        enable-idempotence: true
       consumer:
         group-id: post-group
         auto-offset-reset: earliest
@@ -57,7 +104,7 @@ server:
 
 logging:
   level:
-    root: info
+    root: debug
 
 user-service:
   host: localhost
@@ -79,14 +126,33 @@ thread-pool:
   author-ban:
     size: 2
     shutdown-timeout-seconds: 30
+  post-after-publisher:
+    core-pool-size: 5
+    max-pool-size: 8
+    keep-alive-seconds: 60
+    allow-core-thread-timeout: false
+    thread-name-prefix: PostAfterPublisherExecutor-
+    wait-for-tasks-to-complete-on-shutdown: true
+    await-termination-seconds: 30
+  view-count-updater:
+    core-pool-size: 1
+    max-pool-size: 1
+    thread-name-prefix: ViewCountUpdaterExecutor-
 
 batch:
   size: 1000
+  users-per-page: 1000
+  users-forming-feed: 50
+  post-view-changed: 500
+
+processors-setting:
+  released-processors: 2
 
 cron:
   delete-expired-posts: 0 49 15 * * FRI
   author-ban: 0 0 0 * * *
   comment-ban: 0 13 18 * * FRI
+  update-view-count: 0 0/30 * * * *
 
 ban-properties:
   value-rejected-posts: 5

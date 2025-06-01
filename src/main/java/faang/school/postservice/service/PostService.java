@@ -7,15 +7,13 @@ import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.dto.PostResponseDto;
 import faang.school.postservice.dto.event.HashtagAddingEvent;
 import faang.school.postservice.dto.event.PostViewEvent;
+import faang.school.postservice.dto.feed.ViewCountDto;
 import faang.school.postservice.exception.AsyncPostProcessingException;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.HashtagServiceConnectionException;
 import faang.school.postservice.exception.PostAlreadyPublishedException;
 import faang.school.postservice.exception.PostUnverifiedException;
 import faang.school.postservice.mapper.PostMapper;
-import faang.school.postservice.model.Album;
-import faang.school.postservice.model.Comment;
-import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.model.VerifiedStatus;
@@ -23,9 +21,8 @@ import faang.school.postservice.model.ad.Ad;
 import faang.school.postservice.publisher.HashtagAddingEventPublisher;
 import faang.school.postservice.publisher.HashtagRemovingEventPublisher;
 import faang.school.postservice.publisher.PostViewEventPublisher;
-import faang.school.postservice.repository.AlbumRepository;
-import faang.school.postservice.repository.CommentRepository;
-import faang.school.postservice.repository.LikeRepository;
+import faang.school.postservice.publisher.PostsViewEventPublisher;
+import faang.school.postservice.repository.PostRedisRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ResourceRepository;
 import faang.school.postservice.repository.ad.AdRepository;
@@ -35,7 +32,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -43,37 +39,43 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class PostService {
+
     private final PostRepository postRepository;
     private final PostMapper postMapper;
     private final ProjectServiceClient projectServiceClient;
     private final UserServiceClient userServiceClient;
-    private final LikeRepository likeRepository;
-    private final CommentRepository commentRepository;
     private final AdRepository adRepository;
     private final ResourceRepository resourceRepository;
-    private final AlbumRepository albumRepository;
     private final PostViewEventPublisher postViewEventPublisher;
     private final ExecutorService executorService;
     private final HashtagAddingEventPublisher hashtagAddingPublisher;
     private final HashtagRemovingEventPublisher hashtagRemovingPublisher;
     private final HashtagServiceClient hashtagClient;
+    private final PostProcessingService postProcessingService;
+    private final PostsViewEventPublisher postsViewEventPublisher;
+    private final PostRedisRepository postRedisRepository;
 
     @Value("${batch.size}")
     private int batchSize;
 
     @Value("${thread-pool.publish-timeout}")
     private int threadTimeout;
+
+    @Value("${batch.post-view-changed}")
+    private int batchPostViewChanged;
 
     public void publishScheduledPosts() {
         List<Post> readyPosts = postRepository.findReadyToPublish();
@@ -88,7 +90,7 @@ public class PostService {
         for (List<Post> batch : batches) {
             CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
                 try {
-                    publishBatch(batch);
+                    postProcessingService.publishBatch(batch);
                 } catch (DataValidationException e) {
                     log.error("Ошибка валидации в списке: {}", e.getMessage());
                     throw new DataValidationException("Ошибка валидации в списке. Размер: {}", batch.size());
@@ -99,6 +101,7 @@ public class PostService {
             }, executorService);
 
             futures.add(future);
+            postProcessingService.processPostsAfterPublish(postMapper.toResponseDtoList(batch));
         }
 
         try {
@@ -117,23 +120,6 @@ public class PostService {
         }
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void publishBatch(List<Post> batch) {
-        if (batch == null || batch.isEmpty()) {
-            log.error("в списке не содержится постов");
-            throw new DataValidationException("список постов пуст");
-        }
-
-        for (Post post : batch) {
-            post.setPublished(true);
-            post.setPublishedAt(LocalDateTime.now());
-        }
-
-        postRepository.saveAll(batch);
-        log.info("Опубликовано {} постов с {} по {} id.",
-                batch.size(), batch.get(0).getId(), batch.get(batch.size() - 1).getId());
-    }
-
     public PostResponseDto create(PostDto postDto) {
         validateContent(postDto);
         validateAuthor(postDto.authorId(), postDto.projectId());
@@ -143,20 +129,14 @@ public class PostService {
             ad = adRepository.findById(postDto.adId()).orElseThrow(
                     () -> new RuntimeException("ad not found"));
         }
-        List<Comment> comments = commentRepository.findByIdIn(postDto
-                .commentsId() != null ? postDto.commentsId() : List.of());
-        List<Like> likes = likeRepository.findByIdIn(postDto
-                .likesId() != null ? postDto.likesId() : List.of());
         List<Resource> resources = resourceRepository.findByIdIn(postDto
                 .resourcesId() != null ? postDto.resourcesId() : List.of());
-        List<Album> albums = albumRepository.findByIdIn(postDto
-                .albumsId() != null ? postDto.albumsId() : List.of());
 
         post.setAd(ad);
-        post.setComments(comments);
-        post.setLikes(likes);
+        post.setComments(new ArrayList<>());
+        post.setLikes(new ArrayList<>());
         post.setResources(resources);
-        post.setAlbums(albums);
+        post.setAlbums(new ArrayList<>());
         post.setVerifiedStatus(VerifiedStatus.PENDING);
 
         postRepository.save(post);
@@ -187,7 +167,10 @@ public class PostService {
         post.setPublishedAt(LocalDateTime.now());
         postRepository.save(post);
         log.info("Post published: {}", post);
-        return postMapper.toResponseDto(post);
+
+        PostResponseDto postDto = postMapper.toResponseDto(post);
+        postProcessingService.processPostAfterPublish(postDto);
+        return postDto;
     }
 
     public PostResponseDto update(PostDto postDto, Long postId) {
@@ -216,6 +199,8 @@ public class PostService {
         PostResponseDto response = postMapper.toResponseDto(post);
         List<Long> hashtags = hashtagClient.getHashtagsIdsByPostId(postId);
         response.setHashtagsId(hashtags);
+
+        postsViewEventPublisher.publish(postId);
         return response;
     }
 
@@ -257,6 +242,38 @@ public class PostService {
 
     public List<PostResponseDto> getPostsByIds(List<Long> postIds) {
         return postMapper.toResponseDtoList(postRepository.findAllByIdIn(postIds));
+    }
+
+    public List<Post> getPostsByAuthorIds(Set<Long> authorIds) {
+        return postRepository.findPostsByAuthorIds(authorIds);
+    }
+
+    public Map<Long, Long> getCountViewsByPostIds(List<Long> postIds) {
+        return postRepository.findViewsByPostIds(postIds).stream()
+                .collect(Collectors.toMap(
+                        ViewCountDto::postId,
+                        ViewCountDto::viewCount)
+                );
+    }
+
+    @Transactional
+    public void updateViewCount() {
+        Map<Long, Long> viewCounts = postRedisRepository.getAllViewCounts();
+        List<Long> allIds = new ArrayList<>(viewCounts.keySet());
+
+        for (int i = 0; i < allIds.size(); i += batchPostViewChanged) {
+            List<Long> postIds = allIds.subList(i, Math.min(i + batchPostViewChanged, allIds.size()));
+            List<Post> posts = postRepository.findAllByIdIn(postIds);
+
+            posts.forEach(post -> {
+                Long redisViewCount = viewCounts.get(post.getId());
+                if (redisViewCount != null) {
+                    post.setViewCount(redisViewCount);
+                }
+            });
+
+            postRepository.saveAll(posts);
+        }
     }
 
     private void validateContent(PostDto postDto) {
@@ -340,6 +357,7 @@ public class PostService {
                 .sorted(Comparator.comparing(Post::getPublishedAt).reversed())
                 .peek(post -> postViewEventPublisher.published(
                         new PostViewEvent(post.getId(), userId, id, LocalDateTime.now())))
+                .peek(post -> postsViewEventPublisher.publish(post.getId()))
                 .map(postMapper::toResponseDto)
                 .peek(postDto -> postDto.setHashtagsId(hashtags.get(postDto.getId())))
                 .toList();

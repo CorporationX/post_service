@@ -1,0 +1,24 @@
+package faang.school.postservice.listener;
+
+import faang.school.postservice.dto.feed.CommentRedisEvent;
+import faang.school.postservice.repository.PostRedisRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.support.Acknowledgment;
+import org.springframework.stereotype.Component;
+
+@Component
+@RequiredArgsConstructor
+public class CommentAddedEventListener {
+
+    private final AbstractEventListener abstractEventListener;
+    private final PostRedisRepository postRedisRepository;
+
+    @KafkaListener(
+            topics = "${spring.data.kafka.topic.comment-added.name}",
+            groupId = "${spring.data.kafka.consumer.group-id}"
+    )
+    public void receive(String message, Acknowledgment ack) {
+        abstractEventListener.receiveAndHandle(message, CommentRedisEvent.class, postRedisRepository::addComment, ack);
+    }
+}

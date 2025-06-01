@@ -18,7 +18,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler({
             jakarta.persistence.EntityNotFoundException.class,
-            faang.school.postservice.exception.EntityNotFoundException.class
+            faang.school.postservice.exception.EntityNotFoundException.class,
+            UserNotFoundException.class
     })
     public ResponseEntity<ErrorResponse> handleExceptionsWithStatusNotFound(Exception ex) {
         return ResponseEntity.status(NOT_FOUND).body(getErrorResponse(ex));
@@ -28,7 +29,8 @@ public class GlobalExceptionHandler {
             MultipartException.class,
             PostUnverifiedException.class,
             DataValidationException.class,
-            JsonSerializationException.class
+            JsonSerializationException.class,
+            JsonDeserializationException.class
     })
     public ResponseEntity<ErrorResponse> handleExceptionsWithStatusBadRequest(Exception ex) {
         return ResponseEntity.status(BAD_REQUEST).body(getErrorResponse(ex));
@@ -45,7 +47,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler({
             HashtagServiceConnectionException.class,
-            AsyncPostProcessingException.class
+            AsyncPostProcessingException.class,
+            UserServiceConnectionException.class,
+            PageOverflowException.class
     })
     public ResponseEntity<ErrorResponse> handleExceptionsWithStatusInternalServerError(Exception ex) {
         return ResponseEntity.status(INTERNAL_SERVER_ERROR).body(getErrorResponse(ex));

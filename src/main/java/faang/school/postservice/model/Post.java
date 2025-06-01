@@ -88,4 +88,7 @@ public class Post {
     @Column(name = "verified", nullable = false)
     @Enumerated(EnumType.STRING)
     private VerifiedStatus verifiedStatus;
+
+    @Column(name = "views", nullable = false)
+    private long viewCount;
 }

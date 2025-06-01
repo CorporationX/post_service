@@ -3,13 +3,16 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.event.LikeEvent;
+import faang.school.postservice.dto.feed.LikeCountDto;
 import faang.school.postservice.exception.ConcurrentLikeException;
 import faang.school.postservice.exception.DuplicateEntityException;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.LikeAddedEventPublisher;
 import faang.school.postservice.publisher.LikeEventPublisher;
+import faang.school.postservice.publisher.LikeRemovedEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -17,11 +20,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -42,6 +46,8 @@ public class LikeService {
     private final UserContext userContext;
     private final UserServiceClient userClient;
     private final LikeEventPublisher likeEventPublisher;
+    private final LikeAddedEventPublisher likeAddedEventPublisher;
+    private final LikeRemovedEventPublisher likeRemovedEventPublisher;
 
     public void putLikeOnPost(Long postId) {
         Long userId = getContextUser();
@@ -63,6 +69,8 @@ public class LikeService {
 
             addLikeOnDatabase(userId, post, null);
             printMessageAddLike(postId);
+
+            likeAddedEventPublisher.publish(postId);
         } finally {
             userLock.unlock();
             Like like = likeRepository.findByPostIdAndUserId(postId, userId)
@@ -84,6 +92,8 @@ public class LikeService {
             }
             likeRepository.deleteByPostIdAndUserId(postId, userId);
             printMessageRemoveLike(postId);
+
+            likeRemovedEventPublisher.publish(postId);
         } finally {
             userLock.unlock();
         }
@@ -129,6 +139,14 @@ public class LikeService {
         } finally {
             userLock.unlock();
         }
+    }
+
+    public Map<Long, Integer> getCountsLikesByPostIds(List<Long> postIds) {
+        return likeRepository.countLikesByPostIds(postIds).stream()
+                .collect(Collectors.toMap(
+                        LikeCountDto::postId,
+                        LikeCountDto::likeCount
+                ));
     }
 
     private void validateEntityId(Long entityId) {
