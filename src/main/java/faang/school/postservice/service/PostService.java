@@ -1,14 +1,19 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.dto.post.PostDto;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
 public interface PostService {
 
-    PostDto createDraft(PostDto postDto);
+    PostDto createDraft(PostDto dto, List<MultipartFile> files);
+
+    PostDto createDraft(PostDto dto);
 
     PostDto publishPost(Long postId);
+
+    PostDto updatePost(Long postId, PostDto postDto, List<MultipartFile> newFiles);
 
     PostDto updatePost(Long postId, PostDto postDto);
 
