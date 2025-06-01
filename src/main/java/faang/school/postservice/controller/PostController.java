@@ -2,9 +2,13 @@ package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.post.PostRequestDto;
 import faang.school.postservice.dto.post.PostResponseDto;
+import faang.school.postservice.model.Post;
 import faang.school.postservice.service.PostService;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,6 +16,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -93,5 +99,14 @@ public class PostController {
         List<PostResponseDto> response = postService.getProjectPublishedPosts(projectId);
         log.info("Finished fetching published posts for project ID: {}", projectId);
         return response;
+    }
+
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    @GetMapping("/feed/{userId}")
+    public List<PostResponseDto> getFeed
+            (@PathVariable @Valid @NotNull Long userId,
+            @RequestParam(required = false) Long postId) {
+
+        return postService.getFeed(userId, postId);
     }
 }

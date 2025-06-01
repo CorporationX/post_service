@@ -10,7 +10,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.kafka.core.KafkaTemplate;
 
-import static faang.school.postservice.service.publisher.KafkaPublisher.FAILED_SERIALIZING_OBJECT;
+import static faang.school.postservice.contants.ErrorMessage.FAILED_SERIALIZING_OBJECT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
