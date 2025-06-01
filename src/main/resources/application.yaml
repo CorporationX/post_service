@@ -32,6 +32,14 @@ logging:
   level:
     root: info
 
+services:
+  s3:
+    endpoint: http://localhost:9000
+    accessKey: user
+    secretKey: password
+    bucketName: corpbucket
+    isMocked: false
+
 user-service:
   host: localhost
   port: 8080
