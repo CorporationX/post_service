@@ -3,12 +3,14 @@ package faang.school.postservice.service;
 import faang.school.postservice.event.PostViewEvent;
 import faang.school.postservice.exception.PostNotFoundException;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.publisher.KafkaPostViewProducer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 
 @Slf4j
@@ -25,7 +27,13 @@ public class PostViewService {
 
     private final RedisTemplate<String, String> redisTemplate;
     private final PostRepository postRepository;
+    private final KafkaPostViewProducer kafkaPostViewProducer;
 
+    public void processPostView(Long postId, Long userId) {
+        PostViewEvent event = new PostViewEvent(postId, userId, LocalDateTime.now());
+        kafkaPostViewProducer.sendPostViewEvent(event);
+    }
+  
     public void handlePostViewEvent(PostViewEvent event) {
         int incrementViews = postRepository.incrementViews(event.getPostId());
         if (incrementViews == 0) {
