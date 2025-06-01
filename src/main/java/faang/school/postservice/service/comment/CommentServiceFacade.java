@@ -36,7 +36,7 @@ public class CommentServiceFacade {
         return mapperComment.fromDtoListToEntityList(comments);
     }
 
-    public void deleteComment(long commentId, long authorId) {
-        commentService.deleteComment(commentId, authorId);
+    public void deleteComment(long commentId) {
+        commentService.deleteComment(commentId);
     }
 }

@@ -1,6 +1,7 @@
 package faang.school.postservice.service.comment;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.repository.CommentRepository;
@@ -18,6 +19,7 @@ public class CommentService {
     private final UserServiceClient userServiceClient;
     private final CommentRepository commentRepository;
     private final CommentValidation commentValidation;
+    private final UserContext userContext;
 
     @Transactional
     public Comment createComment(Comment comment) {
@@ -48,20 +50,18 @@ public class CommentService {
 
     @Transactional(readOnly = true)
     public List<Comment> getAllComments(long postId) {
-        commentValidation.validatePostExists(postId);
-
         List<Comment> comments = commentRepository.findAllByPostId(postId);
-        if (null == comments) {
-            throw new NullPointerException("List comments cannot be Null");
+        if(comments.isEmpty()) {
+            commentValidation.validatePostExists(postId);
         }
         return comments;
     }
 
     @Transactional
-    public void deleteComment(long commentId, long authorId) {
-        commentValidation.validateCommentExists(commentId);
+    public void deleteComment(long commentId) {
+        long userId = userContext.getUserId();
         Comment comment = getComment(commentId);
-        commentValidation.checkAuthorEqualsUser(authorId, comment.getAuthorId());
+        commentValidation.checkAuthorEqualsUser(userId, comment.getAuthorId());
 
         commentRepository.deleteById(commentId);
     }

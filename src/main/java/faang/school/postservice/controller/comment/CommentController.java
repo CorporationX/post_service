@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -43,8 +42,8 @@ public class CommentController {
     }
 
     @DeleteMapping("/{commentId}")
-    public ResponseEntity<Long> deleteComment(@PathVariable long commentId,  @RequestParam long authorId) {
-        commentServiceF.deleteComment(commentId, authorId);
+    public ResponseEntity<Long> deleteComment(@PathVariable long commentId) {
+        commentServiceF.deleteComment(commentId);
         return ResponseEntity.ok(commentId);
     }
 }

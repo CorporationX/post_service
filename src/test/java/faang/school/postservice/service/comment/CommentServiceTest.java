@@ -136,12 +136,11 @@ class CommentServiceTest {
 
     @Test
     void testDeleteCommentWhenCommentExists() {
-        doNothing().when(commentValidation).validateCommentExists(COMMENT_ID);
         doNothing().when(commentValidation).checkAuthorEqualsUser(USER_ID, USER_ID);
         when(commentRepository.findById(COMMENT_ID)).thenReturn(Optional.of(commentNew));
         doNothing().when(commentRepository).deleteById(COMMENT_ID);
 
-        assertDoesNotThrow(() -> commentService.deleteComment(COMMENT_ID, USER_ID));
+        assertDoesNotThrow(() -> commentService.deleteComment(COMMENT_ID));
         verify(commentValidation).validateCommentExists(COMMENT_ID);
         verify(commentValidation).checkAuthorEqualsUser(USER_ID, USER_ID);
         verify(commentRepository).deleteById(COMMENT_ID);
