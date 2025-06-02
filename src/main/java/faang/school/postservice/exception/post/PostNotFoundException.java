@@ -1,6 +1,6 @@
 package faang.school.postservice.exception.post;
 
-import java.util.EntityNotFoundException;
+import jakarta.persistence.EntityNotFoundException;
 
 public class PostNotFoundException extends EntityNotFoundException {
     public PostNotFoundException(String message) {
