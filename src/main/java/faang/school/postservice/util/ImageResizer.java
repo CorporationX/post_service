@@ -24,15 +24,18 @@ public class ImageResizer {
         validateFileType(file);
         BufferedImage image = convertFileToBufferedImage(file);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        int originalFirstSide = image.getHeight();
-        int originalSecondSide = image.getWidth();
-        int targetWidth = getTargetWidth(originalFirstSide, size);
-        int targetHigh = getTargetHeight(originalFirstSide, originalSecondSide, size);
 
+        int targetSide;
+        if (size == PictureSize.SMALL) {
+            targetSide = SMALL_PICTURE_MAX_SIDE_PXL;
+        }
+        else {
+            targetSide = LARGE_PICTURE_MAX_SIDE_PXL;
+        }
         try {
             Thumbnails.of(image)
-                    .forceSize(targetWidth, targetHigh)
-                    .outputFormat(file.getContentType().substring(file.getContentType().indexOf('/') + 1))
+                    .size(targetSide, targetSide)
+                    .keepAspectRatio(true)
                     .toOutputStream(outputStream);
         } catch (Exception e) {
             log.error("Exception while resizing image was thrown", e);
@@ -66,24 +69,6 @@ public class ImageResizer {
 //        Обеспечивает фактическую валидацию содержимого файла, что файл действительно является изображением.
 //        Например, файл с расширением .jpg может быть поврежден или не содержать изображение
         return originalImage;
-    }
-
-    private int getTargetWidth(int originalFirstSide, PictureSize size) {
-        if (size == PictureSize.SMALL) {
-            return Math.min(originalFirstSide, SMALL_PICTURE_MAX_SIDE_PXL);
-        }
-        return Math.min(originalFirstSide, LARGE_PICTURE_MAX_SIDE_PXL);
-    }
-
-    private int getTargetHeight(int originalFirstSide, int originalSecondSide, PictureSize size) {
-        if (originalFirstSide == originalSecondSide) {
-            return getTargetWidth(originalFirstSide, size);
-        }
-        if (originalFirstSide > originalSecondSide) {
-            return getTargetWidth(originalFirstSide, size) * originalSecondSide/originalFirstSide;
-        }
-        else
-            return getTargetWidth(originalSecondSide, size);
     }
 
     private void validateFileType(MultipartFile file) {
