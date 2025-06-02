@@ -1,10 +1,6 @@
 package faang.school.postservice.validation.comment;
 
-import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.exception.DataValidationException;
-import faang.school.postservice.model.Comment;
-import faang.school.postservice.model.Post;
-import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -17,13 +13,9 @@ import java.util.Objects;
 public class CommentValidation {
     public static final int MAX_LENGTH_CONTENT = 4096;
 
-    private final UserServiceClient userServiceClient;
     private final PostRepository postRepository;
-    private final CommentRepository commentRepository;
 
-
-    public void validateLengthContentComment(Comment comment) {
-        String content = comment.getContent();
+    public void validateLengthContentComment(String content) {
         if (content.isEmpty()) {
             throw new DataValidationException("the length of the comment is empty");
         }
@@ -33,36 +25,30 @@ public class CommentValidation {
         }
     }
 
-    public void validateAuthorExists(Comment comment) {
-        Long authorId = comment.getAuthorId();
-        userServiceClient.getUser(authorId);
+    public void checkAuthorEqualsUser(Long authorId, Long userId) {
+        if (null == authorId || null == userId) {
+            throw new DataValidationException("User cannot be Null");
+        }
+        if (!Objects.equals(authorId, userId)) {
+            throw new DataValidationException("userId and authorId must match");
+        }
     }
 
-    public void validateCommentEqualsUpdateComment(Comment comment, Comment updateComment) {
-        String contentComment = comment.getContent();
-        String contentUpdateComment = updateComment.getContent();
-        if (Objects.equals(contentComment, contentUpdateComment)) {
+    public void checkContentNotEquals(String oldContent, String newContent) {
+        if (null == oldContent || null == newContent) {
+            throw new DataValidationException("content cannot be Null");
+        }
+        if (Objects.equals(oldContent, newContent)) {
             throw new DataValidationException("the comment has not been updated");
         }
     }
 
-    public void validatePostExists(Comment comment) {
-        Post post = comment.getPost();
-        if (null == post) {
-            throw new DataValidationException("the comment is not linked to the post");
+    public void validatePostExists(Long postId) {
+        if (null == postId) {
+            throw new DataValidationException("post cannot be Null");
         }
-        validatePostExistsById(post.getId());
-    }
-
-    public void validatePostExistsById(long postId) {
         if (!postRepository.existsById(postId)) {
             throw new EntityNotFoundException(("the post does not exists %d".formatted(postId)));
-        }
-    }
-
-    public void validateCommentExists(long commentId) {
-        if (!commentRepository.existsById(commentId)) {
-            throw new EntityNotFoundException(("the comment does not exists %d".formatted(commentId)));
         }
     }
 }
