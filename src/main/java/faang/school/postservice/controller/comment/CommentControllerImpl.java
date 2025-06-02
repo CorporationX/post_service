@@ -18,13 +18,15 @@ public class CommentControllerImpl implements CommentController {
     private final CommentServiceFacade commentServiceF;
 
     @Override
-    public ResponseEntity<CommentDtoResponse> createComment(@PathVariable long postId, @RequestParam String content) {
+    public ResponseEntity<CommentDtoResponse> createComment(@PathVariable long postId,
+                                                            @RequestParam String content) {
         CommentDtoResponse commentDtoResponse = commentServiceF.createComment(postId, content);
         return ResponseEntity.ok(commentDtoResponse);
     }
 
     @Override
-    public ResponseEntity<CommentDtoResponse> updateComment(@PathVariable long commentId, @RequestParam String newContent) {
+    public ResponseEntity<CommentDtoResponse> updateComment(@PathVariable long commentId,
+                                                            @RequestParam String newContent) {
         CommentDtoResponse commentDtoResponse = commentServiceF.updateComment(commentId, newContent);
         return ResponseEntity.ok(commentDtoResponse);
     }

@@ -23,7 +23,8 @@ public interface CommentController {
     )
     @ApiResponse(responseCode = "200", description = "Комментарий создан")
     @PostMapping("/post/{postId}")
-    ResponseEntity<CommentDtoResponse> createComment(@PathVariable long postId, @RequestParam String content);
+    ResponseEntity<CommentDtoResponse> createComment(@PathVariable long postId,
+                                                     @RequestParam String content);
 
     @Operation(
             summary = "Обновления комментария",
@@ -32,7 +33,8 @@ public interface CommentController {
     )
     @ApiResponse(responseCode = "200", description = "Комментарий обновлен")
     @PatchMapping("/{commentId}")
-    ResponseEntity<CommentDtoResponse> updateComment(@PathVariable long commentId, @RequestParam String newContent);
+    ResponseEntity<CommentDtoResponse> updateComment(@PathVariable long commentId,
+                                                     @RequestParam String newContent);
 
     @Operation(
             summary = "Получить все комментарии поста",
