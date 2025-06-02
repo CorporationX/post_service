@@ -23,6 +23,8 @@ public class CommentControllerImpl implements CommentController {
                                                             @RequestParam String content) {
         CommentDtoResponse commentDtoResponse = commentServiceF.createComment(postId, content);
         return ResponseEntity.ok(commentDtoResponse);
+
+        //todo сюда добавить опциональное добавление файла
     }
 
     @Override
@@ -45,10 +47,13 @@ public class CommentControllerImpl implements CommentController {
     }
 
     @Override
-    public ResponseEntity<String> uploadFile(MultipartFile files) {
-        //todo прикрепить одно изображение можно
-        //
-
-        return null;
+    public ResponseEntity<String> uploadFile(long commentId, MultipartFile file) {
+        String fileName = file.getOriginalFilename();
+        long fileSize = file.getSize();
+        String contentType = file.getContentType();
+        // todo как то надо проверить размер, либо делать это на сервисном слое
+        // todo что передавать в сервис
+        commentServiceF.uploadFile(commentId, file);
+        return ResponseEntity.ok("File uploaded: %s".formatted(fileName));
     }
 }

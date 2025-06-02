@@ -5,6 +5,7 @@ import faang.school.postservice.mapper.comment.MapperComment;
 import faang.school.postservice.model.Comment;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -34,5 +35,9 @@ public class CommentServiceFacade {
 
     public void deleteComment(long commentId) {
         commentService.deleteComment(commentId);
+    }
+
+    public void uploadFile(long commentId, MultipartFile files) {
+        commentService.uploadFile(commentId, files);
     }
 }

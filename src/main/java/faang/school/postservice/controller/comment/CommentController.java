@@ -54,6 +54,7 @@ public interface CommentController {
     ResponseEntity<Long> deleteComment(@PathVariable long commentId);
 
     @ApiResponse(responseCode = "200", description = "Комментарий удален")
-    @PostMapping("/uploadFiles")
-    ResponseEntity<String> uploadFile(@RequestPart("file") MultipartFile files);
+    @PostMapping("/{commentId}/uploadFiles")
+    ResponseEntity<String> uploadFile(@PathVariable long commentId,
+                                      @RequestParam("file") MultipartFile file);
 }

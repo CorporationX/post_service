@@ -12,6 +12,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -79,5 +80,11 @@ public class CommentService {
     public Comment getComment(long commentId) {
         return commentRepository.findById(commentId).orElseThrow(
                 () -> new EntityNotFoundException("the comment was not found in the database"));
+    }
+
+    @Transactional
+    public void uploadFile(long commentId, MultipartFile files) {
+
+        //todo тут принимаем файл
     }
 }

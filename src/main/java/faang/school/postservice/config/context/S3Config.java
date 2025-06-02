@@ -31,6 +31,10 @@ public class S3Config {
     @Value("${minio.path-style-access}")
     private boolean pathStyleAccess;
 
+    @Value("${minio.max-file-size-mb}")
+    private long maxFileSizeMb;
+    //todo пока нигде не использую
+
     @Bean
     public S3Client s3Client() {
         return S3Client.builder()
