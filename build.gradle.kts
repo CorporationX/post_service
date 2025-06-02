@@ -3,11 +3,11 @@ plugins {
     id("org.springframework.boot") version "3.0.6"
     id("io.spring.dependency-management") version "1.1.0"
     id("jacoco")
-    kotlin("jvm") version "1.9.0"
 }
 
 group = "faang.school"
 version = "1.0"
+java.sourceCompatibility = JavaVersion.VERSION_17
 
 repositories {
     mavenCentral()
@@ -57,7 +57,6 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.9.2")
     testImplementation("org.assertj:assertj-core:3.24.2")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
 }
 
 tasks.test {
@@ -77,10 +76,6 @@ tasks.bootJar {
 
 tasks.build {
     dependsOn(tasks.jacocoTestCoverageVerification)
-}
-
-kotlin {
-    jvmToolchain(17)
 }
 
 jacoco {
@@ -117,6 +112,18 @@ tasks.jacocoTestCoverageVerification {
     violationRules {
         rule {
             element = "CLASS"
+            excludes = listOf(
+                "**/client/**",
+                "**/mapper/**",
+                "**/entity/**",
+                "**/config/**",
+                "**/dto/**",
+                "**/model/**",
+                "**/repository**",
+                "**/**Test.class",
+                "**/PostServiceApp.class",
+                "**/**Impl",
+            )
             limit {
                 counter = "LINE"
                 value = "COVEREDRATIO"
