@@ -67,7 +67,7 @@ dependencies {
     /**
      * Formating images
      */
-    implementation("net.coobird:thumbnailator:0.4.14")
+    implementation("net.coobird:thumbnailator:0.4.20")
 }
 
 tasks.test {

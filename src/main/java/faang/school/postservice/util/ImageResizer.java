@@ -25,8 +25,9 @@ public class ImageResizer {
     public ByteArrayInputStream getResizedImageStream(MultipartFile file, PictureSize size) {
         validateFileType(file);
         BufferedImage image = convertFileToBufferedImage(file);
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-
+        String fileName = file.getOriginalFilename();
+        assert fileName != null;
+        String formatName = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
         int targetSide;
         if (size == PictureSize.SMALL) {
             targetSide = SMALL_PICTURE_MAX_SIDE_PXL;
@@ -34,20 +35,22 @@ public class ImageResizer {
         else {
             targetSide = LARGE_PICTURE_MAX_SIDE_PXL;
         }
-        try {
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             Thumbnails.of(image)
                     .size(targetSide, targetSide)
                     .keepAspectRatio(true)
+                    .outputFormat(formatName)
                     .toOutputStream(outputStream);
+            return new ByteArrayInputStream(outputStream.toByteArray());
         } catch (Exception e) {
-            log.error("Exception while resizing image was thrown", e);
+            log.error("Exception while resizing image was thrown: {}", e.getMessage(), e);
             throw new FileProcessException("Exception while resizing image was thrown");
         }
-        return new ByteArrayInputStream(outputStream.toByteArray());
     }
 
     private BufferedImage convertFileToBufferedImage(MultipartFile file) {
-        String fileName = file.getName();
+        String fileName = file.getOriginalFilename();
+        assert fileName != null;
         String formatName = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
         List<String> formatList = Arrays.asList("jpg", "jpeg", "png", "gif", "bmp", "wbmp", "tiff");
 //        позволяет быстро отсеять файлы с неподдерживаемыми расширениями,

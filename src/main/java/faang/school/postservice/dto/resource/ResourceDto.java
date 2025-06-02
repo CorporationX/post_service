@@ -1,8 +1,8 @@
 package faang.school.postservice.dto.resource;
 
-import lombok.Getter;
+import lombok.Data;
 
-@Getter
+@Data
 public class ResourceDto {
-    String key;
+    private String key;
 }

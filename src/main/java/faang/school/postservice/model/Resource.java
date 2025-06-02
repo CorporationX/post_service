@@ -51,7 +51,7 @@ public class Resource {
     @JoinColumn(name = "post_id", nullable = false)
     private Post post;
 
-    @ManyToOne
-    @JoinColumn(name = "comment_id")
-    private Comment comment;
+//    @ManyToOne
+//    @JoinColumn(name = "comment_id")
+//    private Comment comment;
 }
