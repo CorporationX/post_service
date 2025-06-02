@@ -14,49 +14,49 @@ jobs:
         java-version: [17]
 
     steps:
-    - uses: actions/checkout@v2,
+    - uses: actions/checkout@v2
 
     - name: Set up JDK ${{ matrix.java-version }}
       uses: actions/setup-java@v2
       with:
         java-version: ${{ matrix.java-version }}
-        distribution: 'adopt',
+        distribution: 'adopt'
 
     - name: Grant execute permission for gradlew
-      run: chmod +x gradlew,
+      run: chmod +x gradlew
 
     - name: Build with Gradle (skip tests)
-      run: ./gradlew build testClasses -x test -x check -x checkstyleMain -x checkstyleTest --no-daemon,
+      run: ./gradlew build testClasses -x test -x check -x checkstyleMain -x checkstyleTest --no-daemon
 
     - name: Test with Gradle
-      run: ./gradlew test -x testClasses --no-daemon --continue,
+      run: ./gradlew test -x testClasses --no-daemon --continue
 
     - name: Verify Test Coverage
-      run: ./gradlew jacocoTestCoverageVerification --no-daemon,
+      run: ./gradlew jacocoTestCoverageVerification --no-daemon
 
     - name: Checkstyle verification
-      run: ./gradlew checkstyleMain checkstyleTest --no-daemon --continue,
+      run: ./gradlew checkstyleMain checkstyleTest --no-daemon --continue
 
     - name: Archive test report
       if: always()
       uses: actions/upload-artifact@v4
       with:
         name: test_report
-        path: build/reports/tests/test,
+        path: build/reports/tests/test
 
     - name: Archive jacoco report
       if: always()
       uses: actions/upload-artifact@v4
       with:
         name: jacoco_report
-        path: build/reports/jacoco/test/html,
+        path: build/reports/jacoco/test/html
 
     - name: Archive checkstyle report
       if: always()
       uses: actions/upload-artifact@v4
       with:
         name: checkstyle_report
-        path: build/reports/checkstyle,
+        path: build/reports/checkstyle
 
     - name: Get changed files
       id: changed-files
