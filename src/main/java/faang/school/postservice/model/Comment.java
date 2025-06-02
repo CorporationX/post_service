@@ -68,7 +68,6 @@ public class Comment {
         sb.append("id=").append(id);
         sb.append(", content='").append(content).append('\'');
         sb.append(", authorId=").append(authorId);
-        //sb.append(", post=").append(post);
         sb.append(", createdAt=").append(createdAt);
         sb.append(", updatedAt=").append(updatedAt);
         sb.append(", largeImageFileKey='").append(largeImageFileKey).append('\'');

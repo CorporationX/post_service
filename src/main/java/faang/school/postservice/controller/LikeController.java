@@ -36,43 +36,43 @@ public class LikeController {
     @PostMapping("/post")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Add user like to post", description = "Add user like to post")
-    public LikePostResponseDto addPost(
+    public LikePostResponseDto addLikeToPost(
             @Valid @RequestBody LikePostRequestDto likePostRequestDto
     ) {
         log.debug("add like to post request: {}", likePostRequestDto);
         LikeDto likeDto = getLikeDto(likePostRequestDto);
-        LikeDto resultLikeDto = likeService.addPost(likeDto);
+        LikeDto resultLikeDto = likeService.addLikeToPost(likeDto);
         return likeMapper.toPostResponseDto(resultLikeDto);
     }
 
     @DeleteMapping("/post/{postId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Delete user like from post", description = "Delete user like from post")
-    public void deletePost(@PathVariable Long postId) {
+    public void deleteLikeFromPost(@PathVariable Long postId) {
         log.debug("delete like from post. postId={}", postId);
         LikeDto likeDto = getPostLikeDto(postId);
-        likeService.deletePost(likeDto);
+        likeService.deleteLikeFromPost(likeDto);
     }
 
     @PostMapping("/comment")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Add user like to comment", description = "Add user like to comment")
-    public LikeCommentResponseDto addComment(
+    public LikeCommentResponseDto addLikeToComment(
             @Valid @RequestBody LikeCommentRequestDto likeCommentRequestDto
     ) {
         log.debug("add like to comment request: {}", likeCommentRequestDto);
         LikeDto likeDto = getLikeDto(likeCommentRequestDto);
-        LikeDto resultLikeDto = likeService.addComment(likeDto);
+        LikeDto resultLikeDto = likeService.addLikeToComment(likeDto);
         return likeMapper.toCommentResponseDto(resultLikeDto);
     }
 
     @DeleteMapping("/comment/{commentId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Delete user like from comment", description = "Delete user like from comment")
-    public void deleteComment(@PathVariable Long commentId) {
+    public void deleteLikeFromComment(@PathVariable Long commentId) {
         log.debug("delete like from comment. commentId: {}", commentId);
         LikeDto likeDto = getCommentLikeDto(commentId);
-        likeService.deleteComment(likeDto);
+        likeService.deleteLikeFromComment(likeDto);
     }
 
     /**

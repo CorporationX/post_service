@@ -30,14 +30,14 @@ public class LikeService {
     public static final String USER_NOT_FOUND = "user by id={} find error";
 
     private final LikeRepository likeRepository;
-    private final UserServiceClient userService;
+    private final UserServiceClient userServiceClient;
     private final PostService postService;
     private final CommentService commentService;
     private final LikeMapper mapper;
     private final Utils utils;
     private final ObjectMapper objectMapper;
 
-    public LikeDto addComment(LikeDto likeDto) {
+    public LikeDto addLikeToComment(LikeDto likeDto) {
         validateUser(likeDto.userId());
         Comment comment = commentService.findCommentById(likeDto.commentId());
         likeRepository.findByCommentIdAndUserId(likeDto.commentId(), likeDto.userId())
@@ -48,14 +48,14 @@ public class LikeService {
         return mapper.toDto(like);
     }
 
-    public void deleteComment(LikeDto likeDto) {
+    public void deleteLikeFromComment(LikeDto likeDto) {
         validateUser(likeDto.userId());
         likeRepository.deleteByCommentIdAndUserId(likeDto.commentId(), likeDto.userId())
                 .orElseThrow(() -> new LikeNotFoundException(
                         utils.format(COMMENT_LIKE_NOT_FOUND, likeDto.userId(), likeDto.commentId())));
     }
 
-    public LikeDto addPost(LikeDto likeDto) {
+    public LikeDto addLikeToPost(LikeDto likeDto) {
         validateUser(likeDto.userId());
         Post post = postService.findPostById(likeDto.postId());
         likeRepository.findByPostIdAndUserId(likeDto.postId(), likeDto.userId())
@@ -66,7 +66,7 @@ public class LikeService {
         return mapper.toDto(like);
     }
 
-    public void deletePost(LikeDto likeDto) {
+    public void deleteLikeFromPost(LikeDto likeDto) {
         validateUser(likeDto.userId());
         likeRepository.deleteByPostIdAndUserId(likeDto.postId(), likeDto.userId())
                 .orElseThrow(() -> new LikeNotFoundException(
@@ -90,7 +90,7 @@ public class LikeService {
 
     private void validateUser(Long userId) {
         try {
-            userService.checkUser(userId);
+            userServiceClient.checkUser(userId);
         } catch (FeignException fe) {
             log.error("FeignException.status is: [{}]", fe.status());
             log.error("validateUser: {}", fe.getMessage(), fe);

@@ -34,14 +34,14 @@ public class ExceptionApiHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handlerMethodArgumentNotValidException(MethodArgumentNotValidException e) {
         Map<String, String> detail = e.getBindingResult()
-            .getFieldErrors()
-            .stream()
-            .collect(Collectors.toMap(
-                FieldError::getField,
-                error -> Objects.requireNonNullElse(error.getDefaultMessage(), "")
-            ));
+                .getFieldErrors()
+                .stream()
+                .collect(Collectors.toMap(
+                        FieldError::getField,
+                        error -> Objects.requireNonNullElse(error.getDefaultMessage(), "")
+                ));
         String errorMessage = utils.format("Validation failed with {} errors",
-            e.getBindingResult().getFieldErrors().size());
+                e.getBindingResult().getFieldErrors().size());
         return getErrorResponse("handlerMethodArgumentNotValidException", errorMessage, detail, e);
     }
 
@@ -57,28 +57,11 @@ public class ExceptionApiHandler {
         return getErrorResponse("handleUnrecognizedPropertyException", e);
     }
 
-    @ExceptionHandler(UserNotFoundException.class)
+    @ExceptionHandler({UserNotFoundException.class, LikeNotFoundException.class, PostNotFoundException.class,
+            CommentNotFoundException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handlerUserNotFoundException(UserNotFoundException e) {
-        return getErrorResponse("handlerUserNotFoundException", e);
-    }
-
-    @ExceptionHandler(LikeNotFoundException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handlerLikeNotFoundException(LikeNotFoundException e) {
-        return getErrorResponse("handlerLikeNotFoundException", e);
-    }
-
-    @ExceptionHandler(PostNotFoundException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handlerPostNotFoundException(PostNotFoundException e) {
-        return getErrorResponse("handlerPostNotFoundException", e);
-    }
-
-    @ExceptionHandler(CommentNotFoundException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handlerCommentNotFoundException(CommentNotFoundException e) {
-        return getErrorResponse("handlerCommentNotFoundException", e);
+    public ErrorResponse handlerNotFoundException(RuntimeException e) {
+        return getErrorResponse("handlerNotFoundException", e);
     }
 
     @ExceptionHandler(LikeExistsException.class)
@@ -110,10 +93,10 @@ public class ExceptionApiHandler {
     }
 
     private ErrorResponse getErrorResponse(
-        String exceptionLabel,
-        String errorMessage,
-        Map<String, String> detail,
-        Exception e
+            String exceptionLabel,
+            String errorMessage,
+            Map<String, String> detail,
+            Exception e
     ) {
         log.error("{}: {}", exceptionLabel, e.getMessage(), e);
         return new ErrorResponse(errorMessage, detail);

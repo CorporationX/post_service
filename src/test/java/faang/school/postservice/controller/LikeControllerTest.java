@@ -68,7 +68,7 @@ class LikeControllerTest {
         LikeDto likeDto = getRequestLikePostDto();
         LikeDto resultLikeDto = getResponseLikePostDto();
 
-        when(likeService.addPost(likeDto)).thenReturn(resultLikeDto);
+        when(likeService.addLikeToPost(likeDto)).thenReturn(resultLikeDto);
 
         mockMvc.perform(post("/likes/post")
                         .content(objectMapper.writeValueAsString(requestDto))
@@ -87,7 +87,7 @@ class LikeControllerTest {
     public void testDeleteLikePostSuccess() throws Exception {
         LikeDto likeDto = getRequestLikePostDto();
 
-        doNothing().when(likeService).deletePost(likeDto);
+        doNothing().when(likeService).deleteLikeFromPost(likeDto);
 
         mockMvc.perform(delete(utils.format("/likes/post/{}", POST_ID)))
                 .andDo(print())
@@ -101,7 +101,7 @@ class LikeControllerTest {
         LikeDto likeDto = getRequestLikeCommentDto();
         LikeDto resultLikeDto = getResponseLikeCommentDto();
 
-        when(likeService.addComment(likeDto)).thenReturn(resultLikeDto);
+        when(likeService.addLikeToComment(likeDto)).thenReturn(resultLikeDto);
 
         mockMvc.perform(post("/likes/comment")
                         .content(objectMapper.writeValueAsString(requestDto))
@@ -120,7 +120,7 @@ class LikeControllerTest {
     public void testDeleteUserCommentSuccess() throws Exception {
         LikeDto likeDto = getRequestLikeCommentDto();
 
-        doNothing().when(likeService).deleteComment(likeDto);
+        doNothing().when(likeService).deleteLikeFromComment(likeDto);
 
         mockMvc.perform(delete(utils.format("/likes/comment/{}", COMMENT_ID)))
                 .andDo(print())

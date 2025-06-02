@@ -44,8 +44,6 @@ class ExceptionApiHandlerTest {
     private ObjectMapper objectMapper;
     @Spy
     private UserContext userContext;
-    @Spy
-    private LikeMapperImpl mapper;
     @InjectMocks
     private LikeController likeController;
     @InjectMocks
@@ -126,7 +124,7 @@ class ExceptionApiHandlerTest {
 
         final String expectedError = utils.format(LikeService.USER_NOT_FOUND, USER_ID);
         UserNotFoundException exception = new UserNotFoundException(expectedError);
-        doThrow(exception).when(likeService).deleteComment(likeDto);
+        doThrow(exception).when(likeService).deleteLikeFromComment(likeDto);
 
         MockMvcWebTestClient.bindToController(likeController)
                 .controllerAdvice(exceptionApiHandler)
@@ -153,7 +151,7 @@ class ExceptionApiHandlerTest {
 
         final String expectedError = "mock LikeNotFoundException";
         LikeNotFoundException exception = new LikeNotFoundException(expectedError);
-        doThrow(exception).when(likeService).deleteComment(likeDto);
+        doThrow(exception).when(likeService).deleteLikeFromComment(likeDto);
 
         MockMvcWebTestClient.bindToController(likeController)
                 .controllerAdvice(exceptionApiHandler)
@@ -180,7 +178,7 @@ class ExceptionApiHandlerTest {
         final String expectedError = "mock PostNotFoundException";
         PostNotFoundException exception = new PostNotFoundException(expectedError);
 
-        doThrow(exception).when(likeService).addPost(any(LikeDto.class));
+        doThrow(exception).when(likeService).addLikeToPost(any(LikeDto.class));
 
         MockMvcWebTestClient.bindToController(likeController)
                 .controllerAdvice(exceptionApiHandler)
@@ -209,7 +207,7 @@ class ExceptionApiHandlerTest {
         final String expectedError = "mock CommentNotFoundException";
         CommentNotFoundException exception = new CommentNotFoundException(expectedError);
 
-        doThrow(exception).when(likeService).addComment(any(LikeDto.class));
+        doThrow(exception).when(likeService).addLikeToComment(any(LikeDto.class));
 
         MockMvcWebTestClient.bindToController(likeController)
                 .controllerAdvice(exceptionApiHandler)
@@ -238,7 +236,7 @@ class ExceptionApiHandlerTest {
         final String expectedError = "mock LikeExistsException";
         LikeExistsException exception = new LikeExistsException(expectedError);
 
-        doThrow(exception).when(likeService).addComment(any(LikeDto.class));
+        doThrow(exception).when(likeService).addLikeToComment(any(LikeDto.class));
 
         MockMvcWebTestClient.bindToController(likeController)
                 .controllerAdvice(exceptionApiHandler)
