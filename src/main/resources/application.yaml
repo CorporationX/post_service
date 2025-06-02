@@ -57,6 +57,7 @@ spring:
         user-ban: "user-ban-topic"
         post-like: "post-like-event-topic"
         news-feed-comment: "news-comment-topic"
+        like: "likes_topic"
         post-view: "post-view-topic"
     consumers:
       post-view: "post-view-consumer"

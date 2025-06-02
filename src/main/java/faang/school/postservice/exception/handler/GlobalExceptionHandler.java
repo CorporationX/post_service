@@ -2,6 +2,7 @@ package faang.school.postservice.exception.handler;
 
 import faang.school.postservice.exception.InvalidPostAuthorsException;
 import faang.school.postservice.exception.LanguageToolException;
+import faang.school.postservice.exception.LikeOptimisticLockException;
 import faang.school.postservice.exception.PostNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+    private static final String CONCURRENT_UPDATE_MSG = "The likes are being updated, try again later.";
 
     @ExceptionHandler(LanguageToolException.class)
     public ResponseEntity<ErrorResponse> handleLanguageToolException(LanguageToolException exception) {
@@ -58,5 +60,16 @@ public class GlobalExceptionHandler {
                 .property("service", "PostService")
                 .build();
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(LikeOptimisticLockException.class)
+    public ResponseEntity<ErrorResponse> handleLikeOptimisticLockException(LikeOptimisticLockException exception) {
+        ErrorResponse errorResponse = ErrorResponse.builder(exception, HttpStatus.CONFLICT, exception.getMessage())
+                .title("Concurrent Update Conflict")
+                .detail(CONCURRENT_UPDATE_MSG)
+                .property("service", "LikeService")
+                .build();
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
     }
 }
