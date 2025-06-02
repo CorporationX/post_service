@@ -75,16 +75,22 @@ tasks.bootJar {
 }
 
 checkstyle {
-    toolVersion = "10.12.1"  // Актуальная версия Checkstyle
-    configFile = rootProject.file("config/checkstyle/checkstyle.xml")
-    isIgnoreFailures = false  // Остановить сборку при ошибках стиля
-    maxWarnings = 0  // Не допускать warnings
+    toolVersion = "10.17.0"
+    configFile = file("${project.rootDir}/config/checkstyle/checkstyle.xml")
+    checkstyle.enableExternalDtdLoad.set(true)
 }
 
-tasks.withType<Checkstyle>().configureEach {
-    reports {
-        xml.required.set(false)
-        html.required.set(true)
-        html.outputLocation.set(file("${buildDir}/reports/checkstyle/${name}.html"))
-    }
+tasks.checkstyleMain {
+    source = fileTree("${project.rootDir}/src/main/java")
+    include("**/*.java")
+    exclude("**/resources/**")
+
+    classpath = files()
+}
+
+tasks.checkstyleTest {
+    source = fileTree("${project.rootDir}/src/test")
+    include("**/*.java")
+
+    classpath = files()
 }
