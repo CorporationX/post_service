@@ -18,5 +18,5 @@ public interface LikeRepository extends CrudRepository<Like, Long> {
 
     Optional<Like> findByCommentIdAndUserId(long commentId, long userId);
 
-    Optional<List<Like>> findByUserId(long userId);
+    List<Like> findByUserId(long userId);
 }

@@ -1,7 +1,6 @@
 package faang.school.postservice.service;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
@@ -9,7 +8,9 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.LikeDto;
 import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.exception.DuplicateLikesException;
 import faang.school.postservice.exception.ExternalServiceException;
+import faang.school.postservice.exception.UserNotFoundException;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
@@ -35,7 +36,7 @@ public class LikeServiceImpl implements LikeService {
     @Override
     public LikeDto putLikeToPost(long postId) {
         Post post = getPost(postId);
-        userValidation();        
+        checkUserExists();        
         duplicatePostLikeValidation(postId);        
         relatedCommentsLikeValidation(postId);
 
@@ -50,7 +51,7 @@ public class LikeServiceImpl implements LikeService {
     @Override
     public LikeDto putLikeToComment(long commentId) {
         Comment comment = getComment(commentId);
-        userValidation();
+        checkUserExists();
         duplicateCommentLikeValidation(commentId);
         relatedPostsLikeValidation(comment);
 
@@ -63,35 +64,36 @@ public class LikeServiceImpl implements LikeService {
     }
 
     @Override
-    public void deleteLike(long likeId) {
-        likeRepository.deleteById(likeId);
-    }
-
-    @Override
-    public int countLikesFor(Long postId) {
+    public int countLikesForPost(Long postId) {
         return getPost(postId).getLikes().size();
     }
     
     @Override
     public void deleteLikeForPost(long postId) {
-        likeRepository.deleteByPostIdAndUserId(postId, userContext.getUserId());
+        if (likeRepository.findByPostIdAndUserId(postId, userContext.getUserId()).isPresent()) {
+            likeRepository.deleteByPostIdAndUserId(postId, userContext.getUserId());
+        } else {
+            throw new DataValidationException(String.format(
+                "User %d has not liked post %d.", userContext.getUserId(), postId
+            ));
+        }
     }
 
     @Override
-    public void deleteLikeForComment(long postId) {
-        likeRepository.deleteByCommentIdAndUserId(postId, userContext.getUserId());
+    public void deleteLikeForComment(long commentId) {
+        if (likeRepository.findByCommentIdAndUserId(commentId, userContext.getUserId()).isPresent()) {
+            likeRepository.deleteByCommentIdAndUserId(commentId, userContext.getUserId());
+        } else {
+            throw new DataValidationException(String.format(
+                "User %d has not liked comment %d.", userContext.getUserId(), commentId
+            ));
+        }
     }
 
     @Override
     public List<LikeDto> getLikesByUser() {
-        Optional<List<Like>> likes = likeRepository.findByUserId(userContext.getUserId());
-        if (likes.isEmpty()) {
-            throw new EntityNotFoundException(String.format(
-                "User %d has no likes.", userContext.getUserId()
-            ));
-        }
-
-        return likeMapper.toDtos(likes.get());
+        List<Like> likes = likeRepository.findByUserId(userContext.getUserId());
+        return likeMapper.toDtos(likes);
     }
 
     private Post getPost(long postId) {
@@ -101,12 +103,12 @@ public class LikeServiceImpl implements LikeService {
             )));
     }
 
-    private void userValidation() {
+    private void checkUserExists() {
         try {
             userServiceClient.getUser(userContext.getUserId());
         } catch (FeignException e) {
             if (e.status() == 404) {
-                throw new EntityNotFoundException(String.format(
+                throw new UserNotFoundException(String.format(
                     "User %d is not found.", userContext.getUserId()
                 ));
             } else if (e.status() >= 400 && e.status() < 500) {
@@ -127,7 +129,7 @@ public class LikeServiceImpl implements LikeService {
 
     private void duplicatePostLikeValidation(long postId) {
         if (likeRepository.findByPostIdAndUserId(postId, userContext.getUserId()).isPresent()) {
-            throw new DataValidationException(String.format(
+            throw new DuplicateLikesException(String.format(
                 "User %d already liked post %d.", userContext.getUserId(), postId
             ));
         }
@@ -142,7 +144,7 @@ public class LikeServiceImpl implements LikeService {
 
     private void duplicateCommentLikeValidation(long commentId) {
         if (likeRepository.findByCommentIdAndUserId(commentId, userContext.getUserId()).isPresent()) {
-            throw new DataValidationException(String.format(
+            throw new DuplicateLikesException(String.format(
                 "User %d already liked comment %d.", 
                 userContext.getUserId(), commentId
             ));
@@ -150,7 +152,7 @@ public class LikeServiceImpl implements LikeService {
     }
 
     private List<Like> getUsersLikes() {
-        return likeRepository.findByUserId(userContext.getUserId()).orElse(List.of());
+        return likeRepository.findByUserId(userContext.getUserId());
     }
 
     private void relatedCommentsLikeValidation(Long postId) {

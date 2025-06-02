@@ -7,9 +7,8 @@ import faang.school.postservice.dto.LikeDto;
 public interface LikeService {
     LikeDto putLikeToPost(long postId);
     LikeDto putLikeToComment(long commentId);
-    void deleteLike(long likeId);
     void deleteLikeForPost(long postId);
     void deleteLikeForComment(long commentId);
-    int countLikesFor(Long postId);
+    int countLikesForPost(Long postId);
     List<LikeDto> getLikesByUser(); 
 }

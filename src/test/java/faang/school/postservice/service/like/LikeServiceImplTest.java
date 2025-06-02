@@ -8,6 +8,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -91,7 +92,7 @@ public class LikeServiceImplTest {
     @Test
     public void testPutLikeToPost_whenLikeIsValid_thenLikeIsCreated() {
         when(postRepository.findById(post1.getId())).thenReturn(Optional.of(post1));
-        when(likeRepository.findByUserId(1L)).thenReturn(Optional.empty());
+        when(likeRepository.findByUserId(1L)).thenReturn(List.of());
         when(userContext.getUserId()).thenReturn(1L);
 
         likeService.putLikeToPost(1L);
@@ -110,7 +111,7 @@ public class LikeServiceImplTest {
     @Test
     public void testPutLikeToComment_whenLikeIsValid_thenLikeIsCreated() {
         when(commentRepository.findById(comment1.getId())).thenReturn(Optional.of(comment1));
-        when(likeRepository.findByUserId(1L)).thenReturn(Optional.empty());
+        when(likeRepository.findByUserId(1L)).thenReturn(List.of());
         when(userContext.getUserId()).thenReturn(1L);
 
         likeService.putLikeToComment(1L);
@@ -126,17 +127,4 @@ public class LikeServiceImplTest {
         assertThrows(EntityNotFoundException.class, () -> likeService.putLikeToPost(1L));
     }
 
-    @Test
-    public void testDeleteLike_whenLikeExists_thenLikeIsDeleted() {
-        when(likeRepository.findById(1L)).thenReturn(Optional.of(likePost));
-
-        likeService.deleteLike(1L);
-
-        verify(likeRepository, times(1)).deleteById(1L);
-    }
-
-    @Test
-    public void testDeleteLike_whenLikeDoesNotExist_thenThrow() {
-        assertThrows(EntityNotFoundException.class, () -> likeService.deleteLike(1L));
-    }
 }

@@ -2,7 +2,6 @@ package faang.school.postservice.controller.like;
 
 import java.util.List;
 
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,38 +22,33 @@ public class LikeController {
     private final LikeService likeService;
 
     @PostMapping("/post/{postId}")
-    public ResponseEntity<LikeDto> putLikeToPost(@PathVariable long postId) {
-        return ResponseEntity.ok(likeService.putLikeToPost(postId));
+    public LikeDto putLikeToPost(@PathVariable long postId) {
+        return likeService.putLikeToPost(postId);
     }
     
     @PostMapping("/comment/{commentId}")
-    public ResponseEntity<LikeDto> putLikeToComment(@PathVariable long commentId) {
-        return ResponseEntity.ok(likeService.putLikeToComment(commentId));
+    public LikeDto putLikeToComment(@PathVariable long commentId) {
+        return likeService.putLikeToComment(commentId);
     }
 
-    @DeleteMapping("/{likeId}")
-    public void deleteLike(@PathVariable long likeId) {
-        likeService.deleteLike(likeId);
-    }
-
-    @DeleteMapping("/forPost/{postId}")
+    @DeleteMapping("/post/{postId}")
     public void deleteLikeForPost(@PathVariable long postId) {
         likeService.deleteLikeForPost(postId);
     }
 
-    @DeleteMapping("/forPost/{commentId}")
+    @DeleteMapping("/post/{commentId}")
     public void deleteLikeForComment(@PathVariable long commentId) {
         likeService.deleteLikeForComment(commentId);
     }
 
-    @GetMapping("/my")
+    @GetMapping("/user")
     public List<LikeDto> getLikesByUser() {
        return likeService.getLikesByUser(); 
     }
 
-    @GetMapping("/count/forPost/{postId}")
+    @GetMapping("/post/{postId}/count")
     public int countLikes(@PathVariable Long postId) {
-        return likeService.countLikesFor(postId);
+        return likeService.countLikesForPost(postId);
     }
 
 }

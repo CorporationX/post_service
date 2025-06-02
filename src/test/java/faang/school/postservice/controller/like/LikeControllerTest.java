@@ -1,10 +1,6 @@
 package faang.school.postservice.controller.like;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -65,17 +61,10 @@ public class LikeControllerTest {
     }
 
     @Test
-    public void testDeleteLike_whenLikeIsOk_thenLikeIsDeleted() throws Exception {
-        mockMvc.perform(delete("/api/v1/likes/{likeId}", 1L))
-                .andExpect(status().isOk());
-        verify(likeService, times(1)).deleteLike(any(Long.class));
-    }
-
-    @Test
     public void testGetLikesByUser_whenUserHasLikes_thenLikesAreReturned() throws Exception {
         when(likeService.getLikesByUser()).thenReturn(List.of(new LikeDto(1L, 1L, 1L)));
 
-        mockMvc.perform(get("/api/v1/likes/my"))
+        mockMvc.perform(get("/api/v1/likes/user"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].postId", is(1)));
