@@ -5,12 +5,15 @@ import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.CommentDto;
 import faang.school.postservice.dto.LikeDto;
 import faang.school.postservice.dto.PostDto;
+import faang.school.postservice.events.LikeEventType;
+import faang.school.postservice.events.LikePublishKafkaEvent;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.KafkaLikeProducer;
 import faang.school.postservice.repository.LikeRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +34,8 @@ public class LikeServiceImpl implements LikeService {
     private final CommentService commentService;
     private final UserContext userContext;
 
+    private final KafkaLikeProducer kafkaLikeProducer;
+
     @Override
     public PostDto addLikeToPost(Long postId) {
         long userId = getUserById();
@@ -42,6 +47,14 @@ public class LikeServiceImpl implements LikeService {
         Like like = likeMapper.toEntity(new LikeDto(userId, postId, null));
         like.setPost(post);
         likeRepository.save(like);
+
+        kafkaLikeProducer.sendEvent(LikePublishKafkaEvent.builder()
+                .likeId(like.getId())
+                .postId(post.getId())
+                .authorId(userId)
+                .likeEventType(LikeEventType.ADD)
+                .build());
+
         return postMapper.toDto(post);
     }
 

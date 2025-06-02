@@ -38,8 +38,6 @@ public abstract class RedisCacheTemplateBase<T> {
 
         template.setEnableTransactionSupport(true);
 
-        template.afterPropertiesSet();
-
         return template;
     }
 }
