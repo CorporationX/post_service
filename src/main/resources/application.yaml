@@ -68,9 +68,13 @@ spring:
         user-ban: "user-ban-topic"
         post-like: "post-like-event-topic"
         news-feed-comment: "news-comment-topic"
+        post-view: "post-view-topic"
         feed-heating: "feed-heating-topic"
-    consumer:
+    consumers:
+      post-view: "post-view-consumer"
       group-id: feed-heating-group
+    listener:
+      ack-mode: MANUAL
 
 server:
   port: 8081

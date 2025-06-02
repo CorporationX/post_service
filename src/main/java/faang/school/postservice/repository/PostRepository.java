@@ -1,8 +1,10 @@
 package faang.school.postservice.repository;
 
 import faang.school.postservice.model.Post;
+import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
@@ -46,6 +48,11 @@ public interface PostRepository extends CrudRepository<Post, Long> {
 
     @Query("SELECT p FROM Post p WHERE p.verified = false")
     Stream<Post> streamByVerifiedFalse();
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE Post p SET p.views = p.views + 1 WHERE p.id = :id")
+    int incrementViews(Long id);
 
     @Query("SELECT p FROM Post p WHERE p.authorId IN :authorIds AND p.published = true ORDER BY p.publishedAt DESC")
     List<Post> findByAuthorIdsAndPublishedTrue(@Param("authorIds") Set<Long> authorIds, Pageable pageable);
