@@ -12,6 +12,8 @@ public class ErrorMessage {
     public static final String ERROR_SERIALIZE = "Failed to serialize event {}.\n";
     public static final String ERROR_NOT_FOUND_POST = "Post with ID %d not found in the system.\n";
     public static final String ERROR_MAX_ATTEMPTS_EXCEEDED = "Concurrent update conflict for post %d. Please retry.";
+    public static final String WARN_POST_NOT_FOUND = "Post %d not found";
+    public static final String ERROR_PROCESSING_LIKE_EVENT = "Error processing like event for post %d: %s";
 
     private static final String ERROR_NOT_FOUND_USER = "User with ID %d not found in the system.\n";
     private static final String ERROR_NOT_FOUND_COMMENT = "Post with ID %d not found in the system.\n";

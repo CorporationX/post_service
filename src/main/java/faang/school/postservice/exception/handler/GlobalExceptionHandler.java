@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+    private static final String CONCURRENT_UPDATE_MSG = "The likes are being updated, try again later.";
 
     @ExceptionHandler(LanguageToolException.class)
     public ResponseEntity<ErrorResponse> handleLanguageToolException(LanguageToolException exception) {
@@ -63,12 +64,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(LikeOptimisticLockException.class)
     public ResponseEntity<ErrorResponse> handleLikeOptimisticLockException(LikeOptimisticLockException exception) {
-        String message = "The post's like count is currently being updated by multiple users. " +
-                "Please try your action again in a moment.";
-
         ErrorResponse errorResponse = ErrorResponse.builder(exception, HttpStatus.CONFLICT, exception.getMessage())
                 .title("Concurrent Update Conflict")
-                .detail(message)
+                .detail(CONCURRENT_UPDATE_MSG)
                 .property("service", "LikeService")
                 .build();
 

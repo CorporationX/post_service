@@ -8,6 +8,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
+import static faang.school.postservice.contants.ErrorMessage.ERROR_PROCESSING_LIKE_EVENT;
+import static faang.school.postservice.contants.ErrorMessage.WARN_POST_NOT_FOUND;
+
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -20,9 +23,9 @@ public class KafkaLikeConsumer {
         try {
             redisLikeService.incrementLikesForPost(event.getPostId());
         } catch (PostNotFoundException e) {
-            log.warn("Post {} not found", event.getPostId());
-        } catch (Exception e) {
-            log.error("Error processing like event for post {}: {}", event.getPostId(), e.getMessage(), e);
+            log.warn(String.format(WARN_POST_NOT_FOUND, event.getPostId()));
+        } catch (RuntimeException e) {
+            log.error(String.format(ERROR_PROCESSING_LIKE_EVENT, event.getPostId(), e.getMessage()), e);
         }
     }
 }
