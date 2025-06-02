@@ -18,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -82,25 +83,29 @@ public class PostServiceImpl implements PostService {
         post.setContent(dto.content());
 
         List<Resource> currentResources = post.getResources();
-        List<String> updatedKeys = dto.resourceKeys() == null ? List.of() : dto.resourceKeys();
 
-        List<Resource> toKeep = new ArrayList<>(currentResources.stream()
-                .filter(resource -> updatedKeys.contains(resource.getKey()))
-                .toList());
-
-        List<Resource> toDelete = currentResources.stream()
-                .filter(resource -> !updatedKeys.contains(resource.getKey()))
-                .toList();
-        resourceService.deleteResources(toDelete);
+        List<Resource> finalResources;
+        if (dto.resourceKeys() == null) {
+            finalResources = new ArrayList<>(currentResources);
+        } else {
+            List<String> toKeepKeys = dto.resourceKeys();
+            List<Resource> toDelete = currentResources.stream()
+                    .filter(resource -> !toKeepKeys.contains(resource.getKey()))
+                    .toList();
+            resourceService.deleteResources(toDelete);
+            finalResources = currentResources.stream()
+                    .filter(resource -> toKeepKeys.contains(resource.getKey()))
+                    .collect(Collectors.toCollection(ArrayList::new));
+        }
 
         if (newFiles != null && !newFiles.isEmpty()) {
-            List<Resource> newResources = resourceService.uploadResources(newFiles, toKeep.size());
+            List<Resource> newResources = resourceService.uploadResources(newFiles, finalResources.size());
             newResources.forEach(resource -> resource.setPost(post));
-            toKeep.addAll(newResources);
+            finalResources.addAll(newResources);
         }
 
         currentResources.clear();
-        currentResources.addAll(toKeep);
+        currentResources.addAll(finalResources);
 
         return postMapper.toDto(postRepository.save(post));
     }
