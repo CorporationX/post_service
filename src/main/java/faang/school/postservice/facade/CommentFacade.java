@@ -20,8 +20,7 @@ public class CommentFacade {
 
     public CommentDto create(CommentCreateDto dto) {
         Comment comment = commentMapper.toEntityFromCreateDto(dto);
-        Long postId = comment.getPost().getId();
-        Comment createdComment = commentService.create(postId, comment);
+        Comment createdComment = commentService.create(dto.getPostId(), comment);
 
         return commentMapper.toDto(createdComment);
     }
