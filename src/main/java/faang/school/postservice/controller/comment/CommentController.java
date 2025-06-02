@@ -22,13 +22,15 @@ public class CommentController {
     private final CommentServiceFacade commentServiceF;
 
     @PostMapping("/post/{postId}")
-    public ResponseEntity<CommentDtoResponse> createComment(@PathVariable long postId, @RequestParam String content) {
+    public ResponseEntity<CommentDtoResponse> createComment(@PathVariable long postId,
+                                                            @RequestParam String content) {
         CommentDtoResponse commentDtoResponse = commentServiceF.createComment(postId, content);
         return ResponseEntity.ok(commentDtoResponse);
     }
 
     @PatchMapping("/{commentId}")
-    public ResponseEntity<CommentDtoResponse> updateComment(@PathVariable long commentId, String newContent) {
+    public ResponseEntity<CommentDtoResponse> updateComment(@PathVariable long commentId,
+                                                            @RequestParam String newContent) {
         CommentDtoResponse commentDtoResponse = commentServiceF.updateComment(commentId, newContent);
         return ResponseEntity.ok(commentDtoResponse);
     }
