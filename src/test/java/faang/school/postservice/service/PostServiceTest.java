@@ -22,24 +22,24 @@ class PostServiceTest {
     private PostService postService;
 
     @Test
-    void getPostById(){
+    void getPostById() {
         long id = 1L;
         Post post = Post.builder().id(id).build();
 
         Mockito.when(postRepository.findById(id)).thenReturn(Optional.of(post));
 
-        Post result  = postService.getPostById(id);
+        Post result = postService.getPostById(id);
 
         assertNotNull(result);
         assertEquals(id, result.getId());
     }
 
     @Test
-    void getUserByIdTestException(){
+    void getUserByIdTestException() {
         long id = -1L;
         Mockito.when(postRepository.findById(id))
                 .thenThrow(new IllegalArgumentException("There is no such id = " + id));
 
-        assertThrows(IllegalArgumentException.class, ()->postRepository.findById(id));
+        assertThrows(IllegalArgumentException.class, () -> postRepository.findById(id));
     }
 }
