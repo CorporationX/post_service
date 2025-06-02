@@ -39,7 +39,6 @@ public interface CommentController {
                             description = "ID Пользователя",
                             required = true)
             }
-
     )
     @ApiResponse(responseCode = "200", description = "Комментарий обновлен")
 
