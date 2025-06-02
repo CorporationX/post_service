@@ -90,5 +90,7 @@ public class CommentService {
     }
 
     @Transactional
-    public void deleteFile(long commentId, )
+    public void deleteFile(long commentId, MultipartFile file) {
+
+    }
 }
