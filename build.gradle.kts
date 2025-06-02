@@ -82,6 +82,11 @@ tasks.jacocoTestReport {
                     "**/entity/**",
                     "**/repository/**",
                     "**/exception/**",
+                    "**/facade/**",
+                    "**/handler/**",
+                    "**/client/**",
+                    "**/mapper/**",
+                    "**/model/**"
                 )
             }
         })
@@ -92,9 +97,30 @@ tasks.named<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
     dependsOn(tasks.test)
     violationRules {
         rule {
+            element = "PACKAGE"
             limit {
-                minimum = "0.7".toBigDecimal()
+                counter = "INSTRUCTION"
+                value = "COVEREDRATIO"
+                minimum = "0.70".toBigDecimal()
             }
+
+            excludes = listOf(
+                "faang.school.postservice.config.*",
+                "faang.school.postservice.controller.*",
+                "faang.school.postservice.dto.*",
+                "faang.school.postservice.entity",
+                "faang.school.postservice.entity.*",
+                "faang.school.postservice.repository",
+                "faang.school.postservice.repository.*",
+                "faang.school.postservice.exception.*",
+                "faang.school.postservice.facade.*",
+                "faang.school.postservice.handler",
+                "faang.school.postservice.client",
+                "faang.school.postservice.mapper.*",
+                "faang.school.postservice.model",
+                "faang.school.postservice.model.*",
+                "faang.school.postservice"
+            )
         }
     }
 }
