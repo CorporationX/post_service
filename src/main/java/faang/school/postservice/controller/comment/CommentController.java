@@ -1,16 +1,19 @@
 package faang.school.postservice.controller.comment;
 
+import faang.school.postservice.dto.comment.CommentCreateDto;
 import faang.school.postservice.dto.comment.CommentDtoResponse;
+import faang.school.postservice.dto.comment.CommentUpdateDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 
@@ -23,8 +26,7 @@ public interface CommentController {
     )
     @ApiResponse(responseCode = "200", description = "Комментарий создан")
     @PostMapping("/post/{postId}")
-    ResponseEntity<CommentDtoResponse> createComment(@PathVariable long postId,
-                                                     @RequestParam String content);
+    ResponseEntity<CommentDtoResponse> createComment(@Valid @RequestBody CommentCreateDto commentDto);
 
     @Operation(
             summary = "Обновления комментария",
@@ -33,8 +35,7 @@ public interface CommentController {
     )
     @ApiResponse(responseCode = "200", description = "Комментарий обновлен")
     @PatchMapping("/{commentId}")
-    ResponseEntity<CommentDtoResponse> updateComment(@PathVariable long commentId,
-                                                     @RequestParam String newContent);
+    ResponseEntity<CommentDtoResponse> updateComment(@Valid @RequestBody CommentUpdateDto commentDto);
 
     @Operation(
             summary = "Получить все комментарии поста",
