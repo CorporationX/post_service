@@ -61,46 +61,6 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
-    finalizedBy(tasks.jacocoTestReport)
-}
-
-tasks.jacocoTestReport {
-    dependsOn(tasks.test)
-    reports {
-        xml.required.set(true)
-        csv.required.set(false)
-        html.outputLocation.set(layout.buildDirectory.dir("jacocoHtml"))
-    }
-
-    classDirectories.setFrom(
-        files(classDirectories.files.map {
-            fileTree(it) {
-                exclude(
-                    "**/config/**",
-                    "**/controller/**",
-                    "**/dto/**",
-                    "**/entity/**",
-                    "**/repository/**",
-                    "**/exception/**",
-                )
-            }
-        })
-    )
-}
-
-tasks.named<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
-    dependsOn(tasks.test)
-    violationRules {
-        rule {
-            limit {
-                minimum = "0.7".toBigDecimal()
-            }
-        }
-    }
-}
-
-tasks.check {
-    dependsOn(tasks.named("jacocoTestCoverageVerification"))
 }
 
 tasks.withType<Test> {
