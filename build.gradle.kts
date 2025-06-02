@@ -9,9 +9,12 @@ group = "faang.school"
 version = "1.0"
 java.sourceCompatibility = JavaVersion.VERSION_17
 
+val springCloudVersion by extra("2022.0.5")
+
 repositories {
     mavenCentral()
 }
+
 
 dependencies {
     /**
@@ -25,6 +28,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.cloud:spring-cloud-starter-openfeign:4.0.2")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+    implementation("org.springframework.cloud:spring-cloud-starter-consul-config")
 
     /**
      * Database
@@ -37,6 +41,11 @@ dependencies {
      * S3 Service
      */
     implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:3.1.1")
+
+    /**
+     * Tika
+     */
+    implementation("org.apache.tika:tika-core:2.9.2")
 
     /**
      * Utils & Logging
@@ -65,6 +74,11 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
 
+dependencyManagement {
+    imports {
+        mavenBom("org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}")
+    }
+}
 
 tasks.test {
     useJUnitPlatform()

@@ -10,7 +10,10 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Object;
 
 
 import java.time.LocalDateTime;
@@ -24,7 +27,7 @@ import java.io.IOException;
 public class S3Service {
     private final S3Client s3Client;
 
-    @Value("${cloud.aws.s3.bucket-name}")
+    @Value("${spring.cloud.aws.s3.bucket-name}")
     private String bucketName;
 
     public Resource uploadFile(MultipartFile file, String folder) {
@@ -54,5 +57,26 @@ public class S3Service {
                 .type(file.getContentType())
                 .createdAt(LocalDateTime.now())
                 .build();
+    }
+
+    public InputStream getFileAsInputStream(Resource resource) {
+        try {
+            GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(resource.getKey())
+                    .build();
+            return s3Client.getObject(getObjectRequest);
+        } catch (Exception e) {
+            log.error("Failed to download file from S3: {}", resource.getKey(), e);
+            throw new RuntimeException("Failed to download file", e);
+        }
+    }
+
+    public void deleteFile(String key) {
+        s3Client.deleteObject(DeleteObjectRequest.builder()
+                .bucket(bucketName)
+                .key(key)
+                .build());
+        log.info("File deleted successfully from S3: {}", key);
     }
 }

@@ -3,6 +3,7 @@ package faang.school.postservice.service.utils;
 import faang.school.postservice.dto.post.CreatePostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.project.ProjectService;
 import faang.school.postservice.service.user.UserService;

@@ -35,7 +35,7 @@ public class PostService {
 
     @Transactional
     public PostDto publishPost(long postId) {
-        Post post = postServiceUtils.isPostExists(postId);
+        Post post = postServiceUtils.getPost(postId);
         if (post.isPublished()) {
             throw new IllegalArgumentException("Post is already published");
         }
@@ -45,23 +45,23 @@ public class PostService {
     }
 
     @Transactional
-    public PostDto update(long postId, String content) {
-        Post post = postServiceUtils.isPostExists(postId);
+    public PostDto updateContent(long postId, String content) {
+        Post post = postServiceUtils.getPost(postId);
         post.setContent(content);
         return postMapper.toPostDto(postRepository.save(post));
     }
 
     @Transactional
     public void delete(long postId) {
-        Post post = postServiceUtils.isPostExists(postId);
+        Post post = postServiceUtils.getPost(postId);
         post.setDeleted(true);
         postRepository.save(post);
     }
 
     @Transactional(readOnly = true)
     public PostDto getById(long postId) {
-        postServiceUtils.isPostExists(postId);
-        return postMapper.toPostDto(postServiceUtils.isPostExists(postId));
+        postServiceUtils.getPost(postId);
+        return postMapper.toPostDto(postServiceUtils.getPost(postId));
     }
 
     @Transactional(readOnly = true)
