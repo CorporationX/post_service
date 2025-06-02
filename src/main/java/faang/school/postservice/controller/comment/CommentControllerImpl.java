@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -41,5 +42,13 @@ public class CommentControllerImpl implements CommentController {
     public ResponseEntity<Long> deleteComment(@PathVariable long commentId) {
         commentServiceF.deleteComment(commentId);
         return ResponseEntity.ok(commentId);
+    }
+
+    @Override
+    public ResponseEntity<String> uploadFile(MultipartFile files) {
+        //todo прикрепить одно изображение можно
+        //
+
+        return null;
     }
 }

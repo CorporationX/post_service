@@ -65,6 +65,11 @@ dependencies {
      * Доступ: http://localhost:8081/swagger-ui/index.html
      */
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0")
+
+    /**
+     * Amazon S3
+     */
+    implementation("software.amazon.awssdk:s3:2.31.54")
 }
 
 tasks.test {
