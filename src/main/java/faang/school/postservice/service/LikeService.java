@@ -27,15 +27,14 @@ public class LikeService {
 
     @Transactional
     public LikeDto addLikePost(Long postId, Long userId) {
-        Post post = postService.getPostById(postId);
-        //Проверка на наличие поста в системе
+        Post post = postService.getPostById(postId);    //Проверка на наличие поста в системе
 
-        userServiceClient.getUser(userId);//Проверка на наличие юзера в системе
+        userServiceClient.getUser(userId);  //Проверка на наличие юзера в системе
 
         if (post.getLikes().stream()
                 .anyMatch(like -> Objects.equals(like.getUserId(), userId))) {
             throw new IllegalArgumentException("Post already has like on it");
-        }//Проверка на "стоит уже лайк на посте или нет"
+        }   //Проверка на "стоит уже лайк на посте или нет"
 
         Like like = createPostLike(post, userId);
         post.getLikes().add(like);
@@ -60,12 +59,12 @@ public class LikeService {
         Comment comment = commentService.getCommentById(commentId);
         //Проверка на наличие комментария в системе
 
-        userServiceClient.getUser(userId);//Проверка на наличие юзера в системе
+        userServiceClient.getUser(userId);  //Проверка на наличие юзера в системе
 
         if (comment.getLikes().stream()
                 .anyMatch(like -> Objects.equals(like.getUserId(), userId))) {
             throw new IllegalArgumentException("Comment already has like on it");
-        }//Стоит ли лайк на комменте или нет
+        }   //Стоит ли лайк на комменте или нет
 
         Like like = createCommentLike(comment, userId);
         comment.getLikes().add(like);
