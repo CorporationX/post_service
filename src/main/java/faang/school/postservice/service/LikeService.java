@@ -67,8 +67,9 @@ public class LikeService {
         kafkaLikeProducer.sendLikeEvent(new LikeEvent(like.getUserId(), postId, like.getId()));
 
         kafkaPublisher.send(likeTopic, createLikeEvent(like.getUserId(), post.getAuthorId(), post.getId()));
-        log.info("User {} liked post {} !", userId, postId);
+
         eventPublisher.publish(new LikeEvent(like.getUserId(), postId, like.getId()), likeAchievementTopic);
+        log.info("User {} liked post {} !", userId, postId);
         return result;
     }
 

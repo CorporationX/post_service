@@ -1,8 +1,12 @@
 package faang.school.postservice.kafka;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.config.kafka.AbstractKafkaProducer;
+import faang.school.postservice.contants.ErrorMessage;
 import faang.school.postservice.dto.like.LikeEvent;
+import faang.school.postservice.exception.LikeException;
+import faang.school.postservice.exception.ProcessingEventException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -23,9 +27,10 @@ public class KafkaLikeProducer extends AbstractKafkaProducer {
             log.info("Attempting to send LikeEvent to topic '{}': {}", likeTopic, likeEvent);
             super.send(likeTopic, likeEvent);
             log.info("Successfully sent LikeEvent to topic '{}': {}", likeTopic, likeEvent);
-        } catch (Exception e) {
-            log.error("Failed to send LikeEvent to topic '{}': {}. Error: {}", likeTopic, likeEvent, e.getMessage());
-            throw e;
+        } catch (RuntimeException e) {
+            String errorMessage = ErrorMessage.getErrorSendMessage(likeTopic, e.getMessage());
+            log.error(errorMessage);
+            throw new LikeException(errorMessage, e);
         }
     }
 }
