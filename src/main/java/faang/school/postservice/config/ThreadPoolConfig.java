@@ -9,11 +9,16 @@ import java.util.concurrent.Executors;
 
 @Configuration
 public class ThreadPoolConfig {
-    @Value("${app.thread-pool-size}")
+    @Value("${app.thread-pool-size")
     private int threadPoolSize;
 
     @Bean
     public ExecutorService threadPoolExecutor() {
         return Executors.newFixedThreadPool(threadPoolSize);
+    }
+
+    @Bean(name = "taskSplitterExecutor")
+    public ExecutorService taskSplitterExecutor() {
+        return Executors.newSingleThreadExecutor();
     }
 }

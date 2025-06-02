@@ -10,6 +10,12 @@ public class ErrorMessage {
     public static final String ERROR_NULL_ID = "ID cant be null";
     public static final String ERROR_NOT_AUTHOR_COMMENT = "You are not the author of the comment";
     public static final String ERROR_SERIALIZE = "Failed to serialize event {}.\n";
+    public static final String ERROR_SERVICE_UNAVAILABLE = "User service unavailable";
+    public static final String ERROR_CACHE_FAILED = "Cache operation failed";
+    public static final String ERROR_CACHE_WARMING = "Cache warming failed for user";
+    public static final String ERROR_RETRIEVE_POSTS = "Could not retrieve posts";
+    public static final String ERROR_RETRIEVE_USER = "Could not retrieve user data";
+    public static final String ERROR_RETRIEVE_POST_DETAILS = "Could not retrieve post details";
 
     private static final String ERROR_NOT_FOUND_USER = "User with ID %d not found in the system.\n";
     private static final String ERROR_NOT_FOUND_POST = "Post with ID %d not found in the system.\n";

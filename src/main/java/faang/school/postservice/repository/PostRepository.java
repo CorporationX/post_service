@@ -5,8 +5,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 public interface PostRepository extends CrudRepository<Post, Long> {
@@ -44,4 +46,10 @@ public interface PostRepository extends CrudRepository<Post, Long> {
 
     @Query("SELECT p FROM Post p WHERE p.verified = false")
     Stream<Post> streamByVerifiedFalse();
+
+    @Query("SELECT p FROM Post p WHERE p.authorId IN :authorIds AND p.published = true ORDER BY p.publishedAt DESC")
+    List<Post> findByAuthorIdsAndPublishedTrue(@Param("authorIds") Set<Long> authorIds, Pageable pageable);
+
+    @Query("SELECT DISTINCT p FROM Post p LEFT JOIN FETCH p.comments WHERE p.id IN :ids")
+    List<Post> findAllByIdWithComments(@Param("ids") Set<Long> ids);
 }
