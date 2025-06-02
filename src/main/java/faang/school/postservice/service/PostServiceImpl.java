@@ -4,15 +4,18 @@ import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.CreatePostDto;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.events.PostPublishedKafkaEvent;
 import faang.school.postservice.exception.AuthorNotFoundException;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.mapper.UserMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.KafkaPostProducer;
 import faang.school.postservice.publisher.RedisUserBanTopicPublisher;
 import faang.school.postservice.redis_repository.post.PostRedisRepository;
-import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.redis_repository.user.UserRedisRepository;
+import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.utils.ListUtils;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +41,8 @@ public class PostServiceImpl implements PostService {
 
     private final RedisUserBanTopicPublisher redisUserBanTopicPublisher;
 
+    private final KafkaPostProducer kafkaPostProducer;
+
     @Value("${app.moderation.post-count-threshold}")
     private int postCountThreshold;
 
@@ -46,6 +51,9 @@ public class PostServiceImpl implements PostService {
 
     @Value("${news-feed.users.redis-ttl:86400}")
     private long userRedisTtl;
+
+    @Value("${news-feed.posts.kafka-publish-batch-size:86400}")
+    private int kafkaEventBatchSize;
 
     public CreatePostDto create(CreatePostDto createPostDto) {
         validateContent(createPostDto);
@@ -63,6 +71,16 @@ public class PostServiceImpl implements PostService {
             var userRedis = userMapper.toUserRedis(userDto);
             userRedis.setTimeToLive(userRedisTtl);
             userRedisRepository.save(userRedis);
+
+            var followerIds = getUserFollowers(createPostDto.authorId()).stream().map(UserDto::id).toList();
+
+            ListUtils.chunk(followerIds, kafkaEventBatchSize).parallel().forEach(followerIdsChunk -> {
+                var eventToPublish = PostPublishedKafkaEvent.builder()
+                        .postId(post.getId())
+                        .authorFollowerIds(followerIdsChunk)
+                        .build();
+                kafkaPostProducer.sendEvent(eventToPublish);
+            });
         }
 
         return postMapper.toCreatedPostDto(post);
@@ -125,6 +143,14 @@ public class PostServiceImpl implements PostService {
             return true;
         } catch (FeignException e) {
             return false;
+        }
+    }
+
+    private List<UserDto> getUserFollowers(Long authorId) {
+        try {
+            return userServiceClient.getUserFollowers(authorId);
+        } catch (FeignException e) {
+            throw new AuthorNotFoundException(MessageFormat.format("Author with ID {0} does not exist.", authorId));
         }
     }
 }

@@ -27,6 +27,19 @@ spring:
         user_ban:
           name: user_ban
 
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      group-id: news-feed
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: faang.school.postservice.events.*
+
 server:
   port: 8081
 
@@ -63,6 +76,8 @@ ads:
 news-feed:
   posts:
     redis-ttl: 86400
-    max-comments-count: 3;
+    max-comments-count: 3
+    topic: posts
+    kafka-publish-batch-size: 1000
   users:
     redis-ttl: 86400
