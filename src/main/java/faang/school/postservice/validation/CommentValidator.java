@@ -14,7 +14,7 @@ public class CommentValidator {
 
     public void validateCommentAuthor(Long userId) {
         try {
-            userServiceClient.getUser(userId);
+            userServiceClient.getUserById(userId);
         } catch (FeignException e) {
             throw new EntityNotFoundException("User not found");
         }
