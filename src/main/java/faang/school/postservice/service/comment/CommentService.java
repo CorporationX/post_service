@@ -68,6 +68,7 @@ public class CommentService {
 
     @Transactional
     public void deleteComment(long commentId) {
+        //todo удалить картинку
         long userId = userContext.getUserId();
         Comment comment = getComment(commentId);
 
@@ -87,4 +88,7 @@ public class CommentService {
 
         //todo тут принимаем файл
     }
+
+    @Transactional
+    public void deleteFile(long commentId, )
 }
