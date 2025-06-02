@@ -1,4 +1,4 @@
-package faang.school.postservice.s3;
+package faang.school.postservice.service.s3;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.HttpMethod;
@@ -53,8 +53,6 @@ public class S3StorageService {
                                 endPoint, "us-east-1"))
                 .withPathStyleAccessEnabled(true)
                 .build();
-
-
         try {
             if (!s3Client.doesBucketExistV2(bucketName)) {
                 s3Client.createBucket(bucketName);
@@ -65,13 +63,12 @@ public class S3StorageService {
         }
     }
 
-    public void uploadFile(String key, MultipartFile file) throws IOException {
-
+    public void uploadFile(String key, InputStream inputStream, long contentLength, String contentType) {
         ObjectMetadata metadata = new ObjectMetadata();
-        metadata.setContentLength(file.getSize());
-        metadata.setContentType(file.getContentType());
+        metadata.setContentLength(contentLength);
+        metadata.setContentType(contentType);
 
-        try (InputStream inputStream = file.getInputStream()) {
+        try {
             s3Client.putObject(bucketName, key, inputStream, metadata);
             log.info("File successfully uploaded to S3: {}", key);
         } catch (AmazonServiceException e) {
@@ -80,16 +77,9 @@ public class S3StorageService {
         }
     }
 
-    public void uploadFile(String key, InputStream inputStream, long contentLength, String contentType) {
-        ObjectMetadata metadata = new ObjectMetadata();
-        metadata.setContentLength(contentLength);
-        metadata.setContentType(contentType);
-        try {
-            s3Client.putObject(bucketName, key, inputStream, metadata);
-            log.info("File successfully uploaded to S3: {}", key);
-        } catch (AmazonServiceException e) {
-            log.error("Error uploading file {}: {}", key, e.getMessage());
-            throw e;
+    public void uploadFile(String key, MultipartFile file) throws IOException {
+        try (InputStream is = file.getInputStream()) {
+            uploadFile(key, is, file.getSize(), file.getContentType());
         }
     }
 
@@ -110,8 +100,7 @@ public class S3StorageService {
             s3Client.deleteObject(bucketName, key);
             log.info("File successfully deleted {}", key);
         } catch (AmazonServiceException e) {
-            log.error("an Error occurred while deleting file {} - {}",
-                    key, e.getMessage());
+            log.error("Error occurred while deleting file {}: {}", key, e.getMessage());
         }
     }
 

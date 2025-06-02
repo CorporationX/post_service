@@ -2,11 +2,13 @@ package faang.school.postservice.dto.image;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
 @Data
 @Builder(toBuilder = true)
+@AllArgsConstructor
 public class CommentDto {
     private Long id;
     @NotBlank(message = "content must not be blank")

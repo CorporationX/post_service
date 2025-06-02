@@ -6,7 +6,7 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.s3.S3StorageService;
+import faang.school.postservice.service.s3.S3StorageService;
 import faang.school.postservice.service.image.ImageProcessingService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -50,35 +50,25 @@ public class CommentService {
             attachImageToComment(comment, file);
             comment = commentRepository.save(comment);
         }
-        CommentDto dto = commentMapper.toDto(comment);
 
+        CommentDto dto = commentMapper.toDto(comment);
         if (comment.getLargeImageFileKey() != null) {
-            dto.setUrlLarge(
-                    s3StorageService.generatePresignedUrl(comment.getLargeImageFileKey())
-            );
+            dto.setUrlLarge(s3StorageService.generatePresignedUrl(comment.getLargeImageFileKey()));
         }
         if (comment.getSmallImageFileKey() != null) {
-            dto.setUrlThumb(
-                    s3StorageService.generatePresignedUrl(comment.getSmallImageFileKey())
-            );
+            dto.setUrlThumb(s3StorageService.generatePresignedUrl(comment.getSmallImageFileKey()));
         }
         return dto;
     }
 
-
     private void attachImageToComment(Comment comment, MultipartFile file) throws IOException {
-        if (imageService.isFileSizeExceeded(file)) {
-            throw new IllegalArgumentException("File is more than 5 MB");
-        }
-        String contentType = file.getContentType();
-        if (contentType == null || !contentType.toLowerCase().startsWith("image/")) {
-            throw new IllegalArgumentException("File is not an image");
-        }
+        imageService.validateImage(file);
 
+        String contentType = file.getContentType();
         String uuid = UUID.randomUUID().toString().replace("-", "");
         String originalName = file.getOriginalFilename();
-        String ext = imageService.getFileExtension(
-                (originalName != null) ? originalName.toLowerCase(): "");
+        String ext = imageService.getFileExtension((originalName != null) ?
+                originalName.toLowerCase() : "");
 
         String largeKey = "comments/images/large/" + uuid + "_large." + ext;
         String smallKey = "comments/images/small/" + uuid + "_small." + ext;
@@ -86,7 +76,6 @@ public class CommentService {
         boolean largeUploaded = false;
         try {
             byte[] largeBytes = imageService.createLargeImage(file);
-
             try (InputStream isLarge = new ByteArrayInputStream(largeBytes)) {
                 s3StorageService.uploadFile(
                         largeKey,
@@ -97,7 +86,6 @@ public class CommentService {
             largeUploaded = true;
 
             byte[] smallBytes = imageService.createSmallImage(file);
-
             try (InputStream isSmall = new ByteArrayInputStream(smallBytes)) {
                 s3StorageService.uploadFile(
                         smallKey,
@@ -136,6 +124,7 @@ public class CommentService {
     public void deleteComment(Long id) {
         Comment comment = commentRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Comment not found: " + id));
+
         if (comment.getLargeImageFileKey() != null) {
             s3StorageService.deleteFile(comment.getLargeImageFileKey());
         }

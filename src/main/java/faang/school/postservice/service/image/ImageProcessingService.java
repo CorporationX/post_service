@@ -18,8 +18,17 @@ public class ImageProcessingService {
     private static final int SMALL_IMAGE_MAX_SIZE = 170;
     private static final long MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
 
-    public boolean isFileSizeExceeded(MultipartFile file) {
-        return file.getSize() > MAX_FILE_SIZE_BYTES;
+    public void validateImage(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            return; // пустое поле допустимо, у нас опционально
+        }
+        if (file.getSize() > MAX_FILE_SIZE_BYTES) {
+            throw new IllegalArgumentException("File size exceeds 5 MB");
+        }
+        String ct = file.getContentType();
+        if (ct == null || !ct.toLowerCase().startsWith("image/")) {
+            throw new IllegalArgumentException("File is not an image");
+        }
     }
 
     public byte[] resizeImage(MultipartFile originalFile, int maxSize) throws IOException {
@@ -27,22 +36,24 @@ public class ImageProcessingService {
         if (ct == null || !ct.toLowerCase().startsWith("image/")) {
             throw new IllegalArgumentException("This file is not an image");
         }
+
         BufferedImage originalImage = ImageIO.read(originalFile.getInputStream());
         if (originalImage == null) {
             throw new IOException("Cannot read image from MultipartFile");
         }
 
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
         String originalName = originalFile.getOriginalFilename();
         String formatName = (originalName != null && originalName.contains("."))
                 ? getFileExtension(originalName.toLowerCase())
-                : "";
+                : "png";
 
         if (!isImageFormatSupported(formatName)) {
             formatName = "jpeg";
-            log.error("Unknown or unsupported format for file {}. Using JPEG.", originalName);
+            log.warn("Unsupported format \"{}\" for file {}. Defaulting to JPEG.",
+                    formatName, originalName);
         }
 
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
         Thumbnails.of(originalImage)
                 .size(maxSize, maxSize)
                 .keepAspectRatio(true)
@@ -70,7 +81,6 @@ public class ImageProcessingService {
         }
         return fileName.substring(idx + 1);
     }
-
 
     public boolean isImageFormatSupported(String formatName) {
         if (formatName == null || formatName.isBlank()) {
