@@ -4,6 +4,7 @@ import faang.school.postservice.exception.FileProcessException;
 import faang.school.postservice.model.ad.PictureSize;
 import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnails;
+import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
@@ -15,6 +16,7 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
+@Component
 @Slf4j
 public class ImageResizer {
     public static int SMALL_PICTURE_MAX_SIDE_PXL = 170;

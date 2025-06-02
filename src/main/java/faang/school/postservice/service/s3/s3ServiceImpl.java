@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.time.LocalDateTime;
@@ -25,24 +26,19 @@ public class s3ServiceImpl implements S3Servce {
     private String bucketName;
 
     @Override
-    public Resource uploadFile(MultipartFile file, String folder) {
+    public Resource uploadFile(ByteArrayInputStream file, String path) {
         ObjectMetadata objectMetadata = new ObjectMetadata();
-        objectMetadata.setContentType(file.getContentType());
-        objectMetadata.setContentLength(file.getSize());
-        String key = String.format("%s/%s", folder, file.getName());
-        try {
-            PutObjectRequest savedFile = new PutObjectRequest(bucketName, key, file.getInputStream(), objectMetadata);
-            amazonS3.putObject(savedFile);
-        } catch (IOException e) {
-            log.error(e.getMessage());
-            throw new RuntimeException();
-        }
+        objectMetadata.setContentType("image/jpeg");
+        objectMetadata.setContentLength(file.available());
+        String key = String.format("%s/%s", path, "resized_image.jpg");
+        PutObjectRequest savedFile = new PutObjectRequest(bucketName, key, file, objectMetadata);
+        amazonS3.putObject(savedFile);
 
         return Resource.builder()
                 .key(key)
-                .name(file.getName())
-                .size(file.getSize())
-                .type(file.getContentType())
+                .name(path + "_image.jpg")
+                .size(file.available())
+                .type("image/jpeg")
                 .createdAt(LocalDateTime.now())
                 .build();
     }
