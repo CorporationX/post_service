@@ -1,5 +1,9 @@
-package faang.school.postservice.model;
+package faang.school.postservice.model.post;
 
+import faang.school.postservice.model.Album;
+import faang.school.postservice.model.Comment;
+import faang.school.postservice.model.Like;
+import faang.school.postservice.model.Resource;
 import faang.school.postservice.model.ad.Ad;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -15,15 +19,17 @@ import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -38,10 +44,10 @@ public class Post {
     @Column(name = "content", nullable = false, length = 4096)
     private String content;
 
-    @Column(name = "author_id", nullable = false)
+    @Column(name = "author_id", updatable = false)
     private Long authorId;
 
-    @Column(name = "project_id")
+    @Column(name = "project_id", updatable = false)
     private Long projectId;
 
     @OneToMany(mappedBy = "post", orphanRemoval = true)
@@ -82,4 +88,8 @@ public class Post {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 }
