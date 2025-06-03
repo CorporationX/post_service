@@ -10,6 +10,9 @@ public class ErrorMessage {
     public static final String ERROR_NULL_ID = "ID cant be null";
     public static final String ERROR_NOT_AUTHOR_COMMENT = "You are not the author of the comment";
     public static final String ERROR_SERIALIZE = "Failed to serialize event {}.\n";
+    public static final String ERROR_SERIALIZE_EVENT = "Failed to serialize event [%s]";
+    public static final String FAILED_SERIALIZING_OBJECT = "Failed to serialize object";
+    public static final String FAILED_TO_DESERIALIZE_EVENT = "Failed to deserialize %s from Kafka message";
     public static final String CACHE_AUTHOR_ERROR = "Failed to cache author in Redis";
 
     private static final String ERROR_NOT_FOUND_USER = "User with ID %d not found in the system.\n";

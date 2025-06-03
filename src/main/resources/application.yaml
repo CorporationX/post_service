@@ -11,6 +11,7 @@ app:
       user_ban: user_ban
       comment-analytics: comment_analytics_topic
       like-achievement: like_achievement_topic
+    max-comment-cache: 3
   thread-pool-size: 16
 
 spring:
@@ -41,6 +42,19 @@ spring:
           name: calculations_channel
       key-prefix:
         author-cache: newsfeed:authors
+        comment: "post:%d:comment"
+      script:
+        commentCache: >
+          local key = KEYS[1]
+          local score = tonumber(ARGV[1])
+          local value = ARGV[2]
+          local maxSize = tonumber(ARGV[3])
+          redis.call('ZADD', key, score, value)
+          local size = redis.call('ZCARD', key)
+          if size > maxSize then
+              redis.call('ZREMRANGEBYRANK', key, 0, size - maxSize - 1)
+          end
+          return nil
   retry:
     language-tool:
       max-attempts: 4
@@ -64,6 +78,11 @@ spring:
       post-view: "post-view-consumer"
     listener:
       ack-mode: MANUAL
+      enable-auto-commit: false
+      topics:
+        news-feed-comment: "news-comment-topic"
+      groupId:
+        news-feed-group: "news-feed-group"
 
 server:
   port: 8081
