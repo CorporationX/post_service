@@ -3,6 +3,7 @@ package faang.school.postservice.consumer;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
@@ -18,7 +19,9 @@ public class TestContainer {
     @Container
     static final GenericContainer<?> redis = new GenericContainer<>(
             DockerImageName.parse("redis:7.0")
-    ).withExposedPorts(6379);
+    )
+            .withExposedPorts(6379)
+            .waitingFor(Wait.forLogMessage(".*Ready to accept connections.*\\n", 1));
 
     @DynamicPropertySource
     static void overrideProperties(DynamicPropertyRegistry registry) {
