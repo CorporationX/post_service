@@ -59,10 +59,4 @@ public interface PostRepository extends CrudRepository<Post, Long> {
     @Transactional
     @Query("UPDATE Post p SET p.views = p.views + 1 WHERE p.id = :id")
     int incrementViews(Long id);
-
-    @Query("SELECT p FROM Post p WHERE p.authorId IN :authorIds AND p.published = true ORDER BY p.publishedAt DESC")
-    List<Post> findByAuthorIdsAndPublishedTrue(@Param("authorIds") Set<Long> authorIds, Pageable pageable);
-
-    @Query("SELECT DISTINCT p FROM Post p LEFT JOIN FETCH p.comments WHERE p.id IN :ids")
-    List<Post> findAllByIdWithComments(@Param("ids") Set<Long> ids);
 }
