@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 public class PostService {
     private final PostRepository postRepository;
 
-    public Post getPostById(Long id){
+    public Post getPostById(Long id) {
         return postRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("There is no such id = " + id));
     }

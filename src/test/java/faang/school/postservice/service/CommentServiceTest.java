@@ -21,24 +21,24 @@ class CommentServiceTest {
     private CommentService commentService;
 
     @Test
-    void getUserByIdTest(){
+    void getUserByIdTest() {
         long id = 1L;
         Comment comment = Comment.builder().id(id).build();
 
         Mockito.when(commentRepository.findById(id)).thenReturn(Optional.of(comment));
 
-        Comment result  = commentService.getCommentById(id);
+        Comment result = commentService.getCommentById(id);
 
         assertNotNull(result);
         assertEquals(id, result.getId());
     }
 
     @Test
-    void getUserByIdTestException(){
+    void getUserByIdTestException() {
         long id = -1L;
         Mockito.when(commentRepository.findById(id))
                 .thenThrow(new IllegalArgumentException("There is no such id = " + id));
 
-        assertThrows(IllegalArgumentException.class, ()->commentRepository.findById(id));
+        assertThrows(IllegalArgumentException.class, () -> commentRepository.findById(id));
     }
 }

@@ -18,22 +18,22 @@ public class LikeController {
     private final LikeService likeSystemService;
 
     @PostMapping(path = "/post/{postId}")
-    public LikeDto addLikePost(@PathVariable Long postId){
+    public LikeDto addLikePost(@PathVariable Long postId) {
         return likeSystemService.addLikePost(postId, userContext.getUserId());
     }
 
     @DeleteMapping(path = "/post/{id}")
-    public LikeDto deleteLikePost(@PathVariable Long id){
+    public LikeDto deleteLikePost(@PathVariable Long id) {
         return likeSystemService.deleteLikePost(id);
     }
 
     @PostMapping(path = "/comment/{commentId}")
-    public LikeDto addLikeComment(@PathVariable Long commentId){
+    public LikeDto addLikeComment(@PathVariable Long commentId) {
         return likeSystemService.addLikeComment(commentId, userContext.getUserId());
     }
 
     @DeleteMapping(path = "/comment/{id}")
-    public LikeDto deleteLikeComment(@PathVariable Long id){
+    public LikeDto deleteLikeComment(@PathVariable Long id) {
         return likeSystemService.deleteLikeComment(id);
     }
 }

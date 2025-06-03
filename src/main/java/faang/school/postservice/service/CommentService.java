@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 public class CommentService {
     private final CommentRepository commentRepository;
 
-    public Comment getCommentById(Long id){
+    public Comment getCommentById(Long id) {
         return commentRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("There is no such id = " + id));
     }
