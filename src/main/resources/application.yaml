@@ -41,6 +41,7 @@ spring:
         calculations_channel:
           name: calculations_channel
       key-prefix:
+        author-cache: newsfeed:authors
         comment: "post:%d:comment"
       script:
         commentCache: >
@@ -72,7 +73,11 @@ spring:
         user-ban: "user-ban-topic"
         post-like: "post-like-event-topic"
         news-feed-comment: "news-comment-topic"
+        post-view: "post-view-topic"
+    consumers:
+      post-view: "post-view-consumer"
     listener:
+      ack-mode: MANUAL
       enable-auto-commit: false
       topics:
         news-feed-comment: "news-comment-topic"
@@ -122,3 +127,7 @@ posts:
 
   publishing:
     cron: "0 0 * * * *"
+
+ttl:
+  comment-cache:
+    ttl-seconds: 86400

@@ -23,6 +23,7 @@ import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.publisher.KafkaPublisher;
+import faang.school.postservice.service.redis.AuthorCacheService;
 import feign.FeignException;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -100,6 +101,9 @@ public class CommentServiceImpl implements CommentService {
     @Value("${spring.kafka.producer.topics.user-ban}")
     private String userBanTopic;
 
+    @Value("${ttl.comment-cache.ttl-seconds}")
+    private Duration ttlAuthor;
+
     private static final double TOXICITY_THRESHOLD = 0.35;
     private static final int MAX_LENGTH_CHARACTER = 4096;
 
@@ -112,6 +116,7 @@ public class CommentServiceImpl implements CommentService {
     private final UserServiceClient userServiceClient;
     private final CommentEventPublisher commentEventPublisher;
     private final NotificationKafkaProducer notificationKafkaProducer;
+    private final AuthorCacheService authorCacheService;
     private final KafkaCommentProducer kafkaCommentProducer;
     private ExecutorService executor;
 
@@ -189,6 +194,7 @@ public class CommentServiceImpl implements CommentService {
                 comment.getId(), LocalDateTime.now());
         commentEventPublisher.publish(commentEvent);
         kafkaCommentProducer.send(commentEvent);
+        authorCacheService.cacheAuthor(String.valueOf(commentRequestDto.getAuthorId()), ttlAuthor);
         log.info(INFO_CREATE_COMMENT, comment.getId(), commentRequestDto.getAuthorId(), commentRequestDto.getPostId());
     }
 

@@ -13,6 +13,7 @@ public class ErrorMessage {
     public static final String ERROR_SERIALIZE_EVENT = "Failed to serialize event [%s]";
     public static final String FAILED_SERIALIZING_OBJECT = "Failed to serialize object";
     public static final String FAILED_TO_DESERIALIZE_EVENT = "Failed to deserialize %s from Kafka message";
+    public static final String CACHE_AUTHOR_ERROR = "Failed to cache author in Redis";
 
     private static final String ERROR_NOT_FOUND_USER = "User with ID %d not found in the system.\n";
     private static final String ERROR_NOT_FOUND_POST = "Post with ID %d not found in the system.\n";
