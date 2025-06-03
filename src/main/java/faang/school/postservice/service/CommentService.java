@@ -52,7 +52,7 @@ public class CommentService {
         validateNullCommentDto(commentDto);
         validateCommentContent(commentDto);
 
-        Comment commentForSave = mapper.toEntity(commentDto);
+        Comment commentForSave = commentMapper.toEntity(commentDto);
         commentForSave.setPost(post);
         Comment savedComment = repository.save(commentForSave);
         log.info("Комментарий {} успешно опубликован", savedComment.getId());
@@ -73,15 +73,15 @@ public class CommentService {
                 .build();
         commentEvenRedisPublisher.publish(commentEvent);
         log.info("Комментарий {} отправлен в топик ", savedComment);
-      
-      CommentSendEvent commentEvent = CommentSendEvent.builder()
+
+        CommentSendEvent kafkaEvent = CommentSendEvent.builder()
                 .authorId(userId)
                 .postId(post.getId())
                 .commentId(savedComment.getId())
                 .build();
-        kafkaCommentProducer.sendCommentCreatedEvent(commentEvent);
-     
-        return mapper.toDto(savedComment);
+        kafkaCommentProducer.sendCommentCreatedEvent(kafkaEvent);
+
+        return commentMapper.toDto(savedComment);
     }
 
     public CommentDto editComment(CommentDto commentDto, long commentId, String content) {
