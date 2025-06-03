@@ -59,6 +59,12 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.9.2")
     testImplementation("org.assertj:assertj-core:3.24.2")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+
+    /**
+     * Swagger
+     * Доступ: http://localhost:8081/swagger-ui/index.html
+     */
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0")
 }
 
 tasks.test {
