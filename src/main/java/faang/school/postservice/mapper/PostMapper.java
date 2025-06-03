@@ -24,6 +24,7 @@ public interface PostMapper {
     @Mapping(target = "resources", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "verifiedStatus", ignore = true)
     Post toEntity(PostDto postDto);
 
     @Mapping(target = "likeCount", source = "likes", qualifiedByName = "calculateLikeCount")
