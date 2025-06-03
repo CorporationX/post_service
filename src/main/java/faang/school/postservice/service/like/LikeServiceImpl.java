@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -29,17 +30,21 @@ public class LikeServiceImpl implements LikeService {
 
     @Override
     @Transactional
-    public Like likeThePost(Like like, long postId) {
+    public Like likeThePost(long postId) {
         UserDto user = existenceCheckUser();
         Post post = postService.getPostById(postId);
         Optional<Like> likeOptional = likeRepository.findByPostIdAndUserId(post.getId(), user.id());
-        Like existingLike = likeOptional.orElseGet(() -> {
-            Like newLike = new Like();
-            newLike.setPost(post);
-            newLike.setUserId(user.id());
-            return newLike;
-        });
-        return likeRepository.save(existingLike);
+        if (likeOptional.isPresent()) {
+            return likeOptional.get();
+        } else {
+            Like existingLike = likeOptional.orElseGet(() -> {
+                Like newLike = new Like();
+                newLike.setPost(post);
+                newLike.setUserId(user.id());
+                return newLike;
+            });
+            return likeRepository.save(existingLike);
+        }
     }
 
     @Override
@@ -50,17 +55,21 @@ public class LikeServiceImpl implements LikeService {
 
     @Override
     @Transactional
-    public Like likeTheComment(Like like, long commentId) {
+    public Like likeTheComment(long commentId) {
         UserDto user = existenceCheckUser();
         Optional<Comment> comment = commentRepository.findById(commentId);
         Optional<Like> likeOptional = likeRepository.findByCommentIdAndUserId(commentId, user.id());
-        Like likeResult = likeOptional.orElseGet(() -> {
-            Like newLike = new Like();
-            newLike.setComment(comment.get());
-            newLike.setUserId(user.id());
-            return newLike;
-        });
-        return likeRepository.save(likeResult);
+        if (likeOptional.isPresent()) {
+            return likeOptional.get();
+        } else {
+            Like likeResult = likeOptional.orElseGet(() -> {
+                Like newLike = new Like();
+                newLike.setComment(comment.get());
+                newLike.setUserId(user.id());
+                return newLike;
+            });
+            return likeRepository.save(likeResult);
+        }
     }
 
     @Override
@@ -71,11 +80,17 @@ public class LikeServiceImpl implements LikeService {
     }
 
     @Override
-    @Transactional
-    public long countTheLikeForPost(long postId) {
+    @Transactional(readOnly = true)
+    public List<Like> getAllTheLikeForPost(long postId) {
         Post posts = postService.getPostById(postId);
+        return posts.getLikes();
+    }
 
-        return posts.getLikes().size();
+    @Override
+    @Transactional(readOnly = true)
+    public List<Like> countTheLikeForComment(long comment) {
+
+        return null;
     }
 
     protected UserDto existenceCheckUser() {

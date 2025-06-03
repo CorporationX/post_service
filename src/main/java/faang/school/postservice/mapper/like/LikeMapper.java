@@ -1,22 +1,12 @@
 package faang.school.postservice.mapper.like;
 
 import faang.school.postservice.dto.like.LikeDto;
-import faang.school.postservice.dto.like.LikeForCommentDto;
-import faang.school.postservice.dto.like.LikeForPostDto;
 import faang.school.postservice.model.Like;
 
-public class LikeMapper {
-    public static Like likeCreateDtoToLike(LikeForPostDto likeForPostDto) {
-        return Like.builder()
-                .userId(likeForPostDto.getUserId())
-                .build();
-    }
+import java.util.List;
+import java.util.stream.Collectors;
 
-    public static LikeForPostDto likeCreateToLikeDto (Like like) {
-        return LikeForPostDto.builder()
-                .userId(like.getId())
-                .build();
-    }
+public class LikeMapper {
 
     public static LikeDto likeToResponseLikeDto (Like like) {
         return LikeDto.builder()
@@ -25,10 +15,10 @@ public class LikeMapper {
                 .build();
     }
 
-    public static Like likeForCommentToLike(LikeForCommentDto likeForCommentDto) {
-        return Like.builder()
-                .userId(likeForCommentDto.getUserId())
-                .build();
+    public static List<LikeDto> likeListToResponseLikeDto(List<Like> likes) {
+        return likes.stream()
+                .map(LikeMapper::likeToResponseLikeDto)
+                .collect(Collectors.toList());
     }
 
 }

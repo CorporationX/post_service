@@ -8,5 +8,4 @@ import lombok.Getter;
 @Builder
 @AllArgsConstructor
 public class LikeForPostDto {
-    private long userId;
 }
