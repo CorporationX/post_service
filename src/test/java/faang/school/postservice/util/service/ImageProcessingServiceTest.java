@@ -44,7 +44,7 @@ public class ImageProcessingServiceTest {
     }
 
     @Test
-    void validateImageNullOrEmptyDoesNotThrow() {
+    void testValidateImageNullOrEmptyDoesNotThrow() {
         assertDoesNotThrow(() -> imageService.validateImage(null));
 
         MockMultipartFile empty =
@@ -55,7 +55,7 @@ public class ImageProcessingServiceTest {
     }
 
     @Test
-    void validateImageTooLargeThrows() {
+    void testValidateImageTooLargeThrows() {
         byte[] largeBytes = new byte[(int) (5L * 1024 * 1024 + 1)];
         MockMultipartFile tooLarge = new MockMultipartFile(
                 "file", "big.png", "image/png", largeBytes);
@@ -67,7 +67,7 @@ public class ImageProcessingServiceTest {
     }
 
     @Test
-    void validateImageNotImageThrows() {
+    void testValidateImageNotImageThrows() {
         MockMultipartFile notImage = new MockMultipartFile(
                 "file", "file.txt", "text/plain", "hello".getBytes());
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
@@ -77,7 +77,7 @@ public class ImageProcessingServiceTest {
     }
 
     @Test
-    void resizeImageKeepsAspectRatioAndReturnsJpegBytes() throws IOException {
+    void testResizeImageKeepsAspectRatioAndReturnsJpegBytes() throws IOException {
         MockMultipartFile original = createTestImage(2000, 1000, "png");
 
         byte[] resizedBytes = imageService.resizeImage(original, 500);
@@ -102,7 +102,7 @@ public class ImageProcessingServiceTest {
     }
 
     @Test
-    void createLargeAndSmallImage_RespectMaxDimensions() throws IOException {
+    void testCreateLargeAndSmallImageRespectMaxDimensions() throws IOException {
         MockMultipartFile original = createTestImage(3000, 3000, "jpg");
 
         byte[] largeBytes = imageService.createLargeImage(original);
