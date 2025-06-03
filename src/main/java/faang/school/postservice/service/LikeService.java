@@ -6,6 +6,7 @@ import faang.school.postservice.dto.like.LikeEvent;
 import faang.school.postservice.enums.TargetLike;
 import faang.school.postservice.event.PostLikeEvent;
 import faang.school.postservice.exception.LikeException;
+import faang.school.postservice.kafka.KafkaLikeProducer;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
@@ -46,6 +47,7 @@ public class LikeService {
     private final EventPublisher eventPublisher;
     private final LikeMapper likeMapper;
     private final ChannelTopic likeAchievementTopic;
+    private final KafkaLikeProducer kafkaLikeProducer;
 
     @Value("${spring.kafka.producer.topics.post-like}")
     private String likeTopic;
@@ -61,9 +63,13 @@ public class LikeService {
 
         Like like = buildLike(userId, post, null);
         LikeDto result = likeMapper.toLikeDto(likeRepository.save(like));
+
+        kafkaLikeProducer.sendLikeEvent(new LikeEvent(like.getUserId(), postId, like.getId()));
+
         kafkaPublisher.send(likeTopic, createLikeEvent(like.getUserId(), post.getAuthorId(), post.getId()));
-        log.info("User {} liked post {} !", userId, postId);
+
         eventPublisher.publish(new LikeEvent(like.getUserId(), postId, like.getId()), likeAchievementTopic);
+        log.info("User {} liked post {} !", userId, postId);
         return result;
     }
 

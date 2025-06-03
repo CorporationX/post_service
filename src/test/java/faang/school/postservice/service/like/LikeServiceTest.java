@@ -3,6 +3,7 @@ package faang.school.postservice.service.like;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.exception.LikeException;
+import faang.school.postservice.kafka.KafkaLikeProducer;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
@@ -51,6 +52,8 @@ public class LikeServiceTest {
     private EventPublisher eventPublisher;
     @Mock
     private KafkaPublisher kafkaPublisher;
+    @Mock
+    private KafkaLikeProducer kafkaLikeProducer;
 
     @Spy
     private LikeMapper likeMapper;
