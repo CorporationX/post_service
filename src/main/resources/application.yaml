@@ -27,6 +27,17 @@ spring:
         post_like_channel:
           name: post_like_events
 
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: my-group
+      auto-offset-reset: earliest
+    topic:
+      like:
+        name: likes
+        partitions: 3
+        replication-factor: 1
+
 server:
   port: 8081
 

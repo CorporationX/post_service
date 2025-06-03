@@ -56,6 +56,7 @@ dependencies {
     testImplementation("org.testcontainers:junit-jupiter")
     testImplementation("org.testcontainers:postgresql")
     testImplementation("com.redis.testcontainers:testcontainers-redis-junit-jupiter:1.4.6")
+    testImplementation("org.testcontainers:kafka")
 
     /**
      * Tests
@@ -69,6 +70,11 @@ dependencies {
      * AWS S3
      */
     implementation("com.amazonaws:aws-java-sdk-s3:1.12.566")
+
+    /**
+     * Kafka
+     */
+    implementation("org.springframework.kafka:spring-kafka:3.0.11")
 }
 
 tasks.withType<Test> {
