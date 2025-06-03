@@ -16,4 +16,9 @@ public class ThreadPoolConfig {
     public ExecutorService threadPoolExecutor() {
         return Executors.newFixedThreadPool(threadPoolSize);
     }
+
+    @Bean(name = "taskSplitterExecutor")
+    public ExecutorService taskSplitterExecutor() {
+        return Executors.newSingleThreadExecutor();
+    }
 }
