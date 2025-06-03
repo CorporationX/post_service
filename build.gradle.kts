@@ -93,16 +93,16 @@ tasks.jacocoTestReport {
     classDirectories.setFrom(files(classDirectories.files.map {
         fileTree(it).apply {
             exclude(
-                "faang.school.postservice.client.*",
-                "faang.school.postservice.mapper.*",
-                "faang.school.postservice.entity.*",
-                "faang.school.postservice.config.*",
-                "faang.school.postservice.dto.*",
-                "faang.school.postservice.model.*",
-                "faang.school.postservice.repository.*",
-                "**/*Test.class",
-                "**/*Impl.class",
-                "faang.school.post_service.PostServiceApp"
+                "**/client/**",
+                "**/mapper/**",
+                "**/entity/**",
+                "**/config/**",
+                "**/dto/**",
+                "**/model/**",
+                "**/repository**",
+                "**/**Test.class",
+                "**/PostServiceApp.class",
+                "**/**Impl"
             )
         }
     }))
