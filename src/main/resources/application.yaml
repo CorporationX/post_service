@@ -21,6 +21,9 @@ spring:
     redis:
       port: 6379
       host: localhost
+      max-total: 128
+      max-idle: 128
+      min-idle: 16
       channels:
         calculations_channel:
           name: calculations_channel
@@ -80,3 +83,18 @@ moderation:
     path: "dictionary-for-moderation.txt"
     batch:
       size: 1000
+
+kafka:
+  bootstrap-servers: localhost:9092
+  topic:
+    post:
+      name: posts
+      partitions: 1
+      replicationFactor: 1
+      async:
+        core-pool-size: 5
+        max-pool-size: 10
+        queue-capacity: 20
+
+feed:
+  max-size: 500
