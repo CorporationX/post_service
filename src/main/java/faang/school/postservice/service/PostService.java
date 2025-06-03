@@ -25,5 +25,7 @@ public interface PostService {
 
     List<PostDto> getAllPostsByProjectId(Long projectId);
 
+    void correctContentDraftPostsByLanguageToolAI();
+
     Post getExistingPost(Long postId);
 }
