@@ -5,6 +5,10 @@ app:
     top-hashtags-cache: 1000
   cron:
     author-banner: "0 0 12 * * ?"  # Каждый день в 12:00
+  heating:
+    max-pages: 1000
+    batch-size: 1000
+    max-queue-size: 10000
 
   redis:
     topic:
@@ -12,6 +16,15 @@ app:
       comment-analytics: comment_analytics_topic
       like-achievement: like_achievement_topic
     max-comment-cache: 3
+    keys:
+      user-feed: "user:feed:%d"
+      user-data: "user:%d"
+      post-data: "post:%d"
+    ttl:
+      default-seconds: 86400
+
+  feed:
+    posts-limit: 500
   thread-pool-size: 16
 
 spring:
@@ -74,8 +87,10 @@ spring:
         post-like: "post-like-event-topic"
         news-feed-comment: "news-comment-topic"
         post-view: "post-view-topic"
+        feed-heating: "feed-heating-topic"
     consumers:
       post-view: "post-view-consumer"
+      group-id: feed-heating-group
     listener:
       ack-mode: MANUAL
       enable-auto-commit: false
