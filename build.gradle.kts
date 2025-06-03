@@ -102,6 +102,7 @@ tasks.jacocoTestReport {
                 "**/repository**",
                 "**/**Test.class",
                 "**/PostServiceApp.class",
+                "**/controller/LikeController.class",
                 "**/**Impl"
             )
         }
@@ -120,6 +121,7 @@ tasks.jacocoTestCoverageVerification {
                 "faang.school.postservice.dto.*",
                 "faang.school.postservice.model.*",
                 "faang.school.postservice.repository.*",
+                "faang.school.postservice.controller.LikeController",
                 "**/*Test.class",
                 "**/*Impl.class",
                 "faang.school.postservice.PostServiceApp"
