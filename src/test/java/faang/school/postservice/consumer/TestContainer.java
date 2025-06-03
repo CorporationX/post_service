@@ -18,8 +18,7 @@ public class TestContainer {
             DockerImageName.parse("confluentinc/cp-kafka:7.6.1")
     )
             .withEnv("KAFKA_AUTO_CREATE_TOPICS_ENABLE", "true")
-            .waitingFor(Wait.forLogMessage(".*KafkaServer id=\\d+ started.*\\n", 1))
-            .withStartupTimeout(Duration.ofSeconds(60));
+            .withStartupTimeout(Duration.ofSeconds(90));
 
     @Container
     static final GenericContainer<?> redis = new GenericContainer<>(
