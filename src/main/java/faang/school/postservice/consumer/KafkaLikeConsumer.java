@@ -26,8 +26,8 @@ public class KafkaLikeConsumer {
         }
 
         try {
-            boolean isNewLike = Objects.equals(redisTemplate.opsForSet()
-                    .add(likesKey, String.valueOf(userId)), INCREMENT_VALUE);
+            Long likeAdded = redisTemplate.opsForSet().add(likesKey, String.valueOf(userId));
+            boolean isNewLike = Objects.equals(likeAdded, INCREMENT_VALUE);
 
             if (isNewLike) {
                 redisTemplate.opsForHash().increment(postKey, "likeCount", INCREMENT_VALUE);
