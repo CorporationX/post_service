@@ -22,8 +22,8 @@ spring:
       port: 6379
       host: localhost
       channels:
-        calculations_channel:
-          name: calculations_channel
+          calculations_channel: cal
+          user: user
 
 server:
   port: 8081
@@ -41,3 +41,6 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+cron:
+    project-
