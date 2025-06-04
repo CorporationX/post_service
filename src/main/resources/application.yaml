@@ -46,12 +46,10 @@ logging:
   level:
     root: info
 
-user-service:
-  host: localhost
-  port: 8080
-project-service:
-  host: localhost
-  port: 8082
-payment-service:
-  host: localhost
-  port: 9080
+services:
+  user-service:
+    name: user-service
+  project-service:
+    name: project-service
+  payment-service:
+    name: payment-service
