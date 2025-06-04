@@ -34,6 +34,17 @@ public class RedisConfig {
     public Jackson2JsonRedisSerializer<LikePostEvent> likeEventJsonSerializer() {
         return new Jackson2JsonRedisSerializer<>(LikePostEvent.class);
     }
+    @Bean
+    public RedisTemplate<String, LikePostEvent> likePostEventRedisTemplate(
+            RedisConnectionFactory connectionFactory,
+            Jackson2JsonRedisSerializer<LikePostEvent> likeEventJsonSerializer
+    ) {
+        RedisTemplate<String, LikePostEvent> template = new RedisTemplate<>();
+        template.setConnectionFactory(connectionFactory);
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setValueSerializer(likeEventJsonSerializer);
+        return template;
+    }
 
     @Bean
     public RedisTemplate<String, String> redisTemplate(RedisConnectionFactory connectionFactory) {
