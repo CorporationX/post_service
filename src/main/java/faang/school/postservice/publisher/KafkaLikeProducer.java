@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class KafkaLikeProducer {
     private final KafkaTemplate<String, LikePostEvent> kafkaTemplate;
-    @Value("${spring.kafka.topics.likes.name}")
+    @Value("${spring.kafka.topic.like.name}")
     private String likeTopicName;
 
     public void sendMessage(LikePostEvent event) {
