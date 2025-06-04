@@ -9,9 +9,9 @@ public interface AlbumService {
 
     AlbumDto createAlbum(AlbumDto albumDto);
 
-    void addPostInAlbum(long albumId, long postId);
+    void addPostInAlbum(long albumId, long postId, long userId);
 
-    void deletePostFromAlbum(long albumId, long postId);
+    void deletePostFromAlbum(long albumId, long postId, long userId);
 
     void addAlbumToFavorite(long albumId, long userId);
 

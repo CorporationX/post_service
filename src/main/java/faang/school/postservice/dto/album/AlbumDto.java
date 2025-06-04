@@ -1,5 +1,6 @@
 package faang.school.postservice.dto.album;
 
+import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.model.Post;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -9,6 +10,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -23,11 +26,11 @@ public class AlbumDto {
     private String title;
 
     @NotBlank(message = "Description must not be blank")
-    @Size(max = 256, message = "Description must be no longer than 4096 characters")
+    @Size(max = 4096, message = "Description must be no longer than 4096 characters")
     private String description;
 
     @NotNull(message = "Author id must be a positive number")
     @Min(value = 1, message = "Author id must be a positive number")
     private Long authorId;
-    private Post post;
+    private Long postId;
 }

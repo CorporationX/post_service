@@ -30,13 +30,19 @@ public class AlbumController {
     }
 
     @PostMapping("/{albumId}/post/{postId}")
-    public void addPostInAlbum(@PathVariable long albumId, @PathVariable long postId) {
-        albumService.addPostInAlbum(albumId, postId);
+    public void addPostInAlbum(
+            @PathVariable long albumId,
+            @PathVariable long postId,
+            @PathVariable long userId) {
+        albumService.addPostInAlbum(albumId, postId, userId);
     }
 
     @DeleteMapping("/{albumId}/post/{postId}")
-    public void deletePostFromAlbum(@PathVariable long albumId, @PathVariable long postId) {
-        albumService.deletePostFromAlbum(albumId, postId);
+    public void deletePostFromAlbum(
+            @PathVariable long albumId,
+            @PathVariable long postId,
+            @PathVariable long userId) {
+        albumService.deletePostFromAlbum(albumId, postId, userId);
     }
 
     @PostMapping("/users/{userId}/favorite-albums/{albumId}")

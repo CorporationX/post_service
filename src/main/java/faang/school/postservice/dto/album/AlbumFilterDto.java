@@ -10,8 +10,6 @@ import java.time.LocalDateTime;
 public class AlbumFilterDto {
 
     private String titlePattern;
-    private Integer max;
-    private Integer min;
     private LocalDateTime createdBeforeDate;
     private LocalDateTime createdAfterDate;
 }

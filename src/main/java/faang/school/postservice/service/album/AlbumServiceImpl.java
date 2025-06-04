@@ -1,6 +1,5 @@
 package faang.school.postservice.service.album;
 
-import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.album.AlbumDto;
 import faang.school.postservice.dto.album.AlbumFilterDto;
 import faang.school.postservice.exception.DataValidationException;
@@ -27,7 +26,6 @@ public class AlbumServiceImpl implements AlbumService {
     private final AlbumMapper albumMapper;
     private final AlbumRepository albumRepository;
     private final PostRepository postRepository;
-    private final UserServiceClient userServiceClient;
     private final List<AlbumFilter> albumFilters;
     private final UserValidationService userValidationService;
 
@@ -53,8 +51,10 @@ public class AlbumServiceImpl implements AlbumService {
 
     @Override
     @Transactional
-    public void addPostInAlbum(long albumId, long postId) {
-        Album album = findById(albumId);
+    public void addPostInAlbum(long albumId, long postId, long userId) {
+        Album album = albumRepository.findByIdWithPosts(albumId)
+                .orElseThrow(() -> new EntityNotFoundException("Album not found with id=%d".formatted(albumId)));
+        validateAuthorIsOwner(album, userId);
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("Post not found with id=%d".formatted(postId)));
         if (!album.getPosts().contains(post)) {
@@ -66,8 +66,10 @@ public class AlbumServiceImpl implements AlbumService {
 
     @Override
     @Transactional
-    public void deletePostFromAlbum(long albumId, long postId) {
-        Album album = findById(albumId);
+    public void deletePostFromAlbum(long albumId, long postId, long userId) {
+        Album album = albumRepository.findByIdWithPosts(albumId)
+                .orElseThrow(() -> new EntityNotFoundException("Album not found with id=%d".formatted(albumId)));
+        validateAuthorIsOwner(album, userId);
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("Post not found with id=%d".formatted(postId)));
         album.getPosts().remove(post);
@@ -143,7 +145,6 @@ public class AlbumServiceImpl implements AlbumService {
         validateAuthorIsOwner(existingAlbum, albumDto.getAuthorId());
         existingAlbum.setTitle(albumDto.getTitle());
         existingAlbum.setDescription(albumDto.getDescription());
-        existingAlbum.getPosts().add(albumDto.getPost());
         albumRepository.save(existingAlbum);
         return albumMapper.toDto(existingAlbum);
     }
