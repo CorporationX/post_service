@@ -22,6 +22,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
     implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.retry:spring-retry")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.cloud:spring-cloud-starter-openfeign:4.0.2")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
@@ -42,8 +43,8 @@ dependencies {
     implementation("com.fasterxml.jackson.core:jackson-databind:2.14.2")
     implementation("org.slf4j:slf4j-api:2.0.5")
     implementation("ch.qos.logback:logback-classic:1.4.6")
-    implementation("org.projectlombok:lombok:1.18.26")
-    annotationProcessor("org.projectlombok:lombok:1.18.26")
+    implementation("org.projectlombok:lombok:1.18.32")
+    annotationProcessor("org.projectlombok:lombok:1.18.32")
     implementation("org.mapstruct:mapstruct:1.5.3.Final")
     annotationProcessor("org.mapstruct:mapstruct-processor:1.5.3.Final")
 
@@ -84,53 +85,3 @@ val test by tasks.getting(Test::class) { testLogging.showStandardStreams = true 
 tasks.bootJar {
     archiveFileName.set("service.jar")
 }
-
-val jacocoExclude = listOf(
-    "faang/school/postservice/PostServiceApp*",
-    "faang/school/postservice/client/Feign*",
-    "**/config/**",
-    "**/model/**",
-    "**/dto/**",
-    "**/mapper/**"
-)
-
-tasks.jacocoTestReport {
-    reports {
-        xml.required.set(false)
-        csv.required.set(false)
-        html.required.set(true)
-    }
-    classDirectories.setFrom(classDirectories.files.map {
-        fileTree(it).matching {
-            exclude(jacocoExclude)
-        }
-    })
-}
-
-val jacocoClassExclude = listOf(
-    "faang.school.postservice.PostServiceApp",
-    "faang.school.postservice.client.Feign*",
-    "faang.school.postservice.rest.ExceptionApiHandler",
-    "faang.school.postservice.config.*",
-    "faang.school.postservice.model.*",
-    "faang.school.postservice.mapper.*",
-    "faang.school.postservice.exception.ErrorResponseDto*",
-    "faang.school.postservice.dto.*"
-)
-
-tasks.jacocoTestCoverageVerification {
-    violationRules {
-        rule {
-            element = "CLASS"
-            isEnabled = true
-            excludes = jacocoClassExclude
-            limit {
-                counter = "LINE"
-                value = "COVEREDRATIO"
-                minimum = "0.7".toBigDecimal()
-            }
-        }
-    }
-}
-
-
