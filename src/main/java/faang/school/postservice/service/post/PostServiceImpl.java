@@ -5,6 +5,7 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostCreateDto;
 import faang.school.postservice.dto.post.PostOutputDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
+import faang.school.postservice.dto.post.UserPostsDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.PostAlreadyPublishedException;
@@ -14,6 +15,7 @@ import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.PostService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +31,9 @@ public class PostServiceImpl implements PostService {
     private final PostMapper postMapper;
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
+
+    @Value("${entity.post.max-unverified-count-for-ban}")
+    private long maxUnverifiedPostsForBan;
 
     @Override
     public PostOutputDto getPostById(long postId) {
@@ -125,6 +130,16 @@ public class PostServiceImpl implements PostService {
         postMapper.update(postUpdateDto, foundPost);
         Post updatedPost = postRepository.save(foundPost);
         return postMapper.toPostDto(updatedPost);
+    }
+
+    @Override
+    public List<Long> getUsersIdsToBan() {
+        /** ToDo: Может тут сразу сделать запрос с учетом количества? */
+        List<UserPostsDto> postsCount = postRepository.findUnverifiedPostsCountForUsers();
+        return postsCount.stream()
+                .filter((posts) -> posts.getCount() > maxUnverifiedPostsForBan)
+                .map(UserPostsDto::getAuthorId)
+                .toList();
     }
 
     private Post findPostById(long postId) {

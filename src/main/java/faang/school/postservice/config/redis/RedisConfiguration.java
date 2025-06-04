@@ -37,7 +37,7 @@ public class RedisConfiguration {
 
     @Bean
     public ChannelTopic userTopic() {
-        return new ChannelTopic(redisParams.channels().user());
+        return new ChannelTopic(redisParams.channels().userBan());
     }
 
     @Bean

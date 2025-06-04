@@ -15,6 +15,6 @@ public class UserPublisher implements MessagePublisher {
     @Override
     public void publish(String message) {
         redisTemplate.convertAndSend(topic.getTopic(), message);
-        log.info("Message published: {}", message);
+        log.info("Message published. Banned user id: {}", message);
     }
 }

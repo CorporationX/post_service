@@ -3,7 +3,6 @@ package faang.school.postservice.service;
 import faang.school.postservice.dto.post.PostCreateDto;
 import faang.school.postservice.dto.post.PostOutputDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
-import faang.school.postservice.model.Post;
 
 import java.util.List;
 
@@ -25,4 +24,6 @@ public interface PostService {
     PostOutputDto publishPost(long postId);
 
     PostOutputDto updatePost(long postId, PostUpdateDto postUpdateDto);
+
+    List<Long> getUsersIdsToBan();
 }

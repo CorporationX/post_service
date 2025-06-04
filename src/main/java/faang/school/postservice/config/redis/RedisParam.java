@@ -10,7 +10,7 @@ public record RedisParam(
         @NestedConfigurationProperty Channels channels
 ) {
     public record Channels(
-            String user
+            String userBan
     ) {
     }
 }
