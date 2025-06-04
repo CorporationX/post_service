@@ -1,7 +1,7 @@
 package faang.school.postservice.config.redis;
 
 import faang.school.postservice.publisher.MessagePublisher;
-import faang.school.postservice.publisher.user.UserPublisher;
+import faang.school.postservice.publisher.user.UserBanPublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.context.annotation.Bean;
@@ -51,6 +51,6 @@ public class RedisConfiguration {
 
     @Bean
     public MessagePublisher redisUserPublisher() {
-        return new UserPublisher(redisTemplate(), userTopic());
+        return new UserBanPublisher(redisTemplate(), userTopic());
     }
 }

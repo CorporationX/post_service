@@ -8,7 +8,7 @@ import org.springframework.data.redis.listener.ChannelTopic;
 
 @Slf4j
 @RequiredArgsConstructor
-public class UserPublisher implements MessagePublisher {
+public class UserBanPublisher implements MessagePublisher {
     private final RedisTemplate<String, Object> redisTemplate;
     private final ChannelTopic topic;
 
