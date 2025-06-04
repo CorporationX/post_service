@@ -20,7 +20,7 @@ public class ImageProcessingService {
 
     public void validateImage(MultipartFile file) {
         if (file == null || file.isEmpty()) {
-            return; // пустое поле допустимо, у нас опционально
+            return;
         }
         if (file.getSize() > MAX_FILE_SIZE_BYTES) {
             throw new IllegalArgumentException("File size exceeds 5 MB");

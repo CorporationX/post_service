@@ -60,6 +60,7 @@ public class S3StorageService {
             }
         } catch (AmazonServiceException e) {
             log.error("Error checking/creating bucket {}: {}", bucketName, e.getMessage());
+            throw e;
         }
     }
 
