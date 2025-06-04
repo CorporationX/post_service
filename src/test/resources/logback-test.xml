@@ -11,7 +11,8 @@
         </encoder>
     </appender>
 
-    <logger name="faang.school" level="DEBUG" additivity="false">
+    <logger name="faang.school" additivity="false">
+        <level value="DEBUG"/>
         <appender-ref ref="CONSOLE2"/>
     </logger>
 
