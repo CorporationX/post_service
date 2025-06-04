@@ -3,11 +3,13 @@ package faang.school.postservice.service.like;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.service.PostService;
+import faang.school.postservice.service.comment.CommentService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -37,7 +39,7 @@ public class LikeServiceTest {
     @Mock
     private PostService postService;
     @Mock
-    private CommentRepository commentRepository;
+    private CommentService commentService;
     @InjectMocks
     private LikeServiceImpl likeService;
 
@@ -96,5 +98,29 @@ public class LikeServiceTest {
         assertEquals(2, likes.size());
         assertEquals(1L, likes.get(0).getId());
         assertEquals(2L, likes.get(1).getId());
+    }
+
+    @Test
+    public void testLikeTheComment() {
+        Comment comment = new Comment();
+        comment.setId(1L);
+        UserDto mockUser = new UserDto(1L, "name", "email");
+
+        when(userContext.getUserId()).thenReturn(mockUser.id());
+        when(userServiceClient.getUser(mockUser.id())).thenReturn(mockUser);
+        when(commentService.getComment(comment.getId())).thenReturn(comment);
+        when(likeRepository.findByCommentIdAndUserId(comment.getId(), mockUser.id())).thenReturn(Optional.empty());
+
+        Like saveLike = new Like();
+        saveLike.setId(1L);
+        saveLike.setComment(comment);
+        saveLike.setUserId(mockUser.id());
+
+        when(likeRepository.save(any(Like.class))).thenReturn(saveLike);
+
+        Like resultLike = likeService.likeTheComment(comment.getId());
+        assertNotNull(resultLike);
+        assertEquals(saveLike.getId(), resultLike.getId());
+        verify(likeRepository).save(any(Like.class));
     }
 }

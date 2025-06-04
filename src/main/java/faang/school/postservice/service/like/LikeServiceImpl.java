@@ -6,9 +6,10 @@ import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.service.PostService;
+import faang.school.postservice.service.comment.CommentService;
+import faang.school.postservice.service.comment.CommentServiceFacade;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -26,7 +27,7 @@ public class LikeServiceImpl implements LikeService {
     private final UserServiceClient userServiceClient;
     private final UserContext userContext;
     private final PostService postService;
-    private final CommentRepository commentRepository;
+    private final CommentService commentService;
 
     @Override
     @Transactional
@@ -48,6 +49,7 @@ public class LikeServiceImpl implements LikeService {
     }
 
     @Override
+    @Transactional
     public void deleteLikeThePost(long postId) {
         UserDto user = existenceCheckUser();
         likeRepository.deleteByPostIdAndUserId(postId, user.id());
@@ -57,14 +59,14 @@ public class LikeServiceImpl implements LikeService {
     @Transactional
     public Like likeTheComment(long commentId) {
         UserDto user = existenceCheckUser();
-        Optional<Comment> comment = commentRepository.findById(commentId);
+        Comment comment = commentService.getComment(commentId);
         Optional<Like> likeOptional = likeRepository.findByCommentIdAndUserId(commentId, user.id());
         if (likeOptional.isPresent()) {
             return likeOptional.get();
         } else {
             Like likeResult = likeOptional.orElseGet(() -> {
                 Like newLike = new Like();
-                newLike.setComment(comment.get());
+                newLike.setComment(comment);
                 newLike.setUserId(user.id());
                 return newLike;
             });
@@ -73,6 +75,7 @@ public class LikeServiceImpl implements LikeService {
     }
 
     @Override
+    @Transactional
     public void deleteLikeTheComment(long commentId) {
         UserDto user = existenceCheckUser();
 
@@ -88,9 +91,9 @@ public class LikeServiceImpl implements LikeService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Like> countTheLikeForComment(long comment) {
-
-        return null;
+    public List<Like> getAllTheLikeForComment(long commentId) {
+        Comment comment = commentService.getComment(commentId);
+        return comment.getLikes();
     }
 
     protected UserDto existenceCheckUser() {

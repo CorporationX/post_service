@@ -11,5 +11,5 @@ public interface LikeService {
     Like likeTheComment(long commentId);
     void deleteLikeTheComment(long commentId);
     List<Like> getAllTheLikeForPost(long postId);
-    List<Like> countTheLikeForComment(long comment);
+    List<Like> getAllTheLikeForComment(long comment);
 }
