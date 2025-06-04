@@ -31,7 +31,7 @@ public class Album {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
 
     @Column(name = "title", nullable = false, length = 256)
     private String title;
@@ -40,7 +40,7 @@ public class Album {
     private String description;
 
     @Column(name = "author_id", nullable = false)
-    private long authorId;
+    private Long authorId;
 
     @ManyToMany
     @JoinTable(name = "post_album", joinColumns = @JoinColumn(name = "album_id"), inverseJoinColumns = @JoinColumn(name = "post_id"))
