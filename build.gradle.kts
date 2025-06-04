@@ -3,7 +3,7 @@ plugins {
     id("org.springframework.boot") version "3.0.6"
     id("io.spring.dependency-management") version "1.1.0"
     id("jacoco")
-    id("checkstyle")  // Добавляем плагин Checkstyle
+    id("checkstyle") 
 }
 
 group = "faang.school"
@@ -88,7 +88,7 @@ tasks.jacocoTestReport {
     reports {
         xml.required.set(true)
         html.required.set(true)
-        html.outputLocation.set(layout.buildDirectory.dir("jacocoHtml"))
+        html.outputLocation.set(layout.buildDirectory.dir("reports/jacoco/test/html"))
     }
 
     classDirectories.setFrom(files(classDirectories.files.map {
