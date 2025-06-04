@@ -3,8 +3,6 @@ package faang.school.postservice.controller.post;
 import faang.school.postservice.dto.post.PostCreateDto;
 import faang.school.postservice.dto.post.PostOutputDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
-import faang.school.postservice.publisher.MessagePublisher;
-import faang.school.postservice.publisher.user.UserPublisher;
 import faang.school.postservice.service.PostService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -29,7 +27,6 @@ import java.util.List;
 @RequestMapping("/api/v1/posts")
 @RequiredArgsConstructor
 public class PostController {
-    private final MessagePublisher redisUserPublisher;
     private final PostService postService;
 
     @PostMapping("/drafts")
@@ -102,13 +99,5 @@ public class PostController {
         List<PostOutputDto> projectPosts = postService.getNotDeletedProjectPublished(projectId);
         log.info("Getting published posts for project with id {} - Finished", projectId);
         return projectPosts;
-    }
-
-    @GetMapping("/publish/{projectId}")
-    public void publish(@PathVariable long projectId) {
-        List<Long> usersIds = postService.getUsersIdsToBan();
-        usersIds.stream()
-                .map(String::valueOf)
-                .forEach(redisUserPublisher::publish);
     }
 }
