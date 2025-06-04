@@ -1,5 +1,6 @@
 package faang.school.postservice.consumer;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -67,5 +68,10 @@ public class TestConfig {
                 .partitions(1)
                 .replicas(1)
                 .build();
+    }
+
+    @Bean
+    public ObjectMapper objectMapper() {
+        return new ObjectMapper();
     }
 }
