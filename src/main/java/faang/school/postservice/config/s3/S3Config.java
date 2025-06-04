@@ -1,4 +1,4 @@
-package faang.school.postservice.client.s3;
+package faang.school.postservice.config.s3;
 
 import faang.school.postservice.config.minio.MinioProperties;
 import lombok.RequiredArgsConstructor;
