@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class PostUpdateDto {
-    @NotNull
     private String content;
     private LocalDateTime scheduledAt;
 }

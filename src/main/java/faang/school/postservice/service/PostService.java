@@ -29,25 +29,18 @@ public class PostService {
     @Transactional
     public Post createPost(Post post) {
         long userId = userContext.getUserId();
-        boolean isExist = postRepository.existsById(post.getId());
-
         post.setAuthorId(userId);
-        PostValidation.validatePostDoesNotExist(isExist);
         PostValidation.validateNotNullAuthor(post);
         PostValidation.validateNotNullContent(post);
         userServiceClient.getUser(userId);
         executeIfNotNull(post.getProjectId(), () -> projectServiceClient.getProject(post.getProjectId()));
-
-        postRepository.save(post);
-        return getValidPostOrThrowException(post.getId());
+        return postRepository.save(post);
     }
 
     @Transactional
     public boolean publishPost(Long postId) {
         Post post = getValidPostOrThrowException(postId);
-
         PostValidation.validateNotAlreadyPublishedPost(post);
-
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
         postRepository.save(post);
@@ -57,9 +50,8 @@ public class PostService {
     @Transactional
     public Post updatePost(Long postId, Post updateFields) {
         Post post = getValidPostOrThrowException(postId);
-
         post.setUpdatedAt(LocalDateTime.now());
-        post.setContent(updateFields.getContent());
+        setIfNotNull(updateFields.getContent(), post::setContent);
         setIfNotNull(updateFields.getScheduledAt(), post::setScheduledAt);
         return postRepository.save(post);
     }
@@ -67,7 +59,6 @@ public class PostService {
     @Transactional
     public void deletePost(Long postId) {
         Post post = getValidPostOrThrowException(postId);
-
         PostValidation.validateNotAlreadyDeletedPost(post);
         post.setDeleted(true);
         postRepository.save(post);

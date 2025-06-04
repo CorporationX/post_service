@@ -5,6 +5,8 @@ import faang.school.postservice.dto.post.ResponsePostDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
 import faang.school.postservice.model.Post;
 
+import java.util.List;
+
 public class PostMapper {
 
     public static Post postUpdateDtoToPost(PostCreateDto postCreateDto) {
@@ -53,5 +55,9 @@ public class PostMapper {
                 .content(post.getContent())
                 .scheduledAt(post.getScheduledAt())
                 .build();
+    }
+
+    public static List<ResponsePostDto> postListToResponsePostDtoList(List<Post> postList) {
+        return postList.stream().map(PostMapper::postToResponsePostDto).toList();
     }
 }
