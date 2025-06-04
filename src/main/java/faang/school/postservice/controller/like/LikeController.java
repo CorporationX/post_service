@@ -1,51 +1,69 @@
 package faang.school.postservice.controller.like;
 
+import faang.school.postservice.dto.error.PostServiceErrorResponseDto;
 import faang.school.postservice.dto.like.LikeResponseDto;
-import faang.school.postservice.facade.like.LikeFacade;
-import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
-@Slf4j
-@RestController
-@RequestMapping("/likes")
-@AllArgsConstructor
-public class LikeController {
-    private final LikeFacade likeFacade;
+@Tag(name = "Like Controller", description = "Like API")
+public interface LikeController {
 
-    @PostMapping("/post/{postId}")
-    public ResponseEntity<LikeResponseDto> addLikeToPost(@PathVariable long postId) {
-        LikeResponseDto savedLike = likeFacade.addLikeToPost(postId);
-        log.info("User with id = {} added a like to post with id = {}", savedLike.getUserId(), postId);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(savedLike);
-    }
+    @Operation(summary = "Add like to the post", description = "Adds like to the post on behalf of the current user",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "201",
+                            description = "Like was successfully added to post",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = LikeResponseDto.class))
+                    ),
+                    @ApiResponse(
+                            responseCode = "409",
+                            description = "User has already liked this post",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = PostServiceErrorResponseDto.class))
+                    ),
+                    @ApiResponse(
+                            responseCode = "404",
+                            description = "Post or User not found",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = PostServiceErrorResponseDto.class))
+                    )
+            })
+    ResponseEntity<LikeResponseDto> addLikeToPost(long postId);
 
-    @PostMapping("/comment/{commentId}")
-    public ResponseEntity<LikeResponseDto> addLikeToComment(@PathVariable long commentId) {
-        LikeResponseDto savedLike = likeFacade.addLikeToComment(commentId);
-        log.info("User with id = {} added a like to comment with id = {}", savedLike.getUserId(), commentId);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(savedLike);
-    }
+    @Operation(summary = "Add like to the comment", description = "Adds like to the comment on behalf of the " +
+            "current user",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "201",
+                            description = "Like was successfully added to comment",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = LikeResponseDto.class))
+                    ),
+                    @ApiResponse(
+                            responseCode = "409",
+                            description = "User has already liked this comment",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = PostServiceErrorResponseDto.class))
+                    ),
+                    @ApiResponse(
+                            responseCode = "404",
+                            description = "Comment or User not found",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = PostServiceErrorResponseDto.class))
+                    )
+            })
+    ResponseEntity<LikeResponseDto> addLikeToComment(long commentId);
 
-    @DeleteMapping("/post/{postId}")
-    public ResponseEntity<Void> deleteLikeFromPost(@PathVariable long postId) {
-        likeFacade.deleteLikeFromPost(postId);
-        log.info("Like deleted from post with id {}", postId);
-        return ResponseEntity.noContent().build();
-    }
+    @Operation(summary = "Delete like from post", description = "Deletes the user's like from the post if it exists",
+            responses =  @ApiResponse(responseCode = "204", description = "Like was successfully deleted from post"))
+    ResponseEntity<Void> deleteLikeFromPost(long postId);
 
-    @DeleteMapping("/comment/{commentId}")
-    public ResponseEntity<Void> deleteLikeFromComment(@PathVariable long commentId) {
-        likeFacade.deleteLikeFromComment(commentId);
-        log.info("Like deleted from comment with id {}", commentId);
-        return ResponseEntity.noContent().build();
-    }
+    @Operation(summary = "Delete like from comment", description = "Deletes the user's like from the comment if it exists",
+            responses =  @ApiResponse(responseCode = "204", description = "Like was successfully deleted from comment"))
+    ResponseEntity<Void> deleteLikeFromComment(long commentId);
 }
