@@ -3,7 +3,7 @@ plugins {
     id("org.springframework.boot") version "3.0.6"
     id("io.spring.dependency-management") version "1.1.0"
     id("jacoco")
-    id("checkstyle")  // Добавляем плагин Checkstyle
+    id("checkstyle") 
 }
 
 group = "faang.school"
@@ -66,12 +66,74 @@ tasks.test {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+    finalizedBy(tasks.jacocoTestReport, tasks.jacocoTestCoverageVerification)
 }
 
 val test by tasks.getting(Test::class) { testLogging.showStandardStreams = true }
 
 tasks.bootJar {
     archiveFileName.set("service.jar")
+}
+
+tasks.build {
+    dependsOn(tasks.jacocoTestCoverageVerification)
+}
+
+jacoco {
+    toolVersion = "0.8.13"
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+        html.outputLocation.set(layout.buildDirectory.dir("reports/jacoco/test/html"))
+    }
+
+    classDirectories.setFrom(files(classDirectories.files.map {
+        fileTree(it).apply {
+            exclude(
+                "**/client/**",
+                "**/mapper/**",
+                "**/entity/**",
+                "**/config/**",
+                "**/dto/**",
+                "**/model/**",
+                "**/repository**",
+                "**/**Test.class",
+                "**/PostServiceApp.class",
+                "**/controller/LikeController.class",
+                "**/**Impl"
+            )
+        }
+    }))
+}
+
+tasks.jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            element = "CLASS"
+            excludes = listOf(
+                "faang.school.postservice.client.*",
+                "faang.school.postservice.mapper.*",
+                "faang.school.postservice.entity.*",
+                "faang.school.postservice.config.*",
+                "faang.school.postservice.dto.*",
+                "faang.school.postservice.model.*",
+                "faang.school.postservice.repository.*",
+                "faang.school.postservice.controller.LikeController",
+                "**/*Test.class",
+                "**/*Impl.class",
+                "faang.school.postservice.PostServiceApp"
+            )
+            limit {
+                counter = "LINE"
+                value = "COVEREDRATIO"
+                minimum = "0.8".toBigDecimal()
+            }
+        }
+    }
 }
 
 checkstyle {
