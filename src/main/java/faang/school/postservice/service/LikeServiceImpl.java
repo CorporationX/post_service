@@ -6,11 +6,10 @@ import org.springframework.stereotype.Service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.LikeCountDto;
 import faang.school.postservice.dto.LikeDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.DuplicateLikesException;
-import faang.school.postservice.exception.ExternalServiceException;
-import faang.school.postservice.exception.UserNotFoundException;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
@@ -18,7 +17,6 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
-import feign.FeignException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
@@ -64,8 +62,8 @@ public class LikeServiceImpl implements LikeService {
     }
 
     @Override
-    public int countLikesForPost(Long postId) {
-        return getPost(postId).getLikes().size();
+    public LikeCountDto countLikesForPost(Long postId) {
+        return new LikeCountDto(getPost(postId).getLikes().size());
     }
     
     @Override
@@ -104,27 +102,7 @@ public class LikeServiceImpl implements LikeService {
     }
 
     private void checkUserExists() {
-        try {
-            userServiceClient.getUser(userContext.getUserId());
-        } catch (FeignException e) {
-            if (e.status() == 404) {
-                throw new UserNotFoundException(String.format(
-                    "User %d is not found.", userContext.getUserId()
-                ));
-            } else if (e.status() >= 400 && e.status() < 500) {
-                throw new DataValidationException(String.format(
-                    "Service returned error (%d) for user id %d.", e.status(), userContext.getUserId()
-                ));
-            } else if (e.status() >= 500) {
-                throw new ExternalServiceException(String.format(
-                    "Service unavailable or failed (%d) for user id %d.", e.status(), userContext.getUserId()
-                ));
-            } else {
-                throw new RuntimeException(String.format(
-                    "Unexpected error while validating user: %d. %s.", userContext.getUserId(), e.getMessage()
-                ));
-            }
-        }
+        userServiceClient.getUser(userContext.getUserId());
     }
 
     private void duplicatePostLikeValidation(long postId) {

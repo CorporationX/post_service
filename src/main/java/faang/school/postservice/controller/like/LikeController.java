@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import faang.school.postservice.dto.LikeCountDto;
 import faang.school.postservice.dto.LikeDto;
 import faang.school.postservice.service.LikeService;
 import lombok.RequiredArgsConstructor;
@@ -47,7 +48,7 @@ public class LikeController {
     }
 
     @GetMapping("/post/{postId}/count")
-    public int countLikes(@PathVariable Long postId) {
+    public LikeCountDto countLikes(@PathVariable Long postId) {
         return likeService.countLikesForPost(postId);
     }
 
