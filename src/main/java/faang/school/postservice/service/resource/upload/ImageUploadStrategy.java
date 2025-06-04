@@ -63,8 +63,9 @@ public class ImageUploadStrategy extends AbstractAsyncUploadStrategy implements 
     }
 
     private byte[] toByteArray(BufferedImage image, String extension) throws Exception {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ImageIO.write(image, extension, baos);
-        return baos.toByteArray();
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            ImageIO.write(image, extension, baos);
+            return baos.toByteArray();
+        }
     }
 }

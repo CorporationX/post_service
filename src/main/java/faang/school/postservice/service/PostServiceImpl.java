@@ -44,11 +44,9 @@ public class PostServiceImpl implements PostService {
         validateAuthor(dto.authorId(), dto.projectId());
         Post post = postMapper.toEntity(dto);
 
-        if (files != null && !files.isEmpty()) {
-            List<Resource> resources = resourceService.uploadResources(files, 0);
-            resources.forEach(resource -> resource.setPost(post));
-            post.setResources(resources);
-        }
+        List<Resource> resources = resourceService.uploadResources(files, 0);
+        resources.forEach(resource -> resource.setPost(post));
+        post.setResources(resources);
 
         return postMapper.toDto(postRepository.save(post));
     }
@@ -89,20 +87,18 @@ public class PostServiceImpl implements PostService {
             finalResources = new ArrayList<>(currentResources);
         } else {
             List<String> toKeepKeys = dto.resourceKeys();
-            List<Resource> toDelete = currentResources.stream()
+            List<Resource> toDeleteResources = currentResources.stream()
                     .filter(resource -> !toKeepKeys.contains(resource.getKey()))
                     .toList();
-            resourceService.deleteResources(toDelete);
+            resourceService.deleteResources(toDeleteResources);
             finalResources = currentResources.stream()
                     .filter(resource -> toKeepKeys.contains(resource.getKey()))
                     .collect(Collectors.toCollection(ArrayList::new));
         }
 
-        if (newFiles != null && !newFiles.isEmpty()) {
-            List<Resource> newResources = resourceService.uploadResources(newFiles, finalResources.size());
-            newResources.forEach(resource -> resource.setPost(post));
-            finalResources.addAll(newResources);
-        }
+        List<Resource> newResources = resourceService.uploadResources(newFiles, finalResources.size());
+        newResources.forEach(resource -> resource.setPost(post));
+        finalResources.addAll(newResources);
 
         currentResources.clear();
         currentResources.addAll(finalResources);
