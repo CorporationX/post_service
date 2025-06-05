@@ -16,13 +16,14 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/posts")
+@RequestMapping("/api/v1/posts")
 @RequiredArgsConstructor
 public class PostController {
 
     private final PostService postService;
 
     @PostMapping
+    @Deprecated
     public PostDto createDraft(@RequestBody @Valid PostDto postDto) {
         return postService.createDraft(postDto);
     }
@@ -33,6 +34,7 @@ public class PostController {
     }
 
     @PutMapping("/{postId}")
+    @Deprecated
     public PostDto update(@PathVariable Long postId, @RequestBody @Valid PostDto postDto) {
         return postService.updatePost(postId, postDto);
     }
