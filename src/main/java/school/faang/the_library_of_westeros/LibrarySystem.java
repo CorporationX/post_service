@@ -21,7 +21,7 @@ public class LibrarySystem {
     public void printAllBooks() {
         for (Book book : library.keySet()) {
             System.out.printf("Title: %s (Author: %s, Year: %d) - Location: %s%n",
-                    book.getTitle(), book.getAuthor(), book.getYear(), library.get(book));
+                    book.title(), book.author(), book.year(), library.get(book));
         }
     }
 }

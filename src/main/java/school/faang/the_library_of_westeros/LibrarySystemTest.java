@@ -9,7 +9,7 @@ public class LibrarySystemTest {
         libraryTest.addBook("TT4", "Unknown", 482, "black turet");
         libraryTest.removeBook("TT2", "Unknown", 479);
         libraryTest.findBook("TT3", "Unknown", 480);
-        libraryTest.findBook("TT5", "Unknown", 485);
+        libraryTest.findBook("TT5", "Unknown", 486);
         libraryTest.printAllBooks();
     }
 }
