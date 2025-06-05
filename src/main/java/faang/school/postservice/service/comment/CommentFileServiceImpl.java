@@ -3,12 +3,12 @@ package faang.school.postservice.service.comment;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.exception.CommentAlreadyHasPictureException;
-import faang.school.postservice.mapper.ResourceMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.ad.PictureSize;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.ResourceRepository;
+import faang.school.postservice.service.CommentFileService;
 import faang.school.postservice.service.S3Servce;
 import faang.school.postservice.util.ImageResizer;
 import jakarta.persistence.EntityNotFoundException;
@@ -29,21 +29,20 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class CommentResourceService {
+public class CommentFileServiceImpl implements CommentFileService {
 
     private final UserContext userContext;
     private final UserServiceClient userServiceClient;
     private final CommentRepository commentRepository;
     private final ResourceRepository resourceRepository;
-    private final ResourceMapper resourceMapper;
     private final S3Servce s3Servce;
-    private final ImageResizer imageResizer;
 
     @Value("${entity.commentServiceFileLimitMb}")
     private long fileLimitMb;
 
     @Transactional
-    public List<String> addResourceToComment(long commentId, MultipartFile file)
+    @Override
+    public List<String> addImageToComment(long commentId, MultipartFile file)
             throws FileSizeLimitExceededException, AccessException {
         checkFileSize(file);
         Comment comment = commentRepository.findById(commentId).orElseThrow(() ->
@@ -55,9 +54,9 @@ public class CommentResourceService {
         String path = "Post" + postId + "Comment" + commentId;
 
         String largeImageKey = s3Servce.uploadFile
-                (imageResizer.getResizedImageStream(file, PictureSize.LARGE), path + "Large");
+                (ImageResizer.getResizedImageStream(file, PictureSize.LARGE), path + "Large");
         String smallImageKey = s3Servce.uploadFile
-                (imageResizer.getResizedImageStream(file, PictureSize.SMALL), path + "Small");
+                (ImageResizer.getResizedImageStream(file, PictureSize.SMALL), path + "Small");
         comment.setSmallImageFileKey(smallImageKey);
         comment.setLargeImageFileKey(largeImageKey);
         commentRepository.save(comment);
@@ -65,13 +64,8 @@ public class CommentResourceService {
         return List.of(smallImageKey, largeImageKey);
     }
 
-    public InputStream downloadFile(String fileKey) {
-        resourceRepository.findByKey(fileKey).orElseThrow(() ->
-                new EntityNotFoundException(String.format("No image with key %s", fileKey)));
-        return s3Servce.downloadFile(fileKey);
-    }
-
     @Transactional
+    @Override
     public void deleteImageFromCommentById(Long commentId) throws AccessException {
         Comment comment = commentRepository.findById(commentId).orElseThrow(() ->
                 new EntityNotFoundException(String.format("Comment with id %d does not exist", commentId)));
@@ -88,6 +82,7 @@ public class CommentResourceService {
         log.info("Deleting image for comment with id {} - Finished", commentId);
     }
 
+    @Override
     public byte[] getCommentImage(Long commentId, PictureSize size) {
         Comment comment = commentRepository.findById(commentId).orElseThrow(() ->
                 new EntityNotFoundException(String.format("Comment with id %d does not exist", commentId)));
@@ -105,7 +100,6 @@ public class CommentResourceService {
             throw new RuntimeException("Failed to read image", e);
         }
     }
-
 
     private void checkUserIsAuthor(long userId, Comment comment) throws AccessException {
         userServiceClient.getUser(userId);

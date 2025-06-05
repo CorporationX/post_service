@@ -2,6 +2,7 @@ package faang.school.postservice.util;
 
 import faang.school.postservice.exception.FileProcessException;
 import faang.school.postservice.model.ad.PictureSize;
+import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.stereotype.Component;
@@ -15,12 +16,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
-@Component
+@UtilityClass
 @Slf4j
 public class ImageResizer {
     public static int SMALL_PICTURE_MAX_SIDE_PXL = 170;
     public static int LARGE_PICTURE_MAX_SIDE_PXL = 1080;
+    public static final Set<String> IMAGE_FORMATS = Set.of("jpg", "jpeg", "png", "gif", "bmp", "wbmp", "tiff");
 
     public ByteArrayInputStream getResizedImageStream(MultipartFile file, PictureSize size) {
         validateFileType(file);
@@ -52,10 +55,9 @@ public class ImageResizer {
         String fileName = file.getOriginalFilename();
         assert fileName != null;
         String formatName = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
-        List<String> formatList = Arrays.asList("jpg", "jpeg", "png", "gif", "bmp", "wbmp", "tiff");
 //        позволяет быстро отсеять файлы с неподдерживаемыми расширениями,
 //        что может сэкономить ресурсы, если файл не соответствует ожидаемому формату
-        if (!formatList.contains(formatName)) {
+        if (!IMAGE_FORMATS.contains(formatName)) {
             log.error("Uploaded file is not a supported image format: {}", fileName);
             throw new FileProcessException("Uploaded file is not a supported image format: %s".formatted(fileName));
         }

@@ -38,7 +38,6 @@ public class s3ServiceImpl implements S3Servce {
         return key;
     }
 
-
     @Override
     public void deleteFile(String fileKey) {
         amazonS3.deleteObject(bucketName, fileKey);

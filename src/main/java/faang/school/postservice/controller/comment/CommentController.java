@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import faang.school.postservice.service.s3.CommentResourceService;
+import faang.school.postservice.service.CommentFileService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -48,7 +49,7 @@ import java.util.Objects;
 public class CommentController {
 
     private final CommentService service;
-    private final CommentResourceService commentResourceService;
+    private final CommentFileService commentFileService;
     private final UserContext userContext;
 
     @PostMapping
@@ -106,13 +107,13 @@ public class CommentController {
             (@PathVariable Long commentId, @RequestParam("file") MultipartFile file)
             throws AccessException, FileSizeLimitExceededException {
         log.debug("Uploading image for comment with id {} - Started", commentId);
-        return commentResourceService.addResourceToComment(commentId, file);
+        return commentFileService.addImageToComment(commentId, file);
     }
 
     @DeleteMapping("/{commentId}/comment-image")
-    public ResponseEntity<Void> deleteCoverImage(@PathVariable Long commentId) throws AccessException {
+    public ResponseEntity<Void> deleteCommentImage(@PathVariable Long commentId) throws AccessException {
         log.debug("Deleting image for comment with id {} - Started", commentId);
-        commentResourceService.deleteImageFromCommentById(commentId);
+        commentFileService.deleteImageFromCommentById(commentId);
         return ResponseEntity.noContent().build();
     }
 
@@ -120,14 +121,14 @@ public class CommentController {
     public ResponseEntity<byte[]> downloadCommentImage(@PathVariable Long commentId,
                                                        @RequestParam(value = "size", required = false) String size) {
         log.debug("Getting image for comment with id {} - Started", commentId);
-        byte[] coverImage;
+        byte[] image;
         if (Objects.equals(size, "small")) {
-            coverImage = commentResourceService.getCommentImage(commentId, PictureSize.SMALL);
+            image = commentFileService.getCommentImage(commentId, PictureSize.SMALL);
         } else {
-            coverImage = commentResourceService.getCommentImage(commentId, PictureSize.LARGE);
+            image = commentFileService.getCommentImage(commentId, PictureSize.LARGE);
         }
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.IMAGE_JPEG);
-        return new ResponseEntity<>(coverImage, headers, HttpStatus.OK);
+        return new ResponseEntity<>(image, headers, HttpStatus.OK);
     }
 }
