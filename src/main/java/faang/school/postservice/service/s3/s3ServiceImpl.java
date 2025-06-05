@@ -1,5 +1,6 @@
 package faang.school.postservice.service.s3;
 
+import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
@@ -26,7 +27,7 @@ public class s3ServiceImpl implements S3Servce {
     private String bucketName;
 
     @Override
-    public Resource uploadFile(ByteArrayInputStream file, String path) {
+    public String uploadFile(ByteArrayInputStream file, String path) {
         ObjectMetadata objectMetadata = new ObjectMetadata();
         objectMetadata.setContentType("image/jpeg");
         objectMetadata.setContentLength(file.available());
@@ -34,18 +35,9 @@ public class s3ServiceImpl implements S3Servce {
         PutObjectRequest savedFile = new PutObjectRequest(bucketName, key, file, objectMetadata);
         amazonS3.putObject(savedFile);
 
-        return Resource.builder()
-                .key(key)
-                .name(path + "_image.jpg")
-                .size(file.available())
-                .type("image/jpeg")
-                .createdAt(LocalDateTime.now())
-                .build();
+        return key;
     }
 
-//    public URL getFileUrl(String fileKey) {
-//        return amazonS3.getUrl(bucketName, fileKey);
-//    }
 
     @Override
     public void deleteFile(String fileKey) {
@@ -57,7 +49,7 @@ public class s3ServiceImpl implements S3Servce {
         try {
             S3Object s3Object = amazonS3.getObject(bucketName, fileKey);
             return s3Object.getObjectContent();
-        } catch (Exception e) {
+        } catch (SdkClientException e) {
             log.error("Exception was thrown while downloading file", e);
             throw new FileProcessException("Error while downloading file with key %s from bucket %s"
                     .formatted(fileKey, bucketName));

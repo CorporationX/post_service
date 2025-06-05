@@ -1,13 +1,11 @@
-package faang.school.postservice.service.s3;
+package faang.school.postservice.service.comment;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.dto.resource.ResourceDto;
 import faang.school.postservice.exception.CommentAlreadyHasPictureException;
 import faang.school.postservice.mapper.ResourceMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.model.Resource;
 import faang.school.postservice.model.ad.PictureSize;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.ResourceRepository;
@@ -45,35 +43,26 @@ public class CommentResourceService {
     private long fileLimitMb;
 
     @Transactional
-    public List<ResourceDto> addResourceToComment(long commentId, MultipartFile file)
+    public List<String> addResourceToComment(long commentId, MultipartFile file)
             throws FileSizeLimitExceededException, AccessException {
+        checkFileSize(file);
         Comment comment = commentRepository.findById(commentId).orElseThrow(() ->
                 new EntityNotFoundException(String.format("Comment with id %d does not exist", commentId)));
         checkUserIsAuthor(userContext.getUserId(), comment);
         checkHasPictureAlready(comment);
-        checkFileSize(file);
         Post post = comment.getPost();
         long postId = post.getId();
         String path = "Post" + postId + "Comment" + commentId;
 
-        Resource largeImage = s3Servce.uploadFile
+        String largeImageKey = s3Servce.uploadFile
                 (imageResizer.getResizedImageStream(file, PictureSize.LARGE), path + "Large");
-        Resource smallImage = s3Servce.uploadFile
+        String smallImageKey = s3Servce.uploadFile
                 (imageResizer.getResizedImageStream(file, PictureSize.SMALL), path + "Small");
-        smallImage.setPost(post);
-//        smallImage.setComment(comment);
-        largeImage.setPost(post);
-//        чтобы при получении поста в его ресурсах не значились картинки комментариев
-//        largeImage.setComment(comment);
-
-        resourceRepository.save(smallImage);
-        resourceRepository.save(largeImage);
-
-        comment.setSmallImageFileKey(smallImage.getKey());
-        comment.setLargeImageFileKey(largeImage.getKey());
+        comment.setSmallImageFileKey(smallImageKey);
+        comment.setLargeImageFileKey(largeImageKey);
         commentRepository.save(comment);
         log.info("Uploading image for comment with id {} - Finished", commentId);
-        return resourceMapper.toListDto(List.of(smallImage, largeImage));
+        return List.of(smallImageKey, largeImageKey);
     }
 
     public InputStream downloadFile(String fileKey) {
@@ -108,19 +97,12 @@ public class CommentResourceService {
         } else {
             key = comment.getLargeImageFileKey();
         }
-        InputStream imageInputStream = s3Servce.downloadFile(key);
-        log.info("Getting image for comment with id {} - Finished", commentId);
-        try {
+        try (InputStream imageInputStream = s3Servce.downloadFile(key)) {
+            log.info("Getting image for comment with id {} - Finished", commentId);
             return imageInputStream.readAllBytes();
         } catch (IOException e) {
             log.error("Error reading image input stream", e);
             throw new RuntimeException("Failed to read image", e);
-        } finally {
-            try {
-                imageInputStream.close();
-            } catch (IOException e) {
-                log.error("Error closing image input stream", e);
-            }
         }
     }
 
@@ -142,7 +124,8 @@ public class CommentResourceService {
     private void checkHasPictureAlready(Comment comment) {
         if (comment.getLargeImageFileKey() != null || comment.getSmallImageFileKey() != null) {
             throw new CommentAlreadyHasPictureException
-                    ("This comment already has a picture. Delete it before uploading new one");
+                    (String.format("This comment with id %d already has a picture. Delete it before uploading new one",
+                            comment.getId()));
         }
     }
 }

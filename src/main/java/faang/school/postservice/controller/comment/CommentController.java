@@ -5,9 +5,9 @@ import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CommentForCreationDto;
 import faang.school.postservice.dto.comment.CommentForUpdateDto;
 import faang.school.postservice.dto.comment.CommentOutputDto;
-import faang.school.postservice.dto.resource.ResourceDto;
 import faang.school.postservice.model.ad.PictureSize;
 import faang.school.postservice.service.CommentService;
+import faang.school.postservice.service.comment.CommentResourceService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -102,7 +102,7 @@ public class CommentController {
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/{commentId}/comment-image")
-    public List<ResourceDto> uploadCommentImage
+    public List<String> uploadCommentImage
             (@PathVariable Long commentId, @RequestParam("file") MultipartFile file)
             throws AccessException, FileSizeLimitExceededException {
         log.debug("Uploading image for comment with id {} - Started", commentId);

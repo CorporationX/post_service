@@ -9,11 +9,10 @@ import java.net.URL;
 
 public interface S3Servce {
 
-    Resource uploadFile (ByteArrayInputStream file, String folder);
+    String uploadFile(ByteArrayInputStream file, String folder);
 
-//    URL getFileUrl(String fileKey);
 
-    void deleteFile (String key);
+    void deleteFile(String key);
 
     InputStream downloadFile(String fileKey);
 }
