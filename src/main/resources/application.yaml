@@ -32,6 +32,13 @@ logging:
   level:
     root: info
 
+springdoc:
+  api-docs:
+    enabled: true
+
+  swagger-ui:
+    url: /openapi.yaml
+
 user-service:
   host: localhost
   port: 8080
