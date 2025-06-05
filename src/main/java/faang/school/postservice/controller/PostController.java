@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -42,7 +43,7 @@ public class PostController {
         return ResponseEntity.ok(isPublished);
     }
 
-    @PutMapping("/{postId}")
+    @PatchMapping("/{postId}")
     public ResponseEntity<ResponsePostDto> updatePost(@PathVariable Long postId, @RequestBody PostUpdateDto postUpdateDto) {
         Post updatedFields = PostMapper.postUpdateDtoToPost(postUpdateDto);
         Post updatedPost = postService.updatePost(postId, updatedFields);
@@ -66,28 +67,28 @@ public class PostController {
     @GetMapping("/drafts/user")
     public ResponseEntity<List<ResponsePostDto>> getUserDrafts(@RequestParam Long authorId) {
         List<Post> postList = postService.getAllDraftsByAuthorId(authorId);
-        List<ResponsePostDto> responseList = postList.stream().map(PostMapper::postToResponsePostDto).toList();
+        List<ResponsePostDto> responseList = PostMapper.postListToResponsePostDtoList(postList);
         return ResponseEntity.ok(responseList);
     }
 
     @GetMapping("/drafts/project")
     public ResponseEntity<List<ResponsePostDto>> getProjectDrafts(@RequestParam Long projectId) {
         List<Post> postList = postService.getAllDraftsByProjectId(projectId);
-        List<ResponsePostDto> responseList = postList.stream().map(PostMapper::postToResponsePostDto).toList();
+        List<ResponsePostDto> responseList = PostMapper.postListToResponsePostDtoList(postList);
         return ResponseEntity.ok(responseList);
     }
 
     @GetMapping("/user")
     public ResponseEntity<List<ResponsePostDto>> getUserPublished(@RequestParam Long authorId) {
         List<Post> postList = postService.getAllPublishedByAuthorId(authorId);
-        List<ResponsePostDto> responseList = postList.stream().map(PostMapper::postToResponsePostDto).toList();
+        List<ResponsePostDto> responseList = PostMapper.postListToResponsePostDtoList(postList);
         return ResponseEntity.ok(responseList);
     }
 
     @GetMapping("/project")
     public ResponseEntity<List<ResponsePostDto>> getProjectPublished(@RequestParam Long projectId) {
         List<Post> postList = postService.getAllPublishedByProjectId(projectId);
-        List<ResponsePostDto> responseList = postList.stream().map(PostMapper::postToResponsePostDto).toList();
+        List<ResponsePostDto> responseList = PostMapper.postListToResponsePostDtoList(postList);
         return ResponseEntity.ok(responseList);
     }
 }
