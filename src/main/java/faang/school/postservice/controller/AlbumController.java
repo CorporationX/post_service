@@ -29,12 +29,11 @@ public class AlbumController {
 
     @PostMapping()
     public AlbumDto createAlbum(@Valid @RequestBody AlbumDto albumDto) {
-//        userContext.setUserId(12);
         userContext.getUserId();
         return albumService.createAlbum(albumDto);
     }
 
-    @PostMapping("{albumId}/posts/{postId}")
+    @PostMapping("/{albumId}/posts/{postId}")
     public AlbumDto addPostToAlbum(@PathVariable long albumId, @PathVariable long postId) {
         long userId = userContext.getUserId();
         return albumService.addPostToAlbum(albumId, postId, userId);
@@ -81,13 +80,14 @@ public class AlbumController {
     }
 
     @PutMapping("/{albumId}")
-    public AlbumDto updateAlbum(@PathVariable("albumId") long albumId, @RequestBody AlbumDto albumDto) {
+    public AlbumDto updateAlbum(@PathVariable("albumId") long albumId,
+                                @Valid @RequestBody AlbumDto albumDto) {
         long userId = userContext.getUserId();
         return albumService.updateAlbum(albumId, userId, albumDto);
     }
 
     @DeleteMapping("/{albumId}")
-    public AlbumDto deleteAlbum(@PathVariable("albumId") long albumId){
+    public AlbumDto deleteAlbum(@PathVariable("albumId") long albumId) {
         long userId = userContext.getUserId();
         return albumService.deleteAlbum(albumId, userId);
     }

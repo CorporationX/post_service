@@ -12,6 +12,7 @@ import java.util.stream.Stream;
 public class BeforeDateFilter implements AlbumFilter {
     @Override
     public boolean isApplicable(AlbumFilterDto albumFilterDto) {
+
         return albumFilterDto.getBeforeDate() != null;
     }
 

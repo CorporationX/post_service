@@ -1,6 +1,7 @@
 package faang.school.postservice.dto.albums;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Null;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -15,6 +16,7 @@ public class AlbumDto {
     private String title;
     @NotBlank(message = "Требуется описание альбома")
     private String description;
+    @Null(message = "authorId устанавливается автоматически и не должен передаваться вручную")
     private Long authorId;
     private List<Long> postIds = new ArrayList<>();
 }

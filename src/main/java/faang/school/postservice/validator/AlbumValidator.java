@@ -50,7 +50,17 @@ public class AlbumValidator {
 
     public void validateRemovePostFromAlbum(Album album, long postId, long userId) {
         validateUserAndAccess(album, userId);
-        //checkPostExistenceInAlbum(album, postId);
+        checkPostMissingInAlbum(album,postId);
+    }
+
+    private void checkPostMissingInAlbum(Album album, long postId) {
+        boolean postMissing = album.getPosts().stream()
+                .noneMatch(post -> post.getId() == postId);
+
+        if (postMissing) {
+            throw new DataValidationException(
+                    String.format("Пост с id '%d' не найден в альбоме", postId));
+        }
     }
 
     public void validateAddAlbumToFavorite(Album album, long userId) {

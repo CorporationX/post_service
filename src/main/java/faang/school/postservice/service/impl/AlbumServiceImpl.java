@@ -37,9 +37,9 @@ public class AlbumServiceImpl implements AlbumService {
     public AlbumDto createAlbum(AlbumDto albumDto) {
         Album album = albumMapper.toAlbum(albumDto);
 
+        album.setAuthorId(userContext.getUserId());
         albumValidator.validateUniqueTitle(album);
-//        userExistValidator.userExist(userContext.getUserId());
-
+        userExistValidator.userExist(userContext.getUserId());
 
         final Album savedAlbum = albumRepository.save(album);
         return albumMapper.toAlbumDto(savedAlbum);
@@ -101,7 +101,6 @@ public class AlbumServiceImpl implements AlbumService {
         return albumMapper.toAlbumDto(album);
     }
 
-    //
     @Override
     @Transactional
     public AlbumDto getAlbumById(long albumId) {

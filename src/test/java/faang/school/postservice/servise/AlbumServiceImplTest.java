@@ -105,8 +105,6 @@ public class AlbumServiceImplTest {
 
         when(albumRepository.save(any(Album.class))).thenReturn(savedAlbum);
         doNothing().when(albumValidator).validateUniqueTitle(any(Album.class));
-//        doNothing().when(userExistValidator).userExist(anyLong());
-//        when(userContext.getUserId()).thenReturn(AUTHOR_ID);
 
         AlbumDto result = albumService.createAlbum(albumDto);
 
@@ -116,7 +114,6 @@ public class AlbumServiceImplTest {
         assertEquals(ALBUM_DESCRIPTION, result.getDescription());
 
         verify(albumValidator).validateUniqueTitle(any(Album.class));
-//        verify(userExistValidator).userExist(AUTHOR_ID);
         verify(albumRepository).save(any(Album.class));
     }
 
