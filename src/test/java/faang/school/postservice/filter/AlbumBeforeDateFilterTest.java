@@ -45,13 +45,13 @@ public class AlbumBeforeDateFilterTest {
     }
 
     @Test
-    void isApplicable_ShouldReturnTrue_WhenBeforeDateIsSet() {
+    void isApplicable_ShouldReturnTrueWhenBeforeDateIsSet() {
         filterDto.setBeforeDate("2023-01-01");
         assertTrue(beforeDateFilter.isApplicable(filterDto));
     }
 
     @Test
-    void isApplicable_ShouldReturnFalse_WhenBeforeDateIsNull() {
+    void isApplicable_ShouldReturnFalseWhenBeforeDateIsNull() {
         filterDto.setBeforeDate(null);
         assertFalse(beforeDateFilter.isApplicable(filterDto));
     }

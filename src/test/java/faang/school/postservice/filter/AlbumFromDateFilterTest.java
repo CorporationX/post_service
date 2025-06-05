@@ -69,7 +69,7 @@ public class AlbumFromDateFilterTest {
     }
 
     @Test
-    void apply_ShouldIncludeAlbum_WhenCreatedOnFromDate() {
+    void apply_ShouldIncludeAlbumWhenCreatedOnFromDate() {
         filterDto.setFromDate("2023-01-01");
 
         Album albumExact = Album.builder()
