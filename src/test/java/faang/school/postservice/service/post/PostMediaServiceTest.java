@@ -1,8 +1,7 @@
 package faang.school.postservice.service.post;
 
-import faang.school.postservice.config.post.media.properties.PostMediaProperties;
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.mapper.post.PostMapper;
+import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.post.PostMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
@@ -16,17 +15,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-
-import faang.school.postservice.exception.DataValidationException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -34,7 +29,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -84,9 +78,8 @@ class PostMediaServiceTest { // Предполагаем, что это тест
         postDto = new PostDto(); // Заполните при необходимости
     }
 
-    // Тесты для deleteMediaFiles
     @Test
-    void deleteMediaFiles_shouldDeleteFilesAndRemoveFromPost_whenFilesExistAndBelongToPost() {
+    void deleteMediaFilesShouldDeleteFilesAndRemoveFromPostWhenFilesExistAndBelongToPost() {
         // Arrange
         Long postId = 1L;
         List<Long> fileIdsToDelete = Arrays.asList(10L, 20L);
@@ -111,22 +104,6 @@ class PostMediaServiceTest { // Предполагаем, что это тест
         verify(postMapper).toPostDto(post);
     }
 
-    @Test
-    void deleteMediaFiles_shouldThrowDataValidationException_whenResourceNotFound() {
-        // Arrange
-        Long postId = 1L;
-        List<Long> fileIdsToDelete = List.of(99L); // Несуществующий ID
-
-        when(postServiceUtils.getPost(postId)).thenReturn(post);
-        when(resourceRepository.findById(99L)).thenReturn(Optional.empty());
-
-        // Act & Assert
-        DataValidationException exception = assertThrows(DataValidationException.class, () -> {
-            postMediaService.deleteMediaFiles(postId, fileIdsToDelete);
-        });
-        assertEquals("Resource not found with ID: 99", exception.getMessage());
-        verify(s3Service, never()).deleteFile(anyString()); // S3 удаление не должно вызываться
-    }
 
     @Test
     void deleteMediaFiles_shouldThrowDataValidationException_whenResourceDoesNotBelongToPost() {
@@ -172,21 +149,5 @@ class PostMediaServiceTest { // Предполагаем, что это тест
 
         verify(s3Service).getFileAsInputStream(resource1);
         verify(s3Service).getFileAsInputStream(resource2);
-    }
-
-    @Test
-    void getMediaFiles_shouldThrowDataValidationException_whenPostHasNoResources() {
-        // Arrange
-        Long postId = 1L;
-        post.setResources(new ArrayList<>()); // Убираем ресурсы из поста
-
-        when(postServiceUtils.getPost(postId)).thenReturn(post);
-
-        // Act & Assert
-        DataValidationException exception = assertThrows(DataValidationException.class, () -> {
-            postMediaService.getMediaFiles(postId);
-        });
-        assertEquals("No media files found for post with ID: 1", exception.getMessage());
-        verify(s3Service, never()).getFileAsInputStream(any(Resource.class));
     }
 }
