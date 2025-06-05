@@ -4,24 +4,25 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class LibrarySystem {
-    private final Map<Book, String> library = new HashMap<>();
+    private final Map<Book, String> LIBRARY = new HashMap<>();
 
     public void addBook(String title, String author, int year, String location) {
-        library.putIfAbsent(new Book(title, author, year), location);
+        LIBRARY.putIfAbsent(new Book(title, author, year), location);
     }
 
     public void removeBook(String title, String author, int year) {
-        library.remove(new Book(title, author, year));
+        LIBRARY.remove(new Book(title, author, year));
     }
 
     public void findBook(String title, String author, int year) {
-        System.out.println(library.getOrDefault(new Book(title, author, year), String.format("\"Book %s not found\"", title)));
+        System.out.println(LIBRARY.getOrDefault(new Book(title, author, year),
+                String.format("\"Book %s not found\"", title)));
     }
 
     public void printAllBooks() {
-        for (Book book : library.keySet()) {
+        for (Book book : LIBRARY.keySet()) {
             System.out.printf("Title: %s (Author: %s, Year: %d) - Location: %s%n",
-                    book.title(), book.author(), book.year(), library.get(book));
+                    book.title(), book.author(), book.year(), LIBRARY.get(book));
         }
     }
 }
