@@ -1,8 +1,11 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.KafkaConfig;
+import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
@@ -24,6 +27,9 @@ public class LikeService {
     private LikeRepository likeRepository;
     private CommentRepository commentRepository;
     private UserServiceClient userServiceClient;
+    private KafkaLikeProducerService kafkaLikeProducerService;
+    private final KafkaConfig kafkaConfig;
+    private LikeMapper likeMapper;
 
     private static final String ERROR_POST_DOES_NOT_EXIST = "Post doesn't exist: postId={}";
     private static final String ERROR_COMMENT_DOES_NOT_EXIST = "Comment doesn't exist: commentId={} ";
@@ -43,6 +49,8 @@ public class LikeService {
             like.setComment(null);
             Like likeFromDataBase = likeRepository.save(like);
             log.info(USER_LIKES_POST, like.getUserId(), like.getPost().getId());
+            LikeDto likeDto = likeMapper.toDto(like);
+            kafkaLikeProducerService.send(kafkaConfig.getPostLikeTopicName(), likeDto);
             return likeFromDataBase;
         } else {
             logWarningSameLikeStatus(like);
