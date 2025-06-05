@@ -60,7 +60,7 @@ public class Post {
     private List<Resource> resources;
 
     @Column(name = "published", nullable = false)
-    private boolean published;
+    private boolean published = false;
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "published_at")
@@ -71,7 +71,7 @@ public class Post {
     private LocalDateTime scheduledAt;
 
     @Column(name = "deleted", nullable = false)
-    private boolean deleted;
+    private boolean deleted = false;
 
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
