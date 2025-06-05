@@ -6,6 +6,8 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.repository.LikeRepository;
+import faang.school.postservice.service.comments.CommentService;
+import faang.school.postservice.service.utils.PostServiceUtils;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +22,7 @@ import java.time.LocalDateTime;
 public class LikeService {
     private final LikeRepository likeRepository;
     private final LikeMapper likeMapper;
-    private final PostService postService;
+    private final PostServiceUtils postServiceUtils;
     private final CommentService commentService;
     private final UserServiceClient userServiceClient;
 
@@ -31,7 +33,7 @@ public class LikeService {
 
         Like newLikeToPost = Like.builder()
                 .userId(userId)
-                .post(postService.getPost(postId))
+                .post(postServiceUtils.getPost(postId))
                 .build();
         return likeMapper.toDto(likeRepository.save(newLikeToPost));
     }
