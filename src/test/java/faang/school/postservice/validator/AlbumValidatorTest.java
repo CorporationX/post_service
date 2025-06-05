@@ -51,21 +51,21 @@ public class AlbumValidatorTest {
     }
 
     @Test
-    void validateUniqueTitle_ShouldThrowException_WhenTitleExists() {
+    void validateUniqueTitle_ShouldThrowExceptionWhenTitleExists() {
         when(albumRepository.existsByTitleAndAuthorId("Test Title", 10L)).thenReturn(true);
 
         assertThrows(DataValidationException.class, () -> albumValidator.validateUniqueTitle(album));
     }
 
     @Test
-    void validateUniqueTitle_ShouldDoNothing_WhenTitleIsUnique() {
+    void validateUniqueTitle_ShouldDoNothingWhenTitleIsUnique() {
         when(albumRepository.existsByTitleAndAuthorId("Test Title", 10L)).thenReturn(false);
 
         assertDoesNotThrow(() -> albumValidator.validateUniqueTitle(album));
     }
 
     @Test
-    void validateAddPostToAlbum_ShouldThrowException_WhenUserIsNotAuthor() {
+    void validateAddPostToAlbum_ShouldThrowExceptionWhenUserIsNotAuthor() {
         Album album = Album.builder()
                 .authorId(10L)
                 .posts(List.of())
@@ -80,7 +80,7 @@ public class AlbumValidatorTest {
     }
 
     @Test
-    void validateAddPostToAlbum_ShouldThrowException_WhenPostAlreadyExistsInAlbum() {
+    void validateAddPostToAlbum_ShouldThrowExceptionWhenPostAlreadyExistsInAlbum() {
         Post existingPost = new Post();
         existingPost.setId(5L);
 
@@ -111,7 +111,7 @@ public class AlbumValidatorTest {
     }
 
     @Test
-    void validateRemovePostFromAlbum_shouldPass_whenUserIsAuthorAndPostExists() {
+    void validateRemovePostFromAlbum_ShouldPassWhenUserIsAuthorAndPostExists() {
         Album album = Album.builder()
                 .authorId(1L)
                 .posts(List.of(Post.builder().id(100L).build()))
@@ -121,7 +121,7 @@ public class AlbumValidatorTest {
     }
 
     @Test
-    void validateRemovePostFromAlbum_shouldThrowException_whenUserIsNotAuthor() {
+    void validateRemovePostFromAlbum_ShouldThrowExceptionWhenUserIsNotAuthor() {
         Album album = Album.builder()
                 .authorId(1L)
                 .posts(List.of(Post.builder().id(100L).build()))
@@ -145,7 +145,7 @@ public class AlbumValidatorTest {
     }
 
     @Test
-    void validateAddAlbumToFavorite_throwsException_thenUserIsNotAuthor() {
+    void validateAddAlbumToFavoriteThrowsExceptionThenUserIsNotAuthor() {
         Album album = Album.builder()
                 .id(1L)
                 .authorId(99L)
@@ -158,7 +158,7 @@ public class AlbumValidatorTest {
     }
 
     @Test
-    void validateRemoveAlbumFromFavorite_shouldThrow_whenUserIsNotAuthor() {
+    void validateRemoveAlbumFromFavorite_ShouldThrowWhenUserIsNotAuthor() {
         Album album = Album.builder()
                 .id(1L)
                 .authorId(10L)
@@ -171,7 +171,7 @@ public class AlbumValidatorTest {
     }
 
     @Test
-    void validateUpdateAlbum_shouldThrow_whenUserIsNotAuthor() {
+    void validateUpdateAlbum_ShouldThrowWhenUserIsNotAuthor() {
         Album album = Album.builder()
                 .id(1L)
                 .authorId(10L)
@@ -189,7 +189,7 @@ public class AlbumValidatorTest {
     }
 
     @Test
-    void validateUpdateAlbum_shouldPass_whenTitleIsSame() {
+    void validateUpdateAlbum_ShouldPassWhenTitleIsSame() {
         Album album = Album.builder()
                 .id(1L)
                 .authorId(10L)
@@ -207,7 +207,7 @@ public class AlbumValidatorTest {
     }
 
     @Test
-    void validateAlbumTitleIsUnique_shouldThrow_whenTitleAlreadyExists() {
+    void validateAlbumTitleIsUnique_ShouldThrowWhenTitleAlreadyExists() {
         long userId = 1L;
         Album existingAlbum = Album.builder()
                 .id(1L)
@@ -227,7 +227,7 @@ public class AlbumValidatorTest {
     }
 
     @Test
-    void validateAlbumTitleIsUnique_shouldPass_whenTitleIsUnique() {
+    void validateAlbumTitleIsUnique_ShouldPassWhenTitleIsUnique() {
         long userId = 1L;
         Album existingAlbum = Album.builder()
                 .id(1L)
@@ -247,7 +247,7 @@ public class AlbumValidatorTest {
     }
 
     @Test
-    void validateDeleteAlbum_shouldThrow_whenUserIsNotAuthor() {
+    void validateDeleteAlbum_ShouldThrowWhenUserIsNotAuthor() {
         Album album = Album.builder()
                 .id(1L)
                 .authorId(10L)
@@ -259,7 +259,7 @@ public class AlbumValidatorTest {
     }
 
     @Test
-    void validateDeleteAlbum_shouldPass_whenUserIsAuthor() {
+    void validateDeleteAlbum_ShouldPassWhenUserIsAuthor() {
         Album album = Album.builder()
                 .id(1L)
                 .authorId(10L)

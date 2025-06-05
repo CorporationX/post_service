@@ -49,14 +49,14 @@ public class AlbumFilterServiceImplTest {
     void applyFilters_ShouldApplyOnlyApplicableFilters() {
         AlbumFilterDto filterDto = new AlbumFilterDto();
 
-        Stream<Album> inputStream = Stream.of(album1);
-
         when(filter1.isApplicable(filterDto)).thenReturn(true);
         when(filter1.apply(any(), eq(filterDto))).thenAnswer(i -> i.getArgument(0));
 
         when(filter2.isApplicable(filterDto)).thenReturn(false);
 
         albumFilterService = new AlbumFilterServiceImpl(List.of(filter1, filter2));
+
+        Stream<Album> inputStream = Stream.of(album1);
 
         List<Album> result = albumFilterService.applyFilters(inputStream, filterDto).toList();
 
@@ -68,7 +68,7 @@ public class AlbumFilterServiceImplTest {
     }
 
     @Test
-    void applyFilters_ShouldReturnOriginalStream_WhenDtoIsNull() {
+    void applyFilters_ShouldReturnOriginalStreamWhenDtoIsNull() {
         Stream<Album> original = Stream.of(album1);
 
         List<Album> result = albumFilterService.applyFilters(original, null).toList();

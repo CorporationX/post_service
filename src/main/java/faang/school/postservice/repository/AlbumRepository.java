@@ -17,7 +17,11 @@ public interface AlbumRepository extends JpaRepository<Album, Long> {
 
     boolean existsByTitleAndAuthorId(String title, long authorId);
 
-    @Query(nativeQuery = true, value = "SELECT EXISTS(SELECT 1 FROM favorite_albums WHERE album_id = :albumId AND user_id = :userId)")
+    @Query(
+            nativeQuery = true,
+            value = "SELECT EXISTS(SELECT 1 FROM favorite_albums" +
+                    "WHERE album_id = :albumId AND user_id = :userId)")
+
     boolean checkAlbumExistsInFavorites(long albumId, long userId);
 
     boolean existsByIdAndAuthorId(long id, long authorId);

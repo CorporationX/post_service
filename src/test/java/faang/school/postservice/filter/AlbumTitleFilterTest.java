@@ -1,6 +1,5 @@
 package faang.school.postservice.filter;
 
-import faang.school.postservice.dto.albums.AlbumDto;
 import faang.school.postservice.dto.albums.AlbumFilterDto;
 import faang.school.postservice.filter.album.TitleFilter;
 import faang.school.postservice.model.Album;
@@ -40,19 +39,19 @@ public class AlbumTitleFilterTest {
     }
 
     @Test
-    void isApplicable_FilterIsNotApplicable_whenTitleIsNull() {
+    void isApplicable_FilterIsNotApplicableWhenTitleIsNull() {
         albumFilterDto.setTitlePattern(null);
         assertFalse(titleFilter.isApplicable(albumFilterDto));
     }
 
     @Test
-    void isApplicable_FilterIsNotApplicable_whenTitleIsEmpty() {
+    void isApplicable_FilterIsNotApplicableWhenTitleIsEmpty() {
         albumFilterDto.setTitlePattern("");
         assertFalse(titleFilter.isApplicable(albumFilterDto));
     }
 
     @Test
-    void apply_FilterByTitlePattern_ReturnsMatchingAlbums() {
+    void apply_FilterByTitlePatternReturnsMatchingAlbums() {
         albumFilterDto.setTitlePattern("tit");
 
         List<Album> result = titleFilter
@@ -64,7 +63,7 @@ public class AlbumTitleFilterTest {
     }
 
     @Test
-    void apply_FilterByTitlePattern_IgnoresCase() {
+    void apply_FilterByTitlePatternIgnoresCase() {
         albumFilterDto.setTitlePattern("tIt");
 
         List<Album> result = titleFilter

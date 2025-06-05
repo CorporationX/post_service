@@ -45,13 +45,13 @@ public class AlbumFromDateFilterTest {
     }
 
     @Test
-    void isApplicable_ShouldReturnTrue_WhenFromDateIsSet() {
+    void isApplicable_ShouldReturnTrueWhenFromDateIsSet() {
         filterDto.setFromDate("2023-01-01");
         assertTrue(fromDateFilter.isApplicable(filterDto));
     }
 
     @Test
-    void isApplicable_ShouldReturnFalse_WhenFromDateIsNull() {
+    void isApplicable_ShouldReturnFalseWhenFromDateIsNull() {
         filterDto.setFromDate(null);
         assertFalse(fromDateFilter.isApplicable(filterDto));
     }

@@ -50,7 +50,7 @@ public class AlbumValidator {
 
     public void validateRemovePostFromAlbum(Album album, long postId, long userId) {
         validateUserAndAccess(album, userId);
-        checkPostMissingInAlbum(album,postId);
+        checkPostMissingInAlbum(album, postId);
     }
 
     private void checkPostMissingInAlbum(Album album, long postId) {
@@ -88,7 +88,7 @@ public class AlbumValidator {
 
         Album updatedAlbum = albumMapper.toAlbum(albumDto);
 
-        if(!album.getTitle().equals(updatedAlbum.getTitle())){
+        if (!album.getTitle().equals(updatedAlbum.getTitle())) {
             validateAlbumTitleIsUnique(userId, updatedAlbum);
         }
     }
