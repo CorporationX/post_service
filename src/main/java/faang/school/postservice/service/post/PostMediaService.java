@@ -9,11 +9,10 @@ import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.ResourceRepository;
 import faang.school.postservice.service.s3.S3Service;
 import faang.school.postservice.service.utils.PostServiceUtils;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -54,10 +53,11 @@ public class PostMediaService {
 
         for (Long fileId : fileIds) {
             Resource resource = resourceRepository.findById(fileId)
-                    .orElseThrow(() -> new DataValidationException("Resource not found with ID: " + fileId));
-            if (!resource.getPost().equals(post)) {
+                    .orElseThrow(() -> new EntityNotFoundException("Resource not found with ID: " + fileId));
+            if (!Objects.equals(resource.getPost(), post)) {
                 throw new DataValidationException("Resource with ID " + fileId + " does not belong to post with ID " + postId);
             }
+
             s3Service.deleteFile(resource.getKey());
             resourceRepository.delete(resource);
             post.getResources().remove(resource);
@@ -71,11 +71,6 @@ public class PostMediaService {
     public List<InputStream> getMediaFiles(Long postId) {
         Post post = postServiceUtils.getPost(postId);
         log.info("Retrieving media files for post ID: {}", postId);
-
-        if (post.getResources().isEmpty()) {
-            throw new DataValidationException("No media files found for post with ID: " + postId);
-        }
-
         List<Resource> resources = post.getResources();
         return resources.stream()
                 .map(s3Service::getFileAsInputStream)

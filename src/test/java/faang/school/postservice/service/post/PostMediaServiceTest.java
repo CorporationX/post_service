@@ -3,6 +3,7 @@ package faang.school.postservice.service.post;
 import faang.school.postservice.config.post.media.properties.PostMediaProperties;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.post.PostMapper;
+import faang.school.postservice.mapper.post.PostMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.ResourceRepository;
@@ -51,7 +52,7 @@ class PostMediaServiceTest { // Предполагаем, что это тест
     private S3Service s3Service;
 
     @Spy
-    private PostMapper postMapper;
+    private PostMapperImpl postMapper;
 
     @InjectMocks
     private PostMediaService postMediaService; // Ваш сервис, содержащий эти методы

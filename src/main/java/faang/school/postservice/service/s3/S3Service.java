@@ -1,5 +1,7 @@
 package faang.school.postservice.service.s3;
 
+import faang.school.postservice.exception.FileDownloadFailedException;
+import faang.school.postservice.exception.FileUploadFailedException;
 import faang.school.postservice.model.Resource;
 import io.awspring.cloud.s3.ObjectMetadata;
 import lombok.RequiredArgsConstructor;
@@ -47,7 +49,7 @@ public class S3Service {
             log.info("File uploaded successfully to S3: {}", mediaKey);
         } catch (IOException e) {
             log.error("Failed to upload file to S3", e);
-            throw new RuntimeException("Failed to upload file", e);
+            throw new FileUploadFailedException("Failed to upload file");
         }
 
         return Resource.builder()
@@ -68,7 +70,7 @@ public class S3Service {
             return s3Client.getObject(getObjectRequest);
         } catch (Exception e) {
             log.error("Failed to download file from S3: {}", resource.getKey(), e);
-            throw new RuntimeException("Failed to download file", e);
+            throw new FileDownloadFailedException("Failed to download file");
         }
     }
 

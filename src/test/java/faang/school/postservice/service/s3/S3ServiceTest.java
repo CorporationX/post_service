@@ -1,5 +1,7 @@
 package faang.school.postservice.service.s3;
 
+import faang.school.postservice.exception.FileDownloadFailedException;
+import faang.school.postservice.exception.FileUploadFailedException;
 import faang.school.postservice.model.Resource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -45,13 +47,11 @@ class S3ServiceTest {
 
     @BeforeEach
     void setUp() {
-        // Устанавливаем значение для поля, аннотированного @Value
         ReflectionTestUtils.setField(s3Service, "bucketName", BUCKET_NAME);
     }
 
     @Test
     void uploadFile_shouldUploadSuccessfully_whenFileIsValid() throws IOException {
-        // Arrange
         String originalFilename = "image.jpg";
         String contentType = "image/jpeg";
         long fileSize = 1024L;
@@ -96,11 +96,10 @@ class S3ServiceTest {
         when(mockFile.getInputStream()).thenThrow(new IOException("Test IO Exception"));
 
         // Act & Assert
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+        RuntimeException exception = assertThrows(FileUploadFailedException.class, () -> {
             s3Service.uploadFile(mockFile, FOLDER_NAME);
         });
         assertEquals("Failed to upload file", exception.getMessage());
-        assertTrue(exception.getCause() instanceof IOException);
     }
 
     @Test
@@ -114,14 +113,9 @@ class S3ServiceTest {
 
         when(s3Client.getObject(any(GetObjectRequest.class))).thenReturn(mockResponseStream);
 
-        // Act
         InputStream resultStream = s3Service.getFileAsInputStream(resource);
 
-        // Assert
         assertNotNull(resultStream);
-        // Можно добавить проверку содержимого потока, если это важно
-        // assertEquals("test content", new String(resultStream.readAllBytes()));
-
         ArgumentCaptor<GetObjectRequest> getObjectRequestCaptor = ArgumentCaptor.forClass(GetObjectRequest.class);
         verify(s3Client).getObject(getObjectRequestCaptor.capture());
         GetObjectRequest capturedRequest = getObjectRequestCaptor.getValue();
@@ -135,10 +129,10 @@ class S3ServiceTest {
         String fileKey = "test-folder/error-file.txt";
         Resource resource = Resource.builder().key(fileKey).build();
 
-        when(s3Client.getObject(any(GetObjectRequest.class))).thenThrow(new RuntimeException("S3 SDK Error"));
+        when(s3Client.getObject(any(GetObjectRequest.class))).thenThrow(new FileDownloadFailedException("S3 SDK Error"));
 
         // Act & Assert
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+        RuntimeException exception = assertThrows(FileDownloadFailedException.class, () -> {
             s3Service.getFileAsInputStream(resource);
         });
         assertEquals("Failed to download file", exception.getMessage());
