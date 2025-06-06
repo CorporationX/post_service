@@ -5,6 +5,20 @@ spring:
     username: user
     password: password
 
+  config:
+    import: 'optional:consul:'
+  application:
+    name: post-service
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+      discovery: post-service-i1
+      config:
+        enabled: true
+        watch:
+          enabled: true
+
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
@@ -62,12 +76,10 @@ logging:
   level:
     root: info
 
-user-service:
-  host: localhost
-  port: 8080
-project-service:
-  host: localhost
-  port: 8082
-payment-service:
-  host: localhost
-  port: 9080
+services:
+  user-service:
+    name: user-service
+  project-service:
+    name: project-service
+  payment-service:
+    name: payment-service

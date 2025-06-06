@@ -8,6 +8,7 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.LikeRepository;
+import faang.school.postservice.service.comments.CommentService;
 import faang.school.postservice.service.utils.PostServiceUtils;
 import feign.FeignException;
 import org.junit.jupiter.api.BeforeEach;

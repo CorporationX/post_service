@@ -14,6 +14,7 @@ val springCloudVersion by extra("2022.0.5")
 repositories {
     mavenCentral()
 }
+val springCloudVersion by extra("2022.0.5")
 
 
 dependencies {
@@ -27,6 +28,9 @@ dependencies {
     implementation("org.springframework.retry:spring-retry")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.cloud:spring-cloud-starter-openfeign:4.0.2")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("org.springframework.cloud:spring-cloud-starter-consul-config")
+    implementation("org.springframework.cloud:spring-cloud-starter-consul-discovery")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     implementation("org.springframework.cloud:spring-cloud-starter-consul-config")
 
@@ -89,8 +93,46 @@ tasks.withType<Test> {
     useJUnitPlatform()
 }
 
-val test by tasks.getting(Test::class) { testLogging.showStandardStreams = true }
-
 tasks.bootJar {
     archiveFileName.set("service.jar")
+}
+
+val jacocoReportIncludes = listOf(
+    "faang/school/postservice/service/**"
+)
+
+val jacocoVerificationIncludes = listOf(
+    "faang.school.postservice.service.**"
+)
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+    reports {
+        xml.required.set(false)
+        csv.required.set(false)
+        html.required.set(true)
+    }
+    classDirectories.setFrom(files(classDirectories.files.map {
+        fileTree(it).matching {
+            include(jacocoReportIncludes)
+        }
+    }))
+}
+
+tasks.jacocoTestCoverageVerification {
+    dependsOn(tasks.jacocoTestReport)
+    violationRules {
+        rule {
+            element = "BUNDLE"
+            isEnabled = true
+
+            includes = jacocoVerificationIncludes
+
+            limit {
+                counter = "LINE"
+                value = "COVEREDRATIO"
+                minimum = "0.7".toBigDecimal()
+            }
+        }
+    }
 }
