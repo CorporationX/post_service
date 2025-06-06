@@ -1,18 +1,14 @@
 package faang.school.postservice.controller.comment;
 
+import faang.school.postservice.dto.comment.CommentCreateDto;
 import faang.school.postservice.dto.comment.CommentDtoResponse;
+import faang.school.postservice.dto.comment.CommentUpdateDto;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -21,40 +17,50 @@ public interface CommentController {
 
     @Operation(
             summary = "Создания комментария",
-            description = "Сохраняет комментарий в базе"
+            description = "Сохраняет комментарий в базе",
+            parameters = {
+                    @Parameter(
+                            name = "x-user-id",
+                            in = ParameterIn.HEADER,
+                            description = "ID Пользователя",
+                            required = true)
+            }
     )
     @ApiResponse(responseCode = "200", description = "Комментарий создан")
-    @PostMapping("/post/{postId}")
-    ResponseEntity<CommentDtoResponse> createComment(@PathVariable long postId,
-                                                     @RequestParam String content);
+    ResponseEntity<CommentDtoResponse> createComment(CommentCreateDto commentDto);
 
     @Operation(
             summary = "Обновления комментария",
-            description = "Обновляет комментарий в базе"
-
+            description = "Обновляет комментарий в базе",
+            parameters = {
+                    @Parameter(
+                            name = "x-user-id",
+                            in = ParameterIn.HEADER,
+                            description = "ID Пользователя",
+                            required = true)
+            }
     )
     @ApiResponse(responseCode = "200", description = "Комментарий обновлен")
-    @PatchMapping("/{commentId}")
-    ResponseEntity<CommentDtoResponse> updateComment(@PathVariable long commentId,
-                                                     @RequestParam String newContent);
+
+    ResponseEntity<CommentDtoResponse> updateComment(CommentUpdateDto commentDto);
 
     @Operation(
             summary = "Получить все комментарии поста",
             description = "Возвращает список комментариев поста из базы"
     )
-    @GetMapping("/{postId}")
-    ResponseEntity<List<CommentDtoResponse>> getAllComments(@PathVariable long postId);
+    ResponseEntity<List<CommentDtoResponse>> getAllComments(long postId);
 
     @Operation(
             summary = "Удалить комментарий",
-            description = "Удаляет из базы"
+            description = "Удаляет из базы",
+            parameters = {
+                    @Parameter(
+                            name = "x-user-id",
+                            in = ParameterIn.HEADER,
+                            description = "ID Пользователя",
+                            required = true)
+            }
     )
     @ApiResponse(responseCode = "200", description = "Комментарий удален")
-    @DeleteMapping("/{commentId}")
-    ResponseEntity<Long> deleteComment(@PathVariable long commentId);
-
-    @ApiResponse(responseCode = "200", description = "Комментарий удален")
-    @PostMapping("/{commentId}/uploadFiles")
-    ResponseEntity<String> uploadFile(@PathVariable long commentId,
-                                      @RequestParam("file") MultipartFile file);
+    ResponseEntity<Long> deleteComment(long commentId);
 }

@@ -21,12 +21,6 @@ public class PostValidation {
         }
     }
 
-    public static void validatePostDoesNotExist(boolean isExist) {
-        if (isExist) {
-            throw new DataValidationException("Post with such id already exists");
-        }
-    }
-
     public static void validateNotNullContent(Post post) {
         if (Objects.isNull(post.getContent())) {
             throw new DataValidationException("Content of the post can not be null");
