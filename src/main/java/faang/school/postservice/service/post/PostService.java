@@ -1,4 +1,4 @@
-package faang.school.postservice.service;
+package faang.school.postservice.service.post;
 
 import faang.school.postservice.dto.post.CreatePostDto;
 import faang.school.postservice.dto.post.PostDto;
@@ -45,7 +45,7 @@ public class PostService {
     }
 
     @Transactional
-    public PostDto update(long postId, String content) {
+    public PostDto updateContent(long postId, String content) {
         Post post = postServiceUtils.getPost(postId);
         post.setContent(content);
         return postMapper.toPostDto(postRepository.save(post));
