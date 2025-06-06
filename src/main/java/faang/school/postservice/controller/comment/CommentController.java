@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -41,7 +42,6 @@ public interface CommentController {
             }
     )
     @ApiResponse(responseCode = "200", description = "Комментарий обновлен")
-
     ResponseEntity<CommentDtoResponse> updateComment(CommentUpdateDto commentDto);
 
     @Operation(
@@ -63,4 +63,39 @@ public interface CommentController {
     )
     @ApiResponse(responseCode = "200", description = "Комментарий удален")
     ResponseEntity<Long> deleteComment(long commentId);
+
+    @Operation(
+            summary = "Прикрепить картинку к комментарию",
+            description = "Добавляет картинку в базу"
+    )
+    @ApiResponse(responseCode = "200", description = "Картинка загружена")
+    ResponseEntity<String> uploadFile(long commentId, MultipartFile file);
+
+    @Operation(
+            summary = "Удалить картинку из комментария",
+            description = "Удалить картинку из базу",
+            parameters = {
+                    @Parameter(
+                            name = "x-user-id",
+                            in = ParameterIn.HEADER,
+                            description = "ID Пользователя",
+                            required = true)
+            }
+    )
+    @ApiResponse(responseCode = "200", description = "Картинка удалена")
+    ResponseEntity<String> deleteFile(long commentId);
+
+    @Operation(
+            summary = "Получить маленькую картинку",
+            description = "Выводит маленькую на экран"
+    )
+    @ApiResponse(responseCode = "200", description = "Картинка загружена")
+    ResponseEntity<String> getSmallImage(long commentId);
+
+    @Operation(
+            summary = "Получить большую картинку",
+            description = "Выводит большую картинку на экран"
+    )
+    @ApiResponse(responseCode = "200", description = "Картинка загружена")
+    ResponseEntity<String> getLargeImage(long commentId);
 }

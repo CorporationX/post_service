@@ -7,23 +7,34 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.amazonS3.ImageCompressor;
+import faang.school.postservice.service.amazonS3.S3Service;
 import faang.school.postservice.validation.comment.CommentValidation;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.Builder;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
+@Slf4j
 @Service
+@Builder
 @RequiredArgsConstructor
 public class CommentService {
+    private static final int MAX_SIZE_FOR_LARGE_IMAGE = 1080;
+    private static final int MAX_SIZE_FOR_SMALL_IMAGE = 170;
+
     private final UserServiceClient userServiceClient;
     private final CommentRepository commentRepository;
     private final CommentValidation commentValidation;
     private final UserContext userContext;
     private final PostRepository postRepository;
+    private final S3Service s3Service;
+    private final ImageCompressor imageCompressor;
 
     @Transactional
     public Comment createComment(long postId, String content) {
@@ -84,13 +95,61 @@ public class CommentService {
     }
 
     @Transactional
-    public void uploadFile(long commentId, MultipartFile files) {
+    public void uploadFile(long commentId, MultipartFile originalFile) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> {
+                    log.error("comment under the ID {} not found", commentId);
+                    return new EntityNotFoundException("comment not found");
+                });
 
-        //todo тут принимаем файл
+        String folderForLargeImage = String.format("largeImageForComment-%d", comment.getId());
+        String folderForSmallImage = String.format("SmallImageForComment-%d", comment.getId());
+
+        MultipartFile largeImage = imageCompressor.compressImage(originalFile, MAX_SIZE_FOR_LARGE_IMAGE);
+        MultipartFile smallImage = imageCompressor.compressImage(originalFile, MAX_SIZE_FOR_SMALL_IMAGE);
+
+        String keyLargeImage = s3Service.uploadFile(folderForLargeImage, largeImage);
+        String keySmallImage = s3Service.uploadFile(folderForSmallImage, smallImage);
+
+        comment.setLargeImageFileKey(keyLargeImage);
+        comment.setSmallImageFileKey(keySmallImage);
+
+        commentRepository.save(comment);
     }
 
     @Transactional
-    public void deleteFile(long commentId, MultipartFile file) {
+    public void deleteFile(long commentId) {
+        Comment comment = getComment(commentId);
+        String keyLargeImage = comment.getLargeImageFileKey();
+        String keySmallImage = comment.getSmallImageFileKey();
+
+        s3Service.deleteFile(keyLargeImage);
+        s3Service.deleteFile(keySmallImage);
+    }
+
+    public void downloadSmallImage(long commentId) {
 
     }
+
+    public void downloadLargeImage(long commentId) {
+
+    }
+
+
+//    public MultipartFile getSmallImage(long commentId) {
+//        Comment comment = getComment(commentId);
+//        String keySmallImage = comment.getSmallImageFileKey();
+//
+//        s3Service.
+//
+//
+//
+//    }
 }
+
+
+//todo: getFile
+//todo: getBigFile
+//todo: При удалении коммента, должна удаляться картинка из S3
+//todo: При удалении коммента, должна удаляться при обновлении
+

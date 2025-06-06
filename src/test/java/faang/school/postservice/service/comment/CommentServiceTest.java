@@ -60,12 +60,13 @@ class CommentServiceTest {
     @BeforeEach
     void setUp() {
         CommentValidation commentValidation = new CommentValidation(postRepository);
-        commentService = new CommentService(
-                userServiceClient,
-                commentRepository,
-                commentValidation,
-                userContext,
-                postRepository);
+        commentService = CommentService.builder()
+                .userServiceClient(userServiceClient)
+                .commentRepository(commentRepository)
+                .commentValidation(commentValidation)
+                .userContext(userContext)
+                .postRepository(postRepository)
+                .build();
 
         post = new Post();
         post.setId(POST_ID);

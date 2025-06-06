@@ -40,4 +40,16 @@ public class CommentServiceFacade {
     public void uploadFile(long commentId, MultipartFile files) {
         commentService.uploadFile(commentId, files);
     }
+
+    public void deleteFile(long commentId) {
+        commentService.deleteFile(commentId);
+    }
+
+    public void getSmallImage(long commentId) {
+        commentService.downloadSmallImage(commentId);
+    }
+
+    public void getLargeImage(long commentId) {
+        commentService.downloadLargeImage(commentId);
+    }
 }

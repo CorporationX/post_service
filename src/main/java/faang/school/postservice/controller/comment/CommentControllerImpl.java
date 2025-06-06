@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -61,14 +62,33 @@ public class CommentControllerImpl implements CommentController {
         return ResponseEntity.ok(commentId);
     }
 
+    @PostMapping("/{commentId}/image")
     @Override
-    public ResponseEntity<String> uploadFile(long commentId, MultipartFile file) {
-        String fileName = file.getOriginalFilename();
-        long fileSize = file.getSize();
-        String contentType = file.getContentType();
+    public ResponseEntity<String> uploadFile(@PathVariable long commentId,
+                                             @RequestParam MultipartFile file) {
         // todo как то надо проверить размер, либо делать это на сервисном слое
-        // todo что передавать в сервис
         commentServiceF.uploadFile(commentId, file);
-        return ResponseEntity.ok("File uploaded: %s".formatted(fileName));
+        return ResponseEntity.ok("File uploaded: %s".formatted(file.getOriginalFilename()));
+    }
+
+    @DeleteMapping("/{commentId}/image")
+    @Override
+    public ResponseEntity<String> deleteFile(@PathVariable long commentId) {
+        commentServiceF.deleteFile(commentId);
+        return ResponseEntity.ok("File deleted");
+    }
+
+    @GetMapping("/{commentId}/image/small")
+    @Override
+    public ResponseEntity<String> getSmallImage(@PathVariable long commentId) {
+        commentServiceF.getSmallImage(commentId);
+        return null;
+    }
+
+    @GetMapping("/{commentId}/image/large")
+    @Override
+    public ResponseEntity<String> getLargeImage(@PathVariable long commentId) {
+        commentServiceF.getLargeImage(commentId);
+        return null;
     }
 }
