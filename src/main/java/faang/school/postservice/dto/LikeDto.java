@@ -8,5 +8,7 @@ import java.time.LocalDateTime;
 public record LikeDto(
         Long id,
         Long userId,
-        LocalDateTime createdAt
+        LocalDateTime createdAt,
+        Long commentId,
+        Long postId
 ) {}

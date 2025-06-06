@@ -26,13 +26,14 @@ spring:
           name: calculations_channel
 
   config:
-    import: 'optional:consul:config/post-service/'
+    import: 'optional:consul:'
   application:
     name: post-service
   cloud:
     consul:
       host: localhost
       port: 8500
+      discovery: post-service-i1
       config:
         enabled: true
         watch:
@@ -44,8 +45,6 @@ spring:
             connectTimeout: 5000
             readTimeout: 3000
             loggerLevel: full
-
-
     aws:
       credentials:
         access-key: user
