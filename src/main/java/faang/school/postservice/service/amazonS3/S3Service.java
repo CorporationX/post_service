@@ -7,9 +7,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Object;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -54,19 +58,17 @@ public class S3Service {
     }
 
 
-//    public InputStream downloadFile(String key) {
-//        GetObjectRequest request = GetObjectRequest.builder()
-//                .bucket(bucketName)
-//                .key(key)
-//                .build();
-//
-//        InputStream inputStream = s3Client.getObject(request);
-//
-//
-//    }
-    //todo скачивание изображение
+    public InputStream downloadFile(String key) {
+        try {
+            GetObjectRequest request = GetObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(key)
+                    .build();
 
-
-
-
+            return s3Client.getObject(request);
+        } catch (S3Exception e) {
+            log.error("File download failed. Key: {}. Error: {}", key, e.getMessage(), e);
+            throw new S3Exception("File download failed for key: " + key);
+        }
+    }
 }

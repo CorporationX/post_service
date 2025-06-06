@@ -18,6 +18,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.rmi.RemoteException;
 import java.util.List;
 
 @Slf4j
@@ -102,6 +105,10 @@ public class CommentService {
                     return new EntityNotFoundException("comment not found");
                 });
 
+        if (!commentValidation.isKeyImageEmpty(comment)) {
+            deleteFile(commentId);
+        }
+
         String folderForLargeImage = String.format("largeImageForComment-%d", comment.getId());
         String folderForSmallImage = String.format("SmallImageForComment-%d", comment.getId());
 
@@ -127,11 +134,20 @@ public class CommentService {
         s3Service.deleteFile(keySmallImage);
     }
 
-    public void downloadSmallImage(long commentId) {
+    @Transactional
+    public InputStream downloadSmallImage(long commentId) {
+        Comment comment = getComment(commentId);
+        String keySmallImage = comment.getSmallImageFileKey();
 
+        return s3Service.downloadFile(keySmallImage);
     }
 
-    public void downloadLargeImage(long commentId) {
+    @Transactional
+    public InputStream downloadLargeImage(long commentId) {
+        Comment comment = getComment(commentId);
+        String keyLargeImage = comment.getLargeImageFileKey();
+
+        return s3Service.downloadFile(keyLargeImage);
 
     }
 

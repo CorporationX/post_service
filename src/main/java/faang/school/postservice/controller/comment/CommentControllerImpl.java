@@ -6,6 +6,10 @@ import faang.school.postservice.dto.comment.CommentUpdateDto;
 import faang.school.postservice.service.comment.CommentServiceFacade;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,8 +22,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/comments")
@@ -80,15 +87,25 @@ public class CommentControllerImpl implements CommentController {
 
     @GetMapping("/{commentId}/image/small")
     @Override
-    public ResponseEntity<String> getSmallImage(@PathVariable long commentId) {
-        commentServiceF.getSmallImage(commentId);
-        return null;
+    public ResponseEntity<InputStreamResource> getSmallImage(@PathVariable long commentId) {
+        InputStream inputStream = commentServiceF.getSmallImage(commentId);
+        InputStreamResource resource = new InputStreamResource(inputStream);
+        
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"image\"")
+                .contentType(MediaType.IMAGE_JPEG)
+                .body(resource);
     }
 
     @GetMapping("/{commentId}/image/large")
     @Override
-    public ResponseEntity<String> getLargeImage(@PathVariable long commentId) {
-        commentServiceF.getLargeImage(commentId);
-        return null;
+    public ResponseEntity<InputStreamResource> getLargeImage(@PathVariable long commentId) {
+        InputStream inputStream = commentServiceF.getLargeImage(commentId);
+        InputStreamResource resource = new InputStreamResource(inputStream);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"image\"")
+                .contentType(MediaType.IMAGE_JPEG)
+                .body(resource);
     }
 }

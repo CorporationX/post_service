@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.InputStream;
 import java.util.List;
 
 @Service
@@ -45,11 +46,11 @@ public class CommentServiceFacade {
         commentService.deleteFile(commentId);
     }
 
-    public void getSmallImage(long commentId) {
-        commentService.downloadSmallImage(commentId);
+    public InputStream getSmallImage(long commentId) {
+        return commentService.downloadSmallImage(commentId);
     }
 
-    public void getLargeImage(long commentId) {
-        commentService.downloadLargeImage(commentId);
+    public InputStream getLargeImage(long commentId) {
+        return commentService.downloadLargeImage(commentId);
     }
 }

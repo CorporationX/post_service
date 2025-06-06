@@ -1,6 +1,7 @@
 package faang.school.postservice.service.amazonS3;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.lang.NonNull;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
@@ -17,6 +18,7 @@ public class CustomMultipartFile implements MultipartFile {
     private final String contentType;
     private final byte[] content;
 
+    @NonNull
     @Override
     public String getName() {
         return name;
@@ -42,18 +44,20 @@ public class CustomMultipartFile implements MultipartFile {
         return content.length;
     }
 
+    @NonNull
     @Override
     public byte[] getBytes() throws IOException {
         return content;
     }
 
+    @NonNull
     @Override
     public InputStream getInputStream() {
         return new ByteArrayInputStream(content);
     }
 
     @Override
-    public void transferTo(File dest) throws IOException {
+    public void transferTo(@NonNull File dest) throws IOException {
         try (FileOutputStream out = new FileOutputStream(dest)) {
             out.write(content);
         }
