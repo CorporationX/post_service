@@ -1,5 +1,7 @@
 package faang.school.postservice.controller.post;
 
+import faang.school.postservice.config.corrector.PostCorrecter;
+import faang.school.postservice.dto.post.TextCheckRequest;
 import faang.school.postservice.dto.post.PostCreateDto;
 import faang.school.postservice.dto.post.PostOutputDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
@@ -33,6 +35,7 @@ import java.util.List;
 @Tag(name = "Post Management", description = "Operations related to posts")
 public class PostController {
     private final PostService postService;
+    private final PostCorrecter postCorrecter;
 
     @PostMapping("/drafts")
     @ApiResponses(value = {
@@ -124,5 +127,12 @@ public class PostController {
         List<PostOutputDto> projectPosts = postService.getNotDeletedProjectPublished(projectId);
         log.info("Getting published posts for project with id {} - Finished", projectId);
         return projectPosts;
+    }
+
+    @PostMapping("/check-text")
+    public TextCheckRequest checkPostText(@RequestBody TextCheckRequest request) {
+        String textToCheck = request.getText();
+        String correctedText = postCorrecter.checkText(textToCheck);
+        return new TextCheckRequest(correctedText);
     }
 }
