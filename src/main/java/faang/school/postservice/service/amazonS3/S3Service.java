@@ -1,9 +1,12 @@
 package faang.school.postservice.service.amazonS3;
 
+import faang.school.postservice.dto.comment.CommentResponseImageDto;
 import faang.school.postservice.exception.S3Exception;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -12,11 +15,13 @@ import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
+import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
+import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import software.amazon.awssdk.services.s3.model.S3Object;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 
@@ -58,14 +63,30 @@ public class S3Service {
     }
 
 
-    public InputStream downloadFile(String key) {
+    public CommentResponseImageDto downloadFile(String key) {
         try {
             GetObjectRequest request = GetObjectRequest.builder()
                     .bucket(bucketName)
                     .key(key)
                     .build();
 
-            return s3Client.getObject(request);
+            ResponseInputStream<GetObjectResponse> responseStream = s3Client.getObject(request);
+            GetObjectResponse response = responseStream.response();
+
+            if (!response.hasMetadata()) {
+                log.error("missing metadata");
+                throw new S3Exception("missing metadata");
+            }
+
+            Map<String, String> metadata = response.metadata();
+
+            return CommentResponseImageDto.builder()
+                    .fileName(metadata.getOrDefault("filename", key))
+                    .contentType(response.contentType())
+                    .contentLength(response.contentLength())
+                    .resource(new InputStreamResource(responseStream))
+                    .build();
+
         } catch (S3Exception e) {
             log.error("File download failed. Key: {}. Error: {}", key, e.getMessage(), e);
             throw new S3Exception("File download failed for key: " + key);

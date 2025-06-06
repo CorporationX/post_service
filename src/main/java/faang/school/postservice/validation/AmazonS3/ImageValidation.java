@@ -24,5 +24,4 @@ public class ImageValidation {
         }
         return file.getContentType().startsWith("image/");
     }
-
 }

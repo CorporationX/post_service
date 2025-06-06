@@ -1,13 +1,13 @@
 package faang.school.postservice.service.comment;
 
 import faang.school.postservice.dto.comment.CommentDtoResponse;
+import faang.school.postservice.dto.comment.CommentResponseImageDto;
 import faang.school.postservice.mapper.comment.MapperComment;
 import faang.school.postservice.model.Comment;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.InputStream;
 import java.util.List;
 
 @Service
@@ -46,11 +46,11 @@ public class CommentServiceFacade {
         commentService.deleteFile(commentId);
     }
 
-    public InputStream getSmallImage(long commentId) {
+    public CommentResponseImageDto getSmallImage(long commentId) {
         return commentService.downloadSmallImage(commentId);
     }
 
-    public InputStream getLargeImage(long commentId) {
+    public CommentResponseImageDto getLargeImage(long commentId) {
         return commentService.downloadLargeImage(commentId);
     }
 }

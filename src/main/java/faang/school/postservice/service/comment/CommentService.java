@@ -2,6 +2,7 @@ package faang.school.postservice.service.comment;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.comment.CommentResponseImageDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
@@ -18,9 +19,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.rmi.RemoteException;
 import java.util.List;
 
 @Slf4j
@@ -82,12 +80,12 @@ public class CommentService {
 
     @Transactional
     public void deleteComment(long commentId) {
-        //todo удалить картинку
         long userId = userContext.getUserId();
         Comment comment = getComment(commentId);
 
         commentValidation.checkAuthorEqualsUser(userId, comment.getAuthorId());
 
+        deleteFile(commentId);
         commentRepository.deleteById(commentId);
     }
 
@@ -135,7 +133,7 @@ public class CommentService {
     }
 
     @Transactional
-    public InputStream downloadSmallImage(long commentId) {
+    public CommentResponseImageDto downloadSmallImage(long commentId) {
         Comment comment = getComment(commentId);
         String keySmallImage = comment.getSmallImageFileKey();
 
@@ -143,29 +141,11 @@ public class CommentService {
     }
 
     @Transactional
-    public InputStream downloadLargeImage(long commentId) {
+    public CommentResponseImageDto downloadLargeImage(long commentId) {
         Comment comment = getComment(commentId);
         String keyLargeImage = comment.getLargeImageFileKey();
 
         return s3Service.downloadFile(keyLargeImage);
-
     }
-
-
-//    public MultipartFile getSmallImage(long commentId) {
-//        Comment comment = getComment(commentId);
-//        String keySmallImage = comment.getSmallImageFileKey();
-//
-//        s3Service.
-//
-//
-//
-//    }
 }
-
-
-//todo: getFile
-//todo: getBigFile
-//todo: При удалении коммента, должна удаляться картинка из S3
-//todo: При удалении коммента, должна удаляться при обновлении
 

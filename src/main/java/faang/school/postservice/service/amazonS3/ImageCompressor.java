@@ -1,5 +1,6 @@
 package faang.school.postservice.service.amazonS3;
 
+import faang.school.postservice.exception.ImageProcessingException;
 import faang.school.postservice.validation.AmazonS3.ImageValidation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +18,7 @@ import java.io.InputStream;
 public class ImageCompressor {
     private static final String DEFAULT_FORMAT = "jpg";
     private static final float DEFAULT_QUALITY = 0.8f;
+
 
     private final ImageValidation imageValidation;
 
@@ -46,7 +48,7 @@ public class ImageCompressor {
             );
         } catch (IOException e) {
             log.error("couldn't process the image {}", originalFile.getOriginalFilename(), e);
-            throw new RuntimeException();
+            throw new ImageProcessingException("couldn't process the image");
         }
     }
 

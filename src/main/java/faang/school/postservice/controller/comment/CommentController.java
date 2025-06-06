@@ -8,7 +8,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -91,12 +91,12 @@ public interface CommentController {
             description = "Выводит маленькую на экран"
     )
     @ApiResponse(responseCode = "200", description = "Картинка загружена")
-    ResponseEntity<InputStreamResource> getSmallImage(long commentId);
+    ResponseEntity<Resource> getSmallImage(long commentId);
 
     @Operation(
             summary = "Получить большую картинку",
             description = "Выводит большую картинку на экран"
     )
     @ApiResponse(responseCode = "200", description = "Картинка загружена")
-    ResponseEntity<InputStreamResource> getLargeImage(long commentId);
+    ResponseEntity<Resource> getLargeImage(long commentId);
 }
