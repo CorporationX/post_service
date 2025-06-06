@@ -2,7 +2,9 @@ package faang.school.postservice.service.post;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.threads.ThreadPoolConfig;
 import faang.school.postservice.dto.post.PostCreateDto;
+import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.PostOutputDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
 import faang.school.postservice.dto.project.ProjectDto;
@@ -18,8 +20,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +33,7 @@ public class PostServiceImpl implements PostService {
     private final PostMapper postMapper;
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
+    private final ThreadPoolConfig poolConfig;
 
     @Override
     public PostOutputDto getPostById(long postId) {
@@ -125,6 +130,19 @@ public class PostServiceImpl implements PostService {
         postMapper.update(postUpdateDto, foundPost);
         Post updatedPost = postRepository.save(foundPost);
         return postMapper.toPostDto(updatedPost);
+    }
+
+    @Override
+    public void publishScheduledPosts() {
+        List<Post> posts = postRepository.findReadyToPublish();
+
+        List<CompletableFuture<PostOutputDto>> futures = posts.stream().map(post ->
+            CompletableFuture.supplyAsync(() -> publishPost(post.getId()), poolConfig.getThreadPool())
+        ).toList();
+
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+        // Надо ли закрывать poolConfig.getThreadPool() после каждого выполнения если учесть что запуск каждую минуту?
+        // Потребляет ли ресурсы при раскрытии ThreadPool и при закрытии?
     }
 
     private Post findPostById(long postId) {

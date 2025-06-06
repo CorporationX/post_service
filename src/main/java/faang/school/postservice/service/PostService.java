@@ -25,4 +25,6 @@ public interface PostService {
     PostOutputDto publishPost(long postId);
 
     PostOutputDto updatePost(long postId, PostUpdateDto postUpdateDto);
+
+    void publishScheduledPosts();
 }
