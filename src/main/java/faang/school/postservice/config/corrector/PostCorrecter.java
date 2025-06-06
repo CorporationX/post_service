@@ -42,16 +42,7 @@ public class PostCorrecter {
 
             int responseCode = connection.getResponseCode();
             if (responseCode == HttpURLConnection.HTTP_OK) {
-                BufferedReader input = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                String inputLine;
-                StringBuilder response = new StringBuilder();
-                while ((inputLine = input.readLine()) != null) {
-                    response.append(inputLine);
-                }
-                input.close();
-
-                ObjectMapper objectMapper = new ObjectMapper();
-                JsonNode jsonResponse = objectMapper.readTree(response.toString());
+                JsonNode jsonResponse = getJsonNode(connection);
                 int previousEnd = 0;
                 for (JsonNode match : jsonResponse.get("matches")) {
                     if (match.has("replacements") && !match.get("replacements").isEmpty()) {
@@ -72,5 +63,19 @@ public class PostCorrecter {
             throw new TextAutoCorrectionException("Something went wrong. Text could not be processed for autocorrection.");
         }
         return correctedText.toString();
+    }
+
+    private static JsonNode getJsonNode(HttpURLConnection connection) throws IOException {
+        BufferedReader input = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+        String inputLine;
+        StringBuilder response = new StringBuilder();
+        while ((inputLine = input.readLine()) != null) {
+            response.append(inputLine);
+        }
+        input.close();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode jsonResponse = objectMapper.readTree(response.toString());
+        return jsonResponse;
     }
 }
