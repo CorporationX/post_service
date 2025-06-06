@@ -21,6 +21,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -57,7 +58,7 @@ public class Post {
     private Ad ad;
 
     @OneToMany(mappedBy = "post", orphanRemoval = true)
-    private List<Resource> resources;
+    private List<Resource> resources = new ArrayList<>();
 
     @Column(name = "published", nullable = false)
     private boolean published = false;

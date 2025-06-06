@@ -5,20 +5,6 @@ spring:
     username: user
     password: password
 
-  config:
-    import: 'optional:consul:'
-  application:
-    name: post-service
-  cloud:
-    consul:
-      host: localhost
-      port: 8500
-      discovery: post-service-i1
-      config:
-        enabled: true
-        watch:
-          enabled: true
-
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
@@ -38,6 +24,36 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
+
+  config:
+    import: 'optional:consul:'
+  application:
+    name: post-service
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+      config:
+        enabled: true
+        watch:
+          enabled: true
+
+    aws:
+      credentials:
+        access-key: user
+        secret-key: password
+      region:
+        static: us-east-1
+      s3:
+        endpoint: http://...:9000
+        path-style-access-enabled: true
+        bucket-name: post-bucket
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 20MB
+      max-request-size: 20MB
 
 server:
   port: 8081
