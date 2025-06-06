@@ -1,6 +1,7 @@
 package faang.school.postservice.config;
 
 import faang.school.postservice.dto.like.LikeDto;
+import faang.school.postservice.dto.post.PostDto;
 import lombok.Getter;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -36,6 +37,15 @@ public class KafkaProducerConfig {
     }
 
     @Bean
+    public ProducerFactory<String, PostDto> producerFactoryPostDto() {
+        Map<String, Object> config = new HashMap();
+        config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+        return new DefaultKafkaProducerFactory<>(config);
+    }
+
+    @Bean
     public NewTopic taskTopicPostLike() {
         return TopicBuilder.name(postLikeTopicName)
                 .partitions(1)
@@ -62,5 +72,10 @@ public class KafkaProducerConfig {
     @Bean
     public KafkaTemplate<String, LikeDto> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
+    }
+
+    @Bean
+    public KafkaTemplate<String, PostDto> kafkaTemplatePostDto() {
+        return new KafkaTemplate<>(producerFactoryPostDto());
     }
 }
