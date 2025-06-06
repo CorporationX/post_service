@@ -1,7 +1,7 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.config.KafkaConfig;
+import faang.school.postservice.config.KafkaProducerConfig;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
@@ -28,7 +28,7 @@ public class LikeService {
     private CommentRepository commentRepository;
     private UserServiceClient userServiceClient;
     private KafkaLikeProducerService kafkaLikeProducerService;
-    private final KafkaConfig kafkaConfig;
+    private final KafkaProducerConfig kafkaConfig;
     private LikeMapper likeMapper;
 
     private static final String ERROR_POST_DOES_NOT_EXIST = "Post doesn't exist: postId={}";

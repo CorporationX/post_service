@@ -19,10 +19,12 @@ import java.util.Map;
 
 @Configuration
 @Getter
-public class KafkaConfig {
+public class KafkaProducerConfig {
     @Value("${spring.kafka.bootstrap-servers}")
     String bootstrapServers;
     private final String postLikeTopicName = "PostLike";
+    private final String commentLikeTopicName = "CommentLike";
+    private final String postCreationTopicName = "PostCreation";
 
     @Bean
     public ProducerFactory<String, LikeDto> producerFactory() {
@@ -35,7 +37,23 @@ public class KafkaConfig {
 
     @Bean
     public NewTopic taskTopicPostLike() {
-        return TopicBuilder.name("PostLike")
+        return TopicBuilder.name(postLikeTopicName)
+                .partitions(1)
+                .replicas(1)
+                .build();
+    }
+
+    @Bean
+    public NewTopic taskTopicCommentLike() {
+        return TopicBuilder.name(commentLikeTopicName)
+                .partitions(1)
+                .replicas(1)
+                .build();
+    }
+
+    @Bean
+    public NewTopic taskTopicPostCreation() {
+        return TopicBuilder.name(postCreationTopicName)
                 .partitions(1)
                 .replicas(1)
                 .build();
