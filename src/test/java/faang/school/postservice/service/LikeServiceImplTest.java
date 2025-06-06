@@ -1,6 +1,6 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.client.FeignUserClient;
+import faang.school.postservice.client.FeignUserServiceAdapter;
 import faang.school.postservice.dto.LikeDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.TotalLikesIsZeroException;
@@ -54,7 +54,7 @@ class LikeServiceImplTest {
     private UserCacheService userCache;
 
     @Mock
-    private FeignUserClient userFeignClient;
+    private FeignUserServiceAdapter userFeignClient;
 
     @InjectMocks
     private LikeServiceImpl likeService;
@@ -74,7 +74,7 @@ class LikeServiceImplTest {
         @Test
         @DisplayName("When postId is null, should return empty page")
         void testFindLikesByPostId_nullPostId_returnsEmptyPage() {
-            Page<UserDto> result = likeService.findLikesByPostId(null, pageable);
+            Page<UserDto> result = likeService.findLikersByPostId(null, pageable);
             assertTrue(result.isEmpty());
             assertEquals(0, result.getTotalElements());
             verifyNoInteractions(postLikeCache, commentLikeCache, userCache, userFeignClient);
@@ -89,7 +89,7 @@ class LikeServiceImplTest {
                     .thenReturn(0L);
 
             assertThrows(TotalLikesIsZeroException.class,
-                    () -> likeService.findLikesByPostId(entityId, pageable));
+                    () -> likeService.findLikersByPostId(entityId, pageable));
             verify(postLikeCache).touchKeys(entityId);
         }
     }
@@ -100,7 +100,7 @@ class LikeServiceImplTest {
         @Test
         @DisplayName("When commentId is null, should return empty page")
         void testFindLikesByCommentId_nullCommentId_returnsEmptyPage() {
-            Page<UserDto> result = likeService.findLikesByCommentId(null, pageable);
+            Page<UserDto> result = likeService.findLikersByCommentId(null, pageable);
             assertTrue(result.isEmpty());
             assertEquals(0, result.getTotalElements());
             verifyNoInteractions(postLikeCache, commentLikeCache, userCache, userFeignClient);
@@ -115,7 +115,7 @@ class LikeServiceImplTest {
                     .thenReturn(0L);
 
             assertThrows(TotalLikesIsZeroException.class,
-                    () -> likeService.findLikesByCommentId(entityId, pageable));
+                    () -> likeService.findLikersByCommentId(entityId, pageable));
             verify(commentLikeCache).touchKeys(entityId);
         }
     }
@@ -163,7 +163,7 @@ class LikeServiceImplTest {
             Pageable dbPageable = PageRequest.of(0, 10 * 5,
                     Sort.by("createdAt").descending());
             List<LikeDto> likesFromDb = userIdsPage1.stream()
-                    .map(userId -> new LikeDto(userId, entityId, null))
+                    .map(userId -> new LikeDto(userId, entityId, null, null, null))
                     .collect(Collectors.toList());
             Page<LikeDto> dbPage = new PageImpl<>(likesFromDb, dbPageable, totalLikes);
 

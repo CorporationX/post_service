@@ -40,7 +40,7 @@ class LikeDataFetcherTest {
     private LikeMapper likeMapper;
 
     @InjectMocks
-    private LikeServiceInterfaceImpl likeService;
+    private LikeDataFetcher likeService;
 
     private Pageable pageable;
     private Like like1;

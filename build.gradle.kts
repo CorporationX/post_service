@@ -9,8 +9,6 @@ group = "faang.school"
 version = "1.0"
 java.sourceCompatibility = JavaVersion.VERSION_17
 
-val springCloudVersion by extra("2022.0.5")
-
 repositories {
     mavenCentral()
 }

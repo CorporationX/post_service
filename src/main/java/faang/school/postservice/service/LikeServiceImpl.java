@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class LikeServiceInterfaceImpl implements LikeServiceInterface {
+public class LikeServiceImpl implements LikeServiceInterface {
     private static final int PREFETCH_FACTOR = 5;
 
     private final FeignUserServiceAdapter userFeignClient;
@@ -74,7 +74,6 @@ public class LikeServiceInterfaceImpl implements LikeServiceInterface {
         PageWindow idsWindow = loadUserIds(entityId, pageable, likeCache);
         log.info("Loaded user IDs for {} ID: {}. Found {} IDs for page, total likes: {}.",
                 entityName, entityId, idsWindow.userIds().size(), idsWindow.totalLikes());
-
         if (idsWindow.userIds().isEmpty()) {
             log.info("No user IDs found for the current page for {} ID: {}. Returning empty DTO page.",
                     entityName, entityId);
