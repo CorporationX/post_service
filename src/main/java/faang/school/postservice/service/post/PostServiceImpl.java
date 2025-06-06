@@ -4,7 +4,6 @@ import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.threads.ThreadPoolConfig;
 import faang.school.postservice.dto.post.PostCreateDto;
-import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.PostOutputDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
 import faang.school.postservice.dto.project.ProjectDto;
@@ -20,7 +19,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -137,7 +135,7 @@ public class PostServiceImpl implements PostService {
         List<Post> posts = postRepository.findReadyToPublish();
 
         List<CompletableFuture<PostOutputDto>> futures = posts.stream().map(post ->
-            CompletableFuture.supplyAsync(() -> publishPost(post.getId()), poolConfig.getThreadPool())
+                CompletableFuture.supplyAsync(() -> publishPost(post.getId()), poolConfig.getThreadPool())
         ).toList();
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
