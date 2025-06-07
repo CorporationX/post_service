@@ -3,12 +3,14 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.client.languagetool.LanguageToolClient;
+import faang.school.postservice.dto.languagetool.LanguageToolResponseDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.PostNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.ai.LanguageTool;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -111,7 +113,8 @@ public class PostServiceImpl implements PostService {
 
         for (Post post : posts) {
             try {
-                String corrected = languageToolClient.correctText(post.getContent());
+                LanguageToolResponseDto languageToolResponseDto = languageToolClient.correctText(post.getContent());
+                String corrected = LanguageTool.applyCorrectText(post.getContent(), languageToolResponseDto);
                 post.setContent(corrected);
                 postRepository.save(post);
             } catch (Exception e) {
