@@ -11,10 +11,12 @@ import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.PostAlreadyPublishedException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.MessagePublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.PostService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +33,8 @@ public class PostServiceImpl implements PostService {
     private final PostMapper postMapper;
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
+    @Qualifier(value = "redisUserPublisher")
+    private final MessagePublisher userPublisher;
 
     @Value("${entity.post.max-unverified-count-for-ban}")
     private long maxUnverifiedPostsForBan;
@@ -132,12 +136,16 @@ public class PostServiceImpl implements PostService {
         return postMapper.toPostDto(updatedPost);
     }
 
-    @Override
-    public List<Long> getUsersIdsToBan() {
-        /** ToDo: Может тут сразу сделать запрос с учетом количества? */
-        List<UserPostsDto> postsCount = postRepository.findUnverifiedPostsCountForUsers();
+    public void publishUsersToBan() {
+        List<Long> usersIds = this.getUsersIdsToBan();
+        usersIds.stream()
+                .map(String::valueOf)
+                .forEach(userPublisher::publish);
+    }
+
+    private List<Long> getUsersIdsToBan() {
+        List<UserPostsDto> postsCount = postRepository.findUnverifiedPostsCountForUsers(maxUnverifiedPostsForBan);
         return postsCount.stream()
-                .filter((posts) -> posts.getCount() > maxUnverifiedPostsForBan)
                 .map(UserPostsDto::getAuthorId)
                 .toList();
     }

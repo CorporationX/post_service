@@ -27,6 +27,7 @@ public interface PostRepository extends CrudRepository<Post, Long> {
                 FROM Post p
                 WHERE p.verified = false
                 GROUP BY p.authorId 
+                HAVING COUNT(p.authorId) > :maxUnverifiedPostsForBan
             """)
-    List<UserPostsDto> findUnverifiedPostsCountForUsers();
+    List<UserPostsDto> findUnverifiedPostsCountForUsers(long maxUnverifiedPostsForBan);
 }
