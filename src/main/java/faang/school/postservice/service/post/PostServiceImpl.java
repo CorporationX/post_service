@@ -2,7 +2,6 @@ package faang.school.postservice.service.post;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.config.threads.ThreadPoolConfig;
 import faang.school.postservice.dto.post.PostCreateDto;
 import faang.school.postservice.dto.post.PostOutputDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
@@ -15,6 +14,7 @@ import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.PostService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,7 +31,7 @@ public class PostServiceImpl implements PostService {
     private final PostMapper postMapper;
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
-    private final ThreadPoolConfig poolConfig;
+    private final ThreadPoolTaskExecutor taskExecutor;
 
     @Override
     public PostOutputDto getPostById(long postId) {
@@ -134,9 +134,10 @@ public class PostServiceImpl implements PostService {
     public void publishScheduledPosts() {
         List<Post> posts = postRepository.findReadyToPublish();
 
-        List<CompletableFuture<PostOutputDto>> futures = posts.stream().map(post ->
-                CompletableFuture.supplyAsync(() -> publishPost(post.getId()), poolConfig.getThreadPool())
-        ).toList();
+        List<CompletableFuture<PostOutputDto>> futures = posts.stream()
+                .map(post ->
+                        CompletableFuture.supplyAsync(() -> publishPost(post.getId()), taskExecutor)
+                ).toList();
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
         // Надо ли закрывать poolConfig.getThreadPool() после каждого выполнения если учесть что запуск каждую минуту?

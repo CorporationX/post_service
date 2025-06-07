@@ -25,6 +25,12 @@ spring:
         calculations_channel:
           name: calculations_channel
 
+  task:
+    execution:
+      pool:
+        size: 10
+        max-size: 10
+
 server:
   port: 8081
 
@@ -41,3 +47,6 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+cron:
+  each-minute: "0 * * * * *"
