@@ -32,6 +32,14 @@ logging:
   level:
     root: info
 
+scheduler:
+  expired-ad:
+    batch-size: 100
+    cron: 0 0 0 * * ?
+
+executor-service:
+  threads-count: 2
+
 user-service:
   host: localhost
   port: 8080
