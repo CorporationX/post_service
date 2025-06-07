@@ -33,6 +33,12 @@ dependencies {
     runtimeOnly("org.postgresql:postgresql")
 
     /**
+     * Minio S3 & Thumbnailator
+     */
+    implementation("software.amazon.awssdk:s3:2.31.54")
+    implementation("net.coobird:thumbnailator:0.4.20")
+
+    /**
      * Utils & Logging
      */
     implementation("com.fasterxml.jackson.core:jackson-databind:2.14.2")

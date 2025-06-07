@@ -1,7 +1,7 @@
 spring:
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/postgres
+    url: jdbc:postgresql://localhost:5433/postgres
     username: user
     password: password
 
@@ -25,12 +25,32 @@ spring:
         calculations_channel:
           name: calculations_channel
 
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 10MB
+      file-size-threshold: 2MB
+
+  cloud:
+    aws:
+      s3:
+        endpoint: http://127.0.0.1:9000
+        bucket: corpbucket
+        access-key: user
+        secret-key: password
+      region:
+        static-region: eu-central-1
+
 server:
   port: 8081
 
 logging:
   level:
     root: info
+
+file:
+  upload:
+    max-size: 5242880
 
 user-service:
   host: localhost
