@@ -1,4 +1,4 @@
 package faang.school.postservice.dto.languagetool;
 
-public record LanguageToolReplacementDTO(String value) {
+public record LanguageToolReplacementDto(String value) {
 }
