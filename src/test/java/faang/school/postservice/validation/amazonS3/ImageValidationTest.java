@@ -1,4 +1,4 @@
-package faang.school.postservice.validation.AmazonS3;
+package faang.school.postservice.validation.amazonS3;
 
 import faang.school.postservice.exception.DataValidationException;
 import org.junit.jupiter.api.Test;

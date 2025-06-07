@@ -1,11 +1,9 @@
-package faang.school.postservice.validation.AmazonS3;
+package faang.school.postservice.validation.amazonS3;
 
 import faang.school.postservice.exception.DataValidationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
 
 @Slf4j
 @Component

@@ -1,7 +1,7 @@
 package faang.school.postservice.service.amazonS3;
 
 import faang.school.postservice.exception.ImageProcessingException;
-import faang.school.postservice.validation.AmazonS3.ImageValidation;
+import faang.school.postservice.validation.amazonS3.ImageValidation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnails;
