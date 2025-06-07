@@ -2,11 +2,14 @@ package faang.school.postservice.service.comment;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.comment.CommentResponseImageDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.amazonS3.ImageCompressor;
+import faang.school.postservice.service.amazonS3.S3Service;
 import faang.school.postservice.validation.comment.CommentValidation;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,6 +19,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Collections;
 import java.util.List;
@@ -24,8 +28,14 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.contains;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -35,6 +45,10 @@ class CommentServiceTest {
     private static final long POST_ID = 2L;
     private static final long USER_ID = 3L;
     private static final String CONTENT = "content";
+    private static final String KEY_LARGE_IMAGE = "largeKey";
+    private static final String KEY_SMALL_IMAGE = "smallKey";
+    private static final int MAX_SIZE_FOR_LARGE_IMAGE = 1080;
+    private static final int MAX_SIZE_FOR_SMALL_IMAGE = 170;
 
     @Mock
     private CommentRepository commentRepository;
@@ -47,6 +61,15 @@ class CommentServiceTest {
 
     @Mock
     private PostRepository postRepository;
+
+    @Mock
+    private S3Service s3Service;
+
+    @Mock
+    private ImageCompressor imageCompressor;
+
+    @Mock
+    private MultipartFile originalFile;
 
     @InjectMocks
     private CommentService commentService;
@@ -66,6 +89,8 @@ class CommentServiceTest {
                 .commentValidation(commentValidation)
                 .userContext(userContext)
                 .postRepository(postRepository)
+                .s3Service(s3Service)
+                .imageCompressor(imageCompressor)
                 .build();
 
         post = new Post();
@@ -181,4 +206,79 @@ class CommentServiceTest {
         assertThrows(EntityNotFoundException.class,
                 () -> commentService.getComment(COMMENT_ID));
     }
+
+    @Test
+    void testUploadFileWhenFileUploaded() {
+        MultipartFile compressedLargeFile = mock(MultipartFile.class);
+        MultipartFile compressedSmallFile = mock(MultipartFile.class);
+
+        when(commentRepository.findById(COMMENT_ID)).thenReturn(Optional.of(commentSaved));
+        when(imageCompressor.compressImage(originalFile, MAX_SIZE_FOR_LARGE_IMAGE)).thenReturn(compressedLargeFile);
+        when(imageCompressor.compressImage(originalFile, MAX_SIZE_FOR_SMALL_IMAGE)).thenReturn(compressedSmallFile);
+        when(s3Service.uploadFile(contains("largeImageForComment"), any(MultipartFile.class))).thenReturn(KEY_LARGE_IMAGE);
+        when(s3Service.uploadFile(contains("SmallImageForComment"), any(MultipartFile.class))).thenReturn(KEY_SMALL_IMAGE);
+        when(commentRepository.save(any(Comment.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        ArgumentCaptor<Comment> commentCaptor = ArgumentCaptor.forClass(Comment.class);
+
+        commentService.uploadFile(COMMENT_ID, originalFile);
+
+        verify(commentRepository).findById(COMMENT_ID);
+        verify(imageCompressor, times(2)).compressImage(any(MultipartFile.class), anyInt());
+        verify(s3Service).uploadFile(contains("largeImageForComment"), eq(compressedLargeFile));
+        verify(s3Service).uploadFile(contains("SmallImageForComment"), eq(compressedSmallFile));
+        verify(commentRepository).save(commentCaptor.capture());
+        Comment savedComment = commentCaptor.getValue();
+        assertEquals(KEY_LARGE_IMAGE, savedComment.getLargeImageFileKey());
+        assertEquals(KEY_SMALL_IMAGE, savedComment.getSmallImageFileKey());
+    }
+
+    @Test
+    void testDeleteFileWhenFileDeleted() {
+        commentSaved.setLargeImageFileKey(KEY_LARGE_IMAGE);
+        commentSaved.setSmallImageFileKey(KEY_SMALL_IMAGE);
+
+        when(commentRepository.findById(COMMENT_ID)).thenReturn(Optional.of(commentSaved));
+        doNothing().when(s3Service).deleteFile(KEY_LARGE_IMAGE);
+        doNothing().when(s3Service).deleteFile(KEY_SMALL_IMAGE);
+
+        commentService.deleteFile(COMMENT_ID);
+
+        verify(s3Service).deleteFile(KEY_LARGE_IMAGE);
+        verify(s3Service).deleteFile(KEY_SMALL_IMAGE);
+    }
+
+    @Test
+    void testDownloadLargeImageWhenFileDownloaded() {
+        commentSaved.setLargeImageFileKey(KEY_LARGE_IMAGE);
+        CommentResponseImageDto commentResponseImageDto = new CommentResponseImageDto();
+        commentResponseImageDto.setFileName("ResponseDto");
+
+        when(commentRepository.findById(COMMENT_ID)).thenReturn(Optional.of(commentSaved));
+        when(s3Service.downloadFile(KEY_LARGE_IMAGE)).thenReturn(commentResponseImageDto);
+
+        CommentResponseImageDto result = commentService.downloadLargeImage(COMMENT_ID);
+
+        assertEquals(result.getFileName(), commentResponseImageDto.getFileName());
+        verify(s3Service).downloadFile(KEY_LARGE_IMAGE);
+    }
+
+    @Test
+    void testDownloadSmallImageWhenFileDownloaded() {
+        commentSaved.setLargeImageFileKey(KEY_SMALL_IMAGE);
+        CommentResponseImageDto commentResponseImageDto = new CommentResponseImageDto();
+        commentResponseImageDto.setFileName("ResponseDto");
+
+        when(commentRepository.findById(COMMENT_ID)).thenReturn(Optional.of(commentSaved));
+        when(s3Service.downloadFile(KEY_SMALL_IMAGE)).thenReturn(commentResponseImageDto);
+
+        CommentResponseImageDto result = commentService.downloadLargeImage(COMMENT_ID);
+
+        assertEquals(result.getFileName(), commentResponseImageDto.getFileName());
+        verify(s3Service).downloadFile(KEY_SMALL_IMAGE);
+
+    }
+
+
 }

@@ -92,16 +92,15 @@ public class CommentService {
     @Transactional(readOnly = true)
     public Comment getComment(long commentId) {
         return commentRepository.findById(commentId).orElseThrow(
-                () -> new EntityNotFoundException("the comment was not found in the database"));
+                () -> {
+                    log.error("comment under the ID {} not found", commentId);
+                    return new EntityNotFoundException("comment not found");
+                });
     }
 
     @Transactional
     public void uploadFile(long commentId, MultipartFile originalFile) {
-        Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> {
-                    log.error("comment under the ID {} not found", commentId);
-                    return new EntityNotFoundException("comment not found");
-                });
+        Comment comment = getComment(commentId);
 
         if (!commentValidation.isKeyImageEmpty(comment)) {
             deleteFile(commentId);
