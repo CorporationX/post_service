@@ -28,7 +28,7 @@ public class LikeService {
     private CommentRepository commentRepository;
     private UserServiceClient userServiceClient;
     private KafkaLikeProducerService kafkaLikeProducerService;
-    private final KafkaProducerConfig kafkaConfig;
+    private final KafkaProducerConfig kafkaProducerConfig;
     private LikeMapper likeMapper;
 
     private static final String ERROR_POST_DOES_NOT_EXIST = "Post doesn't exist: postId={}";
@@ -50,7 +50,7 @@ public class LikeService {
             Like likeFromDataBase = likeRepository.save(like);
             log.info(USER_LIKES_POST, like.getUserId(), like.getPost().getId());
             LikeDto likeDto = likeMapper.toDto(like);
-            kafkaLikeProducerService.send(kafkaConfig.getPostLikeTopicName(), likeDto);
+            kafkaLikeProducerService.send(kafkaProducerConfig.getPostLikeTopicName(), likeDto);
             return likeFromDataBase;
         } else {
             logWarningSameLikeStatus(like);

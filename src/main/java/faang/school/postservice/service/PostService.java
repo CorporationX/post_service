@@ -1,9 +1,12 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.config.KafkaProducerConfig;
 import faang.school.postservice.exception.NotFoundException;
+import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -11,6 +14,9 @@ import org.springframework.stereotype.Service;
 public class PostService {
 
     private static final String POST_NOT_FOUND_PATTERN = "Post with ID: %s not found";
+    private final KafkaProducerConfig kafkaProducerConfig;
+    private final KafkaLikeProducerService kafkaLikeProducerService;
+    private  final PostMapper postMapper;
 
     public final PostRepository postRepository;
 
@@ -18,5 +24,11 @@ public class PostService {
         return postRepository.findById(postId).orElseThrow(
                 () -> new NotFoundException(
                         String.format(POST_NOT_FOUND_PATTERN, postId)));
+    }
+
+    public Post createPost(Post post){
+        Post postSaved = postRepository.save(post);
+        kafkaLikeProducerService.send(kafkaProducerConfig.getPostCreationTopicName(), postMapper.toDto(post));
+        return postSaved;
     }
 }

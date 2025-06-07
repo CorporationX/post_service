@@ -16,6 +16,7 @@ public class KafkaLikeProducerService {
     private final KafkaTemplate<String, LikeDto> kafkaTemplate;
     private final KafkaTemplate<String, PostDto> kafkaTemplatePostDto;
     private final String LOG_LIKE_SENT_TO_KAFKA_TOPIC = "Like {} is sent to KafkaTopic {}";
+    private final String LOG_POST_SENT_TO_KAFKA_TOPIC = "Post {} is sent to KafkaTopic {}";
 
     public void send(String topicName, LikeDto likeDto) {
         var future = kafkaTemplate.send(topicName, likeDto);
@@ -37,7 +38,7 @@ public class KafkaLikeProducerService {
             } else {
                 future.complete(sendResult);
             }
-            log.info(LOG_LIKE_SENT_TO_KAFKA_TOPIC, postDto, topicName);
+            log.info(LOG_POST_SENT_TO_KAFKA_TOPIC, postDto, topicName);
         });
     }
 }

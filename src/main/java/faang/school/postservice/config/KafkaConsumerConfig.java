@@ -26,7 +26,10 @@ public class KafkaConsumerConfig {
         config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
-        config.put("spring.json.type.mapping", "faang.school.postservice.dto.like.LikeDto:faang.school.postservice.dto.like.LikeDto");    // This config tells mapper that these two classes although in different package but are same.
+        config.put("spring.json.type.mapping",
+                "faang.school.postservice.dto.like.LikeDto:faang.school.postservice.dto.like.LikeDto," +
+                "faang.school.postservice.dto.post.PostDto:faang.school.postservice.dto.post.PostDto");
+        // This config tells mapper that these two classes although in different package but are same.
         config.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
         config.put(ConsumerConfig.GROUP_INSTANCE_ID_CONFIG, "post-service-instance-1");
         config.put(ConsumerConfig.CLIENT_ID_CONFIG, "post-service-consumer-1");

@@ -15,10 +15,10 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: none
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
-        format_sql: true
+        format_sql: false
 
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
@@ -55,6 +55,8 @@ server:
 logging:
   level:
     root: info
+    org.hibernate.SQL: warn
+    org.hibernate.type.descriptor.sql.BasicBinder: warn
 
 file:
   upload:
