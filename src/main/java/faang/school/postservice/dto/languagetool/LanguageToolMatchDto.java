@@ -2,9 +2,9 @@ package faang.school.postservice.dto.languagetool;
 
 import java.util.List;
 
-public record LanguageToolMatchDto(
+public record LanguageToolMatchDTO(
         int offset,
         int length,
-        List<LanguageToolReplacementDto> replacements
+        List<LanguageToolReplacementDTO> replacements
 ) {
 }
