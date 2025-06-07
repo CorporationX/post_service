@@ -69,7 +69,6 @@ public class S3Service {
     )
     @Transactional
     public void deleteFile(String key) {
-
         s3Client.deleteObject(request -> request.bucket(bucketName).key(key));
     }
 
