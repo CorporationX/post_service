@@ -73,7 +73,6 @@ public class S3Service {
         s3Client.deleteObject(request -> request.bucket(bucketName).key(key));
     }
 
-
     @Retryable(
             retryFor = {AwsServiceException.class, SdkClientException.class},
             maxAttempts = 5,
