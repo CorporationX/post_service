@@ -9,15 +9,20 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.PostNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.resource.ResourceService;
 import faang.school.postservice.service.ai.LanguageTool;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -29,12 +34,26 @@ public class PostServiceImpl implements PostService {
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
     private final LanguageToolClient languageToolClient;
+    private final ResourceService resourceService;
 
     @Override
     @Transactional
     public PostDto createDraft(PostDto dto) {
         validateAuthor(dto.authorId(), dto.projectId());
         Post post = postMapper.toEntity(dto);
+        return postMapper.toDto(postRepository.save(post));
+    }
+
+    @Override
+    @Transactional
+    public PostDto createDraft(PostDto dto, List<MultipartFile> files) {
+        validateAuthor(dto.authorId(), dto.projectId());
+        Post post = postMapper.toEntity(dto);
+
+        List<Resource> resources = resourceService.uploadResources(files, 0);
+        resources.forEach(resource -> resource.setPost(post));
+        post.setResources(resources);
+
         return postMapper.toDto(postRepository.save(post));
     }
 
@@ -56,6 +75,40 @@ public class PostServiceImpl implements PostService {
         Post post = getExistingPost(postId);
         validateAuthorUnchanged(post, dto);
         post.setContent(dto.content());
+        return postMapper.toDto(postRepository.save(post));
+    }
+
+    @Override
+    @Transactional
+    public PostDto updatePost(Long postId, PostDto dto, List<MultipartFile> newFiles) {
+        Post post = getExistingPost(postId);
+        validateAuthorUnchanged(post, dto);
+
+        post.setContent(dto.content());
+
+        List<Resource> currentResources = post.getResources();
+
+        List<Resource> finalResources;
+        if (dto.resourceKeys() == null) {
+            finalResources = new ArrayList<>(currentResources);
+        } else {
+            List<String> toKeepKeys = dto.resourceKeys();
+            List<Resource> toDeleteResources = currentResources.stream()
+                    .filter(resource -> !toKeepKeys.contains(resource.getKey()))
+                    .toList();
+            resourceService.deleteResources(toDeleteResources);
+            finalResources = currentResources.stream()
+                    .filter(resource -> toKeepKeys.contains(resource.getKey()))
+                    .collect(Collectors.toCollection(ArrayList::new));
+        }
+
+        List<Resource> newResources = resourceService.uploadResources(newFiles, finalResources.size());
+        newResources.forEach(resource -> resource.setPost(post));
+        finalResources.addAll(newResources);
+
+        currentResources.clear();
+        currentResources.addAll(finalResources);
+
         return postMapper.toDto(postRepository.save(post));
     }
 

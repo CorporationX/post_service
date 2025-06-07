@@ -2,11 +2,18 @@ package faang.school.postservice.dto.post;
 
 import jakarta.validation.constraints.NotBlank;
 
+import java.util.List;
+
 public record PostDto(
         Long id,
         @NotBlank(message = "Содержимое поста не может быть пустым")
         String content,
         Long authorId,
-        Long projectId
+        Long projectId,
+        List<String> resourceKeys
 ) {
+
+    public PostDto(Long id, String content, Long authorId, Long projectId) {
+        this(id, content, authorId, projectId, List.of());
+    }
 }
