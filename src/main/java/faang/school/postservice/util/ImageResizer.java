@@ -55,8 +55,6 @@ public class ImageResizer {
         String fileName = file.getOriginalFilename();
         assert fileName != null;
         String formatName = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
-//        позволяет быстро отсеять файлы с неподдерживаемыми расширениями,
-//        что может сэкономить ресурсы, если файл не соответствует ожидаемому формату
         if (!IMAGE_FORMATS.contains(formatName)) {
             log.error("Uploaded file is not a supported image format: {}", fileName);
             throw new FileProcessException("Uploaded file is not a supported image format: %s".formatted(fileName));
@@ -73,8 +71,6 @@ public class ImageResizer {
             throw new FileProcessException("Uploaded file is not a valid image or format is not supported: %s"
                     .formatted(file.getOriginalFilename()));
         }
-//        Обеспечивает фактическую валидацию содержимого файла, что файл действительно является изображением.
-//        Например, файл с расширением .jpg может быть поврежден или не содержать изображение
         return originalImage;
     }
 

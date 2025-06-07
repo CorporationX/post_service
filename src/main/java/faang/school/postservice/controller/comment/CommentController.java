@@ -122,11 +122,7 @@ public class CommentController {
                                                        @RequestParam(value = "size", required = false) String size) {
         log.debug("Getting image for comment with id {} - Started", commentId);
         byte[] image;
-        if (Objects.equals(size, "small")) {
-            image = commentFileService.getCommentImage(commentId, PictureSize.SMALL);
-        } else {
-            image = commentFileService.getCommentImage(commentId, PictureSize.LARGE);
-        }
+        image = commentFileService.getCommentImage(commentId, size);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.IMAGE_JPEG);
         return new ResponseEntity<>(image, headers, HttpStatus.OK);

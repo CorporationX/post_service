@@ -8,8 +8,9 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
-@EnableScheduling
 @ConfigurationPropertiesScan
+@EnableScheduling
+@EnableRetry
 @EnableFeignClients(basePackages = "faang.school.postservice.client")
 public class PostServiceApp {
     public static void main(String[] args) {

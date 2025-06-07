@@ -12,7 +12,7 @@ public interface CommentFileService {
     List<String> addImageToComment(long commentId, MultipartFile file)
             throws FileSizeLimitExceededException, AccessException;
 
-    byte[] getCommentImage(Long commentId, PictureSize size);
+    byte[] getCommentImage(Long commentId, String size);
 
     void deleteImageFromCommentById(Long commentId) throws AccessException;
 }

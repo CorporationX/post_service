@@ -9,7 +9,7 @@ import faang.school.postservice.model.ad.PictureSize;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.ResourceRepository;
 import faang.school.postservice.service.CommentFileService;
-import faang.school.postservice.service.S3Servce;
+import faang.school.postservice.service.S3Service;
 import faang.school.postservice.util.ImageResizer;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -35,7 +36,7 @@ public class CommentFileServiceImpl implements CommentFileService {
     private final UserServiceClient userServiceClient;
     private final CommentRepository commentRepository;
     private final ResourceRepository resourceRepository;
-    private final S3Servce s3Servce;
+    private final S3Service s3Service;
 
     @Value("${entity.commentServiceFileLimitMb}")
     private long fileLimitMb;
@@ -53,9 +54,9 @@ public class CommentFileServiceImpl implements CommentFileService {
         long postId = post.getId();
         String path = "Post" + postId + "Comment" + commentId;
 
-        String largeImageKey = s3Servce.uploadFile
+        String largeImageKey = s3Service.uploadFile
                 (ImageResizer.getResizedImageStream(file, PictureSize.LARGE), path + "Large");
-        String smallImageKey = s3Servce.uploadFile
+        String smallImageKey = s3Service.uploadFile
                 (ImageResizer.getResizedImageStream(file, PictureSize.SMALL), path + "Small");
         comment.setSmallImageFileKey(smallImageKey);
         comment.setLargeImageFileKey(largeImageKey);
@@ -72,27 +73,25 @@ public class CommentFileServiceImpl implements CommentFileService {
         checkUserIsAuthor(userContext.getUserId(), comment);
         String largeImageFileKey = comment.getLargeImageFileKey();
         String smallImageFileKey = comment.getSmallImageFileKey();
-        s3Servce.deleteFile(largeImageFileKey);
-        s3Servce.deleteFile(smallImageFileKey);
-        resourceRepository.deleteByKey(largeImageFileKey);
+        s3Service.deleteFile(largeImageFileKey);
+        s3Service.deleteFile(smallImageFileKey);
         comment.setLargeImageFileKey(null);
-        resourceRepository.deleteByKey(smallImageFileKey);
         comment.setSmallImageFileKey(null);
-
+        commentRepository.save(comment);
         log.info("Deleting image for comment with id {} - Finished", commentId);
     }
 
     @Override
-    public byte[] getCommentImage(Long commentId, PictureSize size) {
+    public byte[] getCommentImage(Long commentId, String size) {
         Comment comment = commentRepository.findById(commentId).orElseThrow(() ->
                 new EntityNotFoundException(String.format("Comment with id %d does not exist", commentId)));
         String key;
-        if (size == PictureSize.SMALL) {
+        if (Objects.equals(size, "small")) {
             key = comment.getSmallImageFileKey();
         } else {
             key = comment.getLargeImageFileKey();
         }
-        try (InputStream imageInputStream = s3Servce.downloadFile(key)) {
+        try (InputStream imageInputStream = s3Service.downloadFile(key)) {
             log.info("Getting image for comment with id {} - Finished", commentId);
             return imageInputStream.readAllBytes();
         } catch (IOException e) {
