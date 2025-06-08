@@ -10,9 +10,12 @@ group = "faang.school"
 version = "1.0"
 java.sourceCompatibility = JavaVersion.VERSION_17
 
+val springCloudVersion by extra("2022.0.5")
+
 repositories {
     mavenCentral()
 }
+
 
 dependencies {
     /**
@@ -22,9 +25,12 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
     implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.retry:spring-retry")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.cloud:spring-cloud-starter-openfeign:4.0.2")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+    implementation("org.springframework.cloud:spring-cloud-starter-consul-config")
+    implementation ("org.springframework.cloud:spring-cloud-starter-loadbalancer")
 
     /**
      * Database
@@ -34,18 +40,29 @@ dependencies {
     runtimeOnly("org.postgresql:postgresql")
 
     /**
+
      * Amazon S3
      */
     implementation("com.amazonaws:aws-java-sdk-s3:1.12.481")
     implementation("net.coobird:thumbnailator:0.4.20")
+
+     * S3 Service
+     */
+    implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:3.1.1")
+
+    /**
+     * Tika
+     */
+    implementation("org.apache.tika:tika-core:2.9.2")
+
     /**
      * Utils & Logging
      */
     implementation("com.fasterxml.jackson.core:jackson-databind:2.14.2")
     implementation("org.slf4j:slf4j-api:2.0.5")
     implementation("ch.qos.logback:logback-classic:1.4.6")
-    implementation("org.projectlombok:lombok:1.18.26")
-    annotationProcessor("org.projectlombok:lombok:1.18.26")
+    implementation("org.projectlombok:lombok:1.18.32")
+    annotationProcessor("org.projectlombok:lombok:1.18.32")
     implementation("org.mapstruct:mapstruct:1.5.3.Final")
     annotationProcessor("org.mapstruct:mapstruct-processor:1.5.3.Final")
 
@@ -58,6 +75,11 @@ dependencies {
     testImplementation("com.redis.testcontainers:testcontainers-redis-junit-jupiter:1.4.6")
 
     /**
+     * Documentation
+     */
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0")
+
+    /**
      * Tests
      */
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.9.2")
@@ -65,8 +87,15 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
 
+dependencyManagement {
+    imports {
+        mavenBom("org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}")
+    }
+}
+
 tasks.test {
     useJUnitPlatform()
+    finalizedBy(tasks.jacocoTestReport, tasks.jacocoTestCoverageVerification)
 }
 
 tasks.withType<Test> {

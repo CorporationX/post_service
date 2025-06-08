@@ -24,11 +24,37 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
+
   servlet:
     multipart:
       enabled: true
       max-file-size: 50MB
       max-request-size: 50MB
+      
+  config:
+    import: 'optional:consul:config/post-service/'
+  application:
+    name: post-service
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+      config:
+        enabled: true
+        watch:
+          enabled: true
+
+    aws:
+      credentials:
+        access-key: user
+        secret-key: password
+      region:
+        static: us-east-1
+      s3:
+        endpoint: http://...:9000
+        path-style-access-enabled: true
+        bucket-name: post-bucket
+
 server:
   port: 8081
 
