@@ -66,7 +66,11 @@ public class ImageProcessingService {
         if (idx == -1 || idx == fileName.length() - 1) {
             return "png";
         }
-        return fileName.substring(idx + 1);
+        String ext = fileName.substring(idx + 1).toLowerCase();
+        if (ext.equals("jpeg")) {
+            ext = "jpg";
+        }
+        return ext;
     }
 
     public boolean isImageFormatSupported(String formatName) {
