@@ -15,7 +15,7 @@ import java.net.ConnectException;
 import java.net.SocketTimeoutException;
 import java.util.List;
 
-@FeignClient(name = "project-service", url = "${project-service.host}:${project-service.port}")
+@FeignClient(name = "${services.project-service.name}")
 @Retryable(
         retryFor = {SocketTimeoutException.class,
                 ConnectException.class,

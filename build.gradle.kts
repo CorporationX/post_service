@@ -9,10 +9,12 @@ group = "faang.school"
 version = "1.0"
 java.sourceCompatibility = JavaVersion.VERSION_17
 
+val springCloudVersion by extra("2022.0.5")
+
 repositories {
     mavenCentral()
 }
-val springCloudVersion by extra("2022.0.5")
+
 
 dependencies {
     /**
@@ -29,6 +31,8 @@ dependencies {
     implementation("org.springframework.cloud:spring-cloud-starter-consul-config")
     implementation("org.springframework.cloud:spring-cloud-starter-consul-discovery")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+    implementation("org.springframework.cloud:spring-cloud-starter-consul-config")
+    implementation ("org.springframework.cloud:spring-cloud-starter-loadbalancer")
 
     /**
      * Database
@@ -36,6 +40,16 @@ dependencies {
     implementation("org.liquibase:liquibase-core")
     implementation("redis.clients:jedis:4.3.2")
     runtimeOnly("org.postgresql:postgresql")
+
+    /**
+     * S3 Service
+     */
+    implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:3.1.1")
+
+    /**
+     * Tika
+     */
+    implementation("org.apache.tika:tika-core:2.9.2")
 
     /**
      * Utils & Logging
@@ -55,6 +69,11 @@ dependencies {
     testImplementation("org.testcontainers:junit-jupiter")
     testImplementation("org.testcontainers:postgresql")
     testImplementation("com.redis.testcontainers:testcontainers-redis-junit-jupiter:1.4.6")
+
+    /**
+     * Documentation
+     */
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0")
 
     /**
      * Tests

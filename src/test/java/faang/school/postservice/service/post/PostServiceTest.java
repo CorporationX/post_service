@@ -5,7 +5,6 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.post.PostMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.PostService;
 import faang.school.postservice.service.utils.PostServiceUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -98,7 +97,7 @@ class PostServiceTest {
             String content = "Updated content";
             when(postServiceUtils.getPost(anyLong())).thenReturn(testPost);
 
-            postService.update(1L, content);
+            postService.updateContent(1L, content);
             assertEquals(content, testPost.getContent());
         }
 
