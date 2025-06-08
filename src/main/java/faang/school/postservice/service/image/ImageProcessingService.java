@@ -16,20 +16,7 @@ public class ImageProcessingService {
 
     private static final int LARGE_IMAGE_MAX_SIZE = 1080;
     private static final int SMALL_IMAGE_MAX_SIZE = 170;
-    private static final long MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
 
-    public void validateImage(MultipartFile file) {
-        if (file == null || file.isEmpty()) {
-            return;
-        }
-        if (file.getSize() > MAX_FILE_SIZE_BYTES) {
-            throw new IllegalArgumentException("File size exceeds 5 MB");
-        }
-        String ct = file.getContentType();
-        if (ct == null || !ct.toLowerCase().startsWith("image/")) {
-            throw new IllegalArgumentException("File is not an image");
-        }
-    }
 
     public byte[] resizeImage(MultipartFile originalFile, int maxSize) throws IOException {
         String ct = originalFile.getContentType();

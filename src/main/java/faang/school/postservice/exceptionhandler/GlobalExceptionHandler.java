@@ -39,7 +39,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<?> handleConstraintViolation(ConstraintViolationException ex) {
         String message = ex.getConstraintViolations().stream()
-                .map(v -> v.getPropertyPath() + ": " + v.getMessage())
+                .map(v ->
+                        String.format("%s: %s", v.getPropertyPath(), v.getMessage()))
                 .collect(Collectors.joining("; "));
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
@@ -49,7 +50,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<?> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
         String message = ex.getBindingResult().getFieldErrors().stream()
-                .map(err -> err.getField() + ": " + err.getDefaultMessage())
+                .map(err ->
+                        String.format("%s: %s", err.getField(), err.getDefaultMessage()))
                 .collect(Collectors.joining("; "));
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)

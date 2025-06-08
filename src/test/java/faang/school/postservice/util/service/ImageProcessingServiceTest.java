@@ -44,39 +44,6 @@ public class ImageProcessingServiceTest {
     }
 
     @Test
-    void testValidateImageNullOrEmptyDoesNotThrow() {
-        assertDoesNotThrow(() -> imageService.validateImage(null));
-
-        MockMultipartFile empty =
-                new MockMultipartFile("file",
-                        "empty.png",
-                        "image/png", new byte[0]);
-        assertDoesNotThrow(() -> imageService.validateImage(empty));
-    }
-
-    @Test
-    void testValidateImageTooLargeThrows() {
-        byte[] largeBytes = new byte[(int) (5L * 1024 * 1024 + 1)];
-        MockMultipartFile tooLarge = new MockMultipartFile(
-                "file", "big.png", "image/png", largeBytes);
-
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
-            imageService.validateImage(tooLarge);
-        });
-        assertEquals("File size exceeds 5 MB", ex.getMessage());
-    }
-
-    @Test
-    void testValidateImageNotImageThrows() {
-        MockMultipartFile notImage = new MockMultipartFile(
-                "file", "file.txt", "text/plain", "hello".getBytes());
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
-            imageService.validateImage(notImage);
-        });
-        assertEquals("File is not an image", ex.getMessage());
-    }
-
-    @Test
     void testResizeImageKeepsAspectRatioAndReturnsJpegBytes() throws IOException {
         MockMultipartFile original = createTestImage(2000, 1000, "png");
 

@@ -47,26 +47,28 @@ public class CommentService {
                 .authorId(authorId)
                 .post(post)
                 .build();
-        comment = commentRepository.save(comment);
 
-        if (file != null && !file.isEmpty()) {
-            attachImageToComment(comment, file);
-            try {
+        try {
+            comment = commentRepository.save(comment);
+            if (file != null && !file.isEmpty()) {
+                attachImageToComment(comment, file);
                 comment = commentRepository.save(comment);
-            } catch (RuntimeException saveEx) {
-                cleanupPartialUploads(
-                        comment.getLargeImageFileKey() != null,
-                        comment.getSmallImageFileKey() != null,
-                        comment.getLargeImageFileKey(),
-                        comment.getSmallImageFileKey()
-                );
-                throw saveEx;
             }
-        }
+            CommentDto dto = commentMapper.toDto(comment);
+            populateDtoWithImageUrls(comment, dto);
+            return dto;
 
-        CommentDto dto = commentMapper.toDto(comment);
-        populateDtoWithImageUrls(comment, dto);
-        return dto;
+        } catch (Exception ex) {
+            cleanupPartialUploads(
+                    comment.getLargeImageFileKey() != null,
+                    comment.getSmallImageFileKey() != null,
+                    comment.getLargeImageFileKey(),
+                    comment.getSmallImageFileKey()
+            );
+            throw ex instanceof RuntimeException
+                    ? (RuntimeException) ex
+                    : new RuntimeException(ex);
+        }
     }
 
     @Transactional
@@ -117,7 +119,6 @@ public class CommentService {
     }
 
     private void attachImageToComment(Comment comment, MultipartFile file) {
-        imageService.validateImage(file);
 
         String contentType = file.getContentType();
         String uuid = UUID.randomUUID().toString().replace("-", "");

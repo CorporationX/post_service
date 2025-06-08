@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 
@@ -36,6 +37,7 @@ public class CommentController {
             @RequestParam("postId")   @NotNull @Positive Long postId,
             @RequestPart(value = "file", required = false) MultipartFile file
     ) {
+        validateImage(file);
         CommentDto saved = commentService.createCommentWithOptionalImage(
                 content, authorId, postId, file);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
@@ -51,5 +53,22 @@ public class CommentController {
     public ResponseEntity<Void> deleteComment(@PathVariable @NotNull @Positive Long id) {
         commentService.deleteComment(id);
         return ResponseEntity.noContent().build();
+    }
+
+    private void validateImage(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            return;
+        }
+        if (file.getSize() > 5 * 1024 * 1024) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "File size exceeds 5 MB"
+            );
+        }
+        String ct = file.getContentType();
+        if (ct == null || !ct.toLowerCase().startsWith("image/")) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "File is not an image"
+            );
+        }
     }
 }
