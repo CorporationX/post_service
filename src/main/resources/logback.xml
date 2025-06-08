@@ -1,13 +1,8 @@
 <configuration>
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%red(%d{yyyy-MM-dd HH:mm:ss.SSS}) [%thread] %highlight(%-5level){
-                INFO=green,
-                WARN=yellow,
-                ERROR=red,
-                DEBUG=blue,
-                TRACE=magenta
-                } %green(%logger{36}) - %msg%n
+            <pattern>
+                %red(%d{yyyy-MM-dd HH:mm:ss.SSS}) [%thread] %highlight(%-5level) %green(%logger{36}) - %msg%n
             </pattern>
         </encoder>
     </appender>
@@ -19,13 +14,21 @@
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
             <fileNamePattern>logs/app-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
-            <maxFileSize>10MB</maxFileSize>
+            <maxFileSize>5MB</maxFileSize>
             <maxHistory>5</maxHistory>
         </rollingPolicy>
     </appender>
 
-    <root level="INFO">
-        <appender-ref ref="CONSOLE" />
-        <appender-ref ref="ROLLING_FILE" />
-    </root>
+    <springProfile name="dev">
+        <root level="DEBUG">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+    </springProfile>
+
+    <springProfile name="!dev">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="ROLLING_FILE"/>
+        </root>
+    </springProfile>
 </configuration>
