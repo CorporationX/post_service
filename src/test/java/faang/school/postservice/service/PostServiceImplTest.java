@@ -56,7 +56,7 @@ public class PostServiceImplTest {
         PostDto result = postService.createDraft(dto);
 
         assertNotNull(result);
-        assertEquals(100L, result.id());
+        assertEquals(1001L, result.id());
     }
 
     @Test

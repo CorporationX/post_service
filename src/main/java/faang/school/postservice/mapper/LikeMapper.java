@@ -19,7 +19,7 @@ public interface LikeMapper {
 
     @Mapping(target = "commentId", source = "comment.id") 
     @Mapping(target = "postId", source = "post.id")
-    LikeDto toDto(Lik1e like);
+    LikeDto toDto(Like like);
 
     @Mapping(target = "commentId", source = "comment.id") 
     @Mapping(target = "postId", source = "post.id")
