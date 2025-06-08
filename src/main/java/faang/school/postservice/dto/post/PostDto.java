@@ -26,4 +26,6 @@ public class PostDto {
     private LocalDateTime publishedAt;
     private List<Long> likesIds;
     private Integer likeCount;
+
+    private LocalDateTime scheduledAt;
 }
