@@ -26,7 +26,7 @@ spring:
           name: calculations_channel
 
   config:
-    import: 'optional:consul:'
+    import: 'optional:consul:config/post-service/'
   application:
     name: post-service
   cloud:
