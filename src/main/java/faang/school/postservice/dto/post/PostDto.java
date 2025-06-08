@@ -25,5 +25,7 @@ public class PostDto {
     private Boolean published;
     private LocalDateTime publishedAt;
     private List<Long> likesIds;
-    private List<Long> resourcesIds;
+    private Integer likeCount;
+
+    private LocalDateTime scheduledAt;
 }
