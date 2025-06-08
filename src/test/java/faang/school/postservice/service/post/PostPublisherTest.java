@@ -2,7 +2,6 @@ package faang.school.postservice.service.post;
 
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.PostService;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,7 +36,7 @@ public class PostPublisherTest {
     private PostRepository postRepository;
 
     @InjectMocks
-    private PostService postService;
+    private faang.school.postservice.service.post.PostService postService;
 
     @BeforeEach
     public void setUp() {
