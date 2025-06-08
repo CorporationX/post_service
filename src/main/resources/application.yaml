@@ -39,6 +39,7 @@ scheduler:
 
 executor-service:
   threads-count: 2
+  termination-timeout: 30
 
 user-service:
   host: localhost

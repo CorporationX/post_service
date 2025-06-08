@@ -22,7 +22,7 @@ public class AdServiceImpl implements AdService {
     private final ExecutorService executorService;
 
     @Value("${scheduler.expired-ad.batch-size}")
-    public int batchSize;
+    private int batchSize;
 
     @Override
     public void removeExpiredAds() {
