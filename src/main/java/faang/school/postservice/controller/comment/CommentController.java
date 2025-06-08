@@ -6,6 +6,10 @@ import faang.school.postservice.dto.comment.CommentForCreationDto;
 import faang.school.postservice.dto.comment.CommentForUpdateDto;
 import faang.school.postservice.dto.comment.CommentOutputDto;
 import faang.school.postservice.service.CommentService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -28,12 +32,16 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/comments")
 @RequiredArgsConstructor
+@Tag(name = "Comment Management", description = "Operations related to comments")
 public class CommentController {
 
     private final CommentService service;
     private final UserContext userContext;
 
     @PostMapping
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Created successfully")
+    })
     public CommentOutputDto create(@Valid @RequestBody CommentForCreationDto commentDto) {
         log.info("Creating a comment by user {} for post with id {} - Started"
                 , userContext.getUserId(), commentDto.getPostId());
@@ -41,6 +49,9 @@ public class CommentController {
     }
 
     @PatchMapping
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Updated successfully")
+    })
     public CommentDto update(@Valid @RequestBody CommentForUpdateDto commentDto) {
         log.info("Update a comment with id {} by user {} - Started"
                 , commentDto.getId(), userContext.getUserId());
@@ -48,6 +59,8 @@ public class CommentController {
     }
 
     @GetMapping("/post/{postId}")
+    @Operation(summary = "Gets comments by postID",
+            description= "Post must exist")
     public List<CommentOutputDto> findByPostId(@NotNull @PathVariable long postId) {
         log.info("Searching for a list of comments for post with id {} by user {} - Started"
                 , postId, userContext.getUserId());
@@ -55,6 +68,8 @@ public class CommentController {
     }
 
     @GetMapping("/{commentId}")
+    @Operation(summary = "Gets comment by its ID",
+            description= "Comment must exist")
     public CommentDto findById(@NotNull @PathVariable long commentId) {
         log.info("Searching for a comment with id {} by user {} - Started"
                 , commentId, userContext.getUserId());
@@ -62,6 +77,9 @@ public class CommentController {
     }
 
     @DeleteMapping("/{commentId}")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Deleted successfully")
+    })
     public ResponseEntity<Void> deleteById(@NotNull @PathVariable long commentId) {
         log.info("Deleting a comment with id {} by user {} - Started"
                 , commentId, userContext.getUserId());

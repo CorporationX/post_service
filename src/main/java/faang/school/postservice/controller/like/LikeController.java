@@ -1,6 +1,7 @@
 package faang.school.postservice.controller.like;
 
 import faang.school.postservice.service.LikeService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -8,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/like")
 @RequiredArgsConstructor
+@Tag(name = "Like Management", description = "Operations related to likes")
 public class LikeController {
 
     private final LikeService likeService;
