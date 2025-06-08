@@ -46,7 +46,7 @@ dependencies {
     implementation("com.amazonaws:aws-java-sdk-s3:1.12.481")
     implementation("net.coobird:thumbnailator:0.4.20")
 
-     * S3 Service
+     /* S3 Service
      */
     implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:3.1.1")
 
