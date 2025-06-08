@@ -6,7 +6,7 @@ spring:
     password: password
 
   config:
-    import: 'optional:consul:'
+    import: 'optional:consul:config/post-service/'
   application:
     name: post-service
   cloud:
@@ -39,19 +39,6 @@ spring:
         calculations_channel:
           name: calculations_channel
 
-  config:
-    import: 'optional:consul:config/post-service/'
-  application:
-    name: post-service
-  cloud:
-    consul:
-      host: localhost
-      port: 8500
-      config:
-        enabled: true
-        watch:
-          enabled: true
-
     aws:
       credentials:
         access-key: user
@@ -83,3 +70,18 @@ services:
     name: project-service
   payment-service:
     name: payment-service
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: http://localhost:9411/api/v2/spans
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always

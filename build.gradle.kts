@@ -27,12 +27,18 @@ dependencies {
     implementation("org.springframework.retry:spring-retry")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.cloud:spring-cloud-starter-openfeign:4.0.2")
+    implementation ("io.github.openfeign:feign-micrometer:13.5")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.cloud:spring-cloud-starter-consul-config")
     implementation("org.springframework.cloud:spring-cloud-starter-consul-discovery")
-    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
-    implementation("org.springframework.cloud:spring-cloud-starter-consul-config")
+    implementation("io.micrometer:micrometer-tracing")
+    implementation("io.micrometer:micrometer-tracing-bridge-brave")
+    implementation("io.zipkin.reporter2:zipkin-reporter-brave")
+    implementation("io.micrometer:context-propagation")
+    implementation("io.zipkin.brave:brave-instrumentation-spring-web")
     implementation ("org.springframework.cloud:spring-cloud-starter-loadbalancer")
+    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+
 
     /**
      * Database
