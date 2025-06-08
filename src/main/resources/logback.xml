@@ -1,4 +1,15 @@
 <configuration>
+    <conversionRule conversionWord="highlight"
+                    converterClass="ch.qos.logback.classic.pattern.color.HighlightingCompositeConverter">
+        <highlight>
+            <pattern>%boldRed(ERROR)</pattern>
+            <pattern>%boldYellow(WARN)</pattern>
+            <pattern>%boldGreen(INFO)</pattern>
+            <pattern>%red(DEBUG)</pattern>
+            <pattern>%boldWhite(TRACE)</pattern>
+        </highlight>
+    </conversionRule>
+
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>
