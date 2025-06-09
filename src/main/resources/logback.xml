@@ -30,16 +30,14 @@
         </rollingPolicy>
     </appender>
 
-    <springProfile name="dev">
-        <root level="DEBUG">
-            <appender-ref ref="CONSOLE"/>
-        </root>
-    </springProfile>
+    <root level="DEBUG">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="ROLLING_FILE"/>
+    </root>
 
-    <springProfile name="!dev">
+    <springProfile name="dev">
         <root level="INFO">
             <appender-ref ref="CONSOLE"/>
-            <appender-ref ref="ROLLING_FILE"/>
         </root>
     </springProfile>
 </configuration>
