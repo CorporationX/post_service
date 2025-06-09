@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -39,7 +40,7 @@ public class CommentController {
     }
 
     @GetMapping
-    public ResponseEntity<List<CommentDto>> getAllByPostId(@PathVariable Long postId) {
+    public ResponseEntity<List<CommentDto>> getAllByPostId(@RequestParam Long postId) {
         List<CommentDto> comments = commentFacade.getAllByPostId(postId);
         return ResponseEntity.ok(comments);
     }

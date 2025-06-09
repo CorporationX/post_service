@@ -40,7 +40,7 @@ public class CommentService {
     }
 
     @Transactional
-    public Comment update(Long commentId, Comment comment) {
+    public Comment update(Comment comment) {
         commentValidator.validateCommentAuthor(comment.getAuthorId());
 
         long userId = userContext.getUserId();
