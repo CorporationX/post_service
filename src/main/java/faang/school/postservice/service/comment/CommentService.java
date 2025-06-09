@@ -74,4 +74,14 @@ public class CommentService {
         commentRepository.deleteById(commentId);
         log.debug("Комментарий с id={} успешно удален", commentId);
     }
+
+    @Transactional(readOnly = true)
+    public List<Comment> getUnverifiedComments() {
+        return commentRepository.findByVerified();
+    }
+
+    @Transactional
+    public void saveAll(List<Comment> comments) {
+        commentRepository.saveAll(comments);
+    }
 }

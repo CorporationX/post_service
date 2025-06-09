@@ -41,3 +41,13 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+moderation:
+  comments:
+    cron: "0 0 0 * * *"
+    batch-size: 100
+    max-thread-pool-size: 4
+
+dictionary:
+  offensive:
+    initial: "dictionary/offensive-words.yaml"
