@@ -51,4 +51,4 @@ services:
 
 jobs:
   spellcheck:
-    cron: "0 * * * * *"
+    cron: "0 0 2 * * *"

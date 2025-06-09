@@ -15,7 +15,7 @@ public class PostCreateProjectRequestDto {
     @NotBlank(message = "Content is mandatory")
     @Size(max = 4096, message = "Max length content — 4096 char")
     private String content;
-    @NotBlank(message = "Language is mandatory")
+    @NotNull(message = "Language is mandatory")
     private PostLanguage language;
     @NotNull(message = "ProjectId is mandatory")
     private Long projectId;
