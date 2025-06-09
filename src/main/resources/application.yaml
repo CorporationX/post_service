@@ -22,8 +22,8 @@ spring:
       port: 6379
       host: localhost
       channels:
-        calculations_channel:
-          name: calculations_channel
+          calculations_channel_name: cal
+          user_ban_name: user_ban
 
 server:
   port: 8081
@@ -41,3 +41,11 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+cron:
+    project:
+        ban-user: 0 0 1 * * *
+
+entity:
+    post:
+        max-unverified-count-for-ban: 5
