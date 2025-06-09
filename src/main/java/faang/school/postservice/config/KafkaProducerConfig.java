@@ -1,6 +1,7 @@
 package faang.school.postservice.config;
 
 import faang.school.postservice.dto.like.LikeDto;
+import faang.school.postservice.dto.post.PostAndFollowersDto;
 import faang.school.postservice.dto.post.PostDto;
 import lombok.Getter;
 import org.apache.kafka.clients.admin.NewTopic;
@@ -26,6 +27,7 @@ public class KafkaProducerConfig {
     private final String postLikeTopicName = "PostLike";
     private final String commentLikeTopicName = "CommentLike";
     private final String postCreationTopicName = "PostCreation";
+    private final String postAndFollowersTopicName = "PostAndFollowers";
 
     @Bean
     public ProducerFactory<String, LikeDto> producerFactory() {
@@ -38,6 +40,15 @@ public class KafkaProducerConfig {
 
     @Bean
     public ProducerFactory<String, PostDto> producerFactoryPostDto() {
+        Map<String, Object> config = new HashMap();
+        config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+        return new DefaultKafkaProducerFactory<>(config);
+    }
+
+    @Bean
+    public ProducerFactory<String, PostAndFollowersDto> producerFactoryPostAndFollowersDto() {
         Map<String, Object> config = new HashMap();
         config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
@@ -64,6 +75,14 @@ public class KafkaProducerConfig {
     @Bean
     public NewTopic taskTopicPostCreation() {
         return TopicBuilder.name(postCreationTopicName)
+                .partitions(1)
+                .replicas(1)
+                .build();
+    }
+
+    @Bean
+    public NewTopic taskTopicPostAndFollowersDto() {
+        return TopicBuilder.name(postAndFollowersTopicName)
                 .partitions(1)
                 .replicas(1)
                 .build();
