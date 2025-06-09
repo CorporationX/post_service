@@ -1,84 +1,65 @@
 package faang.school.postservice.service.post;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.config.corrector.PostCorrectorProperty;
 import faang.school.postservice.exception.TextAutoCorrectionException;
 import faang.school.postservice.service.PostCorrectorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 
 @Configuration
 @RequiredArgsConstructor
 @Component
 public class PostCorrecterImpl implements PostCorrectorService {
     private final PostCorrectorProperty properties;
-    private final ObjectMapper objectMapper;
 
     @Override
     @Retryable(retryFor = {IOException.class}, maxAttempts = 3, backoff = @Backoff(delay = 2000, multiplier = 1.5))
     public String checkText(String textToCheck) {
         StringBuilder correctedText = new StringBuilder();
-        try {
-            String url = properties.apiUrl();
+        String url = properties.apiUrl();
 
-            HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
-            connection.setRequestMethod("POST");
-            connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-            connection.setDoOutput(true);
-            String params = "text=" + textToCheck + "&language=" + properties.language();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        String params = "text=" + textToCheck + "&language=" + properties.language();
+        HttpEntity<String> requestEntity = new HttpEntity<>(params, headers);
 
-            try (OutputStream os = connection.getOutputStream()) {
-                os.write(params.getBytes());
-                os.flush();
-            }
+        RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity<JsonNode> responseEntity =
+                restTemplate.exchange(url, HttpMethod.POST, requestEntity,
+                        new ParameterizedTypeReference<JsonNode>() {});
 
-            int responseCode = connection.getResponseCode();
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                JsonNode jsonResponse = getJsonNode(connection);
-                int previousEnd = 0;
-                for (JsonNode match : jsonResponse.get("matches")) {
-                    if (match.has("replacements") && !match.get("replacements").isEmpty()) {
-                        String replacement = match.get("replacements").get(0).get("value").asText();
+        if (responseEntity.getStatusCode().is2xxSuccessful()) {
+            JsonNode jsonResponse = responseEntity.getBody();
+            int previousEnd = 0;
+            assert jsonResponse != null;
+            for (JsonNode match : jsonResponse.get("matches")) {
+                if (match.has("replacements") && !match.get("replacements").isEmpty()) {
+                    String replacement = match.get("replacements").get(0).get("value").asText();
 //                        Извлекается первое возможное исправление для найденной ошибки.
-                        int offset = match.get("offset").asInt();
-                        int length = match.get("length").asInt();
-                        correctedText.append(textToCheck, previousEnd, offset);
-                        correctedText.append(replacement);
-                        previousEnd = offset + length;
-                    }
+                    int offset = match.get("offset").asInt();
+                    int length = match.get("length").asInt();
+                    correctedText.append(textToCheck, previousEnd, offset);
+                    correctedText.append(replacement);
+                    previousEnd = offset + length;
                 }
-                correctedText.append(textToCheck.substring(previousEnd));
-            } else {
-                throw new TextAutoCorrectionException("Failed : HTTP error code : " + responseCode);
             }
-        } catch (IOException e) {
-            throw new TextAutoCorrectionException("Something went wrong. Text could not be processed for autocorrection.");
+            correctedText.append(textToCheck.substring(previousEnd));
+        } else {
+            throw new TextAutoCorrectionException("Failed : HTTP error code : " + responseEntity.getStatusCode());
         }
         return correctedText.toString();
-    }
-
-    private JsonNode getJsonNode(HttpURLConnection connection) throws IOException {
-        BufferedReader input = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-        String inputLine;
-        StringBuilder response = new StringBuilder();
-        while ((inputLine = input.readLine()) != null) {
-            response.append(inputLine);
-        }
-        input.close();
-
-        JsonNode jsonResponse = objectMapper.readTree(response.toString());
-        return jsonResponse;
     }
 }
