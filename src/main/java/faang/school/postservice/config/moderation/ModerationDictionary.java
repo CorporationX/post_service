@@ -1,8 +1,6 @@
 package faang.school.postservice.config.moderation;
 
 import jakarta.annotation.PostConstruct;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -11,7 +9,6 @@ import org.yaml.snakeyaml.Yaml;
 
 import java.io.InputStream;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Slf4j
@@ -47,11 +44,5 @@ public class ModerationDictionary {
         } catch (Exception e) {
             log.error("Не удалось загрузить словарь нецензурных слов", e);
         }
-    }
-
-    @Setter
-    @Getter
-    public static class ModerationWordsHolder {
-        private List<String> offensiveWords;
     }
 }

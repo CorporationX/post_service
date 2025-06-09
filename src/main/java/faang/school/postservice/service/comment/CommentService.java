@@ -5,7 +5,7 @@ import faang.school.postservice.exception.comment.CommentNotFoundException;
 import faang.school.postservice.exception.comment.CommentValidationException;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.post.Post;
-import faang.school.postservice.repository.CommentRepository;
+import faang.school.postservice.repository.comment.CommentRepository;
 import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.validation.CommentValidator;
 import lombok.RequiredArgsConstructor;
@@ -77,7 +77,7 @@ public class CommentService {
 
     @Transactional(readOnly = true)
     public List<Comment> getUnverifiedComments() {
-        return commentRepository.findByVerified();
+        return commentRepository.findByVerified(false);
     }
 
     @Transactional
