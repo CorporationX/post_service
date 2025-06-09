@@ -1,7 +1,7 @@
 spring:
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/postgres
+    url: jdbc:postgresql://localhost:5434/postgres
     username: user
     password: password
 
@@ -32,12 +32,23 @@ logging:
   level:
     root: info
 
-user-service:
-  host: localhost
-  port: 8080
-project-service:
-  host: localhost
-  port: 8082
-payment-service:
-  host: localhost
-  port: 9080
+services:
+  user-service:
+    host: localhost
+    port: 8080
+
+  project-service:
+    host: localhost
+    port: 8082
+
+  payment-service:
+    host: localhost
+    port: 9080
+
+  language-tool:
+    domain: api.languagetool.org
+    version: v2
+
+jobs:
+  spellcheck:
+    cron: "0 0 2 * * *"

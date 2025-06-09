@@ -96,6 +96,16 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
+    public List<Post> getAllDraftPosts() {
+        Post post = new Post();
+        post.setPublished(false);
+        post.setDeleted(false);
+        Example<Post> example = Example.of(post);
+
+        return postRepository.findAll(example);
+    }
+
+    @Transactional(readOnly = true)
     public List<Post> getAllDraftPostsByProjectId(long projectId) {
         Post post = new Post();
         post.setPublished(false);
