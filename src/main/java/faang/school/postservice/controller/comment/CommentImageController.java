@@ -4,12 +4,10 @@ import faang.school.postservice.dto.image.ImageDownloadDto;
 import faang.school.postservice.dto.image.ImageResponseDto;
 import faang.school.postservice.service.comment.CommentImageService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.support.StandardMultipartHttpServletRequest;
 
 @RestController
 @RequestMapping("/api/v1/comments/{commentId}/images")
