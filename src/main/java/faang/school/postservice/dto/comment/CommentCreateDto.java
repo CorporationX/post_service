@@ -18,9 +18,6 @@ public class CommentCreateDto {
     private String content;
 
     @NotNull
-    private Long authorId;
-
-    @NotNull
     private Long postId;
 
     private LocalDateTime createdAt;

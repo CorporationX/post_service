@@ -30,10 +30,9 @@ public class CommentService {
 
     @Transactional
     public Comment create(long postId, Comment comment) {
-        commentValidator.validateCommentAuthor(comment.getAuthorId());
-
         Post post = postService.getPostById(postId);
         comment.setPost(post);
+        comment.setAuthorId(userContext.getUserId());
 
         Comment savedComment = commentRepository.save(comment);
         log.debug("Создан комментарий с id={}", comment.getId());
@@ -41,7 +40,9 @@ public class CommentService {
     }
 
     @Transactional
-    public Comment update(Comment comment) {
+    public Comment update(Long commentId, Comment comment) {
+        commentValidator.validateCommentAuthor(comment.getAuthorId());
+
         long userId = userContext.getUserId();
         if (!Objects.equals(userId, comment.getAuthorId())) {
             throw new CommentValidationException("Обновление разрешено только автору комментария");
