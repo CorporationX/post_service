@@ -5,15 +5,19 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostCreateDto;
 import faang.school.postservice.dto.post.PostOutputDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
+import faang.school.postservice.dto.post.UserPostsDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.PostAlreadyPublishedException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.MessagePublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.PostService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +33,11 @@ public class PostServiceImpl implements PostService {
     private final PostMapper postMapper;
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
+    @Qualifier(value = "redisUserPublisher")
+    private final MessagePublisher userPublisher;
+
+    @Value("${entity.post.max-unverified-count-for-ban}")
+    private long maxUnverifiedPostsForBan;
 
     @Override
     public PostOutputDto getPostById(long postId) {
@@ -125,6 +134,20 @@ public class PostServiceImpl implements PostService {
         postMapper.update(postUpdateDto, foundPost);
         Post updatedPost = postRepository.save(foundPost);
         return postMapper.toPostDto(updatedPost);
+    }
+
+    public void publishUsersToBan() {
+        List<Long> usersIds = this.getUsersIdsToBan();
+        usersIds.stream()
+                .map(String::valueOf)
+                .forEach(userPublisher::publish);
+    }
+
+    private List<Long> getUsersIdsToBan() {
+        List<UserPostsDto> postsCount = postRepository.findUnverifiedPostsCountForUsers(maxUnverifiedPostsForBan);
+        return postsCount.stream()
+                .map(UserPostsDto::getAuthorId)
+                .toList();
     }
 
     private Post findPostById(long postId) {

@@ -1,5 +1,6 @@
 package faang.school.postservice.repository;
 
+import faang.school.postservice.dto.post.UserPostsDto;
 import faang.school.postservice.model.Post;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
@@ -21,4 +22,12 @@ public interface PostRepository extends CrudRepository<Post, Long> {
     @Query("SELECT p FROM Post p WHERE p.published = false AND p.deleted = false AND p.scheduledAt <= CURRENT_TIMESTAMP")
     List<Post> findReadyToPublish();
 
+    @Query("""
+            SELECT new faang.school.postservice.dto.post.UserPostsDto(p.authorId, COUNT(p.id) as count) 
+                FROM Post p
+                WHERE p.verified = false
+                GROUP BY p.authorId 
+                HAVING COUNT(p.authorId) > :maxUnverifiedPostsForBan
+            """)
+    List<UserPostsDto> findUnverifiedPostsCountForUsers(long maxUnverifiedPostsForBan);
 }
