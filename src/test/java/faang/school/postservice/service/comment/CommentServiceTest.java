@@ -1,6 +1,7 @@
 package faang.school.postservice.service.comment;
 
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.exception.comment.CommentNotFoundException;
 import faang.school.postservice.exception.comment.CommentValidationException;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.post.Post;
@@ -95,7 +96,8 @@ public class CommentServiceTest {
     public void testGetComment_notFound() {
         when(commentRepository.findById(comment.getId())).thenReturn(Optional.empty());
 
-        assertThrows(CommentValidationException.class, () -> commentService.get(comment.getId()));
+        assertThrows(CommentNotFoundException.class, () -> commentService.get(comment.getId()));
+        verify(commentRepository).findById(comment.getId());
     }
 
     @Test

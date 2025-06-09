@@ -1,6 +1,7 @@
 package faang.school.postservice.service.comment;
 
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.exception.comment.CommentNotFoundException;
 import faang.school.postservice.exception.comment.CommentValidationException;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.post.Post;
@@ -54,8 +55,7 @@ public class CommentService {
     @Transactional(readOnly = true)
     public Comment get(long commentId) {
         return commentRepository.findById(commentId)
-                .orElseThrow(() -> new CommentValidationException(
-                        String.format("Комментарий с id=%d не найден", commentId)));
+                .orElseThrow(() -> new CommentNotFoundException(commentId));
     }
 
     @Transactional(readOnly = true)
