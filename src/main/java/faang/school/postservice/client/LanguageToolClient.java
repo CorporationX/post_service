@@ -1,6 +1,6 @@
 package faang.school.postservice.client;
 
-import faang.school.postservice.dto.LanguageToolClientResponseDto;
+import faang.school.postservice.dto.post.LanguageToolClientResponseDto;
 import feign.FeignException;
 import feign.Headers;
 import feign.RetryableException;

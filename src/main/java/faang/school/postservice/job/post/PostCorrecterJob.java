@@ -2,7 +2,7 @@ package faang.school.postservice.job.post;
 
 import faang.school.postservice.client.LanguageToolClient;
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.dto.LanguageToolClientResponseDto;
+import faang.school.postservice.dto.post.LanguageToolClientResponseDto;
 import faang.school.postservice.model.post.Post;
 import faang.school.postservice.service.post.PostService;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +30,8 @@ public class PostCorrecterJob {
 
         for (Post post : posts) {
             try {
-                LanguageToolClientResponseDto response = languageToolClient.checkSpelling(post.getContent(), "ru");
+                LanguageToolClientResponseDto response =
+                        languageToolClient.checkSpelling(post.getContent(), post.getLanguage().toString());
                 String correctedText = applyCorrections(post.getContent(), response.getMatches());
 
                 post.setContent(correctedText);

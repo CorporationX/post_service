@@ -8,6 +8,8 @@ import faang.school.postservice.model.ad.Ad;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -43,6 +45,10 @@ public class Post {
 
     @Column(name = "content", nullable = false, length = 4096)
     private String content;
+
+    @Column(name = "language", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private PostLanguage language;
 
     @Column(name = "author_id", updatable = false)
     private Long authorId;
