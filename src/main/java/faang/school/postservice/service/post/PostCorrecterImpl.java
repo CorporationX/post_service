@@ -1,14 +1,16 @@
-package faang.school.postservice.config.corrector;
+package faang.school.postservice.service.post;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import faang.school.postservice.config.corrector.PostCorrectorProperty;
 import faang.school.postservice.exception.TextAutoCorrectionException;
+import faang.school.postservice.service.PostCorrectorService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -18,17 +20,19 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 @Configuration
-@ConfigurationPropertiesScan
 @RequiredArgsConstructor
 @Component
-public class PostCorrecter {
+public class PostCorrecterImpl implements PostCorrectorService {
     private final PostCorrectorProperty properties;
+    private final ObjectMapper objectMapper;
 
-    @Retryable(value = {IOException.class}, maxAttempts = 3, backoff = @Backoff(delay = 2000, multiplier = 1.5))
+    @Override
+    @Retryable(retryFor = {IOException.class}, maxAttempts = 3, backoff = @Backoff(delay = 2000, multiplier = 1.5))
     public String checkText(String textToCheck) {
         StringBuilder correctedText = new StringBuilder();
         try {
             String url = properties.apiUrl();
+
             HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
             connection.setRequestMethod("POST");
             connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
@@ -65,7 +69,7 @@ public class PostCorrecter {
         return correctedText.toString();
     }
 
-    private static JsonNode getJsonNode(HttpURLConnection connection) throws IOException {
+    private JsonNode getJsonNode(HttpURLConnection connection) throws IOException {
         BufferedReader input = new BufferedReader(new InputStreamReader(connection.getInputStream()));
         String inputLine;
         StringBuilder response = new StringBuilder();
@@ -74,7 +78,6 @@ public class PostCorrecter {
         }
         input.close();
 
-        ObjectMapper objectMapper = new ObjectMapper();
         JsonNode jsonResponse = objectMapper.readTree(response.toString());
         return jsonResponse;
     }

@@ -1,6 +1,6 @@
 package faang.school.postservice.controller.post;
 
-import faang.school.postservice.config.corrector.PostCorrecter;
+import faang.school.postservice.service.PostCorrectorService;
 import faang.school.postservice.dto.post.TextCheckRequest;
 import faang.school.postservice.dto.post.PostCreateDto;
 import faang.school.postservice.dto.post.PostOutputDto;
@@ -35,7 +35,7 @@ import java.util.List;
 @Tag(name = "Post Management", description = "Operations related to posts")
 public class PostController {
     private final PostService postService;
-    private final PostCorrecter postCorrecter;
+    private final PostCorrectorService postCorrecter;
 
     @PostMapping("/drafts")
     @ApiResponses(value = {
