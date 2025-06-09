@@ -3,6 +3,7 @@ package faang.school.postservice.controller.comment;
 import faang.school.postservice.dto.image.ImageDownloadDto;
 import faang.school.postservice.dto.image.ImageResponseDto;
 import faang.school.postservice.service.comment.CommentImageService;
+import faang.school.postservice.utils.MimeTypeUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.http.*;
@@ -28,28 +29,18 @@ public class CommentImageController {
     public ResponseEntity<Resource> downloadImage(@PathVariable Long commentId,
                                                   @PathVariable Long imageId) {
         ImageDownloadDto dto = commentImageService.downloadImageByCommentId(commentId, imageId);
-        MediaType mediaType = MediaType.parseMediaType(dto.getContentType());
-        String fileName = "image_" + imageId + getFileExtension(dto.getContentType());
+        String fileName = "preview_" + imageId + MimeTypeUtils.getExtensionByContentType(dto.getContentType());
 
-        return ResponseEntity.ok()
-                .contentType(mediaType)
-                .header(HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=\"" + fileName + "\"")
-                .body(dto.getResource());
+        return buildImageResponse(dto, fileName);
     }
 
     @GetMapping("/{imageId}/preview")
     public ResponseEntity<Resource> downloadPreview(@PathVariable Long commentId,
                                                     @PathVariable Long imageId) {
         ImageDownloadDto dto = commentImageService.downloadPreviewByCommentId(commentId, imageId);
-        MediaType mediaType = MediaType.parseMediaType(dto.getContentType());
-        String fileName = "preview_" + imageId + getFileExtension(dto.getContentType());
+        String fileName = "preview_" + imageId + MimeTypeUtils.getExtensionByContentType(dto.getContentType());
 
-        return ResponseEntity.ok()
-                .contentType(mediaType)
-                .header(HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=\"" + fileName + "\"")
-                .body(dto.getResource());
+        return buildImageResponse(dto, fileName);
     }
 
     @GetMapping("/{imageId}/view")
@@ -66,19 +57,17 @@ public class CommentImageController {
     @DeleteMapping("/{imageId}")
     public ResponseEntity<Void> deleteImage(@PathVariable Long commentId,
                                             @PathVariable Long imageId) {
-            commentImageService.deleteImage(commentId, imageId);
+        commentImageService.deleteImage(commentId, imageId);
 
-            return ResponseEntity.noContent().build();
+        return ResponseEntity.noContent().build();
     }
 
-    private String getFileExtension(String contentType) {
-        if (contentType == null) return "";
-        return switch (contentType) {
-            case "image/jpeg" -> ".jpg";
-            case "image/png"  -> ".png";
-            case "image/gif"  -> ".gif";
-            case "image/webp" -> ".webp";
-            default -> "";
-        };
+    private ResponseEntity<Resource> buildImageResponse(ImageDownloadDto dto, String fileName) {
+        MediaType mediaType = MediaType.parseMediaType(dto.getContentType());
+        ResponseEntity.BodyBuilder builder = ResponseEntity.ok().contentType(mediaType);
+
+        builder.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"");
+
+        return builder.body(dto.getResource());
     }
 }

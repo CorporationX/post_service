@@ -1,4 +1,4 @@
-package faang.school.postservice.facade;
+package faang.school.postservice.facade.comment;
 
 import faang.school.postservice.dto.comment.CommentCreateDto;
 import faang.school.postservice.dto.comment.CommentDto;

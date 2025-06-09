@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 @Component
 @RequiredArgsConstructor
@@ -43,4 +44,3 @@ public class S3KeyGenerator {
         return fileName.replaceAll("[^\\p{L}\\p{N}._\\-\\— ]", "_");
     }
 }
-

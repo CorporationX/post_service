@@ -26,8 +26,14 @@ public class CommentImageFileValidator {
             throw new UnsupportedFileTypeException("Доступны только изображения.");
         }
 
+
         String lowerCaseName = Objects.requireNonNull(file.getOriginalFilename()).toLowerCase();
-        String fileExtension = lowerCaseName.substring(lowerCaseName.lastIndexOf("."));
+        int index = lowerCaseName.lastIndexOf(".");
+        if (index == -1 || index == lowerCaseName.length() - 1) {
+            throw new UnsupportedFileTypeException("Файл без расширения или с некорректным расширением.");
+        }
+
+        String fileExtension = lowerCaseName.substring(index);
         if (!IMAGE_EXTENSIONS.contains(fileExtension)) {
             throw new UnsupportedFileTypeException("Доступны только изображения с заданными форматами.");
         }

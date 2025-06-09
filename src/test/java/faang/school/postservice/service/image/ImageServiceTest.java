@@ -8,7 +8,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.MediaType;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
@@ -17,9 +18,11 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 
+import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -29,75 +32,61 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class ImageServiceTest {
 
-    @InjectMocks
-    private ImageService imageService;
-
     @Mock
     private S3Service s3Service;
 
     @Mock
     private S3KeyGenerator s3KeyGenerator;
 
+    @InjectMocks
+    private ImageService imageService;
+
     @Test
-    void uploadToS3_shouldReturnImageResponseDto() throws Exception {
+    void uploadToS3_shouldProcessAndUploadImage() throws Exception {
         MultipartFile file = mock(MultipartFile.class);
-        when(file.getOriginalFilename()).thenReturn("file.jpg");
+        when(file.getOriginalFilename()).thenReturn("test.jpg");
         when(file.getContentType()).thenReturn("image/jpeg");
-        when(file.getSize()).thenReturn(1234L);
-        when(file.getInputStream()).thenReturn(getTestImageStream());
+        when(file.getSize()).thenReturn(12345L);
 
-        when(s3KeyGenerator.generateImageKey("file.jpg")).thenReturn("imgKey");
-        when(s3KeyGenerator.generatePreviewKey("imgKey")).thenReturn("previewKey");
+        String key = "user_1/originals/...jpg";
+        String previewKey = "user_1/previews/...jpg";
 
-        ImageResponseDto result = imageService.uploadToS3(file);
+        when(s3KeyGenerator.generateImageKey(anyString())).thenReturn(key);
+        when(s3KeyGenerator.generatePreviewKey(key)).thenReturn(previewKey);
 
-        assertEquals("imgKey", result.getFileKey());
-        assertEquals("previewKey", result.getPreviewKey());
-        assertEquals("image/jpeg", result.getContentType());
-        assertEquals(1234L, result.getSize());
-        verify(s3Service, times(2)).uploadImageBytesInS3(any(), any(), eq("image/jpeg"));
+        BufferedImage testImage = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
+        ByteArrayOutputStream imageStream = new ByteArrayOutputStream();
+        ImageIO.write(testImage, "jpg", imageStream);
+
+        when(file.getInputStream()).thenReturn(
+                new ByteArrayInputStream(imageStream.toByteArray())
+        );
+
+        ImageResponseDto response = imageService.uploadToS3(file);
+
+        assertEquals(key, response.getFileKey());
+        assertEquals(previewKey, response.getPreviewKey());
+        assertEquals("image/jpeg", response.getContentType());
+        assertEquals(12345L, response.getSize());
+
+        verify(s3Service, times(2)).upload(any(), any(), eq("image/jpeg"));
     }
 
     @Test
-    void download_shouldReturnInputStream() throws Exception {
-        InputStream expectedStream = new ByteArrayInputStream(new byte[]{1, 2, 3});
-        when(s3Service.download("someKey")).thenReturn(expectedStream);
+    void download_shouldReturnResource() throws Exception {
+        InputStream is = new ByteArrayInputStream("image".getBytes());
+        when(s3Service.download("key.jpg")).thenReturn(is);
 
-        InputStream actualStream = imageService.download("someKey");
+        Resource resource = imageService.download("key.jpg");
 
-        assertSame(expectedStream, actualStream);
+        assertNotNull(resource);
+        assertInstanceOf(InputStreamResource.class, resource);
     }
 
     @Test
-    void delete_shouldCallS3() {
-        imageService.delete("toDelete");
+    void delete_shouldDelegateToS3Service() {
+        imageService.delete("key.jpg");
 
-        verify(s3Service).delete("toDelete");
-    }
-
-    @Test
-    void detectContentType_shouldReturnCorrectType() {
-        when(s3Service.getContentType("key")).thenReturn("image/png");
-
-        MediaType mediaType = imageService.detectContentType("key");
-
-        assertEquals(MediaType.IMAGE_PNG, mediaType);
-    }
-
-    @Test
-    void detectContentType_shouldReturnOctetStreamOnFailure() {
-        when(s3Service.getContentType("key")).thenThrow(new RuntimeException());
-
-        MediaType mediaType = imageService.detectContentType("key");
-
-        assertEquals(MediaType.APPLICATION_OCTET_STREAM, mediaType);
-    }
-
-
-    private InputStream getTestImageStream() throws Exception {
-        BufferedImage image = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        ImageIO.write(image, "jpg", out);
-        return new ByteArrayInputStream(out.toByteArray());
+        verify(s3Service).delete("key.jpg");
     }
 }
