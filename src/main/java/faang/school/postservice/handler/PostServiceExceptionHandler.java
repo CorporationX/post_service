@@ -5,6 +5,7 @@ import faang.school.postservice.exception.authorization.UserUnauthorizedExceptio
 import faang.school.postservice.exception.client.RemoteNotFoundException;
 import faang.school.postservice.exception.comment.CommentNotFoundException;
 import faang.school.postservice.exception.like.LikeAlreadyExistsException;
+import faang.school.postservice.exception.like.LikeNotFoundException;
 import faang.school.postservice.exception.post.PostAlreadyPublishedException;
 import faang.school.postservice.exception.post.PostNotFoundException;
 import faang.school.postservice.exception.user.UserNotFoundException;
@@ -25,18 +26,18 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 @Slf4j
 public class PostServiceExceptionHandler {
-    private static final Map<Class<? extends Exception>, HttpStatus> httpStatusMap = Map.of(
-            UserUnauthorizedException.class, HttpStatus.UNAUTHORIZED,
-            PostNotFoundException.class, HttpStatus.NOT_FOUND,
-            PostAlreadyPublishedException.class, HttpStatus.CONFLICT,
-            RemoteNotFoundException.class, HttpStatus.NOT_FOUND,
-            MethodArgumentNotValidException.class, HttpStatus.BAD_REQUEST,
-            FeignException.class, HttpStatus.BAD_GATEWAY,
-            RetryableException.class, HttpStatus.BAD_GATEWAY,
-            CommentNotFoundException.class, HttpStatus.NOT_FOUND,
-            UserNotFoundException.class, HttpStatus.NOT_FOUND,
-            LikeAlreadyExistsException.class, HttpStatus.CONFLICT
-
+    private static final Map<Class<? extends Exception>, HttpStatus> httpStatusMap = Map.ofEntries(
+            Map.entry(UserUnauthorizedException.class, HttpStatus.UNAUTHORIZED),
+            Map.entry(PostNotFoundException.class, HttpStatus.NOT_FOUND),
+            Map.entry(PostAlreadyPublishedException.class, HttpStatus.CONFLICT),
+            Map.entry(RemoteNotFoundException.class, HttpStatus.NOT_FOUND),
+            Map.entry(MethodArgumentNotValidException.class, HttpStatus.BAD_REQUEST),
+            Map.entry(FeignException.class, HttpStatus.BAD_GATEWAY),
+            Map.entry(RetryableException.class, HttpStatus.BAD_GATEWAY),
+            Map.entry(CommentNotFoundException.class, HttpStatus.NOT_FOUND),
+            Map.entry(UserNotFoundException.class, HttpStatus.NOT_FOUND),
+            Map.entry(LikeAlreadyExistsException.class, HttpStatus.CONFLICT),
+            Map.entry(LikeNotFoundException.class, HttpStatus.NOT_FOUND)
     );
     private static final Map<Class<? extends Exception>, ErrorHandler> errorHandlers = Map.of(
             MethodArgumentNotValidException.class, ex ->
@@ -53,7 +54,8 @@ public class PostServiceExceptionHandler {
             RetryableException.class,
             CommentNotFoundException.class,
             UserNotFoundException.class,
-            LikeAlreadyExistsException.class
+            LikeAlreadyExistsException.class,
+            LikeNotFoundException.class
     })
     public ResponseEntity<PostServiceErrorResponseDto> handleException(Exception ex) {
         ErrorHandler handler = getErrorHandler(ex);

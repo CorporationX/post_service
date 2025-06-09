@@ -97,6 +97,7 @@ public class CommentServiceTest {
         when(commentRepository.findById(comment.getId())).thenReturn(Optional.empty());
 
         assertThrows(CommentNotFoundException.class, () -> commentService.get(comment.getId()));
+        verify(commentRepository).findById(comment.getId());
     }
 
     @Test

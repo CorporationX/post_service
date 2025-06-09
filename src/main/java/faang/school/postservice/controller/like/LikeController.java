@@ -60,10 +60,16 @@ public interface LikeController {
     ResponseEntity<LikeResponseDto> addLikeToComment(long commentId);
 
     @Operation(summary = "Delete like from post", description = "Deletes the user's like from the post if it exists",
-            responses =  @ApiResponse(responseCode = "204", description = "Like was successfully deleted from post"))
+            responses = {
+                    @ApiResponse(responseCode = "204", description = "Like was successfully deleted from post"),
+                    @ApiResponse(responseCode = "404", description = "Current user has no like on this post")
+            })
     ResponseEntity<Void> deleteLikeFromPost(long postId);
 
     @Operation(summary = "Delete like from comment", description = "Deletes the user's like from the comment if it exists",
-            responses =  @ApiResponse(responseCode = "204", description = "Like was successfully deleted from comment"))
+            responses = {
+                    @ApiResponse(responseCode = "204", description = "Like was successfully deleted from comment"),
+                    @ApiResponse(responseCode = "404", description = "Current user has no like on this comment")
+            })
     ResponseEntity<Void> deleteLikeFromComment(long commentId);
 }

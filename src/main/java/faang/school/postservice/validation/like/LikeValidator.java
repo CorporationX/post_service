@@ -1,10 +1,7 @@
 package faang.school.postservice.validation.like;
 
-import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.exception.like.LikeAlreadyExistsException;
-import faang.school.postservice.exception.user.UserNotFoundException;
 import faang.school.postservice.repository.LikeRepository;
-import feign.FeignException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -14,16 +11,6 @@ import org.springframework.stereotype.Component;
 @AllArgsConstructor
 public class LikeValidator {
     private LikeRepository likeRepository;
-    private UserServiceClient userServiceClient;
-
-    public void checkLikeAuthorExists(long userId) {
-        try {
-            userServiceClient.getUserById(userId);
-        } catch (FeignException.NotFound e) {
-            log.error("User with id = {} not found", userId);
-            throw new UserNotFoundException(e.getMessage());
-        }
-    }
 
     public void checkUserHasNoLikeOnPost(long userId, long postId) {
         likeRepository.findByPostIdAndUserId(postId, userId)
