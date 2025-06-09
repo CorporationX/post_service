@@ -1,8 +1,8 @@
-package faang.school.postservice.job;
+package faang.school.postservice.job.comment;
 
 import faang.school.postservice.config.moderation.ModerationDictionary;
 import faang.school.postservice.config.moderation.ModerationProperties;
-import faang.school.postservice.model.Comment;
+import faang.school.postservice.model.comment.Comment;
 import faang.school.postservice.service.comment.CommentService;
 import faang.school.postservice.utils.GracefullyShutdownThreadPool;
 import lombok.RequiredArgsConstructor;

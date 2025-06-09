@@ -2,7 +2,8 @@ package faang.school.postservice.job;
 
 import faang.school.postservice.config.moderation.ModerationDictionary;
 import faang.school.postservice.config.moderation.ModerationProperties;
-import faang.school.postservice.model.Comment;
+import faang.school.postservice.job.comment.CommentModerationJob;
+import faang.school.postservice.model.comment.Comment;
 import faang.school.postservice.service.comment.CommentService;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;

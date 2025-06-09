@@ -22,10 +22,9 @@ public class GracefullyShutdownThreadPool {
                 executorService.shutdownNow();
             }
         } catch (InterruptedException ex) {
-            log.error("Thread stoppage error");
+            log.error("Не удалось завершить поток");
             executorService.shutdownNow();
             Thread.currentThread().interrupt();
         }
     }
 }
-

@@ -1,5 +1,6 @@
-package faang.school.postservice.model;
+package faang.school.postservice.model.comment;
 
+import faang.school.postservice.model.Like;
 import faang.school.postservice.model.post.Post;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

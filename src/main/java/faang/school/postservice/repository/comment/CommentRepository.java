@@ -1,6 +1,6 @@
 package faang.school.postservice.repository.comment;
 
-import faang.school.postservice.model.Comment;
+import faang.school.postservice.model.comment.Comment;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 

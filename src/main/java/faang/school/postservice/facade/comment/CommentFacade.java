@@ -1,10 +1,10 @@
-package faang.school.postservice.facade;
+package faang.school.postservice.facade.comment;
 
 import faang.school.postservice.dto.comment.CommentCreateDto;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CommentUpdateDto;
 import faang.school.postservice.mapper.comment.CommentMapper;
-import faang.school.postservice.model.Comment;
+import faang.school.postservice.model.comment.Comment;
 import faang.school.postservice.service.comment.CommentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
