@@ -70,7 +70,7 @@ class CommentImageServiceTest {
     }
 
     @Test
-    void downloadImageByCommentId_shouldReturnDto() throws Exception {
+    void downloadImageByCommentId_shouldReturnDto() {
         Long commentId = 1L;
         Long imageId = 2L;
         CommentImage image = CommentImage.builder()

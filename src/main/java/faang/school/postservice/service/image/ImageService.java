@@ -8,6 +8,8 @@ import faang.school.postservice.service.s3.S3Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnails;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -38,8 +40,10 @@ public class ImageService {
         return new ImageResponseDto(imageKey, previewKey, file.getContentType(), file.getSize());
     }
 
-    public InputStream download(String key) {
-        return s3Service.download(key);
+    public Resource download(String key) {
+        InputStream stream = s3Service.download(key);
+
+        return new InputStreamResource(stream);
     }
 
     public void delete(String key) {
