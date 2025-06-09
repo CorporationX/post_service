@@ -18,6 +18,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 @Configuration
 @RequiredArgsConstructor
@@ -33,7 +35,7 @@ public class PostCorrecterImpl implements PostCorrectorService {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        String params = "text=" + textToCheck + "&language=" + properties.language();
+        String params = "text=" + URLEncoder.encode(textToCheck, StandardCharsets.UTF_8) + "&language=" + properties.language();
         HttpEntity<String> requestEntity = new HttpEntity<>(params, headers);
 
         RestTemplate restTemplate = new RestTemplate();
