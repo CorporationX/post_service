@@ -53,19 +53,25 @@ public class CommentServiceTest {
 
         post = new Post();
         post.setId(100L);
+
+        when(userContext.getUserId()).thenReturn(2L);
     }
 
     @Test
     public void testCreateComment() {
+        Comment input = new Comment();
+        input.setCreatedAt(LocalDateTime.now());
+
         when(postService.getPostById(post.getId())).thenReturn(post);
-        when(commentRepository.save(comment)).thenReturn(comment);
+        when(commentRepository.save(any(Comment.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
 
-        Comment result = commentService.create(post.getId(), comment);
+        Comment result = commentService.create(post.getId(), input);
 
-        assertEquals(comment, result);
-        assertEquals(post, comment.getPost());
-        verify(commentValidator).validateCommentAuthor(comment.getAuthorId());
-        verify(commentRepository).save(comment);
+        assertEquals(post, result.getPost());
+        assertEquals(2L, result.getAuthorId());
+        verify(commentValidator).validateCommentAuthor(2L);
+        verify(commentRepository).save(result);
     }
 
     @Test
