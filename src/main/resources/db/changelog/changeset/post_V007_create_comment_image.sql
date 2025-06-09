@@ -1,8 +1,6 @@
 --liquibase formatted sql
 
---changeset trytofixme:create_comment_image1
-drop table if exists comment_image;
-
+--changeset trytofixme:create_comment_image
 CREATE TABLE comment_image (
     id SERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL,
