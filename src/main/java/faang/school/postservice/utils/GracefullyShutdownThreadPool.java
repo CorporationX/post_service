@@ -24,6 +24,7 @@ public class GracefullyShutdownThreadPool {
         } catch (InterruptedException ex) {
             log.error("Thread stoppage error");
             executorService.shutdownNow();
+            Thread.currentThread().interrupt();
         }
     }
 }

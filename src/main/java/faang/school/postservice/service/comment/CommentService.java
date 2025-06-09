@@ -7,7 +7,7 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.post.Post;
 import faang.school.postservice.repository.comment.CommentRepository;
 import faang.school.postservice.service.post.PostService;
-import faang.school.postservice.validation.CommentValidator;
+import faang.school.postservice.validation.comment.CommentValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
