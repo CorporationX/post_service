@@ -69,3 +69,19 @@ services:
     name: project-service
   payment-service:
     name: payment-service
+
+scheduler:
+  update-expired-ads:
+#    cron: 0/5 * * * * ?
+    cron: 0 */15 * * * ?
+  delete-expired-ads:
+#    cron: 0/15 * * * * ?
+    cron: 0 30 3 * * ?
+    batch-size: 1000
+
+expired-ads:
+  async:
+    pool-size: 3
+    max-pool-size: 6
+    queue-capacity: 100
+    thread-name-prefix: expired-ads-thread
