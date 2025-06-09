@@ -1,4 +1,4 @@
-package faang.school.postservice.validation;
+package faang.school.postservice.validation.comment;
 
 import faang.school.postservice.client.UserServiceClient;
 import feign.FeignException;
