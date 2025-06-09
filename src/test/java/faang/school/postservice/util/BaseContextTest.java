@@ -3,6 +3,10 @@ package faang.school.postservice.util;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redis.testcontainers.RedisContainer;
 import faang.school.postservice.PostServiceApp;
+import faang.school.postservice.model.post.Post;
+import faang.school.postservice.repository.post.PostRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +21,10 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(
         classes = {
@@ -34,6 +42,9 @@ public class BaseContextTest {
 
     @Autowired
     protected ObjectMapper objectMapper;
+
+    @Autowired
+    private PostRepository postRepository;
 
     @Container
     public static PostgreSQLContainer<?> POSTGRESQL_CONTAINER =
@@ -59,5 +70,27 @@ public class BaseContextTest {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @BeforeEach
+    void setup() {
+        postRepository.deleteAll();
+    }
+
+    @Test
+    public void testGetPostById() throws Exception {
+        Post post = new Post();
+        post.setId(1L);
+        post.setAuthorId(1L);
+        post.setContent("Test");
+        post.setPublished(false);
+        post.setDeleted(false);
+        postRepository.save(post);
+
+        mockMvc.perform(get("/api/v1/posts/{postId}", post.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(post.getId()))
+                .andExpect(jsonPath("$.content").value(post.getContent()))
+                .andExpect(jsonPath("$.authorId").value(post.getAuthorId()));
     }
 }
