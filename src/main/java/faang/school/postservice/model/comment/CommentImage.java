@@ -1,5 +1,6 @@
-package faang.school.postservice.model;
+package faang.school.postservice.model.comment;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -24,12 +25,19 @@ public class CommentImage {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "user_id", nullable = false)
     private Long userId;
 
+    @Column(name = "comment_id", nullable = false)
+    private Long commentId;
+
+    @Column(name = "file_key", nullable = false, unique = true)
     private String fileKey;
 
+    @Column(name = "preview_key", nullable = false)
     private String previewKey;
 
+    @Column(name = "content_type", nullable = false)
     private String contentType;
 
     private Long size;

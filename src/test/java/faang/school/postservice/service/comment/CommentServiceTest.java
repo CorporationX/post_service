@@ -2,9 +2,9 @@ package faang.school.postservice.service.comment;
 
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.exception.comment.CommentValidationException;
-import faang.school.postservice.model.Comment;
+import faang.school.postservice.model.comment.Comment;
 import faang.school.postservice.model.post.Post;
-import faang.school.postservice.repository.CommentRepository;
+import faang.school.postservice.repository.comment.CommentRepository;
 import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.validation.CommentValidator;
 import org.junit.jupiter.api.BeforeEach;

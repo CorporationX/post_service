@@ -72,12 +72,12 @@ public class S3Service {
         return metadata.contentType();
     }
 
-    public void uploadImageBytesInS3(byte[] bytes, String key) {
+    public void uploadImageBytesInS3(byte[] bytes, String key, String contentType) {
         s3Client.putObject(
                 PutObjectRequest.builder()
                         .bucket(bucketName)
                         .key(key)
-                        .contentType("image/jpeg")
+                        .contentType(contentType)
                         .build(),
                 RequestBody.fromBytes(bytes)
         );

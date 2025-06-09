@@ -10,7 +10,7 @@ import java.util.Objects;
 import java.util.Set;
 
 @Component
-public class ImageFileValidator {
+public class CommentImageFileValidator {
 
     @Value("${file.upload.max-size}")
     private int maxSize;
