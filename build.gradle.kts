@@ -53,6 +53,7 @@ dependencies {
     testImplementation("org.testcontainers:junit-jupiter")
     testImplementation("org.testcontainers:postgresql")
     testImplementation("com.redis.testcontainers:testcontainers-redis-junit-jupiter:1.4.6")
+    implementation("com.alibaba:transmittable-thread-local:2.14.2")
 
     /**
      * Tests

@@ -1,6 +1,7 @@
 package faang.school.postservice.job.post;
 
 import faang.school.postservice.client.LanguageToolClient;
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.LanguageToolClientResponseDto;
 import faang.school.postservice.model.post.Post;
 import faang.school.postservice.service.post.PostService;
@@ -16,13 +17,14 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 public class PostCorrecterJob {
-
     private final PostService postService;
     private final LanguageToolClient languageToolClient;
+    private final UserContext userContext;
 
     @Scheduled(cron = "${jobs.spellcheck.cron}")
     public void correctDraftPosts() {
         log.info("Starting spellcheck job for draft posts");
+        userContext.setSystemUserId();
 
         List<Post> posts = postService.getAllDraftPosts();
 
@@ -40,11 +42,11 @@ public class PostCorrecterJob {
             }
         }
 
+        userContext.clear();
         log.info("Finished spellcheck job");
     }
 
     private String applyCorrections(String originalText, List<LanguageToolClientResponseDto.Match> matches) {
-        // сортируем по убыванию offset, чтобы не сбить индексы
         matches.sort(Comparator.comparingInt(LanguageToolClientResponseDto.Match::getOffset).reversed());
 
         StringBuilder sb = new StringBuilder(originalText);
