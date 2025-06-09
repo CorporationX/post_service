@@ -5,15 +5,14 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.io.InputStream;
+import org.springframework.core.io.Resource;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class ImageDownloadDto {
     @NotNull
-    private InputStream inputStream;
+    private Resource resource;
     @NotBlank
     private String originalFileName;
     @NotBlank

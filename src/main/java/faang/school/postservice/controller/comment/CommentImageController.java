@@ -9,6 +9,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.support.StandardMultipartHttpServletRequest;
 
 @RestController
 @RequestMapping("/api/v1/comments/{commentId}/images")
@@ -21,6 +22,7 @@ public class CommentImageController {
     public ResponseEntity<ImageResponseDto> uploadImage(@PathVariable Long commentId,
                                                         @RequestParam("file") MultipartFile file) {
         ImageResponseDto response = commentImageService.uploadImageForComment(commentId, file);
+
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
     }
 
@@ -35,7 +37,7 @@ public class CommentImageController {
                 .contentType(mediaType)
                 .header(HttpHeaders.CONTENT_DISPOSITION,
                         "attachment; filename=\"" + fileName + "\"")
-                .body(new InputStreamResource(dto.getInputStream()));
+                .body(dto.getResource());
     }
 
     @GetMapping("/{imageId}/preview")
@@ -49,7 +51,7 @@ public class CommentImageController {
                 .contentType(mediaType)
                 .header(HttpHeaders.CONTENT_DISPOSITION,
                         "attachment; filename=\"" + fileName + "\"")
-                .body(new InputStreamResource(dto.getInputStream()));
+                .body(dto.getResource());
     }
 
     @GetMapping("/{imageId}/view")
@@ -60,7 +62,7 @@ public class CommentImageController {
 
         return ResponseEntity.ok()
                 .contentType(mediaType)
-                .body(new InputStreamResource(dto.getInputStream()));
+                .body(dto.getResource());
     }
 
     @DeleteMapping("/{imageId}")

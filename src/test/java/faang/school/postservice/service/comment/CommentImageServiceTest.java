@@ -87,7 +87,7 @@ class CommentImageServiceTest {
 
         assertEquals("fileKey", result.getOriginalFileName());
         assertEquals("image/jpeg", result.getContentType());
-        assertSame(stream, result.getInputStream());
+        assertSame(stream, result.getResource());
     }
 
     @Test

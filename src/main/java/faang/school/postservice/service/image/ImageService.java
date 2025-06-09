@@ -1,18 +1,16 @@
 package faang.school.postservice.service.image;
 
+import faang.school.postservice.dto.image.ImageResponseDto;
 import faang.school.postservice.exception.file.FileReadException;
 import faang.school.postservice.exception.file.FileUploadException;
 import faang.school.postservice.service.s3.S3KeyGenerator;
 import faang.school.postservice.service.s3.S3Service;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.http.MediaType;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import faang.school.postservice.dto.image.ImageResponseDto;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -31,7 +29,6 @@ public class ImageService {
     private final S3Service s3Service;
     private final S3KeyGenerator s3KeyGenerator;
 
-    @SneakyThrows
     public ImageResponseDto uploadToS3(MultipartFile file) {
         String imageKey = s3KeyGenerator.generateImageKey(file.getOriginalFilename());
         String previewKey = s3KeyGenerator.generatePreviewKey(imageKey);
@@ -41,7 +38,6 @@ public class ImageService {
         return new ImageResponseDto(imageKey, previewKey, file.getContentType(), file.getSize());
     }
 
-    @SneakyThrows
     public InputStream download(String key) {
         return s3Service.download(key);
     }
@@ -59,8 +55,7 @@ public class ImageService {
         }
     }
 
-    @Async
-    protected void processAndUploadImages(MultipartFile file, String imagePath, String previewPath) {
+    private void processAndUploadImages(MultipartFile file, String imagePath, String previewPath) {
         try {
             BufferedImage bufferedImage = ImageIO.read(file.getInputStream());
             if (bufferedImage == null) {
@@ -77,7 +72,6 @@ public class ImageService {
         }
     }
 
-    @SneakyThrows
     private byte[] resizeImageToBytes(BufferedImage sourceImage, int maxSideSizePx) {
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             Thumbnails.of(sourceImage)
