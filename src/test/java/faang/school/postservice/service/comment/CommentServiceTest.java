@@ -53,12 +53,12 @@ public class CommentServiceTest {
 
         post = new Post();
         post.setId(100L);
-
-        when(userContext.getUserId()).thenReturn(2L);
     }
 
     @Test
     public void testCreateComment() {
+        when(userContext.getUserId()).thenReturn(2L);
+
         Comment input = new Comment();
         input.setCreatedAt(LocalDateTime.now());
 
