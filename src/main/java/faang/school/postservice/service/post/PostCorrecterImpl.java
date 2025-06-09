@@ -5,7 +5,6 @@ import faang.school.postservice.config.corrector.PostCorrectorProperty;
 import faang.school.postservice.exception.TextAutoCorrectionException;
 import faang.school.postservice.service.PostCorrectorService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -21,11 +20,11 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
-@Configuration
 @RequiredArgsConstructor
 @Component
 public class PostCorrecterImpl implements PostCorrectorService {
     private final PostCorrectorProperty properties;
+    private final RestTemplate restTemplate;
 
     @Override
     @Retryable(retryFor = {IOException.class}, maxAttempts = 3, backoff = @Backoff(delay = 2000, multiplier = 1.5))
@@ -37,8 +36,6 @@ public class PostCorrecterImpl implements PostCorrectorService {
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         String params = "text=" + URLEncoder.encode(textToCheck, StandardCharsets.UTF_8) + "&language=" + properties.language();
         HttpEntity<String> requestEntity = new HttpEntity<>(params, headers);
-
-        RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<JsonNode> responseEntity =
                 restTemplate.exchange(url, HttpMethod.POST, requestEntity,
                         new ParameterizedTypeReference<JsonNode>() {});
@@ -50,7 +47,6 @@ public class PostCorrecterImpl implements PostCorrectorService {
             for (JsonNode match : jsonResponse.get("matches")) {
                 if (match.has("replacements") && !match.get("replacements").isEmpty()) {
                     String replacement = match.get("replacements").get(0).get("value").asText();
-//                        Извлекается первое возможное исправление для найденной ошибки.
                     int offset = match.get("offset").asInt();
                     int length = match.get("length").asInt();
                     correctedText.append(textToCheck, previousEnd, offset);
