@@ -3,7 +3,7 @@ package faang.school.postservice.controller.comment;
 import faang.school.postservice.dto.comment.CommentCreateDto;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CommentUpdateDto;
-import faang.school.postservice.facade.CommentFacade;
+import faang.school.postservice.facade.comment.CommentFacade;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
