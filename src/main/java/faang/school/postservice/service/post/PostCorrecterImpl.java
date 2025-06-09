@@ -15,7 +15,6 @@ import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
-
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -31,14 +30,14 @@ public class PostCorrecterImpl implements PostCorrectorService {
     public String checkText(String textToCheck) {
         StringBuilder correctedText = new StringBuilder();
         String url = properties.apiUrl();
-
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         String params = "text=" + URLEncoder.encode(textToCheck, StandardCharsets.UTF_8) + "&language=" + properties.language();
         HttpEntity<String> requestEntity = new HttpEntity<>(params, headers);
         ResponseEntity<JsonNode> responseEntity =
                 restTemplate.exchange(url, HttpMethod.POST, requestEntity,
-                        new ParameterizedTypeReference<JsonNode>() {});
+                        new ParameterizedTypeReference<JsonNode>() {
+                        });
 
         if (responseEntity.getStatusCode().is2xxSuccessful()) {
             JsonNode jsonResponse = responseEntity.getBody();
