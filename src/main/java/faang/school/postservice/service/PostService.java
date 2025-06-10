@@ -89,6 +89,11 @@ public class PostService {
         return postRepository.findPublishedByProjectId(projectId);
     }
 
+    @Transactional
+    public List<Post> getAllUnpublishedPost() {
+        return postRepository.findAllUnpublishedPosts();
+    }
+
     private Post getValidPostOrThrowException(Long postId) {
         Optional<Post> postOptional = postRepository.findById(postId);
         PostValidation.validatePostExists(postOptional.isPresent());
