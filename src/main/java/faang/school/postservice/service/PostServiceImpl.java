@@ -5,12 +5,14 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.PostNotFoundException;
+import faang.school.postservice.exception.ScheduledPostPublicationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.resource.ResourceService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,10 +20,14 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PostServiceImpl implements PostService {
 
     private final PostRepository postRepository;
@@ -29,6 +35,8 @@ public class PostServiceImpl implements PostService {
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
     private final ResourceService resourceService;
+    private final ExecutorService scheduledPostExecutorService;
+    private static final int BATCH_SIZE = 1000;
 
     @Override
     @Transactional
@@ -175,6 +183,47 @@ public class PostServiceImpl implements PostService {
             userServiceClient.getUser(authorId);
         } else {
             projectServiceClient.getProject(projectId);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void publishScheduledPosts() {
+        log.info("Starting scheduled post publishing job");
+        List<Post> postsToPublish = postRepository.findReadyToPublish();
+        if (postsToPublish.isEmpty()) {
+            log.info("No scheduled posts found to publish");
+            return;
+        }
+        log.info("Found {} scheduled posts to publish", postsToPublish.size());
+        List<List<Post>> batches = createBatches(postsToPublish);
+        List<CompletableFuture<Void>> futures = batches.stream()
+                .map(batch -> CompletableFuture.runAsync(
+                        () -> publishPosts(batch), scheduledPostExecutorService))
+                .toList();
+
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+        log.info("Finished scheduled post publishing job");
+    }
+
+    private List<List<Post>> createBatches(List<Post> posts) {
+        return IntStream.range(0, (posts.size() + BATCH_SIZE - 1) / BATCH_SIZE)
+                .mapToObj(i -> posts.subList(i * BATCH_SIZE, Math.min((i + 1) * BATCH_SIZE, posts.size()))).toList();
+    }
+
+    private void publishPosts(List<Post> batch) {
+        try {
+            log.debug("Publishing {} posts", batch.size());
+            LocalDateTime publishTime = LocalDateTime.now();
+            batch.forEach(post -> {
+                post.setPublished(true);
+                post.setPublishedAt(publishTime);
+            });
+            postRepository.saveAll(batch);
+            log.debug("Successfully published {} posts", batch.size());
+        } catch (Exception e) {
+            log.error("Error while publishing scheduled posts", e);
+            throw new ScheduledPostPublicationException("Failed to publish scheduled posts", e.getCause());
         }
     }
 }

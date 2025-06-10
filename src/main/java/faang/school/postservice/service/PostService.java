@@ -31,4 +31,6 @@ public interface PostService {
     List<PostDto> getAllPostsByProjectId(Long projectId);
 
     Post getExistingPost(Long postId);
+
+    void publishScheduledPosts();
 }
