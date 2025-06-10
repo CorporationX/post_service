@@ -1,11 +1,13 @@
-package faang.school.postservice.service.ai;
+package faang.school.postservice.util;
 
 import faang.school.postservice.dto.languagetool.LanguageToolMatchDto;
 import faang.school.postservice.dto.languagetool.LanguageToolResponseDto;
+import lombok.experimental.UtilityClass;
 
 import java.util.Comparator;
 import java.util.List;
 
+@UtilityClass
 public class LanguageTool {
 
     static public String applyCorrectText(String original, LanguageToolResponseDto response) {
