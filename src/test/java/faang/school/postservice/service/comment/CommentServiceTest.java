@@ -20,8 +20,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.any;
 
 @ExtendWith(MockitoExtension.class)
 public class CommentServiceTest {
@@ -53,15 +57,21 @@ public class CommentServiceTest {
 
     @Test
     public void testCreateComment() {
+        when(userContext.getUserId()).thenReturn(2L);
+
+        Comment input = new Comment();
+        input.setCreatedAt(LocalDateTime.now());
+
         when(postService.getPostById(post.getId())).thenReturn(post);
-        when(commentRepository.save(comment)).thenReturn(comment);
+        when(commentRepository.save(any(Comment.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
 
-        Comment result = commentService.create(post.getId(), comment);
+        Comment result = commentService.create(post.getId(), input);
 
-        assertEquals(comment, result);
-        assertEquals(post, comment.getPost());
-        verify(commentValidator).validateCommentAuthor(comment.getAuthorId());
-        verify(commentRepository).save(comment);
+        assertEquals(post, result.getPost());
+        assertEquals(2L, result.getAuthorId());
+        verify(commentValidator).validateCommentAuthor(2L);
+        verify(commentRepository).save(result);
     }
 
     @Test
