@@ -55,4 +55,12 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             ORDER BY p.published_at DESC
             """)
     List<Post> findPublishedByProjectId(Long projectId);
+
+    //todo разобраться с этой аннотацией
+    @Query(nativeQuery = true, value = """
+            SELECT * FROM POST post
+            WHERE post.published = false AND post.deleted = false
+            """)
+    List<Post> findAllUnpublishedPosts();
+
 }
