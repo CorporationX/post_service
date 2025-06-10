@@ -80,3 +80,14 @@ resource:
     allowed-types:
       - audio/mpeg
       - audio/ogg
+
+post:
+  correcter:
+    cron: "0 0 3 * * *"
+    retry:
+      max-attempts: 3
+      delay: 2000
+
+language-tool:
+  url: https://api.languagetool.org/v2/check
+  language: ru-RU

@@ -26,6 +26,11 @@ dependencies {
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
     /**
+     * Retry support
+     */
+    implementation("org.springframework.retry:spring-retry:2.0.12")
+
+    /**
      * Database
      */
     implementation("org.liquibase:liquibase-core")

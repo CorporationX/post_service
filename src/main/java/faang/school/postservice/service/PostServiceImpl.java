@@ -2,6 +2,8 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.client.languagetool.LanguageToolClient;
+import faang.school.postservice.dto.languagetool.LanguageToolResponseDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.PostNotFoundException;
@@ -10,7 +12,9 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.resource.ResourceService;
+import faang.school.postservice.util.LanguageTool;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PostServiceImpl implements PostService {
@@ -28,6 +33,7 @@ public class PostServiceImpl implements PostService {
     private final PostMapper postMapper;
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
+    private final LanguageToolClient languageToolClient;
     private final ResourceService resourceService;
 
     @Override
@@ -151,6 +157,23 @@ public class PostServiceImpl implements PostService {
         return postRepository.findPublishedByProject(projectId).stream()
                 .map(postMapper::toDto)
                 .toList();
+    }
+
+    @Override
+    @Transactional
+    public void correctContentDraftPostsByLanguageToolAI() {
+        List<Post> posts = postRepository.findUnpublishedAndNotDeleted();
+
+        for (Post post : posts) {
+            try {
+                LanguageToolResponseDto languageToolResponseDto = languageToolClient.correctText(post.getContent());
+                String corrected = LanguageTool.applyCorrectText(post.getContent(), languageToolResponseDto);
+                post.setContent(corrected);
+                postRepository.save(post);
+            } catch (Exception e) {
+                log.warn("Failed to correct post {}: {}", post.getId(), e.getMessage());
+            }
+        }
     }
 
     public Post getExistingPost(Long id) {
