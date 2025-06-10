@@ -1,6 +1,7 @@
 package faang.school.postservice.service.comment;
 
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.exception.comment.CommentNotFoundException;
 import faang.school.postservice.exception.comment.CommentValidationException;
 import faang.school.postservice.model.comment.Comment;
 import faang.school.postservice.model.post.Post;
@@ -29,7 +30,10 @@ public class CommentService {
 
     @Transactional
     public Comment create(long postId, Comment comment) {
-        commentValidator.validateCommentAuthor(comment.getAuthorId());
+        long userId = userContext.getUserId();
+        comment.setAuthorId(userId);
+
+        commentValidator.validateCommentAuthor(userId);
 
         Post post = postService.getPostById(postId);
         comment.setPost(post);
@@ -41,6 +45,8 @@ public class CommentService {
 
     @Transactional
     public Comment update(Comment comment) {
+        commentValidator.validateCommentAuthor(comment.getAuthorId());
+
         long userId = userContext.getUserId();
         if (!Objects.equals(userId, comment.getAuthorId())) {
             throw new CommentValidationException("Обновление разрешено только автору комментария");
@@ -54,8 +60,7 @@ public class CommentService {
     @Transactional(readOnly = true)
     public Comment get(long commentId) {
         return commentRepository.findById(commentId)
-                .orElseThrow(() -> new CommentValidationException(
-                        String.format("Комментарий с id=%d не найден", commentId)));
+                .orElseThrow(() -> new CommentNotFoundException(commentId));
     }
 
     @Transactional(readOnly = true)
