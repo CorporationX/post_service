@@ -1,6 +1,7 @@
 package faang.school.postservice.validation.comment;
 
 import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.model.Comment;
 import faang.school.postservice.repository.PostRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -50,5 +51,11 @@ public class CommentValidation {
         if (!postRepository.existsById(postId)) {
             throw new EntityNotFoundException(("the post does not exists %d".formatted(postId)));
         }
+    }
+
+    public boolean isKeyImageEmpty(Comment comment) {
+        String keyLarge = comment.getLargeImageFileKey();
+        String keySmall = comment.getSmallImageFileKey();
+        return keyLarge == null || keySmall == null;
     }
 }

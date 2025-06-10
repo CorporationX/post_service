@@ -2,6 +2,10 @@ spring:
   profiles:
     active: dev
 
+  servlet:
+    multipart:
+      max-file-size: 5MB
+
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://localhost:5432/postgres
@@ -31,6 +35,10 @@ spring:
 server:
   port: 8081
 
+logging:
+  level:
+    root: info
+
 user-service:
   host: localhost
   port: 8080
@@ -41,4 +49,11 @@ payment-service:
   host: localhost
   port: 9080
 
-
+minio:
+  endpoint: http://localhost:9000
+  access-key: user
+  secret-key: password
+  bucket: corpbucket
+  region: us-east-1
+  path-style-access: true
+  max-file-size-mb: 5
