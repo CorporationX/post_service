@@ -6,7 +6,13 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 
-@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.ERROR)
+@Mapper(componentModel = "spring",
+        unmappedTargetPolicy = ReportingPolicy.ERROR,
+        uses = {
+                PostAndFollowersMapperUtil.class
+        }
+)
 public interface PostAndFollowersMapper {
+    @Mapping(target = "followers", qualifiedByName = {"PostAndFollowersMapperUtil", "getFollowers"}, source = "authorId")
     PostAndFollowersDto toDto(Post post);
 }
