@@ -25,12 +25,6 @@ spring:
         calculations_channel:
           name: calculations_channel
 
-  servlet:
-    multipart:
-      enabled: true
-      max-file-size: 50MB
-      max-request-size: 50MB
-      
   config:
     import: 'optional:consul:config/post-service/'
   application:
@@ -55,6 +49,12 @@ spring:
         path-style-access-enabled: true
         bucket-name: post-bucket
 
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 20MB
+      max-request-size: 20MB
+
 server:
   port: 8081
 
@@ -63,19 +63,9 @@ logging:
     root: info
 
 services:
-  s3:
-    endpoint: http://localhost:9000
-    accessKey: user
-    secretKey: password
-    bucketName: corpbucket
-    isMocked: false
-
-user-service:
-  host: localhost
-  port: 8080
-project-service:
-  host: localhost
-  port: 8082
-payment-service:
-  host: localhost
-  port: 9080
+  user-service:
+    name: user-service
+  project-service:
+    name: project-service
+  payment-service:
+    name: payment-service

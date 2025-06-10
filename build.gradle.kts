@@ -3,7 +3,6 @@ plugins {
     id("org.springframework.boot") version "3.0.6"
     id("io.spring.dependency-management") version "1.1.0"
     id("jacoco")
-    id("org.liquibase.gradle") version "2.2.0"
 }
 
 group = "faang.school"
@@ -40,13 +39,7 @@ dependencies {
     runtimeOnly("org.postgresql:postgresql")
 
     /**
-
-     * Amazon S3
-     */
-    implementation("com.amazonaws:aws-java-sdk-s3:1.12.481")
-    implementation("net.coobird:thumbnailator:0.4.20")
-
-     /* S3 Service
+     * S3 Service
      */
     implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:3.1.1")
 
