@@ -41,3 +41,10 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+services:
+  s3:
+    endpoints: http://localhost:9000
+    accessKey: user
+    secretKey: password
+    bucket: corpbucket

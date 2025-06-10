@@ -46,6 +46,12 @@ dependencies {
     annotationProcessor("org.mapstruct:mapstruct-processor:1.5.3.Final")
 
     /**
+     * Amazon
+     */
+    implementation("com.amazonaws:aws-java-sdk-s3:1.12.481")
+    implementation("software.amazon.awssdk:s3:2.31.54")
+
+    /**
      * Test containers
      */
     implementation(platform("org.testcontainers:testcontainers-bom:1.17.6"))
