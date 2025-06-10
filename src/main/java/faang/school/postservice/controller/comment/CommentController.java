@@ -5,15 +5,12 @@ import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CommentForCreationDto;
 import faang.school.postservice.dto.comment.CommentForUpdateDto;
 import faang.school.postservice.dto.comment.CommentOutputDto;
-import faang.school.postservice.model.ad.PictureSize;
+import faang.school.postservice.service.CommentFileService;
 import faang.school.postservice.service.CommentService;
-import faang.school.postservice.service.comment.CommentResourceService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import faang.school.postservice.service.s3.CommentResourceService;
-import faang.school.postservice.service.CommentFileService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -38,7 +35,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import java.util.Objects;
 
 @Slf4j
 @Validated

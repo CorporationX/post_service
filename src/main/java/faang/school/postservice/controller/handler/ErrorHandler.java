@@ -66,10 +66,19 @@ public class ErrorHandler {
         );
     }
 
-    @ExceptionHandler({
-            PostAlreadyPublishedException.class,
-            CommentAlreadyHasPictureException.class
-    })
+    @ExceptionHandler(PostAlreadyPublishedException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ErrorResponseDto handlePostAlreadyPublished(PostAlreadyPublishedException e) {
+        log.error("PostAlreadyPublishedException was thrown", e);
+        return new ErrorResponseDto(
+                HttpStatus.CONFLICT.name(),
+                "Post was already published.",
+                e.getMessage(),
+                LocalDateTime.now().format(formatter)
+        );
+    }
+
+    @ExceptionHandler(CommentAlreadyHasPictureException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorResponseDto handleConflictAlreadyBeenDone(Exception e) {
         log.error("{}  was thrown", e.getClass().getSimpleName(), e);
