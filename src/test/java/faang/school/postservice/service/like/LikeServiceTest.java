@@ -9,7 +9,7 @@ import faang.school.postservice.exception.comment.CommentNotFoundException;
 import faang.school.postservice.exception.like.LikeAlreadyExistsException;
 import faang.school.postservice.exception.like.LikeNotFoundException;
 import faang.school.postservice.exception.post.PostNotFoundException;
-import faang.school.postservice.model.Comment;
+import faang.school.postservice.model.comment.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.post.Post;
 import faang.school.postservice.repository.LikeRepository;

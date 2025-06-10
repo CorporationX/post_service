@@ -3,11 +3,11 @@ package faang.school.postservice.service.comment;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.exception.comment.CommentNotFoundException;
 import faang.school.postservice.exception.comment.CommentValidationException;
-import faang.school.postservice.model.Comment;
+import faang.school.postservice.model.comment.Comment;
 import faang.school.postservice.model.post.Post;
-import faang.school.postservice.repository.CommentRepository;
+import faang.school.postservice.repository.comment.CommentRepository;
 import faang.school.postservice.service.post.PostService;
-import faang.school.postservice.validation.CommentValidator;
+import faang.school.postservice.validation.comment.CommentValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -30,7 +30,10 @@ public class CommentService {
 
     @Transactional
     public Comment create(long postId, Comment comment) {
-        commentValidator.validateCommentAuthor(comment.getAuthorId());
+        long userId = userContext.getUserId();
+        comment.setAuthorId(userId);
+
+        commentValidator.validateCommentAuthor(userId);
 
         Post post = postService.getPostById(postId);
         comment.setPost(post);
@@ -42,6 +45,8 @@ public class CommentService {
 
     @Transactional
     public Comment update(Comment comment) {
+        commentValidator.validateCommentAuthor(comment.getAuthorId());
+
         long userId = userContext.getUserId();
         if (!Objects.equals(userId, comment.getAuthorId())) {
             throw new CommentValidationException("Обновление разрешено только автору комментария");

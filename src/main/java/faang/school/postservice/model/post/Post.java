@@ -1,7 +1,7 @@
 package faang.school.postservice.model.post;
 
 import faang.school.postservice.model.Album;
-import faang.school.postservice.model.Comment;
+import faang.school.postservice.model.comment.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.model.ad.Ad;
