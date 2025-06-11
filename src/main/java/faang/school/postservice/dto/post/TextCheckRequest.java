@@ -10,5 +10,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class TextCheckRequest {
     @NotBlank(message = "Post content could not be blank")
-    String text;
+    private String text;
 }
