@@ -38,4 +38,5 @@ public class PostValidation {
             throw new DataValidationException("Post was already deleted");
         }
     }
+
 }
