@@ -25,25 +25,26 @@ spring:
         calculations_channel:
           name: calculations_channel
 
-  servlet:
-    multipart:
-      enabled: true
-      max-file-size: 50MB
-      max-request-size: 50MB
-      
   config:
-    import: 'optional:consul:config/post-service/'
+    import: 'optional:consul:'
   application:
     name: post-service
   cloud:
     consul:
       host: localhost
       port: 8500
+      discovery: post-service-i1
       config:
         enabled: true
         watch:
           enabled: true
-
+    openfeign:
+      client:
+        config:
+          user-service:
+            connectTimeout: 5000
+            readTimeout: 3000
+            loggerLevel: full
     aws:
       credentials:
         access-key: user
@@ -55,6 +56,12 @@ spring:
         path-style-access-enabled: true
         bucket-name: post-bucket
 
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 20MB
+      max-request-size: 20MB
+
 server:
   port: 8081
 
@@ -63,19 +70,23 @@ logging:
     root: info
 
 services:
-  s3:
-    endpoint: http://localhost:9000
-    accessKey: user
-    secretKey: password
-    bucketName: corpbucket
-    isMocked: false
+  user-service:
+    name: user-service
+  project-service:
+    name: project-service
+  payment-service:
+    name: payment-service
 
-user-service:
-  host: localhost
-  port: 8080
-project-service:
-  host: localhost
-  port: 8082
-payment-service:
-  host: localhost
-  port: 9080
+cache:
+  like:
+    ttl:
+      minutes: 10
+  user:
+    ttl:
+      minutes: 30
+
+feign:
+  retry:
+    maxAttempts: 3
+    delay: 1000
+    multiplier: 2

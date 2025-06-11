@@ -3,19 +3,16 @@ plugins {
     id("org.springframework.boot") version "3.0.6"
     id("io.spring.dependency-management") version "1.1.0"
     id("jacoco")
-    id("org.liquibase.gradle") version "2.2.0"
 }
 
 group = "faang.school"
 version = "1.0"
 java.sourceCompatibility = JavaVersion.VERSION_17
 
-val springCloudVersion by extra("2022.0.5")
-
 repositories {
     mavenCentral()
 }
-
+val springCloudVersion by extra("2022.0.5")
 
 dependencies {
     /**
@@ -28,8 +25,10 @@ dependencies {
     implementation("org.springframework.retry:spring-retry")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.cloud:spring-cloud-starter-openfeign:4.0.2")
-    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.cloud:spring-cloud-starter-consul-config")
+    implementation("org.springframework.cloud:spring-cloud-starter-consul-discovery")
+    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     implementation ("org.springframework.cloud:spring-cloud-starter-loadbalancer")
 
     /**
@@ -40,13 +39,7 @@ dependencies {
     runtimeOnly("org.postgresql:postgresql")
 
     /**
-
-     * Amazon S3
-     */
-    implementation("com.amazonaws:aws-java-sdk-s3:1.12.481")
-    implementation("net.coobird:thumbnailator:0.4.20")
-
-     /* S3 Service
+     * S3 Service
      */
     implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:3.1.1")
 
@@ -93,6 +86,7 @@ dependencyManagement {
     }
 }
 
+
 tasks.test {
     useJUnitPlatform()
     finalizedBy(tasks.jacocoTestReport, tasks.jacocoTestCoverageVerification)
@@ -102,8 +96,46 @@ tasks.withType<Test> {
     useJUnitPlatform()
 }
 
-val test by tasks.getting(Test::class) { testLogging.showStandardStreams = true }
-
 tasks.bootJar {
     archiveFileName.set("service.jar")
+}
+
+val jacocoReportIncludes = listOf(
+    "faang/school/postservice/service/**"
+)
+
+val jacocoVerificationIncludes = listOf(
+    "faang.school.postservice.service.**"
+)
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+    reports {
+        xml.required.set(false)
+        csv.required.set(false)
+        html.required.set(true)
+    }
+    classDirectories.setFrom(files(classDirectories.files.map {
+        fileTree(it).matching {
+            include(jacocoReportIncludes)
+        }
+    }))
+}
+
+tasks.jacocoTestCoverageVerification {
+    dependsOn(tasks.jacocoTestReport)
+    violationRules {
+        rule {
+            element = "BUNDLE"
+            isEnabled = true
+
+            includes = jacocoVerificationIncludes
+
+            limit {
+                counter = "LINE"
+                value = "COVEREDRATIO"
+                minimum = "0.7".toBigDecimal()
+            }
+        }
+    }
 }
