@@ -32,15 +32,22 @@ logging:
   level:
     root: info
 
-user-service:
-  host: localhost
-  port: 8080
-project-service:
-  host: localhost
-  port: 8082
-payment-service:
-  host: localhost
-  port: 9080
+services:
+  s3:
+    endpoint: http://localhost:9000
+    accessKey: user
+    secretKey: password
+    bucketName: projectbucket
+    isMocked: false
+  user-service:
+    host: localhost
+    port: 8080
+  project-service:
+    host: localhost
+    port: 8082
+  payment-service:
+    host: localhost
+    port: 9080
 
 springdoc:
   swagger-ui:
@@ -56,3 +63,4 @@ cron:
 entity:
     post:
         max-unverified-count-for-ban: 5
+    commentServiceFileLimitMb: 5

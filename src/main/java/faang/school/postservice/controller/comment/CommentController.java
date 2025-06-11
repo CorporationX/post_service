@@ -5,6 +5,7 @@ import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CommentForCreationDto;
 import faang.school.postservice.dto.comment.CommentForUpdateDto;
 import faang.school.postservice.dto.comment.CommentOutputDto;
+import faang.school.postservice.service.CommentFileService;
 import faang.school.postservice.service.CommentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -14,6 +15,11 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.tomcat.util.http.fileupload.impl.FileSizeLimitExceededException;
+import org.springframework.expression.AccessException;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -23,7 +29,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -36,6 +45,7 @@ import java.util.List;
 public class CommentController {
 
     private final CommentService service;
+    private final CommentFileService commentFileService;
     private final UserContext userContext;
 
     @PostMapping
@@ -85,5 +95,32 @@ public class CommentController {
                 , commentId, userContext.getUserId());
         service.deleteCommentById(commentId);
         return ResponseEntity.noContent().build();
+    }
+
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping("/{commentId}/comment-image")
+    public List<String> uploadCommentImage
+            (@PathVariable Long commentId, @RequestParam("file") MultipartFile file)
+            throws AccessException, FileSizeLimitExceededException {
+        log.debug("Uploading image for comment with id {} - Started", commentId);
+        return commentFileService.addImageToComment(commentId, file);
+    }
+
+    @DeleteMapping("/{commentId}/comment-image")
+    public ResponseEntity<Void> deleteCommentImage(@PathVariable Long commentId) throws AccessException {
+        log.debug("Deleting image for comment with id {} - Started", commentId);
+        commentFileService.deleteImageFromCommentById(commentId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{commentId}/comment-image")
+    public ResponseEntity<byte[]> downloadCommentImage(@PathVariable Long commentId,
+                                                       @RequestParam(value = "size", required = false) String size) {
+        log.debug("Getting image for comment with id {} - Started", commentId);
+        byte[] image;
+        image = commentFileService.getCommentImage(commentId, size);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.IMAGE_JPEG);
+        return new ResponseEntity<>(image, headers, HttpStatus.OK);
     }
 }
