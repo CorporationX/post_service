@@ -38,6 +38,12 @@ dependencies {
     implementation("redis.clients:jedis:4.3.2")
     runtimeOnly("org.postgresql:postgresql")
 
+    /** Amazon S3
+    */
+    implementation("com.amazonaws:aws-java-sdk-s3:1.12.481")
+    implementation("net.coobird:thumbnailator:0.4.20")
+
+
     /**
      * S3 Service
      */
