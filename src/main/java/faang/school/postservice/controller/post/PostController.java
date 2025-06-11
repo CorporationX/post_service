@@ -131,8 +131,7 @@ public class PostController {
 
     @PostMapping("/check-text")
     public TextCheckRequest checkPostText(@RequestBody TextCheckRequest request) {
-        String textToCheck = request.getText();
-        String correctedText = postCorrecter.checkText(textToCheck);
+        String correctedText = postCorrecter.checkText(request.getText());
         return new TextCheckRequest(correctedText);
     }
 }

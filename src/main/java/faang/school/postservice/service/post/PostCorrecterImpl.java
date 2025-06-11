@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import faang.school.postservice.config.corrector.PostCorrectorProperty;
 import faang.school.postservice.exception.TextAutoCorrectionException;
 import faang.school.postservice.service.PostCorrectorService;
+import faang.school.postservice.service.text.TextCorrectionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
@@ -23,24 +24,15 @@ import java.nio.charset.StandardCharsets;
 @Component
 public class PostCorrecterImpl implements PostCorrectorService {
     private final PostCorrectorProperty properties;
-    private final RestTemplate restTemplate;
+    private final TextCorrectionService textCorrectionService;
 
     @Override
     @Retryable(retryFor = {IOException.class}, maxAttempts = 3, backoff = @Backoff(delay = 2000, multiplier = 1.5))
     public String checkText(String textToCheck) {
         StringBuilder correctedText = new StringBuilder();
-        String url = properties.apiUrl();
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        String params = "text=" + URLEncoder.encode(textToCheck, StandardCharsets.UTF_8) + "&language=" + properties.language();
-        HttpEntity<String> requestEntity = new HttpEntity<>(params, headers);
-        ResponseEntity<JsonNode> responseEntity =
-                restTemplate.exchange(url, HttpMethod.POST, requestEntity,
-                        new ParameterizedTypeReference<JsonNode>() {
-                        });
-
-        if (responseEntity.getStatusCode().is2xxSuccessful()) {
-            JsonNode jsonResponse = responseEntity.getBody();
+        String params = "text=" + URLEncoder.encode(textToCheck, StandardCharsets.UTF_8)
+                + "&language=" + properties.language();
+        JsonNode jsonResponse = textCorrectionService.callCorrectionApi(params);
             int previousEnd = 0;
             assert jsonResponse != null;
             for (JsonNode match : jsonResponse.get("matches")) {
@@ -54,9 +46,6 @@ public class PostCorrecterImpl implements PostCorrectorService {
                 }
             }
             correctedText.append(textToCheck.substring(previousEnd));
-        } else {
-            throw new TextAutoCorrectionException("Failed : HTTP error code : " + responseEntity.getStatusCode());
-        }
         return correctedText.toString();
     }
 }
