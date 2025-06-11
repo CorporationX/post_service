@@ -3,6 +3,7 @@ package faang.school.postservice.service.post;
 import com.fasterxml.jackson.databind.JsonNode;
 import faang.school.postservice.config.corrector.PostCorrectorProperty;
 import faang.school.postservice.exception.TextAutoCorrectionException;
+import faang.school.postservice.model.text.CorrectionResponse;
 import faang.school.postservice.service.PostCorrectorService;
 import faang.school.postservice.service.text.TextCorrectionService;
 import lombok.RequiredArgsConstructor;
@@ -32,14 +33,14 @@ public class PostCorrecterImpl implements PostCorrectorService {
         StringBuilder correctedText = new StringBuilder();
         String params = "text=" + URLEncoder.encode(textToCheck, StandardCharsets.UTF_8)
                 + "&language=" + properties.language();
-        JsonNode jsonResponse = textCorrectionService.callCorrectionApi(params);
+        CorrectionResponse correctionResponse = textCorrectionService.callCorrectionApi(params);
             int previousEnd = 0;
-            assert jsonResponse != null;
-            for (JsonNode match : jsonResponse.get("matches")) {
-                if (match.has("replacements") && !match.get("replacements").isEmpty()) {
-                    String replacement = match.get("replacements").get(0).get("value").asText();
-                    int offset = match.get("offset").asInt();
-                    int length = match.get("length").asInt();
+            assert correctionResponse != null;
+            for (CorrectionResponse.Match match : correctionResponse.getMatches()) {
+                if (match.getReplacements() != null && !match.getReplacements().isEmpty()) {
+                    String replacement = match.getReplacements().get(0).getValue();
+                    int offset = match.getOffset();
+                    int length = match.getLength();
                     correctedText.append(textToCheck, previousEnd, offset);
                     correctedText.append(replacement);
                     previousEnd = offset + length;
