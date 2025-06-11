@@ -15,6 +15,12 @@ public class ScheduledPostPublisher {
 
     @Scheduled(cron = "0 * * * * *")
     public void publishScheduledPosts() {
-        postService.publishScheduledPosts();
+        log.info("Starting scheduled post publication job");
+        try {
+            postService.publishScheduledPosts();
+            log.info("Finished scheduled post publication job");
+        } catch (Exception e) {
+            log.error("Failed to publish scheduled posts", e);
+        }
     }
 }
