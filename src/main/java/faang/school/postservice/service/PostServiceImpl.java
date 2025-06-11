@@ -207,8 +207,14 @@ public class PostServiceImpl implements PostService {
     }
 
     private List<List<Post>> createBatches(List<Post> posts) {
-        return IntStream.range(0, (posts.size() + BATCH_SIZE - 1) / BATCH_SIZE)
-                .mapToObj(i -> posts.subList(i * BATCH_SIZE, Math.min((i + 1) * BATCH_SIZE, posts.size()))).toList();
+        int batchCount = (posts.size() + BATCH_SIZE - 1) / BATCH_SIZE;
+        return IntStream.range(0, batchCount)
+                .mapToObj(batchIndex -> {
+                    int startIndex = batchIndex * BATCH_SIZE;
+                    int endIndex = Math.min((batchIndex + 1) * BATCH_SIZE, posts.size());
+                    return posts.subList(startIndex, endIndex);
+                })
+                .toList();
     }
 
     private void publishPosts(List<Post> batch) {
