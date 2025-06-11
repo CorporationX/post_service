@@ -80,4 +80,19 @@ public class CommentService {
         return commentRepository.findById(commentId).orElseThrow(
                 () -> new EntityNotFoundException("the comment was not found in the database"));
     }
+
+    @Transactional
+    public List<Comment> getNotVerifiedComments() {
+        return commentRepository.findAllNotVerified();
+    }
+
+    @Transactional
+    public List<Comment> saveVerifiedComments(List<Comment> comments) {
+        return commentRepository.saveAll(comments);
+    }
+
+    @Transactional
+    public void deleteCommentsWithProfanities() {
+        commentRepository.deleteAllFailedVerification();
+    }
 }

@@ -41,3 +41,10 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+moderation:
+  comments:
+    cron: "0 * * * * *"
+    batch_size: 50
+    thread_pool_size: 5
+    termination_wait: 1
