@@ -1,18 +1,15 @@
 package faang.school.postservice.service.s3;
 
+
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.HttpMethod;
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -26,37 +23,22 @@ import java.util.concurrent.TimeUnit;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class S3StorageService {
 
-    @Value("${services.s3.endpoint}")
-    private String endPoint;
+    private final AmazonS3 amazonS3;
 
-    @Value("${services.s3.accessKey}")
-    private String accessKey;
-
-    @Value("${services.s3.secretKey}")
-    private String secretKey;
-
-    @Value("${services.s3.bucketName}")
+    @Value("${spring.cloud.aws.s3.bucket-name}")
     private String bucketName;
-
-    private AmazonS3 s3Client;
 
     @PostConstruct
     public void init() {
-        AWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
-
-        this.s3Client = AmazonS3ClientBuilder.standard()
-                .withCredentials(new AWSStaticCredentialsProvider(credentials))
-                .withEndpointConfiguration(
-                        new AwsClientBuilder.EndpointConfiguration(
-                                endPoint, "us-east-1"))
-                .withPathStyleAccessEnabled(true)
-                .build();
         try {
-            if (!s3Client.doesBucketExistV2(bucketName)) {
-                s3Client.createBucket(bucketName);
+            if (!amazonS3.doesBucketExistV2(bucketName)) {
+                amazonS3.createBucket(bucketName);
                 log.info("Bucket created: {}", bucketName);
+            } else {
+                log.info("Bucket {} already exists", bucketName);
             }
         } catch (AmazonServiceException e) {
             log.error("Error checking/creating bucket {}: {}", bucketName, e.getMessage());
@@ -70,7 +52,7 @@ public class S3StorageService {
         metadata.setContentType(contentType);
 
         try {
-            s3Client.putObject(bucketName, key, inputStream, metadata);
+            amazonS3.putObject(bucketName, key, inputStream, metadata);
             log.info("File successfully uploaded to S3: {}", key);
         } catch (AmazonServiceException e) {
             log.error("Error uploading file {}: {}", key, e.getMessage());
@@ -86,7 +68,7 @@ public class S3StorageService {
 
     public Optional<byte[]> downloadFile(String key) {
         try {
-            S3Object s3Object = s3Client.getObject(bucketName, key);
+            S3Object s3Object = amazonS3.getObject(bucketName, key);
             try (S3ObjectInputStream inputStream = s3Object.getObjectContent()) {
                 return Optional.of(inputStream.readAllBytes());
             }
@@ -98,7 +80,7 @@ public class S3StorageService {
 
     public void deleteFile(String key) {
         try {
-            s3Client.deleteObject(bucketName, key);
+            amazonS3.deleteObject(bucketName, key);
             log.info("File successfully deleted {}", key);
         } catch (AmazonServiceException e) {
             log.error("Error occurred while deleting file {}: {}", key, e.getMessage());
@@ -110,6 +92,6 @@ public class S3StorageService {
         GeneratePresignedUrlRequest req = new GeneratePresignedUrlRequest(bucketName, key)
                 .withMethod(HttpMethod.GET)
                 .withExpiration(expiration);
-        return s3Client.generatePresignedUrl(req).toString();
+        return amazonS3.generatePresignedUrl(req).toString();
     }
 }
