@@ -5,15 +5,15 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
+import org.springframework.validation.annotation.Validated;
 
 @Getter
 @Setter
-@Component
+@Validated
 @ConfigurationProperties("batch")
 public class BatchProperties {
 
     @NotNull(message = "Batch size subscribers must be specified")
     @Min(value = 1, message = "Batch size subscribers must be positive")
-    private Integer batchSizeSubscribers;
+    private Integer subscribersBatchSize;
 }

@@ -35,8 +35,8 @@ public class PostEventBatchSender {
             return;
         }
 
-        if (subscriberIds.size() > batchProperties.getBatchSizeSubscribers()) {
-            List<List<UserDto>> partitionsFollowers = ListUtils.partition(subscriberIds, batchProperties.getBatchSizeSubscribers());
+        if (subscriberIds.size() > batchProperties.getSubscribersBatchSize()) {
+            List<List<UserDto>> partitionsFollowers = ListUtils.partition(subscriberIds, batchProperties.getSubscribersBatchSize());
             partitionsFollowers.forEach(list -> sendEvent(post, list));
         } else {
             sendEvent(post, subscriberIds);

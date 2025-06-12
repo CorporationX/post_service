@@ -2,6 +2,7 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.config.ModerationProperties;
 import com.google.common.collect.Lists;
+import faang.school.postservice.config.transactional.PostTransactionService;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.PostDtoValidationException;
@@ -38,6 +39,7 @@ public class PostService {
     private final ModerationProperties moderationProperties;
     private final PostMapper postMapper;
     private final PostEventBatchSender postEventBatchSender;
+    private final PostTransactionService postTransactionService;
 
     private static final int BATCH_SIZE = 1000;
 
@@ -115,19 +117,13 @@ public class PostService {
         });
     }
 
-    @Transactional
     @Async("fileUploadTaskExecutor")
     public PostDto publishPost(PostDto postDto) {
-        Post post = validateDataForPublication(postDto);
+        Post post = validateDataForPublication(postDto.getId());
 
-        post.setPublished(true);
-        post.setPublishedAt(LocalDateTime.now());
-        post.setUpdatedAt(LocalDateTime.now());
-
-        post = postRepository.saveAndFlush(post);
-        postEventBatchSender.sendBatch(post);
-
-        return postMapper.toDto(post);
+        Post savedPost = postTransactionService.saveAndPublishPost(post);
+        postEventBatchSender.sendBatch(savedPost);
+        return postMapper.toDto(savedPost);
     }
 
 
@@ -146,19 +142,19 @@ public class PostService {
         }
     }
 
-    private Post validateDataForPublication(PostDto postDto) {
-        Post post = postRepository.findById(postDto.getId()).orElseThrow(() ->
-                new PostDtoValidationException(String.format("Post with ID %d does not exist", postDto.getId()))
+    private Post validateDataForPublication(Long postId) {
+        Post post = postRepository.findById(postId).orElseThrow(() ->
+                new PostDtoValidationException(String.format("Post with ID %d does not exist", postId))
         );
 
         if (post.isDeleted()) {
             throw new PostDtoValidationException(String.format(
-                    "The post with ID %d removed", postDto.getId()));
+                    "The post with ID %d removed", postId));
         }
 
         if (post.isPublished()) {
             throw new PostDtoValidationException(String.format(
-                    "The post with ID %d has already been published", postDto.getId()));
+                    "The post with ID %d has already been published", postId));
         }
 
         return post;

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import faang.school.postservice.config.ModerationProperties;
+import faang.school.postservice.config.batch.BatchProperties;
 import faang.school.postservice.config.properties.RedisProperties;
 import org.springframework.boot.Banner;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -24,7 +25,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableFeignClients(basePackages = "faang.school.postservice.client")
 @EnableConfigurationProperties({
         ModerationProperties.class,
-        RedisProperties.class
+        RedisProperties.class,
+        BatchProperties.class
 })
 public class PostServiceApp {
     public static void main(String[] args) {

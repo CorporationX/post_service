@@ -6,14 +6,18 @@ import jakarta.validation.constraints.NotNull;
 import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.core.KafkaAdmin;
+import org.springframework.validation.annotation.Validated;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @Configuration
+@ConfigurationProperties
+@Validated
 public class KafkaTopicConfig {
     @Value(value = "${spring.kafka.bootstrap-servers}")
     @NotNull(message = "Bootstrap address can not be null")
