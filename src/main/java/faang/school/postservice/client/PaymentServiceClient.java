@@ -1,5 +1,6 @@
 package faang.school.postservice.client;
 
+import faang.school.postservice.config.client.FeignClientConfig;
 import faang.school.postservice.dto.payment.PaymentRequest;
 import faang.school.postservice.dto.payment.PaymentResponse;
 import feign.FeignException;
@@ -13,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 @FeignClient(name = "payment-service",
         url = "${services.payment-service.host}:${services.payment-service.port}",
-        configuration = FeignConfig.class)
+        configuration = FeignClientConfig.class)
 public interface PaymentServiceClient {
 
     @Retryable(

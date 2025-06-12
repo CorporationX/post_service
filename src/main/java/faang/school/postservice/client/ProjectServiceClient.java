@@ -1,5 +1,6 @@
 package faang.school.postservice.client;
 
+import faang.school.postservice.config.client.FeignClientConfig;
 import faang.school.postservice.dto.project.ProjectClientResponseDto;
 import feign.FeignException;
 import feign.RetryableException;
@@ -15,7 +16,7 @@ import java.util.List;
 @FeignClient(name = "project-service",
         url = "${services.project-service.host}:${services.project-service.port}",
         path = "/api/v1/project",
-        configuration = FeignConfig.class)
+        configuration = FeignClientConfig.class)
 public interface ProjectServiceClient {
     @Retryable(
             retryFor = { FeignException.class, RetryableException.class },

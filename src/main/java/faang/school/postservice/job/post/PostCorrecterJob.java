@@ -1,6 +1,6 @@
 package faang.school.postservice.job.post;
 
-import faang.school.postservice.client.LanguageToolClient;
+import faang.school.postservice.client.language_tool.LanguageToolClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.LanguageToolClientResponseDto;
 import faang.school.postservice.model.post.Post;
@@ -25,7 +25,7 @@ public class PostCorrecterJob {
     private final LanguageToolClient languageToolClient;
     private final UserContext userContext;
     private static final int NUM_THREADS = 10;
-    ExecutorService threadPool = Executors.newFixedThreadPool(NUM_THREADS);
+    private final ExecutorService threadPool = Executors.newFixedThreadPool(NUM_THREADS);
 
     @PreDestroy
     public void shutdownThreadPool() {
@@ -47,8 +47,7 @@ public class PostCorrecterJob {
 
     private void correctAndSavePost(Post post) {
         try {
-            LanguageToolClientResponseDto response =
-                    languageToolClient.checkSpelling(post.getContent(), post.getLanguage().toString());
+            LanguageToolClientResponseDto response = languageToolClient.checkSpelling(post.getContent(), post.getLanguage().toString());
             String correctedText = applyCorrections(post.getContent(), response.getMatches());
 
             post.setContent(correctedText);

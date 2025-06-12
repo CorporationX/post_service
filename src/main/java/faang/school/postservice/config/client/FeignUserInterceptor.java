@@ -1,4 +1,4 @@
-package faang.school.postservice.client;
+package faang.school.postservice.config.client;
 
 import faang.school.postservice.config.context.UserContext;
 import feign.RequestInterceptor;
