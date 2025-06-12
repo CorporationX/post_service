@@ -23,6 +23,10 @@ public class CommentValidatorTest {
     @InjectMocks
     private CommentValidator commentValidator;
 
+    @InjectMocks
+    private CommentValidator commentValidator;
+    @Mock
+    private UserServiceClient userServiceClient;
     private static final long USER_ID = 1L;
 
     @Test
