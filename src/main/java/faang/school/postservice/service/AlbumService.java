@@ -9,23 +9,23 @@ public interface AlbumService {
 
     AlbumDto createAlbum(AlbumDto albumDto);
 
-    AlbumDto addPostToAlbum(long albumId, long postId, long userId);
+    AlbumDto addPostToAlbum(long albumId, long postId);
 
-    AlbumDto removePostFromAlbum(long albumId, long postId, long userId);
+    AlbumDto removePostFromAlbum(long albumId, long postId);
 
-    AlbumDto addAlbumToFavorite(long albumId, long userId);
+    AlbumDto addAlbumToFavorite(long albumId);
 
-    AlbumDto removeAlbumFromFavorite(long albumId, long userId);
+    AlbumDto removeAlbumFromFavorite(long albumId);
 
     AlbumDto getAlbumById(long albumId);
 
-    List<AlbumDto> getAllUserAlbums(long userId, AlbumFilterDto albumFilterDto);
+    List<AlbumDto> getAllUserAlbums(AlbumFilterDto albumFilterDto);
 
     List<AlbumDto> getAllAlbums(AlbumFilterDto albumFilterDto);
 
-    List<AlbumDto> getAllUserFavoriteAlbums(long userId, AlbumFilterDto albumFilterDto);
+    List<AlbumDto> getAllUserFavoriteAlbums(AlbumFilterDto albumFilterDto);
 
-    AlbumDto updateAlbum(long albumId, long userId, AlbumDto albumDto);
+    AlbumDto updateAlbum(long albumId, AlbumDto albumDto);
 
-    AlbumDto deleteAlbum(long albumId, long userId);
+    AlbumDto deleteAlbum(long albumId);
 }

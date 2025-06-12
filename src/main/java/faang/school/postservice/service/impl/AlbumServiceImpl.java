@@ -9,6 +9,7 @@ import faang.school.postservice.mapper.AlbumMapper;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.AlbumRepository;
+import faang.school.postservice.repository.AlbumRepositoryAdapter;
 import faang.school.postservice.repository.PostRepositoryAdapter;
 import faang.school.postservice.service.AlbumService;
 import faang.school.postservice.validator.AlbumValidator;
@@ -24,9 +25,10 @@ import java.util.List;
 public class AlbumServiceImpl implements AlbumService {
 
     private final AlbumRepository albumRepository;
+    private final AlbumRepositoryAdapter albumRepositoryAdapter;
     private final AlbumMapper albumMapper;
     private final AlbumValidator albumValidator;
-    private final UserServiceClient userService;
+    private final UserServiceClient userServiceClient;
     private final UserContext userContext;
     private final UserExistValidator userExistValidator;
     private final PostRepositoryAdapter postRepositoryAdapter;
@@ -36,23 +38,23 @@ public class AlbumServiceImpl implements AlbumService {
     @Transactional
     public AlbumDto createAlbum(AlbumDto albumDto) {
         Album album = albumMapper.toAlbum(albumDto);
+        var userId = userContext.getUserId();
 
-        album.setAuthorId(userContext.getUserId());
+        album.setAuthorId(userId);
         albumValidator.validateUniqueTitle(album);
-        userExistValidator.userExist(userContext.getUserId());
+        userExistValidator.userExist(userId);
 
-        final Album savedAlbum = albumRepository.save(album);
-        return albumMapper.toAlbumDto(savedAlbum);
+        return albumMapper.toAlbumDto(albumRepository.save(album));
     }
 
     @Override
     @Transactional
-    public AlbumDto addPostToAlbum(long albumId, long postId, long userId) {
-        Album album = albumRepository.findById(albumId);
+    public AlbumDto addPostToAlbum(long albumId, long postId) {
+        Album album = albumRepositoryAdapter.findById(albumId);
 
         Post post = postRepositoryAdapter.findById(postId);
 
-        albumValidator.validateAddPostToAlbum(album, postId, userId);
+        albumValidator.validateAddPostToAlbum(album, postId, userContext.getUserId());
 
         album.addPost(post);
         albumRepository.save(album);
@@ -61,10 +63,10 @@ public class AlbumServiceImpl implements AlbumService {
 
     @Override
     @Transactional
-    public AlbumDto removePostFromAlbum(long albumId, long postId, long userId) {
-        Album album = albumRepository.findById(albumId);
+    public AlbumDto removePostFromAlbum(long albumId, long postId) {
+        Album album = albumRepositoryAdapter.findById(albumId);
 
-        albumValidator.validateRemovePostFromAlbum(album, postId, userId);
+        albumValidator.validateRemovePostFromAlbum(album, postId, userContext.getUserId());
 
         album.removePost(postId);
 
@@ -75,12 +77,12 @@ public class AlbumServiceImpl implements AlbumService {
 
     @Override
     @Transactional
-    public AlbumDto addAlbumToFavorite(long albumId, long userId) {
-        Album album = albumRepository.findById(albumId);
+    public AlbumDto addAlbumToFavorite(long albumId) {
+        Album album = albumRepositoryAdapter.findById(albumId);
 
-        albumValidator.validateAddAlbumToFavorite(album, userId);
+        albumValidator.validateAddAlbumToFavorite(album, userContext.getUserId());
 
-        albumRepository.addAlbumToFavorites(albumId, userId);
+        albumRepository.addAlbumToFavorites(albumId, userContext.getUserId());
 
         albumRepository.save(album);
 
@@ -89,12 +91,12 @@ public class AlbumServiceImpl implements AlbumService {
 
     @Override
     @Transactional
-    public AlbumDto removeAlbumFromFavorite(long albumId, long userId) {
-        Album album = albumRepository.findById(albumId);
+    public AlbumDto removeAlbumFromFavorite(long albumId) {
+        Album album = albumRepositoryAdapter.findById(albumId);
 
-        albumValidator.validateRemoveAlbumFromFavorite(album, userId);
+        albumValidator.validateRemoveAlbumFromFavorite(album, userContext.getUserId());
 
-        albumRepository.deleteAlbumFromFavorites(albumId, userId);
+        albumRepository.deleteAlbumFromFavorites(albumId, userContext.getUserId());
 
         albumRepository.save(album);
 
@@ -105,15 +107,18 @@ public class AlbumServiceImpl implements AlbumService {
     @Transactional
     public AlbumDto getAlbumById(long albumId) {
 
-        Album album = albumRepository.findById(albumId);
+        Album album = albumRepositoryAdapter.findById(albumId);
 
         return albumMapper.toAlbumDto(album);
     }
 
     @Override
     @Transactional
-    public List<AlbumDto> getAllUserAlbums(long userId, AlbumFilterDto albumFilterDto) {
-        return albumFilterService.applyFilters(albumRepository.findByAuthorId(userId), albumFilterDto)
+    public List<AlbumDto> getAllUserAlbums(AlbumFilterDto albumFilterDto) {
+        return albumFilterService.
+                applyFilters(
+                        albumRepository.findByAuthorId(userContext.getUserId()),
+                        albumFilterDto)
                 .map(albumMapper::toAlbumDto)
                 .toList();
     }
@@ -128,19 +133,22 @@ public class AlbumServiceImpl implements AlbumService {
 
     @Override
     @Transactional
-    public List<AlbumDto> getAllUserFavoriteAlbums(long userId, AlbumFilterDto albumFilterDto) {
-        return albumFilterService.applyFilters(albumRepository.findFavoriteAlbumsByAuthorId(userId), albumFilterDto)
+    public List<AlbumDto> getAllUserFavoriteAlbums(AlbumFilterDto albumFilterDto) {
+        return albumFilterService.
+                applyFilters(albumRepository.
+                                findFavoriteAlbumsByAuthorId(userContext.getUserId()),
+                        albumFilterDto)
                 .map(albumMapper::toAlbumDto)
                 .toList();
     }
 
     @Override
     @Transactional
-    public AlbumDto updateAlbum(long albumId, long userId, AlbumDto albumDto) {
+    public AlbumDto updateAlbum(long albumId, AlbumDto albumDto) {
 
-        Album albumToUpdate = albumRepository.findById(albumId);
+        Album albumToUpdate = albumRepositoryAdapter.findById(albumId);
 
-        albumValidator.validateUpdateAlbum(albumToUpdate, userId, albumDto);
+        albumValidator.validateUpdateAlbum(albumToUpdate, userContext.getUserId(), albumDto);
 
         albumMapper.update(albumDto, albumToUpdate);
 
@@ -151,12 +159,12 @@ public class AlbumServiceImpl implements AlbumService {
 
     @Override
     @Transactional
-    public AlbumDto deleteAlbum(long albumId, long userId) {
+    public AlbumDto deleteAlbum(long albumId) {
 
-        Album album = albumRepository.findById(albumId);
+        Album album = albumRepositoryAdapter.findById(albumId);
         AlbumDto albumDto = albumMapper.toAlbumDto(album);
 
-        albumValidator.validateDeleteAlbum(album, userId);
+        albumValidator.validateDeleteAlbum(album, userContext.getUserId());
 
         albumRepository.deleteById(albumId);
         return albumDto;

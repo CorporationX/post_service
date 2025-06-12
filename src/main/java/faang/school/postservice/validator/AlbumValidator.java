@@ -22,7 +22,9 @@ public class AlbumValidator {
 
     public void validateUniqueTitle(Album album) {
         if (albumRepository.existsByTitleAndAuthorId(album.getTitle(), album.getAuthorId())) {
-            throw new DataValidationException("Альбом с таким названием уже существует.");
+            throw new DataValidationException(String
+                    .format("Альбом с названием '%s' уже существует у пользователя с ID '%d'",
+                            album.getTitle(), album.getAuthorId()));
         }
     }
 

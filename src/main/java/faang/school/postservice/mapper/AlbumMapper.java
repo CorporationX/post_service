@@ -20,8 +20,6 @@ public interface AlbumMapper {
 
     Album toAlbum(AlbumDto albumDto);
 
-    @Mapping(target = "title", source = "title")
-    @Mapping(target = "description", source = "description")
     @Mapping(target = "posts", source = "albumDto.postIds", qualifiedByName = "postIdsToPosts")
     void update(AlbumDto albumDto, @MappingTarget Album album);
 
@@ -36,10 +34,10 @@ public interface AlbumMapper {
                 .collect(Collectors.toList());
     }
 
-    @Named("postsToPostIds")
-    default List<Long> postsToPostIds(List<Post> posts) {
-        return posts.stream()
-                .map(Post::getId)
-                .collect(Collectors.toList());
-    }
+//    @Named("postsToPostIds")
+//    default List<Long> postsToPostIds(List<Post> posts) {
+//        return posts.stream()
+//                .map(Post::getId)
+//                .collect(Collectors.toList());
+//    }
 }

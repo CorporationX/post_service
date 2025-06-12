@@ -9,6 +9,7 @@ import faang.school.postservice.mapper.AlbumMapperImpl;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.AlbumRepository;
+import faang.school.postservice.repository.AlbumRepositoryAdapter;
 import faang.school.postservice.repository.PostRepositoryAdapter;
 import faang.school.postservice.service.impl.AlbumServiceImpl;
 import faang.school.postservice.validator.AlbumValidator;
@@ -24,6 +25,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -31,7 +33,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
@@ -46,6 +47,9 @@ public class AlbumServiceImplTest {
 
     @Mock
     private AlbumRepository albumRepository;
+
+    @Mock
+    private AlbumRepositoryAdapter albumRepositoryAdapter;
 
     @Mock
     private PostRepositoryAdapter postRepositoryAdapter;
@@ -98,7 +102,7 @@ public class AlbumServiceImplTest {
     }
 
     @Test
-    public void test_createAlbum() {
+    public void test_createAlbumSuccess() {
         Album album = new Album();
         album.setAuthorId(AUTHOR_ID);
         album.setId(ALBUM_ID);
@@ -117,8 +121,9 @@ public class AlbumServiceImplTest {
         verify(albumRepository).save(any(Album.class));
     }
 
+
     @Test
-    public void test_addPostToAlbum() {
+    public void test_addPostToAlbumSuccess() {
         Album album = new Album();
         album.setId(ALBUM_ID);
         album.setAuthorId(AUTHOR_ID);
@@ -130,26 +135,29 @@ public class AlbumServiceImplTest {
         AlbumDto albumDto = new AlbumDto();
         albumDto.setId(ALBUM_ID);
 
-        when(albumRepository.findById(ALBUM_ID)).thenReturn(album);
+        when(albumRepositoryAdapter.findById(ALBUM_ID)).thenReturn(album);
         when(postRepositoryAdapter.findById(POST_ID)).thenReturn(post);
+        when(userContext.getUserId()).thenReturn(AUTHOR_ID);
         doNothing().when(albumValidator).validateAddPostToAlbum(album, POST_ID, AUTHOR_ID);
         when(albumMapper.toAlbumDto(album)).thenReturn(albumDto);
 
-        AlbumDto result = albumService.addPostToAlbum(ALBUM_ID, POST_ID, AUTHOR_ID);
+        AlbumDto result = albumService.addPostToAlbum(ALBUM_ID, POST_ID);
 
         assertNotNull(result);
         assertEquals(ALBUM_ID, result.getId());
         assertTrue(album.getPosts().contains(post));
 
-        verify(albumRepository).findById(ALBUM_ID);
+        verify(albumRepositoryAdapter).findById(ALBUM_ID);
         verify(postRepositoryAdapter).findById(POST_ID);
+        verify(userContext).getUserId();
         verify(albumValidator).validateAddPostToAlbum(album, POST_ID, AUTHOR_ID);
         verify(albumRepository).save(album);
         verify(albumMapper).toAlbumDto(album);
     }
 
+
     @Test
-    public void test_removePostFromAlbum() {
+    public void test_removePostFromAlbumSuccess() {
         Album album = new Album();
         album.setId(ALBUM_ID);
         album.setAuthorId(AUTHOR_ID);
@@ -162,17 +170,18 @@ public class AlbumServiceImplTest {
         AlbumDto albumDto = new AlbumDto();
         albumDto.setId(ALBUM_ID);
 
-        when(albumRepository.findById(ALBUM_ID)).thenReturn(album);
+        when(albumRepositoryAdapter.findById(ALBUM_ID)).thenReturn(album);
+        when(userContext.getUserId()).thenReturn(AUTHOR_ID);
         doNothing().when(albumValidator).validateRemovePostFromAlbum(album, POST_ID, AUTHOR_ID);
         when(albumMapper.toAlbumDto(album)).thenReturn(albumDto);
 
-        AlbumDto result = albumService.removePostFromAlbum(ALBUM_ID, POST_ID, AUTHOR_ID);
+        AlbumDto result = albumService.removePostFromAlbum(ALBUM_ID, POST_ID);
 
         assertNotNull(result);
         assertEquals(ALBUM_ID, result.getId());
         assertFalse(album.getPosts().contains(post));
 
-        verify(albumRepository).findById(ALBUM_ID);
+        verify(albumRepositoryAdapter).findById(ALBUM_ID);
         verify(albumValidator).validateRemovePostFromAlbum(album, POST_ID, AUTHOR_ID);
         verify(albumRepository).save(album);
         verify(albumMapper).toAlbumDto(album);
@@ -180,9 +189,14 @@ public class AlbumServiceImplTest {
 
     @Test
     public void test_addAlbumToFavorite() {
-        when(albumRepository.findById(ALBUM_ID)).thenReturn(album);
+        AlbumDto albumDto = new AlbumDto();
+        albumDto.setId(ALBUM_ID);
 
-        AlbumDto result = albumService.addAlbumToFavorite(ALBUM_ID, AUTHOR_ID);
+        when(albumRepositoryAdapter.findById(ALBUM_ID)).thenReturn(album);
+        when(userContext.getUserId()).thenReturn(AUTHOR_ID);
+        when(albumMapper.toAlbumDto(any(Album.class))).thenReturn(albumDto);
+
+        AlbumDto result = albumService.addAlbumToFavorite(ALBUM_ID);
 
         assertNotNull(result);
         assertEquals(ALBUM_ID, result.getId());
@@ -194,9 +208,10 @@ public class AlbumServiceImplTest {
 
     @Test
     public void test_removeAlbumFromFavorite() {
-        when(albumRepository.findById(ALBUM_ID)).thenReturn(album);
+        when(albumRepositoryAdapter.findById(ALBUM_ID)).thenReturn(album);
+        when(userContext.getUserId()).thenReturn(AUTHOR_ID);
 
-        AlbumDto result = albumService.removeAlbumFromFavorite(ALBUM_ID, AUTHOR_ID);
+        AlbumDto result = albumService.removeAlbumFromFavorite(ALBUM_ID);
 
         assertNotNull(result);
         assertEquals(ALBUM_ID, result.getId());
@@ -208,26 +223,27 @@ public class AlbumServiceImplTest {
 
     @Test
     public void test_getAlbumById() {
-        when(albumRepository.findById(ALBUM_ID)).thenReturn(album);
+        when(albumRepositoryAdapter.findById(ALBUM_ID)).thenReturn(album);
 
         AlbumDto result = albumService.getAlbumById(ALBUM_ID);
 
         assertNotNull(result);
         assertEquals(ALBUM_ID, result.getId());
 
-        verify(albumRepository).findById(ALBUM_ID);
+        verify(albumRepositoryAdapter).findById(ALBUM_ID);
     }
 
     @Test
-    public void test_getAllUserAlbums_withFilters() {
+    public void test_getAllUserAlbumsWithFilters() {
         List<Album> albums = List.of(album, savedAlbum);
         AlbumFilterDto filterDto = new AlbumFilterDto();
 
+        when(userContext.getUserId()).thenReturn(AUTHOR_ID);
         when(albumRepository.findByAuthorId(AUTHOR_ID)).thenReturn(albums.stream());
         when(albumFilterService.applyFilters(any(), eq(filterDto)))
                 .thenReturn(albums.stream());
 
-        List<AlbumDto> result = albumService.getAllUserAlbums(AUTHOR_ID, filterDto);
+        List<AlbumDto> result = albumService.getAllUserAlbums(filterDto);
 
         assertNotNull(result);
         assertEquals(2, result.size());
@@ -238,7 +254,7 @@ public class AlbumServiceImplTest {
     }
 
     @Test
-    public void test_getAllAlbums_withFilters() {
+    public void test_getAllAlbumsWithFilters() {
         Album album1 = new Album();
         album1.setId(1L);
         album1.setAuthorId(1L);
@@ -266,8 +282,7 @@ public class AlbumServiceImplTest {
     }
 
     @Test
-    void test_getAllUserFavoriteAlbums_withFilters() {
-        // given
+    void test_getAllUserFavoriteAlbumsWithFilters() {
         long userId = 1L;
         AlbumFilterDto filterDto = new AlbumFilterDto();
         filterDto.setTitlePattern("t");
@@ -276,12 +291,13 @@ public class AlbumServiceImplTest {
         Album album2 = new Album();
 
         List<Album> favoriteAlbums = List.of(album1, album2);
-        Stream<Album> filteredStream = favoriteAlbums.stream(); // допустим, фильтрация ничего не убрала
+        Stream<Album> filteredStream = favoriteAlbums.stream();
 
+        when(userContext.getUserId()).thenReturn(userId);
         when(albumRepository.findFavoriteAlbumsByAuthorId(userId)).thenReturn(favoriteAlbums.stream());
         when(albumFilterService.applyFilters(any(), eq(filterDto))).thenReturn(favoriteAlbums.stream());
 
-        List<AlbumDto> result = albumService.getAllUserFavoriteAlbums(userId, filterDto);
+        List<AlbumDto> result = albumService.getAllUserFavoriteAlbums(filterDto);
 
         assertEquals(2, result.size());
         verify(albumRepository).findFavoriteAlbumsByAuthorId(userId);
@@ -289,11 +305,15 @@ public class AlbumServiceImplTest {
     }
 
     @Test
-    void test_updateAlbum_success() {
-        when(albumRepository.findById(ALBUM_ID)).thenReturn(album);
-        when(albumRepository.save(album)).thenReturn(album);
+    void test_updateAlbumSuccess() {
+        Album album = new Album();
+        album.setPosts(new ArrayList<>());
 
-        AlbumDto result = albumService.updateAlbum(ALBUM_ID, AUTHOR_ID, albumDto);
+        when(albumRepositoryAdapter.findById(ALBUM_ID)).thenReturn(album);
+        when(albumRepository.save(album)).thenReturn(album);
+        when(userContext.getUserId()).thenReturn(AUTHOR_ID);
+
+        AlbumDto result = albumService.updateAlbum(ALBUM_ID, albumDto);
 
         System.out.println("Returned AlbumDto: " + result);
 
@@ -303,21 +323,22 @@ public class AlbumServiceImplTest {
         assertEquals(albumDto.getDescription(), result.getDescription());
         assertEquals(ALBUM_ID, result.getId());
 
-        verify(albumRepository).findById(ALBUM_ID);
+        verify(albumRepositoryAdapter).findById(ALBUM_ID);
         verify(albumValidator).validateUpdateAlbum(album, AUTHOR_ID, albumDto);
         verify(albumRepository).save(album);
     }
 
     @Test
-    void test_deleteAlbum_success() {
-        when(albumRepository.findById(ALBUM_ID)).thenReturn(album);
+    void test_deleteAlbumSuccess() {
+        when(albumRepositoryAdapter.findById(ALBUM_ID)).thenReturn(album);
         doNothing().when(albumValidator).validateDeleteAlbum(album, AUTHOR_ID);
         when(albumMapper.toAlbumDto(album)).thenReturn(albumDto);
+        when(userContext.getUserId()).thenReturn(AUTHOR_ID);
 
-        AlbumDto result = albumService.deleteAlbum(ALBUM_ID, AUTHOR_ID);
+        AlbumDto result = albumService.deleteAlbum(ALBUM_ID);
 
         assertEquals(albumDto, result);
-        verify(albumRepository).findById(ALBUM_ID);
+        verify(albumRepositoryAdapter).findById(ALBUM_ID);
         verify(albumValidator).validateDeleteAlbum(album, AUTHOR_ID);
         verify(albumMapper).toAlbumDto(album);
         verify(albumRepository).deleteById(ALBUM_ID);
