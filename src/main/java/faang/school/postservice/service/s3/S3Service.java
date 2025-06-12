@@ -3,13 +3,18 @@ package faang.school.postservice.service.s3;
 import faang.school.postservice.config.s3.S3Properties;
 import faang.school.postservice.exception.file.FileDownloadException;
 import faang.school.postservice.exception.file.FileNotFoundException;
+import faang.school.postservice.model.ImageResource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
+import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
@@ -23,7 +28,7 @@ public class S3Service {
     private final S3Client s3Client;
     private final S3Properties s3Properties;
 
-    public InputStream download(String fileKey) {
+    public Resource download(String fileKey) {
         String bucketName = s3Properties.getBucket();
 
         try {
@@ -32,7 +37,23 @@ public class S3Service {
                     .key(fileKey)
                     .build();
 
-            return s3Client.getObject(request);
+            ResponseInputStream<GetObjectResponse> s3Stream = s3Client.getObject(request);
+
+            return new InputStreamResource(s3Stream) {
+                @Override
+                public long contentLength() {
+                    try {
+                        return s3Stream.response().contentLength();
+                    } catch (Exception e) {
+                        return -1;
+                    }
+                }
+
+                @Override
+                public String getFilename() {
+                    return fileKey;
+                }
+            };
         } catch (NoSuchKeyException e) {
             log.warn("Файл не найден: {}", fileKey);
             throw new FileNotFoundException("Файл не найден: " + fileKey);

@@ -3,12 +3,14 @@ package faang.school.postservice.service.image;
 import faang.school.postservice.dto.image.ImageResponseDto;
 import faang.school.postservice.exception.file.FileReadException;
 import faang.school.postservice.exception.file.FileUploadException;
+import faang.school.postservice.model.ImageResource;
+import faang.school.postservice.repository.ImageResourceRepository;
 import faang.school.postservice.service.s3.S3KeyGenerator;
 import faang.school.postservice.service.s3.S3Service;
+import faang.school.postservice.validation.image.CommentImageValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnails;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,7 +18,6 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 
 @Slf4j
 @Service
@@ -27,10 +28,14 @@ public class ImageService {
     private static final int MAX_SIDE_SIZE_OF_SMALL_IMAGE_PX = 170;
     private static final int MAX_SIDE_SIZE_OF_IMAGE_PX = 1080;
 
+    private final CommentImageValidator imageValidator;
+    private final ImageResourceRepository resourceRepository;
     private final S3Service s3Service;
     private final S3KeyGenerator s3KeyGenerator;
 
     public ImageResponseDto uploadToS3(MultipartFile file) {
+        imageValidator.validate(file);
+
         String imageKey = s3KeyGenerator.generateImageKey(file.getOriginalFilename());
         String previewKey = s3KeyGenerator.generatePreviewKey(imageKey);
 
@@ -39,10 +44,16 @@ public class ImageService {
         return new ImageResponseDto(imageKey, previewKey, file.getContentType(), file.getSize());
     }
 
-    public Resource download(String key) {
-        InputStream stream = s3Service.download(key);
+    public ImageResource saveResource(ImageResource resource) {
+        return resourceRepository.save(resource);
+    }
 
-        return new InputStreamResource(stream);
+    public void deleteResource(ImageResource resource) {
+        resourceRepository.delete(resource);
+    }
+
+    public Resource download(String key) {
+        return s3Service.download(key);
     }
 
     public void delete(String key) {

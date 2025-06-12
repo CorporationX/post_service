@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.core.io.Resource;
+import org.springframework.http.MediaType;
 
 @Data
 @AllArgsConstructor
@@ -16,5 +17,5 @@ public class ImageDownloadDto {
     @NotBlank
     private String originalFileName;
     @NotBlank
-    private String contentType;
+    private MediaType contentType;
 }

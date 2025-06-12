@@ -3,7 +3,6 @@ package faang.school.postservice.model.post;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.comment.Comment;
 import faang.school.postservice.model.Like;
-import faang.school.postservice.model.Resource;
 import faang.school.postservice.model.ad.Ad;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -61,9 +60,6 @@ public class Post {
 
     @OneToOne(mappedBy = "post", cascade = CascadeType.ALL)
     private Ad ad;
-
-    @OneToMany(mappedBy = "post", orphanRemoval = true)
-    private List<Resource> resources;
 
     @Column(name = "published", nullable = false)
     private boolean published;

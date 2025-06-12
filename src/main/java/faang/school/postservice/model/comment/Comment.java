@@ -2,6 +2,7 @@ package faang.school.postservice.model.comment;
 
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.post.Post;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -58,9 +59,6 @@ public class Comment {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @Column(name = "large_image_file_key")
-    private String largeImageFileKey;
-
-    @Column(name = "small_image_file_key")
-    private String smallImageFileKey;
+    @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CommentImage> images;
 }

@@ -13,6 +13,8 @@ public class S3KeyGenerator {
 
     private static final String ORIGINAL_IMAGE_KEY_PATTERN = "user_%s/originals/%s-%s-%s";
     private static final String PREVIEW_IMAGE_KEY_PATTERN  = "user_%s/previews/%s-%s-%s";
+    private static final Pattern INVALID_FILENAME_CHARS = Pattern.compile("[^\\w\\dа-яА-ЯёЁ._\\- ]");
+
     private static final String DEFAULT_USER_ID = "default";
 
     private final UserContext userContext;
@@ -41,6 +43,6 @@ public class S3KeyGenerator {
     }
 
     private String sanitize(String fileName) {
-        return fileName.replaceAll("[^\\p{L}\\p{N}._\\-\\— ]", "_");
+        return INVALID_FILENAME_CHARS.matcher(fileName).replaceAll("_");
     }
 }

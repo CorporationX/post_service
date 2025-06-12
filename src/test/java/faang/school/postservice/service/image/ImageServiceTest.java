@@ -73,17 +73,6 @@ class ImageServiceTest {
     }
 
     @Test
-    void download_shouldReturnResource() throws Exception {
-        InputStream is = new ByteArrayInputStream("image".getBytes());
-        when(s3Service.download("key.jpg")).thenReturn(is);
-
-        Resource resource = imageService.download("key.jpg");
-
-        assertNotNull(resource);
-        assertInstanceOf(InputStreamResource.class, resource);
-    }
-
-    @Test
     void delete_shouldDelegateToS3Service() {
         imageService.delete("key.jpg");
 
