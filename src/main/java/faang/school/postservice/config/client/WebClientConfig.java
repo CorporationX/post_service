@@ -15,8 +15,6 @@ import java.util.concurrent.TimeUnit;
 @Configuration
 public class WebClientConfig {
     private static final int TIMEOUT = 5000;
-
-    // TODO: изучить
     @Bean
     public WebClient.Builder webClient() {
         HttpClient httpClient = HttpClient
