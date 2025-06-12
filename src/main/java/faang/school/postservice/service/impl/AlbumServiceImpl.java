@@ -115,10 +115,8 @@ public class AlbumServiceImpl implements AlbumService {
     @Override
     @Transactional
     public List<AlbumDto> getAllUserAlbums(AlbumFilterDto albumFilterDto) {
-        return albumFilterService.
-                applyFilters(
-                        albumRepository.findByAuthorId(userContext.getUserId()),
-                        albumFilterDto)
+        return albumFilterService
+                .applyFilters(albumRepository.findByAuthorId(userContext.getUserId()), albumFilterDto)
                 .map(albumMapper::toAlbumDto)
                 .toList();
     }
@@ -134,10 +132,9 @@ public class AlbumServiceImpl implements AlbumService {
     @Override
     @Transactional
     public List<AlbumDto> getAllUserFavoriteAlbums(AlbumFilterDto albumFilterDto) {
-        return albumFilterService.
-                applyFilters(albumRepository.
-                                findFavoriteAlbumsByAuthorId(userContext.getUserId()),
-                        albumFilterDto)
+        return albumFilterService
+                .applyFilters(albumRepository
+                        .findFavoriteAlbumsByAuthorId(userContext.getUserId()), albumFilterDto)
                 .map(albumMapper::toAlbumDto)
                 .toList();
     }

@@ -33,11 +33,4 @@ public interface AlbumMapper {
                 })
                 .collect(Collectors.toList());
     }
-
-//    @Named("postsToPostIds")
-//    default List<Long> postsToPostIds(List<Post> posts) {
-//        return posts.stream()
-//                .map(Post::getId)
-//                .collect(Collectors.toList());
-//    }
 }
