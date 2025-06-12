@@ -1,7 +1,6 @@
 package faang.school.postservice.client.language_tool;
 
 import faang.school.postservice.dto.post.LanguageToolClientResponseDto;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -14,14 +13,11 @@ import java.time.Duration;
 import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED;
 
 @Component
-@RequiredArgsConstructor
 public class LanguageToolClient {
     private final WebClient webClient;
-    private final LanguageToolConfigurationProperties languageToolConfigurationProperties;
 
     public LanguageToolClient(WebClient.Builder builder,
                               LanguageToolConfigurationProperties props) {
-        this.languageToolConfigurationProperties = props;
         this.webClient = builder
                 .baseUrl(props.getUrl() + "/" + props.getVersion())
                 .build();

@@ -8,16 +8,11 @@ import org.springframework.stereotype.Component;
 @Component
 @Slf4j
 public class UserContext {
-    private static final long SYSTEM_USER_ID = -1L;
 
     private final TransmittableThreadLocal<Long> userIdHolder = new TransmittableThreadLocal<>();
 
     public void setUserId(long userId) {
         userIdHolder.set(userId);
-    }
-
-    public void setSystemUserId() {
-        userIdHolder.set(SYSTEM_USER_ID);
     }
 
     public long getUserId() {
