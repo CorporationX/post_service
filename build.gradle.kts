@@ -68,6 +68,72 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+    finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+    reports {
+        xml.required.set(true)
+        csv.required.set(false)
+        html.outputLocation.set(layout.buildDirectory.dir("jacocoHtml"))
+    }
+
+    classDirectories.setFrom(
+        files(classDirectories.files.map {
+            fileTree(it) {
+                exclude(
+                    "**/config/**",
+                    "**/controller/**",
+                    "**/dto/**",
+                    "**/entity/**",
+                    "**/repository/**",
+                    "**/exception/**",
+                    "**/facade/**",
+                    "**/handler/**",
+                    "**/client/**",
+                    "**/mapper/**",
+                    "**/model/**"
+                )
+            }
+        })
+    )
+}
+
+tasks.named<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
+    dependsOn(tasks.test)
+    violationRules {
+        rule {
+            element = "PACKAGE"
+            limit {
+                counter = "INSTRUCTION"
+                value = "COVEREDRATIO"
+                minimum = "0.70".toBigDecimal()
+            }
+
+            excludes = listOf(
+                "faang.school.postservice.config.*",
+                "faang.school.postservice.controller.*",
+                "faang.school.postservice.dto.*",
+                "faang.school.postservice.entity",
+                "faang.school.postservice.entity.*",
+                "faang.school.postservice.repository",
+                "faang.school.postservice.repository.*",
+                "faang.school.postservice.exception.*",
+                "faang.school.postservice.facade.*",
+                "faang.school.postservice.handler",
+                "faang.school.postservice.client",
+                "faang.school.postservice.mapper.*",
+                "faang.school.postservice.model",
+                "faang.school.postservice.model.*",
+                "faang.school.postservice"
+            )
+        }
+    }
+}
+
+tasks.check {
+    dependsOn(tasks.named("jacocoTestCoverageVerification"))
 }
 
 tasks.withType<Test> {
