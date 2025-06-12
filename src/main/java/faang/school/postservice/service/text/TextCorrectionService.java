@@ -1,6 +1,5 @@
 package faang.school.postservice.service.text;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import faang.school.postservice.config.corrector.PostCorrectorProperty;
 import faang.school.postservice.exception.TextAutoCorrectionException;
 import faang.school.postservice.model.text.CorrectionResponse;

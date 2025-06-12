@@ -1,6 +1,8 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.dto.post.TextCheckResponse;
+
 public interface PostCorrectorService {
 
-    String checkText(String textToCheck);
+    TextCheckResponse checkText(String textToCheck);
 }
