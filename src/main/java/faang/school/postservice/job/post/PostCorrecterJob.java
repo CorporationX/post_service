@@ -65,6 +65,11 @@ public class PostCorrecterJob {
                 String replacement = match.getReplacements().get(0).getValue();
                 int offset = match.getOffset();
                 int length = match.getLength();
+
+                String originalFragment =
+                        originalText.substring(offset,Math.min(offset + length, originalText.length()));
+                log.debug("Correction: replacing '{}' with '{}' at offset {} (length {})",
+                        originalFragment, replacement, offset, length);
                 sb.replace(offset, offset + length, replacement);
             }
         }
