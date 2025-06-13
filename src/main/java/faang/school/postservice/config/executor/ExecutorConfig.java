@@ -1,7 +1,8 @@
 package faang.school.postservice.config.executor;
 
+import faang.school.postservice.config.properties.ExecutorServiceProperties;
 import jakarta.annotation.PreDestroy;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -10,18 +11,14 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 @Configuration
+@RequiredArgsConstructor
 public class ExecutorConfig {
     private ExecutorService executorService;
-
-    @Value("${executor-service.threads-count}")
-    private int threadsCount;
-
-    @Value("${executor-service.termination-timeout}")
-    private int terminationTimeout;
+    private final ExecutorServiceProperties executorProperties;
 
     @Bean
     public ExecutorService executorService() {
-        this.executorService = Executors.newFixedThreadPool(threadsCount);
+        this.executorService = Executors.newFixedThreadPool(executorProperties.getThreadsCount());
         return executorService;
     }
 
@@ -29,7 +26,7 @@ public class ExecutorConfig {
     public void destroy() {
         executorService.shutdown();
         try {
-            if (!executorService.awaitTermination(terminationTimeout, TimeUnit.SECONDS)) {
+            if (!executorService.awaitTermination(executorProperties.getTerminationTimeout(), TimeUnit.SECONDS)) {
                 executorService.shutdownNow();
             }
         } catch (InterruptedException e) {

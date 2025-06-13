@@ -5,7 +5,6 @@ import faang.school.postservice.repository.ad.AdRepository;
 import faang.school.postservice.service.AdService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,12 +20,9 @@ public class AdServiceImpl implements AdService {
     private final AdRepository adRepository;
     private final ExecutorService executorService;
 
-    @Value("${scheduler.expired-ad.batch-size}")
-    private int batchSize;
-
     @Override
-    public void removeExpiredAds() {
-        List<List<Ad>> batches = splitIntoBatches(adRepository.findExpiredAds());
+    public void removeExpiredAds(int batchSize) {
+        List<List<Ad>> batches = splitIntoBatches(adRepository.findExpiredAds(), batchSize);
         List<CompletableFuture<Void>> futures = batches.stream()
                 .map(batch -> CompletableFuture.runAsync(() -> removeAds(batch), executorService))
                 .toList();
@@ -43,7 +39,7 @@ public class AdServiceImpl implements AdService {
         }
     }
 
-    private List<List<Ad>> splitIntoBatches(List<Ad> adsList) {
+    private List<List<Ad>> splitIntoBatches(List<Ad> adsList, int batchSize) {
         return IntStream.range(0, (adsList.size() + batchSize - 1) / batchSize)
                 .mapToObj(value -> adsList.subList(value * batchSize, Math.min(adsList.size(), (value + 1) * batchSize)))
                 .toList();
