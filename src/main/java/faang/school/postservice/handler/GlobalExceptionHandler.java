@@ -104,7 +104,7 @@ public class GlobalExceptionHandler {
     private ResponseEntity<PostServiceErrorResponseDto> createErrorResponse(String errorMsg,
                                                                             HttpStatus status,
                                                                             Exception ex) {
-        log.error("Error in GoalController: {}, response status {}", errorMsg, status, ex);
+        log.error("Error: {}, response status {}", errorMsg, status, ex);
         PostServiceErrorResponseDto response =
                 new PostServiceErrorResponseDto(errorMsg, LocalDateTime.now(), status.value());
         return new ResponseEntity<>(response, status);

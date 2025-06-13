@@ -1,5 +1,6 @@
 package faang.school.postservice.validation.image;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.InvalidMediaTypeException;
 import org.springframework.http.MediaType;
@@ -11,7 +12,8 @@ import faang.school.postservice.exception.file.UnsupportedFileTypeException;
 import java.util.Set;
 
 @Component
-public class CommentImageValidator {
+@Slf4j
+public class ImageValidator {
 
     @Value("${file.upload.max-size}")
     private long maxSize;
@@ -27,20 +29,27 @@ public class CommentImageValidator {
 
     public void validate(MultipartFile file) {
         if (file == null || file.isEmpty()) {
+            log.warn("Файл пуст или не выбран.");
             throw new UnsupportedFileTypeException("Файл пуст или не выбран.");
         }
 
+        log.debug("Получен файл: name={}, size={}, type={}",
+                file.getOriginalFilename(), file.getSize(), file.getContentType());
+
         if (file.getSize() > maxSize) {
+            log.warn("Размер файла превышает допустимый предел: {} > {}", file.getSize(), maxSize);
             throw new FileTooLargeException("Файл слишком большой. Максимальный размер: " + maxSize);
         }
 
         String contentType = file.getContentType();
         if (contentType == null || !isSupportedMediaType(contentType)) {
+            log.warn("Неподдерживаемый тип файла: {}", contentType);
             throw new UnsupportedFileTypeException("Неподдерживаемый тип файла: " + contentType);
         }
 
         String filename = file.getOriginalFilename();
         if (!hasExtension(filename)) {
+            log.warn("Файл не содержит расширения: {}", filename);
             throw new UnsupportedFileTypeException("Файл должен иметь расширение.");
         }
     }

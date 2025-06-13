@@ -13,6 +13,8 @@ import org.springframework.http.MediaType;
 @NoArgsConstructor
 public class ImageDownloadDto {
     @NotNull
+    private Long imageId;
+    @NotNull
     private Resource resource;
     @NotBlank
     private String originalFileName;

@@ -1,30 +1,34 @@
 package faang.school.postservice.service.image;
 
-import faang.school.postservice.dto.image.ImageResponseDto;
+import faang.school.postservice.dto.image.ImageStorage;
+import faang.school.postservice.exception.file.FileReadException;
 import faang.school.postservice.service.s3.S3KeyGenerator;
 import faang.school.postservice.service.s3.S3Service;
+import faang.school.postservice.validation.image.ImageValidator;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.mock.web.MockMultipartFile;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 
-import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -32,50 +36,83 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class ImageServiceTest {
 
+    private static final String TEST_IMAGE_PATH = "test-images/kik.jpg";
+    private static final String TEST_IMAGE_NAME = "kik.jpg";
+    private static final String TEST_IMAGE_TYPE = "image/jpeg";
+    private static final String IMAGE_KEY = "image-key";
+    private static final String PREVIEW_KEY = "preview-key";
+    private static final String DOWNLOAD_KEY = "key";
+
+    @Mock
+    private ImageValidator imageValidator;
     @Mock
     private S3Service s3Service;
-
     @Mock
     private S3KeyGenerator s3KeyGenerator;
-
     @InjectMocks
     private ImageService imageService;
 
+    private MockMultipartFile mockFile;
+
+
+    @BeforeEach
+    void setUp() throws IOException {
+        ClassPathResource resource = new ClassPathResource(TEST_IMAGE_PATH);
+        byte[] imageBytes = resource.getInputStream().readAllBytes();
+
+        mockFile = new MockMultipartFile("file", TEST_IMAGE_NAME, TEST_IMAGE_TYPE, imageBytes);
+    }
+
     @Test
-    void uploadToS3_shouldProcessAndUploadImage() throws Exception {
-        MultipartFile file = mock(MultipartFile.class);
-        when(file.getOriginalFilename()).thenReturn("test.jpg");
-        when(file.getContentType()).thenReturn("image/jpeg");
-        when(file.getSize()).thenReturn(12345L);
+    void uploadToS3_shouldUploadImageAndReturnStorage() {
+        when(s3KeyGenerator.generateImageKey(TEST_IMAGE_NAME)).thenReturn(IMAGE_KEY);
+        when(s3KeyGenerator.generatePreviewKey(IMAGE_KEY)).thenReturn(PREVIEW_KEY);
 
-        String key = "user_1/originals/...jpg";
-        String previewKey = "user_1/previews/...jpg";
+        BufferedImage image = new BufferedImage(10, 10, BufferedImage.TYPE_INT_RGB);
+        try (MockedStatic<ImageIO> mocked = ImageIOStubber.stubImageIORead(image)) {
+            mocked.when(() -> ImageIO.read(any(InputStream.class))).thenReturn(image);
 
-        when(s3KeyGenerator.generateImageKey(anyString())).thenReturn(key);
-        when(s3KeyGenerator.generatePreviewKey(key)).thenReturn(previewKey);
+            ImageStorage result = imageService.uploadToS3(mockFile);
 
-        BufferedImage testImage = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
-        ByteArrayOutputStream imageStream = new ByteArrayOutputStream();
-        ImageIO.write(testImage, "jpg", imageStream);
+            assertEquals(IMAGE_KEY, result.fileKey());
+            assertEquals(PREVIEW_KEY, result.previewKey());
+            assertEquals(TEST_IMAGE_TYPE, result.contentType());
+            assertEquals(mockFile.getSize(), result.size());
 
-        when(file.getInputStream()).thenReturn(
-                new ByteArrayInputStream(imageStream.toByteArray())
-        );
+            verify(s3Service, times(2)).upload(any(byte[].class), anyString(), eq(TEST_IMAGE_TYPE));
+        }
+    }
 
-        ImageResponseDto response = imageService.uploadToS3(file);
+    @Test
+    void uploadToS3_shouldThrowFileReadException_whenNotImage() throws IOException {
+        try (MockedStatic<ImageIO> mocked = ImageIOStubber.stubImageIORead(null)) {
+            when(s3KeyGenerator.generateImageKey(any())).thenReturn(IMAGE_KEY);
+            when(s3KeyGenerator.generatePreviewKey(any())).thenReturn(PREVIEW_KEY);
 
-        assertEquals(key, response.getFileKey());
-        assertEquals(previewKey, response.getPreviewKey());
-        assertEquals("image/jpeg", response.getContentType());
-        assertEquals(12345L, response.getSize());
+            assertThrows(FileReadException.class, () -> imageService.uploadToS3(mockFile));
+        }
+    }
 
-        verify(s3Service, times(2)).upload(any(), any(), eq("image/jpeg"));
+    @Test
+    void download_shouldDelegateToS3Service() {
+        Resource expected = new ByteArrayResource(new byte[]{1, 2, 3});
+        when(s3Service.download(DOWNLOAD_KEY)).thenReturn(expected);
+
+        Resource actual = imageService.download(DOWNLOAD_KEY);
+        assertEquals(expected, actual);
     }
 
     @Test
     void delete_shouldDelegateToS3Service() {
-        imageService.delete("key.jpg");
+        imageService.delete(DOWNLOAD_KEY);
+        verify(s3Service).delete(DOWNLOAD_KEY);
+    }
+}
 
-        verify(s3Service).delete("key.jpg");
+class ImageIOStubber {
+    public static MockedStatic<ImageIO> stubImageIORead(BufferedImage image) {
+        MockedStatic<ImageIO> mock = Mockito.mockStatic(ImageIO.class, CALLS_REAL_METHODS);
+        mock.when(() -> ImageIO.read(any(InputStream.class))).thenReturn(image);
+        return mock;
     }
 }

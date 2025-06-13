@@ -139,7 +139,7 @@ public class CommentServiceTest {
     public void testDeleteComment_notFound() {
         when(commentRepository.existsById(comment.getId())).thenReturn(false);
 
-        assertThrows(CommentValidationException.class, () -> commentService.delete(comment.getId()));
+        assertThrows(CommentNotFoundException.class, () -> commentService.delete(comment.getId()));
         verify(commentRepository, never()).deleteById(any());
     }
 }

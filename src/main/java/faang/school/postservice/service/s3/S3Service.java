@@ -3,7 +3,6 @@ package faang.school.postservice.service.s3;
 import faang.school.postservice.config.s3.S3Properties;
 import faang.school.postservice.exception.file.FileDownloadException;
 import faang.school.postservice.exception.file.FileNotFoundException;
-import faang.school.postservice.model.ImageResource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.InputStreamResource;
@@ -17,8 +16,6 @@ import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-
-import java.io.InputStream;
 
 @Service
 @RequiredArgsConstructor
@@ -38,6 +35,11 @@ public class S3Service {
                     .build();
 
             ResponseInputStream<GetObjectResponse> s3Stream = s3Client.getObject(request);
+
+            log.info("Файл успешно загружен из S3: {}, размер: {} байт, тип: {}",
+                    fileKey,
+                    s3Stream.response().contentLength(),
+                    s3Stream.response().contentType());
 
             return new InputStreamResource(s3Stream) {
                 @Override
@@ -94,5 +96,7 @@ public class S3Service {
                         .build(),
                 RequestBody.fromBytes(bytes)
         );
+
+        log.info("Файл успешно загружен в S3: {}", key);
     }
 }
