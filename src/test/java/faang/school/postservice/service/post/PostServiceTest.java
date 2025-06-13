@@ -5,7 +5,7 @@ import faang.school.postservice.exception.authorization.UserUnauthorizedExceptio
 import faang.school.postservice.exception.client.RemoteNotFoundException;
 import faang.school.postservice.exception.post.PostAlreadyPublishedException;
 import faang.school.postservice.exception.post.PostNotFoundException;
-import faang.school.postservice.model.post.Post;
+import faang.school.postservice.entity.post.Post;
 import faang.school.postservice.repository.post.PostRepository;
 import faang.school.postservice.validation.post.PostValidator;
 import org.junit.jupiter.api.BeforeEach;

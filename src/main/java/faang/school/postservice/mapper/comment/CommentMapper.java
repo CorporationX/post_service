@@ -3,7 +3,7 @@ package faang.school.postservice.mapper.comment;
 import faang.school.postservice.dto.comment.CommentCreateDto;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CommentUpdateDto;
-import faang.school.postservice.model.comment.Comment;
+import faang.school.postservice.entity.comment.Comment;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

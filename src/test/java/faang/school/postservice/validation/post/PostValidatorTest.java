@@ -6,7 +6,7 @@ import faang.school.postservice.dto.project.ProjectClientResponseDto;
 import faang.school.postservice.dto.user.UserClientResponseDto;
 import faang.school.postservice.exception.client.RemoteNotFoundException;
 import faang.school.postservice.exception.post.PostAlreadyPublishedException;
-import faang.school.postservice.model.post.Post;
+import faang.school.postservice.entity.post.Post;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

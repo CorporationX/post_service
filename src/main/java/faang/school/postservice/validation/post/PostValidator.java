@@ -3,7 +3,7 @@ package faang.school.postservice.validation.post;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.exception.post.PostAlreadyPublishedException;
-import faang.school.postservice.model.post.Post;
+import faang.school.postservice.entity.post.Post;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

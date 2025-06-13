@@ -1,10 +1,10 @@
-package faang.school.postservice.model.post;
+package faang.school.postservice.entity.post;
 
-import faang.school.postservice.model.Album;
-import faang.school.postservice.model.comment.Comment;
-import faang.school.postservice.model.Like;
-import faang.school.postservice.model.Resource;
-import faang.school.postservice.model.ad.Ad;
+import faang.school.postservice.entity.album.Album;
+import faang.school.postservice.entity.comment.Comment;
+import faang.school.postservice.entity.like.Like;
+import faang.school.postservice.entity.resource.Resource;
+import faang.school.postservice.entity.ad.Ad;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

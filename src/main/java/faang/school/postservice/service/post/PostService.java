@@ -2,7 +2,7 @@ package faang.school.postservice.service.post;
 
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.exception.post.PostNotFoundException;
-import faang.school.postservice.model.post.Post;
+import faang.school.postservice.entity.post.Post;
 import faang.school.postservice.repository.post.PostRepository;
 import faang.school.postservice.validation.post.PostValidator;
 import lombok.RequiredArgsConstructor;

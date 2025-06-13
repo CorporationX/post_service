@@ -2,7 +2,7 @@ package faang.school.postservice.job.post;
 
 import faang.school.postservice.client.language_tool.LanguageToolClient;
 import faang.school.postservice.dto.post.LanguageToolClientResponseDto;
-import faang.school.postservice.model.post.Post;
+import faang.school.postservice.entity.post.Post;
 import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.utils.async.GracefullyShutdownThreadPool;
 import lombok.RequiredArgsConstructor;
