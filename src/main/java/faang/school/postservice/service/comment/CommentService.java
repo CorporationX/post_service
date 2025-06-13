@@ -158,7 +158,7 @@ public class CommentService {
     }
 
     @Transactional
-    public void deleteCommentsWithProfanities() {
-        commentRepository.deleteAllFailedVerification();
+    public int deleteCommentsWithProfanities() {
+        return commentRepository.deleteAllFailedVerification();
     }
 }

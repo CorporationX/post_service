@@ -1,5 +1,6 @@
 package faang.school.postservice.moderation.model;
 
+import faang.school.postservice.config.executor.ConfiguredExecutorService;
 import faang.school.postservice.config.moderation.CommentsModerationConfiguration;
 import faang.school.postservice.config.moderation.ModerationDictionary;
 import faang.school.postservice.model.Comment;
@@ -12,9 +13,6 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
 @RequiredArgsConstructor
@@ -25,28 +23,24 @@ public class CommentModeration {
     private final CommentService commentService;
     private final ModerationDictionary moderationDictionary;
     private final CommentsModerationConfiguration configuration;
+    private final ConfiguredExecutorService executorService;
 
     @Scheduled(cron = "#{@commentsModerationConfiguration.cron}")
     public void moderateComments() {
-        log.info("Moderation started");
-
         List<List<Comment>> batchedCommentList = getBatches();
-        ExecutorService executorService = Executors.newFixedThreadPool(configuration.getThreadPoolSize());
 
-        batchedCommentList.forEach(batch -> executorService.submit(() -> verifyComments(batch)));
-
-        executorShutdown(executorService);
-
-        log.info("Moderation finished");
+        batchedCommentList.forEach(batch -> executorService.taskExecutor().submit(() -> verifyComments(batch)));
     }
 
     @Scheduled(cron = "#{@commentsModerationConfiguration.cron}")
     public void deleteCommentsWithProfanities() {
-        log.info("Deleting comments with profanities");
-        commentService.deleteCommentsWithProfanities();
+        int deletedComments = commentService.deleteCommentsWithProfanities();
+        log.info("Deleted {} number of commetns fith profanities", deletedComments);
     }
 
     private List<Comment> verifyComments(List<Comment> comments) {
+        log.info("Moderation started. Batch size = {}", comments.size());
+        long start = System.currentTimeMillis();
         List<Comment> verified = comments.stream()
                 .peek(comment -> {
                     boolean hasProfanity = moderationDictionary.containsProfanity(comment.getContent());
@@ -55,7 +49,9 @@ public class CommentModeration {
                     log.debug("Comment {} verification result: {}", comment.getId(), !hasProfanity);
                 })
                 .toList();
+        long end = System.currentTimeMillis();
 
+        log.info("Moderation finished. Execution time: {} ms, ", end - start);
         return commentService.saveVerifiedComments(verified);
     }
 
@@ -68,18 +64,5 @@ public class CommentModeration {
                 .forEach(i -> batchedCommentList.add(comments.subList(i, Math.min(i + batchSize, comments.size()))));
 
         return batchedCommentList;
-    }
-
-    private void executorShutdown(ExecutorService service) {
-        service.shutdown();
-
-        try {
-            if (!service.awaitTermination(configuration.getTerminationAwait(), TimeUnit.MINUTES)) {
-                log.info("Forcing shutdown");
-                service.shutdownNow();
-            }
-        } catch (InterruptedException e) {
-            service.shutdownNow();
-        }
     }
 }

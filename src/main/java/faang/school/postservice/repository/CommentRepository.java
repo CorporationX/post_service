@@ -16,10 +16,11 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
             SELECT * FROM Comment c
             WHERE c.verified_date is NULL
             FOR UPDATE SKIP LOCKED
+            LIMIT 10000
             """)
     List<Comment> findAllNotVerified();
 
     @Modifying
     @Query(nativeQuery = true, value = "DELETE FROM Comment WHERE verified = false")
-    void deleteAllFailedVerification();
+    int deleteAllFailedVerification();
 }

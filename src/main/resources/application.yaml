@@ -13,7 +13,7 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: none
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         format_sql: true
@@ -58,7 +58,7 @@ minio:
 
 moderation:
   comments:
-    cron: "0 * * * * *"
-    batch_size: 50
-    thread_pool_size: 5
-    termination_wait: 1
+    cron: "*/15 * * * * *"
+    batch_size: 1000
+  executor:
+    thread_pool_size: 1000
