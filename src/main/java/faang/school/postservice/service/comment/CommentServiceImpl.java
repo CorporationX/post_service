@@ -1,5 +1,6 @@
 package faang.school.postservice.service.comment;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CommentForCreationDto;
@@ -9,6 +10,8 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.event.CommentEvent;
+import faang.school.postservice.publisher.comment.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.CommentService;
@@ -31,9 +34,10 @@ public class CommentServiceImpl implements CommentService {
     private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
     private final UserContext userContext;
+    private final CommentEventPublisher commentPublisher;
 
     @Override
-    public CommentOutputDto createComment(CommentForCreationDto commentDto) {
+    public CommentOutputDto createComment(CommentForCreationDto commentDto) throws JsonProcessingException {
         Long postId = commentDto.getPostId();
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("Post with id %d doesn't exist".formatted(postId)));
@@ -46,6 +50,12 @@ public class CommentServiceImpl implements CommentService {
         Comment savedComment = commentRepository.save(commentEntity);
         log.info("Creating a comment by user {} for post with id {} - Finished"
                 , userContext.getUserId(), commentDto.getPostId());
+
+        commentPublisher.publish(new CommentEvent(
+                savedComment.getId(),
+                savedComment.getAuthorId(),
+                savedComment.getPost().getId(),
+                savedComment.getCreatedAt()));
         return commentMapper.toDto(savedComment);
     }
 

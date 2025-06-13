@@ -1,6 +1,7 @@
 package faang.school.postservice.config.redis;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
@@ -29,6 +30,11 @@ public class RedisConfiguration {
         config.setPort(redisProperties.port());
 
         return new JedisConnectionFactory(config);
+    }
+
+    @Bean
+    public ChannelTopic commentTopic() {
+        return new ChannelTopic(redisProperties.channels().commentEventName());
     }
 
     @Bean
