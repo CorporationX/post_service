@@ -2,6 +2,7 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.AuthorNotFoundException;
@@ -37,6 +38,10 @@ public class PostServiceImplTest {
     private UserServiceClient userServiceClient;
     @Mock
     private ProjectServiceClient projectServiceClient;
+    @Mock
+    private UserContext userContext;
+    @Mock
+    private PostActionService postInteractionService;
 
     @InjectMocks
     private PostServiceImpl postService;
