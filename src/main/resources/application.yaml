@@ -22,8 +22,8 @@ spring:
       port: 6379
       host: localhost
       channels:
-        calculations_channel:
-          name: calculations_channel
+          calculations_channel_name: cal
+          user_ban_name: user_ban
 
 server:
   port: 8081
@@ -32,6 +32,22 @@ logging:
   level:
     root: info
 
+services:
+  s3:
+    endpoint: http://localhost:9000
+    accessKey: user
+    secretKey: password
+    bucketName: projectbucket
+    isMocked: false
+  user-service:
+    host: localhost
+    port: 8080
+  project-service:
+    host: localhost
+    port: 8082
+  payment-service:
+    host: localhost
+    port: 9080
 scheduler:
   expired-ad:
     batch-size: 100
@@ -41,12 +57,18 @@ executor-service:
   threads-count: 2
   termination-timeout: 30
 
-user-service:
-  host: localhost
-  port: 8080
-project-service:
-  host: localhost
-  port: 8082
-payment-service:
-  host: localhost
-  port: 9080
+springdoc:
+  swagger-ui:
+    path: /swagger-ui
+    enabled: true
+  api-docs:
+    path: /api-docs
+
+cron:
+    project:
+        ban-user: 0 0 1 * * *
+
+entity:
+    post:
+        max-unverified-count-for-ban: 5
+    commentServiceFileLimitMb: 5

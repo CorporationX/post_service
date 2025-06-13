@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 
-@FeignClient(name = "project-service", url = "${project-service.host}:${project-service.port}", configuration = FeignConfig.class)
+@FeignClient(name = "project-service", url = "${services.project-service.host}:${services.project-service.port}", configuration = FeignConfig.class)
 public interface ProjectServiceClient {
     @GetMapping("/api/v1/project/{projectId}")
     ProjectDto getProject(@PathVariable long projectId);

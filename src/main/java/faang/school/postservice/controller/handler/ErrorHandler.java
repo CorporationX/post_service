@@ -1,11 +1,13 @@
 package faang.school.postservice.controller.handler;
 
 import faang.school.postservice.dto.error.ErrorResponseDto;
+import faang.school.postservice.exception.CommentAlreadyHasPictureException;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.PostAlreadyPublishedException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.tomcat.util.http.fileupload.impl.FileSizeLimitExceededException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -35,7 +37,8 @@ public class ErrorHandler {
 
     @ExceptionHandler({
             MethodArgumentNotValidException.class,
-            DataValidationException.class
+            DataValidationException.class,
+            FileSizeLimitExceededException.class,
     })
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponseDto handleBadRequestExceptions(Exception e) {
@@ -70,6 +73,19 @@ public class ErrorHandler {
         return new ErrorResponseDto(
                 HttpStatus.CONFLICT.name(),
                 "Post was already published.",
+                e.getMessage(),
+                LocalDateTime.now().format(formatter)
+        );
+    }
+
+    @ExceptionHandler(CommentAlreadyHasPictureException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ErrorResponseDto handleConflictAlreadyBeenDone(Exception e) {
+        log.error("{}  was thrown", e.getClass().getSimpleName(), e);
+        return new ErrorResponseDto(
+                HttpStatus.CONFLICT.name(),
+                "This action can only be performed once on an object." +
+                        " Undo previous changes to perform this operation again.",
                 e.getMessage(),
                 LocalDateTime.now().format(formatter)
         );
