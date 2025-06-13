@@ -1,4 +1,4 @@
-package faang.school.postservice.config.client;
+package faang.school.postservice.config.client.web;
 
 import io.netty.channel.ChannelOption;
 import io.netty.handler.timeout.ReadTimeoutHandler;

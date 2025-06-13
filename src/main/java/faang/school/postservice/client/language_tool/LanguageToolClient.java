@@ -1,5 +1,6 @@
 package faang.school.postservice.client.language_tool;
 
+import faang.school.postservice.config.client.web.language_tool.LanguageToolConfigurationProperties;
 import faang.school.postservice.dto.post.LanguageToolClientResponseDto;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;

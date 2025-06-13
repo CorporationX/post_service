@@ -1,4 +1,4 @@
-package faang.school.postservice.config.client;
+package faang.school.postservice.config.client.feign;
 
 import faang.school.postservice.exception.authorization.UserUnauthorizedException;
 import faang.school.postservice.exception.client.RemoteNotFoundException;

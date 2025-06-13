@@ -1,6 +1,6 @@
 package faang.school.postservice.client;
 
-import faang.school.postservice.config.client.FeignClientConfig;
+import faang.school.postservice.config.client.feign.FeignClientConfig;
 import faang.school.postservice.dto.payment.PaymentRequest;
 import faang.school.postservice.dto.payment.PaymentResponse;
 import feign.FeignException;

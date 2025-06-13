@@ -1,6 +1,6 @@
 package faang.school.postservice.client;
 
-import faang.school.postservice.config.client.FeignClientConfig;
+import faang.school.postservice.config.client.feign.FeignClientConfig;
 import faang.school.postservice.dto.project.ProjectClientResponseDto;
 import feign.FeignException;
 import feign.RetryableException;

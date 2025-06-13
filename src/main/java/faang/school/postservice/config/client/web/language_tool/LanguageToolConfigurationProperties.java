@@ -1,4 +1,4 @@
-package faang.school.postservice.client.language_tool;
+package faang.school.postservice.config.client.web.language_tool;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;

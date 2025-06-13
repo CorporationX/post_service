@@ -53,3 +53,6 @@ jobs:
   spellcheck:
     cron: "0 0 2 * * *"
     # в 02:00 каждый день
+
+system:
+  user-id: -1
