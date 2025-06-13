@@ -75,3 +75,9 @@ entity:
 languagetool:
   apiUrl: "https://api.languagetool.org/v2/check"
   language: "auto"
+
+retry:
+  max-attempts: 3
+  backoff:
+    delay: 2000
+    multiplier: 1.5
