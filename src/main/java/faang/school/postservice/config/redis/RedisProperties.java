@@ -10,7 +10,8 @@ public record RedisProperties(
         @NestedConfigurationProperty Channels channels
 ) {
     public record Channels(
-            String userBanName
+            String userBanName,
+            String likeEventName
     ) {
     }
 }

@@ -37,6 +37,11 @@ public class RedisConfiguration {
     }
 
     @Bean
+    public ChannelTopic likeTopic() {
+        return new ChannelTopic(redisProperties.channels().likeEventName());
+    }
+
+    @Bean
     public RedisTemplate<String, Object> redisTemplate() {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(jedisConnectionFactory());
