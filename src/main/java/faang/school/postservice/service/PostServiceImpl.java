@@ -3,6 +3,7 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.client.languagetool.LanguageToolClient;
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.languagetool.LanguageToolResponseDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.DataValidationException;
@@ -35,6 +36,8 @@ public class PostServiceImpl implements PostService {
     private final ProjectServiceClient projectServiceClient;
     private final LanguageToolClient languageToolClient;
     private final ResourceService resourceService;
+    private final UserContext userContext;
+    private final PostActionService postActionService;
 
     @Override
     @Transactional
@@ -124,6 +127,8 @@ public class PostServiceImpl implements PostService {
     @Transactional(readOnly = true)
     public PostDto getPost(Long postId) {
         Post post = getExistingPost(postId);
+        Long viewerId = userContext.getUserId();
+        postActionService.registerPostView(post.getId(), post.getAuthorId(), viewerId);
         return postMapper.toDto(post);
     }
 
@@ -146,7 +151,9 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional(readOnly = true)
     public List<PostDto> getAllPostsByAuthorId(Long userId) {
+        Long viewerId = userContext.getUserId();
         return postRepository.findPublishedByAuthor(userId).stream()
+                .peek(post -> postActionService.registerPostView(post.getId(), post.getAuthorId(), viewerId))
                 .map(postMapper::toDto)
                 .toList();
     }
@@ -154,7 +161,9 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional(readOnly = true)
     public List<PostDto> getAllPostsByProjectId(Long projectId) {
+        Long viewerId = userContext.getUserId();
         return postRepository.findPublishedByProject(projectId).stream()
+                .peek(post -> postActionService.registerPostView(post.getId(), post.getAuthorId(), viewerId))
                 .map(postMapper::toDto)
                 .toList();
     }
