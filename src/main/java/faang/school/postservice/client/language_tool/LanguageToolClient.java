@@ -39,7 +39,7 @@ public class LanguageToolClient {
                 .body(BodyInserters.fromFormData(formData))
                 .retrieve()
                 .bodyToMono(LanguageToolClientResponseDto.class)
-                .retryWhen(Retry.backoff(100, Duration.ofMillis(2)))
+                .retryWhen(Retry.backoff(5, Duration.ofMillis(2)))
                 .block();
 
         log.debug("Language tool client got response check spelling {}", response);
