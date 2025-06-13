@@ -55,4 +55,4 @@ jobs:
     # в 02:00 каждый день
 
 system:
-  user-id: -1
+  user-id: -2
