@@ -25,6 +25,7 @@ public class CommentServiceImp implements CommentService {
     private final CommentMapper commentMapper;
     private final PostService postService;
     private final UserValidationService userValidationService;
+    private final CommentActionService commentActionService;
 
 
     @Override
@@ -33,7 +34,9 @@ public class CommentServiceImp implements CommentService {
         Post post = validateRequestAndGetPost(request);
         Comment comment = commentMapper.toEntity(request);
         comment.setPost(post);
-        return commentMapper.toCommentDto(commentRepository.save(comment));
+        Comment saved = commentRepository.save(comment);
+        commentActionService.registerNewComment(saved);
+        return commentMapper.toCommentDto(saved);
     }
 
     @Override
