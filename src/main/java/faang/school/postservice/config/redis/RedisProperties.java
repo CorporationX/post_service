@@ -11,7 +11,6 @@ public record RedisProperties(
 ) {
     public record Channels(
             String userBanName,
-            String commentEventName
-    ) {
-    }
+            String commentTopic
+    ) {}
 }
