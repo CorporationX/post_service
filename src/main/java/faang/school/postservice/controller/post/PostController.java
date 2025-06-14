@@ -4,6 +4,10 @@ import faang.school.postservice.dto.post.PostCreateDto;
 import faang.school.postservice.dto.post.PostOutputDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
 import faang.school.postservice.service.PostService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -26,10 +30,14 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/posts")
 @RequiredArgsConstructor
+@Tag(name = "Post Management", description = "Operations related to posts")
 public class PostController {
     private final PostService postService;
 
     @PostMapping("/drafts")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Created successfully")
+    })
     public PostOutputDto createPost(@Valid @RequestBody PostCreateDto postCreateDto) {
         log.debug("Creating new post draft {} - Started", postCreateDto);
         PostOutputDto createdPost = postService.createPost(postCreateDto);
@@ -38,6 +46,9 @@ public class PostController {
     }
 
     @PatchMapping("/{postId}/publish")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Published successfully")
+    })
     public PostOutputDto publishPost(@NotNull @PathVariable("postId") Long postId) {
         log.debug("Publishing post with id {} - Started", postId);
         PostOutputDto publishedPost = postService.publishPost(postId);
@@ -46,6 +57,9 @@ public class PostController {
     }
 
     @PutMapping("/{postId}")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Updated successfully")
+    })
     public PostOutputDto updatePost(@NotNull @PathVariable("postId") Long postId, @Valid @RequestBody PostUpdateDto postUpdateDto) {
         log.debug("Updating post with id {} - Started", postId);
         PostOutputDto updatedPost = postService.updatePost(postId, postUpdateDto);
@@ -54,6 +68,9 @@ public class PostController {
     }
 
     @DeleteMapping("/{postId}")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Deleted successfully")
+    })
     public PostOutputDto deletePost(@NotNull @PathVariable("postId") Long postId) {
         log.debug("Deleting post with id {} - Started", postId);
         PostOutputDto deletedPost = postService.deletePost(postId);
@@ -70,6 +87,8 @@ public class PostController {
     }
 
     @GetMapping("/drafts/users/{userId}")
+    @Operation(summary = "Gets user`s drafted posts by userID",
+            description= "User must exist")
     public List<PostOutputDto> getNotDeletedUserDrafts(@NotNull @PathVariable("userId") Long userId) {
         log.debug("Getting drafted posts for user with id {} - Started", userId);
         List<PostOutputDto> userPosts = postService.getNotDeletedUserDrafts(userId);
@@ -78,6 +97,8 @@ public class PostController {
     }
 
     @GetMapping("/drafts/projects/{projectId}")
+    @Operation(summary = "Gets project`s drafted posts by projectID",
+            description= "Project must exist")
     public List<PostOutputDto> getNotDeletedProjectDrafts(@NotNull @PathVariable("projectId") Long projectId) {
         log.debug("Getting drafted posts for project with id {} - Started", projectId);
         List<PostOutputDto> projectPosts = postService.getNotDeletedProjectDrafts(projectId);
@@ -86,6 +107,8 @@ public class PostController {
     }
 
     @GetMapping("/users/{userId}")
+    @Operation(summary = "Gets user`s published posts by userID",
+            description= "User must exist")
     public List<PostOutputDto> getNotDeletedUserPublished(@NotNull @PathVariable("userId") Long userId) {
         log.debug("Getting published posts for user with id {} - Started", userId);
         List<PostOutputDto> userPosts = postService.getNotDeletedUserPublished(userId);
@@ -94,6 +117,8 @@ public class PostController {
     }
 
     @GetMapping("/projects/{projectId}")
+    @Operation(summary = "Gets project`s published posts by projectID",
+            description= "Project must exist")
     public List<PostOutputDto> getNotDeletedProjectPublished(@NotNull @PathVariable("projectId") Long projectId) {
         log.debug("Getting published posts for project with id {} - Started", projectId);
         List<PostOutputDto> projectPosts = postService.getNotDeletedProjectPublished(projectId);

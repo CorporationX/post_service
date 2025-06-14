@@ -4,6 +4,7 @@ import faang.school.postservice.dto.album.AlbumCreateDto;
 import faang.school.postservice.dto.album.AlbumFilterDto;
 import faang.school.postservice.dto.album.AlbumUpdateDto;
 import faang.school.postservice.service.AlbumService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
@@ -24,6 +25,7 @@ import java.util.List;
 @RequestMapping("/api/v1/albums")
 @RequiredArgsConstructor
 @Validated
+@Tag(name = "Album Management", description = "Operations related to albums")
 public class AlbumController {
     private final AlbumService albumService;
 
