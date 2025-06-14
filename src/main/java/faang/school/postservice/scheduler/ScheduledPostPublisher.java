@@ -1,6 +1,5 @@
 package faang.school.postservice.scheduler;
 
-import faang.school.postservice.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -8,10 +7,10 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 @Component
 public class ScheduledPostPublisher {
-    private final PostService postService;
+    private final SchedulerService schedulerService;
 
-    @Scheduled(cron = "${cron.each-minute}")
+    @Scheduled(cron = "${cron.project.each-minute}")
     private void publishScheduledPosts() {
-        postService.publishScheduledPosts();
+        schedulerService.publishScheduledPosts();
     }
 }

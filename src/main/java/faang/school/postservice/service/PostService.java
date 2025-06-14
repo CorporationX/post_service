@@ -27,5 +27,4 @@ public interface PostService {
 
     void publishUsersToBan();
 
-    void publishScheduledPosts();
 }

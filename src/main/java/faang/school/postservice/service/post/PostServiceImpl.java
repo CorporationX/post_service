@@ -18,14 +18,12 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
@@ -40,7 +38,6 @@ public class PostServiceImpl implements PostService {
 
     @Value("${entity.post.max-unverified-count-for-ban}")
     private long maxUnverifiedPostsForBan;
-    private final ThreadPoolTaskExecutor taskExecutor;
 
     @Override
     public PostOutputDto getPostById(long postId) {
@@ -127,6 +124,7 @@ public class PostServiceImpl implements PostService {
         foundPost.setPublished(true);
         foundPost.setPublishedAt(LocalDateTime.now());
         Post publishedPost = postRepository.save(foundPost);
+
         return postMapper.toPostDto(publishedPost);
     }
 
@@ -151,20 +149,6 @@ public class PostServiceImpl implements PostService {
         return postsCount.stream()
                 .map(UserPostsDto::getAuthorId)
                 .toList();
-    }
-
-    @Override
-    public void publishScheduledPosts() {
-        List<Post> posts = postRepository.findReadyToPublish();
-
-        List<CompletableFuture<PostOutputDto>> futures = posts.stream()
-                .map(post ->
-                        CompletableFuture.supplyAsync(() -> publishPost(post.getId()), taskExecutor)
-                ).toList();
-
-        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
-        // Надо ли закрывать poolConfig.getThreadPool() после каждого выполнения если учесть что запуск каждую минуту?
-        // Потребляет ли ресурсы при раскрытии ThreadPool и при закрытии?
     }
 
     private Post findPostById(long postId) {
