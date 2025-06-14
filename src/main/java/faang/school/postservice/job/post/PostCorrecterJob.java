@@ -4,41 +4,41 @@ import faang.school.postservice.client.language_tool.LanguageToolClient;
 import faang.school.postservice.dto.post.LanguageToolClientResponseDto;
 import faang.school.postservice.entity.post.Post;
 import faang.school.postservice.service.post.PostService;
-import faang.school.postservice.utils.async.GracefullyShutdownThreadPool;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.Executor;
 
 @Component
 @Slf4j
-@RequiredArgsConstructor
 public class PostCorrecterJob {
+    private static final int NUM_THREADS = 10;
     private final PostService postService;
     private final LanguageToolClient languageToolClient;
-    private static final int NUM_THREADS = 10;
-    private ExecutorService threadPool;
+    private final Executor executor;
+
+    public PostCorrecterJob(PostService postService,
+                            LanguageToolClient languageToolClient,
+                            @Qualifier("correctDraftPosts") Executor executor) {
+        this.postService = postService;
+        this.languageToolClient = languageToolClient;
+        this.executor = executor;
+    }
 
     @Scheduled(cron = "${jobs.spellcheck.cron}")
     public void correctDraftPosts() {
-        try {
-            threadPool = Executors.newFixedThreadPool(NUM_THREADS);
 
-            log.info("Starting spellcheck job for draft posts");
+        log.info("Starting spellcheck job for draft posts");
 
-            List<Post> posts = postService.getAllDraftPosts();
+        List<Post> posts = postService.getAllDraftPosts();
 
-            posts.forEach(post -> threadPool.execute(() -> correctAndSavePost(post)));
+        posts.forEach(post -> executor.execute(() -> correctAndSavePost(post)));
 
-            log.info("Finished spellcheck job");
-        } finally {
-            GracefullyShutdownThreadPool.gracefullyShutdown(threadPool);
-        }
+        log.info("Finished spellcheck job");
     }
 
     private void correctAndSavePost(Post post) {
@@ -67,7 +67,7 @@ public class PostCorrecterJob {
                 int length = match.getLength();
 
                 String originalFragment =
-                        originalText.substring(offset,Math.min(offset + length, originalText.length()));
+                        originalText.substring(offset, Math.min(offset + length, originalText.length()));
                 log.debug("Correction: replacing '{}' with '{}' at offset {} (length {})",
                         originalFragment, replacement, offset, length);
                 sb.replace(offset, offset + length, replacement);
