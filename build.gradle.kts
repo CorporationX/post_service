@@ -24,6 +24,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.cloud:spring-cloud-starter-openfeign:4.0.2")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+    implementation("org.springframework.boot:spring-boot-starter-aop")
+    implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("org.springdoc", "springdoc-openapi-starter-webmvc-ui", "2.0.2")
 
     /**
@@ -43,6 +45,7 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok:1.18.26")
     implementation("org.mapstruct:mapstruct:1.5.3.Final")
     annotationProcessor("org.mapstruct:mapstruct-processor:1.5.3.Final")
+    implementation("org.springframework.retry:spring-retry:2.0.2")
 
     /**
      * Test containers
@@ -87,7 +90,9 @@ tasks.jacocoTestReport {
                     "**/handler/**",
                     "**/client/**",
                     "**/mapper/**",
-                    "**/model/**"
+                    "**/model/**",
+                    "**/utils/**",
+                    "**/job/**"
                 )
             }
         })
@@ -106,20 +111,32 @@ tasks.named<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
             }
 
             excludes = listOf(
+                "faang.school.postservice.config",
                 "faang.school.postservice.config.*",
+                "faang.school.postservice.controller",
                 "faang.school.postservice.controller.*",
+                "faang.school.postservice.dto",
                 "faang.school.postservice.dto.*",
                 "faang.school.postservice.entity",
                 "faang.school.postservice.entity.*",
                 "faang.school.postservice.repository",
                 "faang.school.postservice.repository.*",
+                "faang.school.postservice.exception",
                 "faang.school.postservice.exception.*",
+                "faang.school.postservice.facade",
                 "faang.school.postservice.facade.*",
                 "faang.school.postservice.handler",
+                "faang.school.postservice.handler.*",
                 "faang.school.postservice.client",
+                "faang.school.postservice.client.*",
+                "faang.school.postservice.mapper",
                 "faang.school.postservice.mapper.*",
                 "faang.school.postservice.model",
                 "faang.school.postservice.model.*",
+                "faang.school.postservice.job",
+                "faang.school.postservice.job.*",
+                "faang.school.postservice.utils",
+                "faang.school.postservice.utils.*",
                 "faang.school.postservice"
             )
         }

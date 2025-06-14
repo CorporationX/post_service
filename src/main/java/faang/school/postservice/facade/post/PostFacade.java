@@ -5,7 +5,7 @@ import faang.school.postservice.dto.post.PostCreateUserRequestDto;
 import faang.school.postservice.dto.post.PostResponseDto;
 import faang.school.postservice.dto.post.PostUpdateRequestDto;
 import faang.school.postservice.mapper.post.PostMapper;
-import faang.school.postservice.model.post.Post;
+import faang.school.postservice.entity.post.Post;
 import faang.school.postservice.service.post.PostService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

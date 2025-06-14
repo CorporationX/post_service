@@ -22,7 +22,6 @@ public class CommentValidatorTest {
 
     @InjectMocks
     private CommentValidator commentValidator;
-
     private static final long USER_ID = 1L;
 
     @Test
