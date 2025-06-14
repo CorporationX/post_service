@@ -40,15 +40,9 @@ dependencies {
 
     /** Amazon S3
     */
-    implementation("com.amazonaws:aws-java-sdk-s3:1.12.481")
+    implementation(platform("software.amazon.awssdk:bom:2.31.63"))
+    implementation("software.amazon.awssdk:s3")
     implementation("net.coobird:thumbnailator:0.4.20")
-
-
-    /**
-     * S3 Service
-     */
-    implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:3.1.1")
-
     /**
      * Tika
      */
@@ -89,6 +83,7 @@ dependencies {
 dependencyManagement {
     imports {
         mavenBom("org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}")
+        mavenBom("software.amazon.awssdk:bom:2.20.29")
     }
 }
 

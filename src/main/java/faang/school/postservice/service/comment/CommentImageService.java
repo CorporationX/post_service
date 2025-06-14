@@ -8,29 +8,35 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.image.ImageProcessingService;
-import faang.school.postservice.service.s3.S3StorageService;
+import faang.school.postservice.service.s3.PresignService;
+import faang.school.postservice.service.s3.S3Service;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.ByteArrayInputStream;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
+import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
 import java.io.IOException;
-import java.io.InputStream;
+import java.time.Duration;
 import java.util.UUID;
+
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class CommentImageService {
 
-    private final S3StorageService s3StorageService;
+    private final S3Service s3Service;
     private final ImageProcessingService imageService;
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final CommentImageMapper commentImageMapper;
+    private final PresignService presignService;
 
     @Transactional
     public CommentImageDto createCommentWithOptionalImage(
@@ -47,31 +53,50 @@ public class CommentImageService {
                 .authorId(authorId)
                 .post(post)
                 .build();
+        comment = commentRepository.save(comment);
+
+        String largeKey = null;
+        String smallKey = null;
+        boolean largeUploaded = false;
+        boolean smallUploaded = false;
 
         try {
-            comment = commentRepository.save(comment);
             if (file != null && !file.isEmpty()) {
-                attachImageToComment(comment, file);
+                String originalName = file.getOriginalFilename() != null
+                        ? file.getOriginalFilename().toLowerCase()
+                        : "";
+                String ext = imageService.getFileExtension(originalName);
+                String contentType = imageService.getResizedImageContentType(file.getContentType());
+
+                String basePath = "comments/" + postId + "/comments/" + comment.getId() + "/";
+                String uuid = UUID.randomUUID().toString().replace("-", "");
+                largeKey = basePath + "large_" + uuid + "." + ext;
+                smallKey = basePath + "small_" + uuid + "." + ext;
+
+                byte[] largeBytes = imageService.createLargeImage(file);
+                s3Service.uploadBytesAsResource(largeBytes, largeKey, contentType);
+                largeUploaded = true;
+                comment.setLargeImageFileKey(largeKey);
+
+                byte[] smallBytes = imageService.createSmallImage(file);
+                s3Service.uploadBytesAsResource(smallBytes, smallKey, contentType);
+                smallUploaded = true;
+                comment.setSmallImageFileKey(smallKey);
+
                 comment = commentRepository.save(comment);
             }
+
             CommentImageDto dto = commentImageMapper.toDto(comment);
             populateDtoWithImageUrls(comment, dto);
             return dto;
 
-        } catch (Exception ex) {
-            cleanupPartialUploads(
-                    comment.getLargeImageFileKey() != null,
-                    comment.getSmallImageFileKey() != null,
-                    comment.getLargeImageFileKey(),
-                    comment.getSmallImageFileKey()
-            );
-            throw ex instanceof RuntimeException
-                    ? (RuntimeException) ex
-                    : new RuntimeException(ex);
+        } catch (IOException | RuntimeException ex) {
+            cleanupPartialUploads(largeUploaded, smallUploaded, largeKey, smallKey);
+            throw new CommentImageException("Error while uploading images for comment", ex);
         }
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public CommentImageDto getCommentById(Long id) {
         Comment comment = commentRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Comment not found: " + id));
@@ -88,19 +113,18 @@ public class CommentImageService {
         String largeKey = comment.getLargeImageFileKey();
         if (largeKey != null) {
             try {
-                s3StorageService.deleteFile(largeKey);
+                s3Service.deleteFile(largeKey);
             } catch (RuntimeException ex) {
-                log.warn("Can not delete large image for (key={}): {}", largeKey, ex.getMessage());
+                log.warn("Cannot delete large image (key={}): {}", largeKey, ex.getMessage());
             }
             comment.setLargeImageFileKey(null);
         }
-
         String smallKey = comment.getSmallImageFileKey();
         if (smallKey != null) {
             try {
-                s3StorageService.deleteFile(smallKey);
+                s3Service.deleteFile(smallKey);
             } catch (RuntimeException ex) {
-                log.warn("Can not delete small image for (key={}): {}", smallKey, ex.getMessage());
+                log.warn("Cannot delete small image (key={}): {}", smallKey, ex.getMessage());
             }
             comment.setSmallImageFileKey(null);
         }
@@ -108,84 +132,29 @@ public class CommentImageService {
     }
 
     private void populateDtoWithImageUrls(Comment comment, CommentImageDto dto) {
-        String largeKey = comment.getLargeImageFileKey();
-        if (largeKey != null) {
-            dto.setUrlLarge(s3StorageService.generatePresignedUrl(largeKey));
+        if (comment.getLargeImageFileKey() != null) {
+            dto.setUrlLarge(presignService.generatePresignedUrl(comment.getLargeImageFileKey()));
         }
-        String smallKey = comment.getSmallImageFileKey();
-        if (smallKey != null) {
-            dto.setUrlThumb(s3StorageService.generatePresignedUrl(smallKey));
-        }
-    }
-
-    private void attachImageToComment(Comment comment, MultipartFile file) {
-
-        String contentType = file.getContentType();
-        String uuid = UUID.randomUUID().toString().replace("-", "");
-        String originalName = (file.getOriginalFilename() != null)
-                ? file.getOriginalFilename().toLowerCase()
-                : "";
-        String ext = imageService.getFileExtension(originalName);
-
-        String largeKey = "comments/images/large/" + uuid + "_large." + ext;
-        String smallKey = "comments/images/small/" + uuid + "_small." + ext;
-
-        boolean largeUploaded = false;
-        boolean smallUploaded = false;
-
-        try {
-            byte[] largeBytes = imageService.createLargeImage(file);
-            try (InputStream isLarge = new ByteArrayInputStream(largeBytes)) {
-                s3StorageService.uploadFile(
-                        largeKey,
-                        isLarge,
-                        largeBytes.length,
-                        imageService.getResizedImageContentType(contentType)
-                );
-            }
-            largeUploaded = true;
-            comment.setLargeImageFileKey(largeKey);
-
-            byte[] smallBytes = imageService.createSmallImage(file);
-            try (InputStream isSmall = new ByteArrayInputStream(smallBytes)) {
-                s3StorageService.uploadFile(
-                        smallKey,
-                        isSmall,
-                        smallBytes.length,
-                        imageService.getResizedImageContentType(contentType)
-                );
-            }
-            smallUploaded = true;
-            comment.setSmallImageFileKey(smallKey);
-
-        } catch (IOException ex) {
-            cleanupPartialUploads(largeUploaded, smallUploaded, largeKey, smallKey);
-            throw new CommentImageException("Error I/O while uploading images for comment", ex);
-
-        } catch (RuntimeException ex) {
-            cleanupPartialUploads(largeUploaded, smallUploaded, largeKey, smallKey);
-            throw new CommentImageException("Cannot upload images for comment", ex);
+        if (comment.getSmallImageFileKey() != null) {
+            dto.setUrlThumb(presignService.generatePresignedUrl(comment.getSmallImageFileKey()));
         }
     }
 
     private void cleanupPartialUploads(
-            boolean largeUploaded,
-            boolean smallUploaded,
-            String largeKey,
-            String smallKey
-    ) {
-        if (smallUploaded) {
+            boolean largeUploaded, boolean smallUploaded,
+            String largeKey, String smallKey) {
+        if (smallUploaded && smallKey != null) {
             try {
-                s3StorageService.deleteFile(smallKey);
-            } catch (RuntimeException ex) {
-                log.warn("Cannot delete small image for (key={}): {}", smallKey, ex.getMessage());
+                s3Service.deleteFile(smallKey);
+            } catch (Exception e) {
+                log.warn("Failed to cleanup small image (key={}): {}", smallKey, e.getMessage());
             }
         }
-        if (largeUploaded) {
+        if (largeUploaded && largeKey != null) {
             try {
-                s3StorageService.deleteFile(largeKey);
-            } catch (RuntimeException ex) {
-                log.warn("Cannot delete large image for (key={}): {}", largeKey, ex.getMessage());
+                s3Service.deleteFile(largeKey);
+            } catch (Exception e) {
+                log.warn("Failed to cleanup large image (key={}): {}", largeKey, e.getMessage());
             }
         }
     }

@@ -24,6 +24,7 @@ import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -153,5 +154,63 @@ class S3ServiceTest {
         assertEquals(BUCKET_NAME, capturedRequest.bucket());
         assertEquals(fileKey, capturedRequest.key());
         verify(s3Client, times(1)).deleteObject(any(DeleteObjectRequest.class));
+    }
+
+    @Test
+    void testUploadBytesAsResource_CallsS3PutObjectAndReturnsResource() {
+        byte[] data = new byte[] {1, 2, 3, 4, 5};
+        String key = "folder/subfolder/file.bin";
+        String contentType = "application/octet-stream";
+
+        PutObjectResponse fakeResponse = PutObjectResponse.builder().build();
+        when(s3Client.putObject(any(PutObjectRequest.class), any(RequestBody.class)))
+                .thenReturn(fakeResponse);
+
+        LocalDateTime beforeCall = LocalDateTime.now();
+
+        Resource result = s3Service.uploadBytesAsResource(data, key, contentType);
+
+        ArgumentCaptor<PutObjectRequest> requestCaptor = ArgumentCaptor.forClass(PutObjectRequest.class);
+        ArgumentCaptor<RequestBody> bodyCaptor = ArgumentCaptor.forClass(RequestBody.class);
+        verify(s3Client, times(1)).putObject(requestCaptor.capture(), bodyCaptor.capture());
+
+        PutObjectRequest passedRequest = requestCaptor.getValue();
+        assertEquals("test-bucket", passedRequest.bucket(), "Bucket name должен совпадать с bucketName");
+        assertEquals(key, passedRequest.key(), "Key должен совпадать");
+        assertEquals(contentType, passedRequest.contentType(), "ContentType должен совпадать");
+        assertEquals((Long) ((long) data.length), passedRequest.contentLength(), "ContentLength должен совпадать");
+
+        RequestBody passedBody = bodyCaptor.getValue();
+        assertNotNull(passedBody, "RequestBody не должен быть null");
+
+        assertNotNull(result, "Результат не должен быть null");
+        assertEquals(key, result.getKey(), "Resource.key должен совпадать");
+        assertEquals((Long) ((long) data.length), result.getSize(), "Resource.size должен совпадать");
+        assertEquals(key, result.getName(), "Resource.name по коду установлен равным key");
+        assertEquals(contentType, result.getType(), "Resource.type должен совпадать");
+
+        assertNotNull(result.getCreatedAt(), "createdAt не должен быть null");
+        LocalDateTime afterCall = LocalDateTime.now();
+        assertFalse(result.getCreatedAt().isBefore(beforeCall),
+                "createdAt должен быть не раньше времени до вызова");
+        assertFalse(result.getCreatedAt().isAfter(afterCall.plusSeconds(1)),
+                "createdAt должен быть не позже текущего времени");
+    }
+
+    @Test
+    void testUploadBytesAsResource_S3ClientThrowsException_Propagates() {
+        byte[] data = new byte[]{9,8,7};
+        String key = "some/key";
+        String contentType = "image/png";
+
+        when(s3Client.putObject(any(PutObjectRequest.class), any(RequestBody.class)))
+                .thenThrow(new RuntimeException("S3 error"));
+
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> {
+            s3Service.uploadBytesAsResource(data, key, contentType);
+        });
+        assertTrue(ex.getMessage().contains("S3 error"));
+
+        verify(s3Client, times(1)).putObject(any(PutObjectRequest.class), any(RequestBody.class));
     }
 }
