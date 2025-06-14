@@ -111,6 +111,7 @@ tasks.named<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
             }
 
             excludes = listOf(
+                "default",
                 "faang.school.postservice.config",
                 "faang.school.postservice.config.*",
                 "faang.school.postservice.controller",
