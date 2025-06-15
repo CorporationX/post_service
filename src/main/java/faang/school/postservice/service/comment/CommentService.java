@@ -147,7 +147,7 @@ public class CommentService {
         return s3Service.downloadFile(keyLargeImage);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public List<Comment> getNotVerifiedComments() {
         return commentRepository.findAllNotVerified();
     }

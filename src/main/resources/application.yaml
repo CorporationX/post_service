@@ -64,4 +64,5 @@ moderation:
     cron: "*/15 * * * * *"
     batch_size: 1000
   executor:
-    thread_pool_size: 1000
+    thread_pool_max_size: 1000
+    thread_pool_core_size: 500

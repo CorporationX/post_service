@@ -7,13 +7,14 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.service.comment.CommentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.ListUtils;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.IntStream;
 
 @RequiredArgsConstructor
 @Component
@@ -23,24 +24,25 @@ public class CommentModeration {
     private final CommentService commentService;
     private final ModerationDictionary moderationDictionary;
     private final CommentsModerationConfiguration configuration;
-    private final ConfiguredExecutorService executorService;
+    private final ThreadPoolTaskExecutor executor;
 
     @Scheduled(cron = "#{@commentsModerationConfiguration.cron}")
+    @Transactional
     public void moderateComments() {
-        List<List<Comment>> batchedCommentList = getBatches();
+        List<List<Comment>> batchedCommentList = getCommentBatchesLockedForUpdate();
 
-        batchedCommentList.forEach(batch -> executorService.taskExecutor().submit(() -> verifyComments(batch)));
+        batchedCommentList.forEach(batch -> executor.submit(() -> verifyComments(batch)));
     }
 
     @Scheduled(cron = "#{@commentsModerationConfiguration.cron}")
     public void deleteCommentsWithProfanities() {
         int deletedComments = commentService.deleteCommentsWithProfanities();
-        log.info("Deleted {} number of commetns fith profanities", deletedComments);
+        log.info("Deleted {} number of comments with profanities", deletedComments);
     }
 
     private List<Comment> verifyComments(List<Comment> comments) {
-        log.info("Moderation started. Batch size = {}", comments.size());
-        long start = System.currentTimeMillis();
+        log.info("Moderation started. Batch size: {}", comments.size());
+
         List<Comment> verified = comments.stream()
                 .peek(comment -> {
                     boolean hasProfanity = moderationDictionary.containsProfanity(comment.getContent());
@@ -49,20 +51,15 @@ public class CommentModeration {
                     log.debug("Comment {} verification result: {}", comment.getId(), !hasProfanity);
                 })
                 .toList();
-        long end = System.currentTimeMillis();
 
-        log.info("Moderation finished. Execution time: {} ms, ", end - start);
+        log.info("Moderation finished. Verified comments: {}", verified.size());
         return commentService.saveVerifiedComments(verified);
     }
 
-    private List<List<Comment>> getBatches() {
+    private List<List<Comment>> getCommentBatchesLockedForUpdate() {
         List<Comment> comments = commentService.getNotVerifiedComments();
         int batchSize = configuration.getBatchSize();
-        List<List<Comment>> batchedCommentList = new ArrayList<>();
 
-        IntStream.iterate(0, i -> i < comments.size(), i -> i + batchSize)
-                .forEach(i -> batchedCommentList.add(comments.subList(i, Math.min(i + batchSize, comments.size()))));
-
-        return batchedCommentList;
+        return ListUtils.partition(comments, batchSize);
     }
 }
