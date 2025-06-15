@@ -2,6 +2,7 @@ package faang.school.postservice.service.resource;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.s3.S3Dto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.model.Post;
@@ -20,13 +21,14 @@ import java.util.List;
 @RequiredArgsConstructor
 @Service
 public class ResourceServiceImpl implements ResourceService {
-
     private final PostRepository postRepository;
     private final ResourceRepository resourceRepository;
     private final UserServiceClient userServiceClient;
     private final UserContext userContext;
     private final S3Service s3Service;
     private final PostService postService;
+    private final static long MAX_SIZE_RESOURCE_LIST = 10;
+
     @Override
     @Transactional
     public Resource addBuildForPost(long postId, MultipartFile file) {
@@ -39,27 +41,39 @@ public class ResourceServiceImpl implements ResourceService {
                 .filter(post -> post.getId() == postId)
                 .findFirst()
                 .ifPresent(post -> {
-                    if(post.getResources().size() < 10) {
+                    if (post.getResources().size() < MAX_SIZE_RESOURCE_LIST) {
                         resource.setKey(key);
                         resource.setSize(file.getSize());
                         resource.setPost(post);
                         resource.setName(file.getOriginalFilename());
                     } else {
-                        throw  new IllegalArgumentException("Max size list Resource == 10");
+                        throw new IllegalArgumentException("Max size list Resource == 10");
                     }
                 });
         return resourceRepository.save(resource);
     }
 
     @Override
+    @Transactional
     public void deleteImageByPostId(long postId, long resourceId) {
         Post post = postService.getPostById(postId);
-        List<Resource> resources = post.getResources();
-        for(Resource resource : resources) {
-            if(resource.getId() == resourceId) {
-                s3Service.deleteImage(resource.getKey());
-                resourceRepository.deleteById(resourceId);
-            }
-        }
+        post.getResources().stream()
+                .filter(resource -> resource.getId() == resourceId)
+                .findFirst()
+                .ifPresent(resource -> {
+                    s3Service.deleteImage(resource.getKey());
+                    resourceRepository.deleteById(resource.getId());
+                });
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public S3Dto downloadImage(long postId, long resourceId) {
+        Post post = postService.getPostById(postId);
+        return post.getResources().stream()
+                .filter(resource -> resource.getId() == resourceId)
+                .findFirst()
+                .map(resource -> s3Service.downloadImage(resource.getKey()))
+                .orElseThrow(() -> new DataValidationException(String.format("Resource by id %d not Found", resourceId)));
     }
 }

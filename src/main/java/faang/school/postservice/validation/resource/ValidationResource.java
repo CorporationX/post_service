@@ -1,11 +1,14 @@
-package faang.school.postservice.validation;
+package faang.school.postservice.validation.resource;
 
 import faang.school.postservice.exception.DataValidationException;
+import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 public class ValidationResource {
@@ -14,9 +17,8 @@ public class ValidationResource {
     private static final int HEIGHT = 566;
     private static final int MAX_SIZE_SQUARE = 1080;
     private static final long MAX_SIZE_FILE =  5 * 1024;
-    //добавить проверку на количество картинок к одному посту
 
-    public static BufferedImage correctedBuild(MultipartFile image) throws IOException {
+    public BufferedImage correctedBuild(MultipartFile image) throws IOException {
         BufferedImage originalImage = ImageIO.read(image.getInputStream());
         int width = originalImage.getWidth();
         int height = originalImage.getHeight();
@@ -47,16 +49,25 @@ public class ValidationResource {
 
         BufferedImage updateImage = new BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_3BYTE_BGR);
         Graphics2D graphics = updateImage.createGraphics();
-        graphics.drawImage(originalImage, 0, 0, WIDTH, HEIGHT, null);
+        graphics.drawImage(originalImage, 0, 0, targetWidth, targetHeight, null);
         graphics.dispose();
 
         return updateImage;
     }
 
-    private static void checkPictureWeight(MultipartFile file) {
+    private void checkPictureWeight(MultipartFile file) {
         double sizeFile = (double) file.getSize() / 1024;
         if (sizeFile > MAX_SIZE_FILE) {
             throw new DataValidationException("File exceeds allowed size " + MAX_SIZE_FILE);
         }
+    }
+
+    public MultipartFile bufferedImageToMultipartFile(BufferedImage image,
+                                                             String formatName, String filename) throws IOException {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        ImageIO.write(image, formatName,outputStream);
+        byte[] toByte = outputStream.toByteArray();
+        String contentType = "image/" + formatName.toLowerCase();
+        return new BufferedImageToMultipartFile("name", filename, contentType, toByte);
     }
 }
