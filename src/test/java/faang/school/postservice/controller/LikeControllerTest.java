@@ -1,6 +1,6 @@
 package faang.school.postservice.controller;
 
-import faang.school.postservice.dto.like.LikeDto;
+import faang.school.postservice.dto.LikeDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.service.LikeService;
 import org.junit.jupiter.api.Test;
@@ -89,11 +89,11 @@ class LikeControllerTest {
     }
 
     private LikeDto createLikeDto(Long userId) {
-        LikeDto likeDto = new LikeDto();
-        likeDto.setId(231423L);
-        likeDto.setCommentId(2433L);
-        likeDto.setUserId(userId);
-        likeDto.setPostId(34356L);
-        return likeDto;
+        return LikeDto.builder()
+                .id(231423L)
+                .commentId(2433L)
+                .userId(userId)
+                .postId(34356L)
+                .build();
     }
 }

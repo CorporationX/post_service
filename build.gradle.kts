@@ -95,7 +95,6 @@ dependencyManagement {
     }
 }
 
-
 tasks.test {
     useJUnitPlatform()
     finalizedBy(tasks.jacocoTestReport, tasks.jacocoTestCoverageVerification)
@@ -109,4 +108,44 @@ val test by tasks.getting(Test::class) { testLogging.showStandardStreams = true 
 
 tasks.bootJar {
     archiveFileName.set("service.jar")
+}
+
+val jacocoReportIncludes = listOf(
+    "faang/school/postservice/service/**"
+)
+
+val jacocoVerificationIncludes = listOf(
+    "faang.school.postservice.service.**"
+)
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+    reports {
+        xml.required.set(false)
+        csv.required.set(false)
+        html.required.set(true)
+    }
+    classDirectories.setFrom(files(classDirectories.files.map {
+        fileTree(it).matching {
+            include(jacocoReportIncludes)
+        }
+    }))
+}
+
+tasks.jacocoTestCoverageVerification {
+    dependsOn(tasks.jacocoTestReport)
+    violationRules {
+        rule {
+            element = "BUNDLE"
+            isEnabled = true
+
+            includes = jacocoVerificationIncludes
+
+            limit {
+                counter = "LINE"
+                value = "COVEREDRATIO"
+                minimum = "0.7".toBigDecimal()
+            }
+        }
+    }
 }

@@ -39,6 +39,13 @@ spring:
         calculations_channel:
           name: calculations_channel
 
+    openfeign:
+      client:
+        config:
+          user-service:
+            connectTimeout: 5000
+            readTimeout: 3000
+            loggerLevel: full
     aws:
       credentials:
         access-key: user
@@ -85,3 +92,17 @@ management:
   endpoint:
     health:
       show-details: always
+
+cache:
+  like:
+    ttl:
+      minutes: 10
+  user:
+    ttl:
+      minutes: 30
+
+feign:
+  retry:
+    maxAttempts: 3
+    delay: 1000
+    multiplier: 2
