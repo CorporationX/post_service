@@ -51,6 +51,7 @@ dependencies {
     */
     implementation(platform("software.amazon.awssdk:bom:2.31.63"))
     implementation("software.amazon.awssdk:s3")
+    implementation("software.amazon.awssdk:url-connection-client")
     implementation("net.coobird:thumbnailator:0.4.20")
     /**
      * Tika
@@ -92,7 +93,6 @@ dependencies {
 dependencyManagement {
     imports {
         mavenBom("org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}")
-        mavenBom("software.amazon.awssdk:bom:2.20.29")
     }
 }
 

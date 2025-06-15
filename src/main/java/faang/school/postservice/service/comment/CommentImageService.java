@@ -91,6 +91,7 @@ public class CommentImageService {
             return dto;
 
         } catch (IOException | RuntimeException ex) {
+            log.error("Exception while uploading image for comment {}: ", comment.getId(), ex);
             cleanupPartialUploads(largeUploaded, smallUploaded, largeKey, smallKey);
             throw new CommentImageException("Error while uploading images for comment", ex);
         }
