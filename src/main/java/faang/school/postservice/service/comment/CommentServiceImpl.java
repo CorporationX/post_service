@@ -10,7 +10,7 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.model.event.CommentEvent;
+import faang.school.postservice.dto.event.CommentEvent;
 import faang.school.postservice.publisher.comment.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;

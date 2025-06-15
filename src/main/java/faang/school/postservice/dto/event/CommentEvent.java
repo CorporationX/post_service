@@ -1,4 +1,4 @@
-package faang.school.postservice.model.event;
+package faang.school.postservice.dto.event;
 
 import java.time.LocalDateTime;
 

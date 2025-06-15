@@ -2,7 +2,7 @@ package faang.school.postservice.publisher.comment;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import faang.school.postservice.model.event.CommentEvent;
+import faang.school.postservice.dto.event.CommentEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -22,7 +22,7 @@ public class CommentEventPublisher {
 
     public void publish(CommentEvent event) throws JsonProcessingException {
         String json = objectMapper.writeValueAsString(event);
-        redisTemplate.convertAndSend(topic.getTopic(), event);
+        redisTemplate.convertAndSend(topic.getTopic(), json);
         log.info("Message published. Comment (id {}) has been created by user (id {}) for post (id {}). "
                 , event.commentId(), event.authorId(), event.postId());
     }

@@ -1,5 +1,6 @@
 package faang.school.postservice.controller.comment;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CommentForCreationDto;
@@ -52,7 +53,7 @@ public class CommentController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Created successfully")
     })
-    public CommentOutputDto create(@Valid @RequestBody CommentForCreationDto commentDto) {
+    public CommentOutputDto create(@Valid @RequestBody CommentForCreationDto commentDto) throws JsonProcessingException {
         log.info("Creating a comment by user {} for post with id {} - Started"
                 , userContext.getUserId(), commentDto.getPostId());
         return service.createComment(commentDto);
