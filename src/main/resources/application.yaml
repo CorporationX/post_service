@@ -1,30 +1,4 @@
 spring:
-  datasource:
-    driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/postgres
-    username: user
-    password: password
-
-  jpa:
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
-    hibernate:
-      ddl-auto: none
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-
-  liquibase:
-    change-log: classpath:db/changelog/db.changelog-master.yaml
-
-  data:
-    redis:
-      port: 6379
-      host: localhost
-      channels:
-        calculations_channel:
-          name: calculations_channel
-
   config:
     import: 'optional:consul:'
   application:
@@ -56,6 +30,32 @@ spring:
         path-style-access-enabled: true
         bucket-name: post-bucket
 
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: user
+    password: password
+
+  data:
+    redis:
+      port: 6379
+      host: localhost
+      channels:
+        calculations_channel:
+          name: calculations_channel
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+
   servlet:
     multipart:
       enabled: true
@@ -76,6 +76,22 @@ services:
     name: project-service
   payment-service:
     name: payment-service
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+    enabled: false
+  zipkin:
+    tracing:
+      endpoint: http://localhost:9411/api/v2/spans
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
 
 cache:
   like:

@@ -9,10 +9,12 @@ group = "faang.school"
 version = "1.0"
 java.sourceCompatibility = JavaVersion.VERSION_17
 
+val springCloudVersion by extra("2022.0.5")
+
 repositories {
     mavenCentral()
 }
-val springCloudVersion by extra("2022.0.5")
+
 
 dependencies {
     /**
@@ -25,11 +27,18 @@ dependencies {
     implementation("org.springframework.retry:spring-retry")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.cloud:spring-cloud-starter-openfeign:4.0.2")
+    implementation ("io.github.openfeign:feign-micrometer:13.5")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.cloud:spring-cloud-starter-consul-config")
     implementation("org.springframework.cloud:spring-cloud-starter-consul-discovery")
-    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+    implementation("io.micrometer:micrometer-tracing")
+    implementation("io.micrometer:micrometer-tracing-bridge-brave")
+    implementation("io.zipkin.reporter2:zipkin-reporter-brave")
+    implementation("io.micrometer:context-propagation")
+    implementation("io.zipkin.brave:brave-instrumentation-spring-web")
     implementation ("org.springframework.cloud:spring-cloud-starter-loadbalancer")
+    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+
 
     /**
      * Database
@@ -86,7 +95,6 @@ dependencyManagement {
     }
 }
 
-
 tasks.test {
     useJUnitPlatform()
     finalizedBy(tasks.jacocoTestReport, tasks.jacocoTestCoverageVerification)
@@ -95,6 +103,8 @@ tasks.test {
 tasks.withType<Test> {
     useJUnitPlatform()
 }
+
+val test by tasks.getting(Test::class) { testLogging.showStandardStreams = true }
 
 tasks.bootJar {
     archiveFileName.set("service.jar")
