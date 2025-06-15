@@ -32,17 +32,6 @@ spring:
         calculations_channel:
           name: calculations_channel
 
-  kafka:
-    bootstrap-servers: localhost:9092
-    consumer:
-      group-id: user-service-group
-    topics:
-      like:
-        comment-like-topic:
-          name: comment-like-event
-        post-like-topic:
-          name: post-like-event
-
 server:
   port: 8081
 
@@ -60,6 +49,14 @@ payment-service:
   host: localhost
   port: 9080
 
+app:
+  correction:
+    upl: "https://api.languagetool.org/v2/check";
+    language: "auto";
+    cron: "0 0 12 * * ?"
+    retry:
+      maxAttempts: 3
+      delay: 1000
 minio:
   endpoint: http://localhost:9000
   access-key: user
