@@ -1,6 +1,5 @@
 package faang.school.postservice.moderation.model;
 
-import faang.school.postservice.config.executor.ConfiguredExecutorService;
 import faang.school.postservice.config.moderation.CommentsModerationConfiguration;
 import faang.school.postservice.config.moderation.ModerationDictionary;
 import faang.school.postservice.model.Comment;
