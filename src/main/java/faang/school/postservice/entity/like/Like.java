@@ -1,6 +1,7 @@
-package faang.school.postservice.model;
+package faang.school.postservice.entity.like;
 
-import faang.school.postservice.model.post.Post;
+import faang.school.postservice.entity.comment.Comment;
+import faang.school.postservice.entity.post.Post;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -13,42 +14,39 @@ import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
-@Data
-@Entity
-@Builder
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "post_resource")
-public class Resource {
+@Builder
+@Entity
+@Table(name="likes")
+public class Like {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private long id;
 
-    @Column(name = "key", nullable = false, length = 50)
-    private String key;
+    @Column(name="user_id", nullable = false)
+    private Long userId;
 
-    @Column(name = "size")
-    private long size;
+    @ManyToOne
+    @JoinColumn(name = "comment_id")
+    private Comment comment;
+
+    @ManyToOne
+    @JoinColumn(name = "post_id")
+    private Post post;
 
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_at")
     private LocalDateTime createdAt;
-
-    @Column(name = "name", length = 150)
-    private String name;
-
-    @Column(name = "type", length = 50)
-    private String type;
-
-    @ManyToOne
-    @JoinColumn(name = "post_id", nullable = false)
-    private Post post;
 }

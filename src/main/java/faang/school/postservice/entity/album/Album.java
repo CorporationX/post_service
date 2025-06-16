@@ -1,6 +1,6 @@
-package faang.school.postservice.model;
+package faang.school.postservice.entity.album;
 
-import faang.school.postservice.model.post.Post;
+import faang.school.postservice.entity.post.Post;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

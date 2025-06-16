@@ -1,7 +1,7 @@
 package faang.school.postservice.validation.like;
 
 import faang.school.postservice.exception.like.LikeAlreadyExistsException;
-import faang.school.postservice.model.Like;
+import faang.school.postservice.entity.like.Like;
 import faang.school.postservice.repository.LikeRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

@@ -24,6 +24,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.cloud:spring-cloud-starter-openfeign:4.0.2")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+    implementation("org.springframework.boot:spring-boot-starter-aop")
+    implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("org.springdoc", "springdoc-openapi-starter-webmvc-ui", "2.0.2")
 
     /**
@@ -43,6 +45,7 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok:1.18.26")
     implementation("org.mapstruct:mapstruct:1.5.3.Final")
     annotationProcessor("org.mapstruct:mapstruct-processor:1.5.3.Final")
+    implementation("org.springframework.retry:spring-retry:2.0.2")
 
     /**
      * Test containers
@@ -63,6 +66,86 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+    finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+    reports {
+        xml.required.set(true)
+        csv.required.set(false)
+        html.outputLocation.set(layout.buildDirectory.dir("jacocoHtml"))
+    }
+
+    classDirectories.setFrom(
+        files(classDirectories.files.map {
+            fileTree(it) {
+                exclude(
+                    "**/config/**",
+                    "**/controller/**",
+                    "**/dto/**",
+                    "**/entity/**",
+                    "**/repository/**",
+                    "**/exception/**",
+                    "**/facade/**",
+                    "**/handler/**",
+                    "**/client/**",
+                    "**/mapper/**",
+                    "**/model/**",
+                    "**/utils/**",
+                    "**/job/**"
+                )
+            }
+        })
+    )
+}
+
+tasks.named<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
+    dependsOn(tasks.test)
+    violationRules {
+        rule {
+            element = "PACKAGE"
+            limit {
+                counter = "INSTRUCTION"
+                value = "COVEREDRATIO"
+                minimum = "0.70".toBigDecimal()
+            }
+
+            excludes = listOf(
+                "faang.school.postservice.config",
+                "faang.school.postservice.config.*",
+                "faang.school.postservice.controller",
+                "faang.school.postservice.controller.*",
+                "faang.school.postservice.dto",
+                "faang.school.postservice.dto.*",
+                "faang.school.postservice.entity",
+                "faang.school.postservice.entity.*",
+                "faang.school.postservice.repository",
+                "faang.school.postservice.repository.*",
+                "faang.school.postservice.exception",
+                "faang.school.postservice.exception.*",
+                "faang.school.postservice.facade",
+                "faang.school.postservice.facade.*",
+                "faang.school.postservice.handler",
+                "faang.school.postservice.handler.*",
+                "faang.school.postservice.client",
+                "faang.school.postservice.client.*",
+                "faang.school.postservice.mapper",
+                "faang.school.postservice.mapper.*",
+                "faang.school.postservice.model",
+                "faang.school.postservice.model.*",
+                "faang.school.postservice.job",
+                "faang.school.postservice.job.*",
+                "faang.school.postservice.utils",
+                "faang.school.postservice.utils.*",
+                "faang.school.postservice"
+            )
+        }
+    }
+}
+
+tasks.check {
+    dependsOn(tasks.named("jacocoTestCoverageVerification"))
 }
 
 tasks.withType<Test> {
