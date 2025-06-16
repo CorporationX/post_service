@@ -77,7 +77,8 @@ languagetool:
   language: "auto"
 
 retry:
-  max-attempts: 3
-  backoff:
-    delay: 2000
-    multiplier: 1.5
+  text-auto-correction-api:
+    max-attempts: 3
+    backoff:
+      delay: 2000
+      multiplier: 1.5

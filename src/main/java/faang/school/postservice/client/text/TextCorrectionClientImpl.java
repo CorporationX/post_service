@@ -25,10 +25,10 @@ public class TextCorrectionClientImpl implements TextCorrectionClient {
     private final RestTemplate restTemplate;
 
     @Retryable(retryFor = {RestClientResponseException.class},
-            maxAttemptsExpression = "#{@retryProps.maxAttempts}",
+            maxAttemptsExpression = "#{@retryTextCorrectionProps.maxAttempts}",
             backoff = @Backoff(
-                    delayExpression = "#{@retryProps.backoffDelay}",
-                    multiplierExpression = "#{@retryProps.backoffMultiplier}"))
+                    delayExpression = "#{@retryTextCorrectionProps.backoff.delay}",
+                    multiplierExpression = "#{@retryTextCorrectionProps.backoff.multiplier}"))
     public CorrectionResponse callCorrectionApi(String params) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
