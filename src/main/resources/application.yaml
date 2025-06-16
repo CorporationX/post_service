@@ -25,6 +25,11 @@ spring:
         calculations_channel:
           name: calculations_channel
 
+    kafka:
+      producer:
+        host: localhost
+        port: 9092
+
 server:
   port: 8081
 
