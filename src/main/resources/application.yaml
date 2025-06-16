@@ -16,7 +16,7 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: none
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         format_sql: true
@@ -34,6 +34,10 @@ spring:
 
 server:
   port: 8081
+
+logging:
+  level:
+    root: info
 
 user-service:
   host: localhost
@@ -53,3 +57,12 @@ minio:
   region: us-east-1
   path-style-access: true
   max-file-size-mb: 5
+
+
+moderation:
+  comments:
+    cron: "*/15 * * * * *"
+    batch_size: 1000
+  executor:
+    thread_pool_max_size: 1000
+    thread_pool_core_size: 500
