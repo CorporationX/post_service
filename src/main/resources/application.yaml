@@ -16,7 +16,7 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: none
-    show-sql: false
+    show-sql: true
     properties:
       hibernate:
         format_sql: true
@@ -51,12 +51,13 @@ payment-service:
 
 app:
   correction:
-    upl: "https://api.languagetool.org/v2/check";
-    language: "auto";
-    cron: "0 0 12 * * ?"
+    url: "https://api.languagetool.org/v2/check"
+    language: "auto"
+    cron: "0 */30 * * * *"
     retry:
       maxAttempts: 3
       delay: 1000
+
 minio:
   endpoint: http://localhost:9000
   access-key: user

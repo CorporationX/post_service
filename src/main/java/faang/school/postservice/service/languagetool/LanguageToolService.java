@@ -5,10 +5,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.HashMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
@@ -23,14 +24,14 @@ public class LanguageToolService {
     private String url;
 
     public CompletableFuture<LanguageToolResponse> checkText(String originalText, String language) {
-        HashMap<String, String> params = new HashMap<>();
-        params.put("text", originalText);
-        params.put("language", language);
+        MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
+        formData.add("text", originalText);
+        formData.add("language", language);
 
         log.debug("Sending request to LanguageTool for text: {}", originalText);
         return CompletableFuture
                 .supplyAsync(
-                        () -> restTemplate.getForObject(url, LanguageToolResponse.class, params),
+                        () -> restTemplate.postForObject(url, formData, LanguageToolResponse.class),
                         customExecutor)
                 .exceptionally(e -> {
                     log.error("External API request failed", e);
