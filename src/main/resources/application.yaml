@@ -28,11 +28,11 @@ spring:
     kafka:
       producer:
         host: localhost
-        port: 9092
+        port: 29092
       topic:
         comment:
-          name: comment-topic
-          partitions: 3
+          name: comment_topic
+          partitions: 1
 
 server:
   port: 8081
