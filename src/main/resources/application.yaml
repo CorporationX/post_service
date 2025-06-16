@@ -60,9 +60,9 @@ minio:
 
 app:
   correction:
-    upl: "https://api.languagetool.org/v2/check";
-    language: "auto";
-    cron: "0 0 12 * * ?"
+    url: "https://api.languagetool.org/v2/check"
+    language: "auto"
+    cron: "0 */30 * * * *"
     retry:
       maxAttempts: 3
       delay: 1000
