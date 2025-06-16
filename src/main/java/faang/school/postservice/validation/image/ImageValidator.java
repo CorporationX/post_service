@@ -1,22 +1,23 @@
 package faang.school.postservice.validation.image;
 
+import faang.school.postservice.config.file.FileProperties;
+import faang.school.postservice.exception.file.FileTooLargeException;
+import faang.school.postservice.exception.file.UnsupportedFileTypeException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.InvalidMediaTypeException;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
-import faang.school.postservice.exception.file.FileTooLargeException;
-import faang.school.postservice.exception.file.UnsupportedFileTypeException;
 
 import java.util.Set;
 
 @Component
+@RequiredArgsConstructor
 @Slf4j
 public class ImageValidator {
 
-    @Value("${file.upload.max-size}")
-    private long maxSize;
+    private final FileProperties fileProperties;
 
     private static final Set<MediaType> SUPPORTED_IMAGE_TYPES = Set.of(
             MediaType.IMAGE_JPEG,
@@ -36,9 +37,9 @@ public class ImageValidator {
         log.debug("Получен файл: name={}, size={}, type={}",
                 file.getOriginalFilename(), file.getSize(), file.getContentType());
 
-        if (file.getSize() > maxSize) {
-            log.warn("Размер файла превышает допустимый предел: {} > {}", file.getSize(), maxSize);
-            throw new FileTooLargeException("Файл слишком большой. Максимальный размер: " + maxSize);
+        if (file.getSize() > fileProperties.getMaxSize()) {
+            log.warn("Размер файла превышает допустимый предел: {} > {}", file.getSize(), fileProperties.getMaxSize());
+            throw new FileTooLargeException("Файл слишком большой. Максимальный размер: " + fileProperties.getMaxSize());
         }
 
         String contentType = file.getContentType();

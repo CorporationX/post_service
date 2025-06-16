@@ -31,6 +31,7 @@ public class S3Config {
                         StaticCredentialsProvider.create(
                                 AwsBasicCredentials.create(
                                         props.getAccessKey(), props.getSecretKey())))
+                .forcePathStyle(true)
                 .build();
     }
 }
