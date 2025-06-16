@@ -18,7 +18,6 @@ public class PresignService {
     @Value("${spring.cloud.aws.s3.bucket-name}")
     private String bucketName;
 
-
     public String generatePresignedUrl(String key, Duration duration) {
         GetObjectRequest getObjectRequest = GetObjectRequest.builder()
                 .bucket(bucketName)

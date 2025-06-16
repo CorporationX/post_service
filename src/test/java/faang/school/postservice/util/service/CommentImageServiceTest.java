@@ -4,8 +4,8 @@ import faang.school.postservice.dto.image.CommentImageDto;
 import faang.school.postservice.mapper.comment.CommentImageMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.repository.CommentRepository;
-import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.adapter.CommentRepoAdapter;
+import faang.school.postservice.repository.adapter.PostRepoAdapter;
 import faang.school.postservice.service.comment.CommentImageService;
 import faang.school.postservice.service.image.ImageProcessingService;
 import faang.school.postservice.service.s3.PresignService;
@@ -45,10 +45,10 @@ public class CommentImageServiceTest {
     private ImageProcessingService imageService;
 
     @Mock
-    private PostRepository postRepository;
+    private PostRepoAdapter postRepoAdapter;
 
     @Mock
-    private CommentRepository commentRepository;
+    private CommentRepoAdapter commentRepoAdapter;
 
     @Mock
     private CommentImageMapper commentMapper;
@@ -61,16 +61,17 @@ public class CommentImageServiceTest {
 
     @Test
     void testCreateCommentWithOptionalImagePostNotFoundThrows() {
-        when(postRepository.findById(123L)).thenReturn(Optional.empty());
+        when(postRepoAdapter.getById(123L))
+                .thenThrow(new EntityNotFoundException("Post not found: 123"));
 
         EntityNotFoundException ex = assertThrows(EntityNotFoundException.class, () -> {
             commentService.createCommentWithOptionalImage("text", 1L, 123L, null);
         });
         assertTrue(ex.getMessage().contains("Post not found: 123"));
 
-        verify(postRepository, times(1)).findById(123L);
-        verifyNoMoreInteractions(postRepository);
-        verifyNoInteractions(commentRepository, imageService, s3Service, presignService, commentMapper);
+        verify(postRepoAdapter, times(1)).getById(123L);
+        verifyNoMoreInteractions(postRepoAdapter);
+        verifyNoInteractions(commentRepoAdapter, imageService, s3Service, presignService, commentMapper);
     }
 
     @Test
@@ -91,8 +92,8 @@ public class CommentImageServiceTest {
         mappedDto.setAuthorId(5L);
         mappedDto.setPostId(10L);
 
-        when(postRepository.findById(10L)).thenReturn(Optional.of(fakePost));
-        when(commentRepository.save(any(Comment.class))).thenReturn(savedComment);
+        when(postRepoAdapter.getById(10L)).thenReturn(fakePost);
+        when(commentRepoAdapter.saveComment(any(Comment.class))).thenReturn(savedComment);
         when(commentMapper.toDto(savedComment)).thenReturn(mappedDto);
 
         CommentImageDto result = commentService.createCommentWithOptionalImage(
@@ -105,8 +106,8 @@ public class CommentImageServiceTest {
         assertEquals(42L, result.getId());
         assertEquals("hello", result.getContent());
 
-        verify(postRepository, times(1)).findById(10L);
-        verify(commentRepository, times(1)).save(any(Comment.class));
+        verify(postRepoAdapter, times(1)).getById(10L);
+        verify(commentRepoAdapter, times(1)).saveComment(any(Comment.class));
         verify(commentMapper).toDto(savedComment);
 
         verifyNoInteractions(imageService, s3Service, presignService);
@@ -143,8 +144,8 @@ public class CommentImageServiceTest {
         dtoStub.setAuthorId(7L);
         dtoStub.setPostId(11L);
 
-        when(postRepository.findById(11L)).thenReturn(Optional.of(fakePost));
-        when(commentRepository.save(any(Comment.class)))
+        when(postRepoAdapter.getById(11L)).thenReturn(fakePost);
+        when(commentRepoAdapter.saveComment(any(Comment.class)))
                 .thenReturn(initialComment)
                 .thenReturn(commentWithKeys);
 
@@ -183,8 +184,8 @@ public class CommentImageServiceTest {
         assertEquals("https://signed/large-url", result.getUrlLarge());
         assertEquals("https://signed/small-url", result.getUrlThumb());
 
-        verify(postRepository, times(1)).findById(11L);
-        verify(commentRepository, times(2)).save(any(Comment.class));
+        verify(postRepoAdapter, times(1)).getById(11L);
+        verify(commentRepoAdapter, times(2)).saveComment(any(Comment.class));
 
         verify(imageService).createLargeImage(file);
         verify(imageService).createSmallImage(file);
@@ -208,28 +209,30 @@ public class CommentImageServiceTest {
                 .smallImageFileKey("comments/images/small/x.png")
                 .build();
 
-        when(commentRepository.findById(50L)).thenReturn(Optional.of(existing));
+        when(commentRepoAdapter.getById(50L)).thenReturn(existing);
 
         commentService.deleteCommentWithImage(50L);
 
-        verify(commentRepository, times(1)).findById(50L);
+        verify(commentRepoAdapter, times(1)).getById(50L);
         verify(s3Service, times(1)).deleteFile("comments/images/large/x.png");
         verify(s3Service, times(1)).deleteFile("comments/images/small/x.png");
-        verify(commentRepository, times(1)).delete(existing);
+        verify(commentRepoAdapter, times(1)).deleteComment(existing);
 
-        verifyNoMoreInteractions(s3Service, commentRepository);
+        verifyNoMoreInteractions(s3Service, commentRepoAdapter);
     }
 
     @Test
     void testDeleteCommentNotFoundThrows() {
-        when(commentRepository.findById(999L)).thenReturn(Optional.empty());
+        when(commentRepoAdapter.getById(999L)).thenThrow(
+                new EntityNotFoundException("Comment not found: 999")
+        );
 
         EntityNotFoundException ex = assertThrows(EntityNotFoundException.class, () -> {
             commentService.deleteCommentWithImage(999L);
         });
         assertTrue(ex.getMessage().contains("Comment not found: 999"));
 
-        verify(commentRepository, times(1)).findById(999L);
-        verifyNoMoreInteractions(s3Service, presignService, commentRepository);
+        verify(commentRepoAdapter, times(1)).getById(999L);
+        verifyNoMoreInteractions(s3Service, presignService, commentRepoAdapter);
     }
 }

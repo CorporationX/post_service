@@ -17,7 +17,6 @@ public class ImageProcessingService {
     private static final int LARGE_IMAGE_MAX_SIZE = 1080;
     private static final int SMALL_IMAGE_MAX_SIZE = 170;
 
-
     public byte[] resizeImage(MultipartFile originalFile, int maxSize) throws IOException {
         String ct = originalFile.getContentType();
         if (ct == null || !ct.toLowerCase().startsWith("image/")) {

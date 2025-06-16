@@ -7,22 +7,19 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.adapter.CommentRepoAdapter;
+import faang.school.postservice.repository.adapter.PostRepoAdapter;
 import faang.school.postservice.service.image.ImageProcessingService;
 import faang.school.postservice.service.s3.PresignService;
 import faang.school.postservice.service.s3.S3Service;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import software.amazon.awssdk.services.s3.model.GetObjectRequest;
-import software.amazon.awssdk.services.s3.presigner.S3Presigner;
-import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
-import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
+
 import java.io.IOException;
-import java.time.Duration;
 import java.util.UUID;
 
 
@@ -33,10 +30,10 @@ public class CommentImageService {
 
     private final S3Service s3Service;
     private final ImageProcessingService imageService;
-    private final PostRepository postRepository;
-    private final CommentRepository commentRepository;
     private final CommentImageMapper commentImageMapper;
     private final PresignService presignService;
+    private final CommentRepoAdapter commentRepoAdapter;
+    private final PostRepoAdapter postRepoAdapter;
 
     @Transactional
     public CommentImageDto createCommentWithOptionalImage(
@@ -45,15 +42,14 @@ public class CommentImageService {
             Long postId,
             MultipartFile file
     ) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new EntityNotFoundException("Post not found: " + postId));
+        Post post = postRepoAdapter.getById(postId);
 
         Comment comment = Comment.builder()
                 .content(content)
                 .authorId(authorId)
                 .post(post)
                 .build();
-        comment = commentRepository.save(comment);
+        comment = commentRepoAdapter.saveComment(comment);
 
         String largeKey = null;
         String smallKey = null;
@@ -70,8 +66,8 @@ public class CommentImageService {
 
                 String basePath = "comments/" + postId + "/comments/" + comment.getId() + "/";
                 String uuid = UUID.randomUUID().toString().replace("-", "");
-                largeKey = basePath + "large_" + uuid + "." + ext;
-                smallKey = basePath + "small_" + uuid + "." + ext;
+                largeKey = String.format("%slarge_%s.%s", basePath, uuid, ext);
+                smallKey = String.format("%ssmall_%s.%s", basePath, uuid, ext);
 
                 byte[] largeBytes = imageService.createLargeImage(file);
                 s3Service.uploadBytesAsResource(largeBytes, largeKey, contentType);
@@ -83,7 +79,7 @@ public class CommentImageService {
                 smallUploaded = true;
                 comment.setSmallImageFileKey(smallKey);
 
-                comment = commentRepository.save(comment);
+                comment = commentRepoAdapter.saveComment(comment);
             }
 
             CommentImageDto dto = commentImageMapper.toDto(comment);
@@ -99,8 +95,7 @@ public class CommentImageService {
 
     @Transactional(readOnly = true)
     public CommentImageDto getCommentById(Long id) {
-        Comment comment = commentRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Comment not found: " + id));
+        Comment comment = commentRepoAdapter.getById(id);
         CommentImageDto dto = commentImageMapper.toDto(comment);
         populateDtoWithImageUrls(comment, dto);
         return dto;
@@ -108,8 +103,7 @@ public class CommentImageService {
 
     @Transactional
     public void deleteCommentWithImage(Long id) {
-        Comment comment = commentRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Comment not found: " + id));
+        Comment comment = commentRepoAdapter.getById(id);
 
         String largeKey = comment.getLargeImageFileKey();
         if (largeKey != null) {
@@ -129,7 +123,7 @@ public class CommentImageService {
             }
             comment.setSmallImageFileKey(null);
         }
-        commentRepository.delete(comment);
+        commentRepoAdapter.deleteComment(comment);
     }
 
     private void populateDtoWithImageUrls(Comment comment, CommentImageDto dto) {
