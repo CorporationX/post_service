@@ -29,19 +29,21 @@ public class AlbumController {
         return albumService.createAlbum(request);
     }
 
-    @PostMapping("/{albumId}/post/{postId}")
+    @PostMapping("/users/{userId}/albums/{albumId}/post/{postId}")
     public void addPostInAlbum(
             @PathVariable long albumId,
             @PathVariable long postId,
-            @PathVariable long userId) {
+            @PathVariable long userId
+    ) {
         albumService.addPostInAlbum(albumId, postId, userId);
     }
 
-    @DeleteMapping("/{albumId}/post/{postId}")
+    @DeleteMapping("/users/{userId}/albums/{albumId}/post/{postId}")
     public void deletePostFromAlbum(
             @PathVariable long albumId,
             @PathVariable long postId,
-            @PathVariable long userId) {
+            @PathVariable long userId
+    ) {
         albumService.deletePostFromAlbum(albumId, postId, userId);
     }
 
