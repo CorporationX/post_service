@@ -29,6 +29,10 @@ spring:
       producer:
         host: localhost
         port: 9092
+      topic:
+        comment:
+          name: comment-topic
+          partitions: 3
 
 server:
   port: 8081
