@@ -22,4 +22,5 @@ public interface PostRepository extends CrudRepository<Post, Long> {
             "p.deleted = false AND p.scheduledAt <= CURRENT_TIMESTAMP")
     List<Post> findReadyToPublish();
 
+    List<Post> findAll();
 }
