@@ -4,7 +4,9 @@ import faang.school.postservice.dto.album.AlbumDto;
 import faang.school.postservice.dto.album.AlbumFilterDto;
 import faang.school.postservice.service.album.AlbumService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -20,6 +22,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/album")
 @RequiredArgsConstructor
+@Validated
 public class AlbumController {
 
     private final AlbumService albumService;
@@ -31,39 +34,48 @@ public class AlbumController {
 
     @PostMapping("/users/{userId}/albums/{albumId}/post/{postId}")
     public void addPostInAlbum(
-            @PathVariable long albumId,
-            @PathVariable long postId,
-            @PathVariable long userId
+            @PathVariable @Positive Long albumId,
+            @PathVariable @Positive Long postId,
+            @PathVariable @Positive Long userId
     ) {
         albumService.addPostInAlbum(albumId, postId, userId);
     }
 
     @DeleteMapping("/users/{userId}/albums/{albumId}/post/{postId}")
     public void deletePostFromAlbum(
-            @PathVariable long albumId,
-            @PathVariable long postId,
-            @PathVariable long userId
+            @PathVariable @Positive Long albumId,
+            @PathVariable @Positive Long postId,
+            @PathVariable @Positive Long userId
     ) {
         albumService.deletePostFromAlbum(albumId, postId, userId);
     }
 
     @PostMapping("/users/{userId}/favorite-albums/{albumId}")
-    public void addAlbumToFavorite(@PathVariable long albumId, @PathVariable long userId) {
+    public void addAlbumToFavorite(
+            @PathVariable @Positive Long albumId,
+            @PathVariable @Positive Long userId
+    ) {
         albumService.addAlbumToFavorite(albumId, userId);
     }
 
     @DeleteMapping("/users/{userId}/favorite-albums/{albumId}")
-    public void deleteAlbumFromFavorite(@PathVariable long albumId, @PathVariable long userId) {
+    public void deleteAlbumFromFavorite(
+            @PathVariable @Positive Long albumId,
+            @PathVariable @Positive Long userId
+    ) {
         albumService.deleteAlbumFromFavorite(albumId, userId);
     }
 
     @GetMapping("/{albumId}")
-    public AlbumDto getAlbumById(@PathVariable long albumId) {
+    public AlbumDto getAlbumById(@PathVariable @Positive Long albumId) {
         return albumService.getAlbumById(albumId);
     }
 
     @GetMapping("/user/{userId}/albums")
-    public List<AlbumDto> getAllUserAlbums(@PathVariable long userId, @ModelAttribute AlbumFilterDto request) {
+    public List<AlbumDto> getAllUserAlbums(
+            @PathVariable @Positive Long userId,
+            @ModelAttribute AlbumFilterDto request
+    ) {
         return albumService.getAllUserAlbums(userId, request);
     }
 
@@ -73,17 +85,23 @@ public class AlbumController {
     }
 
     @GetMapping("/user/{userId}/favorite-albums")
-    public List<AlbumDto> getAllFavoriteAlbums(@PathVariable long userId, @ModelAttribute AlbumFilterDto request) {
+    public List<AlbumDto> getAllFavoriteAlbums(
+            @PathVariable @Positive Long userId,
+            @ModelAttribute AlbumFilterDto request
+    ) {
         return albumService.getAllFavoriteAlbums(userId, request);
     }
 
-    @PutMapping()
+    @PutMapping
     public AlbumDto updateAlbum(@Valid @RequestBody AlbumDto request) {
         return albumService.updateAlbum(request);
     }
 
     @DeleteMapping("/users/{userId}/albums/{albumId}")
-    public void deleteAlbum(@PathVariable long albumId, @PathVariable long userId) {
+    public void deleteAlbum(
+            @PathVariable @Positive Long albumId,
+            @PathVariable @Positive Long userId
+    ) {
         albumService.deleteAlbum(albumId, userId);
     }
 }
