@@ -19,12 +19,11 @@ public class PostCorrecterImpl implements PostCorrectorService {
 
     @Override
     public TextCheckResponse checkText(String textToCheck) {
-        StringBuilder correctedText = new StringBuilder();
-        String params = "text=" + URLEncoder.encode(textToCheck, StandardCharsets.UTF_8)
+        String apiRequestParams = "text=" + URLEncoder.encode(textToCheck, StandardCharsets.UTF_8)
                 + "&language=" + properties.language();
-        CorrectionResponse correctionResponse = textCorrectionService.callCorrectionApi(params);
+        CorrectionResponse correctionResponse = textCorrectionService.callCorrectionApi(apiRequestParams);
         int previousEnd = 0;
-        assert correctionResponse != null;
+        StringBuilder correctedText = new StringBuilder();
         for (CorrectionResponse.Match match : correctionResponse.getMatches()) {
             if (match.getReplacements() != null && !match.getReplacements().isEmpty()) {
                 String replacement = match.getReplacements().get(0).getValue();
