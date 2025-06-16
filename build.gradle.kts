@@ -26,6 +26,11 @@ dependencies {
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
     /**
+     * Retry support
+     */
+    implementation("org.springframework.retry:spring-retry:2.0.12")
+
+    /**
      * Database
      */
     implementation("org.liquibase:liquibase-core")
@@ -42,7 +47,7 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok:1.18.26")
     implementation("org.mapstruct:mapstruct:1.5.3.Final")
     annotationProcessor("org.mapstruct:mapstruct-processor:1.5.3.Final")
-
+    implementation("software.amazon.awssdk:s3:2.20.138")
     /**
      * Test containers
      */
