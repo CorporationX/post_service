@@ -36,6 +36,9 @@ public class PostPublisherTest {
     @Mock
     private PostRepository postRepository;
 
+    @Mock
+    private BatchPublisher batchPublisher;
+
     @InjectMocks
     private PostService postService;
 
@@ -87,7 +90,7 @@ public class PostPublisherTest {
     }
 
     @Test
-    void publishScheduledPostsSingleBatchAllPostsPublished() {
+    void publishScheduledPostsSingleBatchAllPostsDelegatedToBatchPublisher() {
         List<Post> ready = new ArrayList<>();
         for (int i = 0; i < 3; i++) {
             Post p = new Post();
@@ -100,19 +103,14 @@ public class PostPublisherTest {
         postService.publishScheduledPosts();
 
         ArgumentCaptor<List<Post>> captor = ArgumentCaptor.forClass(List.class);
-        verify(postRepository, times(1)).saveAll(captor.capture());
-
-        List<Post> saved = captor.getValue();
-        assertThat(saved).hasSize(3);
-        for (Post p : saved) {
-            assertThat(p.isPublished()).isTrue();
-            assertThat(p.getPublishedAt()).isNotNull();
-            assertThat(p.getPublishedAt()).isBeforeOrEqualTo(LocalDateTime.now());
-        }
+        verify(batchPublisher, times(1)).publishBatch(captor.capture());
+        List<Post> passed = captor.getValue();
+        assertThat(passed).hasSize(3);
+        assertThat(passed).isEqualTo(ready);
     }
 
     @Test
-    void publishScheduledPostsMultipleBatchesCorrectBatchSizes() {
+    void publishScheduledPostsMultipleBatchesDelegatedCorrectBatchSizes() {
         int total = 2500;
         List<Post> ready = new ArrayList<>();
         for (int i = 0; i < total; i++) {
@@ -126,11 +124,15 @@ public class PostPublisherTest {
         postService.publishScheduledPosts();
 
         ArgumentCaptor<List<Post>> captor = ArgumentCaptor.forClass(List.class);
-        verify(postRepository, times(3)).saveAll(captor.capture());
+        verify(batchPublisher, times(3)).publishBatch(captor.capture());
         List<List<Post>> batches = captor.getAllValues();
 
         assertThat(batches.get(0)).hasSize(1000);
         assertThat(batches.get(1)).hasSize(1000);
         assertThat(batches.get(2)).hasSize(500);
+
+        assertThat(batches.get(0)).containsExactlyElementsOf(ready.subList(0, 1000));
+        assertThat(batches.get(1)).containsExactlyElementsOf(ready.subList(1000, 2000));
+        assertThat(batches.get(2)).containsExactlyElementsOf(ready.subList(2000, 2500));
     }
 }
