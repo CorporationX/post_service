@@ -157,3 +157,17 @@ moderation:
 scheduler:
   outbox-event:
     batch-size: 10
+
+kafka:
+  bootstrap-servers: localhost:9092
+  group-id: post-service-group
+  topic: connectivity_check
+  max-poll: 100
+  topics:
+    post:
+      name: posts
+      partitions: 1
+      replicationFactor: 1
+      retry:
+        delay: 2000
+        multiplier: 2

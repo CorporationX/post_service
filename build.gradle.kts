@@ -47,7 +47,10 @@ dependencies {
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0")
     implementation("org.apache.commons:commons-collections4:4.4")
     implementation("org.springframework.retry:spring-retry:2.0.11")
-
+    implementation("org.apache.kafka:kafka-clients:3.9.1")
+    implementation("org.apache.kafka:kafka_2.13:3.9.1")
+    implementation("org.apache.kafka:kafka-streams:3.8.0")
+    implementation("org.springframework.kafka:spring-kafka:3.3.6")
     /**
      * Files
      */
