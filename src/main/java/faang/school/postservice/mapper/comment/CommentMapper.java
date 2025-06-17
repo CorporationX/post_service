@@ -9,11 +9,7 @@ import org.mapstruct.ReportingPolicy;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface CommentMapper {
 
-    @Mapping(target = "authorId", source = "authorId")
-    @Mapping(target = "postId", source = "post.id")
     CommentDto toDto(Comment comment);
 
-    @Mapping(target = "authorId", source = "authorId")
-    @Mapping(target = "post.id", source = "postId")
     Comment toEntity(CommentDto commentDto);
 }

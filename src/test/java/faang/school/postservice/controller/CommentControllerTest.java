@@ -93,7 +93,7 @@ class CommentControllerTest {
 
         when(commentService.updateComment(any(CommentDto.class))).thenReturn(updatedCommentDto);
 
-        ResponseEntity<CommentDto> response = commentController.updateComment(postId, commentId, commentDto);
+        ResponseEntity<CommentDto> response = commentController.updateComment(commentId, commentDto);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
@@ -109,9 +109,9 @@ class CommentControllerTest {
 
     @Test
     void testUpdateCommentInvalidDtoReturnsBadRequest() {
-        CommentDto invalidCommentDto = CommentDto.builder().content("   ").build(); // Empty content
+        CommentDto invalidCommentDto = CommentDto.builder().content("   ").build();
 
-        ResponseEntity<CommentDto> response = commentController.updateComment(postId, commentId, invalidCommentDto);
+        ResponseEntity<CommentDto> response = commentController.updateComment(commentId, invalidCommentDto);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         verifyNoInteractions(commentService);
@@ -147,7 +147,7 @@ class CommentControllerTest {
 
     @Test
     void testDeleteCommentReturnsNoContent() {
-        ResponseEntity<Void> response = commentController.deleteComment(postId, commentId);
+        ResponseEntity<Void> response = commentController.deleteComment(commentId);
 
         assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
         verify(commentService).deleteComment(commentId);

@@ -35,7 +35,7 @@ public class CommentController {
     }
 
     @PutMapping("/{commentId}")
-    public ResponseEntity<CommentDto> updateComment(@PathVariable Long postId, @PathVariable Long commentId,
+    public ResponseEntity<CommentDto> updateComment(@PathVariable Long commentId,
                                                     @RequestBody CommentDto commentDto) {
         if (!isValidCommentDto(commentDto)) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -52,7 +52,7 @@ public class CommentController {
     }
 
     @DeleteMapping("/{commentId}")
-    public ResponseEntity<Void> deleteComment(@PathVariable Long posId, @PathVariable Long commentId) {
+    public ResponseEntity<Void> deleteComment(@PathVariable Long commentId) {
         commentService.deleteComment(commentId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -60,6 +60,6 @@ public class CommentController {
     private boolean isValidCommentDto(CommentDto commentDto) {
         return commentDto != null
                 && commentDto.getContent() != null
-                && !commentDto.getContent().trim().isEmpty();
+                && !commentDto.getContent().isBlank();
     }
 }

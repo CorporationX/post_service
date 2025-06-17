@@ -80,7 +80,7 @@ public class CommentService {
         if (commentDto == null) {
             throw new IllegalArgumentException("Comment cannot be null");
         }
-        if (commentDto.getContent() == null || commentDto.getContent().trim().isEmpty()) {
+        if (commentDto.getContent() == null || commentDto.getContent().isBlank()) {
             throw new IllegalArgumentException("Comment cannot be empty");
         }
         if (commentDto.getContent().length() > 4096) {
