@@ -21,7 +21,6 @@ public class PostSchedulerServiceImpl implements PostSchedulerService {
     private final PostService postService;
     private final ThreadPoolTaskExecutor taskExecutor;
 
-
     @Override
     public void publishScheduledPosts() {
         log.info("Started publishing scheduled posts.");

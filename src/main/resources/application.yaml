@@ -70,10 +70,18 @@ springdoc:
   api-docs:
     path: /api-docs
 
-cron:
-    project:
-        ban-user: 0 0 1 * * *
-        each-minute: "0 * * * * *"
+
+project:
+    ban-user:
+      cron: 0 0 1 * * *
+    post-publisher:
+      cron: "0 * * * * *"
+
+thread:
+  pool:
+    coreSize: 5
+    maxSize: 10
+    prefix: "post-publisher-"
 
 entity:
     post:
