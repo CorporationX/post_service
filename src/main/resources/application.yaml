@@ -1,9 +1,48 @@
 spring:
+  config:
+    import: 'optional:consul:'
+  application:
+    name: post-service
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+      discovery: post-service-i1
+      config:
+        enabled: true
+        watch:
+          enabled: true
+    openfeign:
+      client:
+        config:
+          user-service:
+            connectTimeout: 5000
+            readTimeout: 3000
+            loggerLevel: full
+    aws:
+      credentials:
+        access-key: user
+        secret-key: password
+      region:
+        static: us-east-1
+      s3:
+        endpoint: http://...:9000
+        path-style-access-enabled: true
+        bucket-name: post-bucket
+
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://localhost:5432/postgres
     username: user
     password: password
+
+  data:
+    redis:
+      port: 6379
+      host: localhost
+      channels:
+        calculations_channel:
+          name: calculations_channel
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
@@ -16,38 +55,6 @@ spring:
 
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
-
-  data:
-    redis:
-      port: 6379
-      host: localhost
-      channels:
-        calculations_channel:
-          name: calculations_channel
-
-  config:
-    import: 'optional:consul:config/post-service/'
-  application:
-    name: post-service
-  cloud:
-    consul:
-      host: localhost
-      port: 8500
-      config:
-        enabled: true
-        watch:
-          enabled: true
-
-    aws:
-      credentials:
-        access-key: user
-        secret-key: password
-      region:
-        static: us-east-1
-      s3:
-        endpoint: http://...:9000
-        path-style-access-enabled: true
-        bucket-name: post-bucket
 
   servlet:
     multipart:
@@ -69,3 +76,33 @@ services:
     name: project-service
   payment-service:
     name: payment-service
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+    enabled: false
+  zipkin:
+    tracing:
+      endpoint: http://localhost:9411/api/v2/spans
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+
+cache:
+  like:
+    ttl:
+      minutes: 10
+  user:
+    ttl:
+      minutes: 30
+
+feign:
+  retry:
+    maxAttempts: 3
+    delay: 1000
+    multiplier: 2
