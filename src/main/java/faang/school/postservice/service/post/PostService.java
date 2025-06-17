@@ -27,6 +27,7 @@ public class PostService {
     private final UserService userService;
     private final ProjectService projectService;
     private final ExecutorService postPublisherPool;
+    private final BatchPublisher batchPublisher;
 
     @Transactional
     public PostDto create(CreatePostDto createPostDto) {
@@ -116,19 +117,7 @@ public class PostService {
             int end = Math.min(i + batchSize, ready.size());
             List<Post> batch = ready.subList(i, end);
 
-            CompletableFuture.runAsync(() -> publishBatch(batch), postPublisherPool);
+            CompletableFuture.runAsync(() -> batchPublisher.publishBatch(batch), postPublisherPool);
         }
-    }
-
-    @Transactional
-    private void publishBatch(List<Post> batch) {
-        LocalDateTime now = LocalDateTime.now();
-
-        for (Post post : batch) {
-            post.setPublished(true);
-            post.setPublishedAt(now);
-        }
-
-        postRepository.saveAll(batch);
     }
 }
