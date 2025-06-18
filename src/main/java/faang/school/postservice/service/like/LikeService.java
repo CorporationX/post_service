@@ -1,4 +1,4 @@
-package faang.school.postservice.service;
+package faang.school.postservice.service.like;
 
 import java.util.List;
 

@@ -1,5 +1,6 @@
-package faang.school.postservice.service;
+package faang.school.postservice.service.like;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -8,12 +9,14 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.LikeCountDto;
 import faang.school.postservice.dto.LikeDto;
+import faang.school.postservice.dto.event.LikeReceivedEventDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.DuplicateLikesException;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.like.LikeReceivedEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -30,6 +33,7 @@ public class LikeServiceImpl implements LikeService {
     private final LikeMapper likeMapper;
     private final UserContext userContext;
     private final UserServiceClient userServiceClient;
+    private final LikeReceivedEventPublisher likeReceivedEventPublisher;
 
     @Override
     public LikeDto putLikeToPost(long postId) {
@@ -42,6 +46,14 @@ public class LikeServiceImpl implements LikeService {
             .userId(userContext.getUserId())
             .post(post)
             .build();
+
+        LikeReceivedEventDto likeReceivedEventDto = LikeReceivedEventDto.builder()
+            .actorId(userContext.getUserId())
+            .receiverId(post.getId())
+            .eventType("POST_LIKE")
+            .receivedAt(LocalDateTime.now().toString())
+            .build();
+        likeReceivedEventPublisher.publish(likeReceivedEventDto);
 
         return likeMapper.toDto(likeRepository.save(like));
     }

@@ -21,7 +21,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 
 import faang.school.postservice.dto.LikeDto;
-import faang.school.postservice.service.LikeServiceImpl;
+import faang.school.postservice.service.like.LikeServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
 public class LikeControllerTest {

@@ -39,7 +39,7 @@ logging:
     root: info
 
 user-service:
-  host: localhost
+  host: localhost:8080
   port: 8080
 project-service:
   host: localhost
