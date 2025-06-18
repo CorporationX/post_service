@@ -1,10 +1,10 @@
 package faang.school.postservice.entity.post;
 
+import faang.school.postservice.entity.ad.Ad;
 import faang.school.postservice.entity.album.Album;
 import faang.school.postservice.entity.comment.Comment;
 import faang.school.postservice.entity.like.Like;
 import faang.school.postservice.entity.resource.Resource;
-import faang.school.postservice.entity.ad.Ad;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -17,11 +17,9 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -30,9 +28,7 @@ import java.util.List;
 
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@ToString(exclude = {"comments", "likes", "albums", "ad", "resources"})
 @Entity
 @Table(name = "post")
 public class Post {
