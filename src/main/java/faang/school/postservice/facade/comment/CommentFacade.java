@@ -49,6 +49,16 @@ public class CommentFacade {
         return commentResponseDto;
     }
 
+    public CommentDto getCommentById(long commentId) {
+        Comment comment = commentService.get(commentId);
+
+        CommentDto commentResponseDto = commentMapper.toDto(comment);
+        log.debug("Mapping Comment entity to CommentDto. Entity content: {}. DTO content: {}.",
+                comment, commentResponseDto);
+
+        return commentResponseDto;
+    }
+
     public List<CommentDto> getAllByPostId(Long postId) {
         List<Comment> comments = commentService.getAllByPostId(postId);
 
