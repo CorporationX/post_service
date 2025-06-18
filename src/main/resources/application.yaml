@@ -80,3 +80,8 @@ resource:
     allowed-types:
       - audio/mpeg
       - audio/ogg
+
+scheduler:
+  batch-size: 1000
+  thread-pool-size: 10
+  cron-expression: "0 * * * * *"

@@ -13,6 +13,8 @@ import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.resource.ResourceService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.ListUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,20 +25,20 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class PostServiceImpl implements PostService {
 
+    @Value("${scheduler.batch-size}")
+    private int batchSize;
     private final PostRepository postRepository;
     private final PostMapper postMapper;
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
     private final ResourceService resourceService;
     private final ExecutorService scheduledPostExecutorService;
-    private static final int BATCH_SIZE = 1000;
 
     @Override
     @Transactional
@@ -207,15 +209,9 @@ public class PostServiceImpl implements PostService {
     }
 
     private List<List<Post>> createBatches(List<Post> posts) {
-        int batchCount = (posts.size() + BATCH_SIZE - 1) / BATCH_SIZE;
-        return IntStream.range(0, batchCount)
-                .mapToObj(batchIndex -> {
-                    int startIndex = batchIndex * BATCH_SIZE;
-                    int endIndex = Math.min((batchIndex + 1) * BATCH_SIZE, posts.size());
-                    return posts.subList(startIndex, endIndex);
-                })
-                .toList();
+        return ListUtils.partition(posts, batchSize);
     }
+
 
     private void publishPosts(List<Post> batch) {
         try {
@@ -228,8 +224,8 @@ public class PostServiceImpl implements PostService {
             postRepository.saveAll(batch);
             log.debug("Successfully published {} posts", batch.size());
         } catch (Exception e) {
-            log.error("Error while publishing scheduled posts", e);
-            throw new ScheduledPostPublicationException("Failed to publish scheduled posts", e.getCause());
+            log.error("Error while publishing scheduled posts in batch of size {}", batch.size(), e);
+            throw new ScheduledPostPublicationException("Failed to publish scheduled posts", e);
         }
     }
 }

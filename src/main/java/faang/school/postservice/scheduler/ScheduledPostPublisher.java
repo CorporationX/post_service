@@ -13,7 +13,7 @@ public class ScheduledPostPublisher {
 
     private final PostService postService;
 
-    @Scheduled(cron = "0 * * * * *")
+    @Scheduled(cron = "${scheduler.cron-expression}")
     public void publishScheduledPosts() {
         log.info("Starting scheduled post publication job");
         try {
