@@ -8,7 +8,6 @@ import faang.school.postservice.dto.languagetool.LanguageToolResponseDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.PostNotFoundException;
-import faang.school.postservice.exception.ScheduledPostPublicationException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
@@ -228,34 +227,37 @@ public class PostServiceImpl implements PostService {
             return;
         }
         log.info("Found {} scheduled posts to publish", postsToPublish.size());
-        List<List<Post>> batches = createBatches(postsToPublish);
+        List<List<Post>> batches = ListUtils.partition(postsToPublish, batchSize);
+        int successfulBatches = 0;
+        int failedBatches = 0;
         List<CompletableFuture<Void>> futures = batches.stream()
                 .map(batch -> CompletableFuture.runAsync(
                         () -> publishPosts(batch), scheduledPostExecutorService))
                 .toList();
 
-        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
-        log.info("Finished scheduled post publishing job");
-    }
+        for (CompletableFuture<Void> future : futures) {
+            try {
+                future.join();
+                successfulBatches++;
+            } catch (Exception e) {
+                failedBatches++;
+                log.error("Failed to publish batch", e);
+            }
+        }
 
-    private List<List<Post>> createBatches(List<Post> posts) {
-        return ListUtils.partition(posts, batchSize);
+        log.info("Finished scheduled post publishing job. Successful: {}, Failed: {}",
+                successfulBatches, failedBatches);
     }
-
 
     private void publishPosts(List<Post> batch) {
-        try {
-            log.debug("Publishing {} posts", batch.size());
-            LocalDateTime publishTime = LocalDateTime.now();
-            batch.forEach(post -> {
-                post.setPublished(true);
-                post.setPublishedAt(publishTime);
-            });
-            postRepository.saveAll(batch);
-            log.debug("Successfully published {} posts", batch.size());
-        } catch (Exception e) {
-            log.error("Error while publishing scheduled posts in batch of size {}", batch.size(), e);
-            throw new ScheduledPostPublicationException("Failed to publish scheduled posts", e);
-        }
+        log.debug("Publishing {} posts", batch.size());
+        LocalDateTime publishTime = LocalDateTime.now();
+        batch.forEach(post -> {
+            post.setPublished(true);
+            post.setPublishedAt(publishTime);
+        });
+        postRepository.saveAll(batch);
+        log.debug("Successfully published {} posts", batch.size());
     }
 }
+
