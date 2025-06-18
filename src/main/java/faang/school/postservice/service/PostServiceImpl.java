@@ -17,7 +17,6 @@ import faang.school.postservice.service.resource.ResourceService;
 import faang.school.postservice.util.LanguageTool;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.ListUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -34,7 +33,6 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class PostServiceImpl implements PostService {
 
     @Value("${scheduler.batch-size}")
