@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 public class AuthorBanner {
     private final PostService postService;
 
-    @Scheduled(cron = "${cron.project.ban-user}")
+    @Scheduled(cron = "${project.ban-user.cron}")
     public void publishUsersToBan() {
         log.info("Author banner started.");
         postService.publishUsersToBan();

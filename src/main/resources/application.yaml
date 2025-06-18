@@ -26,6 +26,12 @@ spring:
           user_ban_name: user_ban
           like_event_name: like_event
 
+  task:
+    execution:
+      pool:
+        size: 10
+        max-size: 10
+
 server:
   port: 8081
 
@@ -49,6 +55,14 @@ services:
   payment-service:
     host: localhost
     port: 9080
+scheduler:
+  expired-ad:
+    batch-size: 100
+    cron: 0 0 0 * * ?
+
+executor-service:
+  threads-count: 2
+  termination-timeout: 30
 
 springdoc:
   swagger-ui:
@@ -57,9 +71,18 @@ springdoc:
   api-docs:
     path: /api-docs
 
-cron:
-    project:
-        ban-user: 0 0 1 * * *
+
+project:
+    ban-user:
+      cron: 0 0 1 * * *
+    post-publisher:
+      cron: "0 * * * * *"
+
+thread:
+  pool:
+    coreSize: 5
+    maxSize: 10
+    prefix: "post-publisher-"
 
 entity:
     post:

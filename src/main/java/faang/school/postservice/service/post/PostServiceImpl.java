@@ -124,6 +124,7 @@ public class PostServiceImpl implements PostService {
         foundPost.setPublished(true);
         foundPost.setPublishedAt(LocalDateTime.now());
         Post publishedPost = postRepository.save(foundPost);
+
         return postMapper.toPostDto(publishedPost);
     }
 
