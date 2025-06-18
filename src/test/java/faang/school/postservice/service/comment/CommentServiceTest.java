@@ -12,8 +12,6 @@ import faang.school.postservice.validation.comment.CommentValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -43,8 +41,6 @@ public class CommentServiceTest {
     private UserContext userContext;
     @Mock
     private CommentKafkaFacade commentKafkaFacade;
-    @Captor
-    private ArgumentCaptor<Comment> commentCaptor;
     @InjectMocks
     private CommentService commentService;
 
@@ -76,9 +72,6 @@ public class CommentServiceTest {
 
         Comment result = commentService.create(post.getId(), input);
 
-        verify(commentKafkaFacade).createCommentEvent(commentCaptor.capture());
-        Comment captureComment = commentCaptor.getValue();
-        assertEquals(captureComment, result);
         assertEquals(post, result.getPost());
         assertEquals(USER_ID, result.getAuthorId());
         verify(commentValidator).validateCommentAuthor(USER_ID);

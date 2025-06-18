@@ -43,8 +43,9 @@ public class CommentService {
         Comment savedComment = commentRepository.save(comment);
         log.info("Создан комментарий с id={}", comment.getId());
 
-        // TODO: мб AOP
-        commentKafkaFacade.createCommentEvent(savedComment);
+        if (post.getAuthorId() != null) {
+            commentKafkaFacade.createCommentEvent(savedComment);
+        }
 
         return savedComment;
     }
