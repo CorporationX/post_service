@@ -4,9 +4,9 @@ import faang.school.postservice.dto.event.LikeEventDto;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-@Service("redisLikeEventPublisher")
+@Component("redisLikeEventPublisher")
 public class RedisLikeEventPublisher implements LikeEventPublisher {
 
     private final RedisTemplate<String, Object> redisTemplate;
