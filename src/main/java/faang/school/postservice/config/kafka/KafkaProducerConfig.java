@@ -16,7 +16,7 @@ import java.util.Map;
 @Configuration
 @RequiredArgsConstructor
 public class KafkaProducerConfig {
-    private final KafkaProducerConfigurationProperties props;
+    private final KafkaConfigurationProperties props;
 
     @Bean
     public ProducerFactory<String, Object> producerFactory() {

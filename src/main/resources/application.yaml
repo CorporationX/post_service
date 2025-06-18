@@ -26,9 +26,8 @@ spring:
           name: calculations_channel
 
     kafka:
-      producer:
-        host: localhost
-        port: 29092
+      host: localhost
+      port: 29092
       topic:
         comment:
           name: comment_topic

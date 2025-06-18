@@ -43,6 +43,7 @@ public class Post {
 
     @Column(name = "content", nullable = false, length = 4096)
     private String content;
+    // TODO: у проекта автор должен быть заполнен
 
     @Column(name = "author_id", updatable = false)
     private Long authorId;

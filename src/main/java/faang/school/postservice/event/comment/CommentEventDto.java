@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CommentEvent {
+public class CommentEventDto {
     private long id;
     private long postId;
     private long authorId;

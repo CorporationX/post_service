@@ -7,9 +7,9 @@ import org.springframework.context.annotation.Configuration;
 
 @Getter
 @Setter
-@ConfigurationProperties(prefix = "spring.data.kafka.producer")
+@ConfigurationProperties(prefix = "spring.data.kafka")
 @Configuration
-public class KafkaProducerConfigurationProperties {
+public class KafkaConfigurationProperties {
     private String host;
     private int port;
 }

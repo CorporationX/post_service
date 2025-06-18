@@ -18,6 +18,7 @@ import java.util.List;
         path = "/api/v1/users",
         configuration = FeignClientConfig.class)
 public interface UserServiceClient {
+    // TODO: удалить
     @Retryable(
             retryFor = { FeignException.class, RetryableException.class },
             maxAttempts = 5,
