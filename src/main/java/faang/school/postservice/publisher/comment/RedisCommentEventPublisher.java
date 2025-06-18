@@ -1,12 +1,12 @@
-package faang.school.postservice.service.publisher.comment;
+package faang.school.postservice.publisher.comment;
 
 import faang.school.postservice.dto.event.CommentEventDto;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-@Service("redisCommentEventPublisher")
+@Component("redisCommentEventPublisher")
 public class RedisCommentEventPublisher implements CommentEventPublisher {
 
     private final RedisTemplate<String, Object> redisTemplate;

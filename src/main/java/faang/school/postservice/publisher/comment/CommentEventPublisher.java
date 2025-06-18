@@ -1,4 +1,4 @@
-package faang.school.postservice.service.publisher.comment;
+package faang.school.postservice.publisher.comment;
 
 import faang.school.postservice.dto.event.CommentEventDto;
 
