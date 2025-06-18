@@ -23,6 +23,7 @@ spring:
       host: localhost
       channels:
         comment: comment_channel
+        postView: post_view_channel
         calculations_channel:
           name: calculations_channel
 
