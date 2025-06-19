@@ -23,8 +23,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -87,31 +85,10 @@ public class LikeServiceImplTest {
         when(postRepository.findById(any())).thenReturn(Optional.of(post));
         when(userServiceClient.getUser(userId)).thenReturn(new UserDto(userId, "name", "email"));
         when(likeRepository.save(any())).thenReturn(like);
-        when(likeEventMapper.likeToEvent(like)).thenReturn(likeEvent);
-        when(objectMapper.writeValueAsString(likeEvent)).thenReturn(jsonEvent);
 
         likeService.addLikePost(postId, userId);
 
-        verify(likeEventPublisher, times(1)).publish(jsonEvent);
+        verify(likeEventPublisher, times(1)).publish(like);
         verifyNoMoreInteractions(likeEventPublisher);
-    }
-
-    @Test
-    public void test_addLikePost_publish_throwsJsonProcessingException() throws JsonProcessingException {
-        Like savedLike = Like.builder().id(100L).build();
-
-        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
-        when(userServiceClient.getUser(userId)).thenReturn(new UserDto(userId, "name", "email"));
-        when(likeRepository.save(any())).thenReturn(savedLike);
-        when(likeEventMapper.likeToEvent(savedLike)).thenReturn(likeEvent);
-        when(objectMapper.writeValueAsString(likeEvent))
-                .thenThrow(new JsonProcessingException("Test error") {
-                });
-
-        RuntimeException exception = assertThrows(RuntimeException.class,
-                () -> likeService.addLikePost(postId, userId));
-
-        assertInstanceOf(JsonProcessingException.class, exception.getCause());
-        verify(likeEventPublisher, never()).publish(anyString());
     }
 }

@@ -1,6 +1,5 @@
 package faang.school.postservice.service.like;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.mapper.LikeEventMapper;
@@ -28,7 +27,7 @@ public class LikeServiceImpl implements LikeService {
     private final UserServiceClient userServiceClient;
     private final CommentRepository commentRepository;
     @Qualifier(value = "likeEventPublisher")
-    private final MessagePublisher likeEventPublisher;
+    private final MessagePublisher<Like> likeEventPublisher;
     private final LikeEventMapper likeEventMapper;
     private final ObjectMapper objectMapper;
 
@@ -54,13 +53,7 @@ public class LikeServiceImpl implements LikeService {
                 .build();
         Like savedLike = likeRepository.save(like);
 
-        try {
-            String messageForPublisher = objectMapper.writeValueAsString(likeEventMapper.likeToEvent(savedLike));
-            likeEventPublisher.publish(messageForPublisher);
-        } catch (JsonProcessingException e) {
-            log.error("Wasn't able to publish an event into redis: {}", e.getMessage());
-            throw new RuntimeException(e);
-        }
+        likeEventPublisher.publish(savedLike);
     }
 
     @Override
