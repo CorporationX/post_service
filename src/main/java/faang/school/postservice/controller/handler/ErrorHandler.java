@@ -13,6 +13,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -86,6 +87,16 @@ public class ErrorHandler {
                 HttpStatus.CONFLICT.name(),
                 "This action can only be performed once on an object." +
                         " Undo previous changes to perform this operation again.",
+                e.getMessage(),
+                LocalDateTime.now().format(formatter)
+        );
+    }
+
+    @ExceptionHandler(HttpClientErrorException.class)
+    public ErrorResponseDto handleHttpClientErrorException(HttpClientErrorException e) {
+        return new ErrorResponseDto(
+                e.getStatusCode().toString(),
+                e.getStatusText(),
                 e.getMessage(),
                 LocalDateTime.now().format(formatter)
         );

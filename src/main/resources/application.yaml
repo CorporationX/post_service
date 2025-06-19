@@ -87,3 +87,13 @@ entity:
     post:
         max-unverified-count-for-ban: 5
     commentServiceFileLimitMb: 5
+languagetool:
+  apiUrl: "https://api.languagetool.org/v2/check"
+  language: "auto"
+
+retry:
+  text-auto-correction-api:
+    max-attempts: 3
+    backoff:
+      delay: 2000
+      multiplier: 1.5
