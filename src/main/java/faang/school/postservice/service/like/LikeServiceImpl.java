@@ -46,16 +46,19 @@ public class LikeServiceImpl implements LikeService {
             .userId(userContext.getUserId())
             .post(post)
             .build();
+        
+        Like savedLike = likeRepository.save(like);
 
-        LikeReceivedEventDto likeReceivedEventDto = LikeReceivedEventDto.builder()
-            .actorId(userContext.getUserId())
-            .receiverId(post.getId())
-            .eventType("POST_LIKE")
-            .receivedAt(LocalDateTime.now().toString())
-            .build();
-        likeReceivedEventPublisher.publish(likeReceivedEventDto);
-
-        return likeMapper.toDto(likeRepository.save(like));
+        if (savedLike != null) {
+            LikeReceivedEventDto likeReceivedEventDto = LikeReceivedEventDto.builder()
+                .actorId(userContext.getUserId())
+                .receiverId(post.getId())
+                .eventType("POST_LIKE")
+                .receivedAt(LocalDateTime.now().toString())
+                .build();
+            likeReceivedEventPublisher.publish(likeReceivedEventDto);
+        }
+        return likeMapper.toDto(savedLike);
     }
 
     @Override
