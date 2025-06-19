@@ -52,6 +52,10 @@ dependencies {
     implementation("software.amazon.awssdk:s3:2.31.54")
 
     /**
+     * Scalr
+     */
+    implementation("org.imgscalr:imgscalr-lib:4.2")
+    /**
      * Test containers
      */
     implementation(platform("org.testcontainers:testcontainers-bom:1.17.6"))

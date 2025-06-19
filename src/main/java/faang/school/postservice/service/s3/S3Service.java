@@ -19,7 +19,6 @@ import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
 import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
-import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
@@ -35,12 +34,10 @@ public class S3Service {
     private String bucketName;
 
     public String generateKeyForImage(MultipartFile image) {
-        String key = String.format("%s%s", System.currentTimeMillis(), image.getOriginalFilename());
+        String key = String.format("%s - %s", System.currentTimeMillis(), image.getOriginalFilename());
 
         try (InputStream inputStream = image.getInputStream()) {
-            BufferedImage bufferedImage = validationResource.correctedBuild(image);
-            MultipartFile multipartFile = validationResource.bufferedImageToMultipartFile(bufferedImage,
-                    "jpeg", image.getOriginalFilename());
+            MultipartFile multipartFile = validationResource.resizeImageIfNeeded(image);
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                     .bucket(bucketName)
                     .key(key)
