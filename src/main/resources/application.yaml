@@ -93,3 +93,8 @@ post:
 language-tool:
   url: https://api.languagetool.org/v2/check
   language: ru-RU
+
+scheduler:
+  batch-size: 1000
+  thread-pool-size: 10
+  cron-expression: "0 * * * * *"

@@ -33,4 +33,6 @@ public interface PostService {
     void correctContentDraftPostsByLanguageToolAI();
 
     Post getExistingPost(Long postId);
+
+    void publishScheduledPosts();
 }
