@@ -16,6 +16,8 @@ import faang.school.postservice.service.resource.ResourceService;
 import faang.school.postservice.util.LanguageTool;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.ListUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,6 +25,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -30,6 +34,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PostServiceImpl implements PostService {
 
+    @Value("${scheduler.batch-size}")
+    private int batchSize;
     private final PostRepository postRepository;
     private final PostMapper postMapper;
     private final UserServiceClient userServiceClient;
@@ -38,6 +44,7 @@ public class PostServiceImpl implements PostService {
     private final ResourceService resourceService;
     private final UserContext userContext;
     private final PostActionService postActionService;
+    private final ExecutorService scheduledPostExecutorService;
 
     @Override
     @Transactional
@@ -209,4 +216,48 @@ public class PostServiceImpl implements PostService {
             projectServiceClient.getProject(projectId);
         }
     }
+
+    @Override
+    @Transactional
+    public void publishScheduledPosts() {
+        log.info("Starting scheduled post publishing job");
+        List<Post> postsToPublish = postRepository.findReadyToPublish();
+        if (postsToPublish.isEmpty()) {
+            log.info("No scheduled posts found to publish");
+            return;
+        }
+        log.info("Found {} scheduled posts to publish", postsToPublish.size());
+        List<List<Post>> batches = ListUtils.partition(postsToPublish, batchSize);
+        int successfulBatches = 0;
+        int failedBatches = 0;
+        List<CompletableFuture<Void>> futures = batches.stream()
+                .map(batch -> CompletableFuture.runAsync(
+                        () -> publishPosts(batch), scheduledPostExecutorService))
+                .toList();
+
+        for (CompletableFuture<Void> future : futures) {
+            try {
+                future.join();
+                successfulBatches++;
+            } catch (Exception e) {
+                failedBatches++;
+                log.error("Failed to publish batch", e);
+            }
+        }
+
+        log.info("Finished scheduled post publishing job. Successful: {}, Failed: {}",
+                successfulBatches, failedBatches);
+    }
+
+    private void publishPosts(List<Post> batch) {
+        log.debug("Publishing {} posts", batch.size());
+        LocalDateTime publishTime = LocalDateTime.now();
+        batch.forEach(post -> {
+            post.setPublished(true);
+            post.setPublishedAt(publishTime);
+        });
+        postRepository.saveAll(batch);
+        log.debug("Successfully published {} posts", batch.size());
+    }
 }
+
