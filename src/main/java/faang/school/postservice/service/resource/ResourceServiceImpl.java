@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Objects;
 
 @RequiredArgsConstructor
 @Service
@@ -31,25 +32,23 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @Transactional
-    public Resource addBuildForPost(long postId, MultipartFile file) {
+    public Resource addImageToPost(long postId, MultipartFile file) {
         UserDto user = userServiceClient.getUser(userContext.getUserId());
-        List<Post> lists = postRepository.findByAuthorId(user.id());
+        Post post = postService.getPostById(postId);
         String key = s3Service.generateKeyForImage(file);
+        if (post.getResources().size() >= MAX_SIZE_RESOURCE_LIST) {
+            throw new DataValidationException(String.format("The post contains the maximum number of pictures %d",
+                    MAX_SIZE_RESOURCE_LIST));
+        }
+        if (!Objects.equals(post.getAuthorId(), user.id())) {
+            throw new DataValidationException(String.format("user with id %d is not the author of post with id %d",
+                    post.getId(), user.id()));
+        }
         Resource resource = new Resource();
-
-        lists.stream()
-                .filter(post -> post.getId() == postId)
-                .findFirst()
-                .ifPresent(post -> {
-                    if (post.getResources().size() < MAX_SIZE_RESOURCE_LIST) {
-                        resource.setKey(key);
-                        resource.setSize(file.getSize());
-                        resource.setPost(post);
-                        resource.setName(file.getOriginalFilename());
-                    } else {
-                        throw new IllegalArgumentException("Max size list Resource == 10");
-                    }
-                });
+        resource.setKey(key);
+        resource.setSize(file.getSize());
+        resource.setPost(post);
+        resource.setName(file.getOriginalFilename());
         return resourceRepository.save(resource);
     }
 
@@ -57,23 +56,26 @@ public class ResourceServiceImpl implements ResourceService {
     @Transactional
     public void deleteImageByPostId(long postId, long resourceId) {
         Post post = postService.getPostById(postId);
-        post.getResources().stream()
-                .filter(resource -> resource.getId() == resourceId)
-                .findFirst()
-                .ifPresent(resource -> {
-                    s3Service.deleteImage(resource.getKey());
-                    resourceRepository.deleteById(resource.getId());
-                });
+        Resource resource = resourceRepository.findById(resourceId)
+                        .orElseThrow(() -> new DataValidationException(String.format("resource with such id %d" +
+                                " does not exist", resourceId)));
+        if(!post.getResources().contains(resource)) {
+            throw new IllegalArgumentException(String.format("There is no such map in this resource %d", resourceId));
+        }
+        s3Service.deleteImage(resource.getKey());
+        resourceRepository.deleteById(resource.getId());
     }
 
     @Override
     @Transactional(readOnly = true)
     public S3Dto downloadImage(long postId, long resourceId) {
         Post post = postService.getPostById(postId);
-        return post.getResources().stream()
-                .filter(resource -> resource.getId() == resourceId)
-                .findFirst()
-                .map(resource -> s3Service.downloadImage(resource.getKey()))
-                .orElseThrow(() -> new DataValidationException(String.format("Resource by id %d not Found", resourceId)));
+        Resource resource = resourceRepository.findById(resourceId)
+                .orElseThrow(() -> new DataValidationException(String.format("resource with such id %d" +
+                        " does not exist", resourceId)));
+        if(!post.getResources().contains(resource)){
+            throw new IllegalArgumentException(String.format("There is no such map in this resource %d", resourceId));
+        }
+        return s3Service.downloadImage(resource.getKey());
     }
 }

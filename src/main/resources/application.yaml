@@ -48,3 +48,8 @@ services:
     accessKey: user
     secretKey: password
     bucket: corpbucket
+
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB

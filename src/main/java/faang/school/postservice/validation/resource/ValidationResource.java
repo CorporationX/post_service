@@ -1,73 +1,43 @@
 package faang.school.postservice.validation.resource;
 
 import faang.school.postservice.exception.DataValidationException;
-import net.coobird.thumbnailator.Thumbnails;
+import org.imgscalr.Scalr;
+import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
-import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+@Component
 public class ValidationResource {
+    private static final long MAX_FILE_SIZE_IN_BYTES = 5 * 1024 * 1024;
 
-    private static final int WIDTH = 1080;
-    private static final int HEIGHT = 566;
-    private static final int MAX_SIZE_SQUARE = 1080;
-    private static final long MAX_SIZE_FILE =  5 * 1024;
+    public MultipartFile resizeImageIfNeeded(MultipartFile file) throws IOException {
+        BufferedImage bufferedImage = ImageIO.read(file.getInputStream());
 
-    public BufferedImage correctedBuild(MultipartFile image) throws IOException {
-        BufferedImage originalImage = ImageIO.read(image.getInputStream());
-        int width = originalImage.getWidth();
-        int height = originalImage.getHeight();
+        checkPictureWeight(file);
+        BufferedImage resultImage = Scalr.resize(bufferedImage, Scalr.Method.AUTOMATIC, Scalr.Mode.FIT_EXACT,
+                bufferedImage.getWidth(), bufferedImage.getHeight());
 
-        boolean isHorizontal = width > height;
+        try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
+            ImageIO.write(resultImage, "jpg", byteArrayOutputStream);
+            byte[] byteImage = byteArrayOutputStream.toByteArray();
 
-        int targetWidth = width;
-        int targetHeight = height;
-        checkPictureWeight(image);
-
-        if (isHorizontal) {
-            if (width > WIDTH || height > HEIGHT) {
-                double newWidth = (double) WIDTH / width;
-                double newHeight = (double) HEIGHT / height;
-                double scaleFactor = Math.min(newWidth, newHeight);
-                targetWidth = (int) (width * scaleFactor);
-                targetHeight = (int) (height * scaleFactor);
-            }
-        } else {
-            if (width > MAX_SIZE_SQUARE || height > MAX_SIZE_SQUARE) {
-                double newWidth = (double) MAX_SIZE_SQUARE / width;
-                double newHeight = (double) MAX_SIZE_SQUARE / height;
-                double scaleFactor = Math.min(newWidth, newHeight);
-                targetWidth = (int) (width * scaleFactor);
-                targetHeight = (int) (height * scaleFactor);
-            }
+            return new InMemoryMultipartFile(
+                    "file",
+                    file.getOriginalFilename(),
+                    "image/jpg",
+                    byteImage
+            );
         }
-
-        BufferedImage updateImage = new BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_3BYTE_BGR);
-        Graphics2D graphics = updateImage.createGraphics();
-        graphics.drawImage(originalImage, 0, 0, targetWidth, targetHeight, null);
-        graphics.dispose();
-
-        return updateImage;
     }
 
     private void checkPictureWeight(MultipartFile file) {
-        double sizeFile = (double) file.getSize() / 1024;
-        if (sizeFile > MAX_SIZE_FILE) {
-            throw new DataValidationException("File exceeds allowed size " + MAX_SIZE_FILE);
+        long sizeFile = file.getSize();
+        if (sizeFile > MAX_FILE_SIZE_IN_BYTES) {
+            throw new DataValidationException("Maximum file size exceeded " + MAX_FILE_SIZE_IN_BYTES);
         }
-    }
-
-    public MultipartFile bufferedImageToMultipartFile(BufferedImage image,
-                                                             String formatName, String filename) throws IOException {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        ImageIO.write(image, formatName,outputStream);
-        byte[] toByte = outputStream.toByteArray();
-        String contentType = "image/" + formatName.toLowerCase();
-        return new BufferedImageToMultipartFile("name", filename, contentType, toByte);
     }
 }

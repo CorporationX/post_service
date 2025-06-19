@@ -86,7 +86,7 @@ public class ResourceServiceTest {
 
         when(resourceRepository.save(any(Resource.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Resource testResource = resourceService.addBuildForPost(POST_ID, file);
+        Resource testResource = resourceService.addImageToPost(POST_ID, file);
 
         assertNotNull(testResource);
         assertEquals(resource.getKey(), testResource.getKey());

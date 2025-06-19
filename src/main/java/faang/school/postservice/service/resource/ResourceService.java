@@ -5,7 +5,7 @@ import faang.school.postservice.model.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface ResourceService {
-    Resource addBuildForPost(long postId, MultipartFile file);
+    Resource addImageToPost(long postId, MultipartFile file);
 
     void deleteImageByPostId(long postId, long resourceId);
 

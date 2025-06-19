@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 @RequiredArgsConstructor
-public class BufferedImageToMultipartFile implements MultipartFile {
+public class InMemoryMultipartFile implements MultipartFile {
     private final String name;
     private final String originalFilename;
     private final String contentType;
