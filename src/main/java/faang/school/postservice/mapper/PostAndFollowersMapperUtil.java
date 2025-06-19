@@ -11,7 +11,7 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 public class PostAndFollowersMapperUtil {
-    private UserServiceClient userServiceClient;
+    private final UserServiceClient userServiceClient;
 
     @Named("getFollowers")
     public List<Long> getFollowers(Long userId) {

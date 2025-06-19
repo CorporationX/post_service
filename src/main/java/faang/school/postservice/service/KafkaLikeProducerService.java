@@ -1,6 +1,7 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.dto.like.LikeDto;
+import faang.school.postservice.dto.post.PostAndFollowersDto;
 import faang.school.postservice.dto.post.PostDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +16,7 @@ import java.util.concurrent.Future;
 public class KafkaLikeProducerService {
     private final KafkaTemplate<String, LikeDto> kafkaTemplate;
     private final KafkaTemplate<String, PostDto> kafkaTemplatePostDto;
+    private final KafkaTemplate<String, PostAndFollowersDto> postAndFollowersDtoKafkaTemplate;
     private final String LOG_LIKE_SENT_TO_KAFKA_TOPIC = "Like {} is sent to KafkaTopic {}";
     private final String LOG_POST_SENT_TO_KAFKA_TOPIC = "Post {} is sent to KafkaTopic {}";
 
@@ -39,6 +41,18 @@ public class KafkaLikeProducerService {
                 future.complete(sendResult);
             }
             log.info(LOG_POST_SENT_TO_KAFKA_TOPIC, postDto, topicName);
+        });
+    }
+
+    public void send(String topicName, PostAndFollowersDto postAndFollowersDto) {
+        var future = postAndFollowersDtoKafkaTemplate.send(topicName, postAndFollowersDto);
+        future.whenComplete((sendResult, exception) -> {
+            if(exception != null){
+                future.completeExceptionally(exception);
+            } else {
+                future.complete(sendResult);
+            }
+            log.info(LOG_POST_SENT_TO_KAFKA_TOPIC, postAndFollowersDto, topicName);
         });
     }
 }

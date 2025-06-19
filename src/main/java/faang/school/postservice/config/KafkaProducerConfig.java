@@ -97,4 +97,9 @@ public class KafkaProducerConfig {
     public KafkaTemplate<String, PostDto> kafkaTemplatePostDto() {
         return new KafkaTemplate<>(producerFactoryPostDto());
     }
+
+    @Bean
+    public KafkaTemplate<String, PostAndFollowersDto> kafkaTemplatePostAnDFollowersDto() {
+        return new KafkaTemplate<>(producerFactoryPostAndFollowersDto());
+    }
 }
