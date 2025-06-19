@@ -13,6 +13,8 @@ import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSeriali
 @Configuration
 public class RedisConfig {
 
+    @Value("${spring.data.redis.channels.comment}")
+    private String commentChannel;
     @Value("${spring.data.redis.channels.postView}")
     private String postViewChannel;
 
@@ -27,6 +29,12 @@ public class RedisConfig {
         template.setDefaultSerializer(serializer);
 
         return template;
+    }
+
+    @Bean
+    @Qualifier("commentTopic")
+    public ChannelTopic commentTopic() {
+        return new ChannelTopic(commentChannel);
     }
 
     @Bean
