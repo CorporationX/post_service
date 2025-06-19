@@ -26,4 +26,5 @@ public interface PostService {
     PostOutputDto updatePost(long postId, PostUpdateDto postUpdateDto);
 
     void publishUsersToBan();
+
 }
