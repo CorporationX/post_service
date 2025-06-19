@@ -13,7 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @RequiredArgsConstructor
 @EnableConfigurationProperties(RedisChannelsConfig.class)
-public class LikeReceivedEventPublisherImpl implements LikeReceivedEventPublisher {
+public class RedisLikeReceivedEventPublisherImpl implements RedisLikeReceivedEventPublisher {
     private final RedisTemplate<String, Object> redisTemplate;
     private final RedisChannelsConfig redisChannelsConfig;
 

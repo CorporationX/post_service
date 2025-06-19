@@ -27,7 +27,7 @@ import faang.school.postservice.mapper.LikeMapperImpl;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.publisher.like.LikeReceivedEventPublisher;
+import faang.school.postservice.publisher.like.RedisLikeReceivedEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -62,7 +62,7 @@ public class LikeServiceImplTest {
     private UserServiceClient userServiceClient;
 
     @Mock
-    private LikeReceivedEventPublisher likeReceivedPublisher;
+    private RedisLikeReceivedEventPublisher likeReceivedPublisher;
 
     @InjectMocks
     private LikeServiceImpl likeService;

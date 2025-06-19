@@ -16,7 +16,7 @@ import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.publisher.like.LikeReceivedEventPublisher;
+import faang.school.postservice.publisher.like.RedisLikeReceivedEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -33,7 +33,7 @@ public class LikeServiceImpl implements LikeService {
     private final LikeMapper likeMapper;
     private final UserContext userContext;
     private final UserServiceClient userServiceClient;
-    private final LikeReceivedEventPublisher likeReceivedEventPublisher;
+    private final RedisLikeReceivedEventPublisher likeReceivedEventPublisher;
 
     @Override
     public LikeDto putLikeToPost(long postId) {

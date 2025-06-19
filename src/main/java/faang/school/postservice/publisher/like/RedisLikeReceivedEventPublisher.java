@@ -2,6 +2,6 @@ package faang.school.postservice.publisher.like;
 
 import faang.school.postservice.dto.event.LikeReceivedEventDto;
 
-public interface LikeReceivedEventPublisher {
+public interface RedisLikeReceivedEventPublisher {
     void publish(LikeReceivedEventDto event);
 }
