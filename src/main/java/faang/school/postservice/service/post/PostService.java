@@ -15,6 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +26,8 @@ public class PostService {
     private final PostMapper postMapper;
     private final UserService userService;
     private final ProjectService projectService;
+    private final ExecutorService postPublisherPool;
+    private final BatchPublisher batchPublisher;
 
     @Transactional
     public PostDto create(CreatePostDto createPostDto) {
@@ -98,5 +102,22 @@ public class PostService {
                 .filter(post -> post.isPublished() && !post.isDeleted())
                 .sorted(Comparator.comparing(Post::getPublishedAt).reversed())
                 .toList());
+    }
+
+    public void publishScheduledPosts() {
+        List<Post> ready = postRepository.findReadyToPublish();
+
+        if (ready == null || ready.isEmpty()) {
+            return;
+        }
+
+        int batchSize = 1000;
+
+        for (int i = 0; i < ready.size(); i += batchSize) {
+            int end = Math.min(i + batchSize, ready.size());
+            List<Post> batch = ready.subList(i, end);
+
+            CompletableFuture.runAsync(() -> batchPublisher.publishBatch(batch), postPublisherPool);
+        }
     }
 }

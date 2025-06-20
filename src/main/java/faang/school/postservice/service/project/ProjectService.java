@@ -16,6 +16,7 @@ import java.net.SocketTimeoutException;
 @RequiredArgsConstructor
 public class ProjectService {
     private final ProjectServiceClient projectServiceClient;
+    
     public void checkProjectExist(Long userId) {
         projectServiceClient.checkProjectExists(userId);
     }
