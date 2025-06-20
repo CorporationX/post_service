@@ -56,7 +56,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             """)
     List<Post> findPublishedByProjectId(Long projectId);
 
-    //todo разобраться с этой аннотацией
     @Query(nativeQuery = true, value = """
             SELECT * FROM POST post
             WHERE post.published = false AND post.deleted = false
