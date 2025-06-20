@@ -23,7 +23,10 @@ public class LanguageToolService {
     @Value("${app.correction.url}")
     private String url;
 
-    public CompletableFuture<LanguageToolResponse> checkText(String originalText, String language) {
+    @Value("${app.correction.language}")
+    private String language;
+
+    public CompletableFuture<LanguageToolResponse> checkText(String originalText) {
         MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
         formData.add("text", originalText);
         formData.add("language", language);

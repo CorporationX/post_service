@@ -7,6 +7,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validation.post.PostValidation;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +18,7 @@ import java.util.Optional;
 import static faang.school.postservice.util.ValidationUtils.setIfNotNull;
 import static faang.school.postservice.util.ValidationUtils.executeIfNotNull;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PostService {
@@ -89,9 +91,15 @@ public class PostService {
         return postRepository.findPublishedByProjectId(projectId);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public List<Post> getAllUnpublishedPost() {
         return postRepository.findAllUnpublishedPosts();
+    }
+
+    public void updateCorrectedContentOfPost(Post post, String correctedContent){
+        post.setContent(correctedContent);
+        postRepository.save(post);
+        log.info("post text ID: {} updated", post.getId());
     }
 
     private Post getValidPostOrThrowException(Long postId) {

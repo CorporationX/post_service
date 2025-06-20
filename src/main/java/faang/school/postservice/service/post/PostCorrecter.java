@@ -2,14 +2,11 @@ package faang.school.postservice.service.post;
 
 import faang.school.postservice.dto.languagetool.LanguageToolResponse;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.PostService;
 import faang.school.postservice.service.languagetool.LanguageToolService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
@@ -22,37 +19,15 @@ import java.util.concurrent.CompletableFuture;
 public class PostCorrecter {
     private final PostService postService;
     private final LanguageToolService languageToolService;
-    private final PostRepository postRepository;
-
-    @Value("${app.correction.language}")
-    private String language;
-
-    @Scheduled(cron = "${app.correction.cron}")
-    public void correctingSpellingOfPosts() {
-        log.info("Starting spellcheck job for draft posts");
-
-        List<Post> posts = postService.getAllUnpublishedPost();
-        List<CompletableFuture<Void>> futures = posts.stream()
-                .map(this::correctingContentPost)
-                .toList();
-        CompletableFuture<Void> allFutures = CompletableFuture.allOf(
-                futures.toArray(new CompletableFuture[0])
-        );
-
-        allFutures.join();
-        log.info("Finished spellcheck job");
-    }
 
     @Async("customExecutor")
     public CompletableFuture<Void> correctingContentPost(Post post) {
         String content = post.getContent();
 
-        return languageToolService.checkText(content, language)
+        return languageToolService.checkText(content)
                 .thenAccept(response -> {
                     String correctedContent = applyCorrected(content, response);
-                    post.setContent(correctedContent);
-                    postRepository.save(post);
-                    log.info("post text ID: {} updated", post.getId());
+                    postService.updateCorrectedContentOfPost(post, correctedContent);
                 }).exceptionally(ex -> {
                     log.error("Error correcting post with id: {}", post.getId(), ex);
                     return null;
