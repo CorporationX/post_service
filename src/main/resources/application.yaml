@@ -36,6 +36,7 @@ spring:
       topics:
         LIKED_POST: notification.post.liked
         COMMENT_CREATED: notification.comment.created
+        POST_VIEWS: post.views
 
 server:
   port: 8081

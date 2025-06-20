@@ -8,5 +8,6 @@ import lombok.RequiredArgsConstructor;
 public enum EventType {
     PUBLISHED_POST,
     LIKED_POST,
-    COMMENT_CREATED;
+    COMMENT_CREATED,
+    POST_VIEWS;
 }
