@@ -22,6 +22,7 @@ public interface CommentMapper {
     @Mapping(source = "id", target = "commentId")
     @Mapping(source = "post.id", target = "postId")
     @Mapping(source = "content", target = "text")
+    @Mapping(target = "timestamp", expression = "java(java.time.LocalDateTime.now())")
     CommentEventDto toCommentEventDto(Comment comment);
 
     default void updateCommentContent(@MappingTarget Comment comment, CommentDto commentDto) {
