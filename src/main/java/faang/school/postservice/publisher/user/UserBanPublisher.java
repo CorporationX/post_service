@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 @Component("redisUserPublisher")
 @RequiredArgsConstructor
 public class UserBanPublisher implements MessagePublisher<String> {
-    private static final String TOPIC_NAME = "user_ban";
+    private static final String TOPIC_NAME = "user_ban_name";
 
     private final RedisProperties properties;
     private final RedisTemplate<String, Object> redisTemplate;
