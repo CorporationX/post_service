@@ -1,8 +1,8 @@
 package faang.school.postservice.dto.post;
 
 import jakarta.validation.constraints.NotBlank;
-import lombok.Builder;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -25,5 +25,8 @@ public class PostDto {
     private Boolean published;
     private LocalDateTime publishedAt;
     private List<Long> likesIds;
+    private Integer likeCount;
     private List<Long> resourcesIds;
+
+    private LocalDateTime scheduledAt;
 }
