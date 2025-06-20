@@ -9,13 +9,16 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.post.PostMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.event.EventType;
+import faang.school.postservice.model.event.PostViewedEvent;
 import faang.school.postservice.publisher.EventPublisher;
+import faang.school.postservice.publisher.KafkaEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import feign.FeignException;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -49,6 +52,9 @@ class   PostServiceTest {
 
     @Mock
     private ExecutorService postPublishingExecutor;
+
+    @Mock
+    private KafkaEventPublisher kafkaPublisher;
 
     @Spy
     private PostMapperImpl postMapper;
@@ -380,5 +386,26 @@ class   PostServiceTest {
     void getAllDraftPosts_ShouldGet() {
         when(postRepository.findAll()).thenReturn(foundList);
         assertEquals(draftPosts, postService.getAllDraftPosts());
+    }
+
+    @Test
+    void getPost_ShouldPublishPostViewedEvent() {
+        post.setId(postId);
+        post.setPublished(true);
+        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+
+        PostDto result = postService.getPost(postId);
+
+        assertEquals(postId, result.getId());
+        assertTrue(result.isPublished());
+
+        ArgumentCaptor<PostViewedEvent> eventCaptor = ArgumentCaptor.forClass(PostViewedEvent.class);
+        verify(kafkaPublisher, times(1)).publish(eq(EventType.POST_VIEWS), eventCaptor.capture());
+
+        PostViewedEvent capturedEvent = eventCaptor.getValue();
+        assertEquals(postId, capturedEvent.getPostId());
+        assertNotNull(capturedEvent.getViewedAt());
+
+        verify(postRepository, times(1)).findById(postId);
     }
 }
