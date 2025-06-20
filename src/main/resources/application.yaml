@@ -40,13 +40,10 @@ logging:
 
 user-service:
   host: localhost:8080
-  port: 8080
 project-service:
-  host: localhost
-  port: 8082
+  host: localhost:8082
 payment-service:
-  host: localhost
-  port: 9080
+  host: localhost:9080
 
 minio:
   endpoint: http://localhost:9000

@@ -14,6 +14,7 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.DuplicateLikesException;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
+import faang.school.postservice.model.EventType;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.like.RedisLikeReceivedEventPublisher;
@@ -53,8 +54,8 @@ public class LikeServiceImpl implements LikeService {
             LikeReceivedEventDto likeReceivedEventDto = LikeReceivedEventDto.builder()
                 .actorId(userContext.getUserId())
                 .receiverId(post.getId())
-                .eventType("POST_LIKE")
-                .receivedAt(LocalDateTime.now().toString())
+                .eventType(EventType.POST_LIKE)
+                .receivedAt(LocalDateTime.now())
                 .build();
             likeReceivedEventPublisher.publish(likeReceivedEventDto);
         }
