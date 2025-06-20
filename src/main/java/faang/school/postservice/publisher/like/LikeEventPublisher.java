@@ -1,5 +1,6 @@
 package faang.school.postservice.publisher.like;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.config.redis.RedisProperties;
 import faang.school.postservice.dto.like.LikeEvent;
 import faang.school.postservice.mapper.LikeEventMapper;
@@ -21,6 +22,7 @@ public class LikeEventPublisher implements MessagePublisher<Like> {
     private final RedisTemplate<String, Object> redisTemplate;
     private String topic;
     private final LikeEventMapper likeEventMapper;
+    private final ObjectMapper objectMapper;
 
     @PostConstruct
     private void init() {
