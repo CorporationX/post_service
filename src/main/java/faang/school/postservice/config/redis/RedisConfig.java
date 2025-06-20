@@ -17,6 +17,8 @@ public class RedisConfig {
     private String commentChannel;
     @Value("${spring.data.redis.channels.postView}")
     private String postViewChannel;
+    @Value("${spring.data.redis.channels.like}")
+    private String likeChannel;
 
     @Bean
     public RedisTemplate<String, Object> redisTemplate(
@@ -41,5 +43,11 @@ public class RedisConfig {
     @Qualifier("postViewTopic")
     public ChannelTopic postViewTopic() {
         return new ChannelTopic(postViewChannel);
+    }
+
+    @Bean
+    @Qualifier("likeTopic")
+    public ChannelTopic likeTopic() {
+        return new ChannelTopic(likeChannel);
     }
 }
