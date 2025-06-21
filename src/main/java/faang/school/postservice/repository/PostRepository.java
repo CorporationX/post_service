@@ -54,5 +54,4 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             WHERE post.published = false AND post.deleted = false
             """)
     List<Post> findAllUnpublishedPosts();
-
 }

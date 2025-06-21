@@ -132,6 +132,3 @@ public class PostServiceTest {
         verify(postRepository).save(captor.capture());
     }
 }
-
-
-
