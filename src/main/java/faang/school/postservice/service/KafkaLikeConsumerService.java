@@ -1,6 +1,7 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.dto.like.LikeDto;
+import faang.school.postservice.dto.post.PostAndFollowersDto;
 import faang.school.postservice.dto.post.PostDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +30,12 @@ public class KafkaLikeConsumerService {
     public void consumePost(PostDto postDto, Acknowledgment acknowledgment) {
         acknowledgment.acknowledge();
         log.info("Acknowledge Post created: {}" , postDto);
+    }
+
+    @KafkaListener(topics={"PostAndFollowers"}, groupId = "consumer-post")
+    public void consumePostCreation(PostAndFollowersDto postAndFollowersDto, Acknowledgment acknowledgment) {
+        acknowledgment.acknowledge();
+        log.info("Acknowledge Post created in PostAndFollowers topic: {}" , postAndFollowersDto);
     }
 
 }
