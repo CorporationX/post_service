@@ -146,5 +146,19 @@ public class CommentService {
 
         return s3Service.downloadFile(keyLargeImage);
     }
-}
 
+    @Transactional(readOnly = true)
+    public List<Comment> getNotVerifiedComments() {
+        return commentRepository.findAllNotVerified();
+    }
+
+    @Transactional
+    public List<Comment> saveVerifiedComments(List<Comment> comments) {
+        return commentRepository.saveAll(comments);
+    }
+
+    @Transactional
+    public int deleteCommentsWithProfanities() {
+        return commentRepository.deleteAllFailedVerification();
+    }
+}
