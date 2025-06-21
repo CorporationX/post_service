@@ -27,6 +27,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-aop")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("org.springdoc", "springdoc-openapi-starter-webmvc-ui", "2.0.2")
+    implementation("org.springframework.kafka:spring-kafka")
 
     /**
      * Database
@@ -91,8 +92,10 @@ tasks.jacocoTestReport {
                     "**/client/**",
                     "**/mapper/**",
                     "**/model/**",
+                    "**/event/**",
                     "**/utils/**",
-                    "**/job/**"
+                    "**/job/**",
+                    "**/publisher/**"
                 )
             }
         })
@@ -111,6 +114,7 @@ tasks.named<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
             }
 
             excludes = listOf(
+                "default",
                 "faang.school.postservice.config",
                 "faang.school.postservice.config.*",
                 "faang.school.postservice.controller",
@@ -133,8 +137,12 @@ tasks.named<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
                 "faang.school.postservice.mapper.*",
                 "faang.school.postservice.model",
                 "faang.school.postservice.model.*",
+                "faang.school.postservice.event",
+                "faang.school.postservice.event.*",
                 "faang.school.postservice.job",
                 "faang.school.postservice.job.*",
+                "faang.school.postservice.publisher",
+                "faang.school.postservice.publisher.*",
                 "faang.school.postservice.utils",
                 "faang.school.postservice.utils.*",
                 "faang.school.postservice"

@@ -22,7 +22,7 @@ public class PostFacade {
 
     public PostResponseDto createDraftPostForCurrentUser(PostCreateUserRequestDto postCreateUserRequestDto) {
         Post post = postMapper.toPostEntity(postCreateUserRequestDto);
-        log.debug("Mapping PostCreateUserRequestDto to Post entity. DTO content: {}. Entity content: {}",
+        log.debug("Mapping PostCreateUserRequestDto to Post entity. DTO content: {}. Entity content: {}.",
                 postCreateUserRequestDto, post);
 
         post = postService.createDraftPostForCurrentUser(post);
@@ -35,7 +35,7 @@ public class PostFacade {
 
     public PostResponseDto createDraftPostForProject(PostCreateProjectRequestDto postCreateProjectRequestDto) {
         Post post = postMapper.toPostEntity(postCreateProjectRequestDto);
-        log.debug("Mapping PostCreateProjectRequestDto to Post entity. DTO content: {}. Entity content: {}",
+        log.debug("Mapping PostCreateProjectRequestDto to Post entity. DTO content: {}. Entity content: {}.",
                 postCreateProjectRequestDto, post);
 
         post = postService.createDraftPostForProject(post);
