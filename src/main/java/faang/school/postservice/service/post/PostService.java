@@ -1,8 +1,8 @@
-package faang.school.postservice.service;
+package faang.school.postservice.service.post;
 
 import faang.school.postservice.dto.post.PostDto;
-import org.springframework.web.multipart.MultipartFile;
 import faang.school.postservice.model.Post;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -33,4 +33,6 @@ public interface PostService {
     void correctContentDraftPostsByLanguageToolAI();
 
     Post getExistingPost(Long postId);
+
+    void publishScheduledPosts();
 }

@@ -13,8 +13,12 @@ import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSeriali
 @Configuration
 public class RedisConfig {
 
+    @Value("${spring.data.redis.channels.comment}")
+    private String commentChannel;
     @Value("${spring.data.redis.channels.postView}")
     private String postViewChannel;
+    @Value("${spring.data.redis.channels.like}")
+    private String likeChannel;
 
     @Bean
     public RedisTemplate<String, Object> redisTemplate(
@@ -30,8 +34,20 @@ public class RedisConfig {
     }
 
     @Bean
+    @Qualifier("commentTopic")
+    public ChannelTopic commentTopic() {
+        return new ChannelTopic(commentChannel);
+    }
+
+    @Bean
     @Qualifier("postViewTopic")
     public ChannelTopic postViewTopic() {
         return new ChannelTopic(postViewChannel);
+    }
+
+    @Bean
+    @Qualifier("likeTopic")
+    public ChannelTopic likeTopic() {
+        return new ChannelTopic(likeChannel);
     }
 }

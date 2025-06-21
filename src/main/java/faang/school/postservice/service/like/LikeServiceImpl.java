@@ -1,14 +1,17 @@
 package faang.school.postservice.service.like;
 
+
 import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.LikeCountDto;
 import faang.school.postservice.dto.LikeDto;
+
 import faang.school.postservice.dto.event.LikeReceivedEventDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.DuplicateLikesException;
@@ -18,6 +21,7 @@ import faang.school.postservice.model.EventType;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.like.RedisLikeReceivedEventPublisher;
+
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -35,6 +39,7 @@ public class LikeServiceImpl implements LikeService {
     private final UserContext userContext;
     private final UserServiceClient userServiceClient;
     private final RedisLikeReceivedEventPublisher likeReceivedEventPublisher;
+    private final LikeActionService likeActionService;
 
     @Override
     public LikeDto putLikeToPost(long postId) {
@@ -81,7 +86,7 @@ public class LikeServiceImpl implements LikeService {
     public LikeCountDto countLikesForPost(Long postId) {
         return new LikeCountDto(getPost(postId).getLikes().size());
     }
-    
+
     @Override
     public void deleteLikeForPost(long postId) {
         if (likeRepository.findByPostIdAndUserId(postId, userContext.getUserId()).isPresent()) {

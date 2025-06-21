@@ -1,7 +1,7 @@
-package faang.school.postservice.service;
+package faang.school.postservice.service.post;
 
 import faang.school.postservice.dto.event.PostViewEventDto;
-import faang.school.postservice.service.publisher.post.PostViewEventPublisher;
+import faang.school.postservice.publisher.post.PostViewEventPublisher;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 

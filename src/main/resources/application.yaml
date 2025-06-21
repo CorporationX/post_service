@@ -22,7 +22,9 @@ spring:
       port: 6379
       host: localhost
       channels:
+        comment: comment_channel
         postView: post_view_channel
+        like: like_channel
         calculations_channel:
           name: calculations_channel
 
@@ -89,3 +91,8 @@ post:
 language-tool:
   url: https://api.languagetool.org/v2/check
   language: ru-RU
+
+scheduler:
+  batch-size: 1000
+  thread-pool-size: 10
+  cron-expression: "0 * * * * *"

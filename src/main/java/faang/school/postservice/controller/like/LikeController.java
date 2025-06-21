@@ -1,7 +1,10 @@
 package faang.school.postservice.controller.like;
 
-import java.util.List;
-
+import faang.school.postservice.dto.LikeCountDto;
+import faang.school.postservice.dto.LikeDto;
+import faang.school.postservice.service.like.LikeService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,6 +17,7 @@ import faang.school.postservice.dto.LikeDto;
 import faang.school.postservice.service.like.LikeService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -26,7 +30,7 @@ public class LikeController {
     public LikeDto putLikeToPost(@PathVariable long postId) {
         return likeService.putLikeToPost(postId);
     }
-    
+
     @PostMapping("/comment/{commentId}")
     public LikeDto putLikeToComment(@PathVariable long commentId) {
         return likeService.putLikeToComment(commentId);
@@ -44,7 +48,7 @@ public class LikeController {
 
     @GetMapping("/user")
     public List<LikeDto> getLikesByUser() {
-       return likeService.getLikesByUser(); 
+        return likeService.getLikesByUser();
     }
 
     @GetMapping("/post/{postId}/count")
