@@ -89,7 +89,7 @@ thread-pool:
   delete-expired-posts-max-threads: 3
   publish-posts-max-threads: 10
   publish-timeout: 3
-  heated-feed-size: 10
+  heater-feed-size: 10
   author-ban:
     size: 2
     shutdown-timeout-seconds: 30

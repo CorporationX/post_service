@@ -24,7 +24,7 @@ public class FeedHeater {
 
     public FeedHeater(UserRepository userRepository,
                       KafkaHeatFeedEventPublisher publisher,
-                      @Value("${spring.data.thread-pool.heater-feed-size}") int poolSize) {
+                      @Value("${thread-pool.heater-feed-size}") int poolSize) {
         this.userRepository = userRepository;
         this.publisher = publisher;
         this.poolSize = poolSize;
