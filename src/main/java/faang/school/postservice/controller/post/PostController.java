@@ -1,5 +1,8 @@
 package faang.school.postservice.controller.post;
 
+import faang.school.postservice.dto.post.TextCheckResponse;
+import faang.school.postservice.service.PostCorrectorService;
+import faang.school.postservice.dto.post.TextCheckRequest;
 import faang.school.postservice.dto.post.PostCreateDto;
 import faang.school.postservice.dto.post.PostOutputDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
@@ -33,6 +36,7 @@ import java.util.List;
 @Tag(name = "Post Management", description = "Operations related to posts")
 public class PostController {
     private final PostService postService;
+    private final PostCorrectorService postCorrecter;
 
     @PostMapping("/drafts")
     @ApiResponses(value = {
@@ -88,7 +92,7 @@ public class PostController {
 
     @GetMapping("/drafts/users/{userId}")
     @Operation(summary = "Gets user`s drafted posts by userID",
-            description= "User must exist")
+            description = "User must exist")
     public List<PostOutputDto> getNotDeletedUserDrafts(@NotNull @PathVariable("userId") Long userId) {
         log.debug("Getting drafted posts for user with id {} - Started", userId);
         List<PostOutputDto> userPosts = postService.getNotDeletedUserDrafts(userId);
@@ -98,7 +102,7 @@ public class PostController {
 
     @GetMapping("/drafts/projects/{projectId}")
     @Operation(summary = "Gets project`s drafted posts by projectID",
-            description= "Project must exist")
+            description = "Project must exist")
     public List<PostOutputDto> getNotDeletedProjectDrafts(@NotNull @PathVariable("projectId") Long projectId) {
         log.debug("Getting drafted posts for project with id {} - Started", projectId);
         List<PostOutputDto> projectPosts = postService.getNotDeletedProjectDrafts(projectId);
@@ -108,7 +112,7 @@ public class PostController {
 
     @GetMapping("/users/{userId}")
     @Operation(summary = "Gets user`s published posts by userID",
-            description= "User must exist")
+            description = "User must exist")
     public List<PostOutputDto> getNotDeletedUserPublished(@NotNull @PathVariable("userId") Long userId) {
         log.debug("Getting published posts for user with id {} - Started", userId);
         List<PostOutputDto> userPosts = postService.getNotDeletedUserPublished(userId);
@@ -118,11 +122,16 @@ public class PostController {
 
     @GetMapping("/projects/{projectId}")
     @Operation(summary = "Gets project`s published posts by projectID",
-            description= "Project must exist")
+            description = "Project must exist")
     public List<PostOutputDto> getNotDeletedProjectPublished(@NotNull @PathVariable("projectId") Long projectId) {
         log.debug("Getting published posts for project with id {} - Started", projectId);
         List<PostOutputDto> projectPosts = postService.getNotDeletedProjectPublished(projectId);
         log.info("Getting published posts for project with id {} - Finished", projectId);
         return projectPosts;
+    }
+
+    @PostMapping("/check-text")
+    public TextCheckResponse checkPostText(@RequestBody TextCheckRequest request) {
+        return postCorrecter.checkText(request.text());
     }
 }
