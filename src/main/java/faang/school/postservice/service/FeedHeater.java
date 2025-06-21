@@ -15,14 +15,20 @@ import java.util.concurrent.TimeUnit;
 
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class FeedHeater {
     private final UserRepository userRepository;
     private final KafkaHeatFeedEventPublisher publisher;
+    private final int poolSize;
 
-    @Value("${spring.data.thread-pool.heater-feed-size}")
-    private int poolSize;
+
+    public FeedHeater(UserRepository userRepository,
+                      KafkaHeatFeedEventPublisher publisher,
+                      @Value("${spring.data.thread-pool.heater-feed-size}") int poolSize) {
+        this.userRepository = userRepository;
+        this.publisher = publisher;
+        this.poolSize = poolSize;
+    }
 
     public void heatFeedCache() throws InterruptedException {
         log.debug("Запуск прогрева кеша");

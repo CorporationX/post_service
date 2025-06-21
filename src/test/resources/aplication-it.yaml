@@ -1,0 +1,14 @@
+spring:
+  data:
+    thread-pool:
+      heater-feed-size: 5
+  liquibase:
+    enabled: false
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
