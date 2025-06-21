@@ -63,7 +63,7 @@ public class PostServiceTest {
         when(userContext.getUserId()).thenReturn(validPost.getAuthorId());
         when(userServiceClient.getUser(validPost.getAuthorId())).thenReturn(userDto);
         when(projectServiceClient.getProject(validPost.getProjectId())).thenReturn(projectDto);
-        //when(postRepository.findById(validPost.getId())).thenReturn(Optional.of(validPost));
+        when(postRepository.findById(validPost.getId())).thenReturn(Optional.of(validPost));
 
         postService.createPost(validPost);
 

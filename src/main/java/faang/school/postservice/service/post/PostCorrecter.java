@@ -20,7 +20,7 @@ public class PostCorrecter {
     private final PostService postService;
     private final LanguageToolService languageToolService;
 
-    @Async("customExecutor")
+    @Async("taskExecutor")
     public CompletableFuture<Void> correctingContentPost(Post post) {
         String content = post.getContent();
 
