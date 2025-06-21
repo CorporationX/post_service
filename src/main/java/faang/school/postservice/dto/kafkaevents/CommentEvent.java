@@ -1,13 +1,19 @@
 package faang.school.postservice.dto.kafkaevents;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.time.LocalDateTime;
 
-public record CommentEvent(
-        long id,
-        long commentAuthorId,
-        long postAuthorId,
-        long postId,
-        String content,
-        LocalDateTime createdAt
-) {
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class CommentEvent {
+    private long id;
+    private long commentAuthorId;
+    private long postAuthorId;
+    private long postId;
+    private String content;
+    private LocalDateTime createdAt;
 }

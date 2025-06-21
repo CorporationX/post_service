@@ -33,6 +33,7 @@ spring:
         author: 86400
       feed:
         size: 500
+        global-size: 1000
         limit: 20
       comments:
         size: 3
@@ -44,6 +45,7 @@ spring:
         userBan: user_ban
         posts: posts
         likes: likes
+        heat: heat
         hashtag-adding:
           name: "hashtag-adding-topic"
           partitions: 3
@@ -87,6 +89,7 @@ thread-pool:
   delete-expired-posts-max-threads: 3
   publish-posts-max-threads: 10
   publish-timeout: 3
+  heated-feed-size: 10
   author-ban:
     size: 2
     shutdown-timeout-seconds: 30

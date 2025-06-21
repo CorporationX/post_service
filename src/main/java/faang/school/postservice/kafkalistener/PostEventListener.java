@@ -31,21 +31,21 @@ public class PostEventListener {
                     containerFactory = "postEventListenerContainerFactory")
     public void handlePostEvent(PostEvent event, Acknowledgment acknowledgment) {
         try {
-            log.info("Получил ивент для поста {}", event.postId());
+            log.info("Получил ивент для поста {}", event.getPostId());
 
-            CachedPost post = getOrLoadPost(event.postId());
+            CachedPost post = getOrLoadPost(event.getPostId());
 
-            event.followers().forEach(followerId -> {
+            event.getFollowers().forEach(followerId -> {
                 postCacheService.addToUserFeed(post, followerId);
             });
 
             acknowledgment.acknowledge();
             log.info("Успешно отправил ивент поста {} для {} подписчиков",
-                    event.postId(), event.followers().size());
+                    event.getPostId(), event.getFollowers().size());
         } catch (EntityNotFoundException e) {
-            log.error("Пост {} не найден в базе", event.postId());
+            log.error("Пост {} не найден в базе", event.getPostId());
         } catch (Exception e) {
-            log.error("Ошибка отправка ивента поста {}", event.postId(), e);
+            log.error("Ошибка отправка ивента поста {}", event.getPostId(), e);
             throw new KafkaEventListenException("Ошибка обработки ивента", e);
         }
     }

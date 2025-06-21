@@ -12,7 +12,7 @@ public class AuthorCacheService {
 
     private final RedisTemplate<String, CachedAuthor> redisTemplate;
 
-    @Value("${spring.redis.ttl.author}")
+    @Value("${spring.data.redis.ttl.author}")
     private long timeToLive;
 
     private static final String AUTHOR_CACHED_KEY = "authors:";

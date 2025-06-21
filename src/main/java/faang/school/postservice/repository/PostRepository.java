@@ -13,6 +13,21 @@ public interface PostRepository extends CrudRepository<Post, Long> {
 
     List<Post> findByProjectId(long projectId);
 
+    @Query(value = """
+            SELECT * FROM post WHERE author_id = :authorId ORDER BY created_at DESC LIMIT 10
+            """, nativeQuery = true)
+    List<Post> findTopTenPostsByAuthorId(@Param("authorId") long authorId);
+
+
+    @Query(value = """
+            SELECT * FROM post
+            WHERE author_id IN :authorIds
+            ORDER BY created_at DESC
+            LIMIT :feedSize
+            """,
+            nativeQuery = true)
+    List<Post> findTopPostsByAuthors(@Param("authorIds") List<Long> authorIds, @Param("feedSize") long feedSize);
+
     @Query("SELECT p FROM Post p LEFT JOIN FETCH p.likes WHERE p.projectId = :projectId")
     List<Post> findByProjectIdWithLikes(long projectId);
 

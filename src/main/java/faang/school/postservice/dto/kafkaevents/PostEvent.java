@@ -1,16 +1,18 @@
 package faang.school.postservice.dto.kafkaevents;
 
-import lombok.Builder;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 import java.util.List;
 
-@Builder
-public record PostEvent(
-        Long postId,
-        Long authorId,
-        Instant publishedAt,
-        List<Long> followers
-) {
-
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class PostEvent {
+    private Long postId;
+    private Long authorId;
+    private Instant publishedAt;
+    private List<Long> followers;
 }

@@ -30,13 +30,13 @@ public class CommentEventListener {
             containerFactory = "commentEventListenerContainerFactory"
     )
     public void handleEvent(CommentEvent event, Acknowledgment ack) {
-        log.info("Получен комментарий {} к посту {}", event.content(), event.postId());
+        log.info("Получен комментарий {} к посту {}", event.getContent(), event.getPostId());
         try {
-            if (postCached(event.postId()) && !commentCached(event.postId(), event.id())) {
+            if (postCached(event.getPostId()) && !commentCached(event.getPostId(), event.getId())) {
                 CommentDto comment = createCommentFromEvent(event);
-                String commentKey = POSTS_HASH_KEY + event.postId() + ":comments";
-                String zsetKey = POSTS_HASH_KEY + event.postId() + ":comments_sorted";
-                long timestamp = event.createdAt().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+                String commentKey = POSTS_HASH_KEY + event.getPostId() + ":comments";
+                String zsetKey = POSTS_HASH_KEY + event.getPostId() + ":comments_sorted";
+                long timestamp = event.getCreatedAt().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
 
                 redisTemplate.opsForList().leftPush(commentKey, comment);
                 redisTemplate.opsForZSet().add(zsetKey, comment.id(), timestamp);
@@ -44,10 +44,10 @@ public class CommentEventListener {
                 redisTemplate.opsForList().trim(commentKey, 0, commentsSize - 1);
                 redisTemplate.opsForZSet().removeRange(zsetKey, -commentsSize - 1, -1);
                 ack.acknowledge();
-                log.info("Успешно добавил комментарий {} к посту {}", event.content(), event.postId());
+                log.info("Успешно добавил комментарий {} к посту {}", event.getContent(), event.getPostId());
             }
         } catch (Exception e) {
-            log.error("Ошибка доставки ивента комментария {} для поста {}", event.id(), event.postId(), e);
+            log.error("Ошибка доставки ивента комментария {} для поста {}", event.getId(), event.getPostId(), e);
             throw new KafkaEventListenException("Ошибка обработки ивента", e);
         }
 
@@ -56,11 +56,11 @@ public class CommentEventListener {
 
     private CommentDto createCommentFromEvent(CommentEvent event) {
         return CommentDto.builder()
-                .createdAt(event.createdAt())
-                .id(event.id())
-                .authorId(event.commentAuthorId())
-                .content(event.content())
-                .postId(event.postId())
+                .createdAt(event.getCreatedAt())
+                .id(event.getId())
+                .authorId(event.getCommentAuthorId())
+                .content(event.getContent())
+                .postId(event.getPostId())
                 .build();
     }
 

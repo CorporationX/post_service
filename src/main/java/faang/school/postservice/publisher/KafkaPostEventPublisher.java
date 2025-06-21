@@ -23,9 +23,9 @@ public class KafkaPostEventPublisher {
     public void publish(PostEvent event) {
         try {
             kafkaTemplate.send(postPublishTopic, event);
-            log.info("Событие о посте {} отправлено {} пользователям", event.postId(), event.followers().size());
+            log.info("Событие о посте {} отправлено {} пользователям", event.getPostId(), event.getFollowers().size());
         } catch (Exception e) {
-            log.error("Не удалось отправить событие о посте {}", event.postId());
+            log.error("Не удалось отправить событие о посте {}", event.getPostId());
             throw new KafkaEventPublishException("Не удалось отправить событие", e);
         }
 

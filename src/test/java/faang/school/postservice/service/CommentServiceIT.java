@@ -97,8 +97,8 @@ public class CommentServiceIT {
         ConsumerRecord<String, String> record = KafkaTestUtils.getSingleRecord(consumer, topic, Duration.ofMillis(5000));
         CommentEvent publishedEvent = objectMapper.readValue(record.value(), CommentEvent.class);
 
-        assertEquals(commentEvent.id(), publishedEvent.id());
-        assertEquals(commentEvent.content(), publishedEvent.content());
+        assertEquals(commentEvent.getId(), publishedEvent.getId());
+        assertEquals(commentEvent.getContent(), publishedEvent.getContent());
     }
 
     private UserDto createUserDto() {

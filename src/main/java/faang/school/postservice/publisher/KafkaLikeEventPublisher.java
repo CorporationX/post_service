@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 @Slf4j
+
 public class KafkaLikeEventPublisher {
     private final KafkaTemplate<String, LikeFeedEvent> kafkaTemplate;
 
@@ -20,9 +21,10 @@ public class KafkaLikeEventPublisher {
     public void publish(LikeFeedEvent event) {
         try {
             kafkaTemplate.send(postLikeTopic, event);
-            log.info("Ивент {} отправлен. {} поставил лайк на пост {}", event.id(), event.authorId(), event.postId());
+            log.info("Ивент {} отправлен. {} поставил лайк на пост {}",
+                    event.getId(), event.getAuthorId(), event.getPostId());
         } catch (Exception e) {
-            log.error("Ошибка отправки ивента {}", event.id());
+            log.error("Ошибка отправки ивента {}", event.getId());
             throw new KafkaEventPublishException("Не удалось отправить ивент", e);
         }
     }

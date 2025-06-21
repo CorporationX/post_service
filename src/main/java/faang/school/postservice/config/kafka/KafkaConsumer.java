@@ -2,6 +2,7 @@ package faang.school.postservice.config.kafka;
 
 import faang.school.postservice.config.properties.KafkaProperties;
 import faang.school.postservice.dto.kafkaevents.CommentEvent;
+import faang.school.postservice.dto.kafkaevents.FeedHeatEvent;
 import faang.school.postservice.dto.kafkaevents.LikeFeedEvent;
 import faang.school.postservice.dto.kafkaevents.PostEvent;
 import lombok.RequiredArgsConstructor;
@@ -85,6 +86,27 @@ public class KafkaConsumer {
         ConcurrentKafkaListenerContainerFactory<String, CommentEvent> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(commentEventConsumerFactory());
+        factory.setBatchListener(false);
+        return factory;
+    }
+
+    @Bean
+    public ConsumerFactory<String, FeedHeatEvent> feedHeatEventConsumerFactory() {
+        Map<String, Object> config = new HashMap<>();
+        config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.bootstrapServers());
+        config.put(ConsumerConfig.GROUP_ID_CONFIG, kafkaProperties.consumer().groupId());
+        config.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, kafkaProperties.consumer().autoOffsetReset());
+        config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+        config.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
+        return new DefaultKafkaConsumerFactory<>(config);
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, FeedHeatEvent> feedHeatEventListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, FeedHeatEvent> factory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(feedHeatEventConsumerFactory());
         factory.setBatchListener(false);
         return factory;
     }

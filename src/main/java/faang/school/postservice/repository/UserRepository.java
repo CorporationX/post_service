@@ -1,12 +1,13 @@
 package faang.school.postservice.repository;
 
+import faang.school.postservice.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
-public interface UserRepository extends JpaRepository<Object, Long> {
+public interface UserRepository extends JpaRepository<User, Long> {
 
 
     @Query(nativeQuery = true, value = """
@@ -22,5 +23,11 @@ public interface UserRepository extends JpaRepository<Object, Long> {
             WHERE follower_id = :userId
             """)
     List<Long> findFolloweesIdsByUserId(@Param("userId")Long userId);
+
+    @Query(nativeQuery = true, value = """
+            Select id
+            FROM user_service.users
+            """)
+    List<Long> findAllUsersIds();
 
 }

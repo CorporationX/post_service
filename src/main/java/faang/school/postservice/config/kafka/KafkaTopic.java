@@ -21,6 +21,9 @@ public class KafkaTopic {
     @Value("${spring.data.kafka.topic.likes}")
     private String postLikeTopic;
 
+    @Value("${spring.data.kafka.topic.heat}")
+    private String heatFeedTopic;
+
 
     @Bean
     public NewTopic comment() {
@@ -41,4 +44,7 @@ public class KafkaTopic {
     public NewTopic postLike() {
         return TopicBuilder.name(postLikeTopic).partitions(3).build();
     }
+
+    @Bean
+    public NewTopic feedHeat() {return TopicBuilder.name(heatFeedTopic).partitions(3).build(); }
 }
