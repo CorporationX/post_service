@@ -1,8 +1,6 @@
 package faang.school.postservice.service.like;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.mapper.LikeEventMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
@@ -13,12 +11,10 @@ import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.LikeService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class LikeServiceImpl implements LikeService {
@@ -28,8 +24,6 @@ public class LikeServiceImpl implements LikeService {
     private final CommentRepository commentRepository;
     @Qualifier(value = "likeEventPublisher")
     private final MessagePublisher<Like> likeEventPublisher;
-    private final LikeEventMapper likeEventMapper;
-    private final ObjectMapper objectMapper;
 
 
     @Override
