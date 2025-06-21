@@ -96,6 +96,7 @@ public class PostService {
         return postRepository.findAllUnpublishedPosts();
     }
 
+    @Transactional
     public void updateCorrectedContentOfPost(Post post, String correctedContent){
         post.setContent(correctedContent);
         postRepository.save(post);

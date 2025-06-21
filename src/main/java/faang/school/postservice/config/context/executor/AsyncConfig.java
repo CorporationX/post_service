@@ -1,4 +1,4 @@
-package faang.school.postservice.config.context;
+package faang.school.postservice.config.context.executor;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

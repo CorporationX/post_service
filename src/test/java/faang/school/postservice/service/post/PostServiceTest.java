@@ -16,12 +16,14 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -61,7 +63,7 @@ public class PostServiceTest {
         when(userContext.getUserId()).thenReturn(validPost.getAuthorId());
         when(userServiceClient.getUser(validPost.getAuthorId())).thenReturn(userDto);
         when(projectServiceClient.getProject(validPost.getProjectId())).thenReturn(projectDto);
-        when(postRepository.findById(validPost.getId())).thenReturn(Optional.of(validPost));
+        //when(postRepository.findById(validPost.getId())).thenReturn(Optional.of(validPost));
 
         postService.createPost(validPost);
 
@@ -108,5 +110,28 @@ public class PostServiceTest {
         verify(postRepository, times(1)).save(validPost);
     }
 
+    @Test
+    void getAllUnpublishedPost() {
+        when(postRepository.findAllUnpublishedPosts()).thenReturn(List.of(validPost));
 
+        List<Post> result = postService.getAllUnpublishedPost();
+
+        verify(postRepository).findAllUnpublishedPosts();
+        assertEquals(validPost.getId(), result.get(0).getId());
+    }
+
+    @Test
+    void updateCorrectedContentOfPost() {
+        String correctedContent = "correctedContent";
+
+        ArgumentCaptor<Post> captor = ArgumentCaptor.forClass(Post.class);
+        when(postRepository.save(any(Post.class))).thenReturn(any(Post.class));
+
+        postService.updateCorrectedContentOfPost(validPost, correctedContent);
+
+        verify(postRepository).save(captor.capture());
+    }
 }
+
+
+
