@@ -4,6 +4,7 @@ import faang.school.postservice.dto.posts.PostDto;
 import faang.school.postservice.dto.posts.PostSaveDto;
 import faang.school.postservice.service.PostService;
 import faang.school.postservice.validator.PostValidator;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -38,17 +39,18 @@ public class PostController {
         return new ResponseEntity<>(postService.create(postSaveDto), HttpStatus.CREATED);
     }
 
+    @Operation(summary = "Получить пост")
     @GetMapping(ID_PATH)
     public ResponseEntity<PostDto> getPost(@PathVariable long id) {
         return ResponseEntity.ok(postService.getPost(id));
     }
 
+    @Operation(summary = "Обновить пост")
     @PutMapping(ID_PATH)
     public ResponseEntity<PostDto> update(@PathVariable long id, @NotNull @RequestBody PostSaveDto postSaveDto) {
         postValidator.validatePost(postSaveDto);
         return ResponseEntity.ok(postService.update(id, postSaveDto));
     }
-
 
     @PostMapping(PUBLISH_ID_PATH)
     public ResponseEntity<String> publish(@PathVariable long id) {
