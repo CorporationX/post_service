@@ -88,6 +88,10 @@ public class PostService {
     public List<Post> getAllPublishedByProjectId(Long projectId) {
         return postRepository.findPublishedByProjectId(projectId);
     }
+    @Transactional(readOnly = true)
+    public List<Post> getAllPost() {
+        return postRepository.findAll();
+    }
 
     private Post getValidPostOrThrowException(Long postId) {
         Optional<Post> postOptional = postRepository.findById(postId);
