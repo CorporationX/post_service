@@ -2,6 +2,7 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.model.ad.AdStatus;
 import faang.school.postservice.repository.adapter.AdRepositoryAdapter;
+import faang.school.postservice.service.utils.AdCleanupAsyncExecutor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,6 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 public class AdServiceImpl implements AdService {
     private final AdRepositoryAdapter adRepositoryAdapter;
+    private final AdCleanupAsyncExecutor adCleanupAsyncExecutor;
 
     @Value("${scheduler.delete-expired-ads.batch-size}")
     private int deleteBatchSize;
@@ -66,13 +68,7 @@ public class AdServiceImpl implements AdService {
                         .findAdIdsByStatus(AdStatus.EXPIRED, pageRequest)
                         .getContent();
                 if (!adIdsForCurrentBatch.isEmpty()) {
-                    int currentBatchNum = batchSubmissionNumber.get();
-                    List<Long> batchToProcess = new ArrayList<>(adIdsForCurrentBatch);
-                    log.info("deleteExpiredAdsInBatches: Processing batch {} with {} ads",
-                            currentBatchNum, batchToProcess.size());
-                    CompletableFuture<Integer> batchFuture =
-                            adRepositoryAdapter.deleteExpiredAdsBatchAsync(batchToProcess, currentBatchNum);
-                    batchExecutionFutures.add(batchFuture);
+                    batchExecutionFutures.add(submitBatchForDeletion(adIdsForCurrentBatch, batchSubmissionNumber));
                 }
             } while (!adIdsForCurrentBatch.isEmpty() && !Thread.currentThread().isInterrupted());
             if (batchExecutionFutures.isEmpty()) {
@@ -115,5 +111,13 @@ public class AdServiceImpl implements AdService {
                 return null;
             }
         });
+    }
+
+    private CompletableFuture<Integer> submitBatchForDeletion(List<Long> adIds, AtomicInteger batchSubmissionNumber) {
+        int currentBatchNum = batchSubmissionNumber.get();
+        List<Long> batchToProcess = new ArrayList<>(adIds);
+        log.info("submitBatchForDeletion: Processing batch {} with {} ads",
+                currentBatchNum, batchToProcess.size());
+        return adCleanupAsyncExecutor.deleteExpiredAdAsync(batchToProcess, currentBatchNum);
     }
 }

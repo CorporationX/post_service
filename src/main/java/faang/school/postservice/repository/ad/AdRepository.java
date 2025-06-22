@@ -22,8 +22,14 @@ public interface AdRepository extends CrudRepository<Ad, Long> {
     @Modifying
     @Query("UPDATE Ad a SET a.status = :newStatus " +
             "WHERE a.status = :currentStatus " +
-            "AND (a.appearancesLeft = 0 OR a.endDate <= :now)")
-    int updateExpiredAds(AdStatus newStatus, AdStatus currentStatus, LocalDateTime now);
+            "AND a.appearancesLeft = 0")
+    int expireAdByAppearances(AdStatus newStatus, AdStatus currentStatus);
+
+    @Modifying
+    @Query("UPDATE Ad a SET a.status = :newStatus " +
+            "WHERE a.status = :currentStatus " +
+            "AND a.endDate <= :now")
+    int expireAdByEndDate(AdStatus newStatus, AdStatus currentStatus, LocalDateTime now);
 
     @Query("SELECT a.id FROM Ad a WHERE a.status = :status")
     Page<Long> findAdIdsByStatus(AdStatus status, Pageable pageable);

@@ -53,3 +53,8 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### Logs and temporary files
+./logs
+*.log
+**.DS_Store

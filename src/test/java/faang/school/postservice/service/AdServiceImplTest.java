@@ -2,6 +2,7 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.model.ad.AdStatus;
 import faang.school.postservice.repository.adapter.AdRepositoryAdapter;
+import faang.school.postservice.service.utils.AdCleanupAsyncExecutor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -47,6 +48,9 @@ class AdServiceImplTest {
 
     @Mock
     private AdRepositoryAdapter adRepositoryAdapter;
+
+    @Mock
+    private AdCleanupAsyncExecutor adCleanupAsyncExecutor;
 
     @InjectMocks
     private AdServiceImpl adService;
@@ -125,7 +129,7 @@ class AdServiceImplTest {
         verify(adRepositoryAdapter).findAdIdsByStatus(eq(AdStatus.EXPIRED), pageableCaptor.capture());
         assertEquals(0, pageableCaptor.getValue().getPageNumber());
         assertEquals(BATCH_SIZE, pageableCaptor.getValue().getPageSize());
-        verify(adRepositoryAdapter, never()).deleteExpiredAdsBatchAsync(anyList(), anyInt());
+        verify(adCleanupAsyncExecutor, never()).deleteExpiredAdAsync(anyList(), anyInt());
     }
 
     @Test
@@ -139,7 +143,7 @@ class AdServiceImplTest {
                 .thenReturn(pageWithAds)
                 .thenReturn(emptyPage);
 
-        when(adRepositoryAdapter.deleteExpiredAdsBatchAsync(eq(adIds), eq(1)))
+        when(adCleanupAsyncExecutor.deleteExpiredAdAsync(eq(adIds), eq(1)))
                 .thenReturn(CompletableFuture.completedFuture(adIds.size()));
 
         assertDoesNotThrow(() -> adService.deleteExpiredAdsInBatches());
@@ -150,7 +154,7 @@ class AdServiceImplTest {
         assertEquals(0, pageables.get(0).getPageNumber());
         assertEquals(1, pageables.get(1).getPageNumber());
 
-        verify(adRepositoryAdapter).deleteExpiredAdsBatchAsync(adIdsBatchCaptor.capture(), batchNumberCaptor.capture());
+        verify(adCleanupAsyncExecutor).deleteExpiredAdAsync(adIdsBatchCaptor.capture(), batchNumberCaptor.capture());
         assertEquals(adIds, adIdsBatchCaptor.getValue());
         assertEquals(1, batchNumberCaptor.getValue());
     }
@@ -172,9 +176,9 @@ class AdServiceImplTest {
                 .thenReturn(page2)
                 .thenReturn(emptyPage);
 
-        when(adRepositoryAdapter.deleteExpiredAdsBatchAsync(eq(batch1Ids), eq(1)))
+        when(adCleanupAsyncExecutor.deleteExpiredAdAsync(eq(batch1Ids), eq(1)))
                 .thenReturn(CompletableFuture.completedFuture(batch1Ids.size()));
-        when(adRepositoryAdapter.deleteExpiredAdsBatchAsync(eq(batch2Ids), eq(2)))
+        when(adCleanupAsyncExecutor.deleteExpiredAdAsync(eq(batch2Ids), eq(2)))
                 .thenReturn(CompletableFuture.completedFuture(batch2Ids.size()));
 
         assertDoesNotThrow(() -> adService.deleteExpiredAdsInBatches());
@@ -188,8 +192,8 @@ class AdServiceImplTest {
         assertEquals(Sort.by("id").ascending(), pageables.get(0).getSort());
 
 
-        verify(adRepositoryAdapter).deleteExpiredAdsBatchAsync(eq(batch1Ids), eq(1));
-        verify(adRepositoryAdapter).deleteExpiredAdsBatchAsync(eq(batch2Ids), eq(2));
+        verify(adCleanupAsyncExecutor).deleteExpiredAdAsync(eq(batch1Ids), eq(1));
+        verify(adCleanupAsyncExecutor).deleteExpiredAdAsync(eq(batch2Ids), eq(2));
     }
 
     @Test
@@ -205,7 +209,7 @@ class AdServiceImplTest {
         assertNotNull(exception.getCause());
         assertEquals("DB find error", exception.getCause().getMessage());
 
-        verify(adRepositoryAdapter, never()).deleteExpiredAdsBatchAsync(anyList(), anyInt());
+        verify(adCleanupAsyncExecutor, never()).deleteExpiredAdAsync(anyList(), anyInt());
     }
 
     @Test
@@ -220,13 +224,13 @@ class AdServiceImplTest {
         when(adRepositoryAdapter.findAdIdsByStatus(eq(AdStatus.EXPIRED), any(Pageable.class)))
                 .thenReturn(pageWithAds)
                 .thenReturn(emptyPage);
-        when(adRepositoryAdapter.deleteExpiredAdsBatchAsync(eq(adIds), eq(1)))
+        when(adCleanupAsyncExecutor.deleteExpiredAdAsync(eq(adIds), eq(1)))
                 .thenReturn(failedFuture);
 
         assertDoesNotThrow(() -> adService.deleteExpiredAdsInBatches());
         verify(adRepositoryAdapter, times(2))
                 .findAdIdsByStatus(eq(AdStatus.EXPIRED), any(Pageable.class));
-        verify(adRepositoryAdapter).deleteExpiredAdsBatchAsync(eq(adIds), eq(1));
+        verify(adCleanupAsyncExecutor).deleteExpiredAdAsync(eq(adIds), eq(1));
     }
 
     @Test
@@ -237,7 +241,7 @@ class AdServiceImplTest {
         adService.deleteExpiredAdsInBatches();
 
         verify(adRepositoryAdapter, never()).findAdIdsByStatus(any(), any());
-        verify(adRepositoryAdapter, never()).deleteExpiredAdsBatchAsync(anyList(), anyInt());
+        verify(adCleanupAsyncExecutor, never()).deleteExpiredAdAsync(anyList(), anyInt());
 
         assertTrue(Thread.interrupted(), "Thread interrupted status should be cleared");
     }
@@ -261,15 +265,15 @@ class AdServiceImplTest {
         CompletableFuture<Integer> failedFuture =
                 CompletableFuture.failedFuture(new RuntimeException("Batch 2 DB Error"));
 
-        when(adRepositoryAdapter.deleteExpiredAdsBatchAsync(eq(batch1Ids), eq(1))).thenReturn(successfulFuture);
-        when(adRepositoryAdapter.deleteExpiredAdsBatchAsync(eq(batch2Ids), eq(2))).thenReturn(failedFuture);
+        when(adCleanupAsyncExecutor.deleteExpiredAdAsync(eq(batch1Ids), eq(1))).thenReturn(successfulFuture);
+        when(adCleanupAsyncExecutor.deleteExpiredAdAsync(eq(batch2Ids), eq(2))).thenReturn(failedFuture);
 
         assertDoesNotThrow(() -> adService.deleteExpiredAdsInBatches());
 
         verify(adRepositoryAdapter, times(3))
                 .findAdIdsByStatus(eq(AdStatus.EXPIRED), any(Pageable.class));
-        verify(adRepositoryAdapter).deleteExpiredAdsBatchAsync(eq(batch1Ids), eq(1));
-        verify(adRepositoryAdapter).deleteExpiredAdsBatchAsync(eq(batch2Ids), eq(2));
+        verify(adCleanupAsyncExecutor).deleteExpiredAdAsync(eq(batch1Ids), eq(1));
+        verify(adCleanupAsyncExecutor).deleteExpiredAdAsync(eq(batch2Ids), eq(2));
     }
 
     @Test
@@ -284,14 +288,14 @@ class AdServiceImplTest {
                 .thenReturn(page1)
                 .thenReturn(emptyPage);
 
-        when(adRepositoryAdapter.deleteExpiredAdsBatchAsync(eq(adIdsBatch1), eq(1)))
+        when(adCleanupAsyncExecutor.deleteExpiredAdAsync(eq(adIdsBatch1), eq(1)))
                 .thenReturn(CompletableFuture.completedFuture(adIdsBatch1.size()));
 
         assertDoesNotThrow(() -> adService.deleteExpiredAdsInBatches());
 
         verify(adRepositoryAdapter, times(2))
                 .findAdIdsByStatus(eq(AdStatus.EXPIRED), any(Pageable.class));
-        verify(adRepositoryAdapter).deleteExpiredAdsBatchAsync(eq(adIdsBatch1), eq(1));
+        verify(adCleanupAsyncExecutor).deleteExpiredAdAsync(eq(adIdsBatch1), eq(1));
 
         List<Pageable> capturedPageables = pageableCaptor.getAllValues();
         assertEquals(0, capturedPageables.get(0).getPageNumber());
@@ -317,12 +321,12 @@ class AdServiceImplTest {
         CompletableFuture<Integer> successfulFuture = CompletableFuture.completedFuture(batch1Ids.size());
         CompletableFuture<Integer> failedFuture = CompletableFuture.failedFuture(new RuntimeException("Batch 2 Error"));
 
-        when(adRepositoryAdapter.deleteExpiredAdsBatchAsync(eq(batch1Ids), eq(1))).thenReturn(successfulFuture);
-        when(adRepositoryAdapter.deleteExpiredAdsBatchAsync(eq(batch2Ids), eq(2))).thenReturn(failedFuture);
+        when(adCleanupAsyncExecutor.deleteExpiredAdAsync(eq(batch1Ids), eq(1))).thenReturn(successfulFuture);
+        when(adCleanupAsyncExecutor.deleteExpiredAdAsync(eq(batch2Ids), eq(2))).thenReturn(failedFuture);
 
         assertDoesNotThrow(() -> adService.deleteExpiredAdsInBatches());
 
-        verify(adRepositoryAdapter).deleteExpiredAdsBatchAsync(eq(batch1Ids), eq(1));
-        verify(adRepositoryAdapter).deleteExpiredAdsBatchAsync(eq(batch2Ids), eq(2));
+        verify(adCleanupAsyncExecutor).deleteExpiredAdAsync(eq(batch1Ids), eq(1));
+        verify(adCleanupAsyncExecutor).deleteExpiredAdAsync(eq(batch2Ids), eq(2));
     }
 }
