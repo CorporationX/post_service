@@ -1,5 +1,6 @@
 package faang.school.postservice.repository;
 
+import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -48,4 +49,12 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             ORDER BY p.published_at DESC
             """)
     List<Post> findPublishedByProjectId(Long projectId);
+
+    @Query(nativeQuery = true, value = """
+            SELECT * FROM Post c
+            WHERE c.verified_date is NULL
+            FOR UPDATE SKIP LOCKED
+            LIMIT 10000
+            """)
+    List<Post> findAllNotVerifiedPost();
 }

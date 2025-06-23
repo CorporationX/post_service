@@ -50,14 +50,10 @@ public class ModerationScheduled {
     }
 
     public List<List<Post>> verifiedPost() {
-        List<Post> postList = postService.getAllPost();
+        List<Post> postList = postService.getNotVerifiedPosts();
         int batchSize = configuration.getBatchSize();
 
-        List<Post> notVerified = postList.stream()
-                .filter(post -> post.getVerifiedDate() == null)
-                .collect(toList());
-
-        return ListUtils.partition(notVerified, batchSize);
+        return ListUtils.partition(postList, batchSize);
     }
 
 }

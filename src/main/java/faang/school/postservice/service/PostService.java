@@ -3,6 +3,7 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validation.post.PostValidation;
@@ -97,5 +98,10 @@ public class PostService {
         Optional<Post> postOptional = postRepository.findById(postId);
         PostValidation.validatePostExists(postOptional.isPresent());
         return postOptional.get();
+    }
+
+    @Transactional(readOnly = true)
+    public List<Post> getNotVerifiedPosts() {
+        return postRepository.findAllNotVerifiedPost();
     }
 }
