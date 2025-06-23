@@ -55,12 +55,17 @@ public class ResourceServiceImpl implements ResourceService {
     @Override
     @Transactional
     public void deleteImageByPostId(long postId, long resourceId) {
+        UserDto user = userServiceClient.getUser(userContext.getUserId());
         Post post = postService.getPostById(postId);
         Resource resource = resourceRepository.findById(resourceId)
                         .orElseThrow(() -> new DataValidationException(String.format("resource with such id %d" +
                                 " does not exist", resourceId)));
         if(!post.getResources().contains(resource)) {
             throw new IllegalArgumentException(String.format("There is no such map in this resource %d", resourceId));
+        }
+        if (!Objects.equals(post.getAuthorId(), user.id())) {
+            throw new DataValidationException(String.format("user with id %d is not the author of post with id %d",
+                    post.getId(), user.id()));
         }
         s3Service.deleteImage(resource.getKey());
         resourceRepository.deleteById(resource.getId());

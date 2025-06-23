@@ -1,9 +1,11 @@
 package faang.school.postservice.service.s3;
 
 import faang.school.postservice.dto.s3.S3Dto;
+import faang.school.postservice.validation.resource.InMemoryMultipartFile;
 import faang.school.postservice.validation.resource.ValidationResource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.imgscalr.Scalr;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
@@ -19,6 +21,9 @@ import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
 import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
@@ -37,7 +42,7 @@ public class S3Service {
         String key = String.format("%s - %s", System.currentTimeMillis(), image.getOriginalFilename());
 
         try (InputStream inputStream = image.getInputStream()) {
-            MultipartFile multipartFile = validationResource.resizeImageIfNeeded(image);
+            MultipartFile multipartFile = resizeImageIfNeeded(image);
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                     .bucket(bucketName)
                     .key(key)
@@ -77,5 +82,25 @@ public class S3Service {
                 .contentLength(metadata.contentLength())
                 .resource(streamResource)
                 .build();
+    }
+
+    private MultipartFile resizeImageIfNeeded(MultipartFile file) throws IOException {
+        BufferedImage bufferedImage = ImageIO.read(file.getInputStream());
+
+        validationResource.checkPictureWeight(file);
+        BufferedImage resultImage = Scalr.resize(bufferedImage, Scalr.Method.AUTOMATIC, Scalr.Mode.FIT_EXACT,
+                bufferedImage.getWidth(), bufferedImage.getHeight());
+
+        try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
+            ImageIO.write(resultImage, "jpg", byteArrayOutputStream);
+            byte[] byteImage = byteArrayOutputStream.toByteArray();
+
+            return new InMemoryMultipartFile(
+                    "file",
+                    file.getOriginalFilename(),
+                    "image/jpg",
+                    byteImage
+            );
+        }
     }
 }
