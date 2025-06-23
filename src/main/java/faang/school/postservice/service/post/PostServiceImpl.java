@@ -34,7 +34,7 @@ public class PostServiceImpl implements PostService {
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
     @Qualifier(value = "redisUserPublisher")
-    private final MessagePublisher userPublisher;
+    private final MessagePublisher<String> userPublisher;
 
     @Value("${entity.post.max-unverified-count-for-ban}")
     private long maxUnverifiedPostsForBan;

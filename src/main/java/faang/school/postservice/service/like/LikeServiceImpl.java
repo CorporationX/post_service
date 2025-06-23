@@ -4,12 +4,14 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.MessagePublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.LikeService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +22,9 @@ public class LikeServiceImpl implements LikeService {
     private final LikeRepository likeRepository;
     private final UserServiceClient userServiceClient;
     private final CommentRepository commentRepository;
+    @Qualifier(value = "likeEventPublisher")
+    private final MessagePublisher<Like> likeEventPublisher;
+
 
     @Override
     @Transactional
@@ -40,7 +45,9 @@ public class LikeServiceImpl implements LikeService {
                 .post(post)
                 .userId(userId)
                 .build();
-        likeRepository.save(like);
+        Like savedLike = likeRepository.save(like);
+
+        likeEventPublisher.publish(savedLike);
     }
 
     @Override
