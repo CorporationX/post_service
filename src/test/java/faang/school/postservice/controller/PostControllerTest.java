@@ -127,8 +127,7 @@ public class PostControllerTest {
 
     @Test
     public void testDeletePost() {
-        PostDto postDto = new PostDto
-                (1L, "Post", 2L, null,
+        PostDto postDto = new PostDto(1L, "Post", 2L, null,
                         false, null,
                         null, null, true);
         long postId = postDto.id();
@@ -216,8 +215,7 @@ public class PostControllerTest {
     }
 
     private PostDto create(long id, String content, Long authorId, Long projectId) {
-        return new PostDto
-                (id, content, authorId, projectId,
+        return new PostDto(id, content, authorId, projectId,
                         false, null,
                         null, null, false);
 

@@ -89,8 +89,7 @@ class PostServiceTest {
 
     @Test
     public void testCreateDraftPost() {
-        PostDto postDto = new PostDto
-                (1L, "Post", 2L, null,
+        PostDto postDto = new PostDto(1L, "Post", 2L, null,
                         false, null,
                         null, null, false);
 
