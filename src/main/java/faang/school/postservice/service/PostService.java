@@ -56,17 +56,6 @@ public class PostService {
         return postMapper.toDto(postRepository.save(post));
     }
 
-    public List<PostDto> getAllPosts() {
-        return postRepository.findAll()
-                .stream()
-                .map(postMapper::toDto)
-                .toList();
-    }
-
-    public void deletePostById(Long postId) {
-        postRepository.deleteById(postId);
-    }
-
     public List<PostDto> getAllNotDeletedDraftsByAuthorId(Long authorId) {
         return getDraftsById(postRepository.findByAuthorId(authorId));
     }

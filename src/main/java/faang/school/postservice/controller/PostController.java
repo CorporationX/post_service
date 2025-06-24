@@ -6,7 +6,6 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.service.PostService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -68,19 +67,9 @@ public class PostController {
         return postService.deletePost(postId);
     }
 
-    @GetMapping
-    public List<PostDto> posts() {
-        return postService.getAllPosts();
-    }
-
     @GetMapping("/{postId}")
     public PostDto getPostById(@PathVariable long postId) {
         return postService.getPostDtoById(postId);
-    }
-
-    @DeleteMapping("{postId}/delete")
-    public void deletePostById(@PathVariable Long postId) {
-        postService.deletePostById(postId);
     }
 
     @GetMapping("/author/{authorId}/drafts")
