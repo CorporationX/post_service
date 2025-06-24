@@ -2,6 +2,7 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.comment.CommentSendEvent;
 import faang.school.postservice.dto.event.CommentEventRedis;
 import faang.school.postservice.dto.kafkaevents.CommentEvent;
 import faang.school.postservice.dto.user.UserDto;
@@ -10,6 +11,7 @@ import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.AuthorCommentCount;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producers.KafkaCommentProducer;
 import faang.school.postservice.publisher.CommentBanPublisher;
 import faang.school.postservice.publisher.CommentEvenRedisPublisher;
 import faang.school.postservice.publisher.CommentEventPublisher;
@@ -34,6 +36,7 @@ public class CommentService {
     private final CommentMapper mapper;
     private final PostRepository postRepository;
     private final UserServiceClient client;
+    private final KafkaCommentProducer kafkaCommentProducer;
     private static final int MAX_LENGTH = 4096;
     private final CommentEventPublisher commentEventPublisher;
     private final CommentEvenRedisPublisher commentEvenRedisPublisher;
@@ -69,6 +72,13 @@ public class CommentService {
                 .build();
         commentEvenRedisPublisher.publish(commentEvent);
         log.info("Комментарий {} отправлен в топик ", savedComment);
+        CommentSendEvent kafkaEvent = CommentSendEvent.builder()
+                .authorId(userId)
+                .postId(post.getId())
+                .commentId(savedComment.getId())
+                .build();
+        kafkaCommentProducer.sendCommentCreatedEvent(kafkaEvent);
+
         return mapper.toDto(savedComment);
     }
 
