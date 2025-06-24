@@ -7,12 +7,14 @@ import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class UserHeaderFilter implements Filter {
 
     private final UserContext userContext;
@@ -22,6 +24,9 @@ public class UserHeaderFilter implements Filter {
             throws ServletException, IOException {
         HttpServletRequest req = (HttpServletRequest) request;
         String userId = req.getHeader("x-user-id");
+
+        log.info("UserHeaderFilter: x-user-id = {}", userId);
+
         if (userId != null) {
             userContext.setUserId(Long.parseLong(userId));
         }
