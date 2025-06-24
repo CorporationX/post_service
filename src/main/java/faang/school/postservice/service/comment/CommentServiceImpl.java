@@ -1,6 +1,5 @@
 package faang.school.postservice.service.comment;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CommentForCreationDto;
@@ -10,7 +9,6 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.dto.event.CommentEvent;
 import faang.school.postservice.publisher.comment.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -37,7 +35,7 @@ public class CommentServiceImpl implements CommentService {
     private final CommentEventPublisher commentPublisher;
 
     @Override
-    public CommentOutputDto createComment(CommentForCreationDto commentDto) throws JsonProcessingException {
+    public CommentOutputDto createComment(CommentForCreationDto commentDto){
         Long postId = commentDto.getPostId();
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("Post with id %d doesn't exist".formatted(postId)));

@@ -27,6 +27,7 @@ public class CommentEventPublisher implements MessagePublisher<Comment> {
         this.topic = properties.getChannels().get(TOPIC_NAME);
     }
 
+    @Override
     public void publish(Comment comment) {
         CommentEvent commentEvent = commentEventMapper.toEvent(comment);
         redisTemplate.convertAndSend(topic, commentEvent);
