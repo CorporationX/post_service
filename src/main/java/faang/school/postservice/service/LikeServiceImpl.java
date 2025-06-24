@@ -3,11 +3,13 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.CommentLikeDto;
 import faang.school.postservice.dto.PostLikeDto;
+import faang.school.postservice.event.like.PostLikeEvent;
 import faang.school.postservice.exception.NotFoundException;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.KafkaLikeProducer;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -26,6 +28,7 @@ public class LikeServiceImpl implements LikeService {
     private final CommentRepository commentRepository;
     private final UserServiceClient userServiceClient;
     private final LikeMapper likeMapper;
+    private final KafkaLikeProducer kafkaLikeProducer;
 
     @Transactional
     @Override
@@ -43,6 +46,11 @@ public class LikeServiceImpl implements LikeService {
 
         like = likeRepository.save(like);
         log.info("User {} liked post {}", userId, postId);
+
+        PostLikeEvent postLikeEvent = new PostLikeEvent();
+        postLikeEvent.setPostId(postId);
+        postLikeEvent.setAuthorId(userId);
+        kafkaLikeProducer.publish(postLikeEvent);
 
         return likeMapper.toPostLikeDto(like);
     }

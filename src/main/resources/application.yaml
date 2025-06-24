@@ -43,6 +43,29 @@ spring:
         calculations_channel:
           name: calculations_channel
 
+  kafka:
+    bootstrap-servers: localhost:29092
+    properties:
+      security.protocol: PLAINTEXT
+      spring.json.trusted.packages: "*"
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      retries: 3
+    consumer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      group-id:
+        likes: likes-group
+      retry:
+        max-attempts: 3
+        backoff-period: 1000
+    topic:
+      likes:
+        name: likes
+        partition: 1
+        replicationFactor: 1
+
 server:
   port: 8081
 
@@ -102,3 +125,9 @@ image-s3:
   resize-sizes:
     - 1080
     - 170
+
+cache:
+  post:
+    key-prefix: "post:"
+    likes-count-postfix: ":likesCount"
+    liked-users-postfix: ":likedUsers"
