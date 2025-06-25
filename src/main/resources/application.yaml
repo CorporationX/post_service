@@ -25,6 +25,7 @@ spring:
           calculations_channel_name: cal
           user_ban_name: user_ban
           like_event_name: like_event
+          comment_topic: comment_topic
 
   task:
     execution:
