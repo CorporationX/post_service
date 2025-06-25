@@ -3,6 +3,7 @@ package faang.school.postservice.service.like.implementations;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.like.LikeDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.AuthorNotFoundException;
 import faang.school.postservice.exception.CommentNotFoundException;
 import faang.school.postservice.exception.LikeAlreadyExistException;
@@ -24,12 +25,15 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -198,5 +202,116 @@ class LikeServiceImplTest {
 
         assertThrows(LikeNotFoundException.class, () -> likeService.unlikeComment(commentId),
                 String.format("Like not found: commentId=%d, userId=%d", commentId, userId));
+    }
+
+    @Test
+    void testGetUsersByPostId() {
+        long postId = 1L;
+
+        Like like1 = Like.builder().userId(1L).post(new Post()).build();
+        Like like2 = Like.builder().userId(2L).post(new Post()).build();
+        when(likeRepository.findByPostId(postId)).thenReturn(List.of(like1, like2));
+
+        UserDto user1 = new UserDto(1L, "user1", "user1@example.com");
+        UserDto user2 = new UserDto(2L, "user2", "user2@example.com");
+        when(userServiceClient.getUsersByIds(List.of(1L, 2L))).thenReturn(List.of(user1, user2));
+
+        List<UserDto> users = likeService.getUserLikedPost(postId);
+
+        assertNotNull(users);
+        assertEquals(2, users.size());
+        assertEquals("user1", users.get(0).username());
+        assertEquals("user2", users.get(1).username());
+    }
+
+    @Test
+    void testGetUsersByPostId_whenNoLikes() {
+        long postId = 1L;
+        when(likeRepository.findByPostId(postId)).thenReturn(List.of());
+
+        List<UserDto> users = likeService.getUserLikedPost(postId);
+
+        verify(likeRepository, times(1)).findByPostId(postId);
+        assertEquals(List.of(), users);
+    }
+
+    @Test
+    void testGetUsersByPostId_whenUsersNotFound() {
+        long postId = 1L;
+        Like like1 = Like.builder().userId(1L).post(new Post()).build();
+        when(likeRepository.findByPostId(postId)).thenReturn(List.of(like1));
+        when(userServiceClient.getUsersByIds(List.of(1L))).thenReturn(List.of());
+
+        List<UserDto> users = likeService.getUserLikedPost(postId);
+
+        assertNotNull(users);
+        assertTrue(users.isEmpty());
+    }
+
+    @Test
+    void testGetUsersByPostId_thenThrowException() {
+        long postId = 1L;
+        Like like1 = Like.builder().userId(1L).post(new Post()).build();
+        when(likeRepository.findByPostId(postId)).thenReturn(List.of(like1));
+        when(userServiceClient.getUsersByIds(List.of(1L))).thenThrow(new RuntimeException("Пользовательский сервис недоступен"));
+
+        assertThrows(RuntimeException.class, () -> likeService.getUserLikedPost(postId));
+    }
+
+    @Test
+    void testGetUsersByCommentId() {
+        long commentId = 1L;
+
+        Like like1 = Like.builder().userId(1L).comment(new Comment()).build();
+        Like like2 = Like.builder().userId(2L).comment(new Comment()).build();
+        when(likeRepository.findByCommentId(commentId)).thenReturn(List.of(like1, like2));
+
+        UserDto user1 = new UserDto(1L, "user1", "user1@example.com");
+        UserDto user2 = new UserDto(2L, "user2", "user2@example.com");
+        when(userServiceClient.getUsersByIds(List.of(1L, 2L))).thenReturn(List.of(user1, user2));
+
+        List<UserDto> users = likeService.getUserLikedComment(commentId);
+
+        assertNotNull(users);
+        assertEquals(2, users.size());
+        assertEquals("user1", users.get(0).username());
+        assertEquals("user2", users.get(1).username());
+    }
+
+    @Test
+    void testGetUsersByCommentId_whenNoLikes() {
+        long commentId = 1L;
+        when(likeRepository.findByCommentId(commentId)).thenReturn(List.of());
+
+        List<UserDto> users = likeService.getUserLikedComment(commentId);
+
+        verify(likeRepository, times(1)).findByCommentId(commentId);
+        assertEquals(List.of(), users);
+    }
+
+
+
+    @Test
+    void testGetUsersByCommentId_whenUsersNotFound() {
+        long commentId = 1L;
+        Like like = Like.builder().userId(1L).comment(new Comment()).build();
+        when(likeRepository.findByCommentId(commentId)).thenReturn(List.of(like));
+        when(userServiceClient.getUsersByIds(List.of(1L))).thenReturn(List.of());
+
+        List<UserDto> users = likeService.getUserLikedComment(commentId);
+
+        assertNotNull(users);
+        assertTrue(users.isEmpty());
+    }
+
+    @Test
+    void testGetUsersByCommentId_thenThrowException() {
+        long commentId = 1L;
+        Like like = Like.builder().userId(1L).comment(new Comment()).build();
+        when(likeRepository.findByCommentId(commentId)).thenReturn(List.of(like));
+        when(userServiceClient.getUsersByIds(List.of(1L)))
+                .thenThrow(new RuntimeException("Пользовательский сервис недоступен"));
+
+        assertThrows(RuntimeException.class, () -> likeService.getUserLikedComment(commentId));
     }
 }
