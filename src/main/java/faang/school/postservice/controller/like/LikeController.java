@@ -12,6 +12,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import faang.school.postservice.dto.LikeCountDto;
+import faang.school.postservice.dto.LikeDto;
+import faang.school.postservice.service.like.LikeService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import java.util.List;
 
 @Slf4j
