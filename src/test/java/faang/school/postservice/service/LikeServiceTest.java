@@ -37,6 +37,8 @@ class LikeServiceTest {
     private UserServiceClient userServiceClient;
     @Spy
     private LikeMapperImpl likeMapper;
+    @Mock
+    private KafkaProducerService kafkaProducerService;
     @InjectMocks
     private LikeService likeSystemService;
 
@@ -57,12 +59,13 @@ class LikeServiceTest {
     void addLikePostTest() {
         long postId = 1L;
         long userId = 2L;
+        long authorId = 3L;
         long userIdNewLike = 3L;
 
         Like like = createLikeWithUserId(userId);
 
         Comment comment = createCommentWithLikes(List.of(like));
-        Post post = createPostWithPostIdLikesAndComments(postId, new ArrayList<>(), List.of(comment));
+        Post post = createPostWithPostIdLikesCommentsAndAuthor(postId, new ArrayList<>(), List.of(comment), authorId);
 
         when(postService.getPostById(any())).thenReturn(post);
 
@@ -119,9 +122,10 @@ class LikeServiceTest {
     void addLikeCommentTest() {
         long id = 1L;
         long userId = 2L;
+        long authorId = 3L;
 
         Comment comment = createCommentWithLikes(new ArrayList<>());
-        Post post = createPostWithPostIdLikesAndComments(id, new ArrayList<>(), List.of(comment));
+        Post post = createPostWithPostIdLikesCommentsAndAuthor(id, new ArrayList<>(), List.of(comment), authorId);
         comment.setPost(post);
 
         when(commentService.getCommentById(any())).thenReturn(comment);
@@ -180,11 +184,12 @@ class LikeServiceTest {
                 .build();
     }
 
-    private Post createPostWithPostIdLikesAndComments(Long postId, List<Like> likes, List<Comment> comments) {
+    private Post createPostWithPostIdLikesCommentsAndAuthor(Long postId, List<Like> likes, List<Comment> comments, Long authorId) {
         return Post.builder()
                 .id(postId)
                 .likes(likes)
                 .comments(comments)
+                .authorId(authorId)
                 .build();
     }
 }

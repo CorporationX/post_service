@@ -45,6 +45,8 @@ payment-service:
 kafka:
    host: "localhost:9092"
    topic-name: "like"
+   num-partitions: 2
+   replication-factor: 1
    properties:
      security.protocol: SSL
      ssl.truststore.location: /path/to/truststore.jks

@@ -27,6 +27,12 @@ public class KafkaProducerConfig {
     @Value("${kafka.topic-name}")
     private String topicName;
 
+    @Value("${kafka.num-partitions}")
+    private int numPartitions;
+
+    @Value("${kafka.replication-factor}")
+    private int replicationFactor;
+
     @Bean
     public ProducerFactory<String, Object> producerFactory() {
         Map<String, Object> configProps = new HashMap<>();
@@ -55,6 +61,6 @@ public class KafkaProducerConfig {
 
     @Bean
     public NewTopic topic() {
-        return new NewTopic(topicName, 2, (short) 1);
+        return new NewTopic(topicName, numPartitions, (short) replicationFactor);
     }
 }
