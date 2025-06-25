@@ -37,7 +37,7 @@ class FeedHeaterTest {
     }
 
     @Test
-    void testHeatFeedCache_PublishesEventsForAllUsers() throws InterruptedException {
+    void positiveHeatFeed() throws InterruptedException {
         feedHeater.heatFeedCache();
 
         verify(publisher, times(3)).publish(any(FeedHeatEvent.class));

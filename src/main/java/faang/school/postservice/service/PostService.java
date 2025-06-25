@@ -46,6 +46,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -203,7 +205,7 @@ public class PostService {
         kafkaPostEventPublisher.publish(
                 new PostEvent(post.getId(),
                         post.getAuthorId(),
-                        Instant.from(post.getPublishedAt()),
+                        post.getPublishedAt().atZone(ZoneOffset.UTC).toInstant(),
                         followersIds)
         );
 
@@ -347,7 +349,7 @@ public class PostService {
                 .id(post.getId())
                 .authorId(post.getAuthorId())
                 .projectId(post.getProjectId())
-                .publishedAt(Instant.from(post.getPublishedAt()))
+                .publishedAt(post.getPublishedAt().atZone(ZoneId.systemDefault()).toInstant())
                 .content(post.getContent())
                 .build();
     }

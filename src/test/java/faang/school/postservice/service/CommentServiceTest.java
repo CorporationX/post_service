@@ -43,6 +43,9 @@ public class CommentServiceTest {
     private Comment comment;
 
     @Mock
+    private AuthorCacheService authorCacheService;
+
+    @Mock
     private CommentRepository repository;
 
     @Mock
@@ -88,7 +91,7 @@ public class CommentServiceTest {
         CommentDto result;
         result = service.createComment(1L, 1L, goodDto);
 
-        verify(client, times(1)).getUser(1L);
+        verify(client, times(2)).getUser(1L);
         verify(postRepository, times(1)).findById(1L);
         verify(repository, times(1)).save(successComment);
 

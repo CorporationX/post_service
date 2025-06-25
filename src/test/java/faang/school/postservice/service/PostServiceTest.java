@@ -5,18 +5,21 @@ import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.dto.PostResponseDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.PostAlreadyPublishedException;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.VerifiedStatus;
 import faang.school.postservice.publisher.HashtagAddingEventPublisher;
 import faang.school.postservice.publisher.HashtagRemovingEventPublisher;
+import faang.school.postservice.publisher.KafkaPostEventPublisher;
 import faang.school.postservice.publisher.PostViewEventPublisher;
 import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ResourceRepository;
+import faang.school.postservice.repository.UserRepository;
 import faang.school.postservice.repository.ad.AdRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -42,6 +45,9 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class PostServiceTest {
+
+    @Mock
+    private UserRepository userRepository;
 
     @Mock
     private PostRepository postRepository;
@@ -88,14 +94,32 @@ public class PostServiceTest {
     @Mock
     private HashtagServiceClient hashtagClient;
 
+    @Mock
+    private PostCacheService postCacheService;
+
+    @Mock
+    private AuthorCacheService authorCacheService;
+
+    @Mock
+    private KafkaPostEventPublisher kafkaPostEventPublisher;
+
+
     @Test
     public void testPositivePublish() {
+        UserDto userDto = UserDto.builder()
+                .id(1L)
+                .email("any")
+                .username("raw")
+                .build();
+
         Post post = Post.builder()
                 .id(1L)
+                .authorId(1L)
                 .verifiedStatus(VerifiedStatus.APPROVED)
                 .published(false)
                 .build();
         when(postRepository.findById(any())).thenReturn(Optional.of(post));
+        when(userServiceClient.getUser(1L)).thenReturn(userDto);
         PostResponseDto postDto = postService.publish(post.getId());
         verify(postRepository, times(1)).save(post);
 

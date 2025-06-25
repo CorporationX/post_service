@@ -51,7 +51,7 @@ public class FeedService {
         if (afterPostId == null) {
             postIds = stringRedisTemplate.opsForZSet().range(userKey, 0, limit - 1);
         } else {
-            Long rank = stringRedisTemplate.opsForZSet().rank(userKey, afterPostId);
+            Long rank = stringRedisTemplate.opsForZSet().rank(userKey, String.valueOf(afterPostId));
             if (rank != null) {
                 postIds = stringRedisTemplate.opsForZSet().range(userKey, (rank + 1), (rank + limit));
             } else {
@@ -99,7 +99,7 @@ public class FeedService {
     private CachedPost getCachedPostFromDb(Long postId) {
         return postRepository.findById(postId)
                 .map(mapper::toCachedPost)
-                .orElseThrow(() -> new EntityNotFoundException("Пост с id %d не найдет", postId));
+                .orElseThrow(() -> new EntityNotFoundException("Пост с id %d не найден", postId));
     }
 
     private void fillFeedForUser(Long userId, List<Long> followees) {

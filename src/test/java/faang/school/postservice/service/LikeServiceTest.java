@@ -58,6 +58,7 @@ public class LikeServiceTest {
     @Mock
     private LikeEventPublisher likeEventPublisher;
 
+    @Mock
     private KafkaLikeEventPublisher kafkaLikeEventPublisher;
 
     @BeforeEach
