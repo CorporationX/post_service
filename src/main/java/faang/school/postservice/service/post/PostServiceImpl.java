@@ -2,9 +2,11 @@ package faang.school.postservice.service.post;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostCreateDto;
 import faang.school.postservice.dto.post.PostOutputDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
+import faang.school.postservice.dto.post.PostViewEvent;
 import faang.school.postservice.dto.post.UserPostsDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
@@ -35,6 +37,9 @@ public class PostServiceImpl implements PostService {
     private final ProjectServiceClient projectServiceClient;
     @Qualifier(value = "redisUserPublisher")
     private final MessagePublisher<String> userPublisher;
+    @Qualifier(value = "postViewEventPublisher")
+    private final MessagePublisher<PostViewEvent> postViewPublisher;
+    private final UserContext userContext;
 
     @Value("${entity.post.max-unverified-count-for-ban}")
     private long maxUnverifiedPostsForBan;
@@ -42,6 +47,7 @@ public class PostServiceImpl implements PostService {
     @Override
     public PostOutputDto getPostById(long postId) {
         Post foundPost = findPostById(postId);
+        postViewPublisher.publish(this.createViewEvent(foundPost));
         return postMapper.toPostDto(foundPost);
     }
 
@@ -71,6 +77,7 @@ public class PostServiceImpl implements PostService {
         return postRepository.findByAuthorId(userId).stream()
                 .filter(post -> !post.isDeleted() && post.isPublished())
                 .sorted(Comparator.comparing(Post::getPublishedAt).reversed())
+                .peek((Post post) -> postViewPublisher.publish(this.createViewEvent(post)))
                 .map(postMapper::toPostDto)
                 .toList();
     }
@@ -81,6 +88,7 @@ public class PostServiceImpl implements PostService {
         return postRepository.findByProjectId(projectId).stream()
                 .filter(post -> !post.isDeleted() && post.isPublished())
                 .sorted(Comparator.comparing(Post::getPublishedAt).reversed())
+                .peek((Post post) -> postViewPublisher.publish(this.createViewEvent(post)))
                 .map(postMapper::toPostDto)
                 .toList();
     }
@@ -162,5 +170,14 @@ public class PostServiceImpl implements PostService {
 
     private ProjectDto findProjectById(long projectId) {
         return projectServiceClient.getProject(projectId);
+    }
+
+    private PostViewEvent createViewEvent(Post post) {
+        return new PostViewEvent(
+                post.getId(),
+                post.getAuthorId(),
+                userContext.getUserId(),
+                LocalDateTime.now()
+        );
     }
 }
