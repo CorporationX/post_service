@@ -185,7 +185,10 @@ class LikeServiceTest {
                 .build();
     }
 
-    private Post createPostWithPostIdLikesCommentsAndAuthor(Long postId, List<Like> likes, List<Comment> comments, Long authorId) {
+    private Post createPostWithPostIdLikesCommentsAndAuthor(Long postId,
+                                                            List<Like> likes,
+                                                            List<Comment> comments,
+                                                            Long authorId) {
         return Post.builder()
                 .id(postId)
                 .likes(likes)

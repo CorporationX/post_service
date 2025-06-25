@@ -10,8 +10,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class LikeEventDto {
-        private long authorId;
-        private long receiverId;
-        private LocalDateTime receivedAt;
+    private long authorId;
+    private long receiverId;
+    private LocalDateTime receivedAt;
 }
 
