@@ -30,14 +30,13 @@ public class PostService {
 
     public PostDto createDraftPost(PostDto dto) {
         Post post = postMapper.toEntity(dto);
-        post.setCreatedAt(LocalDateTime.now());
         return postMapper.toDto(postRepository.save(post));
     }
 
     public PostDto publishPost(long postId) {
         Post post = getPostById(postId);
         if (post.isPublished()) {
-            throw new IllegalStateException("Post already posted.");
+            throw new IllegalArgumentException("Post already posted.");
         }
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());

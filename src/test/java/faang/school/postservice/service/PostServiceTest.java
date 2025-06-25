@@ -127,7 +127,7 @@ class PostServiceTest {
         when(postRepository.findById(postId))
                 .thenReturn(Optional.of(post));
 
-        assertThrows(IllegalStateException.class, () -> postService.publishPost(postId));
+        assertThrows(IllegalArgumentException.class, () -> postService.publishPost(postId));
     }
 
     @Test

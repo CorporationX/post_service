@@ -27,22 +27,14 @@ public class PostController {
 
     @PostMapping("/draftCreate")
     public PostDto createDraftPost(@RequestBody PostDto dto) {
-        validate(dto.projectId(), dto.authorId(), dto.content());
+        validate(dto.projectId(), dto.authorId());
         return postService.createDraftPost(dto);
     }
 
-    private void validate(Long projectId, Long authorId, String content) {
-        if (content == null || content.isBlank()) {
-            throw new IllegalArgumentException("Post cannot be empty.");
-        }
+    private void validate(Long projectId, Long authorId) {
         if (projectId != null && authorId != null) {
             throw new IllegalArgumentException("Post cannot have more than 1 owner");
         }
-
-        validateOwner(projectId, authorId);
-    }
-
-    private void validateOwner(Long projectId, Long authorId) {
         if (projectId == null && userServiceClient.getUser(authorId) == null) {
             throw new EntityNotFoundException("User with id: " + authorId + " not found.");
         }
@@ -58,7 +50,7 @@ public class PostController {
 
     @PatchMapping("/{postId}/updatePost")
     public PostDto updatePost(@PathVariable long postId, @RequestBody PostDto dto) {
-        validate(dto.projectId(), dto.authorId(), dto.content());
+        validate(dto.projectId(), dto.authorId());
         return postService.updatePost(postId, dto);
     }
 
