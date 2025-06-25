@@ -51,3 +51,4 @@ kafka:
      security.protocol: SSL
      ssl.truststore.location: /path/to/truststore.jks
      ssl.truststore.password: password
+
