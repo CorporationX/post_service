@@ -8,7 +8,9 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.event.EventType;
+import faang.school.postservice.model.event.PostViewedEvent;
 import faang.school.postservice.publisher.EventPublisher;
+import faang.school.postservice.publisher.KafkaEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import feign.FeignException;
 import jakarta.persistence.EntityNotFoundException;
@@ -37,6 +39,7 @@ public class PostService {
     private final PostRepository postRepository;
     private final PostMapper postMapper;
     private final ExecutorService postPublishingExecutor;
+    private final KafkaEventPublisher kafkaPublisher;
 
     private final static int BATCH_SIZE = 1000;
 
@@ -95,6 +98,12 @@ public class PostService {
                 .orElseThrow(() -> new EntityNotFoundException("post with id " + postId + " is not exists"));
         validateDeleted(post);
         validatePublished(post, true);
+
+        PostViewedEvent postViewedEvent =PostViewedEvent.builder()
+                .postId(post.getId())
+                .viewedAt(LocalDateTime.now()).build();
+
+        kafkaPublisher.publish(EventType.POST_VIEWS, postViewedEvent);
 
         return postMapper.toDto(post);
     }
