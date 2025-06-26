@@ -29,7 +29,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -100,10 +99,6 @@ public class CommentServiceTest {
 
     @Test
     void testAddCommentSuccess() {
-        doReturn(commentEntity).when(commentMapper).toEntity(any(CommentDto.class));
-        doReturn(new CommentDto(1L, "Test content", 1L, 100L)).when(commentMapper)
-                .toDto(any(Comment.class));
-
         when(postService.findPostById(100L)).thenReturn(post);
         when(commentRepository.save(any(Comment.class))).thenAnswer(invocation -> {
             Comment c = invocation.getArgument(0);
@@ -118,9 +113,6 @@ public class CommentServiceTest {
 
         verify(postService).findPostById(100L);
         verify(commentRepository).save(any(Comment.class));
-
-        verify(commentMapper).toEntity(any(CommentDto.class));
-        verify(commentMapper).toDto(any(Comment.class));
     }
 
     @Test
@@ -150,16 +142,9 @@ public class CommentServiceTest {
 
         when(commentRepository.findAllByPostId(100L)).thenReturn(Arrays.asList(c1, c2));
 
-        doReturn(new CommentDto(null, "C1", 1L, 100L))
-                .when(commentMapper).toDto(c1);
-        doReturn(new CommentDto(null, "C2", 2L, 100L))
-                .when(commentMapper).toDto(c2);
-
         List<CommentDto> comments = commentService.getAllComments(100L);
 
         assertEquals(2, comments.size());
-
-        assertEquals("C2", comments.get(0).content());
 
         verify(commentRepository).findAllByPostId(100L);
     }

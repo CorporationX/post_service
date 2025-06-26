@@ -65,7 +65,6 @@ public class CommentControllerTest {
                 .authorId(AUTHOR_ID).postId(POST_ID).build();
 
         when(commentService.addComment(any(CommentDto.class))).thenReturn(commentDto);
-        when(commentMapper.toPostResponseDto(any(CommentDto.class))).thenReturn(responseDto);
 
         mockMvc.perform(post("/comments/{postId}", POST_ID)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -87,7 +86,6 @@ public class CommentControllerTest {
                 .authorId(AUTHOR_ID).postId(POST_ID).build();
 
         when(commentService.updateComment(any(CommentDto.class))).thenReturn(commentDto);
-        when(commentMapper.toPostResponseDto(any(CommentDto.class))).thenReturn(responseDto);
 
         mockMvc.perform(put("/comments/{postId}/{commentId}", POST_ID, COMMENT_ID)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -110,7 +108,6 @@ public class CommentControllerTest {
         List<CommentPostResponseDto> responseDtos = List.of(responseDto);
 
         when(commentService.getAllComments(POST_ID)).thenReturn(commentDtos);
-        when(commentMapper.toPostResponseDto(any(CommentDto.class))).thenReturn(responseDto);
 
         mockMvc.perform(get("/comments/post/" + POST_ID)
                         .contentType(MediaType.APPLICATION_JSON))
