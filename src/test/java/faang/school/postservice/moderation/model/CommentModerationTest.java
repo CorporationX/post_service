@@ -11,12 +11,19 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.FutureTask;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class CommentModerationTest {
@@ -29,6 +36,9 @@ class CommentModerationTest {
 
     @Mock
     private CommentsModerationConfiguration configuration;
+
+    @Mock
+    private ThreadPoolTaskExecutor executor;
 
     @InjectMocks
     private CommentModeration commentModeration;
@@ -50,8 +60,13 @@ class CommentModerationTest {
         comments = Arrays.asList(comment1, comment2);
 
         when(configuration.getBatchSize()).thenReturn(2);
-        when(configuration.getThreadPoolSize()).thenReturn(2);
-        when(configuration.getTerminationAwait()).thenReturn(1);
+
+        doAnswer(invocation -> {
+            Callable<?> task = invocation.getArgument(0);
+            FutureTask<?> futureTask = new FutureTask<>(task);
+            futureTask.run();
+            return futureTask;
+        }).when(executor).submit(any(Callable.class));
     }
 
     @Test
@@ -75,5 +90,4 @@ class CommentModerationTest {
         assertEquals(1L, cleanComment.getId());
         assertEquals(2L, badComment.getId());
     }
-
-} 
+}
