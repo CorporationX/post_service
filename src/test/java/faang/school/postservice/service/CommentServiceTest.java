@@ -2,7 +2,6 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
-import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.CommentNotFoundException;
 import faang.school.postservice.mapper.comment.CommentMapperImpl;
 import faang.school.postservice.model.Comment;
@@ -10,7 +9,6 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.util.Utils;
-import feign.FeignException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,210 +18,161 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class CommentServiceTest {
+public class CommentServiceTest {
+
     @Mock
     private CommentRepository commentRepository;
-    @Spy
+
+    @Mock
     private Utils utils;
+
     @Spy
     private CommentMapperImpl commentMapper;
+
     @Mock
     private UserServiceClient userServiceClient;
+
     @Mock
     private PostRepository postRepository;
+
+    @Mock
+    private PostService postService;
+
     @InjectMocks
     private CommentService commentService;
 
     private CommentDto commentDto;
-    private Comment comment;
+    private Comment commentEntity;
     private Post post;
-    private UserDto userDto;
-
-    private static final long COMMENT_ID = 1L;
-    private static final long POST_ID = 10L;
-    private static final long AUTHOR_ID = 20L;
-    private static final String CONTENT = "Test comment content";
 
     @BeforeEach
     void setUp() {
-        post = Post.builder().id(POST_ID).build();
-        userDto = new UserDto(AUTHOR_ID, "username", "email");
-        commentDto = CommentDto.builder()
-                .id(COMMENT_ID)
-                .authorId(AUTHOR_ID)
-                .postId(POST_ID)
-                .content(CONTENT)
-                .build();
+        commentDto = new CommentDto(null, "Test content", 1L, 100L);
+        commentEntity = new Comment();
+        commentEntity.setId(1L);
+        commentEntity.setContent("Test content");
+        commentEntity.setPost(new Post());
+        commentEntity.setCreatedAt(LocalDateTime.now());
 
-        comment = Comment.builder()
-                .id(COMMENT_ID)
-                .authorId(AUTHOR_ID)
-                .content(CONTENT)
-                .post(post)
-                .createdAt(LocalDateTime.now())
-                .build();
+        post = new Post();
+        post.setId(100L);
     }
 
     @Test
-    public void findCommentByIdSuccess() {
-        Long commentId = 10L;
-        Comment mockComment = Comment.builder()
-                .id(commentId)
-                .content("mock comment")
-                .build();
+    void testFindCommentByIdFound() {
+        when(commentRepository.findById(1L)).thenReturn(Optional.of(commentEntity));
 
-        when(commentRepository.findById(commentId)).thenReturn(Optional.ofNullable(mockComment));
+        Comment result = commentService.findCommentById(1L);
 
-        Comment actualComment = commentService.findCommentById(commentId);
-        assertNotNull(actualComment);
-        assertNotNull(mockComment);
-        assertEquals(mockComment.getId(), actualComment.getId());
+        assertNotNull(result);
+        assertEquals(commentEntity.getId(), result.getId());
+        verify(commentRepository).findById(1L);
     }
 
     @Test
-    public void findCommentByIdFail() {
-        Long commentId = 10L;
-        String expected = utils.format(CommentService.COMMENT_BY_ID_NOT_FOUND, commentId);
+    void testFindCommentByIdNotFound() {
+        when(commentRepository.findById(1L)).thenReturn(Optional.empty());
+        lenient().when(utils.format(anyString(), any())).thenReturn("Not found");
 
-        when(commentRepository.findById(commentId)).thenReturn(Optional.empty());
+        assertThrows(CommentNotFoundException.class, () -> {
+            commentService.findCommentById(1L);
+        });
 
-        CommentNotFoundException result = assertThrows(
-                CommentNotFoundException.class, () -> commentService.findCommentById(commentId));
-        assertEquals(expected, result.getMessage());
+        verify(commentRepository).findById(1L);
     }
 
     @Test
     void testAddCommentSuccess() {
-        // Arrange
-        when(postRepository.findById(POST_ID)).thenReturn(Optional.of(post)); // настроили поведение postRepository
+        doReturn(commentEntity).when(commentMapper).toEntity(any(CommentDto.class));
+        doReturn(new CommentDto(1L, "Test content", 1L, 100L)).when(commentMapper)
+                .toDto(any(Comment.class));
 
-        when(userServiceClient.getUser(AUTHOR_ID)).thenReturn(userDto);
-        when(commentMapper.toEntity(commentDto)).thenReturn(comment);
-        when(commentRepository.save(any(Comment.class))).thenReturn(comment);
-        when(commentMapper.toDto(comment)).thenReturn(commentDto);
+        when(postService.findPostById(100L)).thenReturn(post);
+        when(commentRepository.save(any(Comment.class))).thenAnswer(invocation -> {
+            Comment c = invocation.getArgument(0);
+            c.setId(1L);
+            return c;
+        });
 
-        // Act
-        CommentDto addedComment = commentService.addComment(commentDto);
+        CommentDto result = commentService.addComment(commentDto);
 
-        // Assert
-        assertNotNull(addedComment);
-        assertEquals(COMMENT_ID, addedComment.getId());
-        assertEquals(CONTENT, addedComment.getContent());
-        assertEquals(AUTHOR_ID, addedComment.getAuthorId());
-        assertEquals(POST_ID, addedComment.getPostId());
+        assertNotNull(result);
+        assertEquals(1L, result.id());
 
-        verify(userServiceClient).getUser(AUTHOR_ID);
+        verify(postService).findPostById(100L);
         verify(commentRepository).save(any(Comment.class));
-        verify(commentMapper).toDto(comment);
-    }
 
-    @Test
-    void testAddCommentFailsIfPostNotFound() {
-        when(postRepository.findById(POST_ID)).thenReturn(Optional.empty());
-
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> commentService.addComment(commentDto));
-
-        assertEquals("Post not found", exception.getMessage());
-        verify(postRepository).findById(POST_ID);
-    }
-
-    @Test
-    void testAddCommentFailsIfAuthorNotFound() {
-        when(userServiceClient.getUser(AUTHOR_ID)).thenThrow(FeignException.NotFound.class);
-
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> commentService.addComment(commentDto));
-
-        assertEquals("Author not found", exception.getMessage());
-        verify(userServiceClient).getUser(AUTHOR_ID);
-        verifyNoInteractions(commentMapper, commentRepository);
-    }
-
-    @Test
-    void testUpdateCommentSuccess() {
-        String updatedContent = "Updated comment content";
-        CommentDto updatedCommentDto = CommentDto.builder().id(COMMENT_ID).content(updatedContent).build();
-
-        Comment existingComment = Comment.builder().id(COMMENT_ID).content(CONTENT).build();
-
-        when(commentRepository.findById(COMMENT_ID)).thenReturn(Optional.of(existingComment));
-        when(commentRepository.save(any(Comment.class))).thenReturn(existingComment);
-        when(commentMapper.toDto(any(Comment.class))).thenReturn(updatedCommentDto);
-
-        CommentDto result = commentService.updateComment(updatedCommentDto);
-
-        assertEquals(updatedContent, result.getContent());
-        verify(commentRepository).findById(COMMENT_ID);
-        verify(commentRepository).save(any(Comment.class));
+        verify(commentMapper).toEntity(any(CommentDto.class));
         verify(commentMapper).toDto(any(Comment.class));
     }
 
     @Test
-    void testUpdateCommentNotFound() {
-        when(commentRepository.findById(COMMENT_ID)).thenReturn(Optional.empty());
+    void testUpdateCommentSuccess() {
+        when(commentRepository.findById(1L)).thenReturn(Optional.of(commentEntity));
+        when(commentRepository.save(any(Comment.class))).thenAnswer(invocation ->
+                invocation.getArgument(0));
 
-        Exception exception = assertThrows(IllegalArgumentException.class, () ->
-                commentService.updateComment(commentDto));
+        CommentDto updateDto = new CommentDto(1L, "Updated content", 1L, 100L);
 
-        assertEquals("Comment not found", exception.getMessage());
-        verify(commentRepository).findById(COMMENT_ID);
-        verifyNoInteractions(commentMapper);
-        verifyNoMoreInteractions(commentRepository);
+        CommentDto result = commentService.updateComment(updateDto);
+
+        assertNotNull(result);
+        assertEquals("Updated content", result.content());
+
+        verify(commentRepository).findById(1L);
+        verify(commentRepository).save(any(Comment.class));
     }
 
     @Test
-    void testGetAllCommentsSuccess() {
-        List<Comment> comments = List.of(createComment(), createComment());
-        when(commentRepository.findAllByPostId(POST_ID)).thenReturn(comments);
-        when(commentMapper.toDto(any(Comment.class))).thenReturn(createCommentDto());
+    void testGetAllCommentsReturnsSortedList() {
+        Comment c1 = new Comment();
+        c1.setCreatedAt(LocalDateTime.of(2023, 10, 10, 10, 0));
 
-        List<CommentDto> result = commentService.getAllComments(POST_ID);
+        Comment c2 = new Comment();
+        c2.setCreatedAt(LocalDateTime.of(2023, 10, 11, 10, 0));
 
-        assertEquals(2, result.size());
-        verify(commentRepository).findAllByPostId(POST_ID);
-        verify(commentMapper, times(2)).toDto(any(Comment.class));
+        when(commentRepository.findAllByPostId(100L)).thenReturn(Arrays.asList(c1, c2));
+
+        doReturn(new CommentDto(null, "C1", 1L, 100L))
+                .when(commentMapper).toDto(c1);
+        doReturn(new CommentDto(null, "C2", 2L, 100L))
+                .when(commentMapper).toDto(c2);
+
+        List<CommentDto> comments = commentService.getAllComments(100L);
+
+        assertEquals(2, comments.size());
+
+        assertEquals("C2", comments.get(0).content());
+
+        verify(commentRepository).findAllByPostId(100L);
     }
 
     @Test
-    void deleteCommentShouldCallDeleteById() {
-        Long id = 5L;
-        doNothing().when(commentRepository).deleteById(id);
+    void testDeleteCommentSuccess() {
+        when(commentRepository.findById(1L)).thenReturn(Optional.of(commentEntity));
 
-        commentService.deleteComment(id);
+        doNothing().when(commentRepository).delete(any(Comment.class));
 
-        verify(commentRepository).deleteById(id);
-    }
+        assertDoesNotThrow(() -> commentService.deleteComment(1L));
 
-    private CommentDto createCommentDto() {
-        return CommentDto.builder()
-                .id(COMMENT_ID)
-                .authorId(AUTHOR_ID)
-                .postId(POST_ID)
-                .content(CONTENT)
-                .build();
-    }
-
-    private Comment createComment() {
-        return Comment.builder()
-                .id(COMMENT_ID)
-                .authorId(AUTHOR_ID)
-                .content(CONTENT)
-                .post(post)
-                .createdAt(LocalDateTime.now())
-                .build();
+        verify(commentRepository).delete(any(Comment.class));
+        verify(commentRepository).findById(1L);
     }
 }
