@@ -2,17 +2,21 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.dto.CommentLikeDto;
 import faang.school.postservice.dto.PostLikeDto;
+import faang.school.postservice.event.like.PostLikeEvent;
 import faang.school.postservice.exception.NotFoundException;
 import faang.school.postservice.mapper.LikeMapperImpl;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.KafkaLikeProducer;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -36,6 +40,10 @@ public class LikeServiceImplTest {
     private PostRepository postRepository;
     @Mock
     private CommentRepository commentRepository;
+    @Mock
+    private KafkaLikeProducer kafkaLikeProducer;
+    @Captor
+    private ArgumentCaptor<PostLikeEvent> postLikeEventCaptor;
     @Spy
     private LikeMapperImpl likeMapper;
     @InjectMocks
@@ -77,6 +85,10 @@ public class LikeServiceImplTest {
         assertEquals(userId, dto.getUserId());
         verify(postRepository).findById(postId);
         verify(likeRepository).save(any(Like.class));
+        verify(kafkaLikeProducer).publish(postLikeEventCaptor.capture());
+        PostLikeEvent event = postLikeEventCaptor.getValue();
+        assertEquals(postId, event.getPostId());
+        assertEquals(userId, event.getAuthorId());
     }
 
     @Test
