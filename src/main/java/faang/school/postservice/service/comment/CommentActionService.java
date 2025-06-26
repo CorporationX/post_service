@@ -11,16 +11,22 @@ import org.springframework.stereotype.Component;
 public class CommentActionService {
 
     private final CommentEventPublisher commentEventPublisher;
+    private final CommentEventPublisher commentAnalyticsEventPublisher; // Добавить
     private final CommentMapper commentMapper;
 
     public CommentActionService(@Qualifier("redisCommentEventPublisher") CommentEventPublisher commentEventPublisher,
+                                @Qualifier("redisCommentAnalyticsEventPublisher")
+                                CommentEventPublisher commentAnalyticsEventPublisher,
                                 CommentMapper commentMapper) {
         this.commentEventPublisher = commentEventPublisher;
+        this.commentAnalyticsEventPublisher = commentAnalyticsEventPublisher;
         this.commentMapper = commentMapper;
     }
 
     public void registerNewComment(Comment comment) {
         CommentEventDto commentEventDto = commentMapper.toCommentEventDto(comment);
         commentEventPublisher.publish(commentEventDto);
+
+        commentAnalyticsEventPublisher.publish(commentEventDto);
     }
 }
