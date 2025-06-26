@@ -36,20 +36,14 @@ public class CommentController {
     private final CommentService commentService;
     private final CommentMapper commentMapper;
 
-    @PostMapping("/{postId}")
+    @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public CommentPostResponseDto addComment(
-            @PathVariable @NotNull @Positive(message = "PostId must be positive") Long postId,
             @Valid @RequestBody CommentPostRequestDto commentPostRequestDto) {
-        log.debug("add comment request: postId={}, request={}", postId, commentPostRequestDto);
+
+        log.debug("add comment request: request={}", commentPostRequestDto);
         CommentDto commentDto = commentMapper.toDto(commentPostRequestDto);
-        CommentDto commentDtoWithPostId = new CommentDto(
-                null,
-                commentDto.content(),
-                commentDto.authorId(),
-                postId
-        );
-        CommentDto resultCommentDto = commentService.addComment(commentDtoWithPostId);
+        CommentDto resultCommentDto = commentService.addComment(commentDto);
         return commentMapper.toPostResponseDto(resultCommentDto);
     }
 

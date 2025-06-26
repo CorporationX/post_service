@@ -14,6 +14,10 @@ public record CommentPostRequestDto(
 
         @NotNull(message = "AuthorId cannot be null")
         @Positive(message = "AuthorId must be positive")
-        Long authorId
+        Long authorId,
+
+        @NotNull(message = "PostId cannot be null")
+        @Positive(message = "PostId must be positive")
+        Long postId
 ) {
 }

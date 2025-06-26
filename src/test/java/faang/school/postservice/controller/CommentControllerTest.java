@@ -59,14 +59,25 @@ public class CommentControllerTest {
 
     @Test
     void testAddComment() throws Exception {
-        CommentPostRequestDto requestDto = CommentPostRequestDto.builder().content(CONTENT).authorId(AUTHOR_ID).build();
-        CommentDto commentDto = CommentDto.builder().content(CONTENT).authorId(AUTHOR_ID).postId(POST_ID).build();
-        CommentPostResponseDto responseDto = CommentPostResponseDto.builder().id(COMMENT_ID).content(CONTENT)
-                .authorId(AUTHOR_ID).postId(POST_ID).build();
+        CommentPostRequestDto requestDto = CommentPostRequestDto.builder()
+                .content(CONTENT)
+                .authorId(AUTHOR_ID)
+                .postId(POST_ID)
+                .build();
+        CommentDto commentDto = CommentDto.builder()
+                .content(CONTENT)
+                .authorId(AUTHOR_ID)
+                .postId(POST_ID)
+                .build();
+        CommentPostResponseDto responseDto = CommentPostResponseDto.builder()
+                .id(COMMENT_ID)
+                .content(CONTENT)
+                .authorId(AUTHOR_ID)
+                .postId(POST_ID).build();
 
         when(commentService.addComment(any(CommentDto.class))).thenReturn(commentDto);
 
-        mockMvc.perform(post("/comments/{postId}", POST_ID)
+        mockMvc.perform(post("/comments")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isCreated())
@@ -74,16 +85,28 @@ public class CommentControllerTest {
                 .andExpect(jsonPath("$.authorId").value(AUTHOR_ID))
                 .andExpect(jsonPath("$.postId").value(POST_ID));
 
-        verify(commentService, times(1)).addComment(any(CommentDto.class));
+        verify(commentService).addComment(any(CommentDto.class));
     }
 
     @Test
     void testUpdateComment() throws Exception {
-        CommentPostRequestDto requestDto = CommentPostRequestDto.builder().content(CONTENT).authorId(AUTHOR_ID).build();
-        CommentDto commentDto = CommentDto.builder().id(COMMENT_ID).content(CONTENT).authorId(AUTHOR_ID)
-                .postId(POST_ID).build();
-        CommentPostResponseDto responseDto = CommentPostResponseDto.builder().id(COMMENT_ID).content(CONTENT)
-                .authorId(AUTHOR_ID).postId(POST_ID).build();
+        CommentPostRequestDto requestDto = CommentPostRequestDto.builder()
+                .content(CONTENT)
+                .authorId(AUTHOR_ID)
+                .postId(POST_ID)
+                .build();
+        CommentDto commentDto = CommentDto.builder()
+                .id(COMMENT_ID)
+                .content(CONTENT)
+                .authorId(AUTHOR_ID)
+                .postId(POST_ID)
+                .build();
+        CommentPostResponseDto responseDto = CommentPostResponseDto.builder()
+                .id(COMMENT_ID)
+                .content(CONTENT)
+                .authorId(AUTHOR_ID)
+                .postId(POST_ID)
+                .build();
 
         when(commentService.updateComment(any(CommentDto.class))).thenReturn(commentDto);
 
@@ -95,15 +118,23 @@ public class CommentControllerTest {
                 .andExpect(jsonPath("$.authorId").value(AUTHOR_ID))
                 .andExpect(jsonPath("$.postId").value(POST_ID));
 
-        verify(commentService, times(1)).updateComment(any(CommentDto.class));
+        verify(commentService).updateComment(any(CommentDto.class));
     }
 
     @Test
     void testGetAllComments() throws Exception {
-        CommentDto commentDto = CommentDto.builder().id(COMMENT_ID).content(CONTENT).authorId(AUTHOR_ID)
-                .postId(POST_ID).build();
-        CommentPostResponseDto responseDto = CommentPostResponseDto.builder().id(COMMENT_ID).content(CONTENT)
-                .authorId(AUTHOR_ID).postId(POST_ID).build();
+        CommentDto commentDto = CommentDto.builder()
+                .id(COMMENT_ID)
+                .content(CONTENT)
+                .authorId(AUTHOR_ID)
+                .postId(POST_ID)
+                .build();
+        CommentPostResponseDto responseDto = CommentPostResponseDto.builder()
+                .id(COMMENT_ID)
+                .content(CONTENT)
+                .authorId(AUTHOR_ID)
+                .postId(POST_ID)
+                .build();
         List<CommentDto> commentDtos = List.of(commentDto);
         List<CommentPostResponseDto> responseDtos = List.of(responseDto);
 
@@ -116,7 +147,7 @@ public class CommentControllerTest {
                 .andExpect(jsonPath("$[0].authorId").value(AUTHOR_ID))
                 .andExpect(jsonPath("$[0].postId").value(POST_ID));
 
-        verify(commentService, times(1)).getAllComments(POST_ID);
+        verify(commentService).getAllComments(POST_ID);
     }
 
     @Test
