@@ -10,5 +10,6 @@ import lombok.Setter;
 @Setter
 public class RedisChannelsConfig {
     private String likes;
-    private String likesReceived;
+    private String likeReceived;
+    private String postCreated;
 }

@@ -1,5 +1,6 @@
 package faang.school.postservice.mapper;
 
+import faang.school.postservice.dto.event.PostCreateEventDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
@@ -18,6 +19,9 @@ public interface PostMapper {
 
     @Mapping(target = "resources", ignore = true)
     Post toEntity(PostDto dto);
+
+    @Mapping(target = "userId", source = "authorId")
+    PostCreateEventDto toPostCreateEventDto(Post post);
 
     default List<String> mapKeys(Post post) {
         if (post.getResources() == null) {

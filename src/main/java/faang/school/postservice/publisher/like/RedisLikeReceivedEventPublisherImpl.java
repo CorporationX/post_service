@@ -20,7 +20,7 @@ public class RedisLikeReceivedEventPublisherImpl implements RedisLikeReceivedEve
     @Override
     public void publish(LikeReceivedEventDto event) {
 
-        long returnCode = redisTemplate.convertAndSend(redisChannelsConfig.getLikesReceived(), event);
+        long returnCode = redisTemplate.convertAndSend(redisChannelsConfig.getLikeReceived(), event);
         log.info("Published event: {}, with code {}.", event, returnCode);
     }
 }

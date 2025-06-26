@@ -11,6 +11,7 @@ import faang.school.postservice.exception.PostNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
+import faang.school.postservice.publisher.post.RedisPostCreateEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.resource.ResourceService;
 import faang.school.postservice.util.LanguageTool;
@@ -45,6 +46,7 @@ public class PostServiceImpl implements PostService {
     private final UserContext userContext;
     private final PostActionService postActionService;
     private final ExecutorService scheduledPostExecutorService;
+    private final RedisPostCreateEventPublisher redisPostCreateEventPublisher;
 
     @Override
     @Transactional
@@ -76,7 +78,11 @@ public class PostServiceImpl implements PostService {
         }
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
-        return postMapper.toDto(postRepository.save(post));
+
+        Post updatedPost = postRepository.save(post);
+        redisPostCreateEventPublisher.push(postMapper.toPostCreateEventDto(updatedPost));
+
+        return postMapper.toDto(updatedPost);
     }
 
     @Override
