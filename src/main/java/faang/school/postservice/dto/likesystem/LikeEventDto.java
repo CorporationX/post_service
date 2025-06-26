@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class LikeEventDto {
-    private long authorId;
+    private long actorId;
     private long receiverId;
     private LocalDateTime receivedAt;
 }
