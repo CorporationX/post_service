@@ -2,10 +2,10 @@ package faang.school.postservice.moderation.model;
 
 import faang.school.postservice.config.moderation.CommentsModerationConfiguration;
 import faang.school.postservice.config.moderation.ModerationDictionary;
+import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.service.PostService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.ListUtils;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -13,14 +13,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
-import static java.util.stream.Collectors.*;
-
 @Component
-@Slf4j
 @RequiredArgsConstructor
-public class ModerationScheduled {
+public class PostModeration {
 
     private final PostService postService;
     private final ModerationDictionary moderationDictionary;
@@ -28,28 +26,29 @@ public class ModerationScheduled {
     private final CommentsModerationConfiguration configuration;
 
     @Scheduled(cron = "#{@commentsModerationConfiguration.cron}")
-    @Transactional
     public void startExecutor() {
-        List<List<Post>> postList = verifiedPost();
+        List<List<Post>> postList = searchUnverifiedPosts();
 
-        postList.forEach(post -> executor.submit(()-> checkContent(post)));
+        postList.forEach(batch -> executor.submit(() -> checkContent(batch)));
     }
 
+    @Transactional
     public List<Post> checkContent(List<Post> postList) {
-        log.info("We start checking posts");
-        return postList.stream()
-                .peek(post -> {
-                    String content = post.getContent();
-                    boolean containsBadWord = moderationDictionary.containsProfanity(content);
-                    if (!containsBadWord) {
-                        post.setVerified(true);
-                        post.setVerifiedDate(LocalDateTime.now());
-                    }
-                    log.info("Post verification completed");
-                }).toList();
+        List<Post> verifiedPostList = new ArrayList<>();
+        for (Post post : postList) {
+            String content = post.getContent();
+            boolean containsBadWord = moderationDictionary.containsProfanity(content);
+            if (containsBadWord) {
+                throw new DataValidationException("This post contains censorship");
+            }
+            post.setVerified(true);
+            post.setVerifiedDate(LocalDateTime.now());
+            verifiedPostList.add(post);
+        }
+        return verifiedPostList;
     }
 
-    public List<List<Post>> verifiedPost() {
+    public List<List<Post>> searchUnverifiedPosts() {
         List<Post> postList = postService.getNotVerifiedPosts();
         int batchSize = configuration.getBatchSize();
 
