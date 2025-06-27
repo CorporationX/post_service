@@ -37,7 +37,10 @@ spring:
     kafka:
       bootstrap-servers: localhost:9092
       topic:
-        comment: comment_topic
+        comment:
+          name: comment
+          partitions: 3
+          replicas: 1
         userBan: user_ban
         hashtag-adding:
           name: "hashtag-adding-topic"
@@ -100,8 +103,3 @@ cron:
 
 ban-properties:
   value-rejected-posts: 5
-
-app:
-  kafka:
-    topic:
-      comments: comments
