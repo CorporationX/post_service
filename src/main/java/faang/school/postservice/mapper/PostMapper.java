@@ -1,6 +1,7 @@
 package faang.school.postservice.mapper;
 
-import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.post.PostRequestDto;
+import faang.school.postservice.dto.post.PostResponseDto;
 import faang.school.postservice.model.Post;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -14,7 +15,9 @@ public interface PostMapper {
     @Mapping(target = "ad", ignore = true)
     @Mapping(target = "resources", ignore = true)
     @Mapping(target = "scheduledAt", ignore = true)
-    Post toEntity(PostDto dto);
+    Post toEntity(PostResponseDto dto);
 
-    PostDto toDto(Post post);
+    PostResponseDto toDto(Post post);
+
+    Post toEntity(PostRequestDto request);
 }

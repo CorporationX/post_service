@@ -2,7 +2,8 @@ package faang.school.postservice.controller;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.post.PostRequestDto;
+import faang.school.postservice.dto.post.PostResponseDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.service.PostService;
@@ -37,99 +38,103 @@ public class PostControllerTest {
 
     @Test
     public void testCreateDraftPost() {
-        PostDto postDto = create(1L, "Post", 2L, null);
-        when(postService.createDraftPost(postDto))
+        PostRequestDto request = createRequest("Post", 2L, null);
+        PostResponseDto postDto = createPostResponseDto(request);
+
+        when(postService.createDraftPost(request))
                 .thenReturn(postDto);
 
         when(userServiceClient.getUser(postDto.authorId()))
                 .thenReturn(new UserDto(1L, "Miras",
                         "mirasospan62@gmail.com"));
 
-        PostDto result = postController.createDraftPost(postDto);
+        PostResponseDto result = postController.createDraftPost(request);
 
         verify(postService, Mockito.times(1))
-                .createDraftPost(postDto);
+                .createDraftPost(request);
         assertEquals("Post", result.content());
     }
 
     @Test
     public void testCreateDraftPostWithNullContent() {
-        PostDto postDto = create(1L, null, 2L, null);
+        PostRequestDto request = createRequest(null, 2L, null);
 
-        when(postService.createDraftPost(postDto))
+        when(postService.createDraftPost(request))
                 .thenThrow(new IllegalArgumentException("Post cannot be empty!"));
 
         assertThrows(IllegalArgumentException.class,
-                () -> postService.createDraftPost(postDto));
+                () -> postService.createDraftPost(request));
     }
 
     @Test
     public void testCreateDraftPostWithTwoOwner() {
-        PostDto postDto = create(1L, "Post", 2L, 2L);
+        PostRequestDto request = createRequest("Post", 2L, 2L);
 
-        when(postService.createDraftPost(postDto))
+        when(postService.createDraftPost(request))
                 .thenThrow(new IllegalArgumentException("Post cannot have more than 1 owner!"));
 
         assertThrows(IllegalArgumentException.class,
-                () -> postService.createDraftPost(postDto));
+                () -> postService.createDraftPost(request));
     }
 
     @Test
     public void testCreateDraftPostWithNullUser() {
-        PostDto postDto = create(1L, "Post", 2L, null);
+        PostRequestDto request = createRequest("Post", 2L, null);
 
-        when(postService.createDraftPost(postDto))
-                .thenThrow(new EntityNotFoundException("User with id: " + postDto.authorId() + " not found!"));
+        when(postService.createDraftPost(request))
+                .thenThrow(new EntityNotFoundException("User with id: " + request.authorId() + " not found!"));
 
         assertThrows(EntityNotFoundException.class,
-                () -> postService.createDraftPost(postDto));
+                () -> postService.createDraftPost(request));
     }
 
     @Test
     public void testCreateDraftPostWithNullProject() {
-        PostDto postDto = create(1L, "Post", null, 2L);
+        PostRequestDto request = createRequest("Post", null, 2L);
 
-        when(postService.createDraftPost(postDto))
-                .thenThrow(new EntityNotFoundException("Project with id: " + postDto.projectId() + " not found!"));
+        when(postService.createDraftPost(request))
+                .thenThrow(new EntityNotFoundException("Project with id: " + request.projectId() + " not found!"));
 
         assertThrows(EntityNotFoundException.class,
-                () -> postService.createDraftPost(postDto));
+                () -> postService.createDraftPost(request));
     }
 
     @Test
     public void testPublishPost() {
-        PostDto postDto = create(1L, "Post", 2L, null);
+        PostRequestDto request = createRequest("Post", 2L, null);
+        PostResponseDto postDto = createPostResponseDto(request);
         long postId = postDto.id();
 
         when(postService.publishPost(postId))
                 .thenReturn(postDto);
 
-        PostDto result = postController.publishPost(postId);
+        PostResponseDto result = postController.publishPost(postId);
 
         assertEquals(postDto, result);
     }
 
     @Test
     public void testUpdatePost() {
-        PostDto postDto = create(2L, "Post", null, 2L);
+        PostRequestDto request = createRequest("Post", null, 2L);
+        PostResponseDto postDto = createPostResponseDto(request);
         long postId = postDto.id();
 
-        when(postService.updatePost(postId, postDto))
+        when(postService.updatePost(postId, request))
                 .thenReturn(postDto);
 
         when(projectServiceClient.getProject(postDto.projectId()))
                 .thenReturn(new ProjectDto(1L, "Title"));
 
-        PostDto result = postController.updatePost(postId, postDto);
+        PostResponseDto result = postController.updatePost(postId, request);
 
         assertEquals(postDto, result);
     }
 
     @Test
     public void testDeletePost() {
-        PostDto postDto = new PostDto(1L, "Post", 2L, null,
-                        false, null,
-                        null, null, true);
+        PostResponseDto postDto = new PostResponseDto(1L, "Post", 2L, null,
+                false, null,
+                null, null, true);
         long postId = postDto.id();
 
         when(postService.deletePost(postId))
@@ -141,29 +146,31 @@ public class PostControllerTest {
     }
 
     @Test
-    public void testGetPostDtoById() {
-        PostDto post = create(1L, "Post", null, 2L);
-        long postId = post.id();
+    public void testGetPostResponseDtoById() {
+        PostRequestDto request = createRequest("Post", null, 2L);
+        PostResponseDto postDto = createPostResponseDto(request);
+        long postId = postDto.id();
 
-        when(postService.getPostDtoById(postId))
-                .thenReturn(post);
+        when(postService.getPostResponseDtoById(postId))
+                .thenReturn(postDto);
 
-        PostDto result = postController.getPostById(postId);
+        PostResponseDto result = postController.getPostById(postId);
 
         assertNotNull(result);
-        assertEquals(post.id(), result.id());
+        assertEquals(postId, result.id());
     }
 
     @Test
     public void testGetAllNotDeletedDraftsByAuthorId() {
-        PostDto draft = create(1L, "Post", 2L, null);
+        PostRequestDto request = createRequest("Post", 2L, null);
+        PostResponseDto draft = createPostResponseDto(request);
         long draftAuthorId = draft.authorId();
-        List<PostDto> drafts = List.of(draft);
+        List<PostResponseDto> drafts = List.of(draft);
 
         when(postService.getAllNotDeletedDraftsByAuthorId(draftAuthorId))
                 .thenReturn(drafts);
 
-        List<PostDto> result = postController.getAllNotDeletedDraftsByAuthorId(draftAuthorId);
+        List<PostResponseDto> result = postController.getAllNotDeletedDraftsByAuthorId(draftAuthorId);
 
         assertNotNull(result);
         assertEquals(drafts, result);
@@ -171,14 +178,15 @@ public class PostControllerTest {
 
     @Test
     public void testGetAllNotDeletedDraftsByProjectId() {
-        PostDto draft = create(1L, "Post", null, 2L);
+        PostRequestDto request = createRequest("Post", null, 2L);
+        PostResponseDto draft = createPostResponseDto(request);
         long draftProjectId = draft.projectId();
-        List<PostDto> drafts = List.of(draft);
+        List<PostResponseDto> drafts = List.of(draft);
 
         when(postService.getAllNotDeletedDraftsByProjectId(draftProjectId))
                 .thenReturn(drafts);
 
-        List<PostDto> result = postController.getAllNotDeletedDraftsByProjectId(draftProjectId);
+        List<PostResponseDto> result = postController.getAllNotDeletedDraftsByProjectId(draftProjectId);
 
         assertNotNull(result);
         assertEquals(drafts, result);
@@ -186,14 +194,15 @@ public class PostControllerTest {
 
     @Test
     public void testGetAllNotDeletedPostsByAuthorId() {
-        PostDto post = create(1L, "Post", 2L, null);
+        PostRequestDto request = createRequest("Post", 2L, null);
+        PostResponseDto post = createPostResponseDto(request);
         long postAuthorId = post.authorId();
-        List<PostDto> posts = List.of(post);
+        List<PostResponseDto> posts = List.of(post);
 
         when(postService.getAllPostsByAuthorId(postAuthorId))
                 .thenReturn(posts);
 
-        List<PostDto> result = postController.getAllNotDeletedPostsByAuthorId(postAuthorId);
+        List<PostResponseDto> result = postController.getAllNotDeletedPostsByAuthorId(postAuthorId);
 
         assertNotNull(result);
         assertEquals(posts, result);
@@ -201,23 +210,28 @@ public class PostControllerTest {
 
     @Test
     public void testGetAllNotDeletedPostsByProjectId() {
-        PostDto post = create(1L, "Post", null, 2L);
+        PostRequestDto request= createRequest("Post", null, 2L);
+        PostResponseDto post = createPostResponseDto(request);
         long postProjectId = post.projectId();
-        List<PostDto> posts = List.of(post);
+        List<PostResponseDto> posts = List.of(post);
 
         when(postService.getAllPostsByProjectId(postProjectId))
                 .thenReturn(posts);
 
-        List<PostDto> result = postController.getAllNotDeletedPostsByProjectId(postProjectId);
+        List<PostResponseDto> result = postController.getAllNotDeletedPostsByProjectId(postProjectId);
 
         assertNotNull(result);
         assertEquals(posts, result);
     }
 
-    private PostDto create(long id, String content, Long authorId, Long projectId) {
-        return new PostDto(id, content, authorId, projectId,
-                        false, null,
-                        null, null, false);
+    private PostResponseDto createPostResponseDto(PostRequestDto request) {
+        return new PostResponseDto(
+                1L, request.content(), request.authorId(), request.projectId(),
+                false, null,
+                null, null, false);
+    }
 
+    private PostRequestDto createRequest(String content, Long authorId, Long projectId) {
+        return new PostRequestDto(content, authorId, projectId);
     }
 }

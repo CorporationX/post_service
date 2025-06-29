@@ -2,7 +2,8 @@ package faang.school.postservice.controller;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.post.PostRequestDto;
+import faang.school.postservice.dto.post.PostResponseDto;
 import faang.school.postservice.service.PostService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +27,7 @@ public class PostController {
     private final ProjectServiceClient projectServiceClient;
 
     @PostMapping("/draftCreate")
-    public PostDto createDraftPost(@RequestBody PostDto dto) {
+    public PostResponseDto createDraftPost(@RequestBody PostRequestDto dto) {
         validate(dto.projectId(), dto.authorId());
         return postService.createDraftPost(dto);
     }
@@ -44,43 +45,43 @@ public class PostController {
     }
 
     @PatchMapping("/{postId}")
-    public PostDto publishPost(@PathVariable long postId) {
+    public PostResponseDto publishPost(@PathVariable long postId) {
         return postService.publishPost(postId);
     }
 
     @PatchMapping("/{postId}/updatePost")
-    public PostDto updatePost(@PathVariable long postId, @RequestBody PostDto dto) {
+    public PostResponseDto updatePost(@PathVariable long postId, @RequestBody PostRequestDto dto) {
         validate(dto.projectId(), dto.authorId());
         return postService.updatePost(postId, dto);
     }
 
     @PatchMapping("/{postId}/deletePost")
-    public PostDto deletePost(@PathVariable long postId) {
+    public PostResponseDto deletePost(@PathVariable long postId) {
         return postService.deletePost(postId);
     }
 
     @GetMapping("/{postId}")
-    public PostDto getPostById(@PathVariable long postId) {
-        return postService.getPostDtoById(postId);
+    public PostResponseDto getPostById(@PathVariable long postId) {
+        return postService.getPostResponseDtoById(postId);
     }
 
     @GetMapping("/author/{authorId}/drafts")
-    public List<PostDto> getAllNotDeletedDraftsByAuthorId(@PathVariable Long authorId) {
+    public List<PostResponseDto> getAllNotDeletedDraftsByAuthorId(@PathVariable Long authorId) {
         return postService.getAllNotDeletedDraftsByAuthorId(authorId);
     }
 
     @GetMapping("/project/{projectId}/drafts")
-    public List<PostDto> getAllNotDeletedDraftsByProjectId(@PathVariable Long projectId) {
+    public List<PostResponseDto> getAllNotDeletedDraftsByProjectId(@PathVariable Long projectId) {
         return postService.getAllNotDeletedDraftsByProjectId(projectId);
     }
 
     @GetMapping("/author/{authorId}/posts")
-    public List<PostDto> getAllNotDeletedPostsByAuthorId(@PathVariable Long authorId) {
+    public List<PostResponseDto> getAllNotDeletedPostsByAuthorId(@PathVariable Long authorId) {
         return postService.getAllPostsByAuthorId(authorId);
     }
 
     @GetMapping("project/{projectId}/posts")
-    public List<PostDto> getAllNotDeletedPostsByProjectId(@PathVariable Long projectId) {
+    public List<PostResponseDto> getAllNotDeletedPostsByProjectId(@PathVariable Long projectId) {
         return postService.getAllPostsByProjectId(projectId);
     }
 }

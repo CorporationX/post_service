@@ -1,6 +1,7 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.post.PostRequestDto;
+import faang.school.postservice.dto.post.PostResponseDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
@@ -23,17 +24,18 @@ public class PostService {
                 .orElseThrow(() -> new IllegalArgumentException("There is no such id = " + id));
     }
 
-    public PostDto getPostDtoById(long id) {
+    public PostResponseDto getPostResponseDtoById(long id) {
         return postMapper.toDto(postRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("There is no such id = " + id)));
     }
 
-    public PostDto createDraftPost(PostDto dto) {
-        Post post = postMapper.toEntity(dto);
+    public PostResponseDto createDraftPost(PostRequestDto request) {
+        Post post = postMapper.toEntity(request);
+
         return postMapper.toDto(postRepository.save(post));
     }
 
-    public PostDto publishPost(long postId) {
+    public PostResponseDto publishPost(long postId) {
         Post post = getPostById(postId);
         if (post.isPublished()) {
             throw new IllegalArgumentException("Post already posted.");
@@ -43,47 +45,47 @@ public class PostService {
         return postMapper.toDto(postRepository.save(post));
     }
 
-    public PostDto updatePost(long postId, PostDto dto) {
+    public PostResponseDto updatePost(long postId, PostRequestDto request) {
         Post post = getPostById(postId);
-        post.setContent(dto.content());
+        post.setContent(request.content());
         return postMapper.toDto(postRepository.save(post));
     }
 
-    public PostDto deletePost(long postId) {
+    public PostResponseDto deletePost(long postId) {
         Post post = getPostById(postId);
         post.setDeleted(true);
         return postMapper.toDto(postRepository.save(post));
     }
 
-    public List<PostDto> getAllNotDeletedDraftsByAuthorId(Long authorId) {
+    public List<PostResponseDto> getAllNotDeletedDraftsByAuthorId(Long authorId) {
         return getDraftsById(postRepository.findByAuthorId(authorId));
     }
 
-    public List<PostDto> getAllNotDeletedDraftsByProjectId(Long projectId) {
+    public List<PostResponseDto> getAllNotDeletedDraftsByProjectId(Long projectId) {
         return getDraftsById(postRepository.findByProjectId(projectId));
     }
 
-    public List<PostDto> getAllPostsByAuthorId(Long authorId) {
+    public List<PostResponseDto> getAllPostsByAuthorId(Long authorId) {
         return getPostsById(postRepository.findByAuthorId(authorId));
     }
 
-    public List<PostDto> getAllPostsByProjectId(Long projectId) {
+    public List<PostResponseDto> getAllPostsByProjectId(Long projectId) {
         return getPostsById(postRepository.findByProjectId(projectId));
     }
 
-    private List<PostDto> getDraftsById(List<Post> posts) {
+    private List<PostResponseDto> getDraftsById(List<Post> posts) {
         return posts.stream()
                 .filter(post -> !post.isDeleted() && !post.isPublished())
                 .map(postMapper::toDto)
-                .sorted(Comparator.comparing(PostDto::createdAt))
+                .sorted(Comparator.comparing(PostResponseDto::createdAt))
                 .toList();
     }
 
-    private List<PostDto> getPostsById(List<Post> posts) {
+    private List<PostResponseDto> getPostsById(List<Post> posts) {
         return posts.stream()
                 .filter(post -> !post.isDeleted() && post.isPublished())
                 .map(postMapper::toDto)
-                .sorted(Comparator.comparing(PostDto::publishedAt))
+                .sorted(Comparator.comparing(PostResponseDto::publishedAt))
                 .toList();
     }
 }

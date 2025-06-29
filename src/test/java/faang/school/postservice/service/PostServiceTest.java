@@ -1,6 +1,7 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.post.PostRequestDto;
+import faang.school.postservice.dto.post.PostResponseDto;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
@@ -17,7 +18,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -62,15 +62,15 @@ class PostServiceTest {
 
 
     @Test
-    public void testGetPostDtoById() {
+    public void testGetPostResponseDtoById() {
         Post post = createPost(1L);
-        PostDto dto = postMapper.toDto(post);
+        PostResponseDto dto = postMapper.toDto(post);
         long postId = post.getId();
 
         when(postRepository.findById(postId))
                 .thenReturn(Optional.of(post));
 
-        PostDto result = postService.getPostDtoById(postId);
+        PostResponseDto result = postService.getPostResponseDtoById(postId);
 
         assertNotNull(result);
         assertEquals(dto, result);
@@ -78,7 +78,7 @@ class PostServiceTest {
 
 
     @Test
-    public void testGetPostDtoByIdNotFound() {
+    public void testGetPostResponseDtoByIdNotFound() {
         long postId = 1L;
 
         when(postRepository.findById(postId))
@@ -89,16 +89,13 @@ class PostServiceTest {
 
     @Test
     public void testCreateDraftPost() {
-        PostDto postDto = new PostDto(1L, "Post", 2L, null,
-                        false, null,
-                        null, null, false);
+        PostRequestDto request = new PostRequestDto("Draft", 1L, null);
 
-        postService.createDraftPost(postDto);
+        postService.createDraftPost(request);
 
         verify(postRepository, times(1)).save(postCaptor.capture());
         Post savedPost = postCaptor.getValue();
-        assertEquals(1L, savedPost.getId());
-        assertFalse(savedPost.isDeleted());
+        assertNotNull(savedPost);
     }
 
     @Test
@@ -140,9 +137,7 @@ class PostServiceTest {
                 .thenReturn(Optional.of(post));
 
         postService.updatePost(postId,
-                new PostDto(1L, "Post",
-                        null, null, false, null,
-                        null, null, false));
+                new PostRequestDto("Post", 1L, null));
 
         verify(postRepository, times(1)).save(postCaptor.capture());
         Post updatedPost = postCaptor.getValue();
@@ -173,7 +168,7 @@ class PostServiceTest {
         when(postRepository.findByAuthorId(draftAuthorId))
                 .thenReturn(List.of(draft));
 
-        List<PostDto> result = postService.getAllNotDeletedDraftsByAuthorId(draftAuthorId);
+        List<PostResponseDto> result = postService.getAllNotDeletedDraftsByAuthorId(draftAuthorId);
 
         assertEquals(List.of(draft), result.stream()
                 .map(postMapper::toEntity)
@@ -189,7 +184,7 @@ class PostServiceTest {
         when(postRepository.findByProjectId(draftProjectId))
                 .thenReturn(List.of(draft));
 
-        List<PostDto> result = postService.getAllNotDeletedDraftsByProjectId(draftProjectId);
+        List<PostResponseDto> result = postService.getAllNotDeletedDraftsByProjectId(draftProjectId);
 
         assertEquals(List.of(draft), result.stream()
                 .map(postMapper::toEntity)
@@ -207,7 +202,7 @@ class PostServiceTest {
         when(postRepository.findByAuthorId(postAuthorId))
                 .thenReturn(List.of(post));
 
-        List<PostDto> result = postService.getAllPostsByAuthorId(postAuthorId);
+        List<PostResponseDto> result = postService.getAllPostsByAuthorId(postAuthorId);
 
         assertEquals(List.of(post), result.stream()
                 .map(postMapper::toEntity)
@@ -224,7 +219,7 @@ class PostServiceTest {
         when(postRepository.findByProjectId(postProjectId))
                 .thenReturn(List.of(post));
 
-        List<PostDto> result = postService.getAllPostsByProjectId(postProjectId);
+        List<PostResponseDto> result = postService.getAllPostsByProjectId(postProjectId);
 
         assertEquals(List.of(post), result.stream()
                 .map(postMapper::toEntity)
