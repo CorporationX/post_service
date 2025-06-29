@@ -22,7 +22,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             SELECT * FROM post p
             WHERE p.published = FALSE
             AND p.deleted = FALSE
-            AND p.scheduled_at <= CURRENT_TIMESTAMP
+            AND p.scheduled_at <= now()
             FOR UPDATE SKIP LOCKED
             LIMIT 1000
             """)
