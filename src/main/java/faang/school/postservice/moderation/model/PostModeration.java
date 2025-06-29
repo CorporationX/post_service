@@ -2,7 +2,6 @@ package faang.school.postservice.moderation.model;
 
 import faang.school.postservice.config.moderation.CommentsModerationConfiguration;
 import faang.school.postservice.config.moderation.ModerationDictionary;
-import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.service.PostService;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +12,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -32,22 +30,20 @@ public class PostModeration {
         postList.forEach(batch -> executor.submit(() -> checkContent(batch)));
     }
 
-    @Transactional
-    public List<Post> checkContent(List<Post> postList) {
-        List<Post> verifiedPostList = new ArrayList<>();
+    public void checkContent(List<Post> postList) {
         for (Post post : postList) {
             String content = post.getContent();
             boolean containsBadWord = moderationDictionary.containsProfanity(content);
             if (containsBadWord) {
-                throw new DataValidationException("This post contains censorship");
+                post.setVerified(false);
+                post.setVerifiedDate(LocalDateTime.now());
             }
             post.setVerified(true);
             post.setVerifiedDate(LocalDateTime.now());
-            verifiedPostList.add(post);
         }
-        return verifiedPostList;
     }
 
+    @Transactional
     public List<List<Post>> searchUnverifiedPosts() {
         List<Post> postList = postService.getNotVerifiedPosts();
         int batchSize = configuration.getBatchSize();
