@@ -210,7 +210,7 @@ public class PostControllerTest {
 
     @Test
     public void testGetAllNotDeletedPostsByProjectId() {
-        PostRequestDto request= createRequest("Post", null, 2L);
+        PostRequestDto request = createRequest("Post", null, 2L);
         PostResponseDto post = createPostResponseDto(request);
         long postProjectId = post.projectId();
         List<PostResponseDto> posts = List.of(post);

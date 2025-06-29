@@ -17,7 +17,7 @@ public interface PostMapper {
     @Mapping(target = "scheduledAt", ignore = true)
     Post toEntity(PostResponseDto dto);
 
-    PostResponseDto toDto(Post post);
-
     Post toEntity(PostRequestDto request);
+
+    PostResponseDto toDto(Post post);
 }
