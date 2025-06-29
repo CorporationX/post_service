@@ -41,7 +41,7 @@ class PostServiceTest {
     @Test
     void getPostById() {
         Post post = createPost(1L);
-        long postId = post.getId();
+        Long postId = post.getId();
 
         when(postRepository.findById(postId)).thenReturn(Optional.of(post));
 
@@ -70,7 +70,7 @@ class PostServiceTest {
         when(postRepository.findById(postId))
                 .thenReturn(Optional.of(post));
 
-        PostResponseDto result = postService.getPostResponseDtoById(postId);
+        PostResponseDto result = postService.getPostById(postId);
 
         assertNotNull(result);
         assertEquals(dto, result);

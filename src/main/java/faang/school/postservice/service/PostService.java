@@ -24,7 +24,7 @@ public class PostService {
                 .orElseThrow(() -> new IllegalArgumentException("There is no such id = " + id));
     }
 
-    public PostResponseDto getPostResponseDtoById(long id) {
+    public PostResponseDto getPostById(long id) {
         return postMapper.toDto(postRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("There is no such id = " + id)));
     }
@@ -35,7 +35,7 @@ public class PostService {
         return postMapper.toDto(postRepository.save(post));
     }
 
-    public PostResponseDto publishPost(long postId) {
+    public PostResponseDto publishPost(Long postId) {
         Post post = getPostById(postId);
         if (post.isPublished()) {
             throw new IllegalArgumentException("Post already posted.");
@@ -45,13 +45,13 @@ public class PostService {
         return postMapper.toDto(postRepository.save(post));
     }
 
-    public PostResponseDto updatePost(long postId, PostRequestDto request) {
+    public PostResponseDto updatePost(Long postId, PostRequestDto request) {
         Post post = getPostById(postId);
         post.setContent(request.content());
         return postMapper.toDto(postRepository.save(post));
     }
 
-    public PostResponseDto deletePost(long postId) {
+    public PostResponseDto deletePost(Long postId) {
         Post post = getPostById(postId);
         post.setDeleted(true);
         return postMapper.toDto(postRepository.save(post));

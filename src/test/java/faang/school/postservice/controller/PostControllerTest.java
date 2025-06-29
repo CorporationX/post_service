@@ -151,7 +151,7 @@ public class PostControllerTest {
         PostResponseDto postDto = createPostResponseDto(request);
         long postId = postDto.id();
 
-        when(postService.getPostResponseDtoById(postId))
+        when(postService.getPostById(postId))
                 .thenReturn(postDto);
 
         PostResponseDto result = postController.getPostById(postId);
