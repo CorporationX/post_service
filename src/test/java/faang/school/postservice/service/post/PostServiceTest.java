@@ -7,21 +7,26 @@ import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.PostService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.LongStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -41,6 +46,9 @@ public class PostServiceTest {
     @Mock
     private UserContext userContext;
 
+    @Mock
+    private PostBatchPublisher postBatchPublisher;
+
     @InjectMocks
     private PostService postService;
 
@@ -53,6 +61,11 @@ public class PostServiceTest {
                     .deleted(false)
                     .build();
 
+    @BeforeEach
+    public void setUp() {
+        ReflectionTestUtils.setField(postService, "batchSize", 2);
+    }
+
     @Test
     public void testCreatePostValid() {
         UserDto userDto = new UserDto(1L, "test", "test");
@@ -61,7 +74,6 @@ public class PostServiceTest {
         when(userContext.getUserId()).thenReturn(validPost.getAuthorId());
         when(userServiceClient.getUser(validPost.getAuthorId())).thenReturn(userDto);
         when(projectServiceClient.getProject(validPost.getProjectId())).thenReturn(projectDto);
-        when(postRepository.findById(validPost.getId())).thenReturn(Optional.of(validPost));
 
         postService.createPost(validPost);
 
@@ -108,5 +120,32 @@ public class PostServiceTest {
         verify(postRepository, times(1)).save(validPost);
     }
 
+    @Test
+    void testPublishScheduledPostsWhenNoPostsToPublish() {
+        when(postRepository.findReadyToPublish()).thenReturn(Collections.emptyList());
 
+        postService.publishScheduledPosts();
+
+        verify(postRepository).findReadyToPublish();
+        verify(postBatchPublisher, never()).publishPosts(any());
+    }
+
+    @Test
+    void testPublishScheduledPostsWhenPostsArePublishedInSeveralBatches() {
+        List<Post> postsToPublish = LongStream.range(1, 4)
+                .mapToObj(id -> Post.builder().id(id).build())
+                .toList();
+        when(postRepository.findReadyToPublish()).thenReturn(postsToPublish);
+
+        postService.publishScheduledPosts();
+
+        ArgumentCaptor<List<Post>> batchCaptor = ArgumentCaptor.forClass(List.class);
+        verify(postRepository).findReadyToPublish();
+        verify(postBatchPublisher, times(2)).publishPosts(batchCaptor.capture());
+
+        List<List<Post>> capturedBatches = batchCaptor.getAllValues();
+        assertEquals(2, capturedBatches.size());
+        assertEquals(2, capturedBatches.get(0).size(), "Первый батч должен содержать 2 поста");
+        assertEquals(1, capturedBatches.get(1).size(), "Второй батч должен содержать 1 пост");
+    }
 }
