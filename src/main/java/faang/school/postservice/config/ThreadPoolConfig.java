@@ -15,8 +15,16 @@ public class ThreadPoolConfig {
     @Value("${thread-pool.publish-posts-max-threads}")
     private int publishThreadSize;
 
+    @Value("${thread-pool.heater-feed-size}")
+    private int feedHeatPoolSize;
+
     @Bean(destroyMethod = "shutdown")
     public ExecutorService threadPool() {
         return Executors.newFixedThreadPool(publishThreadSize);
+    }
+
+    @Bean(name = "feedHeaterExecutor")
+    public ExecutorService feedHeaterExecutor() {
+        return Executors.newFixedThreadPool(feedHeatPoolSize);
     }
 }

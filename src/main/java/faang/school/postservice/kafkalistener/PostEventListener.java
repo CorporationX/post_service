@@ -57,7 +57,7 @@ public class PostEventListener {
 
         if (post == null) {
             Post dbPost = postRepository.findById(postId)
-                    .orElseThrow(() -> new EntityNotFoundException("Пост не найден"));
+                    .orElseThrow(() -> new EntityNotFoundException("Пост %d не найден", postId));
 
             post = CachedPost.builder()
                     .id(dbPost.getId())

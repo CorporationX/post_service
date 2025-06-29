@@ -12,6 +12,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -28,12 +29,22 @@ class FeedHeaterTest {
     @Mock
     private KafkaHeatFeedEventPublisher publisher;
 
+    @Mock
+    private ExecutorService executorService;
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        feedHeater = new FeedHeater(userRepository, publisher, 5);
+        feedHeater = new FeedHeater(userRepository, publisher, executorService);
 
         when(userRepository.findAllUsersIds()).thenReturn(List.of(1L, 2L, 3L));
+
+        when(executorService.submit(any(Runnable.class)))
+                .thenAnswer(invocation -> {
+                    Runnable task = invocation.getArgument(0);
+                    task.run();
+                    return null;
+                });
     }
 
     @Test

@@ -3,15 +3,12 @@ package faang.school.postservice.service;
 import faang.school.postservice.dto.kafkaevents.FeedHeatEvent;
 import faang.school.postservice.publisher.KafkaHeatFeedEventPublisher;
 import faang.school.postservice.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 
 @Service
@@ -19,15 +16,15 @@ import java.util.concurrent.TimeUnit;
 public class FeedHeater {
     private final UserRepository userRepository;
     private final KafkaHeatFeedEventPublisher publisher;
-    private final int poolSize;
+    private final ExecutorService executorService;
 
 
     public FeedHeater(UserRepository userRepository,
                       KafkaHeatFeedEventPublisher publisher,
-                      @Value("${thread-pool.heater-feed-size}") int poolSize) {
+                      @Qualifier("feedHeaterExecutor") ExecutorService executorService) {
         this.userRepository = userRepository;
         this.publisher = publisher;
-        this.poolSize = poolSize;
+        this.executorService = executorService;
     }
 
     public void heatFeedCache() throws InterruptedException {
@@ -35,7 +32,6 @@ public class FeedHeater {
 
         List<Long> usersIds = userRepository.findAllUsersIds();
 
-        ExecutorService executorService = Executors.newFixedThreadPool(poolSize);
 
         for (Long userId : usersIds) {
             executorService.submit(() -> {
@@ -47,7 +43,5 @@ public class FeedHeater {
             });
         }
 
-        executorService.awaitTermination(5, TimeUnit.MINUTES);
-        executorService.shutdown();
     }
 }

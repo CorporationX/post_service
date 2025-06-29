@@ -35,7 +35,7 @@ public class FeedService {
     private final PostCacheService cacheService;
 
     @Value("${spring.data.redis.feed.limit}")
-    private long limit;
+    private long limitPerRequest;
 
     @Value("${spring.data.redis.feed.size}")
     private long feedSize;
@@ -49,21 +49,21 @@ public class FeedService {
         Set<String> postIds;
 
         if (afterPostId == null) {
-            postIds = stringRedisTemplate.opsForZSet().range(userKey, 0, limit - 1);
+            postIds = stringRedisTemplate.opsForZSet().range(userKey, 0, limitPerRequest - 1);
         } else {
             Long rank = stringRedisTemplate.opsForZSet().rank(userKey, String.valueOf(afterPostId));
             if (rank != null) {
-                postIds = stringRedisTemplate.opsForZSet().range(userKey, (rank + 1), (rank + limit));
+                postIds = stringRedisTemplate.opsForZSet().range(userKey, (rank + 1), (rank + limitPerRequest));
             } else {
                 fillFeedFromDataBase();
-                postIds = stringRedisTemplate.opsForZSet().range(userKey, 0, limit - 1);
+                postIds = stringRedisTemplate.opsForZSet().range(userKey, 0, limitPerRequest - 1);
             }
         }
 
         if (postIds == null || postIds.isEmpty()) {
             log.debug("Для юзера {} не нашлось постов в кеше, иду в базу", userId);
             fillFeedFromDataBase();
-            postIds = stringRedisTemplate.opsForZSet().range(userKey, 0, limit - 1);
+            postIds = stringRedisTemplate.opsForZSet().range(userKey, 0, limitPerRequest - 1);
         }
 
         if (postIds == null) {

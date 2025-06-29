@@ -24,27 +24,32 @@ public class KafkaTopic {
     @Value("${spring.data.kafka.topic.heat}")
     private String heatFeedTopic;
 
+    @Value("${spring.data.kafka.standard-partitions-count}")
+    private int partitionsCount;
+
 
     @Bean
     public NewTopic comment() {
-        return TopicBuilder.name(commentTopic).partitions(3).build();
+        return TopicBuilder.name(commentTopic).partitions(partitionsCount).build();
     }
 
     @Bean
     public NewTopic userBan() {
-        return TopicBuilder.name(userBanTopic).partitions(1).build();
+        return TopicBuilder.name(userBanTopic).partitions(partitionsCount).build();
     }
 
     @Bean
     public NewTopic postPublish() {
-        return TopicBuilder.name(postPublishTopic).partitions(3).build();
+        return TopicBuilder.name(postPublishTopic).partitions(partitionsCount).build();
     }
 
     @Bean
     public NewTopic postLike() {
-        return TopicBuilder.name(postLikeTopic).partitions(3).build();
+        return TopicBuilder.name(postLikeTopic).partitions(partitionsCount).build();
     }
 
     @Bean
-    public NewTopic feedHeat() {return TopicBuilder.name(heatFeedTopic).partitions(3).build(); }
+    public NewTopic feedHeat() {
+        return TopicBuilder.name(heatFeedTopic).partitions(partitionsCount).build();
+    }
 }

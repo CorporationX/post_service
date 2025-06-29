@@ -6,7 +6,6 @@ import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.redis.core.RedisHash;
-import org.springframework.data.redis.core.TimeToLive;
 import org.springframework.data.redis.core.index.Indexed;
 
 @RedisHash(value = "authors")
@@ -24,8 +23,4 @@ public class CachedAuthor {
     @Value("${spring.redis.ttl.author}")
     private long ttl;
 
-    @TimeToLive
-    public long getTtl() {
-        return ttl;
-    }
 }

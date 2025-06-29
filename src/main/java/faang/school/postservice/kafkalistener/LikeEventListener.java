@@ -29,8 +29,6 @@ public class LikeEventListener {
         try {
             String postKey = event.getPostId().toString();
             if (!postCashed(event.getId())) {
-                log.warn("Пост не сохранен в кеш");
-            } else {
                 Long newCount = redisTemplate.opsForHash().increment(
                         POSTS_HASH_KEY + postKey, "likes", 1L);
                 log.info("Счетчик лайков для поста {} увеличен до: {}", event.getPostId(), newCount);

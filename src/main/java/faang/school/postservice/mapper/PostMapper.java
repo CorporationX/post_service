@@ -57,19 +57,17 @@ public interface PostMapper {
             return List.of();
         }
         return comments.stream()
-                        .map(comment ->
-                                CommentDto.builder()
-                                    .postId(comment.getPost().getId())
-                                    .id(comment.getId())
-                                    .authorId(comment.getAuthorId())
-                                    .content(comment.getContent())
-                                    .createdAt(comment.getCreatedAt())
-                                    .build())
+                .map(comment ->
+                        CommentDto.builder()
+                                .postId(comment.getPost().getId())
+                                .id(comment.getId())
+                                .authorId(comment.getAuthorId())
+                                .content(comment.getContent())
+                                .createdAt(comment.getCreatedAt())
+                                .build())
                 .toList();
 
     }
-
-
 
 
     List<PostResponseDto> toResponseDtoList(List<Post> posts);
