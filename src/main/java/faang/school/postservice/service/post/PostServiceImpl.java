@@ -80,7 +80,7 @@ public class PostServiceImpl implements PostService {
         post.setPublishedAt(LocalDateTime.now());
 
         Post updatedPost = postRepository.save(post);
-        redisPostCreateEventPublisher.push(postMapper.toPostCreateEventDto(updatedPost));
+        redisPostCreateEventPublisher.publish(postMapper.toPostCreateEventDto(updatedPost));
 
         return postMapper.toDto(updatedPost);
     }
