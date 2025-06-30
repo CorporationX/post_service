@@ -154,4 +154,3 @@ public class CommentServiceTest {
                 commentService.deleteComment(COMMENT_ID, AUTHOR_ID));
     }
 }
-
