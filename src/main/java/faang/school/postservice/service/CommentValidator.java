@@ -9,7 +9,6 @@ import java.util.Objects;
 @NoArgsConstructor
 @Service
 public class CommentValidator {
-
     public void validateCommentUpdate(Comment updatedComment) {
         if (updatedComment.getId() != null) {
             throw new IllegalArgumentException("You can't modify id of the comment");
