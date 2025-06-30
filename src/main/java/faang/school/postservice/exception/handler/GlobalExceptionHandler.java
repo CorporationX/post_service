@@ -8,6 +8,7 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.FileProcessException;
 import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.exception.JsonNotReadException;
+import faang.school.postservice.exception.KafkaPublishPostException;
 import faang.school.postservice.exception.LikeAlreadyExistException;
 import faang.school.postservice.exception.LikeNotFoundException;
 import faang.school.postservice.exception.PostDtoValidationException;
@@ -120,6 +121,13 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleConstraintViolation(ConstraintViolationException e) {
         log.error("Validation failed: {}", e.getClass().getSimpleName(), e);
+        return buildResponse(e);
+    }
+
+    @ExceptionHandler(KafkaPublishPostException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleKafkaPublishPostException(KafkaPublishPostException e) {
+        log.error("KafkaPublishPostException", e);
         return buildResponse(e);
     }
 

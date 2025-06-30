@@ -7,7 +7,7 @@ import faang.school.postservice.dto.album.AlbumCreateUpdateDto;
 import faang.school.postservice.dto.album.AlbumDto;
 import faang.school.postservice.dto.album.AlbumFilterDto;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.service.album.implementations.AlbumServiceImpl;
+import faang.school.postservice.service.album.interfaces.AlbumService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -37,7 +37,7 @@ class AlbumControllerTest {
     private MockMvc mockMvc;
 
     @MockBean
-    private AlbumServiceImpl albumService;
+    private AlbumService albumService;
 
     @MockBean
     private UserContext userContext;

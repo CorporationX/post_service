@@ -3,6 +3,7 @@ package faang.school.postservice.service.like.implementations;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.like.LikeDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.AuthorNotFoundException;
 import faang.school.postservice.exception.CommentNotFoundException;
 import faang.school.postservice.exception.LikeAlreadyExistException;
@@ -23,6 +24,8 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
@@ -38,6 +41,7 @@ public class LikeServiceImpl implements LikeService {
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final UserContext userContext;
+    private static final int BATCH_SIZE = 100;
 
     private void checkLikeExistence(long entityId, long userId,
                                     BiFunction<Long, Long, Optional<Like>> findLikeEntityFunction,
@@ -92,6 +96,40 @@ public class LikeServiceImpl implements LikeService {
     @Transactional
     public void unlikeComment(long commentId) {
         removeLike(commentId, userContext.getUserId(), likeRepository::findByCommentIdAndUserId, "comment");
+    }
+
+    @jakarta.transaction.Transactional
+    public List<UserDto> getUserLikedPost(long postId) {
+        List<Like> likes = likeRepository.findByPostId(postId);
+        if (likes.isEmpty()) {
+            return List.of();
+        }
+        List<Long> userIds = likes.stream()
+                .map(Like::getUserId)
+                .toList();
+        return getUserDtosInBatches(userIds);
+    }
+
+    @jakarta.transaction.Transactional
+    public List<UserDto> getUserLikedComment(long commentId) {
+        List<Like> likes = likeRepository.findByCommentId(commentId);
+        if (likes.isEmpty()) {
+            return List.of();
+        }
+        List<Long> userIds = likes.stream()
+                .map(Like::getUserId)
+                .toList();
+        return getUserDtosInBatches(userIds);
+    }
+
+    private List<UserDto> getUserDtosInBatches(List<Long> userIds) {
+        List<UserDto> result = new ArrayList<>();
+        for (int i = 0; i < userIds.size(); i += BATCH_SIZE) {
+            int endIndex = Math.min(i + BATCH_SIZE, userIds.size());
+            List<Long> batch = userIds.subList(i, endIndex);
+            result.addAll(userServiceClient.getUsersByIds(batch));
+        }
+        return result;
     }
 
     private <T> T checkEntityId(long entityId,

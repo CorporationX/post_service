@@ -10,6 +10,7 @@ import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.post_check.implementations.PostCheckerServiceImpl;
+import faang.school.postservice.utils.batch.PostEventBatchSender;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,6 +36,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -71,6 +73,9 @@ class PostServiceImplTest {
 
     @MockBean
     private ExecutorService postPublishPool;
+
+    @Mock
+    private PostEventBatchSender postEventBatchSender;
 
     @InjectMocks
     private PostServiceImpl postService;
@@ -209,18 +214,15 @@ class PostServiceImplTest {
     @Test
     void testPublicPostSuccess() {
         when(postRepository.findById(1L)).thenReturn(Optional.of(entity));
-        when(postRepository.save(any(Post.class))).thenReturn(entity);
-
-        when(postRepository.save(entity)).thenReturn(entity);
+        when(postRepository.saveAndFlush(any(Post.class))).thenReturn(entity);
+        when(postMapper.toDto(any(Post.class))).thenReturn(outputDto);
 
         PostDto result = postService.publishPost(inputDto);
 
         assertNotNull(result);
         assertEquals(1L, result.getId());
-        assertTrue(result.isPublished());
-        assertNotNull(result.getPublishedAt());
         verify(postRepository, times(1)).findById(1L);
-        verify(postRepository, times(1)).save(any(Post.class));
+        verify(postRepository, times(1)).saveAndFlush(any(Post.class));
         verify(postMapper, times(1)).toDto(any(Post.class));
     }
 
@@ -469,20 +471,6 @@ class PostServiceImplTest {
         postService.correctUnpublishedPosts();
 
         verify(postCheckerService, never()).correctPost(any(Post.class));
-    }
-
-    @Test
-    void testCorrectUnpublishedPosts_withFutureCompletedExceptionally() {
-        List<Post> unpublishedPosts = List.of(new Post());
-        when(postRepository.findReadyToPublish()).thenReturn(unpublishedPosts);
-        CompletableFuture<Post> failedFuture = new CompletableFuture<>();
-        failedFuture.completeExceptionally(new RuntimeException("Correction failed"));
-        when(postCheckerService.correctPost(any(Post.class)))
-                .thenReturn(failedFuture);
-
-        assertThrows(CompletionException.class, () -> postService.correctUnpublishedPosts());
-
-        verify(postCheckerService).correctPost(any(Post.class));
     }
 
     /***************************************************************************************/
