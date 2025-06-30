@@ -228,14 +228,14 @@ class CommentServiceTest {
 
     @Test
     void deleteComment_commentNotFound_throwsException() {
-        when(commentRepository.findById(999L)).thenReturn(Optional.empty());
+        when(commentRepository.findById(1000L)).thenReturn(Optional.empty());
 
         CommentNotFoundException ex = assertThrows(CommentNotFoundException.class,
-                () -> commentService.deleteComment(999L, 1L));
+                () -> commentService.deleteComment(1000L, 1L));
 
-        assertTrue(ex.getMessage().contains("There is no comment with id: 999"));
+        assertTrue(ex.getMessage().contains("There is no comment with id: 1000"));
 
-        verify(commentRepository).findById(999L);
+        verify(commentRepository).findById(1000L);
         verify(commentValidator, never()).validateAuthor(any(), any());
         verify(commentRepository, never()).delete(any());
     }
@@ -256,12 +256,12 @@ class CommentServiceTest {
 
     @Test
     void getCommentById_notFound_throwsException() {
-        when(commentRepository.findById(999L)).thenReturn(Optional.empty());
+        when(commentRepository.findById(1000L)).thenReturn(Optional.empty());
 
         CommentNotFoundException ex = assertThrows(CommentNotFoundException.class,
-                () -> commentService.getCommentById(999L));
+                () -> commentService.getCommentById(1000L));
 
-        assertTrue(ex.getMessage().contains("There is no comment with id: 999"));
-        verify(commentRepository).findById(999L);
+        assertTrue(ex.getMessage().contains("There is no comment with id: 1000"));
+        verify(commentRepository).findById(1000L);
     }
 }
