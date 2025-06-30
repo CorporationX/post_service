@@ -1,4 +1,4 @@
-package faang.school.postservice.client;
+package faang.school.postservice.config.client.feign;
 
 import faang.school.postservice.config.context.UserContext;
 import feign.RequestInterceptor;
@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 public class FeignUserInterceptor implements RequestInterceptor {
 
     private final UserContext userContext;
+
     @Override
     public void apply(RequestTemplate template) {
         template.header("x-user-id", String.valueOf(userContext.getUserId()));

@@ -31,6 +31,14 @@ spring:
         calculations_channel:
           name: calculations_channel
 
+    kafka:
+      host: localhost
+      port: 29092
+      topic:
+        comment:
+          name: comment_topic
+          partitions: 1
+
 file:
   max-size: 10485760
 
@@ -51,12 +59,24 @@ logging:
   level:
     root: info
 
-user-service:
-  host: localhost
-  port: 8080
-project-service:
-  host: localhost
-  port: 8082
-payment-service:
-  host: localhost
-  port: 9080
+services:
+  user-service:
+    host: localhost
+    port: 8080
+
+  project-service:
+    host: localhost
+    port: 8082
+
+  payment-service:
+    host: localhost
+    port: 9080
+
+  language-tool:
+    url: https://api.languagetool.org
+    version: v2
+
+jobs:
+  spellcheck:
+    cron: "0 * * * * *"
+    # каждую минуту

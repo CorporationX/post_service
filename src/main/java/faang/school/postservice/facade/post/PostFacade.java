@@ -5,7 +5,7 @@ import faang.school.postservice.dto.post.PostCreateUserRequestDto;
 import faang.school.postservice.dto.post.PostResponseDto;
 import faang.school.postservice.dto.post.PostUpdateRequestDto;
 import faang.school.postservice.mapper.post.PostMapper;
-import faang.school.postservice.model.post.Post;
+import faang.school.postservice.entity.post.Post;
 import faang.school.postservice.service.post.PostService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +22,7 @@ public class PostFacade {
 
     public PostResponseDto createDraftPostForCurrentUser(PostCreateUserRequestDto postCreateUserRequestDto) {
         Post post = postMapper.toPostEntity(postCreateUserRequestDto);
-        log.debug("Mapping PostCreateUserRequestDto to Post entity. DTO content: {}. Entity content: {}",
+        log.debug("Mapping PostCreateUserRequestDto to Post entity. DTO content: {}. Entity content: {}.",
                 postCreateUserRequestDto, post);
 
         post = postService.createDraftPostForCurrentUser(post);
@@ -35,7 +35,7 @@ public class PostFacade {
 
     public PostResponseDto createDraftPostForProject(PostCreateProjectRequestDto postCreateProjectRequestDto) {
         Post post = postMapper.toPostEntity(postCreateProjectRequestDto);
-        log.debug("Mapping PostCreateProjectRequestDto to Post entity. DTO content: {}. Entity content: {}",
+        log.debug("Mapping PostCreateProjectRequestDto to Post entity. DTO content: {}. Entity content: {}.",
                 postCreateProjectRequestDto, post);
 
         post = postService.createDraftPostForProject(post);

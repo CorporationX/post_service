@@ -1,10 +1,11 @@
 package faang.school.postservice.service.comment;
 
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.entity.comment.Comment;
+import faang.school.postservice.entity.post.Post;
 import faang.school.postservice.exception.comment.CommentNotFoundException;
 import faang.school.postservice.exception.comment.CommentValidationException;
-import faang.school.postservice.model.comment.Comment;
-import faang.school.postservice.model.post.Post;
+import faang.school.postservice.facade.comment.CommentKafkaFacade;
 import faang.school.postservice.repository.comment.CommentRepository;
 import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.validation.comment.CommentValidator;
@@ -22,10 +23,10 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class CommentServiceTest {
@@ -38,17 +39,20 @@ public class CommentServiceTest {
     private PostService postService;
     @Mock
     private UserContext userContext;
+    @Mock
+    private CommentKafkaFacade commentKafkaFacade;
     @InjectMocks
     private CommentService commentService;
 
     private Comment comment;
     private Post post;
+    private static final long USER_ID = 2L;
 
     @BeforeEach
     public void setUp() {
         comment = new Comment();
         comment.setId(1L);
-        comment.setAuthorId(2L);
+        comment.setAuthorId(USER_ID);
         comment.setCreatedAt(LocalDateTime.now());
 
         post = new Post();
@@ -57,7 +61,7 @@ public class CommentServiceTest {
 
     @Test
     public void testCreateComment() {
-        when(userContext.getUserId()).thenReturn(2L);
+        when(userContext.getUserId()).thenReturn(USER_ID);
 
         Comment input = new Comment();
         input.setCreatedAt(LocalDateTime.now());
@@ -69,8 +73,8 @@ public class CommentServiceTest {
         Comment result = commentService.create(post.getId(), input);
 
         assertEquals(post, result.getPost());
-        assertEquals(2L, result.getAuthorId());
-        verify(commentValidator).validateCommentAuthor(2L);
+        assertEquals(USER_ID, result.getAuthorId());
+        verify(commentValidator).validateCommentAuthor(USER_ID);
         verify(commentRepository).save(result);
     }
 
@@ -87,7 +91,7 @@ public class CommentServiceTest {
 
     @Test
     public void testUpdateComment_unauthorized() {
-        when(userContext.getUserId()).thenReturn(999L);
+        when(userContext.getUserId()).thenReturn(3L);
 
         assertThrows(CommentValidationException.class, () -> commentService.update(comment));
         verify(commentRepository, never()).save(any());

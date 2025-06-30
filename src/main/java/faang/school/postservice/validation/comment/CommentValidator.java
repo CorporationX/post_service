@@ -9,13 +9,12 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class CommentValidator {
-
     private final UserServiceClient userServiceClient;
 
     public void validateCommentAuthor(Long userId) {
         try {
             userServiceClient.getUserById(userId);
-        } catch (FeignException e) {
+        } catch (FeignException ex) {
             throw new EntityNotFoundException("User not found");
         }
     }

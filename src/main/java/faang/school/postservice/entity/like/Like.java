@@ -1,7 +1,7 @@
-package faang.school.postservice.model;
+package faang.school.postservice.entity.like;
 
-import faang.school.postservice.model.comment.Comment;
-import faang.school.postservice.model.post.Post;
+import faang.school.postservice.entity.comment.Comment;
+import faang.school.postservice.entity.post.Post;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -12,20 +12,16 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@ToString(exclude = {"comment", "post"})
 @Entity
 @Table(name="likes")
 public class Like {
