@@ -47,4 +47,4 @@ class PostServiceTest {
         assertEquals("Post not found with id: 1", exception.getMessage());
         verify(postRepository, times(1)).findById(1L);
     }
-}
+} 
