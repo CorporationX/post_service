@@ -27,8 +27,6 @@ public interface CommentMapper {
 
     @Mapping(target = "likes", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
-    @Mapping(target = "largeImageFileKey", ignore = true)
-    @Mapping(target = "smallImageFileKey", ignore = true)
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateEntityFromDto(CommentUpdateDto dto, @MappingTarget Comment entity);
 

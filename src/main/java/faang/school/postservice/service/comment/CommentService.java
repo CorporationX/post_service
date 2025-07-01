@@ -80,7 +80,7 @@ public class CommentService {
     @Transactional
     public void delete(Long commentId) {
         if (!commentRepository.existsById(commentId)) {
-            throw new CommentValidationException(String.format("Комментарий с id=%d не найден и не может быть удален", commentId));
+            throw new CommentNotFoundException(commentId);
         }
 
         commentRepository.deleteById(commentId);

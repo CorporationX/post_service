@@ -37,6 +37,12 @@ dependencies {
     runtimeOnly("org.postgresql:postgresql")
 
     /**
+     * Minio S3 & Thumbnailator
+     */
+    implementation("software.amazon.awssdk:s3:2.31.54")
+    implementation("net.coobird:thumbnailator:0.4.20")
+
+    /**
      * Utils & Logging
      */
     implementation("com.fasterxml.jackson.core:jackson-databind:2.14.2")
@@ -62,6 +68,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.9.2")
     testImplementation("org.assertj:assertj-core:3.24.2")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.mockito:mockito-inline:4.11.0")
 }
 
 tasks.test {
