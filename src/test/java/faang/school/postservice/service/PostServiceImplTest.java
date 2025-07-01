@@ -4,12 +4,14 @@ import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.user.ContactDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.AuthorNotFoundException;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.PostNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.post.RedisPostCreateEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.post.PostActionService;
 import faang.school.postservice.service.post.PostServiceImpl;
@@ -19,6 +21,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,6 +48,8 @@ public class PostServiceImplTest {
     private UserContext userContext;
     @Mock
     private PostActionService postInteractionService;
+    @Mock
+    private RedisPostCreateEventPublisher redisPostCreateEventPublisher;
 
     @InjectMocks
     private PostServiceImpl postService;
@@ -55,7 +61,7 @@ public class PostServiceImplTest {
         Post saved = new Post();
         saved.setId(100L);
 
-        when(userServiceClient.getUser(1L)).thenReturn(new UserDto(1L, "name", "email"));
+        when(userServiceClient.getUser(1L)).thenReturn(new UserDto(1L, "name", "email", "EMAIL", new ArrayList<ContactDto>()));
         when(postMapper.toEntity(dto)).thenReturn(post);
         when(postRepository.save(post)).thenReturn(saved);
         when(postMapper.toDto(saved)).thenReturn(new PostDto(100L, "valid content", 1L, null));

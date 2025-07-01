@@ -25,6 +25,8 @@ spring:
         comment: comment_channel
         postView: post_view_channel
         like: like_channel
+        likeReceived: likes_received
+        postCreated: post_created
         calculations_channel:
           name: calculations_channel
 
