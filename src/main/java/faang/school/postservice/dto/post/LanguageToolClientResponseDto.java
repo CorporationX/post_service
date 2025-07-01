@@ -20,12 +20,12 @@ public class LanguageToolClientResponseDto {
         private List<Replacement> replacements;
         private int offset;
         private int length;
-    }
 
-    @Data
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class Replacement {
-        private String value;
+        @Data
+        @AllArgsConstructor
+        @NoArgsConstructor
+        public static class Replacement {
+            private String value;
+        }
     }
 }

@@ -62,4 +62,4 @@ moderation:
 
 dictionary:
   offensive:
-    initial: "dictionary/offensive-words.yaml"
+    initial: "dictionary/offensive-words.csv"

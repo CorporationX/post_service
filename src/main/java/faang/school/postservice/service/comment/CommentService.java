@@ -80,13 +80,18 @@ public class CommentService {
         log.debug("Комментарий с id={} успешно удален", commentId);
     }
 
-    @Transactional(readOnly = true)
-    public List<Comment> getUnverifiedComments() {
-        return commentRepository.findByVerified(false);
+    @Transactional
+    public List<Comment> fetchCommentsForModeration(int limit) {
+        return commentRepository.lockAndFetchUnverified(limit);
     }
 
     @Transactional
     public void saveAll(List<Comment> comments) {
         commentRepository.saveAll(comments);
+    }
+
+    @Transactional
+    public void save(Comment comment) {
+        commentRepository.save(comment);
     }
 }
