@@ -47,7 +47,7 @@ public class PostServiceImpl implements PostService {
     @Override
     public PostOutputDto getPostById(long postId) {
         Post foundPost = findPostById(postId);
-        postViewPublisher.publish(this.createViewEvent(foundPost));
+        postViewPublisher.publish(createViewEvent(foundPost));
         return postMapper.toPostDto(foundPost);
     }
 
@@ -77,7 +77,7 @@ public class PostServiceImpl implements PostService {
         return postRepository.findByAuthorId(userId).stream()
                 .filter(post -> !post.isDeleted() && post.isPublished())
                 .sorted(Comparator.comparing(Post::getPublishedAt).reversed())
-                .peek((Post post) -> postViewPublisher.publish(this.createViewEvent(post)))
+                .peek(post -> postViewPublisher.publish(this.createViewEvent(post)))
                 .map(postMapper::toPostDto)
                 .toList();
     }
