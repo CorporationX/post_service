@@ -48,6 +48,9 @@ spring:
       region:
         static: eu-central-1
 
+  newsfeed:
+    size: 7
+
 
 server:
   port: 8081

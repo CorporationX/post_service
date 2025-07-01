@@ -11,6 +11,7 @@ public interface PostMapper {
     @Mapping(target = "likesNumber", expression = "java(post.getLikes() != null ? (long)post.getLikes().size() : 0)")
     PostDto toDto(Post post);
 
+    @Mapping(target = "id", ignore = true)
     @Mapping(target = "likes", ignore = true)
     @Mapping(target = "comments", ignore = true)
     @Mapping(target = "albums", ignore = true)

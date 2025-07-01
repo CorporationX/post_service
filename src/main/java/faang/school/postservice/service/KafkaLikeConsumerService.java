@@ -7,6 +7,7 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.repository.NewsFeedCashRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Service;
@@ -19,7 +20,9 @@ import java.util.TreeSet;
 @RequiredArgsConstructor
 @Slf4j
 public class KafkaLikeConsumerService {
+
     private final NewsFeedCashRepository newsFeedCashRepository;
+    private final NewsFeedService newsFeedService;
 
     private final KafkaLikeProducerService kafkaLikeProducerService;
     @KafkaListener(topics={"PostLike"}, groupId = "consumer-post-like")
@@ -42,24 +45,25 @@ public class KafkaLikeConsumerService {
 
     @KafkaListener(topics={"PostAndFollowers"}, groupId = "consumer-post")
     public void consumePostCreation(PostAndFollowersDto postAndFollowersDto, Acknowledgment acknowledgment) {
-        acknowledgment.acknowledge();
         log.info("Acknowledge Post created in PostAndFollowers topic: {}" , postAndFollowersDto);
         addPostIdToUserNewsFeed(postAndFollowersDto);
+        acknowledgment.acknowledge();
     }
 
     private void addPostIdToUserNewsFeed(PostAndFollowersDto postAndFollowersDto) {
-        for(Long follower: postAndFollowersDto.getFollowers()) {
-            Optional<NewsFeed> optional = newsFeedCashRepository.findById(follower);
-            if(optional.isPresent()) {
-                NewsFeed newsFeed = optional.get();
-                newsFeed.getPosts().add(postAndFollowersDto.getId());
-                newsFeedCashRepository.save(newsFeed);
-            } else {
-                SortedSet<Long> posts = new TreeSet<>();
-                posts.add(postAndFollowersDto.getId());
-                NewsFeed newsFeed = new NewsFeed(follower, posts);
-                newsFeedCashRepository.save(newsFeed);
-            }
-        }
+        newsFeedService.addPostIdToUserNewsFeed(postAndFollowersDto);
+//        for(Long follower: postAndFollowersDto.getFollowers()) {
+//            Optional<NewsFeed> optional = newsFeedCashRepository.findById(follower);
+//            if(optional.isPresent()) {
+//                NewsFeed newsFeed = optional.get();
+//                newsFeed.getPosts().add(postAndFollowersDto.getId());
+//                newsFeedCashRepository.save(newsFeed);
+//            } else {
+//                SortedSet<Long> posts = new TreeSet<>();
+//                posts.add(postAndFollowersDto.getId());
+//                NewsFeed newsFeed = new NewsFeed(follower, posts);
+//                newsFeedCashRepository.save(newsFeed);
+//            }
+//        }
     }
 }
