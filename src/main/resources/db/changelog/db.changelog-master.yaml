@@ -13,4 +13,5 @@ databaseChangeLog:
       file: db/changelog/changeset/post_V006_alter_post_add_check_constraint.sql
   - include:
       file: db/changelog/changeset/post_V007_alter_post_add_title.sql
-  - include:      file: db/changelog/changeset/post_V006_alter_post_add_check_constraint.sql
+  - include:
+      file: db/changelog/changeset/post_V008_alter_post_resource_to_resource.sql

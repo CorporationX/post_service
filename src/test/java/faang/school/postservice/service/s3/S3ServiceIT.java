@@ -1,10 +1,9 @@
 package faang.school.postservice.service.s3;
 
-import com.jayway.jsonpath.JsonPath;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.user.UserClientResponseDto;
-import faang.school.postservice.model.comment.Comment;
-import faang.school.postservice.model.post.Post;
+import faang.school.postservice.entity.comment.Comment;
+import faang.school.postservice.entity.post.Post;
 import faang.school.postservice.repository.comment.CommentRepository;
 import faang.school.postservice.repository.post.PostRepository;
 import faang.school.postservice.service.config.TestContainersConfig;
@@ -35,7 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-public class S3ServiceIntegrationTest extends TestContainersConfig {
+public class S3ServiceIT extends TestContainersConfig {
 
     private static final String BUCKET = "corpbucket";
     private static final String TEST_IMAGE_PATH = "test-images/kik.jpg";
@@ -71,16 +70,19 @@ public class S3ServiceIntegrationTest extends TestContainersConfig {
 
     @BeforeEach
     void createCommentIfNotExists() throws IOException {
-        Post post = postRepository.save(Post.builder()
-                .authorId(USER_ID)
-                .content("Test post")
-                .build());
+        Post post = new Post();
+        post.setTitle("Test Title");
+        post.setAuthorId(USER_ID);
+        post.setContent("Test post");
 
-        comment = commentRepository.save(Comment.builder()
-                .post(post)
-                .authorId(USER_ID)
-                .content("Test comment")
-                .build());
+        post = postRepository.save(post);
+
+        comment = new Comment();
+        comment.setAuthorId(USER_ID);
+        comment.setContent("Test comment");
+        comment.setPost(post);
+
+        comment = commentRepository.save(comment);
 
         ClassPathResource resource = new ClassPathResource(TEST_IMAGE_PATH);
         byte[] bytes = FileCopyUtils.copyToByteArray(resource.getInputStream());
@@ -100,12 +102,11 @@ public class S3ServiceIntegrationTest extends TestContainersConfig {
         UserClientResponseDto user = new UserClientResponseDto(USER_ID, "name", "email");
         when(userServiceClient.getUserById(USER_ID)).thenReturn(user);
 
-        String uploadResponse = mockMvc.perform(multipart(String.format("/api/v1/comments/%d/images", commentId))
+        mockMvc.perform(multipart(String.format("/api/v1/comments/%d/images", commentId))
                         .file(file)
                         .header("X-USER-ID", USER_ID))
                 .andExpect(status().isAccepted())
                 .andExpectAll(
-                        jsonPath("$.imageId").exists(),
                         jsonPath("$.fileKey").exists(),
                         jsonPath("$.previewKey").exists(),
                         jsonPath("$.contentType").exists(),
@@ -115,7 +116,7 @@ public class S3ServiceIntegrationTest extends TestContainersConfig {
                 .getContentAsString();
 
         mockMvc.perform(MockMvcRequestBuilders.get(
-                String.format("/api/v1/comments/%d/images/%s/view", commentId, JsonPath.read(uploadResponse, "$.imageId")))
+                String.format("/api/v1/comments/%d/images/view", commentId))
                         .header("X-USER-ID", USER_ID))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.IMAGE_JPEG));

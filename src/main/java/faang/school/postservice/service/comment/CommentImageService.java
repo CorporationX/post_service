@@ -2,22 +2,20 @@ package faang.school.postservice.service.comment;
 
 import faang.school.postservice.dto.image.ImageDownloadDto;
 import faang.school.postservice.dto.image.ImageResponseDto;
-import faang.school.postservice.dto.image.ImageStorage;
+import faang.school.postservice.dto.image.ImageResource;
+import faang.school.postservice.entity.resource.Resource;
 import faang.school.postservice.exception.comment.CommentNotFoundException;
-import faang.school.postservice.exception.file.FileNotFoundException;
-import faang.school.postservice.model.ImageResource;
-import faang.school.postservice.model.comment.Comment;
-import faang.school.postservice.model.comment.CommentImage;
-import faang.school.postservice.repository.comment.CommentImageRepository;
+import faang.school.postservice.entity.comment.Comment;
+import faang.school.postservice.model.resource.ImageResources;
 import faang.school.postservice.repository.comment.CommentRepository;
 import faang.school.postservice.service.image.ImageService;
 import faang.school.postservice.service.resource.ResourceService;
 import faang.school.postservice.validation.comment.CommentValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
@@ -29,43 +27,23 @@ public class CommentImageService {
     private final ResourceService resourceService;
     private final CommentValidator commentValidator;
     private final CommentRepository commentRepository;
-    private final CommentImageRepository commentImageRepository;
 
+    @Transactional
     public ImageResponseDto uploadImageForComment(Long commentId, MultipartFile file) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new CommentNotFoundException(commentId));
 
         commentValidator.validateCommentAuthor(comment.getAuthorId());
+        ImageResource imageStorage = imageService.uploadToS3(file);
+        ImageResources resources = resourceService.uploadImageResources(imageStorage);
 
-        ImageStorage imageStorage = imageService.uploadToS3(file);
+        comment.setLargeImageResource(resources.original());
+        comment.setSmallImageResource(resources.preview());
 
-        ImageResource imageResource = ImageResource.builder()
-                .key(imageStorage.fileKey())
-                .name(file.getOriginalFilename())
-                .type(imageStorage.contentType())
-                .size(imageStorage.size())
-                .build();
-        ImageResource savedImage = resourceService.saveResource(imageResource);
+        commentRepository.save(comment);
 
-        ImageResource previewResource = ImageResource.builder()
-                .key(imageStorage.previewKey())
-                .name("preview_" + file.getOriginalFilename())
-                .type(imageStorage.contentType())
-                .size(imageStorage.size())
-                .build();
-        ImageResource savedPreview = resourceService.saveResource(previewResource);
-
-        CommentImage image = CommentImage.builder()
-                .comment(comment)
-                .image(savedImage)
-                .preview(savedPreview)
-                .build();
-
-        commentImageRepository.save(image);
-
-        log.info("Для комментария с id={} загружено изображение imageId={}", commentId, image.getId());
+        log.info("Для комментария с id={} загружено изображение с fileName={}", commentId, file.getOriginalFilename());
         return new ImageResponseDto(
-                image.getId(),
                 imageStorage.fileKey(),
                 imageStorage.previewKey(),
                 imageStorage.contentType(),
@@ -73,52 +51,48 @@ public class CommentImageService {
         );
     }
 
-    public ImageDownloadDto downloadImageByCommentId(Long commentId, Long imageId) {
-        CommentImage image = getCommentImageByIdOrThrow(commentId, imageId);
-        ImageResource imageResource = image.getImage();
-        Resource streamResource = imageService.download(imageResource.getKey());
+    @Transactional(readOnly = true)
+    public ImageDownloadDto downloadImageByCommentId(Long commentId) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new CommentNotFoundException(commentId));
+
+        Resource imageResource = comment.getLargeImageResource();
+        org.springframework.core.io.Resource streamResource = imageService.download(imageResource.getKey());
 
         MediaType mediaType = MediaType.parseMediaType(imageResource.getType());
-        log.info("Получено изображение комментария с id={} и imageId={}", commentId, image.getId());
-        return new ImageDownloadDto(image.getId(), streamResource, imageResource.getName(), mediaType);
+        log.info("Получено изображение комментария с id={} и resourceId={}", commentId, imageResource.getId());
+        return new ImageDownloadDto(streamResource, imageResource.getName(), mediaType);
     }
 
-    public ImageDownloadDto downloadPreviewByCommentId(Long commentId, Long imageId) {
-        CommentImage image = getCommentImageByIdOrThrow(commentId, imageId);
-        ImageResource previewResource = image.getPreview();
-        Resource streamResource = imageService.download(previewResource.getKey());
+    @Transactional(readOnly = true)
+    public ImageDownloadDto downloadPreviewByCommentId(Long commentId) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new CommentNotFoundException(commentId));
+
+        Resource previewResource = comment.getSmallImageResource();
+        org.springframework.core.io.Resource streamResource = imageService.download(previewResource.getKey());
 
         MediaType mediaType = MediaType.parseMediaType(previewResource.getType());
-        log.info("Получено превью изображения комментария с id={} и imageId={}", commentId, image.getId());
-        return new ImageDownloadDto(image.getId(), streamResource, previewResource.getName(), mediaType);
+        log.info("Получено превью изображения комментария с id={} и imageId={}", commentId, previewResource.getId());
+        return new ImageDownloadDto(streamResource, previewResource.getName(), mediaType);
     }
 
+    @Transactional
     public void deleteImage(Long commentId, Long imageId) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new CommentNotFoundException(commentId));
 
         commentValidator.validateCommentAuthor(comment.getAuthorId());
 
-        CommentImage image = getCommentImageByIdOrThrow(commentId, imageId);
-
-        ImageResource imageResource = image.getImage();
-        ImageResource previewResource = image.getPreview();
+        Resource imageResource = comment.getLargeImageResource();
+        Resource previewResource = comment.getSmallImageResource();
 
         imageService.delete(imageResource.getKey());
         imageService.delete(previewResource.getKey());
 
-        commentImageRepository.delete(image);
-
         resourceService.deleteResource(imageResource);
         resourceService.deleteResource(previewResource);
 
-        log.info("Удалено изображение с комментария с id={} и imageId={}", commentId, image.getId());
-    }
-
-    private CommentImage getCommentImageByIdOrThrow(Long commentId, Long imageId) {
-        return commentImageRepository.findByIdAndCommentId(imageId, commentId)
-                .orElseThrow(() -> new FileNotFoundException(
-                        String.format("Изображение не найдено для комментария %d!", commentId)
-                ));
+        log.info("Удалено изображение с комментария с id={} и imageId={}", commentId, imageId);
     }
 }

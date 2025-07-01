@@ -1,6 +1,6 @@
 package faang.school.postservice.service.image;
 
-import faang.school.postservice.dto.image.ImageStorage;
+import faang.school.postservice.dto.image.ImageResource;
 import faang.school.postservice.exception.file.FileReadException;
 import faang.school.postservice.exception.file.FileUploadException;
 import faang.school.postservice.service.s3.S3KeyGenerator;
@@ -30,7 +30,7 @@ public class ImageService {
     private final S3Service s3Service;
     private final S3KeyGenerator s3KeyGenerator;
 
-    public ImageStorage uploadToS3(MultipartFile file) {
+    public ImageResource uploadToS3(MultipartFile file) {
         imageValidator.validate(file);
 
         String imageKey = s3KeyGenerator.generateImageKey(file.getOriginalFilename());
@@ -38,7 +38,7 @@ public class ImageService {
 
         processAndUploadImages(file, imageKey, previewKey);
 
-        return new ImageStorage(imageKey, previewKey, file.getContentType(), file.getSize());
+        return new ImageResource(file.getOriginalFilename(), imageKey, previewKey, file.getContentType(), file.getSize());
     }
 
     public Resource download(String key) {

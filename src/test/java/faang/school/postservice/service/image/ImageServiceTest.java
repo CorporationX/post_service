@@ -1,6 +1,6 @@
 package faang.school.postservice.service.image;
 
-import faang.school.postservice.dto.image.ImageStorage;
+import faang.school.postservice.dto.image.ImageResource;
 import faang.school.postservice.exception.file.FileReadException;
 import faang.school.postservice.service.s3.S3KeyGenerator;
 import faang.school.postservice.service.s3.S3Service;
@@ -49,30 +49,29 @@ class ImageServiceTest {
     private S3Service s3Service;
     @Mock
     private S3KeyGenerator s3KeyGenerator;
+
     @InjectMocks
     private ImageService imageService;
 
     private MockMultipartFile mockFile;
 
-
     @BeforeEach
     void setUp() throws IOException {
-        ClassPathResource resource = new ClassPathResource(TEST_IMAGE_PATH);
-        byte[] imageBytes = resource.getInputStream().readAllBytes();
-
-        mockFile = new MockMultipartFile("file", TEST_IMAGE_NAME, TEST_IMAGE_TYPE, imageBytes);
+        try (InputStream is = new ClassPathResource(TEST_IMAGE_PATH).getInputStream()) {
+            byte[] content = is.readAllBytes();
+            mockFile = new MockMultipartFile("file", TEST_IMAGE_NAME, TEST_IMAGE_TYPE, content);
+        }
     }
 
     @Test
-    void uploadToS3_shouldUploadImageAndReturnStorage() {
+    void shouldUploadImageAndReturnImageResource() {
         when(s3KeyGenerator.generateImageKey(TEST_IMAGE_NAME)).thenReturn(IMAGE_KEY);
         when(s3KeyGenerator.generatePreviewKey(IMAGE_KEY)).thenReturn(PREVIEW_KEY);
 
-        BufferedImage image = new BufferedImage(10, 10, BufferedImage.TYPE_INT_RGB);
-        try (MockedStatic<ImageIO> mocked = ImageIOStubber.stubImageIORead(image)) {
-            mocked.when(() -> ImageIO.read(any(InputStream.class))).thenReturn(image);
+        BufferedImage dummyImage = new BufferedImage(10, 10, BufferedImage.TYPE_INT_RGB);
 
-            ImageStorage result = imageService.uploadToS3(mockFile);
+        try (MockedStatic<ImageIO> imageIO = ImageIOStubber.stubImageIORead(dummyImage)) {
+            ImageResource result = imageService.uploadToS3(mockFile);
 
             assertEquals(IMAGE_KEY, result.fileKey());
             assertEquals(PREVIEW_KEY, result.previewKey());
@@ -84,27 +83,29 @@ class ImageServiceTest {
     }
 
     @Test
-    void uploadToS3_shouldThrowFileReadException_whenNotImage() throws IOException {
-        try (MockedStatic<ImageIO> mocked = ImageIOStubber.stubImageIORead(null)) {
-            when(s3KeyGenerator.generateImageKey(any())).thenReturn(IMAGE_KEY);
-            when(s3KeyGenerator.generatePreviewKey(any())).thenReturn(PREVIEW_KEY);
+    void shouldThrowExceptionWhenUploadedFileIsNotImage() {
+        when(s3KeyGenerator.generateImageKey(anyString())).thenReturn(IMAGE_KEY);
+        when(s3KeyGenerator.generatePreviewKey(anyString())).thenReturn(PREVIEW_KEY);
 
+        try (MockedStatic<ImageIO> imageIO = ImageIOStubber.stubImageIORead(null)) {
             assertThrows(FileReadException.class, () -> imageService.uploadToS3(mockFile));
         }
     }
 
     @Test
-    void download_shouldDelegateToS3Service() {
+    void shouldDownloadImageFromS3() {
         Resource expected = new ByteArrayResource(new byte[]{1, 2, 3});
         when(s3Service.download(DOWNLOAD_KEY)).thenReturn(expected);
 
         Resource actual = imageService.download(DOWNLOAD_KEY);
+
         assertEquals(expected, actual);
     }
 
     @Test
-    void delete_shouldDelegateToS3Service() {
+    void shouldDeleteImageFromS3() {
         imageService.delete(DOWNLOAD_KEY);
+
         verify(s3Service).delete(DOWNLOAD_KEY);
     }
 }

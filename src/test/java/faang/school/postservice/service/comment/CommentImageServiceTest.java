@@ -1,13 +1,12 @@
 package faang.school.postservice.service.comment;
 
 import faang.school.postservice.dto.image.ImageDownloadDto;
+import faang.school.postservice.dto.image.ImageResource;
 import faang.school.postservice.dto.image.ImageResponseDto;
-import faang.school.postservice.dto.image.ImageStorage;
+import faang.school.postservice.entity.comment.Comment;
+import faang.school.postservice.entity.resource.Resource;
 import faang.school.postservice.exception.comment.CommentNotFoundException;
-import faang.school.postservice.model.ImageResource;
-import faang.school.postservice.model.comment.Comment;
-import faang.school.postservice.model.comment.CommentImage;
-import faang.school.postservice.repository.comment.CommentImageRepository;
+import faang.school.postservice.model.resource.ImageResources;
 import faang.school.postservice.repository.comment.CommentRepository;
 import faang.school.postservice.service.image.ImageService;
 import faang.school.postservice.service.resource.ResourceService;
@@ -19,145 +18,157 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.util.FileCopyUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class CommentImageServiceTest {
 
-    private static final String TEST_IMAGE_PATH = "test-images/kik.jpg";
     private static final String TEST_IMAGE_NAME = "kik.jpg";
+    private static final String PREVIEW_IMAGE_NAME = "preview_test.jpg";
     private static final String TEST_IMAGE_TYPE = "image/jpeg";
-    private final Long COMMENT_ID = 1L;
-    private final Long IMAGE_ID = 100L;
-
+    private static final Long COMMENT_ID = 1L;
+    private static final Long AUTHOR_ID = 42L;
 
     @Mock
     private ImageService imageService;
-
     @Mock
     private ResourceService resourceService;
-
     @Mock
     private CommentValidator commentValidator;
-
     @Mock
     private CommentRepository commentRepository;
-
-    @Mock
-    private CommentImageRepository commentImageRepository;
 
     @InjectMocks
     private CommentImageService commentImageService;
 
     private MultipartFile file;
     private Comment comment;
-    private ImageStorage imageStorage;
-    private ImageResource imageResource;
-    private ImageResource previewResource;
-    private CommentImage commentImage;
+    private ImageResource imageStorage;
+    private Resource originalResource;
+    private Resource previewResource;
 
     @BeforeEach
-    void setUp() throws IOException {
-        ClassPathResource resource = new ClassPathResource(TEST_IMAGE_PATH);
-        byte[] bytes = FileCopyUtils.copyToByteArray(resource.getInputStream());
-
-        file = new MockMultipartFile(
-                "file",
-                TEST_IMAGE_NAME,
-                TEST_IMAGE_TYPE,
-                bytes
-        );
+    void setUp() {
         file = new MockMultipartFile("file", TEST_IMAGE_NAME, TEST_IMAGE_TYPE, new byte[]{1, 2, 3});
 
-        comment = Comment.builder().id(COMMENT_ID).authorId(42L).build();
+        comment = new Comment();
+        comment.setId(COMMENT_ID);
+        comment.setAuthorId(AUTHOR_ID);
 
-        imageStorage = new ImageStorage("file-key", "preview-key", TEST_IMAGE_TYPE, 123L);
+        originalResource = new Resource();
+        originalResource.setId(10L);
+        originalResource.setKey("file-key");
+        originalResource.setName(TEST_IMAGE_NAME);
+        originalResource.setType(TEST_IMAGE_TYPE);
+        originalResource.setSize(123L);
 
-        imageResource = ImageResource.builder().id(10L).key("file-key").name(TEST_IMAGE_NAME).type(TEST_IMAGE_TYPE).size(123L).build();
-        previewResource = ImageResource.builder().id(11L).key("preview-key").name("preview_test.jpg").type(TEST_IMAGE_TYPE).size(123L).build();
+        previewResource = new Resource();
+        previewResource.setId(11L);
+        previewResource.setKey("preview-key");
+        previewResource.setName(PREVIEW_IMAGE_NAME);
+        previewResource.setType(TEST_IMAGE_TYPE);
+        previewResource.setSize(123L);
 
-        commentImage = CommentImage.builder()
-                .id(IMAGE_ID)
-                .comment(comment)
-                .image(imageResource)
-                .preview(previewResource)
-                .build();
+        imageStorage = new ImageResource(TEST_IMAGE_NAME, "file-key", "preview-key", TEST_IMAGE_TYPE, 123L);
     }
 
     @Test
-    void uploadImageForComment_shouldUploadAndReturnDto() {
+    void shouldUploadImageForComment() {
         when(commentRepository.findById(COMMENT_ID)).thenReturn(Optional.of(comment));
         when(imageService.uploadToS3(file)).thenReturn(imageStorage);
-        when(resourceService.saveResource(any())).thenReturn(imageResource, previewResource);
-        when(commentImageRepository.save(any())).thenReturn(commentImage);
+        when(resourceService.uploadImageResources(imageStorage)).thenReturn(new ImageResources(originalResource, previewResource));
 
-        ImageResponseDto dto = commentImageService.uploadImageForComment(COMMENT_ID, file);
+        ImageResponseDto result = commentImageService.uploadImageForComment(COMMENT_ID, file);
 
-        assertEquals("file-key", dto.getFileKey());
-        assertEquals("preview-key", dto.getPreviewKey());
-        assertEquals(TEST_IMAGE_TYPE, dto.getContentType());
-        assertEquals(123L, dto.getSize());
+        assertEquals("file-key", result.getFileKey());
+        assertEquals("preview-key", result.getPreviewKey());
+        assertEquals(TEST_IMAGE_TYPE, result.getContentType());
+        assertEquals(123L, result.getSize());
 
-        verify(commentValidator).validateCommentAuthor(42L);
+        verify(commentValidator).validateCommentAuthor(AUTHOR_ID);
+        verify(commentRepository).save(comment);
     }
 
     @Test
-    void downloadImageByCommentId_shouldReturnDownloadDto() {
-        when(commentImageRepository.findByIdAndCommentId(IMAGE_ID, COMMENT_ID)).thenReturn(Optional.of(commentImage));
-        when(imageService.download("file-key")).thenReturn(new ByteArrayResource(new byte[]{1}));
+    void shouldThrowIfCommentNotFoundOnUpload() {
+        when(commentRepository.findById(COMMENT_ID)).thenReturn(Optional.empty());
 
-        ImageDownloadDto dto = commentImageService.downloadImageByCommentId(COMMENT_ID, IMAGE_ID);
+        assertThrows(CommentNotFoundException.class,
+                () -> commentImageService.uploadImageForComment(COMMENT_ID, file));
+    }
 
-        assertEquals(IMAGE_ID, dto.getImageId());
+    @Test
+    void shouldDownloadImageByCommentId() {
+        comment.setLargeImageResource(originalResource);
+        when(commentRepository.findById(COMMENT_ID)).thenReturn(Optional.of(comment));
+        when(imageService.download("file-key")).thenReturn(new ByteArrayResource(new byte[]{1, 2}));
+
+        ImageDownloadDto dto = commentImageService.downloadImageByCommentId(COMMENT_ID);
+
         assertEquals(TEST_IMAGE_NAME, dto.getOriginalFileName());
         assertEquals(MediaType.IMAGE_JPEG, dto.getContentType());
         assertNotNull(dto.getResource());
     }
 
     @Test
-    void downloadPreviewByCommentId_shouldReturnDownloadDto() {
-        when(commentImageRepository.findByIdAndCommentId(IMAGE_ID, COMMENT_ID)).thenReturn(Optional.of(commentImage));
-        when(imageService.download("preview-key")).thenReturn(new ByteArrayResource(new byte[]{1}));
+    void shouldDownloadPreviewByCommentId() {
+        comment.setSmallImageResource(previewResource);
+        when(commentRepository.findById(COMMENT_ID)).thenReturn(Optional.of(comment));
+        when(imageService.download("preview-key")).thenReturn(new ByteArrayResource(new byte[]{5}));
 
-        ImageDownloadDto dto = commentImageService.downloadPreviewByCommentId(COMMENT_ID, IMAGE_ID);
+        ImageDownloadDto dto = commentImageService.downloadPreviewByCommentId(COMMENT_ID);
 
-        assertEquals(IMAGE_ID, dto.getImageId());
-        assertEquals("preview_test.jpg", dto.getOriginalFileName());
+        assertEquals(PREVIEW_IMAGE_NAME, dto.getOriginalFileName());
         assertEquals(MediaType.IMAGE_JPEG, dto.getContentType());
+        assertNotNull(dto.getResource());
     }
 
     @Test
-    void deleteImage_shouldDeleteImageAndResources() {
+    void shouldDeleteImage() {
+        comment.setLargeImageResource(originalResource);
+        comment.setSmallImageResource(previewResource);
         when(commentRepository.findById(COMMENT_ID)).thenReturn(Optional.of(comment));
-        when(commentImageRepository.findByIdAndCommentId(IMAGE_ID, COMMENT_ID)).thenReturn(Optional.of(commentImage));
 
-        commentImageService.deleteImage(COMMENT_ID, IMAGE_ID);
+        commentImageService.deleteImage(COMMENT_ID, 999L); // imageId не используется
 
-        verify(commentValidator).validateCommentAuthor(42L);
+        verify(commentValidator).validateCommentAuthor(AUTHOR_ID);
         verify(imageService).delete("file-key");
         verify(imageService).delete("preview-key");
-        verify(commentImageRepository).delete(commentImage);
-        verify(resourceService).deleteResource(imageResource);
+        verify(resourceService).deleteResource(originalResource);
         verify(resourceService).deleteResource(previewResource);
     }
 
     @Test
-    void uploadImageForComment_shouldThrowIfCommentNotFound() {
+    void shouldThrowIfCommentNotFoundOnDelete() {
         when(commentRepository.findById(COMMENT_ID)).thenReturn(Optional.empty());
-        assertThrows(CommentNotFoundException.class, () -> commentImageService.uploadImageForComment(COMMENT_ID, file));
+
+        assertThrows(CommentNotFoundException.class,
+                () -> commentImageService.deleteImage(COMMENT_ID, 123L));
+    }
+
+    @Test
+    void shouldThrowIfCommentNotFoundOnDownloadImage() {
+        when(commentRepository.findById(COMMENT_ID)).thenReturn(Optional.empty());
+
+        assertThrows(CommentNotFoundException.class,
+                () -> commentImageService.downloadImageByCommentId(COMMENT_ID));
+    }
+
+    @Test
+    void shouldThrowIfCommentNotFoundOnDownloadPreview() {
+        when(commentRepository.findById(COMMENT_ID)).thenReturn(Optional.empty());
+
+        assertThrows(CommentNotFoundException.class,
+                () -> commentImageService.downloadPreviewByCommentId(COMMENT_ID));
     }
 }

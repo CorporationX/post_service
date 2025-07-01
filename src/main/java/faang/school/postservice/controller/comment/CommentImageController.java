@@ -34,13 +34,12 @@ public class CommentImageController {
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
     }
 
-    @GetMapping("/{imageId}/view")
+    @GetMapping("/view")
     public ResponseEntity<Resource> viewImage(@PathVariable Long commentId,
-                                              @PathVariable Long imageId,
                                               @RequestParam(defaultValue = "ORIGINAL") ImageRequestMode mode) {
         ImageDownloadDto dto = switch (mode) {
-            case ORIGINAL -> commentImageService.downloadImageByCommentId(commentId, imageId);
-            case PREVIEW -> commentImageService.downloadPreviewByCommentId(commentId, imageId);
+            case ORIGINAL -> commentImageService.downloadImageByCommentId(commentId);
+            case PREVIEW -> commentImageService.downloadPreviewByCommentId(commentId);
         };
 
         return ResponseEntity.ok()
@@ -48,13 +47,12 @@ public class CommentImageController {
                 .body(dto.getResource());
     }
 
-    @GetMapping("/{imageId}/download")
+    @GetMapping("/download")
     public ResponseEntity<Resource> downloadImage(@PathVariable Long commentId,
-                                                  @PathVariable Long imageId,
                                                   @RequestParam(defaultValue = "ORIGINAL") ImageRequestMode mode) {
         ImageDownloadDto dto = switch (mode) {
-            case ORIGINAL -> commentImageService.downloadImageByCommentId(commentId, imageId);
-            case PREVIEW -> commentImageService.downloadPreviewByCommentId(commentId, imageId);
+            case ORIGINAL -> commentImageService.downloadImageByCommentId(commentId);
+            case PREVIEW -> commentImageService.downloadPreviewByCommentId(commentId);
         };
 
         return ResponseEntity.ok()
@@ -64,7 +62,7 @@ public class CommentImageController {
                 .body(dto.getResource());
     }
 
-    @DeleteMapping("/{imageId}")
+    @DeleteMapping
     public ResponseEntity<Void> deleteImage(@PathVariable Long commentId,
                                             @PathVariable Long imageId) {
         commentImageService.deleteImage(commentId, imageId);
