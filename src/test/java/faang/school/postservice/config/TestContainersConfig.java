@@ -1,4 +1,4 @@
-package faang.school.postservice.service.config;
+package faang.school.postservice.config;
 
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;

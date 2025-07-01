@@ -60,17 +60,14 @@ public class Comment {
     private LocalDateTime updatedAt;
 
     @Column(name = "in_progress", nullable = false)
-    private boolean inProgress;
+    private Boolean inProgress;
 
     @Column(name = "verified")
     private Boolean verified;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "verified_date")
-    private LocalDateTime verifiedDate;
-
     @Column(name = "large_image_file_key")
     private String largeImageFileKey;
+
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "large_image_resource_id")
     private Resource largeImageResource;

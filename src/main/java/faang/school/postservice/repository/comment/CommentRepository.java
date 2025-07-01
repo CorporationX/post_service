@@ -17,10 +17,10 @@ public interface CommentRepository extends CrudRepository<Comment, Long> {
     @Modifying
     @Transactional
     @Query(value = """
-        UPDATE comments
+        UPDATE comment
         SET in_progress = true
         WHERE id IN (
-            SELECT id FROM comments
+            SELECT id FROM comment
             WHERE verified = false AND in_progress = false
             ORDER BY created_at
             LIMIT :limit
