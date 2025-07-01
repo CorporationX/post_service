@@ -5,6 +5,7 @@ import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CommentUpdateDto;
 import faang.school.postservice.entity.comment.Comment;
 import org.mapstruct.BeanMapping;
+import org.mapstruct.Builder;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
@@ -13,7 +14,9 @@ import org.mapstruct.ReportingPolicy;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
+@Mapper(componentModel = "spring",
+        unmappedTargetPolicy = ReportingPolicy.IGNORE,
+        builder = @Builder(disableBuilder = true))
 public interface CommentMapper {
 
     @Mapping(target = "post", ignore = true)
@@ -24,8 +27,6 @@ public interface CommentMapper {
 
     @Mapping(target = "likes", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
-    @Mapping(target = "largeImageFileKey", ignore = true)
-    @Mapping(target = "smallImageFileKey", ignore = true)
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateEntityFromDto(CommentUpdateDto dto, @MappingTarget Comment entity);
 

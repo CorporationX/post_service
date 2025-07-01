@@ -27,6 +27,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-aop")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("org.springdoc", "springdoc-openapi-starter-webmvc-ui", "2.0.2")
+    implementation("org.springframework.kafka:spring-kafka")
 
     /**
      * Database
@@ -34,6 +35,12 @@ dependencies {
     implementation("org.liquibase:liquibase-core")
     implementation("redis.clients:jedis:4.3.2")
     runtimeOnly("org.postgresql:postgresql")
+
+    /**
+     * Minio S3 & Thumbnailator
+     */
+    implementation("software.amazon.awssdk:s3:2.31.54")
+    implementation("net.coobird:thumbnailator:0.4.20")
 
     /**
      * Utils & Logging
@@ -61,7 +68,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.9.2")
     testImplementation("org.assertj:assertj-core:3.24.2")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("org.awaitility:awaitility:4.2.0")
+    testImplementation("org.mockito:mockito-inline:4.11.0")
 }
 
 tasks.test {
@@ -92,8 +99,10 @@ tasks.jacocoTestReport {
                     "**/client/**",
                     "**/mapper/**",
                     "**/model/**",
+                    "**/event/**",
                     "**/utils/**",
-                    "**/job/**"
+                    "**/job/**",
+                    "**/publisher/**"
                 )
             }
         })
@@ -112,6 +121,7 @@ tasks.named<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
             }
 
             excludes = listOf(
+                "default",
                 "faang.school.postservice.config",
                 "faang.school.postservice.config.*",
                 "faang.school.postservice.controller",
@@ -134,8 +144,12 @@ tasks.named<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
                 "faang.school.postservice.mapper.*",
                 "faang.school.postservice.model",
                 "faang.school.postservice.model.*",
+                "faang.school.postservice.event",
+                "faang.school.postservice.event.*",
                 "faang.school.postservice.job",
                 "faang.school.postservice.job.*",
+                "faang.school.postservice.publisher",
+                "faang.school.postservice.publisher.*",
                 "faang.school.postservice.utils",
                 "faang.school.postservice.utils.*",
                 "faang.school.postservice"

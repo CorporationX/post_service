@@ -11,13 +11,15 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
-import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
 
-@Data
-@Builder
+@Getter
+@Setter
+@ToString(exclude = {"post"})
 @Entity
 @Table(name = "post_ad")
 public class Ad {

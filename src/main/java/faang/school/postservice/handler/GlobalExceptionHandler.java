@@ -1,9 +1,14 @@
 package faang.school.postservice.handler;
 
 import faang.school.postservice.dto.error.PostServiceErrorResponseDto;
+import faang.school.postservice.enums.ImageRequestMode;
 import faang.school.postservice.exception.authorization.UserUnauthorizedException;
 import faang.school.postservice.exception.client.RemoteNotFoundException;
 import faang.school.postservice.exception.comment.CommentNotFoundException;
+import faang.school.postservice.exception.file.FileNotFoundException;
+import faang.school.postservice.exception.file.FileReadException;
+import faang.school.postservice.exception.file.FileTooLargeException;
+import faang.school.postservice.exception.file.UnsupportedFileTypeException;
 import faang.school.postservice.exception.like.LikeAlreadyExistsException;
 import faang.school.postservice.exception.like.LikeNotFoundException;
 import faang.school.postservice.exception.post.PostAlreadyPublishedException;
@@ -18,6 +23,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -25,7 +31,7 @@ import java.util.stream.Collectors;
 
 @RestControllerAdvice
 @Slf4j
-public class PostServiceExceptionHandler {
+public class GlobalExceptionHandler {
     private static final Map<Class<? extends Exception>, HttpStatus> httpStatusMap = Map.ofEntries(
             Map.entry(UserUnauthorizedException.class, HttpStatus.UNAUTHORIZED),
             Map.entry(PostNotFoundException.class, HttpStatus.NOT_FOUND),
@@ -37,7 +43,11 @@ public class PostServiceExceptionHandler {
             Map.entry(CommentNotFoundException.class, HttpStatus.NOT_FOUND),
             Map.entry(UserNotFoundException.class, HttpStatus.NOT_FOUND),
             Map.entry(LikeAlreadyExistsException.class, HttpStatus.CONFLICT),
-            Map.entry(LikeNotFoundException.class, HttpStatus.NOT_FOUND)
+            Map.entry(LikeNotFoundException.class, HttpStatus.NOT_FOUND),
+            Map.entry(FileTooLargeException.class, HttpStatus.PAYLOAD_TOO_LARGE),
+            Map.entry(UnsupportedFileTypeException.class, HttpStatus.UNSUPPORTED_MEDIA_TYPE),
+            Map.entry(FileNotFoundException.class, HttpStatus.NOT_FOUND),
+            Map.entry(FileReadException.class, HttpStatus.INTERNAL_SERVER_ERROR)
     );
     private static final Map<Class<? extends Exception>, ErrorHandler> errorHandlers = Map.of(
             MethodArgumentNotValidException.class, ex ->
@@ -55,7 +65,11 @@ public class PostServiceExceptionHandler {
             CommentNotFoundException.class,
             UserNotFoundException.class,
             LikeAlreadyExistsException.class,
-            LikeNotFoundException.class
+            LikeNotFoundException.class,
+            FileTooLargeException.class,
+            UnsupportedFileTypeException.class,
+            FileNotFoundException.class,
+            FileReadException.class
     })
     public ResponseEntity<PostServiceErrorResponseDto> handleException(Exception ex) {
         ErrorHandler handler = getErrorHandler(ex);
@@ -71,6 +85,14 @@ public class PostServiceExceptionHandler {
         return createErrorResponse("Internal server error", HttpStatus.INTERNAL_SERVER_ERROR, ex);
     }
 
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<String> handleEnumConversion(MethodArgumentTypeMismatchException ex) {
+        if (ex.getRequiredType() == ImageRequestMode.class) {
+            return ResponseEntity.badRequest().body("Неверный параметр: " + ex.getValue());
+        }
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Ошибка запроса");
+    }
+
     private HttpStatus getHttpStatus(Throwable ex) {
         return httpStatusMap.getOrDefault(ex.getClass(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -82,7 +104,7 @@ public class PostServiceExceptionHandler {
     private ResponseEntity<PostServiceErrorResponseDto> createErrorResponse(String errorMsg,
                                                                             HttpStatus status,
                                                                             Exception ex) {
-        log.error("Error in GoalController: {}, response status {}", errorMsg, status, ex);
+        log.error("Error: {}, response status {}", errorMsg, status, ex);
         PostServiceErrorResponseDto response =
                 new PostServiceErrorResponseDto(errorMsg, LocalDateTime.now(), status.value());
         return new ResponseEntity<>(response, status);

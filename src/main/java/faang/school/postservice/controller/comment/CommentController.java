@@ -6,6 +6,7 @@ import faang.school.postservice.dto.comment.CommentUpdateDto;
 import faang.school.postservice.facade.comment.CommentFacade;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -23,6 +24,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/comments")
 @RequiredArgsConstructor
+@Slf4j
 public class CommentController {
 
     private final CommentFacade commentFacade;
@@ -37,6 +39,16 @@ public class CommentController {
     public ResponseEntity<CommentDto> update(@RequestBody @Valid CommentUpdateDto dto) {
         CommentDto updated = commentFacade.update(dto);
         return ResponseEntity.ok(updated);
+    }
+
+    @GetMapping("/{commentId}")
+    public ResponseEntity<CommentDto> getCommentById(@PathVariable long commentId) {
+        log.debug("Post controller accepted request get comment with id {}", commentId);
+
+        CommentDto response = commentFacade.getCommentById(commentId);
+        log.debug("Comment controller return response get comment {}", response);
+
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping

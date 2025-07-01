@@ -5,6 +5,7 @@ import faang.school.postservice.exception.comment.CommentNotFoundException;
 import faang.school.postservice.exception.comment.CommentValidationException;
 import faang.school.postservice.entity.comment.Comment;
 import faang.school.postservice.entity.post.Post;
+import faang.school.postservice.facade.comment.CommentKafkaFacade;
 import faang.school.postservice.repository.comment.CommentRepository;
 import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.validation.comment.CommentValidator;
@@ -27,6 +28,7 @@ public class CommentService {
     private final CommentValidator commentValidator;
     private final PostService postService;
     private final UserContext userContext;
+    private final CommentKafkaFacade commentKafkaFacade;
 
     @Transactional
     public Comment create(long postId, Comment comment) {
@@ -39,7 +41,12 @@ public class CommentService {
         comment.setPost(post);
 
         Comment savedComment = commentRepository.save(comment);
-        log.debug("Создан комментарий с id={}", comment.getId());
+        log.info("Создан комментарий с id={}", comment.getId());
+
+        if (post.getAuthorId() != null) {
+            commentKafkaFacade.createCommentEvent(savedComment);
+        }
+
         return savedComment;
     }
 
@@ -73,7 +80,7 @@ public class CommentService {
     @Transactional
     public void delete(Long commentId) {
         if (!commentRepository.existsById(commentId)) {
-            throw new CommentValidationException(String.format("Комментарий с id=%d не найден и не может быть удален", commentId));
+            throw new CommentNotFoundException(commentId);
         }
 
         commentRepository.deleteById(commentId);

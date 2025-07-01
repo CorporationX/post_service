@@ -3,28 +3,25 @@ package faang.school.postservice.entity.resource;
 import faang.school.postservice.entity.post.Post;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
-@Data
+@Getter
+@Setter
+@ToString(exclude = {"post"})
 @Entity
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-@Table(name = "post_resource")
+@Table(name = "resource")
 public class Resource {
 
     @Id
@@ -38,7 +35,6 @@ public class Resource {
     private long size;
 
     @CreationTimestamp
-    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
@@ -48,7 +44,7 @@ public class Resource {
     @Column(name = "type", length = 50)
     private String type;
 
-    @ManyToOne
-    @JoinColumn(name = "post_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "post_id")
     private Post post;
 }
