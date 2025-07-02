@@ -1,16 +1,25 @@
 package faang.school.postservice.mapper;
 
-import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.comment.*;
 import faang.school.postservice.model.Comment;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
+import org.mapstruct.*;
 
-@Mapper(componentModel = "spring")
+import java.util.List;
+
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface CommentMapper {
 
-    @Mapping(target = "post.id", source = "postId")
-    Comment toEntity(CommentDto dto);
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "post", ignore = true)
+    @Mapping(target = "authorId", ignore = true)
+    Comment toEntityFromCreateDto(CommentCreateDto dto);
 
     @Mapping(source = "post.id", target = "postId")
     CommentDto toDto(Comment comment);
+
+    @Mapping(target = "updatedAt", expression = "java(java.time.LocalDateTime.now())")
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    void updateEntityFromDto(CommentUpdateDto dto, @MappingTarget Comment comment);
+
+    List<CommentDto> toDtoList(List<Comment> entities);
 }

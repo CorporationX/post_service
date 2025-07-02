@@ -1,9 +1,8 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.dto.comment.CommentDto;
-import faang.school.postservice.exception.CommentNotFoundException;
-import faang.school.postservice.exception.UserNotFoundException;
+import faang.school.postservice.dto.comment.*;
+import faang.school.postservice.exception.CommentValidationException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
@@ -21,68 +20,56 @@ import java.util.List;
 public class CommentService {
 
     private final CommentRepository commentRepository;
-    private final PostInternalService postInternalService;
+    private final PostService postService;
     private final UserServiceClient userServiceClient;
     private final CommentMapper commentMapper;
     private final CommentValidator commentValidator;
 
     @Transactional(readOnly = true)
     public List<CommentDto> getCommentsByPostId(Long postId) {
-        postInternalService.findPostById(postId);
-
-        return commentRepository.findAllByPostId(postId).stream()
-                .sorted(Comparator.comparing(Comment::getCreatedAt).reversed())
-                .map(commentMapper::toDto)
-                .toList();
+        postService.getPostById(postId);
+        return commentMapper.toDtoList(
+                commentRepository.findAllByPostId(postId).stream()
+                        .sorted(Comparator.comparing(Comment::getCreatedAt).reversed())
+                        .toList()
+        );
     }
 
     @Transactional
-    public CommentDto createComment(CommentDto dto) {
-        commentValidator.validateCommentCreate(dto);
-
-        Post post = postInternalService.findPostById(dto.getPostId());
-
+    public CommentDto createComment(Long postId, CommentCreateDto dto, Long authorId) {
         try {
-            userServiceClient.getUser(dto.getAuthorId());
+            userServiceClient.getUser(authorId);
         } catch (FeignException e) {
-            throw new UserNotFoundException("User with id = " + dto.getAuthorId() + " was not found");
+            throw new CommentValidationException("User with id = " + authorId + " was not found");
         }
 
-        Comment comment = commentMapper.toEntity(dto);
+        Post post = postService.getPostById(postId);
+        Comment comment = commentMapper.toEntityFromCreateDto(dto);
         comment.setPost(post);
-        comment.setAuthorId(dto.getAuthorId());
+        comment.setAuthorId(authorId);
 
         return commentMapper.toDto(commentRepository.save(comment));
     }
 
     @Transactional
-    public CommentDto updateComment(Long commentId, CommentDto dto, Long userId) {
-        Comment existing = commentRepository.findById(commentId)
-                .orElseThrow(() -> new CommentNotFoundException("There is no comment with id: " + commentId));
+    public CommentDto updateComment(Long commentId, CommentUpdateDto dto, Long userId) {
+        Comment comment = getCommentById(commentId);
+        commentValidator.validateAuthor(comment, userId);
+        commentMapper.updateEntityFromDto(dto, comment);
 
-        commentValidator.validateAuthor(existing, userId);
-        commentValidator.validateCommentUpdate(dto);
-
-        existing.setContent(dto.getContent());
-
-        return commentMapper.toDto(commentRepository.save(existing));
+        return commentMapper.toDto(commentRepository.save(comment));
     }
 
     @Transactional
-    public CommentDto deleteComment(Long commentId, Long userId) {
-        Comment existing = commentRepository.findById(commentId)
-                .orElseThrow(() -> new CommentNotFoundException("There is no comment with id: " + commentId));
-
-        commentValidator.validateAuthor(existing, userId);
-
-        commentRepository.delete(existing);
-
-        return commentMapper.toDto(existing);
+    public void deleteComment(Long commentId, Long userId) {
+        Comment comment = getCommentById(commentId);
+        commentValidator.validateAuthor(comment, userId);
+        commentRepository.delete(comment);
     }
 
     @Transactional(readOnly = true)
     public Comment getCommentById(Long id) {
         return commentRepository.findById(id)
-                .orElseThrow(() -> new CommentNotFoundException("There is no comment with id: " + id));
+                .orElseThrow(() -> new CommentValidationException("Comment with id = " + id + " was not found"));
     }
 }
