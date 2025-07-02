@@ -59,9 +59,6 @@ public class Comment {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @Column(name = "in_progress")
-    private Boolean inProgress = false;
-
     @Column(name = "verified")
     private Boolean verified;
 

@@ -55,7 +55,6 @@ public class CommentModerationJob {
                 commentService.delete(comment.getId());
             } else {
                 comment.setVerified(true);
-                comment.setInProgress(false);
                 commentService.save(comment);
             }
         });
