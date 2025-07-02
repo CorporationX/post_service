@@ -1,4 +1,4 @@
-package faang.school.postservice.config;
+package faang.school.postservice.kafka;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;

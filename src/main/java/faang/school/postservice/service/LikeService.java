@@ -1,7 +1,7 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.config.KafkaProducerService;
+import faang.school.postservice.kafka.KafkaProducerService;
 import faang.school.postservice.dto.likesystem.LikeDto;
 import faang.school.postservice.dto.likesystem.LikeEventDto;
 import faang.school.postservice.mapper.LikeMapper;
@@ -21,7 +21,7 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class LikeService {
 
-    @Value("${kafka.topic-name}")
+    @Value("${kafka.topics.like-post}")
     private String topicName;
 
     private final LikeRepository likeRepository;

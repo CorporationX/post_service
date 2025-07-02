@@ -1,8 +1,7 @@
-package faang.school.postservice.config;
+package faang.school.postservice.kafka;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.admin.AdminClientConfig;
-import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,7 +23,7 @@ public class KafkaProducerConfig {
     @Value("${kafka.host}")
     private String bootstrapAddress;
 
-    @Value("${kafka.topic-name}")
+    @Value("${kafka.topics.like-post}")
     private String topicName;
 
     @Value("${kafka.num-partitions}")
@@ -57,10 +56,5 @@ public class KafkaProducerConfig {
         configs.put(AdminClientConfig.REQUEST_TIMEOUT_MS_CONFIG, 30000);
 
         return new KafkaAdmin(configs);
-    }
-
-    @Bean
-    public NewTopic topic() {
-        return new NewTopic(topicName, numPartitions, (short) replicationFactor);
     }
 }
