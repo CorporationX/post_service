@@ -53,7 +53,6 @@ class CommentModerationJobTest extends TestContainersConfig {
         Comment offensive = new Comment();
         offensive.setContent("some некомпетентный here");
         offensive.setVerified(false);
-        offensive.setInProgress(false);
         offensive.setAuthorId(authorId);
         offensive.setPost(post);
         commentRepository.save(offensive);
@@ -61,7 +60,6 @@ class CommentModerationJobTest extends TestContainersConfig {
         Comment clean = new Comment();
         clean.setContent("everything is fine");
         clean.setVerified(false);
-        clean.setInProgress(false);
         clean.setAuthorId(authorId);
         clean.setPost(post);
         commentRepository.save(clean);
@@ -83,7 +81,6 @@ class CommentModerationJobTest extends TestContainersConfig {
                         .allSatisfy(comment -> {
                             assertThat(comment.getContent()).isEqualTo("everything is fine");
                             assertThat(comment.getVerified()).isTrue();
-                            assertThat(comment.getInProgress()).isFalse();
                         });
             });
     }
