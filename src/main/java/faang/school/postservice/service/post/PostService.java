@@ -8,6 +8,8 @@ import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validation.post.PostValidation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.ListUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,16 +19,20 @@ import java.util.Optional;
 
 import static faang.school.postservice.util.ValidationUtils.setIfNotNull;
 import static faang.school.postservice.util.ValidationUtils.executeIfNotNull;
+import static faang.school.postservice.util.ValidationUtils.setIfNotNull;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class PostService {
 
+    @Value("${scheduled-post-publisher.comments.batch_size}")
+    private int batchSize;
     private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
     private final UserContext userContext;
+    private final PostBatchPublisher postBatchPublisher;
 
     @Transactional
     public Post createPost(Post post) {
@@ -62,8 +68,26 @@ public class PostService {
     public void deletePost(Long postId) {
         Post post = getValidPostOrThrowException(postId);
         PostValidation.validateNotAlreadyDeletedPost(post);
+
         post.setDeleted(true);
         postRepository.save(post);
+    }
+
+    @Transactional
+    public void publishScheduledPosts() {
+        log.info("Publishing scheduled posts...");
+        List<Post> readyToPublish = postRepository.findReadyToPublish();
+
+        if (readyToPublish.isEmpty()) {
+            log.info("No scheduled posts found");
+            return;
+        }
+
+        List<List<Post>> batches = ListUtils.partition(readyToPublish, batchSize);
+
+        for (List<Post> batch : batches) {
+            postBatchPublisher.publishPosts(batch);
+        }
     }
 
     @Transactional(readOnly = true)

@@ -14,16 +14,18 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Collections;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -43,6 +45,9 @@ public class PostServiceTest {
     @Mock
     private UserContext userContext;
 
+    @Mock
+    private PostBatchPublisher postBatchPublisher;
+
     @InjectMocks
     private PostService postService;
 
@@ -54,6 +59,11 @@ public class PostServiceTest {
                     .published(false)
                     .deleted(false)
                     .build();
+
+    @BeforeEach
+    public void setUp() {
+        ReflectionTestUtils.setField(postService, "batchSize", 2);
+    }
 
     @Test
     public void testCreatePostValid() {
@@ -111,24 +121,55 @@ public class PostServiceTest {
     }
 
     @Test
-    void getAllUnpublishedPost() {
-        when(postRepository.findAllUnpublishedPosts()).thenReturn(List.of(validPost));
+    void testPublishScheduledPostsWhenNoPostsToPublish() {
+        when(postRepository.findReadyToPublish()).thenReturn(Collections.emptyList());
 
-        List<Post> result = postService.getAllUnpublishedPost();
+        postService.publishScheduledPosts();
 
-        verify(postRepository).findAllUnpublishedPosts();
-        assertEquals(validPost.getId(), result.get(0).getId());
+        verify(postRepository).findReadyToPublish();
+        verify(postBatchPublisher, never()).publishPosts(any());
     }
 
     @Test
-    void updateCorrectedContentOfPost() {
-        String correctedContent = "correctedContent";
+    void testPublishScheduledPostsWhenPostsArePublishedInSeveralBatches() {
+        List<Post> postsToPublish = LongStream.range(1, 4)
+                .mapToObj(id -> Post.builder().id(id).build())
+                .toList();
+        when(postRepository.findReadyToPublish()).thenReturn(postsToPublish);
 
-        ArgumentCaptor<Post> captor = ArgumentCaptor.forClass(Post.class);
-        when(postRepository.save(any(Post.class))).thenReturn(any(Post.class));
+        postService.publishScheduledPosts();
 
-        postService.updateCorrectedContentOfPost(validPost, correctedContent);
+        ArgumentCaptor<List<Post>> batchCaptor = ArgumentCaptor.forClass(List.class);
+        verify(postRepository).findReadyToPublish();
+        verify(postBatchPublisher, times(2)).publishPosts(batchCaptor.capture());
 
-        verify(postRepository).save(captor.capture());
+        List<List<Post>> capturedBatches = batchCaptor.getAllValues();
+        assertEquals(2, capturedBatches.size());
+        assertEquals(2, capturedBatches.get(0).size(), "Первый батч должен содержать 2 поста");
+        assertEquals(1, capturedBatches.get(1).size(), "Второй батч должен содержать 1 пост");
     }
 }
+
+@Test
+void updateCorrectedContentOfPost() {
+    String correctedContent = "correctedContent";
+
+    ArgumentCaptor<Post> captor = ArgumentCaptor.forClass(Post.class);
+    when(postRepository.save(any(Post.class))).thenReturn(any(Post.class));
+
+    postService.updateCorrectedContentOfPost(validPost, correctedContent);
+
+    verify(postRepository).save(captor.capture());
+}
+
+@Test
+void getAllUnpublishedPost() {
+    when(postRepository.findAllUnpublishedPosts()).thenReturn(List.of(validPost));
+
+    List<Post> result = postService.getAllUnpublishedPost();
+
+    verify(postRepository).findAllUnpublishedPosts();
+    assertEquals(validPost.getId(), result.get(0).getId());
+}
+}
+

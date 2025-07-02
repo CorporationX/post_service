@@ -72,3 +72,11 @@ app:
     url: "https://api.languagetool.org/v2/check"
     language: "auto"
     cron: "0 */30 * * * *"
+
+scheduled-post-publisher:
+  comments:
+    cron: "0 * * * * *"
+    batch_size: 1000
+  executor:
+    thread_pool_core_size: 8
+    thread_pool_max_size: 16

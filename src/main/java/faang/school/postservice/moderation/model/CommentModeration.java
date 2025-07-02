@@ -4,9 +4,9 @@ import faang.school.postservice.config.moderation.CommentsModerationConfiguratio
 import faang.school.postservice.config.moderation.ModerationDictionary;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.service.comment.CommentService;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.ListUtils;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
@@ -15,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@RequiredArgsConstructor
 @Component
 @Slf4j
 public class CommentModeration {
@@ -24,6 +23,17 @@ public class CommentModeration {
     private final ModerationDictionary moderationDictionary;
     private final CommentsModerationConfiguration configuration;
     private final ThreadPoolTaskExecutor executor;
+
+    public CommentModeration(
+            CommentService commentService,
+            ModerationDictionary moderationDictionary,
+            CommentsModerationConfiguration configuration,
+            @Qualifier("taskExecutor") ThreadPoolTaskExecutor executor) {
+        this.commentService = commentService;
+        this.moderationDictionary = moderationDictionary;
+        this.configuration = configuration;
+        this.executor = executor;
+    }
 
     @Scheduled(cron = "#{@commentsModerationConfiguration.cron}")
     @Transactional

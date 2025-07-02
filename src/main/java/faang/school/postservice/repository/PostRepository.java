@@ -18,7 +18,14 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("SELECT p FROM Post p LEFT JOIN FETCH p.likes WHERE p.authorId = :authorId")
     List<Post> findByAuthorIdWithLikes(long authorId);
 
-    @Query("SELECT p FROM Post p WHERE p.published = false AND p.deleted = false AND p.scheduledAt <= CURRENT_TIMESTAMP")
+    @Query(nativeQuery = true, value = """
+            SELECT * FROM post p
+            WHERE p.published = FALSE
+            AND p.deleted = FALSE
+            AND p.scheduled_at <= now()
+            FOR UPDATE SKIP LOCKED
+            LIMIT 1000
+            """)
     List<Post> findReadyToPublish();
 
     @Query(nativeQuery = true, value = """
