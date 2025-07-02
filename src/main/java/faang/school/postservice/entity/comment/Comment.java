@@ -59,6 +59,12 @@ public class Comment {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Column(name = "verified")
+    private Boolean verified;
+
+    @Column(name = "large_image_file_key")
+    private String largeImageFileKey;
+
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "large_image_resource_id")
     private Resource largeImageResource;

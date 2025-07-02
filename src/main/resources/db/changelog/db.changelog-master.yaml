@@ -15,3 +15,5 @@ databaseChangeLog:
       file: db/changelog/changeset/post_V007_alter_post_add_title.sql
   - include:
       file: db/changelog/changeset/post_V008_alter_post_resource_to_resource.sql
+  - include:
+      file: db/changelog/changeset/post_V009_alter_comment_add_verified.sql

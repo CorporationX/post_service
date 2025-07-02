@@ -6,7 +6,7 @@ import faang.school.postservice.entity.comment.Comment;
 import faang.school.postservice.entity.post.Post;
 import faang.school.postservice.repository.comment.CommentRepository;
 import faang.school.postservice.repository.post.PostRepository;
-import faang.school.postservice.service.config.TestContainersConfig;
+import faang.school.postservice.config.TestContainersConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

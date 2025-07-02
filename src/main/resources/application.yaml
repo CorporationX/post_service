@@ -80,3 +80,13 @@ jobs:
   spellcheck:
     cron: "0 * * * * *"
     # каждую минуту
+
+moderation:
+  comments:
+    cron: "0 0 0 * * *"
+    batch-size: 100
+    max-thread-pool-size: 4
+
+dictionary:
+  offensive:
+    initial: "dictionary/offensive-words.csv"
