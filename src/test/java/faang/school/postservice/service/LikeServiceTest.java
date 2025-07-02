@@ -1,7 +1,7 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.kafka.KafkaProducerService;
+import faang.school.postservice.config.kafka.KafkaProducerService;
 import faang.school.postservice.dto.likesystem.LikeDto;
 import faang.school.postservice.mapper.LikeMapperImpl;
 import faang.school.postservice.model.Comment;

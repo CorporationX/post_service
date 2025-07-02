@@ -1,4 +1,4 @@
-package faang.school.postservice.kafka;
+package faang.school.postservice.config.kafka;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.admin.AdminClientConfig;
