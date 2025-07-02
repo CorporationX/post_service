@@ -14,18 +14,9 @@ import java.util.TreeSet;
 @Data
 @RequiredArgsConstructor
 @AllArgsConstructor
-@RedisHash("NewsFeed")
+//@RedisHash("NewsFeed")
 public class NewsFeed {
     @Id
     Long userId;
     SortedSet<Long> posts = new TreeSet<>(Comparator.reverseOrder());
-
-    @PostLoad
-    public void ensureOrder() {
-        if (!(posts instanceof TreeSet) ||
-                !Comparator.reverseOrder().equals(((TreeSet<Long>)posts).comparator())) {
-            posts = new TreeSet<>(Comparator.reverseOrder());
-            posts.addAll(this.posts);
-        }
-    }
 }

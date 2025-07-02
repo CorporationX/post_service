@@ -21,7 +21,7 @@ import java.util.TreeSet;
 @Slf4j
 public class KafkaLikeConsumerService {
 
-    private final NewsFeedCashRepository newsFeedCashRepository;
+//    private final NewsFeedCashRepository newsFeedCashRepository;
     private final NewsFeedService newsFeedService;
 
     private final KafkaLikeProducerService kafkaLikeProducerService;
@@ -45,25 +45,18 @@ public class KafkaLikeConsumerService {
 
     @KafkaListener(topics={"PostAndFollowers"}, groupId = "consumer-post")
     public void consumePostCreation(PostAndFollowersDto postAndFollowersDto, Acknowledgment acknowledgment) {
-        log.info("Acknowledge Post created in PostAndFollowers topic: {}" , postAndFollowersDto);
-        addPostIdToUserNewsFeed(postAndFollowersDto);
-        acknowledgment.acknowledge();
+        try {
+            log.info("Received PostAndFollowers message: {}", postAndFollowersDto);
+            addPostIdToUserNewsFeed(postAndFollowersDto);
+            acknowledgment.acknowledge();
+            log.info("Acknowledge Post created in PostAndFollowers topic: {}", postAndFollowersDto);
+        } catch (Exception e) {
+            log.error("Error processing PostAndFollowers message: {}", e.getMessage());
+        }
     }
 
     private void addPostIdToUserNewsFeed(PostAndFollowersDto postAndFollowersDto) {
+        log.info("KafkaLikeConsumerService.addPostIdToUserNewsFeed() {}", postAndFollowersDto);
         newsFeedService.addPostIdToUserNewsFeed(postAndFollowersDto);
-//        for(Long follower: postAndFollowersDto.getFollowers()) {
-//            Optional<NewsFeed> optional = newsFeedCashRepository.findById(follower);
-//            if(optional.isPresent()) {
-//                NewsFeed newsFeed = optional.get();
-//                newsFeed.getPosts().add(postAndFollowersDto.getId());
-//                newsFeedCashRepository.save(newsFeed);
-//            } else {
-//                SortedSet<Long> posts = new TreeSet<>();
-//                posts.add(postAndFollowersDto.getId());
-//                NewsFeed newsFeed = new NewsFeed(follower, posts);
-//                newsFeedCashRepository.save(newsFeed);
-//            }
-//        }
     }
 }
