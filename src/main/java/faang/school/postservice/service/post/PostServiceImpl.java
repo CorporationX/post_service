@@ -77,7 +77,7 @@ public class PostServiceImpl implements PostService {
         return postRepository.findByAuthorId(userId).stream()
                 .filter(post -> !post.isDeleted() && post.isPublished())
                 .sorted(Comparator.comparing(Post::getPublishedAt).reversed())
-                .peek(post -> postViewPublisher.publish(this.createViewEvent(post)))
+                .peek(post -> postViewPublisher.publish(createViewEvent(post)))
                 .map(postMapper::toPostDto)
                 .toList();
     }
@@ -88,7 +88,7 @@ public class PostServiceImpl implements PostService {
         return postRepository.findByProjectId(projectId).stream()
                 .filter(post -> !post.isDeleted() && post.isPublished())
                 .sorted(Comparator.comparing(Post::getPublishedAt).reversed())
-                .peek((Post post) -> postViewPublisher.publish(this.createViewEvent(post)))
+                .peek(post -> postViewPublisher.publish(createViewEvent(post)))
                 .map(postMapper::toPostDto)
                 .toList();
     }
@@ -146,7 +146,7 @@ public class PostServiceImpl implements PostService {
     }
 
     public void publishUsersToBan() {
-        List<Long> usersIds = this.getUsersIdsToBan();
+        List<Long> usersIds = getUsersIdsToBan();
         usersIds.stream()
                 .map(String::valueOf)
                 .forEach(userPublisher::publish);
