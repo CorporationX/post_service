@@ -2,36 +2,28 @@ package faang.school.postservice.service.post;
 
 import faang.school.postservice.dto.languagetool.LanguageToolResponse;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.service.PostService;
 import faang.school.postservice.service.languagetool.LanguageToolService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class PostCorrecter {
-    private final PostService postService;
     private final LanguageToolService languageToolService;
 
-    @Async("taskExecutor")
-    public CompletableFuture<Void> correctingContentPost(Post post) {
-        String content = post.getContent();
+    public void correctingBatchPosts(List<Post> posts) {
+        posts.forEach(post -> {
+            String content = post.getContent();
+            LanguageToolResponse response = languageToolService.checkText(content);
 
-        return languageToolService.checkText(content)
-                .thenAccept(response -> {
-                    String correctedContent = applyCorrected(content, response);
-                    postService.updateCorrectedContentOfPost(post, correctedContent);
-                }).exceptionally(ex -> {
-                    log.error("Error correcting post with id: {}", post.getId(), ex);
-                    return null;
-                });
+            String correctedContent = applyCorrected(content, response);
+            post.setCorrectedContent(correctedContent);
+        });
     }
 
     private String applyCorrected(String originalText, LanguageToolResponse response) {
