@@ -1,8 +1,7 @@
 package faang.school.postservice.jobs;
 
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.PostService;
-import faang.school.postservice.service.post.PostCorrecter;
+import faang.school.postservice.service.post.PostService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
