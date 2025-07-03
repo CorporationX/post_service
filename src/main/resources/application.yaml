@@ -26,6 +26,7 @@ spring:
           user_ban_name: user_ban
           like_event_name: like_event
           comment_topic: comment_topic
+          post_view_name: post_view
 
   task:
     execution:
