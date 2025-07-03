@@ -2,7 +2,6 @@ package faang.school.postservice.service.post;
 
 import faang.school.postservice.dto.languagetool.LanguageToolResponse;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.service.PostService;
 import faang.school.postservice.service.languagetool.LanguageToolService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,10 +20,6 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class PostCorrecterTest {
-
-    @Mock
-    private PostService postService;
-
     @Mock
     private LanguageToolService languageToolService;
 
@@ -33,7 +28,7 @@ class PostCorrecterTest {
 
     private Post testPost;
     private List<Post> testListPosts;
-    private final String ORIGINAL_TEXT = "текст с ошипками.";
+    private static final String ORIGINAL_TEXT = "текст с ошипками.";
     private static final String CORRECTED_TEXT = "текст с ошибками.";
 
     @BeforeEach
