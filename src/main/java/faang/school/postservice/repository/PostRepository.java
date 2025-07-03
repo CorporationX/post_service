@@ -56,9 +56,17 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             """)
     List<Post> findPublishedByProjectId(Long projectId);
 
+    @Query(nativeQuery = true , value = """
+    SELECT * FROM post
+    WHERE published = false AND deleted = false AND corrected_content IS NULL
+    FOR UPDATE SKIP LOCKED
+    LIMIT :limit
+    """)
+    List<Post> fetchDraftPostsBatchWithLock(int limit);
+
     @Query(nativeQuery = true, value = """
-            SELECT * FROM POST post
-            WHERE post.published = false AND post.deleted = false
-            """)
-    List<Post> findAllUnpublishedPosts();
+    SELECT COUNT(*) FROM post
+    WHERE published = false AND deleted = false AND corrected_content IS NULL
+    """)
+    Long countDraftPosts();
 }

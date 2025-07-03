@@ -13,11 +13,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -34,14 +32,17 @@ class PostCorrecterTest {
     private PostCorrecter postCorrecter;
 
     private Post testPost;
-    private final String originalContent = "текст с ошипками.";
+    private List<Post> testListPosts;
+    private final String ORIGINAL_TEXT = "текст с ошипками.";
+    private static final String CORRECTED_TEXT = "текст с ошибками.";
 
     @BeforeEach
     void setUp() {
         testPost = Post.builder()
                 .id(1L)
-                .content(originalContent)
+                .content(ORIGINAL_TEXT)
                 .build();
+        testListPosts = List.of(testPost);
     }
 
     @Test
@@ -53,19 +54,16 @@ class PostCorrecterTest {
                 8,
                 List.of(new LanguageToolResponse.Replacement("ошибками"))
         ));
-
         LanguageToolResponse response = new LanguageToolResponse(matches);
 
         when(languageToolService.checkText(anyString()))
-                .thenReturn(CompletableFuture.completedFuture(response));
+                .thenReturn(response);
 
-        CompletableFuture<Void> result = postCorrecter.correctingContentPost(testPost);
+        postCorrecter.correctingBatchPosts(testListPosts);
 
-        assertNull(result.join());
-        verify(postService).updateCorrectedContentOfPost(
-                eq(testPost),
-                eq("текст с ошибками.")
-        );
+        Post correctedPost = testListPosts.get(0);
+        assertEquals(CORRECTED_TEXT, correctedPost.getCorrectedContent());
+        verify(languageToolService).checkText(ORIGINAL_TEXT);
     }
 
     @Test
@@ -73,11 +71,12 @@ class PostCorrecterTest {
         LanguageToolResponse response = new LanguageToolResponse(new ArrayList<>());
 
         when(languageToolService.checkText(anyString()))
-                .thenReturn(CompletableFuture.completedFuture(response));
+                .thenReturn(response);
 
-        CompletableFuture<Void> result = postCorrecter.correctingContentPost(testPost);
+        postCorrecter.correctingBatchPosts(testListPosts);
 
-        assertNull(result.join());
-        verify(postService).updateCorrectedContentOfPost(eq(testPost), eq(originalContent));
+        Post correctedPost = testListPosts.get(0);
+        assertEquals(ORIGINAL_TEXT, correctedPost.getCorrectedContent());
+        verify(languageToolService).checkText(ORIGINAL_TEXT);
     }
 }

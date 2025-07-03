@@ -5,11 +5,14 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.post.PostBatchPublisher;
+import faang.school.postservice.service.post.PostCorrecter;
 import faang.school.postservice.validation.post.PostValidation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.ListUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,7 +20,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static faang.school.postservice.util.ValidationUtils.setIfNotNull;
 import static faang.school.postservice.util.ValidationUtils.executeIfNotNull;
 import static faang.school.postservice.util.ValidationUtils.setIfNotNull;
 
@@ -33,6 +35,7 @@ public class PostService {
     private final ProjectServiceClient projectServiceClient;
     private final UserContext userContext;
     private final PostBatchPublisher postBatchPublisher;
+    private final PostCorrecter postCorrecter;
 
     @Transactional
     public Post createPost(Post post) {
@@ -115,16 +118,15 @@ public class PostService {
         return postRepository.findPublishedByProjectId(projectId);
     }
 
-    @Transactional(readOnly = true)
-    public List<Post> getAllUnpublishedPost() {
-        return postRepository.findAllUnpublishedPosts();
-    }
-
     @Transactional
-    public void updateCorrectedContentOfPost(Post post, String correctedContent){
-        post.setContent(correctedContent);
-        postRepository.save(post);
-        log.info("post text ID: {} updated", post.getId());
+    @Async("executorForPostService")
+    public void correctingContentBatchPostsAsync(int batch) {
+        log.info("Correcting batch posts, begin transactional");
+        List<Post> posts = postRepository.fetchDraftPostsBatchWithLock(batch);
+
+        postCorrecter.correctingBatchPosts(posts);
+        postRepository.saveAll(posts);
+        log.info("Corrected batch posts, commit transactional");
     }
 
     private Post getValidPostOrThrowException(Long postId) {

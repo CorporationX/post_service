@@ -8,6 +8,7 @@ import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.PostService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -17,14 +18,16 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.LongStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -35,6 +38,9 @@ public class PostServiceTest {
 
     @Mock
     private PostRepository postRepository;
+
+    @Mock
+    private PostCorrecter postCorrecter;
 
     @Mock
     private UserServiceClient userServiceClient;
@@ -73,7 +79,6 @@ public class PostServiceTest {
         when(userContext.getUserId()).thenReturn(validPost.getAuthorId());
         when(userServiceClient.getUser(validPost.getAuthorId())).thenReturn(userDto);
         when(projectServiceClient.getProject(validPost.getProjectId())).thenReturn(projectDto);
-        when(postRepository.findById(validPost.getId())).thenReturn(Optional.of(validPost));
 
         postService.createPost(validPost);
 
@@ -148,28 +153,22 @@ public class PostServiceTest {
         assertEquals(2, capturedBatches.get(0).size(), "Первый батч должен содержать 2 поста");
         assertEquals(1, capturedBatches.get(1).size(), "Второй батч должен содержать 1 пост");
     }
-}
 
-@Test
-void updateCorrectedContentOfPost() {
-    String correctedContent = "correctedContent";
 
-    ArgumentCaptor<Post> captor = ArgumentCaptor.forClass(Post.class);
-    when(postRepository.save(any(Post.class))).thenReturn(any(Post.class));
+    @Test
+    void testCorrectingContentBatchPostsAsync() {
+        int batchSize = 30;
+        List<Post> posts = List.of(validPost);
+        when(postRepository.fetchDraftPostsBatchWithLock(batchSize)).thenReturn(posts);
+        doNothing().when(postCorrecter).correctingBatchPosts(posts);
+        when(postRepository.saveAll(posts)).thenReturn(posts);
 
-    postService.updateCorrectedContentOfPost(validPost, correctedContent);
+        postService.correctingContentBatchPostsAsync(batchSize);
 
-    verify(postRepository).save(captor.capture());
-}
+        verify(postRepository).fetchDraftPostsBatchWithLock(batchSize);
+        verify(postCorrecter).correctingBatchPosts(posts);
+        verify(postRepository).saveAll(posts);
+    }
 
-@Test
-void getAllUnpublishedPost() {
-    when(postRepository.findAllUnpublishedPosts()).thenReturn(List.of(validPost));
-
-    List<Post> result = postService.getAllUnpublishedPost();
-
-    verify(postRepository).findAllUnpublishedPosts();
-    assertEquals(validPost.getId(), result.get(0).getId());
-}
 }
 
