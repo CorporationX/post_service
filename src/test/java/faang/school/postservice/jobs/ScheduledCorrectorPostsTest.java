@@ -1,5 +1,6 @@
 package faang.school.postservice.jobs;
 
+import faang.school.postservice.jobs.correctorpost.ScheduledCorrectorPostsAsync;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.post.PostService;
@@ -33,7 +34,7 @@ class ScheduledCorrectorPostsTest {
     private PostService postService;
 
     @InjectMocks
-    private ScheduledCorrectorPosts scheduledCorrectorPosts;
+    private ScheduledCorrectorPostsAsync scheduledCorrectorPosts;
 
     private List<Post> posts;
     private Post testPost;

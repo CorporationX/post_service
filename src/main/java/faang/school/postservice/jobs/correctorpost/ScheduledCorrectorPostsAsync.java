@@ -1,4 +1,4 @@
-package faang.school.postservice.jobs;
+package faang.school.postservice.jobs.correctorpost;
 
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.post.PostService;
@@ -6,15 +6,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.stream.LongStream;
 
-@Slf4j
 @Component
+@Slf4j
 @RequiredArgsConstructor
-public class ScheduledCorrectorPosts {
+public class ScheduledCorrectorPostsAsync {
 
     private final PostService postService;
     private final PostRepository postRepository;
@@ -22,7 +21,6 @@ public class ScheduledCorrectorPosts {
     private int batchSize;
 
     @Async("executorForPostService")
-    @Scheduled(cron = "${app.correction.cron}")
     public void correctingSpellingOfPosts() {
         log.info("Scheduled job correcter post content started");
         long count = postRepository.countDraftPosts();
