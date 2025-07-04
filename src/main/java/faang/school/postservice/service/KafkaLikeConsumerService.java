@@ -1,27 +1,18 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.cash.NewsFeed;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.post.PostAndFollowersDto;
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.repository.NewsFeedCashRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class KafkaLikeConsumerService {
-
-//    private final NewsFeedCashRepository newsFeedCashRepository;
     private final NewsFeedService newsFeedService;
 
     private final KafkaLikeProducerService kafkaLikeProducerService;
@@ -43,13 +34,13 @@ public class KafkaLikeConsumerService {
         log.info("Acknowledge Post created: {}" , postDto);
     }
 
-    @KafkaListener(topics={"PostAndFollowers"}, groupId = "consumer-post")
+    @KafkaListener(topics={"PostAndFollowers"}, groupId = "consumer-post-followers")
     public void consumePostCreation(PostAndFollowersDto postAndFollowersDto, Acknowledgment acknowledgment) {
         try {
             log.info("Received PostAndFollowers message: {}", postAndFollowersDto);
             addPostIdToUserNewsFeed(postAndFollowersDto);
             acknowledgment.acknowledge();
-            log.info("Acknowledge Post created in PostAndFollowers topic: {}", postAndFollowersDto);
+            log.info("Acknowledge: Post created in PostAndFollowers topic: {}", postAndFollowersDto);
         } catch (Exception e) {
             log.error("Error processing PostAndFollowers message: {}", e.getMessage());
         }

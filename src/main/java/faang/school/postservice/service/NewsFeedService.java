@@ -2,16 +2,20 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.cash.NewsFeed;
 import faang.school.postservice.dto.post.PostAndFollowersDto;
-import faang.school.postservice.exception.NotFoundException;
-import faang.school.postservice.repository.NewsFeedCashRepository;
+import faang.school.postservice.dto.post.PostCashDto;
+import faang.school.postservice.dto.post.PostUiDto;
+import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.repository.post.PostCashRepository;
+import faang.school.postservice.repository.user.UserDtoCashRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
@@ -25,6 +29,8 @@ public class NewsFeedService {
     private int newsFeedMaxSize;
     private static final String NEWS_FEED_KEY_PREFIX = "newsfeed:";
     private final RedisTemplate<String, Long> redisNewsFeedTemplate;
+    private final PostCashRepository postCashRepository;
+    private final UserDtoCashRepository userDtoCashRepository;
 
     public NewsFeed getNewsFeed(Long userId) {
         String key = getKey(userId);
@@ -36,6 +42,50 @@ public class NewsFeedService {
         }
         return new NewsFeed(userId, posts);
     }
+
+    public List<PostUiDto> getNewsFeedContent(Long userId) {
+        String key = getKey(userId);
+        Set<Long> postIds = redisNewsFeedTemplate.opsForZSet().reverseRange(key, 0, -1);
+
+        SortedSet<Long> posts = new TreeSet<>(Comparator.reverseOrder());
+        if (postIds != null) {
+            posts.addAll(postIds);
+        }
+        List<PostUiDto> newsFeedPosts = new ArrayList<>();
+        for(Long p: posts) {
+            Optional<PostCashDto> optionalPost = postCashRepository.findById(p);
+            if(optionalPost.isPresent()) {
+                PostUiDto postUiDto = new PostUiDto();
+                Optional<UserDto> optionalUserDto = userDtoCashRepository.findById(optionalPost.get().getAuthorId());
+                postUiDto.setId(p);
+                postUiDto.setContent(optionalPost.get().getContent());
+                optionalUserDto.ifPresent(postUiDto::setAuthor);
+                postUiDto.setProjectId(optionalPost.get().getProjectId());
+                postUiDto.setLikesNumber(optionalPost.get().getLikesNumber());
+                newsFeedPosts.add(postUiDto);
+            }
+        }
+        return newsFeedPosts;
+    }
+
+//    public List<PostCashDto> getNewsFeedContent(Long userId) {
+//        String key = getKey(userId);
+//        Set<Long> postIds = redisNewsFeedTemplate.opsForZSet().reverseRange(key, 0, -1);
+//
+//        SortedSet<Long> posts = new TreeSet<>(Comparator.reverseOrder());
+//        if (postIds != null) {
+//            posts.addAll(postIds);
+//        }
+//        //post content fill out
+//        List<PostCashDto> newsFeedPostsDto = new ArrayList<>();
+//        for(Long p: posts) {
+//            Optional<PostCashDto> optional = postCashRepository.findById(p);
+//            optional.ifPresent(newsFeedPostsDto::add);
+//        }
+//        //post authorId fill out
+//
+//        return newsFeedPostsDto;
+//    }
 
     public void addPostIdToUserNewsFeed(PostAndFollowersDto postAndFollowersDto) {
         for (Long follower : postAndFollowersDto.getFollowers()) {

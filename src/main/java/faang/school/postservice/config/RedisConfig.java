@@ -1,6 +1,6 @@
 package faang.school.postservice.config;
 
-import faang.school.postservice.cash.NewsFeed;
+import faang.school.postservice.dto.post.PostCashDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -10,10 +10,7 @@ import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.GenericToStringSerializer;
-import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
-
-import java.util.SortedSet;
 
 @Configuration
 @Slf4j
@@ -36,20 +33,17 @@ public class RedisConfig {
         template.setConnectionFactory(jedisConnectionFactory());
         template.setKeySerializer(new StringRedisSerializer());
         template.setValueSerializer(new GenericToStringSerializer<>(Long.class));
-//        template.setHashKeySerializer(new GenericToStringSerializer<>(Long.class));
-//        template.setHashValueSerializer(new GenericJackson2JsonRedisSerializer());
-//        template.setEnableTransactionSupport(true);
         return template;
     }
 
-//    @Bean
-//    public RedisTemplate<String, NewsFeed> redisNewsFeedTemplate() {
-//        RedisTemplate<String, NewsFeed> template = new RedisTemplate<>();
-//        template.setConnectionFactory(jedisConnectionFactory());
-//        template.setKeySerializer(new StringRedisSerializer());
-//        template.setHashKeySerializer(new StringRedisSerializer());
-//        template.setValueSerializer(new GenericToStringSerializer<>(Object.class));
-//        template.setHashValueSerializer(new GenericToStringSerializer<>(Object.class));
-//        return template;
-//    }
+    @Bean
+    public RedisTemplate<String, PostCashDto> redisPostCashTemplate() {
+        RedisTemplate<String, PostCashDto> template = new RedisTemplate<>();
+        template.setConnectionFactory(jedisConnectionFactory());
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+        template.setHashKeySerializer(new StringRedisSerializer());
+        template.setHashValueSerializer(new GenericJackson2JsonRedisSerializer());
+        return template;
+    }
 }

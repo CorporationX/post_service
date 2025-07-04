@@ -1,4 +1,4 @@
-package faang.school.postservice.repository;
+package faang.school.postservice.repository.neewsfeed;
 
 import faang.school.postservice.cash.NewsFeed;
 import org.springframework.data.repository.CrudRepository;

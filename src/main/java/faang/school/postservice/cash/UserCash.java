@@ -1,21 +1,18 @@
 package faang.school.postservice.cash;
 
-import jakarta.persistence.PostLoad;
+import faang.school.postservice.dto.user.UserDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
 
-import java.util.Comparator;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
 @Data
 @RequiredArgsConstructor
 @AllArgsConstructor
-public class NewsFeed {
+@RedisHash("UserCash")
+public class UserCash {
     @Id
-    Long userId;
-    SortedSet<Long> posts = new TreeSet<>(Comparator.reverseOrder());
+    Long id;
+    UserDto userDto;
 }

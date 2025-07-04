@@ -1,11 +1,16 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.KafkaProducerConfig;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.NotFoundException;
 import faang.school.postservice.mapper.PostAndFollowersMapper;
+import faang.school.postservice.mapper.PostCashDtoMapper;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.post.PostCashRepository;
+import faang.school.postservice.repository.post.PostRepository;
+import faang.school.postservice.repository.user.UserDtoCashRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -19,9 +24,13 @@ public class PostService {
     private final KafkaProducerConfig kafkaProducerConfig;
     private final KafkaLikeProducerService kafkaLikeProducerService;
     private  final PostMapper postMapper;
+    private  final PostCashDtoMapper postCashDtoMapper;
     private  final PostAndFollowersMapper postAndFollowersMapper;
+    private  final UserDtoCashRepository userCashRepository;
+    private final UserServiceClient userServiceClient;
 
     public final PostRepository postRepository;
+    private final PostCashRepository postCashRepository;
 
     public Post getPost(Long postId) {
         return postRepository.findById(postId).orElseThrow(
@@ -31,6 +40,9 @@ public class PostService {
 
     public Post createPost(Post post){
         Post postSaved = postRepository.save(post);
+        postCashRepository.save(postCashDtoMapper.toDto(postSaved));
+        UserDto userDto = userServiceClient.getUser(postSaved.getAuthorId());
+        userCashRepository.save(userDto);
         kafkaLikeProducerService.send(kafkaProducerConfig.getPostCreationTopicName(), postMapper.toDto(postSaved));
         kafkaLikeProducerService.send(kafkaProducerConfig.getPostAndFollowersTopicName(), postAndFollowersMapper.toDto(postSaved));
         log.info("Post is created {}", postSaved);

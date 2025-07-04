@@ -63,7 +63,6 @@ public class KafkaConsumerConfig {
                 "faang.school.postservice.dto.post.PostAndFollowersDto:faang.school.postservice.dto.post.PostAndFollowersDto");
         config.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
         config.put(ConsumerConfig.GROUP_INSTANCE_ID_CONFIG, "post-service-instance-1");
-        config.put(ConsumerConfig.CLIENT_ID_CONFIG, "post-service-consumer-1");
         return config;
     }
 }

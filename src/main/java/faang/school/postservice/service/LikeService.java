@@ -10,7 +10,7 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
-import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.post.PostRepository;
 import faang.school.postservice.repository.like.LikeRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -170,7 +170,7 @@ public class LikeService {
 
     private void userIsPresentedInDataBase(Long userId) {
         UserDto userDto = userServiceClient.getUser(userId);
-        if (!userDto.id().equals(userId)) {
+        if (!userDto.getId().equals(userId)) {
             log.error(ERROR_USER_IS_NOT_PRESENTED_IN_DB, userId);
             throw new DataValidationException(ERROR_USER_IS_NOT_PRESENTED_IN_DB);
         }

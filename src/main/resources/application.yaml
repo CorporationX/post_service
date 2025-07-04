@@ -49,7 +49,11 @@ spring:
         static: eu-central-1
 
   newsfeed:
-    size: 7
+    size: 5
+    post:
+      ttl: 160
+    user:
+      ttl: 160
 
 
 server:
