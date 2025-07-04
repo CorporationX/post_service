@@ -2,28 +2,27 @@ package faang.school.postservice.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.dto.comment.*;
+import faang.school.postservice.dto.comment.CommentCreateDto;
+import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.comment.CommentUpdateDto;
 import faang.school.postservice.service.CommentService;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(CommentController.class)
-class CommentControllerTest {
+public class CommentControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -34,76 +33,83 @@ class CommentControllerTest {
     @MockBean
     private UserContext userContext;
 
+
     @Autowired
     private ObjectMapper objectMapper;
 
-    private final Long postId = 1L;
-    private final Long commentId = 10L;
-    private final Long userId = 42L;
-
-    private final CommentDto mockCommentDto = CommentDto.builder()
-            .id(commentId)
-            .content("Test content")
-            .authorId(userId)
-            .postId(postId)
-            .createdAt(LocalDateTime.now())
-            .updatedAt(LocalDateTime.now())
-            .build();
-
     @Test
-    @DisplayName("GET /posts/{postId}/comments — success")
-    void getComments_shouldReturnList() throws Exception {
-        when(commentService.getCommentsByPostId(postId))
-                .thenReturn(List.of(mockCommentDto));
-
-        mockMvc.perform(get("/posts/{postId}/comments", postId))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(commentId));
-    }
-
-    @Test
-    @DisplayName("POST /posts/{postId}/comments — success")
-    void createComment_shouldReturnCreated() throws Exception {
-        CommentCreateDto createDto = CommentCreateDto.builder()
-                .content("New comment")
+    void testCreateComment() throws Exception {
+        CommentCreateDto dto = CommentCreateDto.builder()
+                .postId(1L)
+                .content("Great post!")
                 .build();
 
-        when(userContext.getUserId()).thenReturn(userId);
-        when(commentService.createComment(Mockito.eq(postId),
-                Mockito.any(CommentCreateDto.class), Mockito.eq(userId)))
-                .thenReturn(mockCommentDto);
+        CommentDto response = CommentDto.builder()
+                .id(1L)
+                .postId(1L)
+                .content("Great post!")
+                .build();
 
-        mockMvc.perform(post("/posts/{postId}/comments", postId)
+        Mockito.when(commentService.createComment(any(), eq(100L)))
+                .thenReturn(response);
+
+        mockMvc.perform(post("/comments")
+                        .param("userId", "100")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(createDto)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value(commentId));
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.content").value("Great post!"));
     }
 
     @Test
-    @DisplayName("PUT /posts/{postId}/comments/{commentId} — success")
-    void updateComment_shouldReturnUpdated() throws Exception {
-        CommentUpdateDto updateDto = CommentUpdateDto.builder()
+    void testUpdateComment() throws Exception {
+        CommentUpdateDto dto = CommentUpdateDto.builder()
+                .commentId(1L)
                 .content("Updated comment")
                 .build();
 
-        when(userContext.getUserId()).thenReturn(userId);
-        when(commentService.updateComment(commentId, updateDto, userId))
-                .thenReturn(mockCommentDto);
+        CommentDto response = CommentDto.builder()
+                .id(1L)
+                .postId(1L)
+                .content("Updated comment")
+                .build();
 
-        mockMvc.perform(put("/posts/{postId}/comments/{commentId}", postId, commentId)
+        Mockito.when(commentService.updateComment(any(),
+                eq(101L))).thenReturn(response);
+
+        mockMvc.perform(put("/comments")
+                        .param("userId", "101")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updateDto)))
+                        .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(commentId));
+                .andExpect(jsonPath("$.content")
+                        .value("Updated comment"));
     }
 
     @Test
-    @DisplayName("DELETE /posts/{postId}/comments/{commentId} — success")
-    void deleteComment_shouldReturnNoContent() throws Exception {
-        when(userContext.getUserId()).thenReturn(userId);
-
-        mockMvc.perform(delete("/posts/{postId}/comments/{commentId}", postId, commentId))
+    void testDeleteComment() throws Exception {
+        mockMvc.perform(delete("/comments/1")
+                        .param("userId", "200"))
                 .andExpect(status().isNoContent());
+
+        Mockito.verify(commentService).deleteComment(1L, 200L);
+    }
+
+    @Test
+    void testGetCommentsByPostId() throws Exception {
+        CommentDto dto = CommentDto.builder()
+                .id(1L)
+                .postId(10L)
+                .content("Nice!")
+                .build();
+
+        Mockito.when(commentService.getCommentsByPostId(10L))
+                .thenReturn(List.of(dto));
+
+        mockMvc.perform(get("/comments/post/10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(1))
+                .andExpect(jsonPath("$[0].content").value("Nice!"));
     }
 }

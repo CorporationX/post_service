@@ -64,9 +64,11 @@ public class CommentServiceTest {
     void getCommentsByPostId_shouldReturnSortedComments() {
         Comment older = Comment.builder().createdAt(LocalDateTime.now()
                 .minusDays(1)).build();
-        Comment newer = Comment.builder().createdAt(LocalDateTime.now()).build();
+        Comment newer = Comment.builder().createdAt(LocalDateTime.now())
+                .build();
 
-        when(postService.getPostById(post.getId())).thenReturn(post);
+        when(postService.getPostById(post.getId()))
+                .thenReturn(post);
         when(commentRepository.findAllByPostId(post.getId()))
                 .thenReturn(List.of(older, newer));
 
@@ -79,24 +81,28 @@ public class CommentServiceTest {
     @Test
     void createComment_shouldReturnSavedCommentDto() {
         CommentCreateDto createDto = CommentCreateDto.builder()
-                .content("Test").build();
+                .postId(post.getId())
+                .content("Test")
+                .build();
 
         when(userServiceClient.getUser(comment.getAuthorId()))
                 .thenReturn(null);
         when(postService.getPostById(post.getId())).thenReturn(post);
         when(commentRepository.save(any())).thenReturn(comment);
 
-        CommentDto result = commentService.createComment(post.getId(),
-                createDto, comment.getAuthorId());
+        CommentDto result = commentService.createComment(createDto, comment.getAuthorId());
 
         assertEquals(comment.getContent(), result.content());
         assertEquals(comment.getAuthorId(), result.authorId());
     }
 
+
     @Test
     void createComment_shouldThrowIfUserNotFound() {
         CommentCreateDto createDto = CommentCreateDto.builder()
-                .content("Test").build();
+                .postId(post.getId())
+                .content("Test")
+                .build();
         Long authorId = 123L;
 
         doThrow(FeignException.NotFound.class)
@@ -104,30 +110,35 @@ public class CommentServiceTest {
                 .getUser(eq(authorId));
 
         assertThrows(CommentValidationException.class, () -> {
-            commentService.createComment(post.getId(), createDto, authorId);
+            commentService.createComment(createDto, authorId);
         });
     }
+
 
     @Test
     void updateComment_shouldUpdateSuccessfully() {
         CommentUpdateDto updateDto = CommentUpdateDto.builder()
-                .content("Updated").build();
+                .commentId(comment.getId())
+                .content("Updated")
+                .build();
 
         when(commentRepository.findById(comment.getId()))
                 .thenReturn(Optional.of(comment));
         when(commentRepository.save(any()))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        CommentDto updated = commentService.updateComment(comment.getId(),
-                updateDto, comment.getAuthorId());
+        CommentDto updated = commentService.updateComment(updateDto, comment.getAuthorId());
 
         assertEquals("Updated", updated.content());
     }
 
+
     @Test
     void updateComment_shouldThrowIfNotAuthor() {
         CommentUpdateDto updateDto = CommentUpdateDto.builder()
-                .content("Updated").build();
+                .commentId(comment.getId())
+                .content("Updated")
+                .build();
 
         when(commentRepository.findById(comment.getId()))
                 .thenReturn(Optional.of(comment));
@@ -137,9 +148,10 @@ public class CommentServiceTest {
                 .validateAuthor(any(), eq(111L));
 
         assertThrows(CommentValidationException.class, () ->
-                commentService.updateComment(comment.getId(), updateDto, 111L)
+                commentService.updateComment(updateDto, 111L)
         );
     }
+
 
     @Test
     void deleteComment_shouldDeleteSuccessfully() {

@@ -27,7 +27,7 @@ public class CommentService {
 
     @Transactional(readOnly = true)
     public List<CommentDto> getCommentsByPostId(Long postId) {
-        postService.getPostById(postId);
+        postService.getPostById(postId); // Проверка, что пост существует
         return commentMapper.toDtoList(
                 commentRepository.findAllByPostId(postId).stream()
                         .sorted(Comparator.comparing(Comment::getCreatedAt).reversed())
@@ -36,24 +36,22 @@ public class CommentService {
     }
 
     @Transactional
-    public CommentDto createComment(Long postId, CommentCreateDto dto, Long authorId) {
-        try {
-            userServiceClient.getUser(authorId);
-        } catch (FeignException e) {
-            throw new CommentValidationException("User with id = " + authorId + " was not found");
-        }
+    public CommentDto createComment(CommentCreateDto dto, Long authorId) {
+        validateUserExists(authorId);
 
-        Post post = postService.getPostById(postId);
+        Post post = postService.getPostById(dto.postId());
         Comment comment = commentMapper.toEntityFromCreateDto(dto);
-        comment.setPost(post);
+
         comment.setAuthorId(authorId);
+        comment.setPost(post);
 
         return commentMapper.toDto(commentRepository.save(comment));
     }
 
     @Transactional
-    public CommentDto updateComment(Long commentId, CommentUpdateDto dto, Long userId) {
-        Comment comment = getCommentById(commentId);
+    public CommentDto updateComment(CommentUpdateDto dto, Long userId) {
+        Comment comment = getCommentById(dto.commentId());
+
         commentValidator.validateAuthor(comment, userId);
         commentMapper.updateEntityFromDto(dto, comment);
 
@@ -71,5 +69,13 @@ public class CommentService {
     public Comment getCommentById(Long id) {
         return commentRepository.findById(id)
                 .orElseThrow(() -> new CommentValidationException("Comment with id = " + id + " was not found"));
+    }
+
+    private void validateUserExists(Long userId) {
+        try {
+            userServiceClient.getUser(userId);
+        } catch (FeignException e) {
+            throw new CommentValidationException("User with id = " + userId + " was not found");
+        }
     }
 }
