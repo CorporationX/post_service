@@ -55,4 +55,18 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             ORDER BY p.published_at DESC
             """)
     List<Post> findPublishedByProjectId(Long projectId);
+
+    @Query(nativeQuery = true , value = """
+    SELECT * FROM post
+    WHERE published = false AND deleted = false AND corrected_content IS NULL
+    FOR UPDATE SKIP LOCKED
+    LIMIT :limit
+    """)
+    List<Post> fetchDraftPostsBatchWithLock(int limit);
+
+    @Query(nativeQuery = true, value = """
+    SELECT COUNT(*) FROM post
+    WHERE published = false AND deleted = false AND corrected_content IS NULL
+    """)
+    Long countDraftPosts();
 }

@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.ListUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +33,7 @@ public class PostService {
     private final ProjectServiceClient projectServiceClient;
     private final UserContext userContext;
     private final PostBatchPublisher postBatchPublisher;
+    private final PostCorrecter postCorrecter;
 
     @Transactional
     public Post createPost(Post post) {
@@ -112,6 +114,17 @@ public class PostService {
     @Transactional(readOnly = true)
     public List<Post> getAllPublishedByProjectId(Long projectId) {
         return postRepository.findPublishedByProjectId(projectId);
+    }
+
+    @Transactional
+    @Async("executorForPostService")
+    public void correctingContentBatchPostsAsync(int batch) {
+        log.info("Correcting batch posts, begin transactional");
+        List<Post> posts = postRepository.fetchDraftPostsBatchWithLock(batch);
+
+        postCorrecter.correctingBatchPosts(posts);
+        postRepository.saveAll(posts);
+        log.info("Corrected batch posts, commit transactional");
     }
 
     private Post getValidPostOrThrowException(Long postId) {

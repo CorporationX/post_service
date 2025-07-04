@@ -26,6 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -36,6 +37,9 @@ public class PostServiceTest {
 
     @Mock
     private PostRepository postRepository;
+
+    @Mock
+    private PostCorrecter postCorrecter;
 
     @Mock
     private UserServiceClient userServiceClient;
@@ -148,4 +152,22 @@ public class PostServiceTest {
         assertEquals(2, capturedBatches.get(0).size(), "Первый батч должен содержать 2 поста");
         assertEquals(1, capturedBatches.get(1).size(), "Второй батч должен содержать 1 пост");
     }
+
+
+    @Test
+    void testCorrectingContentBatchPostsAsync() {
+        int batchSize = 30;
+        List<Post> posts = List.of(validPost);
+        when(postRepository.fetchDraftPostsBatchWithLock(batchSize)).thenReturn(posts);
+        doNothing().when(postCorrecter).correctingBatchPosts(posts);
+        when(postRepository.saveAll(posts)).thenReturn(posts);
+
+        postService.correctingContentBatchPostsAsync(batchSize);
+
+        verify(postRepository).fetchDraftPostsBatchWithLock(batchSize);
+        verify(postCorrecter).correctingBatchPosts(posts);
+        verify(postRepository).saveAll(posts);
+    }
+
 }
+
