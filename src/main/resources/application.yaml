@@ -34,6 +34,14 @@ spring:
 
   kafka:
     bootstrap-servers: localhost:9092
+    consumer:
+      group-id: user-service-group
+    topics:
+      like:
+        comment-like-topic:
+          name: comment-like-event
+        post-like-topic:
+          name: post-like-event
 
 server:
   port: 8081
