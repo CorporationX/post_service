@@ -76,6 +76,16 @@ moderation:
     thread_pool_max_size: 1000
     thread_pool_core_size: 500
 
+app:
+  correction:
+    url: "https://api.languagetool.org/v2/check"
+    language: "auto"
+    cron: "0 */30 * * * *" # каждые 30 минут
+    batch-size: 500
+  executor:
+    thread_pool_core_size: 25
+    thread_pool_max_size: 100
+
 scheduled-post-publisher:
   comments:
     cron: "0 * * * * *"
