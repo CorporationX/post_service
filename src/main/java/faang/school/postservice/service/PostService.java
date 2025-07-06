@@ -3,16 +3,16 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.KafkaProducerConfig;
 import faang.school.postservice.config.RedisConfig;
-import faang.school.postservice.dto.post.PostCashDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.NotFoundException;
 import faang.school.postservice.mapper.PostAndFollowersMapper;
 import faang.school.postservice.mapper.PostCashDtoMapper;
 import faang.school.postservice.mapper.PostMapper;
+import faang.school.postservice.mapper.UserCashDtoMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.post.PostCashRepository;
 import faang.school.postservice.repository.post.PostRepository;
-import faang.school.postservice.repository.user.UserDtoCashRepository;
+import faang.school.postservice.repository.user.UserCashDtoCashRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -29,7 +29,8 @@ public class PostService {
     private  final PostMapper postMapper;
     private  final PostCashDtoMapper postCashDtoMapper;
     private  final PostAndFollowersMapper postAndFollowersMapper;
-    private  final UserDtoCashRepository userCashRepository;
+    private final UserCashDtoMapper userCashDtoMapper;
+    private  final UserCashDtoCashRepository userCashDtoRepository;
     private final UserServiceClient userServiceClient;
 
     public final PostRepository postRepository;
@@ -46,7 +47,7 @@ public class PostService {
         postCashRepository.save(postCashDtoMapper.toDto(post, redisConfig.getPostTtl()));
 
         UserDto userDto = userServiceClient.getUser(postSaved.getAuthorId());
-        userCashRepository.save(userDto);
+        userCashDtoRepository.save(userCashDtoMapper.toDto(userDto, redisConfig.getUserTtl()));
 
         kafkaLikeProducerService.send(kafkaProducerConfig.getPostCreationTopicName(), postMapper.toDto(postSaved));
         kafkaLikeProducerService.send(kafkaProducerConfig.getPostAndFollowersTopicName(), postAndFollowersMapper.toDto(postSaved));

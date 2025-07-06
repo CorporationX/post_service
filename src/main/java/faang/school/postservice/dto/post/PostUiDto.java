@@ -1,6 +1,6 @@
 package faang.school.postservice.dto.post;
 
-import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.dto.user.UserCashDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -11,7 +11,7 @@ import lombok.RequiredArgsConstructor;
 public class PostUiDto {
         Long id;
         String content;
-        UserDto author;
+        UserCashDto author;
         Long projectId;
         Long likesNumber;
 }

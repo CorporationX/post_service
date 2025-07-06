@@ -53,7 +53,7 @@ spring:
     post:
       ttl: 160
     user:
-      ttl: 160
+      ttl: 200
 
 
 server:

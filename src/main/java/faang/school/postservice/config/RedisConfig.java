@@ -26,6 +26,9 @@ public class RedisConfig {
     @Value("${spring.newsfeed.post.ttl}")
     private Long postTtl;
 
+    @Value("${spring.newsfeed.post.ttl}")
+    private Long userTtl;
+
     @Bean
     public JedisConnectionFactory jedisConnectionFactory() {
         RedisStandaloneConfiguration redisConfig = new RedisStandaloneConfiguration(redisHost, redisPort);
