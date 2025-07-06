@@ -1,11 +1,11 @@
 package faang.school.postservice.dto.notification;
 
-import faang.school.postservice.dto.like.LikeDto;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 
 @Builder
-public record PostLikedEvent(
-        LikeDto user,
-        LikeDto post
-) implements NotificationEvent {
+@AllArgsConstructor
+public class PostLikedEvent implements NotificationEvent {
+    private long likeId;
+    private long postId;
 }

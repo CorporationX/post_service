@@ -5,7 +5,6 @@ import faang.school.postservice.dto.notification.CommentLikedEvent;
 import faang.school.postservice.dto.notification.PostLikedEvent;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.producer.ProducerConfig;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -3,7 +3,6 @@ package faang.school.postservice.service.like;
 import faang.school.postservice.model.Like;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface LikeService {
     Like likeThePost(long postId);

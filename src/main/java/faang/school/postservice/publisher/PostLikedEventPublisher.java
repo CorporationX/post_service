@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 public class PostLikedEventPublisher extends EventPublisher<PostLikedEvent> {
 
     public PostLikedEventPublisher(
-            @Value(value = "${spring.kafka.topics.like.post-like-topic.name}") String topic,
+            @Value(value = "${spring.kafka.topics.like.post-liked-topic.name}") String topic,
             KafkaTemplate<String, PostLikedEvent> kafkaTemplate) {
         super(topic, kafkaTemplate);
     }

@@ -1,8 +1,8 @@
 package faang.school.postservice.aspect;
 
-import faang.school.postservice.dto.notification.PostLikedEvent;
+import faang.school.postservice.dto.notification.CommentLikedEvent;
 import faang.school.postservice.model.Like;
-import faang.school.postservice.publisher.PostLikedEventPublisher;
+import faang.school.postservice.publisher.CommentLikedEventPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
@@ -14,22 +14,22 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class PostLikedEventAspect {
+public class CommentLikedEventAspect {
 
-    private final PostLikedEventPublisher publisher;
+    private final CommentLikedEventPublisher publisher;
 
     @AfterReturning(
-            value = "@annotation(faang.school.postservice.annotation.PublishPostLikedEventKafka)",
+            value = "@annotation(faang.school.postservice.annotation.PublishCommentLikedEventKafka)",
             returning = "result"
     )
-    public void publishPostLikedEvent(JoinPoint joinPoint, Object result) {
+    public void publishCommentLikedEvent(JoinPoint joinPoint, Object result) {
         Object[] args = joinPoint.getArgs();
-        long postId = (long) args[0];
+        long commentId = (long) args[0];
         Like like = (Like) result;
 
-        publisher.publish(PostLikedEvent.builder()
+        publisher.publish(CommentLikedEvent.builder()
                 .likeId(like.getId())
-                .postId(postId)
+                .commentId(commentId)
                 .build()
         );
     }
