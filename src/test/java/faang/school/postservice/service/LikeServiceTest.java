@@ -14,6 +14,7 @@ import faang.school.postservice.mapper.LikeMapperImpl;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.LikeEventPublisher;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.util.Utils;
 import feign.FeignException;
@@ -59,6 +60,8 @@ class LikeServiceTest {
     private PostService postService;
     @Mock
     private CommentService commentService;
+    @Mock
+    private LikeEventPublisher likeEventPublisher;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -69,7 +72,9 @@ class LikeServiceTest {
         objectMapper.registerModule(new JavaTimeModule());
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         likeService = new LikeService(
-                likeRepository, userService, postService, commentService, mapper, utils, objectMapper);
+            likeRepository, userService, postService, commentService,
+            likeEventPublisher, mapper, utils, objectMapper
+        );
     }
 
     @Test

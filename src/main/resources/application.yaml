@@ -25,6 +25,13 @@ spring:
         calculations_channel:
           name: calculations_channel
 
+  kafka:
+    bootstrap-servers: localhost:9092
+    topics:
+      likeTopic: like-topic
+      postTopic: post-topic
+      commentTopic: comment-topic
+
 server:
   port: 8081
 
