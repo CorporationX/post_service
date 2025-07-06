@@ -69,4 +69,12 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     WHERE published = false AND deleted = false AND corrected_content IS NULL
     """)
     Long countDraftPosts();
+
+    @Query(nativeQuery = true, value = """
+            SELECT * FROM Post c
+            WHERE c.verified_date is NULL
+            FOR UPDATE SKIP LOCKED
+            LIMIT 10000
+            """)
+    List<Post> findAllNotVerifiedPost();
 }

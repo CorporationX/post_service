@@ -132,4 +132,9 @@ public class PostService {
         PostValidation.validatePostExists(postOptional.isPresent());
         return postOptional.get();
     }
+
+    @Transactional
+    public List<Post> getNotVerifiedPosts() {
+        return postRepository.findAllNotVerifiedPost();
+    }
 }
