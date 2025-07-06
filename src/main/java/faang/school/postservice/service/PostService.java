@@ -2,6 +2,8 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.KafkaProducerConfig;
+import faang.school.postservice.config.RedisConfig;
+import faang.school.postservice.dto.post.PostCashDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.NotFoundException;
 import faang.school.postservice.mapper.PostAndFollowersMapper;
@@ -22,6 +24,7 @@ public class PostService {
 
     private static final String POST_NOT_FOUND_PATTERN = "Post with ID: %s not found";
     private final KafkaProducerConfig kafkaProducerConfig;
+    private  final RedisConfig redisConfig;
     private final KafkaLikeProducerService kafkaLikeProducerService;
     private  final PostMapper postMapper;
     private  final PostCashDtoMapper postCashDtoMapper;
@@ -40,9 +43,11 @@ public class PostService {
 
     public Post createPost(Post post){
         Post postSaved = postRepository.save(post);
-        postCashRepository.save(postCashDtoMapper.toDto(postSaved));
+        postCashRepository.save(postCashDtoMapper.toDto(post, redisConfig.getPostTtl()));
+
         UserDto userDto = userServiceClient.getUser(postSaved.getAuthorId());
         userCashRepository.save(userDto);
+
         kafkaLikeProducerService.send(kafkaProducerConfig.getPostCreationTopicName(), postMapper.toDto(postSaved));
         kafkaLikeProducerService.send(kafkaProducerConfig.getPostAndFollowersTopicName(), postAndFollowersMapper.toDto(postSaved));
         log.info("Post is created {}", postSaved);

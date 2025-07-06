@@ -10,8 +10,8 @@ import org.springframework.data.redis.core.TimeToLive;
 
 @Data
 @RequiredArgsConstructor
-@AllArgsConstructor
-@RedisHash(value = "PostCash", timeToLive = 60L)
+//@AllArgsConstructor
+@RedisHash(value = "PostCash")
 public class PostCashDto {
     @Id
     Long id;
@@ -19,4 +19,12 @@ public class PostCashDto {
     Long authorId;
     Long projectId;
     Long likesNumber;
+
+    @Value("${spring.newsfeed.post.ttl}")
+    private transient Long ttl;
+
+    @TimeToLive
+    public Long getTtl() {
+        return ttl;
+    }
 }

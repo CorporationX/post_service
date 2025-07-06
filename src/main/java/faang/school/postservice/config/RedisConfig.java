@@ -1,6 +1,7 @@
 package faang.school.postservice.config;
 
 import faang.school.postservice.dto.post.PostCashDto;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -13,6 +14,7 @@ import org.springframework.data.redis.serializer.GenericToStringSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
+@Getter
 @Slf4j
 public class RedisConfig {
     @Value("${spring.data.redis.host}")
@@ -20,6 +22,9 @@ public class RedisConfig {
 
     @Value("${spring.data.redis.port}")
     private int redisPort;
+
+    @Value("${spring.newsfeed.post.ttl}")
+    private Long postTtl;
 
     @Bean
     public JedisConnectionFactory jedisConnectionFactory() {
