@@ -1,11 +1,13 @@
 package faang.school.postservice.service.amazonS3;
 
 import faang.school.postservice.dto.comment.CommentResponseImageDto;
+import faang.school.postservice.dto.s3.S3Dto;
 import faang.school.postservice.exception.FileCorruptedException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,8 @@ import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
+import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
+import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.IOException;
@@ -98,6 +102,30 @@ public class S3Service {
                 .contentType(response.contentType())
                 .contentLength(response.contentLength())
                 .resource(new InputStreamResource(responseStream))
+                .build();
+    }
+    @Retryable(
+            retryFor = {AwsServiceException.class, SdkClientException.class},
+            maxAttempts = 5,
+            backoff = @Backoff(delay = 1000, multiplier = 2)
+    )
+    public S3Dto downloadImage(String key) {
+        ResponseInputStream<GetObjectResponse> responseObject = s3Client.getObject(
+                GetObjectRequest.builder()
+                        .bucket(bucketName)
+                        .key(key)
+                        .build());
+        Resource streamResource = new InputStreamResource(responseObject);
+        HeadObjectResponse metadata = s3Client.headObject(HeadObjectRequest.builder()
+                .bucket(bucketName)
+                .key(key)
+                .build());
+
+        return S3Dto.builder()
+                .name(metadata.metadata().get("filename"))
+                .contentType(metadata.contentType())
+                .contentLength(metadata.contentLength())
+                .resource(streamResource)
                 .build();
     }
 }
