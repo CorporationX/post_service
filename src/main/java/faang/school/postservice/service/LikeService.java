@@ -13,7 +13,7 @@ import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.publisher.LikeEventPublisher;
+import faang.school.postservice.producer.LikeEventProducer;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.util.Utils;
 import feign.FeignException;
@@ -37,7 +37,7 @@ public class LikeService {
     private final UserServiceClient userServiceClient;
     private final PostService postService;
     private final CommentService commentService;
-    private final LikeEventPublisher likeEventPublisher;
+    private final LikeEventProducer likeEventProducer;
     private final LikeMapper mapper;
     private final Utils utils;
     private final ObjectMapper objectMapper;
@@ -87,7 +87,7 @@ public class LikeService {
             .commentId(commentId)
             .date(LocalDateTime.now())
             .build();
-        likeEventPublisher.publish(likeEventDto);
+        likeEventProducer.publish(likeEventDto);
     }
 
     private void publishLikeToPost(Like like, Long postId) {
@@ -97,7 +97,7 @@ public class LikeService {
             .postId(postId)
             .date(LocalDateTime.now())
             .build();
-        likeEventPublisher.publish(likeEventDto);
+        likeEventProducer.publish(likeEventDto);
     }
 
     private Like getLike(LikeDto likeDto, Comment comment) {

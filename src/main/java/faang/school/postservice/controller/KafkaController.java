@@ -1,7 +1,5 @@
 package faang.school.postservice.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.producer.KafkaProducer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,14 +20,13 @@ public class KafkaController {
      * Класс для тестирования отправки информации в kafka
      */
     private final KafkaProducer kafkaProducer;
-    private final ObjectMapper objectMapper;
 
     @PostMapping("/{topicName}")
     @ResponseStatus(HttpStatus.OK)
     public void sendKafka(
         @PathVariable(value = "topicName") String topic,
         @RequestBody String text
-    ) throws JsonProcessingException {
+    ) {
         log.debug("sendKafka text:\n{}", text);
         kafkaProducer.sendMessage(topic, text);
     }

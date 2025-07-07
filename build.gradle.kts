@@ -122,6 +122,9 @@ tasks.jacocoTestReport {
 }
 
 val jacocoClassExclude = listOf(
+        "faang.school.postservice.controller.KafkaController", // тест Стас
+        "faang.school.postservice.producer.KafkaProducer", // тест Стас
+        "faang.school.postservice.producer.LikeEventProducer", // тест Стас
         "faang.school.postservice.config.*",
         "faang.school.postservice.model.*",
         "faang.school.postservice.dto.*",
@@ -139,7 +142,7 @@ tasks.jacocoTestCoverageVerification {
             limit {
                 counter = "LINE"
                 value = "COVEREDRATIO"
-                minimum = "0.0".toBigDecimal()
+                minimum = "0.8".toBigDecimal()
             }
         }
     }

@@ -14,7 +14,7 @@ import faang.school.postservice.mapper.LikeMapperImpl;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.publisher.LikeEventPublisher;
+import faang.school.postservice.producer.LikeEventProducer;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.util.Utils;
 import feign.FeignException;
@@ -61,7 +61,7 @@ class LikeServiceTest {
     @Mock
     private CommentService commentService;
     @Mock
-    private LikeEventPublisher likeEventPublisher;
+    private LikeEventProducer likeEventProducer;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -73,7 +73,7 @@ class LikeServiceTest {
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         likeService = new LikeService(
             likeRepository, userService, postService, commentService,
-            likeEventPublisher, mapper, utils, objectMapper
+            likeEventProducer, mapper, utils, objectMapper
         );
     }
 
@@ -233,10 +233,9 @@ class LikeServiceTest {
     }
 
     @Test
-    public void testWhenExceptionMessageIsEmpty() throws JsonProcessingException {
+    public void testWhenExceptionMessageIsEmpty() {
         LikeDto requestDto = getLikeDto(null, POST_ID);
         FeignException feignException = mock(FeignException.class);
-        ErrorResponse errorResponse = new ErrorResponse(utils.format(LikeService.USER_NOT_FOUND, USER_ID));
 
         when(feignException.status()).thenReturn(404);
         when(feignException.contentUTF8()).thenReturn(null);
@@ -251,10 +250,9 @@ class LikeServiceTest {
     }
 
     @Test
-    public void testWhenExceptionMessageIsNotJson() throws JsonProcessingException {
+    public void testWhenExceptionMessageIsNotJson() {
         LikeDto requestDto = getLikeDto(null, POST_ID);
         FeignException feignException = mock(FeignException.class);
-        ErrorResponse errorResponse = new ErrorResponse(utils.format(LikeService.USER_NOT_FOUND, USER_ID));
 
         when(feignException.status()).thenReturn(404);
         when(feignException.contentUTF8()).thenReturn("simple error message");
@@ -269,10 +267,9 @@ class LikeServiceTest {
     }
 
     @Test
-    public void testWhenServerIsUnavailable() throws JsonProcessingException {
+    public void testWhenServerIsUnavailable() {
         LikeDto requestDto = getLikeDto(null, POST_ID);
         FeignException feignException = mock(FeignException.class);
-        ErrorResponse errorResponse = new ErrorResponse(utils.format(LikeService.USER_NOT_FOUND, USER_ID));
 
         when(feignException.status()).thenReturn(-1);
         doThrow(feignException).when(userService).checkUser(USER_ID);

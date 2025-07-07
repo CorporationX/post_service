@@ -1,9 +1,8 @@
-package faang.school.postservice.publisher;
+package faang.school.postservice.producer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.dto.event.LikeEventDto;
-import faang.school.postservice.producer.KafkaProducer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,7 +11,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class LikeEventPublisher {
+public class LikeEventProducer {
     private final KafkaProducer kafkaProducer;
     private final ObjectMapper objectMapper;
 
