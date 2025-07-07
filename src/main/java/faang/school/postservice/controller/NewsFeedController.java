@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -28,7 +29,8 @@ public class NewsFeedController {
 
     @GetMapping("/{userId}/content")
     @ResponseBody
-    public List<PostUiDto> getNewsFeedContent(@PathVariable Long userId) {
-        return newsFeedService.getNewsFeedContent(userId);
+    public List<PostUiDto> getNewsFeedContent(@PathVariable Long userId,
+                                              @RequestParam(required = false) Long lastPostId) {
+        return newsFeedService.getNewsFeedContent(userId, lastPostId);
     }
 }

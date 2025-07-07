@@ -50,10 +50,12 @@ spring:
 
   newsfeed:
     size: 5
+    page:
+      size: 3
     post:
-      ttl: 160
+      ttl: 3600
     user:
-      ttl: 200
+      ttl: 3600
 
 
 server:
