@@ -4,14 +4,31 @@ import faang.school.postservice.model.Post;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+@Repository
 public interface PostRepository extends CrudRepository<Post, Long> {
 
     List<Post> findByAuthorId(long authorId);
 
     List<Post> findByProjectId(long projectId);
+
+    @Query(value = """
+            SELECT * FROM post WHERE author_id = :authorId ORDER BY created_at DESC LIMIT 10
+            """, nativeQuery = true)
+    List<Post> findTopTenPostsByAuthorId(@Param("authorId") long authorId);
+
+
+    @Query(value = """
+            SELECT * FROM post
+            WHERE author_id IN :authorIds
+            ORDER BY created_at DESC
+            LIMIT :feedSize
+            """,
+            nativeQuery = true)
+    List<Post> findTopPostsByAuthors(@Param("authorIds") List<Long> authorIds, @Param("feedSize") long feedSize);
 
     @Query("SELECT p FROM Post p LEFT JOIN FETCH p.likes WHERE p.projectId = :projectId")
     List<Post> findByProjectIdWithLikes(long projectId);

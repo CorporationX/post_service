@@ -9,6 +9,7 @@ import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.KafkaLikeEventPublisher;
 import faang.school.postservice.publisher.LikeEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
@@ -57,10 +58,13 @@ public class LikeServiceTest {
     @Mock
     private LikeEventPublisher likeEventPublisher;
 
+    @Mock
+    private KafkaLikeEventPublisher kafkaLikeEventPublisher;
+
     @BeforeEach
     public void setUp() {
         likeService = new LikeService(likeRepository, postRepository,
-                commentRepository, userContext, userClient, likeEventPublisher);
+                commentRepository, userContext, userClient, likeEventPublisher, kafkaLikeEventPublisher);
     }
 
     @Test

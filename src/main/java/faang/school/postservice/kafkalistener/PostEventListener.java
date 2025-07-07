@@ -1,0 +1,77 @@
+package faang.school.postservice.kafkalistener;
+
+import faang.school.postservice.dto.kafkaevents.PostEvent;
+import faang.school.postservice.entity.CachedPost;
+import faang.school.postservice.exception.EntityNotFoundException;
+import faang.school.postservice.exception.KafkaEventListenException;
+import faang.school.postservice.model.Post;
+import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.PostCacheService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.support.Acknowledgment;
+import org.springframework.stereotype.Service;
+
+import java.time.Instant;
+
+@RequiredArgsConstructor
+@Service
+@Slf4j
+public class PostEventListener {
+    private final PostCacheService postCacheService;
+    private final RedisTemplate<String, Object> redisTemplate;
+    private final PostRepository postRepository;
+
+    private static final String POSTS_HASH_KEY = "posts:";
+
+    @KafkaListener(topics = "${spring.data.kafka.topic.posts}",
+                    containerFactory = "postEventListenerContainerFactory")
+    public void handlePostEvent(PostEvent event, Acknowledgment acknowledgment) {
+        try {
+            log.info("Получил ивент для поста {}", event.getPostId());
+
+            CachedPost post = getOrLoadPost(event.getPostId());
+
+            event.getFollowers().forEach(followerId -> {
+                postCacheService.addToUserFeed(post, followerId);
+            });
+
+            acknowledgment.acknowledge();
+            log.info("Успешно отправил ивент поста {} для {} подписчиков",
+                    event.getPostId(), event.getFollowers().size());
+        } catch (EntityNotFoundException e) {
+            log.error("Пост {} не найден в базе", event.getPostId());
+        } catch (Exception e) {
+            log.error("Ошибка отправка ивента поста {}", event.getPostId(), e);
+            throw new KafkaEventListenException("Ошибка обработки ивента", e);
+        }
+    }
+
+    private CachedPost getOrLoadPost(Long postId) {
+        CachedPost post = (CachedPost) redisTemplate.opsForHash()
+                .get(POSTS_HASH_KEY, postId.toString());
+
+
+        if (post == null) {
+            Post dbPost = postRepository.findById(postId)
+                    .orElseThrow(() -> new EntityNotFoundException("Пост %d не найден", postId));
+
+            post = CachedPost.builder()
+                    .id(dbPost.getId())
+                    .content(dbPost.getContent())
+                    .publishedAt(Instant.from(dbPost.getPublishedAt()))
+                    .projectId(dbPost.getProjectId())
+                    .authorId(dbPost.getAuthorId())
+                    .build();
+
+            postCacheService.cachePost(post);
+        }
+
+        return post;
+    }
+
+}
+

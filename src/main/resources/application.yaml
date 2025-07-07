@@ -28,11 +28,25 @@ spring:
         postViewEventPublisher: PostViewEvent_topic
         comment_channel: comment_topic
         like-event: likeEventTopic
+      ttl:
+        post: 86400
+        author: 86400
+      feed:
+        size: 500
+        global-size: 1000
+        limit: 20
+      comments:
+        size: 3
+
     kafka:
       bootstrap-servers: localhost:9092
+      standard-partitions-count: 3
       topic:
         comment: comment_topic
         userBan: user_ban
+        posts: posts
+        likes: likes
+        heat: heat
         hashtag-adding:
           name: "hashtag-adding-topic"
           partitions: 3
@@ -48,6 +62,7 @@ spring:
       consumer:
         group-id: post-group
         auto-offset-reset: earliest
+        trusted-packages: "*"
 
   profiles:
     active: local
@@ -76,6 +91,7 @@ thread-pool:
   delete-expired-posts-max-threads: 3
   publish-posts-max-threads: 10
   publish-timeout: 3
+  heater-feed-size: 10
   author-ban:
     size: 2
     shutdown-timeout-seconds: 30

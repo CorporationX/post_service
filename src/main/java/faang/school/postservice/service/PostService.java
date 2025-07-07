@@ -7,6 +7,10 @@ import faang.school.postservice.dto.PostDto;
 import faang.school.postservice.dto.PostResponseDto;
 import faang.school.postservice.dto.event.HashtagAddingEvent;
 import faang.school.postservice.dto.event.PostViewEvent;
+import faang.school.postservice.dto.kafkaevents.PostEvent;
+import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.entity.CachedAuthor;
+import faang.school.postservice.entity.CachedPost;
 import faang.school.postservice.exception.AsyncPostProcessingException;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.HashtagServiceConnectionException;
@@ -22,9 +26,11 @@ import faang.school.postservice.model.VerifiedStatus;
 import faang.school.postservice.model.ad.Ad;
 import faang.school.postservice.publisher.HashtagAddingEventPublisher;
 import faang.school.postservice.publisher.HashtagRemovingEventPublisher;
+import faang.school.postservice.publisher.KafkaPostEventPublisher;
 import faang.school.postservice.publisher.PostViewEventPublisher;
 import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.repository.CommentRepository;
+import faang.school.postservice.repository.UserRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.ResourceRepository;
@@ -38,7 +44,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -68,6 +77,10 @@ public class PostService {
     private final HashtagAddingEventPublisher hashtagAddingPublisher;
     private final HashtagRemovingEventPublisher hashtagRemovingPublisher;
     private final HashtagServiceClient hashtagClient;
+    private final PostCacheService postCacheService;
+    private final AuthorCacheService authorCacheService;
+    private final UserRepository userRepository;
+    private final KafkaPostEventPublisher kafkaPostEventPublisher;
 
     @Value("${batch.size}")
     private int batchSize;
@@ -102,8 +115,7 @@ public class PostService {
         }
 
         try {
-            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
-                    .get(threadTimeout, TimeUnit.MINUTES);
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).get(threadTimeout, TimeUnit.MINUTES);
         } catch (TimeoutException e) {
             log.warn("Превышено время ожидания публикации");
             throw new AsyncPostProcessingException("Таймаут публикации постов", e);
@@ -130,8 +142,7 @@ public class PostService {
         }
 
         postRepository.saveAll(batch);
-        log.info("Опубликовано {} постов с {} по {} id.",
-                batch.size(), batch.get(0).getId(), batch.get(batch.size() - 1).getId());
+        log.info("Опубликовано {} постов с {} по {} id.", batch.size(), batch.get(0).getId(), batch.get(batch.size() - 1).getId());
     }
 
     public PostResponseDto create(PostDto postDto) {
@@ -140,17 +151,12 @@ public class PostService {
         Post post = postMapper.toEntity(postDto);
         Ad ad = null;
         if (post.getAd() != null) {
-            ad = adRepository.findById(postDto.adId()).orElseThrow(
-                    () -> new RuntimeException("ad not found"));
+            ad = adRepository.findById(postDto.adId()).orElseThrow(() -> new RuntimeException("ad not found"));
         }
-        List<Comment> comments = commentRepository.findByIdIn(postDto
-                .commentsId() != null ? postDto.commentsId() : List.of());
-        List<Like> likes = likeRepository.findByIdIn(postDto
-                .likesId() != null ? postDto.likesId() : List.of());
-        List<Resource> resources = resourceRepository.findByIdIn(postDto
-                .resourcesId() != null ? postDto.resourcesId() : List.of());
-        List<Album> albums = albumRepository.findByIdIn(postDto
-                .albumsId() != null ? postDto.albumsId() : List.of());
+        List<Comment> comments = commentRepository.findByIdIn(postDto.commentsId() != null ? postDto.commentsId() : List.of());
+        List<Like> likes = likeRepository.findByIdIn(postDto.likesId() != null ? postDto.likesId() : List.of());
+        List<Resource> resources = resourceRepository.findByIdIn(postDto.resourcesId() != null ? postDto.resourcesId() : List.of());
+        List<Album> albums = albumRepository.findByIdIn(postDto.albumsId() != null ? postDto.albumsId() : List.of());
 
         post.setAd(ad);
         post.setComments(comments);
@@ -164,13 +170,12 @@ public class PostService {
 
         if (postDto.hashtagsName() != null && !postDto.hashtagsName().isEmpty()) {
             postDto.hashtagsName().forEach(hashtag -> {
-                        Long authorId = 0L;
-                        if (post.getAuthorId() != null) {
-                            authorId = post.getAuthorId();
-                        }
-                        hashtagAddingPublisher.publish(takeHashtagEvent(post.getId(), hashtag, authorId));
-                    }
-            );
+                Long authorId = 0L;
+                if (post.getAuthorId() != null) {
+                    authorId = post.getAuthorId();
+                }
+                hashtagAddingPublisher.publish(takeHashtagEvent(post.getId(), hashtag, authorId));
+            });
         }
         return postMapper.toResponseDto(post);
     }
@@ -186,7 +191,24 @@ public class PostService {
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
         postRepository.save(post);
+
+        CachedPost cachedPost = buildCachedPost(post);
+        postCacheService.cachePost(cachedPost);
+        log.info("Пост {} отправлен в кеш", post.getId());
         log.info("Post published: {}", post);
+
+        CachedAuthor cachedAuthor = getCachedAuthor(post.getAuthorId());
+        authorCacheService.cacheAuthor(cachedAuthor.getAuthorId(), cachedAuthor.getUsername());
+        log.info("Автор {} помещен в кеш", cachedAuthor.getAuthorId());
+
+        List<Long> followersIds = userRepository.findFollowerIdsByAuthorId(post.getAuthorId());
+        kafkaPostEventPublisher.publish(
+                new PostEvent(post.getId(),
+                        post.getAuthorId(),
+                        post.getPublishedAt().atZone(ZoneOffset.UTC).toInstant(),
+                        followersIds)
+        );
+
         return postMapper.toResponseDto(post);
     }
 
@@ -211,8 +233,7 @@ public class PostService {
     public PostResponseDto getPost(Long postId, Long userId) {
         Post post = takePost(postId);
         log.info("Post retrieved: {}", post);
-        postViewEventPublisher.published(new PostViewEvent(postId, userId,
-                post.getAuthorId(), LocalDateTime.now()));
+        postViewEventPublisher.published(new PostViewEvent(postId, userId, post.getAuthorId(), LocalDateTime.now()));
         PostResponseDto response = postMapper.toResponseDto(post);
         List<Long> hashtags = hashtagClient.getHashtagsIdsByPostId(postId);
         response.setHashtagsId(hashtags);
@@ -223,8 +244,7 @@ public class PostService {
         List<Post> posts = postRepository.findByAuthorId(authorId);
         Map<Long, List<Long>> hashtagsOnPosts = findHashtagsByPosts(posts);
 
-        posts = posts.stream()
-                .filter(post -> !post.isDeleted() && !post.isPublished()).toList();
+        posts = posts.stream().filter(post -> !post.isDeleted() && !post.isPublished()).toList();
         return returnPostsDtoList(posts, userId, authorId, hashtagsOnPosts);
     }
 
@@ -232,8 +252,7 @@ public class PostService {
         List<Post> posts = postRepository.findByProjectId(projectId);
         Map<Long, List<Long>> hashtagsOnPosts = findHashtagsByPosts(posts);
 
-        posts = posts.stream()
-                .filter(post -> !post.isDeleted() && !post.isPublished()).toList();
+        posts = posts.stream().filter(post -> !post.isDeleted() && !post.isPublished()).toList();
         return returnPostsDtoList(posts, userId, projectId, hashtagsOnPosts);
     }
 
@@ -241,8 +260,7 @@ public class PostService {
         List<Post> posts = postRepository.findByAuthorId(authorId);
         Map<Long, List<Long>> hashtagsOnPosts = findHashtagsByPosts(posts);
 
-        posts = posts.stream()
-                .filter(post -> !post.isDeleted() && post.isPublished()).toList();
+        posts = posts.stream().filter(post -> !post.isDeleted() && post.isPublished()).toList();
         return returnPostsDtoList(posts, userId, authorId, hashtagsOnPosts);
     }
 
@@ -250,8 +268,7 @@ public class PostService {
         List<Post> posts = postRepository.findByProjectId(projectId);
         Map<Long, List<Long>> hashtagsOnPosts = findHashtagsByPosts(posts);
 
-        posts = posts.stream()
-                .filter(post -> !post.isDeleted() && post.isPublished()).toList();
+        posts = posts.stream().filter(post -> !post.isDeleted() && post.isPublished()).toList();
         return returnPostsDtoList(posts, userId, projectId, hashtagsOnPosts);
     }
 
@@ -301,30 +318,19 @@ public class PostService {
     }
 
     private Post takePost(Long postId) {
-        return postRepository.findById(postId).orElseThrow(
-                () -> new EntityNotFoundException("Post not found"));
+        return postRepository.findById(postId).orElseThrow(() -> new EntityNotFoundException("Post not found"));
     }
 
     private List<List<Post>> partitionList(List<Post> list, int batchSize) {
-        return IntStream.range(0, (list.size() + batchSize - 1) / batchSize)
-                .mapToObj(i -> list.subList(
-                        i * batchSize, Math.min((i + 1) * batchSize, list.size())
-                ))
-                .toList();
+        return IntStream.range(0, (list.size() + batchSize - 1) / batchSize).mapToObj(i -> list.subList(i * batchSize, Math.min((i + 1) * batchSize, list.size()))).toList();
     }
 
     private HashtagAddingEvent takeHashtagEvent(Long postId, String name, Long authorId) {
-        return HashtagAddingEvent.builder()
-                .hashtagName(name)
-                .postId(postId)
-                .authorId(authorId)
-                .build();
+        return HashtagAddingEvent.builder().hashtagName(name).postId(postId).authorId(authorId).build();
     }
 
     private Map<Long, List<Long>> findHashtagsByPosts(List<Post> posts) {
-        List<Long> postIds = posts.stream()
-                .map(Post::getId)
-                .toList();
+        List<Long> postIds = posts.stream().map(Post::getId).toList();
         Map<Long, List<Long>> hashtags;
         try {
             hashtags = hashtagClient.getHashtagsIdsByPostIds(postIds);
@@ -334,14 +340,26 @@ public class PostService {
         return hashtags;
     }
 
-    private List<PostResponseDto> returnPostsDtoList(List<Post> posts, Long userId, Long id,
-                                                     Map<Long, List<Long>> hashtags) {
-        return posts.stream()
-                .sorted(Comparator.comparing(Post::getPublishedAt).reversed())
-                .peek(post -> postViewEventPublisher.published(
-                        new PostViewEvent(post.getId(), userId, id, LocalDateTime.now())))
-                .map(postMapper::toResponseDto)
-                .peek(postDto -> postDto.setHashtagsId(hashtags.get(postDto.getId())))
-                .toList();
+    private List<PostResponseDto> returnPostsDtoList(List<Post> posts, Long userId, Long id, Map<Long, List<Long>> hashtags) {
+        return posts.stream().sorted(Comparator.comparing(Post::getPublishedAt).reversed()).peek(post -> postViewEventPublisher.published(new PostViewEvent(post.getId(), userId, id, LocalDateTime.now()))).map(postMapper::toResponseDto).peek(postDto -> postDto.setHashtagsId(hashtags.get(postDto.getId()))).toList();
     }
+
+    private CachedPost buildCachedPost(Post post) {
+        return CachedPost.builder()
+                .id(post.getId())
+                .authorId(post.getAuthorId())
+                .projectId(post.getProjectId())
+                .publishedAt(post.getPublishedAt().atZone(ZoneId.systemDefault()).toInstant())
+                .content(post.getContent())
+                .build();
+    }
+
+    private CachedAuthor getCachedAuthor(Long id) {
+        UserDto userDto = userServiceClient.getUser(id);
+        return CachedAuthor.builder()
+                .authorId(id)
+                .username(userDto.username())
+                .build();
+    }
+
 }
