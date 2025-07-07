@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.event.LikeEventDto;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.exception.ErrorResponse;
 import faang.school.postservice.exception.LikeExistsException;
@@ -91,6 +92,7 @@ class LikeServiceTest {
         LikeDto responseDto = likeService.addLikeToComment(likeDto);
 
         verify(likeRepository).save(any(Like.class));
+        verify(likeEventProducer).publish(any(LikeEventDto.class));
         assertNotNull(responseDto);
         assertNotNull(responseDto.id());
         assertEquals(USER_ID, responseDto.userId());
@@ -112,6 +114,7 @@ class LikeServiceTest {
                 LikeExistsException.class, () -> likeService.addLikeToComment(requestDto));
 
         verify(likeRepository, times(0)).save(any(Like.class));
+        verify(likeEventProducer, times(0)).publish(any(LikeEventDto.class));
         assertEquals(LikeService.USER_LIKED_THIS_COMMENT, resultException.getMessage());
     }
 
@@ -159,6 +162,7 @@ class LikeServiceTest {
         LikeDto responseDto = likeService.addLikeToPost(requestDto);
 
         verify(likeRepository).save(any(Like.class));
+        verify(likeEventProducer).publish(any(LikeEventDto.class));
         assertNotNull(responseDto);
         assertNotNull(responseDto.id());
         assertEquals(USER_ID, responseDto.userId());
@@ -180,6 +184,7 @@ class LikeServiceTest {
                 LikeExistsException.class, () -> likeService.addLikeToPost(requestDto));
 
         verify(likeRepository, times(0)).save(any(Like.class));
+        verify(likeEventProducer, times(0)).publish(any(LikeEventDto.class));
         assertEquals(LikeService.USER_LIKED_THIS_POST, resultException.getMessage());
     }
 
