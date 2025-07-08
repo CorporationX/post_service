@@ -9,21 +9,27 @@ import org.springframework.kafka.config.TopicBuilder;
 @Configuration
 public class KafkaTopic {
 
-    @Value("${spring.data.kafka.topic.comment}")
+    @Value("${spring.data.kafka.topic.comment.name}")
     private String commentTopic;
+
+    @Value("${spring.data.kafka.topic.comment.partitions}")
+    private int commentPartitions;
+
+    @Value("${spring.data.kafka.topic.comment.replicas}")
+    private int commentReplicas;
 
     @Value("${spring.data.kafka.topic.userBan}")
     private String userBanTopic;
 
 
     @Bean
-    public NewTopic comment() {
-        return TopicBuilder.name(commentTopic).partitions(2).build();
+    public NewTopic userBan() {
+        return TopicBuilder.name(userBanTopic).partitions(1).build();
     }
 
     @Bean
-    public NewTopic userBan() {
-        return TopicBuilder.name(userBanTopic).partitions(1).build();
+    public NewTopic commentsTopic() {
+        return TopicBuilder.name(commentTopic).partitions(commentPartitions).replicas(commentReplicas).build();
     }
 }
 

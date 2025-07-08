@@ -1,9 +1,14 @@
 spring:
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5433/postgres
+    url: jdbc:postgresql://localhost:5432/postgres
     username: user
     password: password
+  kafka:
+    bootstrap-servers: localhost:29092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
@@ -32,7 +37,10 @@ spring:
     kafka:
       bootstrap-servers: localhost:9092
       topic:
-        comment: comment_topic
+        comment:
+          name: comment
+          partitions: 3
+          replicas: 1
         userBan: user_ban
         hashtag-adding:
           name: "hashtag-adding-topic"
