@@ -23,4 +23,12 @@ public interface PostRepository extends CrudRepository<Post, Long> {
 
     @Query("SELECT p FROM Post p WHERE p.id = :postId")
     Post findByPostId(long postId);
+
+    @Query(nativeQuery = true, value = """
+    SELECT p.* FROM Post p
+    WHERE p.author_id IN (:authorIds)
+    AND p.id < :lastPostId
+    Order BY p.id DESC
+    """)
+    List<Post> findByAuthorIds(List<Long> authorIds, Long lastPostId);
 }

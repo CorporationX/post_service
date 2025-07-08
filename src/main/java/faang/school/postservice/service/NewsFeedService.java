@@ -1,18 +1,24 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.cash.NewsFeed;
+import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostAndFollowersDto;
 import faang.school.postservice.dto.post.PostCashDto;
 import faang.school.postservice.dto.post.PostUiDto;
 import faang.school.postservice.dto.user.UserCashDto;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.mapper.PostMapper;
+import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.post.PostCashRepository;
+import faang.school.postservice.repository.post.PostRepository;
 import faang.school.postservice.repository.user.UserCashDtoCashRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -37,6 +43,10 @@ public class NewsFeedService {
     private final RedisTemplate<String, Long> redisNewsFeedTemplate;
     private final PostCashRepository postCashRepository;
     private final UserCashDtoCashRepository userCashDtoRepository;
+    private final PostRepository postRepository;
+    private final UserServiceClient userServiceClient;
+    private final UserContext userContext;
+    private final PostMapper postMapper;
 
     public NewsFeed getNewsFeed(Long userId) {
         String key = getKey(userId);
@@ -69,6 +79,10 @@ public class NewsFeedService {
         Set<Long> postIds = redisNewsFeedTemplate.opsForZSet().range(key, start, end);
         TreeSet<Long> reversedPostIds = new TreeSet<>(Comparator.reverseOrder());
         reversedPostIds.addAll(postIds);
+        //in progress
+        if(reversedPostIds.size() < feedPageSize) {
+            getNewsFeedFromDb(reversedPostIds.last());
+        }
         return convertToPostUiDtos(reversedPostIds);
     }
 
@@ -91,6 +105,11 @@ public class NewsFeedService {
             }
         }
         log.info("NewsFeedService.addPostIdToUserNewsFeed() {}", postAndFollowersDto);
+    }
+
+    @Transactional
+    public List<UserDto> getFollowees(Long userId) {
+        return userServiceClient.getFollowees(userId);
     }
 
     private String getKey(Long userId) {
@@ -126,5 +145,17 @@ public class NewsFeedService {
             }
         }
         return newsFeedPosts;
+    }
+
+    private List<PostUiDto> getNewsFeedFromDb(Long lastPostId){
+        //in progress
+        List<UserDto> userDtos = userServiceClient.getFollowees(userContext.getUserId());
+        log.info("userServiceClient.getFollowees: {}", userDtos);
+        List<Post> posts = postRepository.findByAuthorIds(
+                userDtos.stream().map(UserDto::getId).toList(),
+                lastPostId
+        );
+        log.info("found posts: {}", posts.stream().map(postMapper::toDto).toList());
+        return Collections.emptyList();
     }
 }

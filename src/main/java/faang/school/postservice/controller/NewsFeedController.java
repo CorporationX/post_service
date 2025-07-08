@@ -1,7 +1,10 @@
 package faang.school.postservice.controller;
 
 import faang.school.postservice.cash.NewsFeed;
+import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.PostUiDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.service.NewsFeedService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +24,7 @@ import java.util.List;
 public class NewsFeedController {
     private final NewsFeedService newsFeedService;
 
+
     @GetMapping("/{userId}")
     @ResponseBody
     public NewsFeed getNewsFeed(@PathVariable Long userId) {
@@ -32,5 +36,11 @@ public class NewsFeedController {
     public List<PostUiDto> getNewsFeedContent(@PathVariable Long userId,
                                               @RequestParam(required = false) Long lastPostId) {
         return newsFeedService.getNewsFeedContent(userId, lastPostId);
+    }
+
+    @GetMapping("/followees/{userId}")
+    @ResponseBody
+    public List<UserDto> getFollowees(@PathVariable Long userId) {
+        return newsFeedService.getFollowees(userId);
     }
 }
