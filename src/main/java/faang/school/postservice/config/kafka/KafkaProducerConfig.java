@@ -19,12 +19,12 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class KafkaProducerConfig {
     @Value("${spring.data.kafka.bootstrap-servers}")
-    private String URL;
+    private String url;
 
     @Bean
     public ProducerFactory<String, CommentSendEvent> producerFactory() {
         Map<String, Object> configProps = new HashMap<>();
-        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, URL);
+        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, url);
         configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
         return new DefaultKafkaProducerFactory<>(configProps);
