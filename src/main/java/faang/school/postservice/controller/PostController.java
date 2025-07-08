@@ -31,6 +31,7 @@ public class PostController {
 
     @PostMapping("/draftCreate")
     public PostResponseDto createDraftPost(@Valid @RequestBody  PostRequestDto dto) {
+        validate(dto.projectId(), dto.authorId());
         return postService.createDraftPost(dto);
     }
 
