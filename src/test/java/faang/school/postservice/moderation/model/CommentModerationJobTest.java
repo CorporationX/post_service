@@ -2,6 +2,7 @@ package faang.school.postservice.moderation.model;
 
 import faang.school.postservice.config.moderation.CommentsModerationConfiguration;
 import faang.school.postservice.config.moderation.ModerationDictionary;
+import faang.school.postservice.jobs.moderation.CommentModerationJob;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.service.comment.CommentService;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,7 +27,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class CommentModerationTest {
+class CommentModerationJobTest {
 
     @Mock
     private CommentService commentService;
@@ -41,7 +42,7 @@ class CommentModerationTest {
     private ThreadPoolTaskExecutor executor;
 
     @InjectMocks
-    private CommentModeration commentModeration;
+    private CommentModerationJob commentModerationJob;
 
     private List<Comment> comments;
 
@@ -75,7 +76,7 @@ class CommentModerationTest {
         when(moderationDictionary.containsProfanity("Clean comment")).thenReturn(false);
         when(moderationDictionary.containsProfanity("Bad comment")).thenReturn(true);
 
-        commentModeration.moderateComments();
+        commentModerationJob.moderateComments();
 
         ArgumentCaptor<List<Comment>> captor = ArgumentCaptor.forClass(List.class);
 
