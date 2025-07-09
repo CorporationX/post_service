@@ -2,6 +2,17 @@ spring:
   profiles:
     active: dev
 
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: post-service-group
+    topics:
+      like:
+        post-liked-topic:
+          name: post-liked-event
+        comment-liked-topic:
+          name: comment-liked-event
+
   servlet:
     multipart:
       max-file-size: 5MB
