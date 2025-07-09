@@ -91,5 +91,5 @@ public class Post {
     private LocalDateTime verifiedDate;
 
     @Column(name = "verified")
-    private boolean verified;
+    private Boolean verified;
 }

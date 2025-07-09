@@ -1,4 +1,4 @@
-package faang.school.postservice.moderation.model;
+package faang.school.postservice.jobs.moderation;
 
 import faang.school.postservice.config.moderation.CommentsModerationConfiguration;
 import faang.school.postservice.config.moderation.ModerationDictionary;
@@ -17,14 +17,14 @@ import java.util.List;
 
 @Component
 @Slf4j
-public class CommentModeration {
+public class CommentModerationJob {
 
     private final CommentService commentService;
     private final ModerationDictionary moderationDictionary;
     private final CommentsModerationConfiguration configuration;
     private final ThreadPoolTaskExecutor executor;
 
-    public CommentModeration(
+    public CommentModerationJob(
             CommentService commentService,
             ModerationDictionary moderationDictionary,
             CommentsModerationConfiguration configuration,
@@ -35,6 +35,12 @@ public class CommentModeration {
         this.executor = executor;
     }
 
+    /* TODO:
+        Это тоже с точки зрения блокировок и транзакций реализовано некорректно.
+        Когда вы вызываете executor.submit(() -> verifyComments(batch) в новом потоке,
+        на новый поток текущая транзакция не действует, и когда moderateComments() запустит все потоки
+        то текущая транзакция просто закроется, высвободив все блокировки.
+     */
     @Scheduled(cron = "#{@commentsModerationConfiguration.cron}")
     @Transactional
     public void moderateComments() {
