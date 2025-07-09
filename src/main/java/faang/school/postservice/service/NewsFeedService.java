@@ -9,6 +9,8 @@ import faang.school.postservice.dto.post.PostUiDto;
 import faang.school.postservice.dto.user.UserCashDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.PostMapper;
+import faang.school.postservice.mapper.PostUiDtoMapper;
+import faang.school.postservice.mapper.UserCashDtoMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.post.PostCashRepository;
 import faang.school.postservice.repository.post.PostRepository;
@@ -24,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
@@ -47,6 +50,8 @@ public class NewsFeedService {
     private final UserServiceClient userServiceClient;
     private final UserContext userContext;
     private final PostMapper postMapper;
+    private final PostUiDtoMapper postUiDtoMapper;
+    private final UserCashDtoMapper userCashDtoMapper;
 
     public NewsFeed getNewsFeed(Long userId) {
         String key = getKey(userId);
@@ -70,7 +75,8 @@ public class NewsFeedService {
         }
         Long  rank = redisNewsFeedTemplate.opsForZSet().rank(key, lastPostId);
         if(rank == null) {
-            return Collections.emptyList();
+
+            return getNewsFeedFromDb(Long.MAX_VALUE);
         }
 
         long start = rank + 1;
@@ -81,7 +87,7 @@ public class NewsFeedService {
         reversedPostIds.addAll(postIds);
         //in progress
         if(reversedPostIds.size() < feedPageSize) {
-            getNewsFeedFromDb(reversedPostIds.last());
+            return getNewsFeedFromDb(reversedPostIds.last());
         }
         return convertToPostUiDtos(reversedPostIds);
     }
@@ -148,14 +154,24 @@ public class NewsFeedService {
     }
 
     private List<PostUiDto> getNewsFeedFromDb(Long lastPostId){
-        //in progress
+        //To optimize
         List<UserDto> userDtos = userServiceClient.getFollowees(userContext.getUserId());
-        log.info("userServiceClient.getFollowees: {}", userDtos);
         List<Post> posts = postRepository.findByAuthorIds(
                 userDtos.stream().map(UserDto::getId).toList(),
-                lastPostId
+                lastPostId,
+                feedPageSize
         );
-        log.info("found posts: {}", posts.stream().map(postMapper::toDto).toList());
-        return Collections.emptyList();
+        log.info("getNewsFeedFromDb(): found posts: {}", posts.stream().map(postMapper::toDto).toList());
+
+        List<PostUiDto> postUiDtos = new ArrayList<>();
+        for(Post post : posts) {
+            for(UserDto userDto : userDtos) {
+                if(Objects.equals(userDto.getId(), post.getAuthorId())) {
+                    PostUiDto postUiDto = postUiDtoMapper.toDto(post,userCashDtoMapper.toDto(userDto, 0L));
+                    postUiDtos.add(postUiDto);
+                }
+            }
+        }
+        return postUiDtos;
     }
 }
