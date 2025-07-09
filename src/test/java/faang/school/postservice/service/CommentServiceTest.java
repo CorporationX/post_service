@@ -90,9 +90,7 @@ public class CommentServiceTest {
         when(commentRepository.findById(1L)).thenReturn(Optional.empty());
         lenient().when(utils.format(anyString(), any())).thenReturn("Not found");
 
-        assertThrows(CommentNotFoundException.class, () -> {
-            commentService.findCommentById(1L);
-        });
+        assertThrows(CommentNotFoundException.class, () -> commentService.findCommentById(1L));
 
         verify(commentRepository).findById(1L);
     }

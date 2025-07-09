@@ -3,6 +3,7 @@ package faang.school.postservice.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.event.LikeEventDto;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.exception.ErrorResponse;
 import faang.school.postservice.exception.LikeExistsException;
@@ -12,12 +13,15 @@ import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.LikeEventProducer;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.util.Utils;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
 
 @Slf4j
 @Service
@@ -33,6 +37,7 @@ public class LikeService {
     private final UserServiceClient userServiceClient;
     private final PostService postService;
     private final CommentService commentService;
+    private final LikeEventProducer likeEventProducer;
     private final LikeMapper mapper;
     private final Utils utils;
     private final ObjectMapper objectMapper;
@@ -45,6 +50,7 @@ public class LikeService {
                     throw new LikeExistsException(USER_LIKED_THIS_COMMENT);
                 });
         Like like = likeRepository.save(getLike(likeDto, comment));
+        publishLikeToComment(like, likeDto.commentId());
         return mapper.toDto(like);
     }
 
@@ -63,6 +69,7 @@ public class LikeService {
                     throw new LikeExistsException(USER_LIKED_THIS_POST);
                 });
         Like like = likeRepository.save(getLike(likeDto, post));
+        publishLikeToPost(like, likeDto.postId());
         return mapper.toDto(like);
     }
 
@@ -73,6 +80,25 @@ public class LikeService {
                         utils.format(POST_LIKE_NOT_FOUND, likeDto.userId(), likeDto.postId())));
     }
 
+    private void publishLikeToComment(Like like, Long commentId) {
+        LikeEventDto likeEventDto = LikeEventDto.builder()
+            .authorId(like.getComment().getAuthorId())
+            .senderId(like.getUserId())
+            .commentId(commentId)
+            .date(LocalDateTime.now())
+            .build();
+        likeEventProducer.publish(likeEventDto);
+    }
+
+    private void publishLikeToPost(Like like, Long postId) {
+        LikeEventDto likeEventDto = LikeEventDto.builder()
+            .authorId(like.getPost().getAuthorId())
+            .senderId(like.getUserId())
+            .postId(postId)
+            .date(LocalDateTime.now())
+            .build();
+        likeEventProducer.publish(likeEventDto);
+    }
 
     private Like getLike(LikeDto likeDto, Comment comment) {
         return Like.builder()

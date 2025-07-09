@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.event.LikeEventDto;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.exception.ErrorResponse;
 import faang.school.postservice.exception.LikeExistsException;
@@ -14,6 +15,7 @@ import faang.school.postservice.mapper.LikeMapperImpl;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.LikeEventProducer;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.util.Utils;
 import feign.FeignException;
@@ -59,6 +61,8 @@ class LikeServiceTest {
     private PostService postService;
     @Mock
     private CommentService commentService;
+    @Mock
+    private LikeEventProducer likeEventProducer;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -69,7 +73,9 @@ class LikeServiceTest {
         objectMapper.registerModule(new JavaTimeModule());
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         likeService = new LikeService(
-                likeRepository, userService, postService, commentService, mapper, utils, objectMapper);
+            likeRepository, userService, postService, commentService,
+            likeEventProducer, mapper, utils, objectMapper
+        );
     }
 
     @Test
@@ -86,6 +92,7 @@ class LikeServiceTest {
         LikeDto responseDto = likeService.addLikeToComment(likeDto);
 
         verify(likeRepository).save(any(Like.class));
+        verify(likeEventProducer).publish(any(LikeEventDto.class));
         assertNotNull(responseDto);
         assertNotNull(responseDto.id());
         assertEquals(USER_ID, responseDto.userId());
@@ -107,6 +114,7 @@ class LikeServiceTest {
                 LikeExistsException.class, () -> likeService.addLikeToComment(requestDto));
 
         verify(likeRepository, times(0)).save(any(Like.class));
+        verify(likeEventProducer, times(0)).publish(any(LikeEventDto.class));
         assertEquals(LikeService.USER_LIKED_THIS_COMMENT, resultException.getMessage());
     }
 
@@ -154,6 +162,7 @@ class LikeServiceTest {
         LikeDto responseDto = likeService.addLikeToPost(requestDto);
 
         verify(likeRepository).save(any(Like.class));
+        verify(likeEventProducer).publish(any(LikeEventDto.class));
         assertNotNull(responseDto);
         assertNotNull(responseDto.id());
         assertEquals(USER_ID, responseDto.userId());
@@ -175,6 +184,7 @@ class LikeServiceTest {
                 LikeExistsException.class, () -> likeService.addLikeToPost(requestDto));
 
         verify(likeRepository, times(0)).save(any(Like.class));
+        verify(likeEventProducer, times(0)).publish(any(LikeEventDto.class));
         assertEquals(LikeService.USER_LIKED_THIS_POST, resultException.getMessage());
     }
 
@@ -228,10 +238,9 @@ class LikeServiceTest {
     }
 
     @Test
-    public void testWhenExceptionMessageIsEmpty() throws JsonProcessingException {
+    public void testWhenExceptionMessageIsEmpty() {
         LikeDto requestDto = getLikeDto(null, POST_ID);
         FeignException feignException = mock(FeignException.class);
-        ErrorResponse errorResponse = new ErrorResponse(utils.format(LikeService.USER_NOT_FOUND, USER_ID));
 
         when(feignException.status()).thenReturn(404);
         when(feignException.contentUTF8()).thenReturn(null);
@@ -246,10 +255,9 @@ class LikeServiceTest {
     }
 
     @Test
-    public void testWhenExceptionMessageIsNotJson() throws JsonProcessingException {
+    public void testWhenExceptionMessageIsNotJson() {
         LikeDto requestDto = getLikeDto(null, POST_ID);
         FeignException feignException = mock(FeignException.class);
-        ErrorResponse errorResponse = new ErrorResponse(utils.format(LikeService.USER_NOT_FOUND, USER_ID));
 
         when(feignException.status()).thenReturn(404);
         when(feignException.contentUTF8()).thenReturn("simple error message");
@@ -264,10 +272,9 @@ class LikeServiceTest {
     }
 
     @Test
-    public void testWhenServerIsUnavailable() throws JsonProcessingException {
+    public void testWhenServerIsUnavailable() {
         LikeDto requestDto = getLikeDto(null, POST_ID);
         FeignException feignException = mock(FeignException.class);
-        ErrorResponse errorResponse = new ErrorResponse(utils.format(LikeService.USER_NOT_FOUND, USER_ID));
 
         when(feignException.status()).thenReturn(-1);
         doThrow(feignException).when(userService).checkUser(USER_ID);

@@ -51,6 +51,11 @@ dependencies {
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")
 
     /**
+     * kafka
+     */
+    implementation("org.springframework.kafka:spring-kafka")
+
+    /**
      * Test containers
      */
     implementation(platform("org.testcontainers:testcontainers-bom:1.17.6"))
@@ -117,6 +122,9 @@ tasks.jacocoTestReport {
 }
 
 val jacocoClassExclude = listOf(
+        "faang.school.postservice.controller.KafkaController", // тест Стас
+        "faang.school.postservice.producer.KafkaProducer", // тест Стас
+        "faang.school.postservice.producer.LikeEventProducer", // тест Стас
         "faang.school.postservice.config.*",
         "faang.school.postservice.model.*",
         "faang.school.postservice.dto.*",

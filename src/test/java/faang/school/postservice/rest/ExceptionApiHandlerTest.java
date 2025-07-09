@@ -13,7 +13,6 @@ import faang.school.postservice.exception.LikeExistsException;
 import faang.school.postservice.exception.LikeNotFoundException;
 import faang.school.postservice.exception.PostNotFoundException;
 import faang.school.postservice.exception.UserNotFoundException;
-import faang.school.postservice.mapper.LikeMapperImpl;
 import faang.school.postservice.service.LikeService;
 import faang.school.postservice.util.Utils;
 import org.junit.jupiter.api.BeforeEach;
