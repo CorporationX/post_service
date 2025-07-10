@@ -66,30 +66,63 @@ public class NewsFeedService {
 
     public List<PostUiDto> getNewsFeedContent(Long userId, Long lastPostId) {
         String key = getKey(userId);
+        long start = 0;
+        long end = feedPageSize - 1;
 
-        if(lastPostId == null) {
-            Set<Long> postIds = redisNewsFeedTemplate.opsForZSet().range(key, 0, feedPageSize-1);
-            TreeSet<Long> reversedPostIds = new TreeSet<>(Comparator.reverseOrder());
-            reversedPostIds.addAll(postIds);
-            return convertToPostUiDtos(reversedPostIds);
+        if (lastPostId != null) {
+            Long rank = redisNewsFeedTemplate.opsForZSet().rank(key, lastPostId);
+            if (rank == null) {
+                return getNewsFeedFromDb(lastPostId, feedPageSize);
+            }
+            start = rank + 1;
+            end = start + feedPageSize - 1;
         }
-        Long  rank = redisNewsFeedTemplate.opsForZSet().rank(key, lastPostId);
-        if(rank == null) {
-
-            return getNewsFeedFromDb(Long.MAX_VALUE);
-        }
-
-        long start = rank + 1;
-        long end = start + feedPageSize - 1;
-        log.info("start = {}; end = {}; feedPageSize = {}",start, end, feedPageSize);
+//        if(lastPostId != null) {
+        //здесь тоже может не быть нужных постов кеше - обработать этот случай: Проверено
         Set<Long> postIds = redisNewsFeedTemplate.opsForZSet().range(key, start, end);
-        TreeSet<Long> reversedPostIds = new TreeSet<>(Comparator.reverseOrder());
-        reversedPostIds.addAll(postIds);
-        //in progress
-        if(reversedPostIds.size() < feedPageSize) {
-            return getNewsFeedFromDb(reversedPostIds.last());
+        TreeSet<Long> reversedPostIdsFromCash = new TreeSet<>(Comparator.reverseOrder());
+        reversedPostIdsFromCash.addAll(postIds);
+        if (reversedPostIdsFromCash.isEmpty() && lastPostId == null) {
+            return getNewsFeedFromDb(Long.MAX_VALUE, feedPageSize);
         }
-        return convertToPostUiDtos(reversedPostIds);
+        if (reversedPostIdsFromCash.isEmpty()) {
+            return getNewsFeedFromDb(lastPostId, feedPageSize);
+        }
+        if (reversedPostIdsFromCash.size() >= feedPageSize) {
+            return convertToPostUiDtos(reversedPostIdsFromCash);
+        } else {
+            List<PostUiDto> postUiDtos = new ArrayList<>();
+            postUiDtos.addAll(convertToPostUiDtos(reversedPostIdsFromCash));
+            postUiDtos.addAll(getNewsFeedFromDb(reversedPostIdsFromCash.last(),
+                    feedPageSize - reversedPostIdsFromCash.size()));
+            return postUiDtos;
+        }
+//        }
+        /////
+//        Long  rank = redisNewsFeedTemplate.opsForZSet().rank(key, lastPostId);
+//        if(rank == null) {
+//            return getNewsFeedFromDb(lastPostId, feedPageSize);
+//        }
+//
+//        long start = rank + 1;
+//        long end = start + feedPageSize - 1;
+//        log.info("start = {}; end = {}; feedPageSize = {}",start, end, feedPageSize);
+//        Set<Long> postIds = redisNewsFeedTemplate.opsForZSet().range(key, start, end);
+//        TreeSet<Long> reversedPostIdsFromCash = new TreeSet<>(Comparator.reverseOrder());
+//        reversedPostIdsFromCash.addAll(postIds);
+//        //in progress
+//        if(reversedPostIdsFromCash.isEmpty()) {
+//            return getNewsFeedFromDb(lastPostId, feedPageSize);
+//        }
+//        if(reversedPostIdsFromCash.size() >= feedPageSize) {
+//            return convertToPostUiDtos(reversedPostIdsFromCash);
+//        } else {
+//            List<PostUiDto> postUiDtos = new ArrayList<>();
+//            postUiDtos.addAll(convertToPostUiDtos(reversedPostIdsFromCash));
+//            postUiDtos.addAll(getNewsFeedFromDb(reversedPostIdsFromCash.last(),
+//                    feedPageSize - reversedPostIdsFromCash.size()));
+//            return postUiDtos;
+//        }
     }
 
     public void addPostIdToUserNewsFeed(PostAndFollowersDto postAndFollowersDto) {
@@ -129,6 +162,37 @@ public class NewsFeedService {
         }
     }
 
+    private List<PostUiDto> getNewsFeedPageFromCashAndDb(String key, Long lastPostId) {
+        long start = 0;
+        long end = feedPageSize - 1;
+
+        if (lastPostId != null) {
+            Long rank = redisNewsFeedTemplate.opsForZSet().rank(key, lastPostId);
+            if (rank == null) {
+                return getNewsFeedFromDb(lastPostId, feedPageSize);
+            }
+            start = rank + 1;
+            end = start + feedPageSize - 1;
+        }
+
+        Set<Long> postIds = redisNewsFeedTemplate.opsForZSet().range(key, start, end);
+        TreeSet<Long> reversedPostIdsFromCash = new TreeSet<>(Comparator.reverseOrder());
+        reversedPostIdsFromCash.addAll(postIds);
+
+        if (reversedPostIdsFromCash.isEmpty()) {
+            return getNewsFeedFromDb(lastPostId, feedPageSize);
+        }
+        if (reversedPostIdsFromCash.size() >= feedPageSize) {
+            return convertToPostUiDtos(reversedPostIdsFromCash);
+        } else {
+            List<PostUiDto> postUiDtos = new ArrayList<>();
+            postUiDtos.addAll(convertToPostUiDtos(reversedPostIdsFromCash));
+            postUiDtos.addAll(getNewsFeedFromDb(reversedPostIdsFromCash.last(),
+                    feedPageSize - reversedPostIdsFromCash.size()));
+            return postUiDtos;
+        }
+    }
+
     private List<PostUiDto> convertToPostUiDtos(Set<Long> postIds) {
         if (postIds == null || postIds.isEmpty()) {
             return Collections.emptyList();
@@ -153,21 +217,21 @@ public class NewsFeedService {
         return newsFeedPosts;
     }
 
-    private List<PostUiDto> getNewsFeedFromDb(Long lastPostId){
+    private List<PostUiDto> getNewsFeedFromDb(Long lastPostId, int postsNumber) {
         //To optimize
         List<UserDto> userDtos = userServiceClient.getFollowees(userContext.getUserId());
         List<Post> posts = postRepository.findByAuthorIds(
                 userDtos.stream().map(UserDto::getId).toList(),
                 lastPostId,
-                feedPageSize
+                postsNumber
         );
         log.info("getNewsFeedFromDb(): found posts: {}", posts.stream().map(postMapper::toDto).toList());
 
         List<PostUiDto> postUiDtos = new ArrayList<>();
-        for(Post post : posts) {
-            for(UserDto userDto : userDtos) {
-                if(Objects.equals(userDto.getId(), post.getAuthorId())) {
-                    PostUiDto postUiDto = postUiDtoMapper.toDto(post,userCashDtoMapper.toDto(userDto, 0L));
+        for (Post post : posts) {
+            for (UserDto userDto : userDtos) {
+                if (Objects.equals(userDto.getId(), post.getAuthorId())) {
+                    PostUiDto postUiDto = postUiDtoMapper.toDto(post, userCashDtoMapper.toDto(userDto, 0L));
                     postUiDtos.add(postUiDto);
                 }
             }
