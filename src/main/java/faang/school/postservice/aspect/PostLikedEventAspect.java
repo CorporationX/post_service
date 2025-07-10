@@ -1,6 +1,8 @@
 package faang.school.postservice.aspect;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.notification.PostLikedEvent;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.publisher.PostLikedEventPublisher;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +19,7 @@ import org.springframework.stereotype.Component;
 public class PostLikedEventAspect {
 
     private final PostLikedEventPublisher publisher;
+    private final UserServiceClient userServiceClient;
 
     @AfterReturning(
             value = "@annotation(faang.school.postservice.annotation.PublishPostLikedEventKafka)",
@@ -26,11 +29,12 @@ public class PostLikedEventAspect {
         Object[] args = joinPoint.getArgs();
         long postId = (long) args[0];
         Like like = (Like) result;
+        UserDto authorDto = userServiceClient.getUser(like.getPost().getAuthorId());
 
         publisher.publish(PostLikedEvent.builder()
                 .likeId(like.getId())
-                .likerId(like.getUserId())
-                .authorId(like.getPost().getAuthorId())
+                .liker(like.getUserId())
+                .author(authorDto)
                 .postId(postId)
                 .build()
         );

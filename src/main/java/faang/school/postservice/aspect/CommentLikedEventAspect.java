@@ -1,6 +1,8 @@
 package faang.school.postservice.aspect;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.notification.CommentLikedEvent;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.publisher.CommentLikedEventPublisher;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class CommentLikedEventAspect {
 
+    private final UserServiceClient userServiceClient;
     private final CommentLikedEventPublisher publisher;
 
     @AfterReturning(
@@ -26,11 +29,12 @@ public class CommentLikedEventAspect {
         Object[] args = joinPoint.getArgs();
         long commentId = (long) args[0];
         Like like = (Like) result;
+        UserDto authorDto = userServiceClient.getUser(like.getComment().getAuthorId());
 
         publisher.publish(CommentLikedEvent.builder()
                 .likeId(like.getId())
-                .likerId(like.getUserId())
-                .authorId(like.getComment().getAuthorId())
+                .liker(like.getUserId())
+                .author(authorDto)
                 .commentId(commentId)
                 .build()
         );
