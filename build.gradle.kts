@@ -122,15 +122,16 @@ tasks.jacocoTestReport {
 }
 
 val jacocoClassExclude = listOf(
-        "faang.school.postservice.controller.KafkaController", // тест Стас
-        "faang.school.postservice.producer.KafkaProducer", // тест Стас
-        "faang.school.postservice.producer.LikeEventProducer", // тест Стас
-        "faang.school.postservice.config.*",
-        "faang.school.postservice.model.*",
-        "faang.school.postservice.dto.*",
-        "faang.school.postservice.mapper.*",
-        "faang.school.postservice.PostServiceApp",
-        "faang.school.postservice.client.Feign*"
+    "faang.school.postservice.controller.KafkaController", // тест Стас
+    "faang.school.postservice.producer.KafkaProducer", // тест Стас
+    "faang.school.postservice.producer.LikeEventProducer", // тест Стас
+    "faang.school.postservice.config.*",
+    "faang.school.postservice.model.*",
+    "faang.school.postservice.dto.*",
+    "faang.school.postservice.mapper.*",
+    "faang.school.postservice.PostServiceApp",
+    "faang.school.postservice.client.Feign*",
+    "faang.school.postservice.publisher.CommentEventPublisher" // тест Сергей
 )
 
 tasks.jacocoTestCoverageVerification {

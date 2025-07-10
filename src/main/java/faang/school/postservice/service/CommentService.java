@@ -2,10 +2,12 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.event.CommentEventDto;
 import faang.school.postservice.exception.CommentNotFoundException;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.util.Utils;
@@ -29,6 +31,7 @@ public class CommentService {
     private final UserServiceClient userServiceClient;
     private final PostRepository postRepository;
     private final PostService postService;
+    private final CommentEventPublisher commentEventPublisher;
 
     /**
      * @return возвращает Comment по его id
@@ -46,6 +49,7 @@ public class CommentService {
         comment.setPost(post);
         comment.setCreatedAt(LocalDateTime.now());
         comment = commentRepository.save(comment);
+        publishCommentAnalysis(comment);
         return commentMapper.toDto(comment);
     }
 
@@ -70,5 +74,15 @@ public class CommentService {
     public void deleteComment(Long commentId) {
         Comment comment = findCommentById(commentId);
         commentRepository.delete(comment);
+    }
+
+    private void publishCommentAnalysis(Comment comment) {
+        CommentEventDto commentEventDto = CommentEventDto.builder()
+                .postId(comment.getPost().getId())
+                .authorId(comment.getAuthorId())
+                .commentId(comment.getId())
+                .dateTime(comment.getUpdatedAt())
+                .build();
+        commentEventPublisher.publish(commentEventDto);
     }
 }
