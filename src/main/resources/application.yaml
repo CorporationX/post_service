@@ -32,6 +32,15 @@ spring:
         calculations_channel:
           name: calculations_channel
 
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    topics:
+      comment-created-topic:
+        name: comment-created-notification
+
 server:
   port: 8081
 
@@ -48,6 +57,9 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+notifications:
+  symbol-amount-for-short-content: 20
 
 minio:
   endpoint: http://localhost:9000
