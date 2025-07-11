@@ -6,7 +6,9 @@ import faang.school.postservice.dto.post.PostRequestDto;
 import faang.school.postservice.dto.post.PostResponseDto;
 import faang.school.postservice.service.PostService;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
+@Validated
 @RequiredArgsConstructor
 @RequestMapping("/posts")
 public class PostController {
@@ -27,7 +30,7 @@ public class PostController {
     private final ProjectServiceClient projectServiceClient;
 
     @PostMapping("/draftCreate")
-    public PostResponseDto createDraftPost(@RequestBody PostRequestDto dto) {
+    public PostResponseDto createDraftPost(@Valid @RequestBody  PostRequestDto dto) {
         validate(dto.projectId(), dto.authorId());
         return postService.createDraftPost(dto);
     }
@@ -50,8 +53,7 @@ public class PostController {
     }
 
     @PatchMapping("/{postId}/updatePost")
-    public PostResponseDto updatePost(@PathVariable long postId, @RequestBody PostRequestDto dto) {
-        validate(dto.projectId(), dto.authorId());
+    public PostResponseDto updatePost(@PathVariable long postId, @Valid @RequestBody PostRequestDto dto) {
         return postService.updatePost(postId, dto);
     }
 
