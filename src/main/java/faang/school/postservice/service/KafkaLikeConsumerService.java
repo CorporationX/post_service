@@ -28,11 +28,11 @@ public class KafkaLikeConsumerService {
         log.info("Acknowledge CommentLike: {}" , likeDto);
     }
 
-    @KafkaListener(topics={"PostCreation"}, groupId = "consumer-post")
-    public void consumePost(PostDto postDto, Acknowledgment acknowledgment) {
-        acknowledgment.acknowledge();
-        log.info("Acknowledge Post created: {}" , postDto);
-    }
+//    @KafkaListener(topics={"PostCreation"}, groupId = "consumer-post")
+//    public void consumePost(PostDto postDto, Acknowledgment acknowledgment) {
+//        acknowledgment.acknowledge();
+//        log.info("Acknowledge Post created: {}" , postDto);
+//    }
 
     @KafkaListener(topics={"PostAndFollowers"}, groupId = "consumer-post-followers")
     public void consumePostCreation(PostAndFollowersDto postAndFollowersDto, Acknowledgment acknowledgment) {

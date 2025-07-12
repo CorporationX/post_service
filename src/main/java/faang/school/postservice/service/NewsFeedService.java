@@ -125,6 +125,12 @@ public class NewsFeedService {
         return userServiceClient.getFollowees(userId);
     }
 
+    public void heat() {
+        // получить N пользователей
+        // Для каждого из N пользователей выбрать 100 его новостей из SQL DB
+        //     и на их основе заполнить NewsFeed, PostCash and UserCash топики
+    }
+
     private String getKey(Long userId) {
         return NEWS_FEED_KEY_PREFIX + userId;
     }
