@@ -31,6 +31,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @Service
 @Slf4j
@@ -87,10 +89,10 @@ public class NewsFeedService {
             return getNewsFeedFromDb(lastPostId, feedPageSize);
         }
         if (reversedPostIdsFromCash.size() >= feedPageSize) {       // Cash содержит id всех постов
-            return convertToPostUiDtos(reversedPostIdsFromCash);
+            return collectPostsAndUsersData(reversedPostIdsFromCash);
         } else {                                                    // Cash частично содержит id запрашиваемых постов
             List<PostUiDto> postUiDtos = new ArrayList<>();
-            postUiDtos.addAll(convertToPostUiDtos(reversedPostIdsFromCash));
+            postUiDtos.addAll(collectPostsAndUsersData(reversedPostIdsFromCash));
             postUiDtos.addAll(getNewsFeedFromDb(reversedPostIdsFromCash.last(),
                     feedPageSize - reversedPostIdsFromCash.size()));
             return postUiDtos;
@@ -134,27 +136,31 @@ public class NewsFeedService {
         }
     }
 
-    private List<PostUiDto> convertToPostUiDtos(Set<Long> postIds) {
+    private List<PostUiDto> collectPostsAndUsersData(Set<Long> postIds) {
         if (postIds == null || postIds.isEmpty()) {
             return Collections.emptyList();
         }
 
+        Iterable<PostCashDto> postsFromCash =  postCashRepository.findAllById(postIds);
+        Set<Long> existingPostCashIds = StreamSupport.stream(postsFromCash.spliterator(), false)
+                .map(PostCashDto::getId)
+                .collect(Collectors.toSet());
+
+        List<Long> missingPostCashIds = postIds.stream()
+                .filter(id -> !existingPostCashIds.contains(id))
+                .toList();
+
         List<PostUiDto> newsFeedPosts = new ArrayList<>();
-        for (Long p : postIds) {
-            Optional<PostCashDto> optionalPost = postCashRepository.findById(p);
-            if (optionalPost.isPresent()) {
-                PostUiDto postUiDto = new PostUiDto();
-                Optional<UserCashDto> optionalUserCashDto = userCashDtoRepository.findById(optionalPost.get().getAuthorId());
 
-                postUiDto.setId(p);
-                postUiDto.setContent(optionalPost.get().getContent());
-                optionalUserCashDto.ifPresent(postUiDto::setAuthor);
-                postUiDto.setProjectId(optionalPost.get().getProjectId());
-                postUiDto.setLikesNumber(optionalPost.get().getLikesNumber());
-
-                newsFeedPosts.add(postUiDto);
-            }
+        if(!existingPostCashIds.isEmpty()) {
+            newsFeedPosts.addAll(collectCashPosts(postsFromCash));
         }
+
+        if(!missingPostCashIds.isEmpty()) {
+            newsFeedPosts.addAll(getPostsFromDb(missingPostCashIds));
+        }
+
+        newsFeedPosts.sort(Comparator.comparing(PostUiDto::getId).reversed());
         return newsFeedPosts;
     }
 
@@ -178,5 +184,40 @@ public class NewsFeedService {
             }
         }
         return postUiDtos;
+    }
+
+    private List<PostUiDto> collectCashPosts(Iterable<PostCashDto> postCashDtos) {
+        List<PostUiDto> newsFeedPosts = new ArrayList<>();
+        for(PostCashDto postCashDto : postCashDtos) {
+            PostUiDto postUiDto = new PostUiDto();
+
+            Optional<UserCashDto> optionalUserCashDto = userCashDtoRepository.findById(postCashDto.getAuthorId());
+            postUiDto.setAuthor(
+                    optionalUserCashDto.orElseGet(() ->
+                            userCashDtoMapper.toDto(
+                                    userServiceClient.getUser(postCashDto.getAuthorId()), postCashDto.getTtl())
+                    )
+            );
+            postUiDto.setId(postCashDto.getId());
+            postUiDto.setContent(postCashDto.getContent());
+            postUiDto.setProjectId(postCashDto.getProjectId());
+            postUiDto.setLikesNumber(postCashDto.getLikesNumber());
+
+            newsFeedPosts.add(postUiDto);
+            log.info("collectCashPosts(): {}", postUiDto);
+        }
+        return newsFeedPosts;
+    }
+
+    private List<PostUiDto> getPostsFromDb(List<Long> postIds) {
+        Iterable<Post> posts = postRepository.findAllById(postIds);
+        List<PostUiDto> newsFeedPosts = new ArrayList<>();
+        for(Post p : posts) {
+            UserDto userDto = userServiceClient.getUser(p.getAuthorId());
+            UserCashDto userCashDto = userCashDtoMapper.toDto(userDto, 0L);
+            newsFeedPosts.add(postUiDtoMapper.toDto(p, userCashDto));
+            log.info("Post postId={} not found in Cash. Retrieved from DB", p.getId());
+        }
+        return newsFeedPosts;
     }
 }
