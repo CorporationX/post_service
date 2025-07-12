@@ -17,7 +17,7 @@ public class PostContentChecker {
     private final PostService postService;
     private final ModerationDictionary moderationDictionary;
     @Transactional
-    public List<Post> verifyPostsBatch(List<Post> postList) {
+    public void verifyPostsBatch(List<Post> postList) {
         List<Post> verifiedPostList = new ArrayList<>();
         for (Post post : postList) {
             String content = post.getContent();
@@ -30,6 +30,5 @@ public class PostContentChecker {
             postService.updatePost(post.getId(), post);
             verifiedPostList.add(post);
         }
-        return verifiedPostList;
     }
 }

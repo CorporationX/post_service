@@ -71,10 +71,16 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     Long countDraftPosts();
 
     @Query(nativeQuery = true, value = """
-            SELECT * FROM Post c
-            WHERE c.verified_date is NULL
-            FOR UPDATE SKIP LOCKED
-            LIMIT 10000
+                    SELECT * FROM Post p
+                    WHERE p.verified is NULL
+                    FOR UPDATE
+                    SKIP LOCKED
+                    LIMIT ?1
             """)
-    List<Post> findAllNotVerifiedPost();
+    List<Post> getNotVerifiedPostsLimitedWithLock();
+    @Query(nativeQuery = true, value = """
+    SELECT COUNT(*) FROM post p
+    WHERE p.verified is NULL
+            """)
+    Integer countNotVerifiedPosts();
 }

@@ -11,3 +11,5 @@ databaseChangeLog:
      file: db/changelog/changeset/post_V005_alter_comment_add_verification.sql
   - include:
       file: db/changelog/changeset/post_V006_alter_post_add_corrected_content.sql
+  - include:
+      file: db/changelog/changeset/post_V007_alter_post_add_column_moderation.sql
