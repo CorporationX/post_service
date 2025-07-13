@@ -41,3 +41,11 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+ad-cleanup:
+  cron: "0 0 3 * * ?"
+  batch-size: 200
+  thread-pool:
+    core-pool-size: 6
+    max-pool-size: 12
+    queue-capacity: 200
