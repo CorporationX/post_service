@@ -14,6 +14,6 @@ import lombok.Setter;
 @AllArgsConstructor
 public class CommentCreationNotificationEvent implements NotificationEvent {
     private String shortContent;
-    private UserDto postAuthor;
+    private UserDto owner;
     private String commentAuthorUserName;
 }

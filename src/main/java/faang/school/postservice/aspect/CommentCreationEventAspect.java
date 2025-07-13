@@ -36,7 +36,7 @@ public class CommentCreationEventAspect {
                 : result.getContent();
         CommentCreationNotificationEvent event = CommentCreationNotificationEvent.builder()
                 .shortContent(shortContent)
-                .postAuthor(postAuthor)
+                .owner(postAuthor)
                 .commentAuthorUserName(commentAuthor.getUsername())
                 .build();
         log.info("publishCommentCreationEvent event: {}", event);
