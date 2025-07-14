@@ -14,7 +14,7 @@ public class AdService {
     private final AdRepository adRepository;
     private final AdCleanupSettings settings;
 
-    private final int BATCH_SIZE = settings.getBatchSize();
+    private final int BATCH_SIZE;
 
     public void deleteExpiredAds() {
         LocalDateTime now = LocalDateTime.now();
