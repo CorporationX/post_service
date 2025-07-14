@@ -22,8 +22,18 @@ spring:
       port: 6379
       host: localhost
       channels:
+        comment: comment_channel
+        postView: post_view_channel
+        like: like_channel
+        likeReceived: likes_received
+        postCreated: post_created
         calculations_channel:
           name: calculations_channel
+
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 100MB
 
 server:
   port: 8081
@@ -33,19 +43,17 @@ logging:
     root: info
 
 user-service:
-  host: localhost
-  port: 8080
+  host: localhost:8080
 project-service:
-  host: localhost
-  port: 8082
+  host: localhost:8082
 payment-service:
   host: localhost
   port: 9080
-
-ad-cleanup:
+  
+  ad-cleanup:
   cron: "0 0 3 * * ?"
   batch-size: 200
   thread-pool:
     core-pool-size: 6
     max-pool-size: 12
-    queue-capacity: 200
+    queue-capacity: 200   
