@@ -38,7 +38,7 @@ public class Post {
     @Column(name = "content", nullable = false, length = 4096)
     private String content;
 
-    @Column(name = "author_id", nullable = false)
+    @Column(name = "author_id")
     private Long authorId;
 
     @Column(name = "project_id")
@@ -56,7 +56,7 @@ public class Post {
     @OneToOne(mappedBy = "post", cascade = CascadeType.ALL)
     private Ad ad;
 
-    @OneToMany(mappedBy = "post", orphanRemoval = true)
+    @OneToMany(mappedBy = "post", orphanRemoval = true, cascade = CascadeType.ALL)
     private List<Resource> resources;
 
     @Column(name = "published", nullable = false)
