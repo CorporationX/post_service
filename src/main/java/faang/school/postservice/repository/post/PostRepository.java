@@ -1,8 +1,11 @@
 package faang.school.postservice.repository.post;
 
 import faang.school.postservice.model.Post;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -32,4 +35,8 @@ public interface PostRepository extends CrudRepository<Post, Long> {
     LIMIT :limit
     """)
     List<Post> findByAuthorIds(List<Long> authorIds, Long lastPostId, int limit);
+
+    @Query(nativeQuery = true, value = """
+            SELECT p.* FROM Post p WHERE p.created_at >= NOW() - (INTERVAL '1 day' * :days)""")
+    Page<Post> findRecentPosts(Pageable pageable, @Param("days") int days);
 }

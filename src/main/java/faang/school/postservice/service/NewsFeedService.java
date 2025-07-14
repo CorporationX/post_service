@@ -2,12 +2,17 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.cash.NewsFeed;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.KafkaProducerConfig;
+import faang.school.postservice.config.RedisConfig;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostAndFollowersDto;
 import faang.school.postservice.dto.post.PostCashDto;
+import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.PostUiDto;
 import faang.school.postservice.dto.user.UserCashDto;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.mapper.PostAndFollowersMapper;
+import faang.school.postservice.mapper.PostCashDtoMapper;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.mapper.PostUiDtoMapper;
 import faang.school.postservice.mapper.UserCashDtoMapper;
@@ -18,7 +23,11 @@ import faang.school.postservice.repository.user.UserCashDtoCashRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,10 +59,15 @@ public class NewsFeedService {
     private final UserCashDtoCashRepository userCashDtoRepository;
     private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
+    private final KafkaProducerConfig kafkaProducerConfig;
+    private final KafkaLikeProducerService kafkaLikeProducerService;
     private final UserContext userContext;
     private final PostMapper postMapper;
     private final PostUiDtoMapper postUiDtoMapper;
+    private final PostAndFollowersMapper postAndFollowersMapper;
     private final UserCashDtoMapper userCashDtoMapper;
+    private final PostCashDtoMapper postCashDtoMapper;
+    private final RedisConfig redisConfig;
 
     public NewsFeed getNewsFeed(Long userId) {
         String key = getKey(userId);
@@ -125,12 +139,69 @@ public class NewsFeedService {
         return userServiceClient.getFollowees(userId);
     }
 
-    public void heat() {
+    public boolean heat() {
         // получить N пользователей
+//        boolean lastPage = false;
+//        int pageNumber = 0;
+//        while(!lastPage) {
+//            log.info("Requesting page: {}, size: 5", pageNumber);
+//            Page<UserDto> page = userServiceClient.getActiveUsers(true, pageNumber, 5 );
+//            lastPage = page.isLast();
+//            pageNumber++;
+//            log.info("Page received: {}", page);
+//        }
+//        return true;
         // Для каждого из N пользователей выбрать 100 его новостей из SQL DB
         //     и на их основе заполнить NewsFeed, PostCash and UserCash топики
+        int pageNumber = 0;
+        int size = 3;
+        Pageable pageable = PageRequest.of(pageNumber, size);
+        while(true) {
+            Page<Post> postPage = postRepository.findRecentPosts(pageable, 5);
+            pageable = pageable.next();
+            List<PostDto> postDtos =  postPage.getContent().stream()
+                    .map(postMapper::toDto)
+                    .toList();
+            log.info("Posts received: {}", postDtos);
+            publishPostsToCash(postPage.getContent());
+            if(!postPage.hasNext()) {
+                break;
+            }
+        }
+        return true;
     }
 
+    private void publishPostsToCash(List<Post> posts){
+        List<Long> userIds = new ArrayList<>(posts.stream()
+                .map(Post::getAuthorId)
+                .distinct()
+                .toList());
+        List<Long> notCashedUserIds = getUserIdsThatAreNotInCash(userIds);
+        if(!notCashedUserIds.isEmpty()) {
+            List<UserDto> userDtos = userServiceClient.getUsersByIds(notCashedUserIds);
+            for (UserDto userDto : userDtos) {
+                userCashDtoRepository.save(userCashDtoMapper.toDto(userDto, redisConfig.getUserTtl()));
+                log.info(">>> Users added to Cash: {}", userDtos);
+            }
+        }
+        for(Post post : posts) {
+            postCashRepository.save(postCashDtoMapper.toDto(post, redisConfig.getPostTtl()));
+            kafkaLikeProducerService.send(kafkaProducerConfig.getPostAndFollowersTopicName(), postAndFollowersMapper.toDto(post));
+        }
+    }
+
+    private List<Long> getUserIdsThatAreNotInCash(List<Long> userIds) {
+        List<Long> presentedInCashIds = new ArrayList<>();
+        for(Long id : userIds) {
+            Optional<UserCashDto> optional = userCashDtoRepository.findById(id);
+            if(optional.isPresent()){
+                presentedInCashIds.add(id);
+            }
+        }
+        userIds.removeAll(presentedInCashIds);
+        log.info(">>> presentedInCashUserIds: {}", presentedInCashIds);
+        return userIds;
+    }
     private String getKey(Long userId) {
         return NEWS_FEED_KEY_PREFIX + userId;
     }

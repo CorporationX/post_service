@@ -6,6 +6,7 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.PostUiDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.service.NewsFeedService;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -41,13 +42,14 @@ public class NewsFeedController {
 
     @GetMapping("/followees/{userId}")
     @ResponseBody
+
     public List<UserDto> getFollowees(@PathVariable Long userId) {
         return newsFeedService.getFollowees(userId);
     }
 
-    @PostMapping("/heat")
+    @PostMapping("/warmup")
     @ResponseBody
-    public void heat() {
-        newsFeedService.heat();
+    public boolean warmup() {
+        return newsFeedService.heat();
     }
 }
