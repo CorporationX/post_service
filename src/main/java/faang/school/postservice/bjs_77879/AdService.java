@@ -4,51 +4,31 @@ import faang.school.postservice.model.ad.Ad;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
-import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class AdService {
 
     private final AdRepository adRepository;
-    private final ExecutorService executor;
     private final AdCleanupSettings settings;
 
+    private final int BATCH_SIZE = settings.getBatchSize();
+
     public void deleteExpiredAds() {
-        List<Ad> allAds = adRepository.findAll();
+        LocalDateTime now = LocalDateTime.now();
 
-        if (allAds.isEmpty()) return;
+        List<Ad> expiredAds = adRepository.findAllByEndDateBefore(now);
 
-        List<Long> expiredIds = allAds.stream()
-                .filter(ad -> ad.getEndDate().isBefore(LocalDateTime.now()))
-                .map(Ad::getId)
-                .toList();
-
-        if (expiredIds.isEmpty()) return;
-
-        int batchSize = settings.getBatchSize();
-
-        List<List<Long>> batches = partitionList(expiredIds, batchSize);
-
-        batches.forEach(ids -> {
-            CompletableFuture.runAsync(() -> {
-                try {
-                    adRepository.deleteByIds(ids);
-                } catch (Exception e) {
-                    System.err.println("Ошибка при удалении партии ID: " + ids + ". Ошибка: " + e.getMessage());
-                }
-            }, executor);
-        });
-    }
-
-    private static <T> List<List<T>> partitionList(List<T> list, int size) {
-        List<List<T>> partitions = new ArrayList<>();
-        for (int i = 0; i < list.size(); i += size) {
-            int end = Math.min(i + size, list.size());
-            partitions.add(list.subList(i, end));
+        if (expiredAds.isEmpty()) {
+            return;
         }
-        return partitions;
+
+        List<Long> expiredIds = expiredAds.stream()
+                .map(Ad::getId)
+                .collect(Collectors.toList());
+
+        adRepository.deleteByIds(expiredIds);
     }
 }
