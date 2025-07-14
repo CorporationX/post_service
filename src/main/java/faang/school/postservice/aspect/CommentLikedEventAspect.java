@@ -33,8 +33,8 @@ public class CommentLikedEventAspect {
 
         publisher.publish(CommentLikedEvent.builder()
                 .likeId(like.getId())
-                .liker(like.getUserId())
-                .author(authorDto)
+                .likerId(like.getUserId())
+                .owner(authorDto)
                 .commentId(commentId)
                 .build()
         );
