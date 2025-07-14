@@ -133,8 +133,4 @@ public class PostService {
         return postOptional.get();
     }
 
-//    @Transactional
-//    public List<Post> getNotVerifiedPosts() {
-//        return postRepository.getNotVerifiedPostsLimitedWithLock();
-//    }
 }

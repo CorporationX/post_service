@@ -24,7 +24,7 @@ public class PostModerationService {
 
     @Transactional
     public void verifyPostsBatch(int countBatch) {
-        List<Post> postsBatch = new ArrayList<>();
+        List<Post> postsBatch = postRepository.getNotVerifiedPostsLimitedWithLock();
         log.info("{} posts locked for moderation", postsBatch.size());
 
         postsBatch.forEach(post -> {
