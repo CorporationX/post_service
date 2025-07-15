@@ -1,5 +1,6 @@
 package faang.school.postservice.service.comment;
 
+import faang.school.postservice.annotation.CommentCreationEventKafka;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CommentResponseImageDto;
@@ -7,9 +8,9 @@ import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
-import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.amazonS3.ImageCompressor;
 import faang.school.postservice.service.amazonS3.S3Service;
+import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.validation.comment.CommentValidation;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.Builder;
@@ -33,19 +34,19 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final CommentValidation commentValidation;
     private final UserContext userContext;
-    private final PostRepository postRepository;
+    private final PostService postService;
     private final S3Service s3Service;
     private final ImageCompressor imageCompressor;
 
+    @CommentCreationEventKafka
     @Transactional
     public Comment createComment(long postId, String content) {
         long authorId = userContext.getUserId();
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new EntityNotFoundException("the post was not found in the database"));
+        Post post = postService.getPostById(postId);
         UserDto userDto = userServiceClient.getUser(authorId);
 
         commentValidation.validateLengthContentComment(content);
-        commentValidation.checkAuthorEqualsUser(authorId, userDto.id());
+        commentValidation.checkAuthorEqualsUser(authorId, userDto.getId());
 
         Comment comment = Comment.builder()
                 .authorId(authorId)
