@@ -24,9 +24,8 @@ public class PostModerationService {
 
     @Transactional
     public void verifyPostsBatch(int countBatch) {
-        List<Post> postsBatch = postRepository.getNotVerifiedPostsLimitedWithLock();
+        List<Post> postsBatch = postRepository.getNotVerifiedPostsLimitedWithLock(countBatch);
         log.info("{} posts locked for moderation", postsBatch.size());
-
         postsBatch.forEach(post -> {
             boolean containsBadWord = moderationDictionary.containsProfanity(post.getContent());
             post.setVerified(!containsBadWord);
