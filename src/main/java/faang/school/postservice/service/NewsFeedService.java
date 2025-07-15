@@ -49,10 +49,10 @@ public class NewsFeedService {
     @Value("${spring.newsfeed.size:100}")
     private int newsFeedMaxSize;
     @Value("${spring.newsfeed.page.size:20}")
-    private int warmupDays;
+    private int feedPageSize;
 
     @Value("${spring.newsfeed.warmup.days:1}")
-    private int feedPageSize;
+    private int warmupDays;
     @Value("${spring.newsfeed.warmup.post.batch:1000}")
     private int postBatchSize;
 

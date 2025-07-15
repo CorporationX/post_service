@@ -46,6 +46,7 @@ public class KafkaLikeConsumerService {
         }
     }
 
+    //to do: add aSync launch
     private void addPostIdToUserNewsFeed(PostAndFollowersDto postAndFollowersDto) {
         log.info("KafkaLikeConsumerService.addPostIdToUserNewsFeed() {}", postAndFollowersDto);
         newsFeedService.addPostIdToUserNewsFeed(postAndFollowersDto);
