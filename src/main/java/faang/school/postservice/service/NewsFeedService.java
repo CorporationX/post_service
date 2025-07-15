@@ -27,7 +27,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,11 +46,15 @@ import java.util.stream.StreamSupport;
 @Slf4j
 @RequiredArgsConstructor
 public class NewsFeedService {
-    @Value("${spring.newsfeed.size}")
+    @Value("${spring.newsfeed.size:100}")
     private int newsFeedMaxSize;
+    @Value("${spring.newsfeed.page.size:20}")
+    private int warmupDays;
 
-    @Value("${spring.newsfeed.page.size}")
+    @Value("${spring.newsfeed.warmup.days:1}")
     private int feedPageSize;
+    @Value("${spring.newsfeed.warmup.post.batch:1000}")
+    private int postBatchSize;
 
     private static final String NEWS_FEED_KEY_PREFIX = "newsfeed:";
     private final RedisTemplate<String, Long> redisNewsFeedTemplate;
@@ -139,36 +142,31 @@ public class NewsFeedService {
         return userServiceClient.getFollowees(userId);
     }
 
-    public boolean heat() {
-        // получить N пользователей
-//        boolean lastPage = false;
-//        int pageNumber = 0;
-//        while(!lastPage) {
-//            log.info("Requesting page: {}, size: 5", pageNumber);
-//            Page<UserDto> page = userServiceClient.getActiveUsers(true, pageNumber, 5 );
-//            lastPage = page.isLast();
-//            pageNumber++;
-//            log.info("Page received: {}", page);
-//        }
-//        return true;
-        // Для каждого из N пользователей выбрать 100 его новостей из SQL DB
-        //     и на их основе заполнить NewsFeed, PostCash and UserCash топики
+    /**
+     * Fills up newsfeed cash with data supposedly after loss data in newsfeed cash
+     */
+    public void warmup() {
+        warmupWithRecentPosts(warmupDays);
+    }
+
+    private void warmupWithRecentPosts(int days) {
+        log.info("Warmup newsfeed with recent post for last {} days STARTS", days);
         int pageNumber = 0;
-        int size = 3;
-        Pageable pageable = PageRequest.of(pageNumber, size);
+        long countPosts = 0;
+        Pageable pageable = PageRequest.of(pageNumber, postBatchSize);
         while(true) {
-            Page<Post> postPage = postRepository.findRecentPosts(pageable, 5);
+            Page<Post> postPage = postRepository.findRecentPosts(pageable, days);
             pageable = pageable.next();
             List<PostDto> postDtos =  postPage.getContent().stream()
                     .map(postMapper::toDto)
                     .toList();
-            log.info("Posts received: {}", postDtos);
             publishPostsToCash(postPage.getContent());
+            countPosts += postPage.getContent().size();
             if(!postPage.hasNext()) {
                 break;
             }
         }
-        return true;
+        log.info("Warmup newsfeed with recent posts has FINISHED sending last batch of posts. {} posts processed", countPosts);
     }
 
     private void publishPostsToCash(List<Post> posts){
@@ -190,6 +188,11 @@ public class NewsFeedService {
         }
     }
 
+    /**
+     * Takes input userIds and removes from it id(s) that are not presented in Cash
+     * @param userIds List of user id(s)
+     * @return List of user id(s) of UserCashDto(s) that are NOT presented in Cash
+     */
     private List<Long> getUserIdsThatAreNotInCash(List<Long> userIds) {
         List<Long> presentedInCashIds = new ArrayList<>();
         for(Long id : userIds) {

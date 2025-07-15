@@ -1,12 +1,9 @@
 package faang.school.postservice.controller;
 
 import faang.school.postservice.cash.NewsFeed;
-import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.PostUiDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.service.NewsFeedService;
-import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -49,7 +46,7 @@ public class NewsFeedController {
 
     @PostMapping("/warmup")
     @ResponseBody
-    public boolean warmup() {
-        return newsFeedService.heat();
+    public void warmup() {
+        newsFeedService.warmup();
     }
 }

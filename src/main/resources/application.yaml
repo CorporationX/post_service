@@ -56,6 +56,11 @@ spring:
       ttl: 3600
     user:
       ttl: 3600
+    warmup:
+      days: 5
+      post:
+        batch: 3
+
 
 
 server:
