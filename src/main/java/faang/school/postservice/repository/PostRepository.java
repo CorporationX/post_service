@@ -76,9 +76,9 @@ public interface PostRepository extends JpaRepository<Post, Long> {
                     WHERE p.verified is NULL
                     FOR UPDATE
                     SKIP LOCKED
-                    LIMIT ?1
+                    LIMIT :limit
             """)
-    List<Post> getNotVerifiedPostsLimitedWithLock(@Param("limit") int limit);
+    List<Post> getNotVerifiedPostsLimitedWithLock(int limit);
     @Query(nativeQuery = true, value = """
     SELECT COUNT(*) FROM post p
     WHERE p.verified is NULL
