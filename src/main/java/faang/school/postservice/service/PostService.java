@@ -47,7 +47,7 @@ public class PostService {
         postCashRepository.save(postCashDtoMapper.toDto(post, redisConfig.getPostTtl()));
 
         UserDto userDto = userServiceClient.getUser(postSaved.getAuthorId());
-        userCashDtoRepository.save(userCashDtoMapper.toDto(userDto, redisConfig.getUserTtl()));
+        userCashDtoRepository.save(userCashDtoMapper.toUserCashDto(userDto, redisConfig.getUserTtl()));
 
         kafkaLikeProducerService.send(kafkaProducerConfig.getPostAndFollowersTopicName(), postAndFollowersMapper.toDto(postSaved));
         log.info("Post is created {}", postSaved);

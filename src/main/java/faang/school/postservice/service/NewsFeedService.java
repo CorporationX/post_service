@@ -178,7 +178,7 @@ public class NewsFeedService {
         if(!notCashedUserIds.isEmpty()) {
             List<UserDto> userDtos = userServiceClient.getUsersByIds(notCashedUserIds);
             for (UserDto userDto : userDtos) {
-                userCashDtoRepository.save(userCashDtoMapper.toDto(userDto, redisConfig.getUserTtl()));
+                userCashDtoRepository.save(userCashDtoMapper.toUserCashDto(userDto, redisConfig.getUserTtl()));
                 log.info(">>> Users added to Cash: {}", userDtos);
             }
         }
@@ -201,8 +201,8 @@ public class NewsFeedService {
                 presentedInCashIds.add(id);
             }
         }
+        log.info(">>> presentedInCashUserIds: {}; all users in cash:{}", presentedInCashIds, userIds.size() == presentedInCashIds.size());
         userIds.removeAll(presentedInCashIds);
-        log.info(">>> presentedInCashUserIds: {}", presentedInCashIds);
         return userIds;
     }
     private String getKey(Long userId) {
@@ -258,7 +258,7 @@ public class NewsFeedService {
         for (Post post : posts) {
             for (UserDto userDto : userDtos) {
                 if (Objects.equals(userDto.getId(), post.getAuthorId())) {
-                    PostUiDto postUiDto = postUiDtoMapper.toDto(post, userCashDtoMapper.toDto(userDto, 0L));
+                    PostUiDto postUiDto = postUiDtoMapper.toDto(post, userCashDtoMapper.toUserCashDto(userDto, 0L));
                     postUiDtos.add(postUiDto);
                 }
             }
@@ -270,16 +270,13 @@ public class NewsFeedService {
         List<PostUiDto> newsFeedPosts = new ArrayList<>();
         for(PostCashDto postCashDto : postCashDtos) {
             PostUiDto postUiDto = new PostUiDto();
-
-            Optional<UserCashDto> optionalUserCashDto = userCashDtoRepository.findById(postCashDto.getAuthorId());
-            postUiDto.setAuthor(
-                    optionalUserCashDto.orElseGet(() ->
-                            userCashDtoMapper.toDto(
-                                    userServiceClient.getUser(postCashDto.getAuthorId()), postCashDto.getTtl())
-                    )
-            );
             postUiDto.setId(postCashDto.getId());
             postUiDto.setContent(postCashDto.getContent());
+            postUiDto.setAuthor(
+                    userCashDtoRepository.findById(postCashDto.getAuthorId())
+                            .map(userCashDtoMapper::toUserDto)
+                            .orElseGet(() -> userServiceClient.getUser(postCashDto.getAuthorId()))
+            );
             postUiDto.setProjectId(postCashDto.getProjectId());
             postUiDto.setLikesNumber(postCashDto.getLikesNumber());
 
@@ -294,7 +291,7 @@ public class NewsFeedService {
         List<PostUiDto> newsFeedPosts = new ArrayList<>();
         for(Post p : posts) {
             UserDto userDto = userServiceClient.getUser(p.getAuthorId());
-            UserCashDto userCashDto = userCashDtoMapper.toDto(userDto, 0L);
+            UserCashDto userCashDto = userCashDtoMapper.toUserCashDto(userDto, 0L);
             newsFeedPosts.add(postUiDtoMapper.toDto(p, userCashDto));
             log.info("Post postId={} not found in Cash. Retrieved from DB", p.getId());
         }
