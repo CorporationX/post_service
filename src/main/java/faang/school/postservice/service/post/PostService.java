@@ -3,6 +3,7 @@ package faang.school.postservice.service.post;
 import faang.school.postservice.dto.post.CreatePostDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
+import faang.school.postservice.model.Post;
 import jakarta.validation.constraints.NotNull;
 import lombok.NonNull;
 
@@ -26,4 +27,8 @@ public interface PostService {
     List<PostDto> getPublishedByUser(@NotNull Long userId);
 
     List<PostDto> getPublishedByProject(@NotNull Long projectId);
+
+    Post getPostById(Long postId);
+
+    boolean existsById(Long postId);
 }

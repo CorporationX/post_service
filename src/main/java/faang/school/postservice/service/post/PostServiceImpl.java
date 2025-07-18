@@ -155,4 +155,15 @@ public class PostServiceImpl implements PostService {
 
         return postMapper.toPostDtoList(posts);
     }
+
+    @Override
+    public Post getPostById(Long postId) {
+        return postRepository.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException("Post not found with id " + postId));
+    }
+
+    @Override
+    public boolean existsById(Long postId) {
+        return postRepository.existsById(postId);
+    }
 }
