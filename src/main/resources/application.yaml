@@ -49,15 +49,15 @@ spring:
         static: eu-central-1
 
   newsfeed:
-    size: 5
+    size: 100
     page:
-      size: 3
+      size: 20
     post:
-      ttl: 3600
+      ttl: 86400
     user:
-      ttl: 3600
+      ttl: 86400
     warmup:
-      days: 30
+      days: 1
       post:
         batch: 3
 

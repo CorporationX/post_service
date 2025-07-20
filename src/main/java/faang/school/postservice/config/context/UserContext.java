@@ -12,7 +12,9 @@ public class UserContext {
     }
 
     public long getUserId() {
-        return userIdHolder.get();
+        //to do
+        //return userIdHolder.get();
+        return 10L;
     }
 
     public void clear() {

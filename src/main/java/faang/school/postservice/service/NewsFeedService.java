@@ -84,6 +84,7 @@ public class NewsFeedService {
     }
 
     public List<PostUiDto> getNewsFeedContent(Long userId, Long lastPostId) {
+        log.info("getNewsFeedContent for userId={}, lastPostId={}",userId, lastPostId);
         String key = getKey(userId);
         long start = 0;
         long end = feedPageSize - 1;
@@ -91,7 +92,7 @@ public class NewsFeedService {
         if (lastPostId != null) {
             Long rank = redisNewsFeedTemplate.opsForZSet().rank(key, lastPostId);
             if (rank == null) {
-                return getNewsFeedFromDb(lastPostId, feedPageSize);
+                return getNewsFeedFromDb(userId, lastPostId, feedPageSize);
             }
             start = rank + 1;
             end = start + feedPageSize - 1;
@@ -100,17 +101,17 @@ public class NewsFeedService {
         TreeSet<Long> reversedPostIdsFromCash = new TreeSet<>(Comparator.reverseOrder());
         reversedPostIdsFromCash.addAll(postIds);
         if (reversedPostIdsFromCash.isEmpty() && lastPostId == null) { // Cash пустой
-            return getNewsFeedFromDb(Long.MAX_VALUE, feedPageSize);
+            return getNewsFeedFromDb(userId, Long.MAX_VALUE, feedPageSize);
         }
         if (reversedPostIdsFromCash.isEmpty()) {                    //lastPostId - последний элемент в Cash
-            return getNewsFeedFromDb(lastPostId, feedPageSize);
+            return getNewsFeedFromDb(userId, lastPostId, feedPageSize);
         }
         if (reversedPostIdsFromCash.size() >= feedPageSize) {       // Cash содержит id всех постов
             return collectPostsAndUsersData(reversedPostIdsFromCash);
         } else {                                                    // Cash частично содержит id запрашиваемых постов
             List<PostUiDto> postUiDtos = new ArrayList<>();
             postUiDtos.addAll(collectPostsAndUsersData(reversedPostIdsFromCash));
-            postUiDtos.addAll(getNewsFeedFromDb(reversedPostIdsFromCash.last(),
+            postUiDtos.addAll(getNewsFeedFromDb(userId, reversedPostIdsFromCash.last(),
                     feedPageSize - reversedPostIdsFromCash.size()));
             return postUiDtos;
         }
@@ -244,9 +245,9 @@ public class NewsFeedService {
         return newsFeedPosts;
     }
 
-    private List<PostUiDto> getNewsFeedFromDb(Long lastPostId, int postsNumber) {
+    private List<PostUiDto> getNewsFeedFromDb(Long userId, Long lastPostId, int postsNumber) {
         //To optimize
-        List<UserDto> userDtos = userServiceClient.getFollowees(userContext.getUserId());
+        List<UserDto> userDtos = userServiceClient.getFollowees(userId);
         List<Post> posts = postRepository.findByAuthorIds(
                 userDtos.stream().map(UserDto::getId).toList(),
                 lastPostId,
