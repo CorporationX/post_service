@@ -1,5 +1,6 @@
 package faang.school.postservice.config.kafka;
 
+import faang.school.postservice.dto.notification.CommentAnalytics;
 import faang.school.postservice.dto.notification.CommentLikedEvent;
 import faang.school.postservice.dto.notification.PostLikedEvent;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +30,11 @@ public class KafkaProducerConfig {
 
     @Bean
     public KafkaTemplate<String, PostLikedEvent> postLikedEventTemplate() {
+        return new KafkaTemplate<>(jsonProducerFactory());
+    }
+
+    @Bean
+    public KafkaTemplate<String, CommentAnalytics> commentAnalyticsEventTemplate() {
         return new KafkaTemplate<>(jsonProducerFactory());
     }
 

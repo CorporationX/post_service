@@ -12,6 +12,9 @@ spring:
           name: post-liked-event
         comment-liked-topic:
           name: comment-liked-event
+      comment:
+        comment-topic:
+          name: comment-event
 
   servlet:
     multipart:

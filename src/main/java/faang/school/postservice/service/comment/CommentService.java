@@ -6,6 +6,7 @@ import faang.school.postservice.dto.comment.CommentResponseImageDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.amazonS3.ImageCompressor;
@@ -36,6 +37,7 @@ public class CommentService {
     private final PostRepository postRepository;
     private final S3Service s3Service;
     private final ImageCompressor imageCompressor;
+    private final CommentEventPublisher commentEventPublisher;
 
     @Transactional
     public Comment createComment(long postId, String content) {

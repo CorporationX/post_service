@@ -1,5 +1,6 @@
 package faang.school.postservice.service.comment;
 
+import faang.school.postservice.annotation.PublishCommentEventKafka;
 import faang.school.postservice.dto.comment.CommentDtoResponse;
 import faang.school.postservice.dto.comment.CommentResponseImageDto;
 import faang.school.postservice.mapper.comment.MapperComment;
@@ -16,6 +17,7 @@ public class CommentServiceFacade {
     private final MapperComment mapperComment;
     private final CommentService commentService;
 
+    @PublishCommentEventKafka
     public CommentDtoResponse createComment(long postId, String content) {
         Comment commentCreate = commentService.createComment(postId, content);
 
