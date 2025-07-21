@@ -3,7 +3,7 @@ name: Post Service CI Pipeline
 on:
   pull_request:
     branches:
-      - hippogriff-master-stream8
+      - feature/pipline-BJS2-84470
 
 jobs:
   build:
