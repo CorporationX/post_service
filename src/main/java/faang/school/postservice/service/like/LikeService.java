@@ -57,12 +57,14 @@ public class LikeService {
     public void deleteFromPost(long postId) {
         long currentUserId = context.getUserId();
         log.info("Start deleting like from post {} by user {}", postId, currentUserId);
+        checkUserExists(currentUserId);
         likeRepository.deleteByPostIdAndUserId(postId, currentUserId);
         log.info("Like successfully deleted from post {} by user {}", postId, currentUserId);
     }
 
     public void deleteFromComment(long commentId) {
         long currentUserId = context.getUserId();
+        checkUserExists(currentUserId);
         log.info("Start deleting like from comment {} by user {}", commentId, currentUserId);
         likeRepository.deleteByCommentIdAndUserId(commentId, currentUserId);
         log.info("Comment successfully liked from comment {} by user {}", commentId, currentUserId);

@@ -23,6 +23,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -225,6 +226,28 @@ class LikeServiceTest {
         String actualExceptionMessage = assertThrows(IllegalStateException.class,
                                                      () -> likeService.addToComment(COMMENT_ID)).getMessage();
         assertEquals(expectedExceptionMessage, actualExceptionMessage);
+    }
+
+    @Test
+    @DisplayName("Ошибка удаления лайка поста - пользователь не найден")
+    void negative_whenUserDeletedLikeFromPostNotExists_throwsException() {
+        when(context.getUserId()).thenReturn(USER_ID);
+        when(userServiceClient.getUser(USER_ID)).thenThrow(FeignException.class);
+
+        verify(likeRepository, never()).deleteByPostIdAndUserId(anyLong(), anyLong());
+        assertThrows(FeignException.class,
+                     () -> likeService.deleteFromPost(POST_ID));
+    }
+
+    @Test
+    @DisplayName("Ошибка удаления лайка комментария - пользователь не найден")
+    void negative_whenUserDeletedLikeFromCommentNotExists_throwsException() {
+        when(context.getUserId()).thenReturn(USER_ID);
+        when(userServiceClient.getUser(USER_ID)).thenThrow(FeignException.class);
+
+        verify(likeRepository, never()).deleteByCommentIdAndUserId(anyLong(), anyLong());
+        assertThrows(FeignException.class,
+                     () -> likeService.deleteFromComment(COMMENT_ID));
     }
 
     // ---------------------------------
