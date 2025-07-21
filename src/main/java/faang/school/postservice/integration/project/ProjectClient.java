@@ -1,10 +1,13 @@
 package faang.school.postservice.integration.project;
 
+import faang.school.postservice.integration.project.config.ProjectClientProperties;
 import faang.school.postservice.integration.project.dto.ProjectResponseDto;
 import faang.school.postservice.integration.project.service.ProjectServiceClient;
+import faang.school.postservice.integration.user.config.UserClientProperties;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatusCode;
@@ -21,18 +24,20 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 @Service
+@EnableConfigurationProperties(ProjectClientProperties.class)
 @RequiredArgsConstructor
 @Slf4j
 public class ProjectClient implements ProjectServiceClient {
 
+    private final ProjectClientProperties properties;
+
     @Override
     public ProjectResponseDto getProject(long id) {
 
-        ResponseEntity<ProjectResponseDto> responseEntity = WebClient.builder().baseUrl("").build()
+        ResponseEntity<ProjectResponseDto> responseEntity = WebClient.builder().baseUrl("http://" + properties.host() + ":" + properties.port()).build()
                 .get()
                 .uri(u -> {
-                    return u.path("")
-                            .queryParam("id", id)
+                    return u.path(properties.getProjectUrl() + "/" + id)
                             .build();
                 })
                 .accept(MediaType.APPLICATION_JSON)

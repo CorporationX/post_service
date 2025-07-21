@@ -3,22 +3,13 @@ package faang.school.postservice.dto.post;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
-import java.time.LocalDateTime;
-
 @Data
 @AllArgsConstructor
-public class PostDto {
+public class PostDraftDto {
     private String content;
 
     private Long authorId;
 
     private Long projectId;
 
-    private Long id;
-
-    private boolean deleted;
-
-    private boolean published;
-
-    private LocalDateTime publishedAt;
 }

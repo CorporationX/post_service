@@ -30,8 +30,8 @@ public class UserClient implements UserServiceClient {
         ResponseEntity<UserResponseDto> responseEntity = WebClient.builder().baseUrl("http://" + properties.host() + ":" + properties.port()).build()
                 .get()
                 .uri(u -> {
-                    return u.path(properties.getUserUrl())
-                            .queryParam("id", id)
+                    return u.path(properties.getUserUrl() + "/" + id)
+//                            .queryParam("id", id)
                             .build();
                 })
                 .accept(MediaType.APPLICATION_JSON)

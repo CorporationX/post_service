@@ -35,11 +35,12 @@ logging:
 integration:
   user-service:
     host: localhost
-    port: 8080
-    get-user-url: /get
+    port: 8888
+    get-user-url: /api/user
   project-service:
     host: localhost
     port: 8082
+    get-project-url: /api/project
   payment-service:
     host: localhost
     port: 9080
