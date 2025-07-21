@@ -40,5 +40,10 @@ public class GlobalExceptionHandler {
         return new ErrorResponse("Entity not found", e.getMessage());
     }
 
-
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ExceptionHandler(RuntimeException.class)
+    public ErrorResponse handleRuntimeException(RuntimeException e) {
+        log.error(e.getMessage(), e);
+        return new ErrorResponse("Unknown error", e.getMessage());
+    }
 }
