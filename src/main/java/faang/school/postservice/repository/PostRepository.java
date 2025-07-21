@@ -3,6 +3,7 @@ package faang.school.postservice.repository;
 import faang.school.postservice.model.Post;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -69,4 +70,18 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     WHERE published = false AND deleted = false AND corrected_content IS NULL
     """)
     Long countDraftPosts();
+
+    @Query(nativeQuery = true, value = """
+                    SELECT * FROM Post p
+                    WHERE p.verified is NULL
+                    FOR UPDATE
+                    SKIP LOCKED
+                    LIMIT :limit
+            """)
+    List<Post> getNotVerifiedPostsLimitedWithLock(int limit);
+    @Query(nativeQuery = true, value = """
+    SELECT COUNT(*) FROM post p
+    WHERE p.verified is NULL
+            """)
+    Integer countNotVerifiedPosts();
 }

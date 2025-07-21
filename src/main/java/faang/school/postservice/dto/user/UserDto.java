@@ -1,12 +1,23 @@
 package faang.school.postservice.dto.user;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+
 import java.util.Locale;
 
-public record UserDto(
-    Long id,
-    String username,
-    String email,
-    String phone,
-    Locale locale
-) {
+@Getter
+@Setter
+@RequiredArgsConstructor
+public class UserDto {
+    private long id;
+    private String username;
+    private String email;
+    private String phone;
+    private PreferredContact preference;
+    private Locale locale;
+
+    public enum PreferredContact {
+        EMAIL, PHONE, TELEGRAM
+    }
 }

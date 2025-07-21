@@ -47,6 +47,11 @@ dependencies {
     implementation("commons-io:commons-io:2.19.0")
 
     /**
+     * Message Broker
+     */
+    implementation ("org.springframework.kafka:spring-kafka:3.3.6")
+
+    /**
      * Test containers
      */
     implementation(platform("org.testcontainers:testcontainers-bom:1.17.6"))

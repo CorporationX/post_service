@@ -36,14 +36,14 @@ public class LikeServiceImpl implements LikeService {
     public Like likeThePost(long postId) {
         UserDto user = existenceCheckUser();
         Post post = postService.getPostById(postId);
-        Optional<Like> likeOptional = likeRepository.findByPostIdAndUserId(post.getId(), user.id());
+        Optional<Like> likeOptional = likeRepository.findByPostIdAndUserId(post.getId(), user.getId());
         if (likeOptional.isPresent()) {
             return likeOptional.get();
         } else {
             Like existingLike = likeOptional.orElseGet(() -> {
                 Like newLike = new Like();
                 newLike.setPost(post);
-                newLike.setUserId(user.id());
+                newLike.setUserId(user.getId());
                 return newLike;
             });
             return likeRepository.save(existingLike);
@@ -54,7 +54,7 @@ public class LikeServiceImpl implements LikeService {
     @Transactional
     public void deleteLikeThePost(long postId) {
         UserDto user = existenceCheckUser();
-        likeRepository.deleteByPostIdAndUserId(postId, user.id());
+        likeRepository.deleteByPostIdAndUserId(postId, user.getId());
     }
 
     @Override
@@ -63,14 +63,14 @@ public class LikeServiceImpl implements LikeService {
     public Like likeTheComment(long commentId) {
         UserDto user = existenceCheckUser();
         Comment comment = commentService.getComment(commentId);
-        Optional<Like> likeOptional = likeRepository.findByCommentIdAndUserId(commentId, user.id());
+        Optional<Like> likeOptional = likeRepository.findByCommentIdAndUserId(commentId, user.getId());
         if (likeOptional.isPresent()) {
             return likeOptional.get();
         } else {
             Like likeResult = likeOptional.orElseGet(() -> {
                 Like newLike = new Like();
                 newLike.setComment(comment);
-                newLike.setUserId(user.id());
+                newLike.setUserId(user.getId());
                 return newLike;
             });
             return likeRepository.save(likeResult);
@@ -82,7 +82,7 @@ public class LikeServiceImpl implements LikeService {
     public void deleteLikeTheComment(long commentId) {
         UserDto user = existenceCheckUser();
 
-        likeRepository.deleteByCommentIdAndUserId(commentId, user.id());
+        likeRepository.deleteByCommentIdAndUserId(commentId, user.getId());
     }
 
     @Override
