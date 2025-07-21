@@ -2,6 +2,7 @@ package faang.school.postservice.service.like;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
@@ -29,7 +30,7 @@ public class LikeService {
 
         Post post = postRepository.findById(postId).orElseThrow(
                 () -> new EntityNotFoundException("Post " + postId + " not found"));
-        userServiceClient.getUser(currentUserId);
+        checkUserExists(currentUserId);
 
         checkPossibilityLikePost(currentUserId, post);
         Like like = createLike(currentUserId, post, null);
@@ -44,7 +45,7 @@ public class LikeService {
 
         Comment comment = commentRepository.findById(commentId).orElseThrow(
                 () -> new EntityNotFoundException("Comment " + commentId + " not found"));
-        userServiceClient.getUser(currentUserId);
+        checkUserExists(currentUserId);
 
         checkPossibilityLikeCommentByUser(currentUserId, comment);
         Like like = createLike(currentUserId, null, comment);
@@ -65,6 +66,10 @@ public class LikeService {
         log.info("Start deleting like from comment {} by user {}", commentId, currentUserId);
         likeRepository.deleteByCommentIdAndUserId(commentId, currentUserId);
         log.info("Comment successfully liked from comment {} by user {}", commentId, currentUserId);
+    }
+
+    private UserDto checkUserExists(long id) {
+        return userServiceClient.getUser(id);
     }
 
     private void checkPossibilityLikePost(long currentUserId, Post post) {
