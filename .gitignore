@@ -55,6 +55,6 @@ out/
 .vscode/
 
 ### Logs and temporary files
-./logs
+/logs
 *.log
 **.DS_Store
