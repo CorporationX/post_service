@@ -12,7 +12,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class CommentLikedEvent implements NotificationEvent {
     private Long likeId;
-    private Long likerId;
     private UserDto owner;
     private Long commentId;
 }
