@@ -8,9 +8,7 @@ import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.post.MixedAuthorshipException;
 import faang.school.postservice.exception.post.NoAuthorshipException;
-import faang.school.postservice.exception.post.ProjectNotExistentException;
 import faang.school.postservice.exception.post.RepeatPublishException;
-import faang.school.postservice.exception.post.UserNotExistentException;
 import faang.school.postservice.model.Post;
 import feign.FeignException;
 import org.junit.jupiter.api.Test;
@@ -132,7 +130,7 @@ class PostValidatorTest {
         long badAuthorId = 1L;
         doThrow(FeignException.NotFound.class).when(userServiceClient).getUser(badAuthorId);
 
-        assertThrows(UserNotExistentException.class, () -> postValidator.checkUserExists(badAuthorId));
+        assertThrows(EntityNotFoundException.class, () -> postValidator.checkUserExists(badAuthorId));
     }
 
     @Test
@@ -156,7 +154,7 @@ class PostValidatorTest {
         long invalidProjectId = 2L;
         doThrow(FeignException.NotFound.class).when(projectServiceClient).getProject(invalidProjectId);
 
-        assertThrows(ProjectNotExistentException.class, () -> postValidator.checkProjectExists(invalidProjectId));
+        assertThrows(EntityNotFoundException.class, () -> postValidator.checkProjectExists(invalidProjectId));
     }
 
     @Test

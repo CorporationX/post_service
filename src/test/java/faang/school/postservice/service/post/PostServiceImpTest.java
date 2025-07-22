@@ -5,7 +5,6 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.post.RepeatPublishException;
-import faang.school.postservice.exception.post.UserNotExistentException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
@@ -71,11 +70,11 @@ class PostServiceImplTest {
 
     @Test
     void createDoesNotSaveIfValidationError() {
-        doThrow(new UserNotExistentException("Invalid user"))
+        doThrow(new EntityNotFoundException("Invalid user"))
                 .when(postValidator)
                 .validateCreate(createPostDto);
 
-        assertThrows(UserNotExistentException.class, () -> postService.create(createPostDto));
+        assertThrows(EntityNotFoundException.class, () -> postService.create(createPostDto));
         verifyNoInteractions(postMapper);
         verifyNoInteractions(postRepository);
     }

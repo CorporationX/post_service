@@ -41,7 +41,7 @@ public class PostValidator {
         } catch (FeignException feignException) {
             handleFeignException(
                     feignException,
-                    new ProjectNotExistentException(String.format("No project for provided project id: %d found.", projectId)),
+                    new EntityNotFoundException(String.format("No project for provided project id: %d found.", projectId)),
                     "project",
                     projectId
             );
@@ -55,7 +55,7 @@ public class PostValidator {
 
             handleFeignException(
                     feignException,
-                    new UserNotExistentException(String.format("No user for provided user id: %d found.", authorId)),
+                    new EntityNotFoundException(String.format("No user for provided user id: %d found.", authorId)),
                     "user",
                     authorId
             );
