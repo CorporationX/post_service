@@ -63,9 +63,4 @@ public class BaseContextTest {
             throw new RuntimeException(e);
         }
     }
-
-    @Test
-    public void testThatFails() {
-        fail("Этот тест специально падает для проверки CI");
-    }
 }
