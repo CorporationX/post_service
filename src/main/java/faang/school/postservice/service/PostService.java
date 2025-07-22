@@ -1,11 +1,15 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.kafka.KafkaProducerService;
+import faang.school.postservice.dto.post.PostEventDto;
 import faang.school.postservice.dto.post.PostRequestDto;
 import faang.school.postservice.dto.post.PostResponseDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -15,9 +19,13 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class PostService {
+    @Value("${kafka.topics.posts}")
+    private String topic;
 
     private final PostRepository postRepository;
     private final PostMapper postMapper;
+    private final KafkaProducerService kafka;
+    private final UserServiceClient feignClient;
 
     public Post getPostById(Long id) {
         return postRepository.findById(id)
@@ -32,7 +40,15 @@ public class PostService {
     public PostResponseDto createDraftPost(PostRequestDto request) {
         Post post = postMapper.toEntity(request);
 
-        return postMapper.toDto(postRepository.save(post));
+        PostResponseDto responseDto = postMapper.toDto(postRepository.save(post));
+
+        PostEventDto event = new PostEventDto(
+                responseDto.authorId(),
+                feignClient.getUserFolowees(responseDto.authorId())
+        );
+        kafka.sendMessage(event, topic);
+
+        return responseDto;
     }
 
     public PostResponseDto publishPost(Long postId) {
