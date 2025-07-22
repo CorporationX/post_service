@@ -6,12 +6,19 @@ spring:
     bootstrap-servers: localhost:9092
     consumer:
       group-id: post-service-group
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.add.type.headers: false
     topics:
       like:
         post-liked-topic:
           name: post-liked-event
         comment-liked-topic:
           name: comment-liked-event
+        comment-created-topic:
+          name: comment-created-notification
 
   servlet:
     multipart:
@@ -42,17 +49,6 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
-
-  kafka:
-    bootstrap-servers: localhost:9092
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-      properties:
-        spring.json.add.type.headers: false
-    topics:
-      comment-created-topic:
-        name: comment-created-notification
 
 server:
   port: 8081

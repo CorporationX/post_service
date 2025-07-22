@@ -33,7 +33,6 @@ public class PostLikedEventAspect {
 
         publisher.publish(PostLikedEvent.builder()
                 .likeId(like.getId())
-                .likerId(like.getUserId())
                 .owner(authorDto)
                 .postId(postId)
                 .build()

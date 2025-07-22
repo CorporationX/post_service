@@ -52,6 +52,12 @@ public interface CommentController {
     ResponseEntity<List<CommentDtoResponse>> getAllComments(long postId);
 
     @Operation(
+            summary = "Получить комментарий",
+            description = "Возвращает информацию о комментарии из базы"
+    )
+    ResponseEntity<CommentDtoResponse> getComment(long commentId);
+
+    @Operation(
             summary = "Удалить комментарий",
             description = "Удаляет из базы",
             parameters = {
