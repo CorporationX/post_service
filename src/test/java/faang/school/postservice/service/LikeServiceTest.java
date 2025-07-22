@@ -208,20 +208,24 @@ class LikeServiceTest {
                 Like.builder().userId(10L).build(),
                 Like.builder().userId(20L).build()
         );
-        when(likeRepository.findByCommentId(99L)).thenReturn(likes);
+        when(likeRepository.findByCommentId(99L))
+                .thenReturn(likes);
 
         final List<UserDto> users = List.of(
                 new UserDto(10L, "Alice", "a@test.com"),
                 new UserDto(20L, "Bob", "b@test.com")
         );
-        when(userServiceClient.getUsersByIds(List.of(10L, 20L))).thenReturn(users);
+        when(userServiceClient.getUsersByIds(List.of(10L, 20L)))
+                .thenReturn(users);
 
         final List<UserDto> result = likeSystemService.getUsersWhoLikedComment(99L);
         assertEquals(2, result.size());
         assertEquals("Alice", result.get(0).username());
         assertEquals("Bob", result.get(1).username());
-        verify(likeRepository, times(1)).findByCommentId(99L);
-        verify(userServiceClient, times(1)).getUsersByIds(List.of(10L, 20L));
+        verify(likeRepository, times(1))
+                .findByCommentId(99L);
+        verify(userServiceClient, times(1))
+                .getUsersByIds(List.of(10L, 20L));
     }
 
     private Like createLikeWithUserId(Long userId) {
