@@ -3,13 +3,15 @@ package faang.school.postservice.service.like;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.exception.EntityAlreadyLikedException;
+import faang.school.postservice.exception.EntityDeletedException;
+import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -29,7 +31,7 @@ public class LikeService {
         log.info("Start adding like to post {} by user {}", postId, currentUserId);
 
         Post post = postRepository.findById(postId).orElseThrow(
-                () -> new EntityNotFoundException("Post " + postId + " not found"));
+                () -> new EntityNotFoundException("Post {} not found", postId));
         checkUserExists(currentUserId);
 
         checkPossibilityLikePost(currentUserId, post);
@@ -82,24 +84,21 @@ public class LikeService {
 
     private void checkPostIsNotDeleted(Post post) {
         if (post.isDeleted()) {
-            throw new IllegalStateException(String.format(
-                    "Post %d already deleted", post.getId()));
+            throw new EntityDeletedException("Post {} already deleted", post.getId());
         }
     }
 
     private void checkNotExistsLikedPostByUser(long currentUserId, Long postId) {
         likeRepository.findByPostIdAndUserId(postId, currentUserId)
                 .ifPresent(like -> {
-                    throw new IllegalStateException(String.format(
-                            "User %d already liked post %d", currentUserId, postId));
+                    throw new EntityAlreadyLikedException("User {} already liked post {}", currentUserId, postId);
                 });
     }
 
     private void checkNotExistsLikedCommentForPostByUser(long currentUserId, long postId) {
         boolean existsLikedComment = likeRepository.existsByUserIdAndCommentPostId(currentUserId, postId);
         if (existsLikedComment) {
-            throw new IllegalStateException(String.format(
-                    "User %d already liked comment for post %d", currentUserId, postId));
+            throw new EntityAlreadyLikedException("User {} already liked comment for post {}", currentUserId, postId);
         }
     }
 
@@ -111,8 +110,7 @@ public class LikeService {
     private void chackNotExistsLikedCommentByUser(long currentUserId, Long commentId) {
         likeRepository.findByCommentIdAndUserId(commentId, currentUserId)
                 .ifPresent(like -> {
-                    throw new IllegalStateException(String.format(
-                            "User %d already liked comment %d", currentUserId, commentId));
+                    throw new EntityAlreadyLikedException("User {} already liked comment {}", currentUserId, commentId);
                 });
     }
 

@@ -1,9 +1,11 @@
 package faang.school.postservice.exception.handler;
 
 import faang.school.postservice.dto.error.ErrorResponse;
+import faang.school.postservice.exception.EntityAlreadyLikedException;
+import faang.school.postservice.exception.EntityDeletedException;
+import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.HeaderNotFoundException;
 import feign.FeignException;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -13,18 +15,19 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ErrorResponse handleIllegalArgument(IllegalArgumentException e) {
+
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ExceptionHandler(EntityDeletedException.class)
+    public ErrorResponse handleEntityDeleted(EntityDeletedException e) {
         log.error(e.getMessage(), e);
-        return new ErrorResponse("Illegal argument", e.getMessage());
+        return new ErrorResponse("Entity deleted", e.getMessage());
     }
 
     @ResponseStatus(HttpStatus.CONFLICT)
-    @ExceptionHandler(IllegalStateException.class)
-    public ErrorResponse handleIllegalState(IllegalStateException e) {
+    @ExceptionHandler(EntityAlreadyLikedException.class)
+    public ErrorResponse handleEntityAlreadyLiked(EntityAlreadyLikedException e) {
         log.error(e.getMessage(), e);
-        return new ErrorResponse("Illegal state", e.getMessage());
+        return new ErrorResponse("Entity already liked", e.getMessage());
     }
 
     @ResponseStatus(HttpStatus.NOT_FOUND)

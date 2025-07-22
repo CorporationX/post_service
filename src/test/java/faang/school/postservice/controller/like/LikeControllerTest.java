@@ -37,7 +37,7 @@ class LikeControllerTest {
     @Test
     @DisplayName("Успешно добавить лайк посту")
     void positive_shouldAddToPost() throws Exception {
-        mockMvc.perform(post("/posts/{id}/likes", POST_ID))
+        mockMvc.perform(post("/v1/likes/posts/{id}", POST_ID))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").doesNotExist());
 
@@ -47,7 +47,7 @@ class LikeControllerTest {
     @Test
     @DisplayName("Успешно добавить лайк комментарию")
     void positive_shouldAddToComment() throws Exception {
-        mockMvc.perform(post("/comments/{id}/likes", COMMENT_ID))
+        mockMvc.perform(post("/v1/likes/comments/{id}", COMMENT_ID))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").doesNotExist());
 
@@ -57,7 +57,7 @@ class LikeControllerTest {
     @Test
     @DisplayName("Успешно удалить лайк у поста")
     void positive_shouldDeleteFromPost() throws Exception {
-        mockMvc.perform(delete("/posts/{id}/likes", POST_ID))
+        mockMvc.perform(delete("/v1/likes/posts/{id}", POST_ID))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").doesNotExist());
 
@@ -67,7 +67,7 @@ class LikeControllerTest {
     @Test
     @DisplayName("Успешно удалить лайк у комментария")
     void positive_shouldDeleteFromComment() throws Exception {
-        mockMvc.perform(delete("/comments/{id}/likes", COMMENT_ID))
+        mockMvc.perform(delete("/v1/likes/comments/{id}", COMMENT_ID))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").doesNotExist());
 

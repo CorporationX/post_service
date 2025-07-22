@@ -2,9 +2,8 @@ package faang.school.postservice.exception;
 
 import org.slf4j.helpers.MessageFormatter;
 
-public class HeaderNotFoundException extends RuntimeException {
-
-    public HeaderNotFoundException(String messagePattern, Object... argArray) {
+public class EntityAlreadyLikedException extends RuntimeException {
+    public EntityAlreadyLikedException(String messagePattern, Object... argArray) {
         super(MessageFormatter.arrayFormat(messagePattern, argArray).getMessage());
     }
 }

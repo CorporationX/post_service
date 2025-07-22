@@ -2,6 +2,9 @@ package faang.school.postservice.service.like;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.exception.EntityAlreadyLikedException;
+import faang.school.postservice.exception.EntityDeletedException;
+import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
@@ -9,7 +12,6 @@ import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import feign.FeignException;
-import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -139,7 +141,7 @@ class LikeServiceTest {
         when(postRepository.findById(POST_ID)).thenReturn(preparePost(true));
 
         verify(likeRepository, never()).save(any(Like.class));
-        String actualExceptionMessage = assertThrows(IllegalStateException.class,
+        String actualExceptionMessage = assertThrows(EntityDeletedException.class,
                                                      () -> likeService.addToPost(POST_ID)).getMessage();
         assertEquals(expectedExceptionMessage, actualExceptionMessage);
 
@@ -154,7 +156,7 @@ class LikeServiceTest {
         when(likeRepository.findByPostIdAndUserId(POST_ID, USER_ID)).thenReturn(Optional.of(new Like()));
 
         verify(likeRepository, never()).save(any(Like.class));
-        String actualExceptionMessage = assertThrows(IllegalStateException.class,
+        String actualExceptionMessage = assertThrows(EntityAlreadyLikedException.class,
                                                      () -> likeService.addToPost(POST_ID)).getMessage();
         assertEquals(expectedExceptionMessage, actualExceptionMessage);
     }
@@ -169,7 +171,7 @@ class LikeServiceTest {
         when(likeRepository.existsByUserIdAndCommentPostId(USER_ID, POST_ID)).thenReturn(true);
 
         verify(likeRepository, never()).save(any(Like.class));
-        String actualExceptionMessage = assertThrows(IllegalStateException.class,
+        String actualExceptionMessage = assertThrows(EntityAlreadyLikedException.class,
                                                      () -> likeService.addToPost(POST_ID)).getMessage();
         assertEquals(expectedExceptionMessage, actualExceptionMessage);
     }
@@ -208,7 +210,7 @@ class LikeServiceTest {
         when(likeRepository.findByCommentIdAndUserId(COMMENT_ID, USER_ID)).thenReturn(Optional.of(prepareLike()));
 
         verify(likeRepository, never()).save(any(Like.class));
-        String actualExceptionMessage = assertThrows(IllegalStateException.class,
+        String actualExceptionMessage = assertThrows(EntityAlreadyLikedException.class,
                                                      () -> likeService.addToComment(COMMENT_ID)).getMessage();
         assertEquals(expectedExceptionMessage, actualExceptionMessage);
     }
@@ -223,7 +225,7 @@ class LikeServiceTest {
         when(likeRepository.findByPostIdAndUserId(POST_ID, USER_ID)).thenReturn(Optional.of(prepareLike()));
 
         verify(likeRepository, never()).save(any(Like.class));
-        String actualExceptionMessage = assertThrows(IllegalStateException.class,
+        String actualExceptionMessage = assertThrows(EntityAlreadyLikedException.class,
                                                      () -> likeService.addToComment(COMMENT_ID)).getMessage();
         assertEquals(expectedExceptionMessage, actualExceptionMessage);
     }
