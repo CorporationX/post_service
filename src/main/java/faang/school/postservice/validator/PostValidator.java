@@ -6,14 +6,11 @@ import faang.school.postservice.dto.post.CreatePostDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.post.MixedAuthorshipException;
 import faang.school.postservice.exception.post.NoAuthorshipException;
-import faang.school.postservice.exception.post.ProjectNotExistentException;
 import faang.school.postservice.exception.post.RepeatPublishException;
-import faang.school.postservice.exception.post.UserNotExistentException;
 import faang.school.postservice.model.Post;
 import feign.FeignException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 @Component
