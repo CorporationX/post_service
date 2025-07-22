@@ -1,6 +1,7 @@
 package faang.school.postservice.exception.handler;
 
 import faang.school.postservice.dto.error.ErrorResponse;
+import faang.school.postservice.exception.HeaderNotFoundException;
 import feign.FeignException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +39,13 @@ public class GlobalExceptionHandler {
     public ErrorResponse handleEntityNotFound(EntityNotFoundException e) {
         log.error(e.getMessage(), e);
         return new ErrorResponse("Entity not found", e.getMessage());
+    }
+
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(HeaderNotFoundException.class)
+    public ErrorResponse handleHeaderNotFound(HeaderNotFoundException e) {
+        log.error(e.getMessage(), e);
+        return new ErrorResponse("Header not found", e.getMessage());
     }
 
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
