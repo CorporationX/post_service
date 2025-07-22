@@ -23,19 +23,19 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class KafkaProducerConfig {
 
-    @Value("${kafka.host}")
+    @Value("${spring.kafka.host}")
     private String bootstrapAddress;
 
-    @Value("${kafka.topics.like-post}")
+    @Value("${spring.kafka.topics.like-post}")
     private String likePostTopic;
 
-    @Value("${spring.kafka.topic.post-views}")
+    @Value("${spring.kafka.topics.post-views}")
     private String postViewsTopic;
 
-    @Value("${kafka.num-partitions}")
+    @Value("${spring.kafka.num-partitions}")
     private int numPartitions;
 
-    @Value("${kafka.replication-factor}")
+    @Value("${spring.kafka.replication-factor}")
     private int replicationFactor;
 
     @Bean

@@ -14,7 +14,7 @@ public class KafkaPostViewProducer {
 
     private final KafkaTemplate<String, PostViewEvent> kafkaTemplate;
 
-    @Value("${spring.kafka.topic.post-views}")
+    @Value("${spring.kafka.topics.post-views}")
     private String postViewsTopic;
 
     public void send(PostViewEvent event) {

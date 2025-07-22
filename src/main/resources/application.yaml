@@ -18,9 +18,13 @@ spring:
     change-log: classpath:db/changelog/db.changelog-master.yaml
 
   kafka:
-    topic:
+    host: localhost:9092
+    num-partitions: 3
+    replication-factor: 1
+    topics:
       post-views: post_views
-    bootstrap-servers: localhost:29092
+      like-post: like_post
+    bootstrap-servers: localhost:9092
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
@@ -33,12 +37,6 @@ spring:
         spring.json.trusted.packages: "faang.school.postservice.dto.kafka"
         spring.json.value.default.type: "faang.school.postservice.dto.kafka.PostViewEvent"
 
-kafka:
-  host: localhost:29092
-  num-partitions: 3
-  replication-factor: 1
-  topics:
-    like-post: like_post
 
 
 server:

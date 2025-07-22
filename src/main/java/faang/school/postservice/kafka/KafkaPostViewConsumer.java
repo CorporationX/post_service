@@ -20,7 +20,7 @@ public class KafkaPostViewConsumer {
     private static final String POST_VIEWS_KEY_PREFIX = "post:views:";
     private static final String POST_VIEWS_LOCK_PREFIX = "post:views:lock:";
 
-    @KafkaListener(topics = "${spring.kafka.topic.post-views}", groupId = "post-view-consumer-group")
+    @KafkaListener(topics = "${spring.kafka.topics.post-views}", groupId = "post-view-consumer-group")
     public void consume(@Payload @Valid PostViewEvent event) {
         log.info("Received post view event for postId: {}", event.getPostId());
 
@@ -28,7 +28,8 @@ public class KafkaPostViewConsumer {
         String lockKey = POST_VIEWS_LOCK_PREFIX + event.getPostId();
 
         try {
-            while (Boolean.FALSE.equals(redisTemplate.opsForValue().setIfAbsent(lockKey, "locked", 1, TimeUnit.SECONDS))) {
+            while (Boolean.FALSE.equals(redisTemplate.opsForValue()
+                    .setIfAbsent(lockKey, "locked", 1, TimeUnit.SECONDS))) {
                 Thread.sleep(50);
             }
 
