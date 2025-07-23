@@ -46,6 +46,7 @@ kafka:
    host: "localhost:9092"
    topics:
      like-post: "like-post"
+     posts: "create-post"
    num-partitions: 2
    replication-factor: 1
    properties:
