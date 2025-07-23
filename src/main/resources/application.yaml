@@ -52,3 +52,7 @@ kafka:
      security.protocol: SSL
      ssl.truststore.location: /path/to/truststore.jks
      ssl.truststore.password: password
+
+cache:
+  max-posts: 500
+  expiration-hours: 24
