@@ -12,13 +12,13 @@ spring:
       properties:
         spring.json.add.type.headers: false
     topics:
+      comment-created-topic:
+        name: comment-created-notification
       like:
         post-liked-topic:
           name: post-liked-event
         comment-liked-topic:
           name: comment-liked-event
-        comment-created-topic:
-          name: comment-created-notification
 
   servlet:
     multipart:

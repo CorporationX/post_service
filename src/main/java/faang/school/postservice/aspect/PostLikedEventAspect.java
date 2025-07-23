@@ -25,10 +25,10 @@ public class PostLikedEventAspect {
             value = "@annotation(faang.school.postservice.annotation.PublishPostLikedEventKafka)",
             returning = "result"
     )
-    public void publishPostLikedEvent(JoinPoint joinPoint, Object result) {
+    public void publishPostLikedEvent(JoinPoint joinPoint, Like result) {
         Object[] args = joinPoint.getArgs();
         long postId = (long) args[0];
-        Like like = (Like) result;
+        Like like = result;
         UserDto authorDto = userServiceClient.getUser(like.getPost().getAuthorId());
 
         publisher.publish(PostLikedEvent.builder()

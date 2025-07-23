@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class CommentCreationEventPublisher extends AbstractEventPublisher <CommentCreationNotificationEvent>{
     public CommentCreationEventPublisher(
-            @Value("${spring.kafka.topics.like.comment-created-topic.name}") String topic,
+            @Value("${spring.kafka.topics.comment-created-topic.name}") String topic,
             KafkaTemplate<String, CommentCreationNotificationEvent> kafkaTemplate
     ) {
         super(topic, kafkaTemplate);

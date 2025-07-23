@@ -25,10 +25,10 @@ public class CommentLikedEventAspect {
             value = "@annotation(faang.school.postservice.annotation.PublishCommentLikedEventKafka)",
             returning = "result"
     )
-    public void publishCommentLikedEvent(JoinPoint joinPoint, Object result) {
+    public void publishCommentLikedEvent(JoinPoint joinPoint, Like result) {
         Object[] args = joinPoint.getArgs();
         long commentId = (long) args[0];
-        Like like = (Like) result;
+        Like like = result;
         UserDto authorDto = userServiceClient.getUser(like.getComment().getAuthorId());
 
         publisher.publish(CommentLikedEvent.builder()
