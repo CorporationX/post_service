@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -27,6 +28,9 @@ public class LikeService {
     @Value("${kafka.topics.like-post}")
     private String topicName;
 
+    private static final int BATCH_SIZE = 100;
+
+
     private final LikeRepository likeRepository;
     private final CommentService commentService;
     private final PostService postService;
@@ -34,6 +38,7 @@ public class LikeService {
     private final KafkaProducerService kafkaService;
 
     private final LikeMapper likeMapper;
+
 
     @Transactional
     public LikeDto addLikePost(Long postId, Long userId) {
@@ -117,10 +122,13 @@ public class LikeService {
     }
 
     private List<UserDto> fetchUsersInBatches(List<Long> userIds) {
+        if (userIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
         List<UserDto> result = new ArrayList<>();
-        int batchSize = 100;
-        for (int i = 0; i < userIds.size(); i += batchSize) {
-            int end = Math.min(i + batchSize, userIds.size());
+        for (int i = 0; i < userIds.size(); i += BATCH_SIZE) {
+            int end = Math.min(i + BATCH_SIZE, userIds.size());
             List<Long> batch = userIds.subList(i, end);
             result.addAll(userServiceClient.getUsersByIds(batch));
         }
