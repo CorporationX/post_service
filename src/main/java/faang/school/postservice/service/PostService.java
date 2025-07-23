@@ -7,5 +7,5 @@ public interface PostService {
     void save(PostDraftDto postDraftDto);
     void markPostAsDeleted(long id);
     void createPostDraft(PostDraftDto postDraftDto);
-    void publishPostDraft(Long postId);
+    void publishPost(Long postId, PostDraftDto postDraftDto);
 }

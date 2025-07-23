@@ -14,6 +14,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -38,15 +41,14 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public void markPostAsDeleted(long id) {
-        PostDraftDto postDraftDto = findById(id);
-//        postDraftDto.setDeleted(true);
-//        postDraftDto.setPublished(false);
-        save(postDraftDto);
+          Post post = postRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Пост с id " + id + " не найден"));
+          post.setDeleted(true);
+          postRepository.save(post);
     }
 
     @Override
     public void createPostDraft(PostDraftDto postDraftDto) {
-//        checkAuthorExists(postDraftDto);
+        checkAuthorExists(postDraftDto);
         Post post = postMapper.postDraftDtoToPost(postDraftDto);
         post.setPublished(false);
         post.setDeleted(false);
@@ -54,8 +56,21 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public void publishPostDraft(Long postId) {
-
+    public void publishPost(Long postId, PostDraftDto postDraftDto) {
+        Post post;
+        if (postId == null) {
+            checkAuthorExists(postDraftDto);
+            post = postMapper.postDraftDtoToPost(postDraftDto);
+            post.setPublished(true);
+            post.setPublishedAt(LocalDateTime.now());
+            post.setDeleted(false);
+        } else {
+            post = postRepository.findById(postId)
+                    .orElseThrow(() -> new EntityNotFoundException("Пост с id " + postId + " не найден"));
+            post.setPublished(true);
+            post.setPublishedAt(LocalDateTime.now());
+        }
+        postRepository.save(post);
     }
 
     private void checkAuthor(PostDraftDto postDraftDto) {
