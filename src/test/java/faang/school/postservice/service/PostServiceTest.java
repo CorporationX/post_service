@@ -1,7 +1,9 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.dto.kafka.PostViewEvent;
 import faang.school.postservice.dto.post.PostRequestDto;
 import faang.school.postservice.dto.post.PostResponseDto;
+import faang.school.postservice.kafka.KafkaPostViewProducer;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
@@ -22,8 +24,11 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -31,6 +36,8 @@ class PostServiceTest {
 
     @Mock
     private PostRepository postRepository;
+    @Mock
+    private KafkaPostViewProducer kafkaPostViewProducer;
     @Spy
     private PostMapperImpl postMapper;
     @Captor
@@ -62,18 +69,45 @@ class PostServiceTest {
 
 
     @Test
-    public void testGetPostResponseDtoById() {
-        Post post = createPost(1L);
-        PostResponseDto dto = postMapper.toDto(post);
-        long postId = post.getId();
+    public void testGetPostById_Success() {
+        long postId = 1L;
+        long userId = 123L;
+        Post post = createPost(postId);
+        final PostResponseDto expectedDto = postMapper.toDto(post);
 
         when(postRepository.findById(postId))
                 .thenReturn(Optional.of(post));
 
-        PostResponseDto result = postService.getPostById(postId);
+        doNothing().when(kafkaPostViewProducer).send(any(PostViewEvent.class));
+
+        PostResponseDto result = postService.getPostById(postId, userId);
 
         assertNotNull(result);
-        assertEquals(dto, result);
+        assertEquals(expectedDto, result);
+
+        ArgumentCaptor<PostViewEvent> eventCaptor = ArgumentCaptor.forClass(PostViewEvent.class);
+        verify(kafkaPostViewProducer).send(eventCaptor.capture());
+
+        PostViewEvent sentEvent = eventCaptor.getValue();
+        assertEquals(postId, sentEvent.getPostId());
+        assertEquals(userId, sentEvent.getUserId());
+        assertNotNull(sentEvent.getViewedAt());
+    }
+
+    @Test
+    public void testGetPostById_PostNotFound() {
+        long nonExistentPostId = 999L;
+        long userId = 123L;
+
+        when(postRepository.findById(nonExistentPostId))
+                .thenReturn(Optional.empty());
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> postService.getPostById(nonExistentPostId, userId));
+
+        assertEquals("There is no such id = " + nonExistentPostId, exception.getMessage());
+
+        verifyNoInteractions(kafkaPostViewProducer);
     }
 
 

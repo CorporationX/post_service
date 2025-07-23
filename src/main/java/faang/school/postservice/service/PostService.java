@@ -1,7 +1,9 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.dto.kafka.PostViewEvent;
 import faang.school.postservice.dto.post.PostRequestDto;
 import faang.school.postservice.dto.post.PostResponseDto;
+import faang.school.postservice.kafka.KafkaPostViewProducer;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
@@ -18,15 +20,25 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final PostMapper postMapper;
+    private final KafkaPostViewProducer kafkaPostViewProducer;
 
     public Post getPostById(Long id) {
         return postRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("There is no such id = " + id));
     }
 
-    public PostResponseDto getPostById(long id) {
-        return postMapper.toDto(postRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("There is no such id = " + id)));
+    public PostResponseDto getPostById(long id, long userId) {
+        Post post = postRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("There is no such id = " + id));
+
+        PostViewEvent event = PostViewEvent.builder()
+                .postId(id)
+                .userId(userId)
+                .viewedAt(LocalDateTime.now())
+                .build();
+        kafkaPostViewProducer.send(event);
+
+        return postMapper.toDto(post);
     }
 
     public PostResponseDto createDraftPost(PostRequestDto request) {

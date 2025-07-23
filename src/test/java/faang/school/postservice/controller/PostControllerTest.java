@@ -150,15 +150,20 @@ public class PostControllerTest {
 
     @Test
     public void testGetPostResponseDtoById() {
+        // Подготовка данных
         PostRequestDto request = createRequest("Post", null, 2L);
         PostResponseDto postDto = createPostResponseDto(request);
         long postId = postDto.id();
+        long userId = 1L; // Тестовый ID пользователя
 
-        when(postService.getPostById(postId))
+        // Мокируем вызов сервиса с двумя параметрами
+        when(postService.getPostById(postId, userId))
                 .thenReturn(postDto);
 
-        PostResponseDto result = postController.getPostById(postId);
+        // Вызываем метод контроллера с postId и userId
+        PostResponseDto result = postController.getPostById(postId, userId);
 
+        // Проверяем результат
         assertNotNull(result);
         assertEquals(postId, result.id());
     }
