@@ -47,54 +47,13 @@ user-service:
 project-service:
   host: localhost:8082
 payment-service:
-  host: localhost:9080
-
-minio:
-  endpoint: http://localhost:9000
-  username: user
-  password: password
-  bucket-name: corpbucket
-  region: ru-central1
-
-resource:
-  max-files-per-post: 10
-
-  image:
-    max-file-size-mb: 5
-    allowed-types:
-      - image/jpeg
-      - image/cvg
-    resize:
-      square:
-        width: 1080
-        height: 1080
-      horizontal:
-        width: 1080
-        height: 566
-
-  video:
-    max-file-size-mb: 50
-    allowed-types:
-      - video/mp4
-
-  audio:
-    max-file-size-mb: 10
-    allowed-types:
-      - audio/mpeg
-      - audio/ogg
-
-post:
-  correcter:
-    cron: "0 0 3 * * *"
-    retry:
-      max-attempts: 3
-      delay: 2000
-
-language-tool:
-  url: https://api.languagetool.org/v2/check
-  language: ru-RU
-
-scheduler:
-  batch-size: 1000
-  thread-pool-size: 10
-  cron-expression: "0 * * * * *"
+  host: localhost
+  port: 9080
+  
+  ad-cleanup:
+  cron: "0 0 3 * * ?"
+  batch-size: 200
+  thread-pool:
+    core-pool-size: 6
+    max-pool-size: 12
+    queue-capacity: 200   
