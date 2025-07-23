@@ -43,6 +43,7 @@ public class PostService {
         PostResponseDto responseDto = postMapper.toDto(postRepository.save(post));
 
         PostEventDto event = new PostEventDto(
+                responseDto.id(),
                 responseDto.authorId(),
                 feignClient.getUserFolowees(responseDto.authorId())
         );
