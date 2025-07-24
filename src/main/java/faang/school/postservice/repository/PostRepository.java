@@ -8,19 +8,19 @@ import org.springframework.data.repository.CrudRepository;
 import java.util.List;
 import java.util.Optional;
 
-public interface PostRepository extends CrudRepository<Post, Long> {
+public interface PostRepository extends CrudRepository<Post, Long>, PostRepositoryCustom {
 
     List<Post> findByAuthorId(long authorId);
 
     List<Post> findByProjectId(long projectId);
 
-    List<Post> findByAuthorIdAndDeletedFalseOrderByCreatedAtDesc(Long authorId);
-
-    List<Post> findByProjectIdAndDeletedFalseOrderByCreatedAtDesc(Long projectId);
-
-    List<Post> findByAuthorIdAndPublishedTrueAndDeletedFalseOrderByPublishedAtDesc(Long authorId);
-
-    List<Post> findByProjectIdAndPublishedTrueAndDeletedFalseOrderByPublishedAtDesc(Long projectId);
+//    List<Post> findByAuthorIdAndDeletedFalseOrderByCreatedAtDesc(Long authorId);
+//
+//    List<Post> findByProjectIdAndDeletedFalseOrderByCreatedAtDesc(Long projectId);
+//
+//    List<Post> findByAuthorIdAndPublishedTrueAndDeletedFalseOrderByPublishedAtDesc(Long authorId);
+//
+//    List<Post> findByProjectIdAndPublishedTrueAndDeletedFalseOrderByPublishedAtDesc(Long projectId);
 
     @Query("SELECT p FROM Post p LEFT JOIN FETCH p.likes WHERE p.projectId = :projectId")
     List<Post> findByProjectIdWithLikes(long projectId);

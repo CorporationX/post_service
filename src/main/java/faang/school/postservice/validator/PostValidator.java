@@ -1,14 +1,13 @@
 package faang.school.postservice.validator;
 
-import faang.school.postservice.client.ProjectServiceClient;
-import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.CreatePostDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.post.MixedAuthorshipException;
 import faang.school.postservice.exception.post.NoAuthorshipException;
 import faang.school.postservice.exception.post.RepeatPublishException;
 import faang.school.postservice.model.Post;
-import feign.FeignException;
+import faang.school.postservice.service.post.ProjectFeignService;
+import faang.school.postservice.service.post.UserFeignService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -17,8 +16,8 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class PostValidator {
 
-    private final UserServiceClient userServiceClient;
-    private final ProjectServiceClient projectServiceClient;
+    private final ProjectFeignService projectFeignService;
+    private final UserFeignService userFeignService;
 
     public void validateCreate(CreatePostDto createPostDto) {
         checkNoAuthorship(createPostDto);
@@ -33,42 +32,11 @@ public class PostValidator {
     }
 
     public void checkProjectExists(@NonNull Long projectId) {
-        try {
-            projectServiceClient.getProject(projectId);
-        } catch (FeignException feignException) {
-            handleFeignException(
-                    feignException,
-                    new EntityNotFoundException(String.format("No project for provided project id: %d found.", projectId)),
-                    "project",
-                    projectId
-            );
-        }
+        projectFeignService.getProjectOrFail(projectId);
     }
 
     public void checkUserExists(@NonNull Long authorId) {
-        try {
-            userServiceClient.getUser(authorId);
-        } catch (FeignException feignException) {
-
-            handleFeignException(
-                    feignException,
-                    new EntityNotFoundException(String.format("No user for provided user id: %d found.", authorId)),
-                    "user",
-                    authorId
-            );
-        }
-    }
-
-    private void handleFeignException(FeignException e, RuntimeException notFoundException, String entityName, Long entityId) {
-        if (e instanceof FeignException.NotFound) {
-            throw notFoundException;
-        }
-        throw new RuntimeException(
-                String.format("Unknown problem getting %s id: %d from external service. Problem: %s",
-                        entityName,
-                        entityId,
-                        e.getMessage())
-        );
+        userFeignService.getUserOrFail(authorId);
     }
 
     private void checkMixedAuthorship(CreatePostDto createPostDto) {

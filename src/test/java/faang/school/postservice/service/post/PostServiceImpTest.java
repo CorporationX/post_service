@@ -9,6 +9,7 @@ import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.criteria.PostSearchCriteria;
 import faang.school.postservice.validator.PostValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,9 +27,12 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -55,11 +59,14 @@ class PostServiceImplTest {
     private final String testOriginalContent = "content";
     private final String testUpdatedContent = "updated content";
     private final CreatePostDto createPostDto = new CreatePostDto(testOriginalContent, testAuthorId, null);
-    private final UpdatePostDto updatePostDto = new UpdatePostDto(testPostId, testUpdatedContent);
+    private final UpdatePostDto updatePostDto = new UpdatePostDto(testUpdatedContent);
     private final Post post = new Post();
 
     @Captor
     private ArgumentCaptor<Post> postCaptor;
+
+    @Captor
+    ArgumentCaptor<PostSearchCriteria> criteriaCaptor;
 
     @BeforeEach
     void beforeEach() {
@@ -82,7 +89,7 @@ class PostServiceImplTest {
     @Test
     void createValidatesSavesAndReturnsDto() {
         Post expectedPost = postMapper.toPost(createPostDto);
-        when(postRepository.save(Mockito.any())).thenReturn(expectedPost);
+        when(postRepository.save(any())).thenReturn(expectedPost);
 
         PostDto result = postService.create(createPostDto);
 
@@ -121,32 +128,32 @@ class PostServiceImplTest {
                 .validatePublish(post);
 
         assertThrows(RepeatPublishException.class, () -> postService.publish(testPostId));
-        verify(postRepository, Mockito.never()).save(Mockito.any());
+        verify(postRepository, Mockito.never()).save(any());
     }
 
     @Test
     void updateThrowsIfPostNotFound() {
-        when(postRepository.findByIdAndDeletedFalse(updatePostDto.id())).thenReturn(Optional.empty());
+        when(postRepository.findByIdAndDeletedFalse(testPostId)).thenReturn(Optional.empty());
 
-        assertThrows(EntityNotFoundException.class, () -> postService.update(updatePostDto));
+        assertThrows(EntityNotFoundException.class, () -> postService.update(testPostId, updatePostDto));
     }
 
     @Test
     void updateThrowsIfValidationError() {
-        when(postRepository.findByIdAndDeletedFalse(updatePostDto.id())).thenReturn(Optional.of(post));
+        when(postRepository.findByIdAndDeletedFalse(testPostId)).thenReturn(Optional.of(post));
         doThrow(new EntityNotFoundException("Deleted post"))
                 .when(postValidator)
                 .validateUpdate(post);
 
-        assertThrows(EntityNotFoundException.class, () -> postService.update(updatePostDto));
-        verify(postRepository, Mockito.never()).save(Mockito.any());
+        assertThrows(EntityNotFoundException.class, () -> postService.update(testPostId, updatePostDto));
+        verify(postRepository, Mockito.never()).save(any());
     }
 
     @Test
     void updateMapsUpdateAndReturnsDto() {
         when(postRepository.findByIdAndDeletedFalse(Mockito.anyLong())).thenReturn(Optional.of(post));
 
-        PostDto result = postService.update(updatePostDto);
+        PostDto result = postService.update(testPostId, updatePostDto);
 
         verify(postValidator).validateUpdate(post);
         verify(postMapper).update(updatePostDto, post);
@@ -192,10 +199,20 @@ class PostServiceImplTest {
     }
 
     @Test
-    void getDraftsByUserMapsAllToDtos() {
-        when(postRepository.findByAuthorIdAndDeletedFalseOrderByCreatedAtDesc(testAuthorId)).thenReturn(List.of(post));
+    void getDraftsByUserCorrectCriteriaAndMapsAllToDtos() {
+        when(postRepository.findByCriteria(any(PostSearchCriteria.class))).thenReturn(List.of(post));
 
         List<PostDto> result = postService.getDraftsByUser(testAuthorId);
+
+        verify(postRepository).findByCriteria(criteriaCaptor.capture());
+        PostSearchCriteria capturedCriteria = criteriaCaptor.getValue();
+
+        assertEquals(testAuthorId, capturedCriteria.getAuthorId());
+        assertNull(capturedCriteria.getProjectId());
+        assertEquals(false, capturedCriteria.getDeleted());
+        assertFalse(capturedCriteria.getPublished());
+        assertEquals("createdAt", capturedCriteria.getSortField().getField());
+        assertEquals(PostSearchCriteria.SortDirection.DESC, capturedCriteria.getSortDirection());
 
         assertSingleElementListWithTestPost(result);
     }
@@ -208,31 +225,58 @@ class PostServiceImplTest {
 
 
     @Test
-    void getDraftsByProjectMapsAllToDtos() {
-        when(postRepository.findByProjectIdAndDeletedFalseOrderByCreatedAtDesc(testProjectId))
-                .thenReturn(List.of(post));
+    void getDraftsByProjectCorrectCriteriaAndMapsAllToDtos() {
+        when(postRepository.findByCriteria(any(PostSearchCriteria.class))).thenReturn(List.of(post));
 
         List<PostDto> result = postService.getDraftsByProject(testProjectId);
 
+        verify(postRepository).findByCriteria(criteriaCaptor.capture());
+        PostSearchCriteria capturedCriteria = criteriaCaptor.getValue();
+
+        assertEquals(testProjectId, capturedCriteria.getProjectId());
+        assertNull(capturedCriteria.getAuthorId());
+        assertEquals(false, capturedCriteria.getDeleted());
+        assertFalse(capturedCriteria.getPublished());
+        assertEquals("createdAt", capturedCriteria.getSortField().getField());
+        assertEquals(PostSearchCriteria.SortDirection.DESC, capturedCriteria.getSortDirection());
+
         assertSingleElementListWithTestPost(result);
     }
 
     @Test
-    void getPublishedByUserMapsAllToDtos() {
-        when(postRepository.findByAuthorIdAndPublishedTrueAndDeletedFalseOrderByPublishedAtDesc(testAuthorId))
-                .thenReturn(List.of(post));
+    void getPublishedByUserCorrectCriteriaAndMapsAllToDtos() {
+        when(postRepository.findByCriteria(any(PostSearchCriteria.class))).thenReturn(List.of(post));
 
         List<PostDto> result = postService.getPublishedByUser(testAuthorId);
 
+        verify(postRepository).findByCriteria(criteriaCaptor.capture());
+        PostSearchCriteria capturedCriteria = criteriaCaptor.getValue();
+
+        assertEquals(testAuthorId, capturedCriteria.getAuthorId());
+        assertNull(capturedCriteria.getProjectId());
+        assertEquals(false, capturedCriteria.getDeleted());
+        assertTrue(capturedCriteria.getPublished());
+        assertEquals("publishedAt", capturedCriteria.getSortField().getField());
+        assertEquals(PostSearchCriteria.SortDirection.DESC, capturedCriteria.getSortDirection());
+
         assertSingleElementListWithTestPost(result);
     }
 
     @Test
-    void getPublishedByProjectMapsAllToDtos() {
-        when(postRepository.findByProjectIdAndPublishedTrueAndDeletedFalseOrderByPublishedAtDesc(testProjectId))
-                .thenReturn(List.of(post));
+    void getPublishedByProjectCorrectCriteriaAndMapsAllToDtos() {
+        when(postRepository.findByCriteria(any(PostSearchCriteria.class))).thenReturn(List.of(post));
 
         List<PostDto> result = postService.getPublishedByProject(testProjectId);
+
+        verify(postRepository).findByCriteria(criteriaCaptor.capture());
+        PostSearchCriteria capturedCriteria = criteriaCaptor.getValue();
+
+        assertEquals(testProjectId, capturedCriteria.getProjectId());
+        assertNull(capturedCriteria.getAuthorId());
+        assertEquals(false, capturedCriteria.getDeleted());
+        assertTrue(capturedCriteria.getPublished());
+        assertEquals("publishedAt", capturedCriteria.getSortField().getField());
+        assertEquals(PostSearchCriteria.SortDirection.DESC, capturedCriteria.getSortDirection());
 
         assertSingleElementListWithTestPost(result);
     }

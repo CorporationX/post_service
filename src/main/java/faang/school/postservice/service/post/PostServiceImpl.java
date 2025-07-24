@@ -7,7 +7,9 @@ import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.criteria.PostSearchCriteria;
 import faang.school.postservice.validator.PostValidator;
+import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotNull;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +31,7 @@ public class PostServiceImpl implements PostService {
     private final PostMapper postMapper;
 
     @Override
+    @Transactional
     public PostDto create(CreatePostDto createPostDto) {
         postValidator.validateCreate(createPostDto);
 
@@ -39,7 +42,9 @@ public class PostServiceImpl implements PostService {
         return postMapper.toPostDto(post);
     }
 
+
     @Override
+    @Transactional
     public PostDto publish(@NonNull Long postId) {
         Post post = getNonDeletedPostByIdOrFail(postId);
         postValidator.validatePublish(post);
@@ -53,8 +58,9 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public PostDto update(UpdatePostDto updatePostDto) {
-        Post post = getNonDeletedPostByIdOrFail(updatePostDto.id());
+    @Transactional
+    public PostDto update(Long postId, UpdatePostDto updatePostDto) {
+        Post post = getNonDeletedPostByIdOrFail(postId);
         postValidator.validateUpdate(post);
 
         postMapper.update(updatePostDto, post);
@@ -75,6 +81,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    @Transactional
     public void delete(@NotNull Long postId) {
         Post post = getNonDeletedPostByIdOrFail(postId);
 
@@ -91,29 +98,61 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public List<PostDto> getDraftsByUser(@NotNull Long userId) {
-        return postRepository.findByAuthorIdAndDeletedFalseOrderByCreatedAtDesc(userId).stream()
-                .map(postMapper::toPostDto)
-                .toList();
+        PostSearchCriteria criteria = PostSearchCriteria.builder()
+                .authorId(userId)
+                .published(false)
+                .deleted(false)
+                .sortField(PostSearchCriteria.SortField.CREATED_AT)
+                .sortDirection(PostSearchCriteria.SortDirection.DESC)
+                .build();
+
+        List<Post> posts = postRepository.findByCriteria(criteria);
+
+        return postMapper.toPostDtoList(posts);
     }
 
     @Override
     public List<PostDto> getDraftsByProject(@NotNull Long projectId) {
-        return postRepository.findByProjectIdAndDeletedFalseOrderByCreatedAtDesc(projectId).stream()
-                .map(postMapper::toPostDto)
-                .toList();
+        PostSearchCriteria criteria = PostSearchCriteria.builder()
+                .projectId(projectId)
+                .published(false)
+                .deleted(false)
+                .sortField(PostSearchCriteria.SortField.CREATED_AT)
+                .sortDirection(PostSearchCriteria.SortDirection.DESC)
+                .build();
+
+        List<Post> posts = postRepository.findByCriteria(criteria);
+
+        return postMapper.toPostDtoList(posts);
     }
 
     @Override
     public List<PostDto> getPublishedByUser(@NotNull Long userId) {
-        return postRepository.findByAuthorIdAndPublishedTrueAndDeletedFalseOrderByPublishedAtDesc(userId).stream()
-                .map(postMapper::toPostDto)
-                .toList();
+        PostSearchCriteria criteria = PostSearchCriteria.builder()
+                .authorId(userId)
+                .published(true)
+                .deleted(false)
+                .sortField(PostSearchCriteria.SortField.PUBLISHED_AT)
+                .sortDirection(PostSearchCriteria.SortDirection.DESC)
+                .build();
+
+        List<Post> posts = postRepository.findByCriteria(criteria);
+
+        return postMapper.toPostDtoList(posts);
     }
 
     @Override
     public List<PostDto> getPublishedByProject(@NotNull Long projectId) {
-        return postRepository.findByProjectIdAndPublishedTrueAndDeletedFalseOrderByPublishedAtDesc(projectId).stream()
-                .map(postMapper::toPostDto)
-                .toList();
+        PostSearchCriteria criteria = PostSearchCriteria.builder()
+                .projectId(projectId)
+                .published(true)
+                .deleted(false)
+                .sortField(PostSearchCriteria.SortField.PUBLISHED_AT)
+                .sortDirection(PostSearchCriteria.SortDirection.DESC)
+                .build();
+
+        List<Post> posts = postRepository.findByCriteria(criteria);
+
+        return postMapper.toPostDtoList(posts);
     }
 }

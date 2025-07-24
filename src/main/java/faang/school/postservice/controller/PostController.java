@@ -25,7 +25,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/posts")
+@RequestMapping("/api/v1/posts")
 @RequiredArgsConstructor
 @Validated
 @Tag(name = "Post", description = "Operations related to posts")
@@ -39,7 +39,7 @@ public class PostController {
     )
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
-    public PostDto createPostDraft (@RequestBody @Valid CreatePostDto createPostDto) {
+    public PostDto create(@RequestBody @Valid CreatePostDto createPostDto) {
         return postService.create(createPostDto);
     }
 
@@ -48,7 +48,7 @@ public class PostController {
             description = "Publishes the post if it is not already published or deleted."
     )
     @PostMapping("/publish/{id}")
-    public PostDto publishPost (@PathVariable("id") Long postId) {
+    public PostDto publish(@PathVariable("id") Long postId) {
         return postService.publish(postId);
     }
 
@@ -57,43 +57,43 @@ public class PostController {
             description = "Updates a post according to provided payload"
     )
     @PatchMapping("/{id}")
-    public PostDto updatePost (@RequestBody @Valid UpdatePostDto updatePostDto) {
-        return postService.update(updatePostDto);
+    public PostDto update(@RequestBody @Valid UpdatePostDto updatePostDto, @PathVariable("id") Long postId) {
+        return postService.update(postId, updatePostDto);
     }
 
     @Operation(summary = "Delete a post by ID")
     @DeleteMapping("/{id}")
-    public void deletePost (@PathVariable("id") Long postId) {
+    public void delete(@PathVariable("id") Long postId) {
         postService.delete(postId);
     }
 
     @Operation(summary = "Get an existing post by ID")
     @GetMapping("/{id}")
-    public PostDto getPost (@PathVariable("id") Long postId) {
+    public PostDto get(@PathVariable("id") Long postId) {
         return postService.getById(postId);
     }
 
     @Operation(summary = "Get unpublished posts authored by a given user ID")
     @GetMapping("/drafts/user/{id}")
-    public List<PostDto> getDraftsByUser (@PathVariable("id") Long userId) {
+    public List<PostDto> getDraftsByUser(@PathVariable("id") Long userId) {
         return postService.getDraftsByUser(userId);
     }
 
     @Operation(summary = "Get unpublished posts authored by a given project ID")
     @GetMapping("/drafts/project/{id}")
-    public List<PostDto> getDraftsByProject (@PathVariable("id") Long projectId) {
+    public List<PostDto> getDraftsByProject(@PathVariable("id") Long projectId) {
         return postService.getDraftsByProject(projectId);
     }
 
     @Operation(summary = "Get published posts authored by a given user ID")
     @GetMapping("/published/user/{id}")
-    public List<PostDto> getPublishedByUser (@PathVariable("id") Long userId) {
+    public List<PostDto> getPublishedByUser(@PathVariable("id") Long userId) {
         return postService.getPublishedByUser(userId);
     }
 
     @Operation(summary = "Get published posts authored by a given project ID")
     @GetMapping("/published/project/{id}")
-    public List<PostDto> getPublishedByProject (@PathVariable("id") Long projectId) {
+    public List<PostDto> getPublishedByProject(@PathVariable("id") Long projectId) {
         return postService.getPublishedByProject(projectId);
     }
 }

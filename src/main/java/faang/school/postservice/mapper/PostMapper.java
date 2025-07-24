@@ -7,6 +7,8 @@ import faang.school.postservice.model.Post;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
 
+import java.util.List;
+
 @Mapper(componentModel = "spring", unmappedTargetPolicy = org.mapstruct.ReportingPolicy.IGNORE)
 public interface PostMapper {
 
@@ -15,4 +17,6 @@ public interface PostMapper {
     void update(UpdatePostDto updatePostDto, @MappingTarget Post entity);
 
     PostDto toPostDto(Post post);
+
+    List<PostDto> toPostDtoList(List<Post> posts);
 }

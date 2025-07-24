@@ -13,7 +13,7 @@ public interface PostService {
 
     PostDto publish(@NonNull Long postId);
 
-    PostDto update(UpdatePostDto updatePostDto);
+    PostDto update(Long postId, UpdatePostDto updatePostDto);
 
     void delete(@NotNull Long postId);
 
