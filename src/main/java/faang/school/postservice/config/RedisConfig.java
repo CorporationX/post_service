@@ -16,10 +16,10 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 public class RedisConfig {
 
     @Bean(name = "dequeRedisTemplate")
-    public RedisTemplate<Long, ConcurrentLinkedDeque<Long>> dequeRedisTemplate(RedisConnectionFactory factory) {
-        RedisTemplate<Long, ConcurrentLinkedDeque<Long>> template = new RedisTemplate<>();
+    public RedisTemplate<String, ConcurrentLinkedDeque<Long>> dequeRedisTemplate(RedisConnectionFactory factory) {
+        RedisTemplate<String, ConcurrentLinkedDeque<Long>> template = new RedisTemplate<>();
         template.setConnectionFactory(factory);
-        template.setKeySerializer(new GenericToStringSerializer<>(Long.class));
+        template.setKeySerializer(new StringRedisSerializer());
         template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
         return template;
     }
