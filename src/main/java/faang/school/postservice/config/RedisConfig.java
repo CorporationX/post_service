@@ -10,6 +10,7 @@ import org.springframework.data.redis.serializer.GenericToStringSerializer;
 
 import java.util.concurrent.ConcurrentLinkedDeque;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
 public class RedisConfig {
