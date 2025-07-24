@@ -1,5 +1,6 @@
 package faang.school.postservice.service.comment;
 
+import faang.school.postservice.annotation.PublishCommentEventKafka;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CommentResponseImageDto;
@@ -39,6 +40,7 @@ public class CommentService {
     private final ImageCompressor imageCompressor;
     private final CommentEventPublisher commentEventPublisher;
 
+    @PublishCommentEventKafka
     @Transactional
     public Comment createComment(long postId, String content) {
         long authorId = userContext.getUserId();
