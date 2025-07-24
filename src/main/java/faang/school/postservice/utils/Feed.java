@@ -17,8 +17,10 @@ public class Feed {
     private int expirationHours;
     @Value("${cache.max-posts}")
     private int maxPosts;
+    @Value("${feed.feed-key}")
+    String feedKey;
 
-    public void save(String userId, Long postId) {
+    public void save(Long userId, Long postId) {
         ConcurrentLinkedDeque<Long> currentDeque = get(userId);
         if (currentDeque == null) {
             currentDeque = new ConcurrentLinkedDeque<>();
@@ -27,10 +29,10 @@ public class Feed {
         }
         currentDeque.add(postId);
 
-        dequeRedisTemplate.opsForValue().set(userId, currentDeque, Duration.ofHours(expirationHours));
+        dequeRedisTemplate.opsForValue().set(feedKey + userId, currentDeque, Duration.ofHours(expirationHours));
     }
 
-    public ConcurrentLinkedDeque<Long> get(String userId) {
-        return dequeRedisTemplate.opsForValue().get(userId);
+    public ConcurrentLinkedDeque<Long> get(Long userId) {
+        return dequeRedisTemplate.opsForValue().get(feedKey + userId);
     }
 }

@@ -73,3 +73,6 @@ kafka:
 cache:
   max-posts: 500
   expiration-hours: 24
+
+feed:
+  feed-key: "Feed: "
