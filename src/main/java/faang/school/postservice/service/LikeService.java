@@ -21,7 +21,7 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class LikeService {
 
-    @Value("${kafka.topics.like-post}")
+    @Value("${spring.kafka.topics.like-post}")
     private String topicName;
 
     private final LikeRepository likeRepository;

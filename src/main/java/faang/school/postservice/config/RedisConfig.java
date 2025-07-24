@@ -9,6 +9,7 @@ import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSeriali
 import org.springframework.data.redis.serializer.GenericToStringSerializer;
 
 import java.util.concurrent.ConcurrentLinkedDeque;
+import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 
 @Configuration
 public class RedisConfig {
@@ -29,6 +30,20 @@ public class RedisConfig {
         template.setKeySerializer(new GenericToStringSerializer<>(Long.class));
         template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
 
+        return template;
+    }
+  
+    @Bean
+    public LettuceConnectionFactory redisConnectionFactory() {
+        return new LettuceConnectionFactory("localhost", 6379);
+    }
+
+    @Bean
+    public RedisTemplate<String, Object> redisTemplate() {
+        RedisTemplate<String, Object> template = new RedisTemplate<>();
+        template.setConnectionFactory(redisConnectionFactory());
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
         return template;
     }
 }
