@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 @Component
 @RequiredArgsConstructor
 public class Feed {
-    private final RedisTemplate<Long, ConcurrentLinkedDeque<Long>> redisTemplate;
+    private final RedisTemplate<Long, ConcurrentLinkedDeque<Long>> dequeRedisTemplate;
 
     @Value("${cache.expiration-hours}")
     private int expirationHours;
@@ -27,10 +27,10 @@ public class Feed {
         }
         currentDeque.add(postId);
 
-        redisTemplate.opsForValue().set(userId, currentDeque, Duration.ofHours(expirationHours));
+        dequeRedisTemplate.opsForValue().set(userId, currentDeque, Duration.ofHours(expirationHours));
     }
 
     public ConcurrentLinkedDeque<Long> get(Long userId) {
-        return redisTemplate.opsForValue().get(userId);
+        return dequeRedisTemplate.opsForValue().get(userId);
     }
 }

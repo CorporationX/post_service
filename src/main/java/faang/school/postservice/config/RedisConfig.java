@@ -1,5 +1,6 @@
 package faang.school.postservice.config;
 
+import faang.school.postservice.model.Post;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -7,19 +8,27 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.GenericToStringSerializer;
 
+import java.util.concurrent.ConcurrentLinkedDeque;
+
 @Configuration
 public class RedisConfig {
 
-    @Bean
-    public RedisTemplate<Long, Object> redisTemplate(RedisConnectionFactory factory) {
-        RedisTemplate<Long, Object> template = new RedisTemplate<>();
+    @Bean(name = "dequeRedisTemplate")
+    public RedisTemplate<Long, ConcurrentLinkedDeque<Long>> dequeRedisTemplate(RedisConnectionFactory factory) {
+        RedisTemplate<Long, ConcurrentLinkedDeque<Long>> template = new RedisTemplate<>();
         template.setConnectionFactory(factory);
         template.setKeySerializer(new GenericToStringSerializer<>(Long.class));
         template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
-        template.setHashKeySerializer(new GenericToStringSerializer<>(Long.class));
-        template.setHashValueSerializer(new GenericJackson2JsonRedisSerializer());
-        template.afterPropertiesSet();
+        return template;
+    }
+
+    @Bean(name = "postRedisTemplate")
+    public RedisTemplate<Long, Post> myEntityRedisTemplate(RedisConnectionFactory factory) {
+        RedisTemplate<Long, Post> template = new RedisTemplate<>();
+        template.setConnectionFactory(factory);
+        template.setKeySerializer(new GenericToStringSerializer<>(Long.class));
+        template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+
         return template;
     }
 }
-

@@ -17,7 +17,7 @@ public class KafkaPostConsumer {
     private final PostService service;
     private final PostCache postCache;
 
-    @KafkaListener(topics = "${kafka.topics.posts}")
+    @KafkaListener(topics = "${kafka.topics.posts.create-post}", groupId = "${kafka.group}")
     public void consume(PostEventDto event) {
         event.followeesIds().forEach(id -> {
             feed.save(id, event.postId());
