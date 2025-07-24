@@ -19,7 +19,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class PostService {
-    @Value("${kafka.topics.posts}")
+    @Value("${kafka.topics.posts.create-post}")
     private String topic;
 
     private final PostRepository postRepository;

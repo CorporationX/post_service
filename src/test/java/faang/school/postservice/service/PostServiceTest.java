@@ -104,6 +104,7 @@ class PostServiceTest {
 
         postService.createDraftPost(request);
 
+        verify(kafka).sendMessage(any(), any());
         verify(postRepository, times(1)).save(postCaptor.capture());
         Post savedPost = postCaptor.getValue();
         assertNotNull(savedPost);

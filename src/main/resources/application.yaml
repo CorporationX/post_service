@@ -45,7 +45,8 @@ payment-service:
 kafka:
    host: "localhost:9092"
    topics:
-     posts: "create-post"
+     posts:
+      create-post: "create-post"
      like-post: "like-post"
    num-partitions: 2
    replication-factor: 1
