@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 @Component
 @RequiredArgsConstructor
 public class Feed {
-    private final RedisTemplate<Long, ConcurrentLinkedDeque <Long>> redisTemplate;
+    private final RedisTemplate<Long, ConcurrentLinkedDeque<Long>> redisTemplate;
 
     @Value("${cache.expiration-hours}")
     private int expirationHours;
