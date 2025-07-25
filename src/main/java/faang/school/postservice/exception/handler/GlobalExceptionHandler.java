@@ -5,6 +5,7 @@ import faang.school.postservice.exception.EntityAlreadyLikedException;
 import faang.school.postservice.exception.EntityDeletedException;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.HeaderNotFoundException;
+import faang.school.postservice.exception.NotResourceOwnerException;
 import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -49,6 +50,13 @@ public class GlobalExceptionHandler {
     public ErrorResponse handleHeaderNotFound(HeaderNotFoundException e) {
         log.error(e.getMessage(), e);
         return new ErrorResponse("Header not found", e.getMessage());
+    }
+
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    @ExceptionHandler(NotResourceOwnerException.class)
+    public ErrorResponse handleNotResourceOwner(NotResourceOwnerException e) {
+        log.error(e.getMessage(), e);
+        return new ErrorResponse("Not resource owner", e.getMessage());
     }
 
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)

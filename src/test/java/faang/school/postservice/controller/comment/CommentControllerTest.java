@@ -4,20 +4,17 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.service.comment.CommentService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -37,15 +34,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@ExtendWith(MockitoExtension.class)
+@WebMvcTest
+@ContextConfiguration(classes = CommentController.class)
 class CommentControllerTest {
+    @Autowired
     private MockMvc mockMvc;
-    @Mock
+    @MockBean
     private CommentService commentService;
-    @InjectMocks
-    private CommentController commentController;
-    @Spy
-    private ObjectMapper objectMapper;
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private static final long POST_ID = 1;
     private static final long COMMENT_ID = 2;
@@ -54,11 +50,6 @@ class CommentControllerTest {
     private static final String NEW_CONTENT = "Test a new content";
     private static final int MAX_CONTENT_LENGTH = 4096;
     private static final String LONG_CONTENT = "A".repeat(MAX_CONTENT_LENGTH + 1);
-
-    @BeforeEach
-    void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(commentController).build();
-    }
 
     @Test
     @DisplayName("Успешный вызов POST /v1/comments")
@@ -150,7 +141,7 @@ class CommentControllerTest {
     }
 
     private String toJson(Object obj) throws JsonProcessingException {
-        return objectMapper.writeValueAsString(obj);
+        return OBJECT_MAPPER.writeValueAsString(obj);
     }
 
     private static Stream<Arguments> provideNotValidComment() {
