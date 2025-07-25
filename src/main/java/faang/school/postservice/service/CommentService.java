@@ -4,6 +4,7 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.*;
 import faang.school.postservice.exception.CommentValidationException;
 import faang.school.postservice.mapper.CommentMapper;
+import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
@@ -23,11 +24,12 @@ public class CommentService {
     private final PostService postService;
     private final UserServiceClient userServiceClient;
     private final CommentMapper commentMapper;
+    private final PostMapper postMapper;
     private final CommentValidator commentValidator;
 
     @Transactional(readOnly = true)
     public List<CommentDto> getCommentsByPostId(Long postId) {
-        postService.getPostById(postId); // Проверка, что пост существует
+        postService.getPostDtoById(postId); // Проверка, что пост существует
         return commentMapper.toDtoList(
                 commentRepository.findAllByPostId(postId).stream()
                         .sorted(Comparator.comparing(Comment::getCreatedAt).reversed())
@@ -39,7 +41,7 @@ public class CommentService {
     public CommentDto createComment(CommentCreateDto dto, Long authorId) {
         validateUserExists(authorId);
 
-        Post post = postService.getPostById(dto.postId());
+        Post post = postMapper.toEntity(postService.getPostDtoById(dto.postId()));
         Comment comment = commentMapper.toEntityFromCreateDto(dto);
 
         comment.setAuthorId(authorId);

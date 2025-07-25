@@ -2,8 +2,10 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.*;
+import faang.school.postservice.dto.post.PostResponseDto;
 import faang.school.postservice.exception.CommentValidationException;
-import faang.school.postservice.mapper.CommentMapper;
+import faang.school.postservice.mapper.CommentMapperImpl;
+import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
@@ -11,9 +13,9 @@ import feign.FeignException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mapstruct.factory.Mappers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
@@ -36,8 +38,10 @@ public class CommentServiceTest {
     private UserServiceClient userServiceClient;
     @Mock
     private CommentValidator commentValidator;
-
-    private CommentMapper commentMapper = Mappers.getMapper(CommentMapper.class);
+    @Spy
+    private CommentMapperImpl commentMapper;
+    @Spy
+    private PostMapperImpl postMapper;
 
     @InjectMocks
     private CommentService commentService;
@@ -47,8 +51,8 @@ public class CommentServiceTest {
 
     @BeforeEach
     void setUp() {
-        commentService = new CommentService(commentRepository, postService,
-                userServiceClient, commentMapper, commentValidator);
+        /*commentService = new CommentService(commentRepository, postService,
+                userServiceClient, commentMapper, commentValidator);*/
 
         post = Post.builder().id(1L).build();
         comment = Comment.builder()
@@ -66,13 +70,16 @@ public class CommentServiceTest {
                 .minusDays(1)).build();
         Comment newer = Comment.builder().createdAt(LocalDateTime.now())
                 .build();
+        Long postId = 1L;
+        PostResponseDto responseDto = PostResponseDto.builder().id(postId).build();
 
-        when(postService.getPostById(post.getId()))
-                .thenReturn(post);
+        when(postService.getPostDtoById(anyLong()))
+                .thenReturn(responseDto);
+
         when(commentRepository.findAllByPostId(post.getId()))
                 .thenReturn(List.of(older, newer));
 
-        List<CommentDto> result = commentService.getCommentsByPostId(post.getId());
+        List<CommentDto> result = commentService.getCommentsByPostId(postId);
 
         assertEquals(2, result.size());
         assertTrue(result.get(0).createdAt().isAfter(result.get(1).createdAt()));
@@ -85,9 +92,11 @@ public class CommentServiceTest {
                 .content("Test")
                 .build();
 
-        when(userServiceClient.getUser(comment.getAuthorId()))
-                .thenReturn(null);
-        when(postService.getPostById(post.getId())).thenReturn(post);
+        Long postId = 1L;
+        PostResponseDto responseDto = PostResponseDto.builder().id(postId).build();
+
+        when(userServiceClient.getUser(comment.getAuthorId())).thenReturn(null);
+        when(postService.getPostDtoById(anyLong())).thenReturn(responseDto);
         when(commentRepository.save(any())).thenReturn(comment);
 
         CommentDto result = commentService.createComment(createDto, comment.getAuthorId());
@@ -95,7 +104,6 @@ public class CommentServiceTest {
         assertEquals(comment.getContent(), result.content());
         assertEquals(comment.getAuthorId(), result.authorId());
     }
-
 
     @Test
     void createComment_shouldThrowIfUserNotFound() {

@@ -4,6 +4,7 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.kafka.KafkaProducerService;
 import faang.school.postservice.dto.likesystem.LikeDto;
 import faang.school.postservice.mapper.LikeMapperImpl;
+import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
@@ -40,6 +41,8 @@ class LikeServiceTest {
     private LikeMapperImpl likeMapper;
     @Mock
     private KafkaProducerService kafkaProducerService;
+    @Spy
+    private PostMapperImpl postMapper;
     @InjectMocks
     private LikeService likeSystemService;
 
@@ -90,6 +93,7 @@ class LikeServiceTest {
     @Test
     void deleteLikePostLikeExist() {
         long id = 1L;
+        Long postId = 2L;
         Post post = createPostWithLikes(new ArrayList<>());
         Like like = Like.builder()
                 .id(id)

@@ -21,4 +21,19 @@ public interface PostRepository extends CrudRepository<Post, Long> {
     @Query("SELECT p FROM Post p WHERE p.published = false AND " +
             "p.deleted = false AND p.scheduledAt <= CURRENT_TIMESTAMP")
     List<Post> findReadyToPublish();
+
+    @Query(nativeQuery = true,  value = """
+            SELECT post.* FROM post
+            JOIN subscription ON subscription.followee_id = post.author_id
+            WHERE subscription.follower_id = :userId AND post.id < :postId
+            ORDER BY post.created_at DESC
+            LIMIT :limit
+            """)
+    List<Post> findPostByFollowerId(Long userId, Long postId, Long limit);
+
+    @Query(nativeQuery = true, value = """
+            select s.follower_id from subscription s
+            where followee_id = :followeeId
+            """)
+    List<Long> findAllIdFollowerFollowee(Long followeeId);
 }

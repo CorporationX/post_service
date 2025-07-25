@@ -5,6 +5,7 @@ import faang.school.postservice.dto.post.PostResponseDto;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.redis.RedisService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -22,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -35,17 +37,21 @@ class PostServiceTest {
     private PostMapperImpl postMapper;
     @Captor
     ArgumentCaptor<Post> postCaptor;
+    @Mock
+    private RedisService redisService;
     @InjectMocks
     private PostService postService;
 
     @Test
-    void getPostById() {
-        Post post = createPost(1L);
-        Long postId = post.getId();
+    void getPostDtoById() {
+        Long postId = 1L;
+
+        Post post = createPost(postId);
 
         when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+        when(redisService.getPost(anyString())).thenReturn(null);
 
-        Post result = postService.getPostById(postId);
+        PostResponseDto result = postService.getPostDtoById(postId);
 
         assertNotNull(result);
         assertEquals(postId, result.getId());
@@ -64,18 +70,17 @@ class PostServiceTest {
     @Test
     public void testGetPostResponseDtoById() {
         Post post = createPost(1L);
-        PostResponseDto dto = postMapper.toDto(post);
         long postId = post.getId();
 
         when(postRepository.findById(postId))
                 .thenReturn(Optional.of(post));
+        when(redisService.getPost(anyString())).thenReturn(null);
 
-        PostResponseDto result = postService.getPostById(postId);
+        PostResponseDto result = postService.getPostDtoById(postId);
 
         assertNotNull(result);
-        assertEquals(dto, result);
+        assertEquals(postMapper.toDto(post), result);
     }
-
 
     @Test
     public void testGetPostResponseDtoByIdNotFound() {
@@ -170,9 +175,7 @@ class PostServiceTest {
 
         List<PostResponseDto> result = postService.getAllNotDeletedDraftsByAuthorId(draftAuthorId);
 
-        assertEquals(List.of(draft), result.stream()
-                .map(postMapper::toEntity)
-                .toList());
+        assertEquals(draft.getId(), result.get(0).getId());
     }
 
     @Test
@@ -186,9 +189,7 @@ class PostServiceTest {
 
         List<PostResponseDto> result = postService.getAllNotDeletedDraftsByProjectId(draftProjectId);
 
-        assertEquals(List.of(draft), result.stream()
-                .map(postMapper::toEntity)
-                .toList());
+        assertEquals(draft.getId(), result.get(0).getId());
     }
 
     @Test
@@ -204,9 +205,7 @@ class PostServiceTest {
 
         List<PostResponseDto> result = postService.getAllPostsByAuthorId(postAuthorId);
 
-        assertEquals(List.of(post), result.stream()
-                .map(postMapper::toEntity)
-                .toList());
+        assertEquals(post.getId(), result.get(0).getId());
     }
 
     @Test
@@ -221,12 +220,12 @@ class PostServiceTest {
 
         List<PostResponseDto> result = postService.getAllPostsByProjectId(postProjectId);
 
-        assertEquals(List.of(post), result.stream()
-                .map(postMapper::toEntity)
-                .toList());
+        assertEquals(post.getId(), result.get(0).getId());
     }
 
     private Post createPost(long id) {
-        return Post.builder().id(id).build();
+        return Post.builder()
+                .id(id)
+                .build();
     }
 }

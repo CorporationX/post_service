@@ -21,6 +21,7 @@ spring:
     redis:
       port: 6379
       host: localhost
+      duration_days: 30
       channels:
         calculations_channel:
           name: calculations_channel
@@ -52,3 +53,8 @@ kafka:
      security.protocol: SSL
      ssl.truststore.location: /path/to/truststore.jks
      ssl.truststore.password: password
+
+default_number_post: 3
+
+ttl:
+  posts: 1

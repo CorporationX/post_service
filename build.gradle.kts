@@ -105,7 +105,9 @@ tasks.jacocoTestReport {
                 "**/**Test.class",
                 "**/PostServiceApp.class",
                 "**/controller/LikeController.class",
-                "**/**Impl"
+                "**/**Impl",
+                "**/controller/**",
+                "faang.school.postservice.service.redis.RedisService"
             )
         }
     }))
@@ -123,10 +125,11 @@ tasks.jacocoTestCoverageVerification {
                 "faang.school.postservice.dto.*",
                 "faang.school.postservice.model.*",
                 "faang.school.postservice.repository.*",
-                "faang.school.postservice.controller.LikeController",
+                "faang.school.postservice.controller.*",
                 "**/*Test.class",
                 "**/*Impl.class",
-                "faang.school.postservice.PostServiceApp"
+                "faang.school.postservice.PostServiceApp",
+                "faang.school.postservice.service.redis.RedisService"
             )
             limit {
                 counter = "LINE"

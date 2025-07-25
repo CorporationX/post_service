@@ -64,7 +64,7 @@ public class PostController {
 
     @GetMapping("/{postId}")
     public PostResponseDto getPostById(@PathVariable long postId) {
-        return postService.getPostById(postId);
+        return postService.getPostDtoById(postId);
     }
 
     @GetMapping("/author/{authorId}/drafts")
