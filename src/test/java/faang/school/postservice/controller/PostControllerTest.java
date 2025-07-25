@@ -39,7 +39,7 @@ public class PostControllerTest {
     @InjectMocks
     private PostController postController;
 
-   /* @Test
+   /*@Test
     public void testCreateDraftPost() {
         PostRequestDto request = createRequest("Post", 2L, null);
         PostResponseDto postDto = createPostResponseDto(request);
