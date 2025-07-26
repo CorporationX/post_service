@@ -1,7 +1,10 @@
 package faang.school.postservice.dto.project;
 
+import java.util.List;
+
 public record ProjectDto(
     long id,
-    String title
+    String title,
+    List<Long> participants
 ) {
 }
