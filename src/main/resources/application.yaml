@@ -63,6 +63,7 @@ kafka:
      like-post: "like-post"
      posts:
       create-post: "create-post"
+
    num-partitions: 2
    replication-factor: 1
    properties:

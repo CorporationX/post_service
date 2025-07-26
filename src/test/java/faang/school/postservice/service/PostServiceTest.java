@@ -1,5 +1,7 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.kafka.KafkaProducerService;
 import faang.school.postservice.dto.kafka.PostViewEvent;
 import faang.school.postservice.dto.post.PostRequestDto;
 import faang.school.postservice.dto.post.PostResponseDto;
@@ -25,6 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -37,7 +40,12 @@ class PostServiceTest {
     @Mock
     private PostRepository postRepository;
     @Mock
+    private UserServiceClient client;
+    @Mock
+    private KafkaProducerService kafka;
+    @Mock
     private KafkaPostViewProducer kafkaPostViewProducer;
+
     @Spy
     private PostMapperImpl postMapper;
     @Captor
@@ -125,8 +133,12 @@ class PostServiceTest {
     public void testCreateDraftPost() {
         PostRequestDto request = new PostRequestDto("Draft", 1L, null);
 
+        when(postRepository.save(any())).thenReturn(Post.builder().authorId(1L).content("").id(1L).build());
+        when(client.getUserFolowees(anyLong())).thenReturn(List.of());
+
         postService.createDraftPost(request);
 
+        verify(kafka).sendMessage(any(), any());
         verify(postRepository, times(1)).save(postCaptor.capture());
         Post savedPost = postCaptor.getValue();
         assertNotNull(savedPost);

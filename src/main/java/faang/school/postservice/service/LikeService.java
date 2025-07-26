@@ -4,6 +4,7 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.kafka.KafkaProducerService;
 import faang.school.postservice.dto.likesystem.LikeDto;
 import faang.school.postservice.dto.likesystem.LikeEventDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
@@ -15,6 +16,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -24,6 +28,9 @@ public class LikeService {
     @Value("${spring.kafka.topics.like-post}")
     private String topicName;
 
+    private static final int BATCH_SIZE = 100;
+
+
     private final LikeRepository likeRepository;
     private final CommentService commentService;
     private final PostService postService;
@@ -31,6 +38,7 @@ public class LikeService {
     private final KafkaProducerService kafkaService;
 
     private final LikeMapper likeMapper;
+
 
     @Transactional
     public LikeDto addLikePost(Long postId, Long userId) {
@@ -92,6 +100,41 @@ public class LikeService {
 
         return likeMapper.toDto(like);
     }
+
+    @Transactional
+    public List<UserDto> getUsersWhoLikedPost(Long postId) {
+        List<Long> userIds = likeRepository.findByPostId(postId)
+                .stream()
+                .map(Like::getUserId)
+                .toList();
+
+        return fetchUsersInBatches(userIds);
+    }
+
+    @Transactional
+    public List<UserDto> getUsersWhoLikedComment(Long commentId) {
+        List<Long> userIds = likeRepository.findByCommentId(commentId)
+                .stream()
+                .map(Like::getUserId)
+                .toList();
+
+        return fetchUsersInBatches(userIds);
+    }
+
+    private List<UserDto> fetchUsersInBatches(List<Long> userIds) {
+        if (userIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<UserDto> result = new ArrayList<>();
+        for (int i = 0; i < userIds.size(); i += BATCH_SIZE) {
+            int end = Math.min(i + BATCH_SIZE, userIds.size());
+            List<Long> batch = userIds.subList(i, end);
+            result.addAll(userServiceClient.getUsersByIds(batch));
+        }
+        return result;
+    }
+
 
     private Like createPostLike(Post post, Long userId) {
         return Like.builder()

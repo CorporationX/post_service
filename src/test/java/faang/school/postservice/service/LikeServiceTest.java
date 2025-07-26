@@ -3,6 +3,7 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.kafka.KafkaProducerService;
 import faang.school.postservice.dto.likesystem.LikeDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.LikeMapperImpl;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
@@ -18,13 +19,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.LongStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class LikeServiceTest {
@@ -45,12 +44,11 @@ class LikeServiceTest {
 
     @Test
     void addLikePostTestPostAlreadyHasLiked() {
-        long id = 1L;
-        long userId = 2L;
-        Like like = createLikeWithUserId(userId);
+        final long id = 1L;
+        final long userId = 2L;
+        final Like like = createLikeWithUserId(userId);
 
-        Post post = createPostWithLikes(List.of(like));
-
+        final Post post = createPostWithLikes(List.of(like));
         when(postService.getPostById(any())).thenReturn(post);
 
         assertThrows(IllegalArgumentException.class, () -> likeSystemService.addLikePost(id, userId));
@@ -58,28 +56,27 @@ class LikeServiceTest {
 
     @Test
     void addLikePostTest() {
-        long postId = 1L;
-        long userId = 2L;
-        long authorId = 3L;
-        long userIdNewLike = 3L;
+        final long postId = 1L;
+        final long userId = 2L;
+        final long authorId = 3L;
+        final long userIdNewLike = 3L;
 
-        Like like = createLikeWithUserId(userId);
-
-        Comment comment = createCommentWithLikes(List.of(like));
-        Post post = createPostWithPostIdLikesCommentsAndAuthor(postId, new ArrayList<>(), List.of(comment), authorId);
+        final Like like = createLikeWithUserId(userId);
+        final Comment comment = createCommentWithLikes(List.of(like));
+        final Post post = createPostWithPostIdLikesCommentsAndAuthor(postId,
+                new ArrayList<>(), List.of(comment), authorId);
 
         when(postService.getPostById(any())).thenReturn(post);
 
-        LikeDto result = likeSystemService.addLikePost(postId, userIdNewLike);
-
-        verify(likeRepository, times(1)).save(any());
+        final LikeDto result = likeSystemService.addLikePost(postId, userIdNewLike);
         assertNotNull(result);
         assertEquals(postId, result.postId());
+        verify(likeRepository, times(1)).save(any());
     }
 
     @Test
     void deleteLikePostLikeNotExist() {
-        long id = -1L;
+        final long id = -1L;
 
         when(likeRepository.findById(id))
                 .thenThrow(new IllegalArgumentException("The like with id = " + id + " does not exist"));
@@ -89,9 +86,9 @@ class LikeServiceTest {
 
     @Test
     void deleteLikePostLikeExist() {
-        long id = 1L;
-        Post post = createPostWithLikes(new ArrayList<>());
-        Like like = Like.builder()
+        final long id = 1L;
+        final Post post = createPostWithLikes(new ArrayList<>());
+        final Like like = Like.builder()
                 .id(id)
                 .post(post)
                 .build();
@@ -99,21 +96,19 @@ class LikeServiceTest {
 
         when(likeRepository.findById(any())).thenReturn(Optional.of(like));
 
-        LikeDto result = likeSystemService.deleteLikePost(id);
-
-        verify(likeRepository, times(1)).delete(any());
+        final LikeDto result = likeSystemService.deleteLikePost(id);
         assertNotNull(result);
         assertEquals(id, result.id());
+        verify(likeRepository, times(1)).delete(any());
     }
 
     @Test
     void addLikeCommentTestCommentAlreadyHasLiked() {
-        long id = 1L;
-        long userId = 2L;
+        final long id = 1L;
+        final long userId = 2L;
 
-        Like like = createLikeWithUserId(userId);
-        Comment comment = createCommentWithLikes(List.of(like));
-
+        final Like like = createLikeWithUserId(userId);
+        final Comment comment = createCommentWithLikes(List.of(like));
         when(commentService.getCommentById(id)).thenReturn(comment);
 
         assertThrows(IllegalArgumentException.class, () -> likeSystemService.addLikeComment(id, userId));
@@ -121,26 +116,25 @@ class LikeServiceTest {
 
     @Test
     void addLikeCommentTest() {
-        long id = 1L;
-        long userId = 2L;
-        long authorId = 3L;
+        final long id = 1L;
+        final long userId = 2L;
+        final long authorId = 3L;
 
-        Comment comment = createCommentWithLikes(new ArrayList<>());
-        Post post = createPostWithPostIdLikesCommentsAndAuthor(id, new ArrayList<>(), List.of(comment), authorId);
+        final Comment comment = createCommentWithLikes(new ArrayList<>());
+        final Post post = createPostWithPostIdLikesCommentsAndAuthor(id, new ArrayList<>(), List.of(comment), authorId);
         comment.setPost(post);
 
         when(commentService.getCommentById(any())).thenReturn(comment);
 
-        LikeDto result = likeSystemService.addLikeComment(id, userId);
-
-        verify(likeRepository, times(1)).save(any());
+        final LikeDto result = likeSystemService.addLikeComment(id, userId);
         assertNotNull(result);
         assertEquals(userId, result.userId());
+        verify(likeRepository, times(1)).save(any());
     }
 
     @Test
     void deleteLikeCommentLikeNotExist() {
-        long id = -1L;
+        final long id = -1L;
 
         when(likeRepository.findById(id))
                 .thenThrow(new IllegalArgumentException("The like with id = " + id + " does not exist"));
@@ -150,9 +144,9 @@ class LikeServiceTest {
 
     @Test
     void deleteLikeCommentLikeExist() {
-        long id = 1L;
-        Comment comment = createCommentWithLikes(new ArrayList<>());
-        Like like = Like.builder()
+        final long id = 1L;
+        final Comment comment = createCommentWithLikes(new ArrayList<>());
+        final Like like = Like.builder()
                 .id(id)
                 .comment(comment)
                 .build();
@@ -160,11 +154,78 @@ class LikeServiceTest {
 
         when(likeRepository.findById(id)).thenReturn(Optional.of(like));
 
-        LikeDto result = likeSystemService.deleteLikeComment(id);
-
-        verify(likeRepository, times(1)).delete(any());
+        final LikeDto result = likeSystemService.deleteLikeComment(id);
         assertNotNull(result);
         assertEquals(id, result.id());
+        verify(likeRepository, times(1)).delete(any());
+    }
+
+    @Test
+    void getUsersWhoLikedPost_batchesCorrectly() {
+        final List<Like> likes = LongStream.rangeClosed(1, 150)
+                .mapToObj(id -> Like.builder().userId(id).build())
+                .toList();
+
+        when(likeRepository.findByPostId(42L)).thenReturn(likes);
+
+        final List<UserDto> batch1 = List.of(
+                new UserDto(1L, "User1", "u1@test.com"),
+                new UserDto(2L, "User2", "u2@test.com")
+        );
+        final List<UserDto> batch2 = List.of(
+                new UserDto(101L, "User101", "u101@test.com")
+        );
+
+        when(userServiceClient.getUsersByIds(likes.subList(0, 100)
+                .stream()
+                .map(Like::getUserId)
+                .toList()))
+                .thenReturn(batch1);
+        when(userServiceClient.getUsersByIds(likes.subList(100, 150)
+                .stream()
+                .map(Like::getUserId)
+                .toList()))
+                .thenReturn(batch2);
+
+        final List<UserDto> result = likeSystemService.getUsersWhoLikedPost(42L);
+        assertEquals(3, result.size());
+        verify(likeRepository, times(1)).findByPostId(42L);
+        verify(userServiceClient, times(1))
+                .getUsersByIds(likes.subList(0, 100)
+                        .stream()
+                        .map(Like::getUserId)
+                        .toList());
+        verify(userServiceClient, times(1))
+                .getUsersByIds(likes.subList(100, 150)
+                .stream()
+                .map(Like::getUserId)
+                .toList());
+    }
+
+    @Test
+    void getUsersWhoLikedComment_returnsUsers() {
+        final List<Like> likes = List.of(
+                Like.builder().userId(10L).build(),
+                Like.builder().userId(20L).build()
+        );
+        when(likeRepository.findByCommentId(99L))
+                .thenReturn(likes);
+
+        final List<UserDto> users = List.of(
+                new UserDto(10L, "Alice", "a@test.com"),
+                new UserDto(20L, "Bob", "b@test.com")
+        );
+        when(userServiceClient.getUsersByIds(List.of(10L, 20L)))
+                .thenReturn(users);
+
+        final List<UserDto> result = likeSystemService.getUsersWhoLikedComment(99L);
+        assertEquals(2, result.size());
+        assertEquals("Alice", result.get(0).username());
+        assertEquals("Bob", result.get(1).username());
+        verify(likeRepository, times(1))
+                .findByCommentId(99L);
+        verify(userServiceClient, times(1))
+                .getUsersByIds(List.of(10L, 20L));
     }
 
     private Like createLikeWithUserId(Long userId) {
