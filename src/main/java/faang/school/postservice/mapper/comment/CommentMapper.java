@@ -16,6 +16,7 @@ public interface CommentMapper {
     CommentDto toCommentDto(Comment comment);
 
     Comment toComment(SaveCommentDto saveCommentDto);
+
     List<CommentDto> toCommentDtos(List<Comment> comments);
 
     void update(SaveCommentDto saveCommentDto, @MappingTarget Comment comment);

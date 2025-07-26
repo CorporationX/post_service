@@ -4,6 +4,7 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.SaveCommentDto;
 import faang.school.postservice.exception.EntityNotFoundException;
+import faang.school.postservice.exception.ServiceUnavailableException;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
@@ -79,8 +80,12 @@ public class CommentServiceImpl implements CommentService {
     private void ensureUserExists(Long userId) {
         try {
             userServiceClient.getUser(userId);
-        } catch (FeignException e) {
+        } catch (FeignException.NotFound e) {
+            log.warn("User with id={} not found: {}", userId, e.getMessage());
             throw new EntityNotFoundException("User not found with id: " + userId);
+        } catch (FeignException e) {
+            log.error("Error while checking user existence: {}", e.getMessage());
+            throw new ServiceUnavailableException("User service unavailable");
         }
     }
 }

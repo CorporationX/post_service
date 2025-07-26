@@ -4,21 +4,21 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDateTime;
 
-@Schema(description = "Комментарий к посту")
+@Schema(description = "Post comment DTO")
 public record CommentDto(
-        @Schema(description = "Уникальный идентификатор комментария")
+        @Schema(description = "Unique identifier of the comment")
         Long id,
 
-        @Schema(description = "Текст комментария")
+        @Schema(description = "Content of the comment")
         String content,
 
-        @Schema(description = "ID автора комментария")
+        @Schema(description = "ID of the comment's author")
         Long authorId,
 
-        @Schema(description = "ID поста, к которому относится комментарий")
+        @Schema(description = "ID of the post associated with the comment")
         Long postId,
 
-        @Schema(description = "Дата и время создания комментария")
+        @Schema(description = "Date and time the comment was created")
         LocalDateTime createdAt
 ) {
 }

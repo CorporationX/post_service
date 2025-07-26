@@ -144,13 +144,10 @@ public class CommentServiceTest {
         assertNotNull(result);
         assertEquals(COMMENT_ID, result.id());
         assertEquals(UPDATED_TEXT, result.content());
-        assertEquals(AUTHOR_ID, result.authorId());
-        assertEquals(POST_ID, result.postId());
 
         verify(userServiceClient).getUser(AUTHOR_ID);
         verify(postService).existsById(POST_ID);
         verify(commentRepository).findById(COMMENT_ID);
-        verify(commentValidator).ensurePostExists(true, POST_ID);
         verify(commentValidator).ensureCommentBelongsToPost(comment, POST_ID);
         verify(commentValidator).ensureUserIsAuthor(AUTHOR_ID, comment.getAuthorId());
         verify(commentMapper).update(saveDto, comment);

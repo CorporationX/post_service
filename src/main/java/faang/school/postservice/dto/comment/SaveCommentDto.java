@@ -4,11 +4,11 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-@Schema(description = "Данные для создания или обновления комментария")
+@Schema(description = "DTO for creating or updating a comment")
 public record SaveCommentDto(
-        @Schema(description = "Текст комментария, не может быть пустым, не должен превышать 4096 символов")
-        @NotBlank(message = "Введите текст комментария")
-        @Size(max = 4096, message = "Заголовок не должен превышать 4096 символов")
+        @Schema(description = "Comment text; must not be blank and must not exceed 4096 characters")
+        @NotBlank(message = "Enter the comment text")
+        @Size(max = 4096, message = "Comment text must not exceed 4096 characters")
         String content
 ) {
 }

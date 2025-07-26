@@ -26,7 +26,7 @@ import java.util.List;
 @Validated
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/posts/{postId}/comments")
+@RequestMapping("/api/v1")
 @Tag(name = "Comments", description = "Managing comments related to posts")
 public class CommentController {
 
@@ -37,7 +37,7 @@ public class CommentController {
             summary = "Create a comment for a post",
             description = "Creates a new comment for the specified post ID"
     )
-    @PostMapping
+    @PostMapping("/posts/{postId}/comments")
     @ResponseStatus(HttpStatus.CREATED)
     public CommentDto create(@PathVariable @Positive Long postId,
                              @RequestBody @Valid SaveCommentDto saveCommentDto) {
@@ -48,7 +48,7 @@ public class CommentController {
             summary = "Update a comment",
             description = "Updates the text of a comment by ID. Only the author of the comment can update it"
     )
-    @PutMapping("/{commentId}")
+    @PutMapping("/comments/{commentId}")
     public CommentDto update(@PathVariable @Positive Long postId,
                              @PathVariable @Positive Long commentId,
                              @RequestBody @Valid SaveCommentDto saveCommentDto) {
@@ -59,7 +59,7 @@ public class CommentController {
             summary = "Get all comments for a post",
             description = "Returns a list of all comments for the specified post, sorted by creation date"
     )
-    @GetMapping
+    @GetMapping("/posts/{postId}/comments")
     public List<CommentDto> getByPostId(@PathVariable @Positive Long postId) {
         return commentService.getByPostId(postId);
     }
@@ -68,7 +68,7 @@ public class CommentController {
             summary = "Delete a comment",
             description = "Deletes a comment by ID. Only the author of the comment can delete it"
     )
-    @DeleteMapping("/{commentId}")
+    @DeleteMapping("/comments/{commentId}")
     public void delete(@PathVariable @Positive Long postId,
                        @PathVariable @Positive Long commentId) {
         commentService.delete(postId, commentId, userContext.getUserId());
