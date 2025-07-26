@@ -1,4 +1,4 @@
-package faang.school.postservice.controller;
+package faang.school.postservice.controller.post;
 
 import faang.school.postservice.dto.post.PostCreateDto;
 import faang.school.postservice.dto.post.PostDto;
@@ -35,7 +35,7 @@ import java.util.List;
 public class PostController {
     private final PostService service;
 
-    @PostMapping()
+    @PostMapping
     public ResponseEntity<PostDto> create(@Valid @RequestBody PostCreateDto createDto) {
         var post = service.create(createDto);
         return ResponseEntity.ok(post);
@@ -67,7 +67,9 @@ public class PostController {
 
     @GetMapping("/search")
     public ResponseEntity<List<PostDto>> getList(@Valid @ModelAttribute PostFilterDto filterDto) {
+        System.out.println(filterDto);
         var posts = service.getList(filterDto);
+        System.out.println(posts);
         return ResponseEntity.ok(posts);
     }
 }
