@@ -13,5 +13,6 @@ import java.util.Map;
 public class RedisProperties {
     String host;
     int port;
+    boolean active;
     Map<String, String> channels = new HashMap<>();
 }
