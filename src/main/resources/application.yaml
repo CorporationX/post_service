@@ -4,6 +4,32 @@ spring:
     url: jdbc:postgresql://localhost:5432/postgres
     username: user
     password: password
+  kafka:
+    bootstrap-servers: localhost:9092
+    properties:
+      advertised.listeners: PLAINTEXT://localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      acks: 1
+      retries: 3
+      properties:
+        delivery.timeout.ms: 120000
+        request.timeout.ms: 60000
+    consumer:
+      group-id: my-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+  redis:
+    host: localhost
+    port: 6379
+    timeout: 5000
+  cache:
+    type: redis
+    redis:
+      time-to-live: 600000
+
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
