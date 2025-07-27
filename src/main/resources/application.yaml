@@ -33,15 +33,25 @@ spring:
           name: calculations_channel
 
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: localhost:29092
     producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      key-serializer: org.apache.kafka.common.serialization.StringDeserializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-      properties:
-        spring.json.add.type.headers: false
+      acks: 1
+      retries: 5
+      spring.json.add.type.headers: false
+    consumer:
+      group-id: news-feed
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      auto-offset-reset: earliest
+      enable-auto-commit: false
     topics:
       comment-created-topic:
         name: comment-created-notification
+      comments:
+        name: comments
+
 
 server:
   port: 8081

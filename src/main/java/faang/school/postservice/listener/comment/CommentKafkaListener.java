@@ -21,9 +21,8 @@ public class CommentKafkaListener extends AbstractKafkaListener<CommentEvent> {
 
     // TODO: конфига
     @KafkaListener(
-            topics = "${spring.kafka.topic.comment.name}",
-            containerFactory = "kafkaListenerContainerFactory",
-            groupId = ""
+            topics = "${spring.kafka.topics.comments.name}",
+            groupId = "${spring.kafka.consumer.group-id}"
     )
     public void listenCommentTopic(@Payload String message, Acknowledgment ack) {
         CommentEvent event = getEvent(message);
