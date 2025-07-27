@@ -1,6 +1,7 @@
 package faang.school.postservice.mapper;
 
 import faang.school.postservice.dto.post.PostCreateDto;
+import faang.school.postservice.dto.post.PostCreateEvent;
 import faang.school.postservice.dto.post.PostOutputDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
 import faang.school.postservice.model.Album;

@@ -34,8 +34,10 @@ spring:
       group_id: event-listeners
       offset: earliest
       concurrency: 3
+      pool_size: 3
       topic_names:
           comments: comments
+          posts: posts
 
   task:
     execution:
@@ -60,6 +62,8 @@ services:
   user-service:
     host: localhost
     port: 8080
+    url: localhost:8080
+    path_subscriptions: /api/subscriptions
   project-service:
     host: localhost
     port: 8082

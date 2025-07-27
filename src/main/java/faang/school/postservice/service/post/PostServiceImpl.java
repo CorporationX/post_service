@@ -4,6 +4,7 @@ import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostCreateDto;
+import faang.school.postservice.dto.post.PostCreateEvent;
 import faang.school.postservice.dto.post.PostOutputDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
 import faang.school.postservice.dto.post.PostViewEvent;
@@ -39,6 +40,7 @@ public class PostServiceImpl implements PostService {
     private final MessagePublisher<String> userPublisher;
     @Qualifier(value = "postViewEventPublisher")
     private final MessagePublisher<PostViewEvent> postViewPublisher;
+    private final MessagePublisher<Post> kafkaPostProducer;
     private final UserContext userContext;
 
     @Value("${entity.post.max-unverified-count-for-ban}")
@@ -132,6 +134,8 @@ public class PostServiceImpl implements PostService {
         foundPost.setPublished(true);
         foundPost.setPublishedAt(LocalDateTime.now());
         Post publishedPost = postRepository.save(foundPost);
+
+        kafkaPostProducer.publish(publishedPost);
 
         return postMapper.toPostDto(publishedPost);
     }

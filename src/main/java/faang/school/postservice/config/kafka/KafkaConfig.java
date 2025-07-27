@@ -16,6 +16,8 @@ import org.springframework.kafka.core.ProducerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @RequiredArgsConstructor
 @Configuration
@@ -56,6 +58,11 @@ public class KafkaConfig {
         factory.setConcurrency(kafkaProperties.concurrency());
 
         return factory;
+    }
+
+    @Bean
+    public ExecutorService kafkaThreadPool() {
+        return Executors.newFixedThreadPool(kafkaProperties.poolSize());
     }
 }
 

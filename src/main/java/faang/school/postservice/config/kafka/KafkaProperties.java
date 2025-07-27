@@ -9,11 +9,12 @@ public record KafkaProperties(
         String groupId,
         String offset,
         int concurrency,
+        int poolSize,
         ChannelNames topicNames
 ) {
     public record ChannelNames(
-            String comments
+            String comments,
+            String posts
     ) {
-
     }
 }
