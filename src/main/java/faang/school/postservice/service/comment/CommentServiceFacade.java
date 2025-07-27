@@ -1,37 +1,46 @@
 package faang.school.postservice.service.comment;
 
-import faang.school.postservice.dto.comment.CommentDtoResponse;
+import faang.school.postservice.annotation.CommentCreationEventKafka;
+import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CommentResponseImageDto;
-import faang.school.postservice.mapper.comment.MapperComment;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.model.Comment;
+import faang.school.postservice.service.user.UserCacheService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class CommentServiceFacade {
-    private final MapperComment mapperComment;
     private final CommentService commentService;
+    private final UserCacheService userCacheService;
+    private final UserServiceClient userServiceClient;
+    private final UserContext userContext;
 
-    public CommentDtoResponse createComment(long postId, String content) {
-        Comment commentCreate = commentService.createComment(postId, content);
+    @CommentCreationEventKafka
+    public Comment createComment(long postId, String content) {
+        long userId = userContext.getUserId();
+        UserDto userDto = userServiceClient.getUser(userId);
 
-        return mapperComment.fromEntityToDto(commentCreate);
+        Comment commentCreate = commentService.createComment(postId, content, userId);
+
+        userCacheService.saveUser(userDto);
+
+        return commentCreate;
     }
 
-    public CommentDtoResponse updateComment(long commentId, String content) {
-        Comment commentUpdate = commentService.updateComment(commentId, content);
-
-        return mapperComment.fromEntityToDto(commentUpdate);
+    public Comment updateComment(long commentId, String content) {
+        return commentService.updateComment(commentId, content);
     }
 
-    public List<CommentDtoResponse> getAllComments(long postId) {
-        List<Comment> comments = commentService.getAllComments(postId);
-
-        return mapperComment.fromDtoListToEntityList(comments);
+    public List<Comment> getAllComments(long postId) {
+        return commentService.getAllComments(postId);
     }
 
     public void deleteComment(long commentId) {

@@ -1,10 +1,8 @@
 package faang.school.postservice.service.comment;
 
-import faang.school.postservice.annotation.CommentCreationEventKafka;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CommentResponseImageDto;
-import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
@@ -38,15 +36,11 @@ public class CommentService {
     private final S3Service s3Service;
     private final ImageCompressor imageCompressor;
 
-    @CommentCreationEventKafka
     @Transactional
-    public Comment createComment(long postId, String content) {
-        long authorId = userContext.getUserId();
+    public Comment createComment(long postId, String content, long authorId) {
         Post post = postService.getPostById(postId);
-        UserDto userDto = userServiceClient.getUser(authorId);
 
         commentValidation.validateLengthContentComment(content);
-        commentValidation.checkAuthorEqualsUser(authorId, userDto.getId());
 
         Comment comment = Comment.builder()
                 .authorId(authorId)
@@ -54,7 +48,10 @@ public class CommentService {
                 .content(content)
                 .build();
 
-        return commentRepository.save(comment);
+        Comment savedComment = commentRepository.save(comment);
+        log.info("Comment {} has been saved", savedComment);
+
+        return savedComment;
     }
 
     @Transactional
