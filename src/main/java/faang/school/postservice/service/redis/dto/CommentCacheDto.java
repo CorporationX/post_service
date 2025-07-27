@@ -7,7 +7,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Data
-public class CommentCacheDto implements Serializable {
+public class CommentCacheDto implements Serializable, Comparable<CommentCacheDto> {
 
     private Long id;
 
@@ -18,4 +18,9 @@ public class CommentCacheDto implements Serializable {
     private String content;
 
     private LocalDateTime timestamp;
+
+    @Override
+    public int compareTo(CommentCacheDto o) {
+        return this.timestamp.compareTo(o.timestamp);
+    }
 }

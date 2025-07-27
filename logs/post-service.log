@@ -261,3 +261,774 @@ java.io.IOException: Test IO Exception
 2025-06-18 21:58:45.472 [Test worker] INFO  f.s.p.service.post.PostMediaService - Deleting media files with IDs: [10, 20] for post ID: 1 [trace=, span=]
 2025-06-18 21:58:45.472 [Test worker] INFO  f.s.p.service.post.PostMediaService - Media files deleted successfully for post ID: 1 [trace=, span=]
 2025-06-18 21:58:45.487 [Test worker] INFO  f.s.p.service.post.PostMediaService - Retrieving media files for post ID: 1 [trace=, span=]
+2025-07-27 16:20:36.081 [background-preinit] INFO  o.h.validator.internal.util.Version - HV000001: Hibernate Validator 8.0.0.Final [trace=, span=]
+2025-07-27 16:20:36.145 [main] INFO  f.school.postservice.PostServiceApp - Starting PostServiceApp using Java 17.0.14 with PID 5784 (D:\CorporationX\post_service\build\classes\java\main started by Home in D:\CorporationX\post_service) [trace=, span=]
+2025-07-27 16:20:36.145 [main] INFO  f.school.postservice.PostServiceApp - No active profile set, falling back to 1 default profile: "default" [trace=, span=]
+2025-07-27 16:20:38.598 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode [trace=, span=]
+2025-07-27 16:20:38.598 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JDBC repositories in DEFAULT mode. [trace=, span=]
+2025-07-27 16:20:38.629 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.ad.AdRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table. [trace=, span=]
+2025-07-27 16:20:38.629 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.AlbumRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table. [trace=, span=]
+2025-07-27 16:20:38.645 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.CommentRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table. [trace=, span=]
+2025-07-27 16:20:38.645 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.LikeRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table. [trace=, span=]
+2025-07-27 16:20:38.645 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.PostRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table. [trace=, span=]
+2025-07-27 16:20:38.645 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.ResourceRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table. [trace=, span=]
+2025-07-27 16:20:38.661 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.service.redis.repository.PostRedisRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table. [trace=, span=]
+2025-07-27 16:20:38.661 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 62 ms. Found 0 JDBC repository interfaces. [trace=, span=]
+2025-07-27 16:20:38.677 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode [trace=, span=]
+2025-07-27 16:20:38.677 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode. [trace=, span=]
+2025-07-27 16:20:38.830 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JPA - Could not safely identify store assignment for repository candidate interface faang.school.postservice.service.redis.repository.PostRedisRepository; If you want this repository to be a JPA repository, consider annotating your entities with one of these annotations: jakarta.persistence.Entity, jakarta.persistence.MappedSuperclass (preferred), or consider extending one of the following types with your repository: org.springframework.data.jpa.repository.JpaRepository [trace=, span=]
+2025-07-27 16:20:38.861 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 185 ms. Found 6 JPA repository interfaces. [trace=, span=]
+2025-07-27 16:20:38.889 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode [trace=, span=]
+2025-07-27 16:20:38.889 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode. [trace=, span=]
+2025-07-27 16:20:38.919 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.ad.AdRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository [trace=, span=]
+2025-07-27 16:20:38.919 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.AlbumRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository [trace=, span=]
+2025-07-27 16:20:38.919 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.CommentRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository [trace=, span=]
+2025-07-27 16:20:38.919 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.LikeRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository [trace=, span=]
+2025-07-27 16:20:38.919 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.PostRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository [trace=, span=]
+2025-07-27 16:20:38.919 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.ResourceRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository [trace=, span=]
+2025-07-27 16:20:38.936 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 24 ms. Found 1 Redis repository interfaces. [trace=, span=]
+2025-07-27 16:20:39.319 [main] INFO  o.s.cloud.context.scope.GenericScope - BeanFactory id=d4d60c3d-9603-37f5-93e9-10ebcc9d62c2 [trace=, span=]
+2025-07-27 16:20:39.447 [main] INFO  o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker - Bean 'faang.school.postservice.client.PaymentServiceClient' of type [org.springframework.cloud.openfeign.FeignClientFactoryBean] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying) [trace=, span=]
+2025-07-27 16:20:39.447 [main] INFO  o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker - Bean 'faang.school.postservice.client.ProjectServiceClient' of type [org.springframework.cloud.openfeign.FeignClientFactoryBean] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying) [trace=, span=]
+2025-07-27 16:20:39.447 [main] INFO  o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker - Bean 'faang.school.postservice.client.UserServiceClient' of type [org.springframework.cloud.openfeign.FeignClientFactoryBean] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying) [trace=, span=]
+2025-07-27 16:20:40.500 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port(s): 8081 (http) [trace=, span=]
+2025-07-27 16:20:40.500 [main] INFO  o.a.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8081"] [trace=, span=]
+2025-07-27 16:20:40.512 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat] [trace=, span=]
+2025-07-27 16:20:40.512 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.8] [trace=, span=]
+2025-07-27 16:20:40.608 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext [trace=, span=]
+2025-07-27 16:20:40.608 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 4383 ms [trace=, span=]
+2025-07-27 16:20:40.907 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting... [trace=, span=]
+2025-07-27 16:20:41.972 [main] ERROR com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Exception during pool initialization. [trace=, span=]
+org.postgresql.util.PSQLException: Connection to localhost:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.
+	at org.postgresql.core.v3.ConnectionFactoryImpl.openConnectionImpl(ConnectionFactoryImpl.java:342)
+	at org.postgresql.core.ConnectionFactory.openConnection(ConnectionFactory.java:54)
+	at org.postgresql.jdbc.PgConnection.<init>(PgConnection.java:253)
+	at org.postgresql.Driver.makeConnection(Driver.java:434)
+	at org.postgresql.Driver.connect(Driver.java:291)
+	at com.zaxxer.hikari.util.DriverDataSource.getConnection(DriverDataSource.java:138)
+	at com.zaxxer.hikari.pool.PoolBase.newConnection(PoolBase.java:359)
+	at com.zaxxer.hikari.pool.PoolBase.newPoolEntry(PoolBase.java:201)
+	at com.zaxxer.hikari.pool.HikariPool.createPoolEntry(HikariPool.java:470)
+	at com.zaxxer.hikari.pool.HikariPool.checkFailFast(HikariPool.java:561)
+	at com.zaxxer.hikari.pool.HikariPool.<init>(HikariPool.java:100)
+	at com.zaxxer.hikari.HikariDataSource.getConnection(HikariDataSource.java:112)
+	at liquibase.integration.spring.SpringLiquibase.afterPropertiesSet(SpringLiquibase.java:280)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.invokeInitMethods(AbstractAutowireCapableBeanFactory.java:1816)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1766)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:598)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:520)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:326)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:234)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:324)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:200)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:313)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:200)
+	at org.springframework.context.support.AbstractApplicationContext.getBean(AbstractApplicationContext.java:1132)
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:907)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:584)
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:146)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:732)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:434)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:310)
+	at org.springframework.boot.builder.SpringApplicationBuilder.run(SpringApplicationBuilder.java:150)
+	at faang.school.postservice.PostServiceApp.main(PostServiceApp.java:20)
+Caused by: java.net.ConnectException: Connection refused: getsockopt
+	at java.base/sun.nio.ch.Net.pollConnect(Native Method)
+	at java.base/sun.nio.ch.Net.pollConnectNow(Net.java:672)
+	at java.base/sun.nio.ch.NioSocketImpl.timedFinishConnect(NioSocketImpl.java:547)
+	at java.base/sun.nio.ch.NioSocketImpl.connect(NioSocketImpl.java:602)
+	at java.base/java.net.SocksSocketImpl.connect(SocksSocketImpl.java:327)
+	at java.base/java.net.Socket.connect(Socket.java:633)
+	at org.postgresql.core.PGStream.createSocket(PGStream.java:243)
+	at org.postgresql.core.PGStream.<init>(PGStream.java:98)
+	at org.postgresql.core.v3.ConnectionFactoryImpl.tryConnect(ConnectionFactoryImpl.java:132)
+	at org.postgresql.core.v3.ConnectionFactoryImpl.openConnectionImpl(ConnectionFactoryImpl.java:258)
+	... 31 common frames omitted
+2025-07-27 16:20:41.972 [main] WARN  o.s.b.w.s.c.AnnotationConfigServletWebServerApplicationContext - Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'liquibase' defined in class path resource [org/springframework/boot/autoconfigure/liquibase/LiquibaseAutoConfiguration$LiquibaseConfiguration.class]: org.postgresql.util.PSQLException: Connection to localhost:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections. [trace=, span=]
+2025-07-27 16:20:41.972 [main] INFO  o.a.catalina.core.StandardService - Stopping service [Tomcat] [trace=, span=]
+2025-07-27 16:20:42.004 [main] INFO  o.s.b.a.l.ConditionEvaluationReportLogger - 
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled. [trace=, span=]
+2025-07-27 16:20:42.019 [main] ERROR o.s.boot.SpringApplication - Application run failed [trace=, span=]
+org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'liquibase' defined in class path resource [org/springframework/boot/autoconfigure/liquibase/LiquibaseAutoConfiguration$LiquibaseConfiguration.class]: org.postgresql.util.PSQLException: Connection to localhost:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1770)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:598)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:520)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:326)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:234)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:324)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:200)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:313)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:200)
+	at org.springframework.context.support.AbstractApplicationContext.getBean(AbstractApplicationContext.java:1132)
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:907)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:584)
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:146)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:732)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:434)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:310)
+	at org.springframework.boot.builder.SpringApplicationBuilder.run(SpringApplicationBuilder.java:150)
+	at faang.school.postservice.PostServiceApp.main(PostServiceApp.java:20)
+Caused by: liquibase.exception.DatabaseException: org.postgresql.util.PSQLException: Connection to localhost:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.
+	at liquibase.integration.spring.SpringLiquibase.afterPropertiesSet(SpringLiquibase.java:285)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.invokeInitMethods(AbstractAutowireCapableBeanFactory.java:1816)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1766)
+	... 17 common frames omitted
+Caused by: org.postgresql.util.PSQLException: Connection to localhost:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.
+	at org.postgresql.core.v3.ConnectionFactoryImpl.openConnectionImpl(ConnectionFactoryImpl.java:342)
+	at org.postgresql.core.ConnectionFactory.openConnection(ConnectionFactory.java:54)
+	at org.postgresql.jdbc.PgConnection.<init>(PgConnection.java:253)
+	at org.postgresql.Driver.makeConnection(Driver.java:434)
+	at org.postgresql.Driver.connect(Driver.java:291)
+	at com.zaxxer.hikari.util.DriverDataSource.getConnection(DriverDataSource.java:138)
+	at com.zaxxer.hikari.pool.PoolBase.newConnection(PoolBase.java:359)
+	at com.zaxxer.hikari.pool.PoolBase.newPoolEntry(PoolBase.java:201)
+	at com.zaxxer.hikari.pool.HikariPool.createPoolEntry(HikariPool.java:470)
+	at com.zaxxer.hikari.pool.HikariPool.checkFailFast(HikariPool.java:561)
+	at com.zaxxer.hikari.pool.HikariPool.<init>(HikariPool.java:100)
+	at com.zaxxer.hikari.HikariDataSource.getConnection(HikariDataSource.java:112)
+	at liquibase.integration.spring.SpringLiquibase.afterPropertiesSet(SpringLiquibase.java:280)
+	... 19 common frames omitted
+Caused by: java.net.ConnectException: Connection refused: getsockopt
+	at java.base/sun.nio.ch.Net.pollConnect(Native Method)
+	at java.base/sun.nio.ch.Net.pollConnectNow(Net.java:672)
+	at java.base/sun.nio.ch.NioSocketImpl.timedFinishConnect(NioSocketImpl.java:547)
+	at java.base/sun.nio.ch.NioSocketImpl.connect(NioSocketImpl.java:602)
+	at java.base/java.net.SocksSocketImpl.connect(SocksSocketImpl.java:327)
+	at java.base/java.net.Socket.connect(Socket.java:633)
+	at org.postgresql.core.PGStream.createSocket(PGStream.java:243)
+	at org.postgresql.core.PGStream.<init>(PGStream.java:98)
+	at org.postgresql.core.v3.ConnectionFactoryImpl.tryConnect(ConnectionFactoryImpl.java:132)
+	at org.postgresql.core.v3.ConnectionFactoryImpl.openConnectionImpl(ConnectionFactoryImpl.java:258)
+	... 31 common frames omitted
+2025-07-27 16:38:06.887 [background-preinit] INFO  o.h.validator.internal.util.Version - HV000001: Hibernate Validator 8.0.0.Final [trace=, span=]
+2025-07-27 16:38:06.955 [main] INFO  f.school.postservice.PostServiceApp - Starting PostServiceApp using Java 17.0.14 with PID 9848 (D:\CorporationX\post_service\build\classes\java\main started by Home in D:\CorporationX\post_service) [trace=, span=]
+2025-07-27 16:38:06.956 [main] INFO  f.school.postservice.PostServiceApp - No active profile set, falling back to 1 default profile: "default" [trace=, span=]
+2025-07-27 16:38:10.721 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode [trace=, span=]
+2025-07-27 16:38:10.723 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JDBC repositories in DEFAULT mode. [trace=, span=]
+2025-07-27 16:38:10.762 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.ad.AdRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table. [trace=, span=]
+2025-07-27 16:38:10.763 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.AlbumRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table. [trace=, span=]
+2025-07-27 16:38:10.764 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.CommentRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table. [trace=, span=]
+2025-07-27 16:38:10.814 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.LikeRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table. [trace=, span=]
+2025-07-27 16:38:10.815 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.PostRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table. [trace=, span=]
+2025-07-27 16:38:10.816 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.ResourceRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table. [trace=, span=]
+2025-07-27 16:38:10.817 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.service.redis.repository.PostRedisRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table. [trace=, span=]
+2025-07-27 16:38:10.818 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 91 ms. Found 0 JDBC repository interfaces. [trace=, span=]
+2025-07-27 16:38:10.825 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode [trace=, span=]
+2025-07-27 16:38:10.826 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode. [trace=, span=]
+2025-07-27 16:38:10.992 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JPA - Could not safely identify store assignment for repository candidate interface faang.school.postservice.service.redis.repository.PostRedisRepository; If you want this repository to be a JPA repository, consider annotating your entities with one of these annotations: jakarta.persistence.Entity, jakarta.persistence.MappedSuperclass (preferred), or consider extending one of the following types with your repository: org.springframework.data.jpa.repository.JpaRepository [trace=, span=]
+2025-07-27 16:38:11.015 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 185 ms. Found 6 JPA repository interfaces. [trace=, span=]
+2025-07-27 16:38:11.038 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode [trace=, span=]
+2025-07-27 16:38:11.040 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode. [trace=, span=]
+2025-07-27 16:38:11.061 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.ad.AdRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository [trace=, span=]
+2025-07-27 16:38:11.062 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.AlbumRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository [trace=, span=]
+2025-07-27 16:38:11.062 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.CommentRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository [trace=, span=]
+2025-07-27 16:38:11.062 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.LikeRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository [trace=, span=]
+2025-07-27 16:38:11.062 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.PostRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository [trace=, span=]
+2025-07-27 16:38:11.062 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.ResourceRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository [trace=, span=]
+2025-07-27 16:38:11.073 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 23 ms. Found 1 Redis repository interfaces. [trace=, span=]
+2025-07-27 16:38:11.411 [main] INFO  o.s.cloud.context.scope.GenericScope - BeanFactory id=d4d60c3d-9603-37f5-93e9-10ebcc9d62c2 [trace=, span=]
+2025-07-27 16:38:11.526 [main] INFO  o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker - Bean 'faang.school.postservice.client.PaymentServiceClient' of type [org.springframework.cloud.openfeign.FeignClientFactoryBean] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying) [trace=, span=]
+2025-07-27 16:38:11.527 [main] INFO  o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker - Bean 'faang.school.postservice.client.ProjectServiceClient' of type [org.springframework.cloud.openfeign.FeignClientFactoryBean] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying) [trace=, span=]
+2025-07-27 16:38:11.528 [main] INFO  o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker - Bean 'faang.school.postservice.client.UserServiceClient' of type [org.springframework.cloud.openfeign.FeignClientFactoryBean] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying) [trace=, span=]
+2025-07-27 16:38:12.008 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port(s): 8081 (http) [trace=, span=]
+2025-07-27 16:38:12.025 [main] INFO  o.a.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8081"] [trace=, span=]
+2025-07-27 16:38:12.026 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat] [trace=, span=]
+2025-07-27 16:38:12.026 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.8] [trace=, span=]
+2025-07-27 16:38:12.111 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext [trace=, span=]
+2025-07-27 16:38:12.112 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 5100 ms [trace=, span=]
+2025-07-27 16:38:12.368 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting... [trace=, span=]
+2025-07-27 16:38:12.948 [main] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@55b45ea1 [trace=, span=]
+2025-07-27 16:38:12.950 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed. [trace=, span=]
+2025-07-27 16:38:13.327 [main] INFO  liquibase.database - Set default schema name to public [trace=, span=]
+2025-07-27 16:38:13.626 [main] INFO  liquibase.lockservice - Changelog-Protokoll erfolgreich gesperrt. [trace=, span=]
+2025-07-27 16:38:13.753 [main] INFO  liquibase.changelog - Creating database history table with name: public.databasechangelog [trace=, span=]
+2025-07-27 16:38:13.773 [main] INFO  liquibase.changelog - Reading from public.databasechangelog [trace=, span=]
+2025-07-27 16:38:15.488 [main] INFO  liquibase.changelog - Custom SQL executed [trace=, span=]
+2025-07-27 16:38:15.531 [main] INFO  liquibase.changelog - ChangeSet db/changelog/changeset/post_V001__initial.sql::raw::includeAll ran successfully in 1694ms [trace=, span=]
+2025-07-27 16:38:15.646 [main] INFO  liquibase.changelog - Custom SQL executed [trace=, span=]
+2025-07-27 16:38:15.651 [main] INFO  liquibase.changelog - ChangeSet db/changelog/changeset/post_V002__ad.sql::raw::includeAll ran successfully in 85ms [trace=, span=]
+2025-07-27 16:38:15.744 [main] INFO  liquibase.changelog - Custom SQL executed [trace=, span=]
+2025-07-27 16:38:15.749 [main] INFO  liquibase.changelog - ChangeSet db/changelog/changeset/post_V003_resource.sql::raw::includeAll ran successfully in 91ms [trace=, span=]
+2025-07-27 16:38:15.760 [main] INFO  liquibase.changelog - Custom SQL executed [trace=, span=]
+2025-07-27 16:38:15.765 [main] INFO  liquibase.changelog - ChangeSet db/changelog/changeset/post_V004_alter_comment_add_image_keys.sql::raw::includeAll ran successfully in 9ms [trace=, span=]
+2025-07-27 16:38:16.033 [main] INFO  liquibase.changelog - Custom SQL executed [trace=, span=]
+2025-07-27 16:38:16.163 [main] INFO  liquibase.changelog - ChangeSet db/changelog/changeset/post_V005_alter_post_resource_table.sql::raw::includeAll ran successfully in 389ms [trace=, span=]
+2025-07-27 16:38:16.208 [main] INFO  liquibase.changelog - Custom SQL executed [trace=, span=]
+2025-07-27 16:38:16.212 [main] INFO  liquibase.changelog - ChangeSet db/changelog/changeset/post_V006_alter_post_ad_add_status_and_index.sql::raw::includeAll ran successfully in 40ms [trace=, span=]
+2025-07-27 16:38:16.227 [main] INFO  liquibase.lockservice - Successfully released change log lock [trace=, span=]
+2025-07-27 16:38:16.873 [main] INFO  o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default] [trace=, span=]
+2025-07-27 16:38:16.955 [main] INFO  org.hibernate.Version - HHH000412: Hibernate ORM core version 6.1.7.Final [trace=, span=]
+2025-07-27 16:38:17.373 [main] INFO  SQL dialect - HHH000400: Using dialect: org.hibernate.dialect.PostgreSQLDialect [trace=, span=]
+2025-07-27 16:38:18.253 [main] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000490: Using JtaPlatform implementation: [org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform] [trace=, span=]
+2025-07-27 16:38:18.266 [main] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default' [trace=, span=]
+2025-07-27 16:38:18.435 [main] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning [trace=, span=]
+2025-07-27 16:38:19.745 [main] INFO  o.s.cloud.commons.util.InetUtils - Cannot determine local hostname [trace=, span=]
+2025-07-27 16:38:19.852 [main] INFO  o.s.c.o.FeignClientFactoryBean - For 'user-service' URL not provided. Will try picking an instance via load-balancing. [trace=, span=]
+2025-07-27 16:38:20.615 [main] INFO  o.s.c.o.FeignClientFactoryBean - For 'project-service' URL not provided. Will try picking an instance via load-balancing. [trace=, span=]
+2025-07-27 16:38:21.384 [main] WARN  o.s.b.w.s.c.AnnotationConfigServletWebServerApplicationContext - Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'kafkaConsumerConfig': Injection of autowired dependencies failed [trace=, span=]
+2025-07-27 16:38:21.400 [main] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default' [trace=, span=]
+2025-07-27 16:38:21.402 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated... [trace=, span=]
+2025-07-27 16:38:21.405 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed. [trace=, span=]
+2025-07-27 16:38:21.407 [main] INFO  o.a.catalina.core.StandardService - Stopping service [Tomcat] [trace=, span=]
+2025-07-27 16:38:21.431 [main] INFO  o.s.b.a.l.ConditionEvaluationReportLogger - 
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled. [trace=, span=]
+2025-07-27 16:38:21.451 [main] ERROR o.s.boot.SpringApplication - Application run failed [trace=, span=]
+org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'kafkaConsumerConfig': Injection of autowired dependencies failed
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.postProcessProperties(AutowiredAnnotationBeanPostProcessor.java:488)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.populateBean(AbstractAutowireCapableBeanFactory.java:1416)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:597)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:520)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:326)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:234)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:324)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:200)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:973)
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:917)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:584)
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:146)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:732)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:434)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:310)
+	at org.springframework.boot.builder.SpringApplicationBuilder.run(SpringApplicationBuilder.java:150)
+	at faang.school.postservice.PostServiceApp.main(PostServiceApp.java:20)
+Caused by: java.lang.IllegalArgumentException: Could not resolve placeholder 'spring.kafka.bootstrap-servers' in value "${spring.kafka.bootstrap-servers}"
+	at org.springframework.util.PropertyPlaceholderHelper.parseStringValue(PropertyPlaceholderHelper.java:180)
+	at org.springframework.util.PropertyPlaceholderHelper.replacePlaceholders(PropertyPlaceholderHelper.java:126)
+	at org.springframework.core.env.AbstractPropertyResolver.doResolvePlaceholders(AbstractPropertyResolver.java:239)
+	at org.springframework.core.env.AbstractPropertyResolver.resolveRequiredPlaceholders(AbstractPropertyResolver.java:210)
+	at org.springframework.context.support.PropertySourcesPlaceholderConfigurer.lambda$processProperties$0(PropertySourcesPlaceholderConfigurer.java:191)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.resolveEmbeddedValue(AbstractBeanFactory.java:920)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:1358)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveDependency(DefaultListableBeanFactory.java:1337)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.resolveFieldValue(AutowiredAnnotationBeanPostProcessor.java:710)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor$AutowiredFieldElement.inject(AutowiredAnnotationBeanPostProcessor.java:693)
+	at org.springframework.beans.factory.annotation.InjectionMetadata.inject(InjectionMetadata.java:133)
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.postProcessProperties(AutowiredAnnotationBeanPostProcessor.java:482)
+	... 16 common frames omitted
+2025-07-27 16:42:38.176 [main] INFO  f.school.postservice.PostServiceApp - Starting PostServiceApp using Java 17.0.14 with PID 3512 (D:\CorporationX\post_service\build\classes\java\main started by Home in D:\CorporationX\post_service) [trace=, span=]
+2025-07-27 16:42:38.186 [main] INFO  f.school.postservice.PostServiceApp - No active profile set, falling back to 1 default profile: "default" [trace=, span=]
+2025-07-27 16:42:38.245 [background-preinit] INFO  o.h.validator.internal.util.Version - HV000001: Hibernate Validator 8.0.0.Final [trace=, span=]
+2025-07-27 16:42:42.568 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode [trace=, span=]
+2025-07-27 16:42:42.569 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JDBC repositories in DEFAULT mode. [trace=, span=]
+2025-07-27 16:42:42.611 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.ad.AdRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table. [trace=, span=]
+2025-07-27 16:42:42.612 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.AlbumRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table. [trace=, span=]
+2025-07-27 16:42:42.613 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.CommentRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table. [trace=, span=]
+2025-07-27 16:42:42.614 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.LikeRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table. [trace=, span=]
+2025-07-27 16:42:42.615 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.PostRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table. [trace=, span=]
+2025-07-27 16:42:42.615 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.ResourceRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table. [trace=, span=]
+2025-07-27 16:42:42.617 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.service.redis.repository.PostRedisRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table. [trace=, span=]
+2025-07-27 16:42:42.617 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 42 ms. Found 0 JDBC repository interfaces. [trace=, span=]
+2025-07-27 16:42:42.627 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode [trace=, span=]
+2025-07-27 16:42:42.629 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode. [trace=, span=]
+2025-07-27 16:42:42.774 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JPA - Could not safely identify store assignment for repository candidate interface faang.school.postservice.service.redis.repository.PostRedisRepository; If you want this repository to be a JPA repository, consider annotating your entities with one of these annotations: jakarta.persistence.Entity, jakarta.persistence.MappedSuperclass (preferred), or consider extending one of the following types with your repository: org.springframework.data.jpa.repository.JpaRepository [trace=, span=]
+2025-07-27 16:42:42.798 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 165 ms. Found 6 JPA repository interfaces. [trace=, span=]
+2025-07-27 16:42:42.813 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode [trace=, span=]
+2025-07-27 16:42:42.815 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode. [trace=, span=]
+2025-07-27 16:42:42.832 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.ad.AdRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository [trace=, span=]
+2025-07-27 16:42:42.867 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.AlbumRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository [trace=, span=]
+2025-07-27 16:42:42.868 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.CommentRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository [trace=, span=]
+2025-07-27 16:42:42.868 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.LikeRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository [trace=, span=]
+2025-07-27 16:42:42.868 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.PostRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository [trace=, span=]
+2025-07-27 16:42:42.868 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.ResourceRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository [trace=, span=]
+2025-07-27 16:42:42.876 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 51 ms. Found 1 Redis repository interfaces. [trace=, span=]
+2025-07-27 16:42:43.188 [main] INFO  o.s.cloud.context.scope.GenericScope - BeanFactory id=d4d60c3d-9603-37f5-93e9-10ebcc9d62c2 [trace=, span=]
+2025-07-27 16:42:43.293 [main] INFO  o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker - Bean 'faang.school.postservice.client.PaymentServiceClient' of type [org.springframework.cloud.openfeign.FeignClientFactoryBean] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying) [trace=, span=]
+2025-07-27 16:42:43.294 [main] INFO  o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker - Bean 'faang.school.postservice.client.ProjectServiceClient' of type [org.springframework.cloud.openfeign.FeignClientFactoryBean] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying) [trace=, span=]
+2025-07-27 16:42:43.295 [main] INFO  o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker - Bean 'faang.school.postservice.client.UserServiceClient' of type [org.springframework.cloud.openfeign.FeignClientFactoryBean] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying) [trace=, span=]
+2025-07-27 16:42:43.670 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port(s): 8081 (http) [trace=, span=]
+2025-07-27 16:42:43.687 [main] INFO  o.a.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8081"] [trace=, span=]
+2025-07-27 16:42:43.688 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat] [trace=, span=]
+2025-07-27 16:42:43.688 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.8] [trace=, span=]
+2025-07-27 16:42:43.786 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext [trace=, span=]
+2025-07-27 16:42:43.788 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 5539 ms [trace=, span=]
+2025-07-27 16:42:44.039 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting... [trace=, span=]
+2025-07-27 16:42:44.256 [main] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@7d47b021 [trace=, span=]
+2025-07-27 16:42:44.258 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed. [trace=, span=]
+2025-07-27 16:42:44.429 [main] INFO  liquibase.database - Set default schema name to public [trace=, span=]
+2025-07-27 16:42:44.522 [main] INFO  liquibase.lockservice - Changelog-Protokoll erfolgreich gesperrt. [trace=, span=]
+2025-07-27 16:42:44.673 [main] INFO  liquibase.changelog - Reading from public.databasechangelog [trace=, span=]
+2025-07-27 16:42:44.776 [main] INFO  liquibase.lockservice - Successfully released change log lock [trace=, span=]
+2025-07-27 16:42:45.447 [main] INFO  o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default] [trace=, span=]
+2025-07-27 16:42:45.512 [main] INFO  org.hibernate.Version - HHH000412: Hibernate ORM core version 6.1.7.Final [trace=, span=]
+2025-07-27 16:42:45.853 [main] INFO  SQL dialect - HHH000400: Using dialect: org.hibernate.dialect.PostgreSQLDialect [trace=, span=]
+2025-07-27 16:42:46.731 [main] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000490: Using JtaPlatform implementation: [org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform] [trace=, span=]
+2025-07-27 16:42:46.741 [main] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default' [trace=, span=]
+2025-07-27 16:42:46.918 [main] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning [trace=, span=]
+2025-07-27 16:42:48.179 [main] INFO  o.s.cloud.commons.util.InetUtils - Cannot determine local hostname [trace=, span=]
+2025-07-27 16:42:48.277 [main] INFO  o.s.c.o.FeignClientFactoryBean - For 'user-service' URL not provided. Will try picking an instance via load-balancing. [trace=, span=]
+2025-07-27 16:42:48.873 [main] INFO  o.s.c.o.FeignClientFactoryBean - For 'project-service' URL not provided. Will try picking an instance via load-balancing. [trace=, span=]
+2025-07-27 16:42:51.695 [main] INFO  o.s.cloud.commons.util.InetUtils - Cannot determine local hostname [trace=, span=]
+2025-07-27 16:42:51.734 [main] WARN  o.s.c.l.c.LoadBalancerCacheAutoConfiguration$LoadBalancerCaffeineWarnLogger - Spring Cloud LoadBalancer is currently working with the default cache. While this cache implementation is useful for development and tests, it's recommended to use Caffeine cache in production.You can switch to using Caffeine cache, by adding it and org.springframework.cache.caffeine.CaffeineCacheManager to the classpath. [trace=, span=]
+2025-07-27 16:42:51.747 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 18 endpoint(s) beneath base path '/actuator' [trace=, span=]
+2025-07-27 16:42:51.912 [main] INFO  o.s.b.a.l.ConditionEvaluationReportLogger - 
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled. [trace=, span=]
+2025-07-27 16:42:51.927 [main] ERROR o.s.boot.SpringApplication - Application run failed [trace=, span=]
+java.lang.NoClassDefFoundError: org/jspecify/annotations/NonNull
+	at org.springframework.kafka.listener.adapter.MessagingMessageListenerAdapter.determineInferredType(MessagingMessageListenerAdapter.java:851)
+	at org.springframework.kafka.listener.adapter.MessagingMessageListenerAdapter.<init>(MessagingMessageListenerAdapter.java:183)
+	at org.springframework.kafka.listener.adapter.RecordMessagingMessageListenerAdapter.<init>(RecordMessagingMessageListenerAdapter.java:60)
+	at org.springframework.kafka.config.MethodKafkaListenerEndpoint.createMessageListenerInstance(MethodKafkaListenerEndpoint.java:226)
+	at org.springframework.kafka.config.MethodKafkaListenerEndpoint.createMessageListener(MethodKafkaListenerEndpoint.java:178)
+	at org.springframework.kafka.config.AbstractKafkaListenerEndpoint.setupMessageListener(AbstractKafkaListenerEndpoint.java:511)
+	at org.springframework.kafka.config.AbstractKafkaListenerEndpoint.setupListenerContainer(AbstractKafkaListenerEndpoint.java:494)
+	at org.springframework.kafka.config.AbstractKafkaListenerContainerFactory.createListenerContainer(AbstractKafkaListenerContainerFactory.java:367)
+	at org.springframework.kafka.config.AbstractKafkaListenerContainerFactory.createListenerContainer(AbstractKafkaListenerContainerFactory.java:67)
+	at org.springframework.kafka.config.KafkaListenerEndpointRegistry.createListenerContainer(KafkaListenerEndpointRegistry.java:342)
+	at org.springframework.kafka.config.KafkaListenerEndpointRegistry.registerListenerContainer(KafkaListenerEndpointRegistry.java:270)
+	at org.springframework.kafka.config.KafkaListenerEndpointRegistry.registerListenerContainer(KafkaListenerEndpointRegistry.java:242)
+	at org.springframework.kafka.config.KafkaListenerEndpointRegistrar.registerAllEndpoints(KafkaListenerEndpointRegistrar.java:202)
+	at org.springframework.kafka.config.KafkaListenerEndpointRegistrar.afterPropertiesSet(KafkaListenerEndpointRegistrar.java:190)
+	at org.springframework.kafka.annotation.KafkaListenerAnnotationBeanPostProcessor.afterSingletonsInstantiated(KafkaListenerAnnotationBeanPostProcessor.java:348)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:984)
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:917)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:584)
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:146)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:732)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:434)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:310)
+	at org.springframework.boot.builder.SpringApplicationBuilder.run(SpringApplicationBuilder.java:150)
+	at faang.school.postservice.PostServiceApp.main(PostServiceApp.java:20)
+Caused by: java.lang.ClassNotFoundException: org.jspecify.annotations.NonNull
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:641)
+	at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:188)
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:525)
+	... 24 common frames omitted
+2025-07-27 16:42:51.963 [main] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default' [trace=, span=]
+2025-07-27 16:42:52.162 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated... [trace=, span=]
+2025-07-27 16:42:52.168 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed. [trace=, span=]
+2025-07-27 16:47:30.932 [background-preinit] INFO  o.h.validator.internal.util.Version - HV000001: Hibernate Validator 8.0.0.Final [trace=, span=]
+2025-07-27 16:47:30.990 [main] INFO  f.school.postservice.PostServiceApp - Starting PostServiceApp using Java 17.0.14 with PID 8608 (D:\CorporationX\post_service\build\classes\java\main started by Home in D:\CorporationX\post_service) [trace=, span=]
+2025-07-27 16:47:30.991 [main] INFO  f.school.postservice.PostServiceApp - No active profile set, falling back to 1 default profile: "default" [trace=, span=]
+2025-07-27 16:47:38.348 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode [trace=, span=]
+2025-07-27 16:47:38.349 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JDBC repositories in DEFAULT mode. [trace=, span=]
+2025-07-27 16:47:38.384 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.ad.AdRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table. [trace=, span=]
+2025-07-27 16:47:38.385 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.AlbumRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table. [trace=, span=]
+2025-07-27 16:47:38.386 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.CommentRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table. [trace=, span=]
+2025-07-27 16:47:38.387 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.LikeRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table. [trace=, span=]
+2025-07-27 16:47:38.388 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.PostRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table. [trace=, span=]
+2025-07-27 16:47:38.388 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.ResourceRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table. [trace=, span=]
+2025-07-27 16:47:38.390 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.service.redis.repository.PostRedisRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table. [trace=, span=]
+2025-07-27 16:47:38.391 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 38 ms. Found 0 JDBC repository interfaces. [trace=, span=]
+2025-07-27 16:47:38.401 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode [trace=, span=]
+2025-07-27 16:47:38.401 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode. [trace=, span=]
+2025-07-27 16:47:38.510 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JPA - Could not safely identify store assignment for repository candidate interface faang.school.postservice.service.redis.repository.PostRedisRepository; If you want this repository to be a JPA repository, consider annotating your entities with one of these annotations: jakarta.persistence.Entity, jakarta.persistence.MappedSuperclass (preferred), or consider extending one of the following types with your repository: org.springframework.data.jpa.repository.JpaRepository [trace=, span=]
+2025-07-27 16:47:38.535 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 129 ms. Found 6 JPA repository interfaces. [trace=, span=]
+2025-07-27 16:47:47.205 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode [trace=, span=]
+2025-07-27 16:47:47.207 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode. [trace=, span=]
+2025-07-27 16:47:47.228 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.ad.AdRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository [trace=, span=]
+2025-07-27 16:47:47.228 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.AlbumRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository [trace=, span=]
+2025-07-27 16:47:47.228 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.CommentRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository [trace=, span=]
+2025-07-27 16:47:47.229 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.LikeRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository [trace=, span=]
+2025-07-27 16:47:47.229 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.PostRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository [trace=, span=]
+2025-07-27 16:47:47.229 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.ResourceRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository [trace=, span=]
+2025-07-27 16:47:47.237 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 16 ms. Found 1 Redis repository interfaces. [trace=, span=]
+2025-07-27 16:47:47.643 [main] INFO  o.s.cloud.context.scope.GenericScope - BeanFactory id=d4d60c3d-9603-37f5-93e9-10ebcc9d62c2 [trace=, span=]
+2025-07-27 16:47:47.842 [main] INFO  o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker - Bean 'faang.school.postservice.client.PaymentServiceClient' of type [org.springframework.cloud.openfeign.FeignClientFactoryBean] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying) [trace=, span=]
+2025-07-27 16:47:47.844 [main] INFO  o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker - Bean 'faang.school.postservice.client.ProjectServiceClient' of type [org.springframework.cloud.openfeign.FeignClientFactoryBean] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying) [trace=, span=]
+2025-07-27 16:47:47.845 [main] INFO  o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker - Bean 'faang.school.postservice.client.UserServiceClient' of type [org.springframework.cloud.openfeign.FeignClientFactoryBean] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying) [trace=, span=]
+2025-07-27 16:47:48.281 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port(s): 8081 (http) [trace=, span=]
+2025-07-27 16:47:48.294 [main] INFO  o.a.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8081"] [trace=, span=]
+2025-07-27 16:47:48.295 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat] [trace=, span=]
+2025-07-27 16:47:48.295 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.8] [trace=, span=]
+2025-07-27 16:47:48.385 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext [trace=, span=]
+2025-07-27 16:47:48.386 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 17329 ms [trace=, span=]
+2025-07-27 16:47:48.670 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting... [trace=, span=]
+2025-07-27 16:47:49.125 [main] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@52035328 [trace=, span=]
+2025-07-27 16:47:49.126 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed. [trace=, span=]
+2025-07-27 16:47:49.293 [main] INFO  liquibase.database - Set default schema name to public [trace=, span=]
+2025-07-27 16:47:49.383 [main] INFO  liquibase.lockservice - Changelog-Protokoll erfolgreich gesperrt. [trace=, span=]
+2025-07-27 16:47:52.515 [main] INFO  liquibase.changelog - Reading from public.databasechangelog [trace=, span=]
+2025-07-27 16:47:52.732 [main] INFO  liquibase.lockservice - Successfully released change log lock [trace=, span=]
+2025-07-27 16:47:53.437 [main] INFO  o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default] [trace=, span=]
+2025-07-27 16:47:53.503 [main] INFO  org.hibernate.Version - HHH000412: Hibernate ORM core version 6.1.7.Final [trace=, span=]
+2025-07-27 16:47:53.841 [main] INFO  SQL dialect - HHH000400: Using dialect: org.hibernate.dialect.PostgreSQLDialect [trace=, span=]
+2025-07-27 16:47:54.750 [main] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000490: Using JtaPlatform implementation: [org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform] [trace=, span=]
+2025-07-27 16:47:54.764 [main] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default' [trace=, span=]
+2025-07-27 16:47:54.944 [main] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning [trace=, span=]
+2025-07-27 16:47:56.448 [main] INFO  o.s.cloud.commons.util.InetUtils - Cannot determine local hostname [trace=, span=]
+2025-07-27 16:47:56.551 [main] INFO  o.s.c.o.FeignClientFactoryBean - For 'user-service' URL not provided. Will try picking an instance via load-balancing. [trace=, span=]
+2025-07-27 16:47:57.174 [main] INFO  o.s.c.o.FeignClientFactoryBean - For 'project-service' URL not provided. Will try picking an instance via load-balancing. [trace=, span=]
+2025-07-27 16:48:00.047 [main] INFO  o.s.cloud.commons.util.InetUtils - Cannot determine local hostname [trace=, span=]
+2025-07-27 16:48:00.093 [main] WARN  o.s.c.l.c.LoadBalancerCacheAutoConfiguration$LoadBalancerCaffeineWarnLogger - Spring Cloud LoadBalancer is currently working with the default cache. While this cache implementation is useful for development and tests, it's recommended to use Caffeine cache in production.You can switch to using Caffeine cache, by adding it and org.springframework.cache.caffeine.CaffeineCacheManager to the classpath. [trace=, span=]
+2025-07-27 16:48:00.107 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 18 endpoint(s) beneath base path '/actuator' [trace=, span=]
+2025-07-27 16:48:00.242 [main] INFO  o.s.b.a.l.ConditionEvaluationReportLogger - 
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled. [trace=, span=]
+2025-07-27 16:48:00.269 [main] ERROR o.s.boot.SpringApplication - Application run failed [trace=, span=]
+java.lang.NoClassDefFoundError: org/jspecify/annotations/NonNull
+	at org.springframework.kafka.listener.adapter.MessagingMessageListenerAdapter.determineInferredType(MessagingMessageListenerAdapter.java:851)
+	at org.springframework.kafka.listener.adapter.MessagingMessageListenerAdapter.<init>(MessagingMessageListenerAdapter.java:183)
+	at org.springframework.kafka.listener.adapter.RecordMessagingMessageListenerAdapter.<init>(RecordMessagingMessageListenerAdapter.java:60)
+	at org.springframework.kafka.config.MethodKafkaListenerEndpoint.createMessageListenerInstance(MethodKafkaListenerEndpoint.java:226)
+	at org.springframework.kafka.config.MethodKafkaListenerEndpoint.createMessageListener(MethodKafkaListenerEndpoint.java:178)
+	at org.springframework.kafka.config.AbstractKafkaListenerEndpoint.setupMessageListener(AbstractKafkaListenerEndpoint.java:511)
+	at org.springframework.kafka.config.AbstractKafkaListenerEndpoint.setupListenerContainer(AbstractKafkaListenerEndpoint.java:494)
+	at org.springframework.kafka.config.AbstractKafkaListenerContainerFactory.createListenerContainer(AbstractKafkaListenerContainerFactory.java:367)
+	at org.springframework.kafka.config.AbstractKafkaListenerContainerFactory.createListenerContainer(AbstractKafkaListenerContainerFactory.java:67)
+	at org.springframework.kafka.config.KafkaListenerEndpointRegistry.createListenerContainer(KafkaListenerEndpointRegistry.java:342)
+	at org.springframework.kafka.config.KafkaListenerEndpointRegistry.registerListenerContainer(KafkaListenerEndpointRegistry.java:270)
+	at org.springframework.kafka.config.KafkaListenerEndpointRegistry.registerListenerContainer(KafkaListenerEndpointRegistry.java:242)
+	at org.springframework.kafka.config.KafkaListenerEndpointRegistrar.registerAllEndpoints(KafkaListenerEndpointRegistrar.java:202)
+	at org.springframework.kafka.config.KafkaListenerEndpointRegistrar.afterPropertiesSet(KafkaListenerEndpointRegistrar.java:190)
+	at org.springframework.kafka.annotation.KafkaListenerAnnotationBeanPostProcessor.afterSingletonsInstantiated(KafkaListenerAnnotationBeanPostProcessor.java:348)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:984)
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:917)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:584)
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:146)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:732)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:434)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:310)
+	at org.springframework.boot.builder.SpringApplicationBuilder.run(SpringApplicationBuilder.java:150)
+	at faang.school.postservice.PostServiceApp.main(PostServiceApp.java:20)
+Caused by: java.lang.ClassNotFoundException: org.jspecify.annotations.NonNull
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:641)
+	at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:188)
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:525)
+	... 24 common frames omitted
+2025-07-27 16:48:00.336 [main] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default' [trace=, span=]
+2025-07-27 16:48:00.338 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated... [trace=, span=]
+2025-07-27 16:48:00.343 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed. [trace=, span=]
+2025-07-27 17:16:25.954 [background-preinit] INFO  o.h.validator.internal.util.Version - HV000001: Hibernate Validator 8.0.0.Final [trace=, span=]
+2025-07-27 17:16:26.023 [main] INFO  f.school.postservice.PostServiceApp - Starting PostServiceApp using Java 17.0.14 with PID 9176 (D:\CorporationX\post_service\build\classes\java\main started by Home in D:\CorporationX\post_service) [trace=, span=]
+2025-07-27 17:16:26.024 [main] INFO  f.school.postservice.PostServiceApp - No active profile set, falling back to 1 default profile: "default" [trace=, span=]
+2025-07-27 17:16:29.920 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode [trace=, span=]
+2025-07-27 17:16:29.922 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JDBC repositories in DEFAULT mode. [trace=, span=]
+2025-07-27 17:16:29.968 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.ad.AdRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table. [trace=, span=]
+2025-07-27 17:16:29.969 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.AlbumRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table. [trace=, span=]
+2025-07-27 17:16:29.970 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.CommentRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table. [trace=, span=]
+2025-07-27 17:16:29.971 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.LikeRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table. [trace=, span=]
+2025-07-27 17:16:29.972 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.PostRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table. [trace=, span=]
+2025-07-27 17:16:29.974 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.ResourceRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table. [trace=, span=]
+2025-07-27 17:16:29.976 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.service.redis.repository.PostRedisRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table. [trace=, span=]
+2025-07-27 17:16:29.977 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 47 ms. Found 0 JDBC repository interfaces. [trace=, span=]
+2025-07-27 17:16:29.987 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode [trace=, span=]
+2025-07-27 17:16:29.989 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode. [trace=, span=]
+2025-07-27 17:16:30.156 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JPA - Could not safely identify store assignment for repository candidate interface faang.school.postservice.service.redis.repository.PostRedisRepository; If you want this repository to be a JPA repository, consider annotating your entities with one of these annotations: jakarta.persistence.Entity, jakarta.persistence.MappedSuperclass (preferred), or consider extending one of the following types with your repository: org.springframework.data.jpa.repository.JpaRepository [trace=, span=]
+2025-07-27 17:16:30.184 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 191 ms. Found 6 JPA repository interfaces. [trace=, span=]
+2025-07-27 17:16:30.206 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode [trace=, span=]
+2025-07-27 17:16:30.208 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode. [trace=, span=]
+2025-07-27 17:16:30.231 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.ad.AdRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository [trace=, span=]
+2025-07-27 17:16:30.231 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.AlbumRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository [trace=, span=]
+2025-07-27 17:16:30.231 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.CommentRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository [trace=, span=]
+2025-07-27 17:16:30.231 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.LikeRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository [trace=, span=]
+2025-07-27 17:16:30.232 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.PostRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository [trace=, span=]
+2025-07-27 17:16:30.232 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.ResourceRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository [trace=, span=]
+2025-07-27 17:16:30.242 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 19 ms. Found 1 Redis repository interfaces. [trace=, span=]
+2025-07-27 17:16:30.553 [main] INFO  o.s.cloud.context.scope.GenericScope - BeanFactory id=ed8e8c92-67bb-3262-a394-715365c89ea7 [trace=, span=]
+2025-07-27 17:16:30.666 [main] INFO  o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker - Bean 'faang.school.postservice.client.PaymentServiceClient' of type [org.springframework.cloud.openfeign.FeignClientFactoryBean] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying) [trace=, span=]
+2025-07-27 17:16:30.667 [main] INFO  o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker - Bean 'faang.school.postservice.client.ProjectServiceClient' of type [org.springframework.cloud.openfeign.FeignClientFactoryBean] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying) [trace=, span=]
+2025-07-27 17:16:30.668 [main] INFO  o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker - Bean 'faang.school.postservice.client.UserServiceClient' of type [org.springframework.cloud.openfeign.FeignClientFactoryBean] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying) [trace=, span=]
+2025-07-27 17:16:31.092 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port(s): 8081 (http) [trace=, span=]
+2025-07-27 17:16:31.104 [main] INFO  o.a.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8081"] [trace=, span=]
+2025-07-27 17:16:31.105 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat] [trace=, span=]
+2025-07-27 17:16:31.105 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.8] [trace=, span=]
+2025-07-27 17:16:31.201 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext [trace=, span=]
+2025-07-27 17:16:31.202 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 5110 ms [trace=, span=]
+2025-07-27 17:16:31.484 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting... [trace=, span=]
+2025-07-27 17:16:38.030 [main] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@4c418496 [trace=, span=]
+2025-07-27 17:16:38.031 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed. [trace=, span=]
+2025-07-27 17:16:43.526 [main] INFO  liquibase.database - Set default schema name to public [trace=, span=]
+2025-07-27 17:16:48.986 [main] INFO  liquibase.lockservice - Changelog-Protokoll erfolgreich gesperrt. [trace=, span=]
+2025-07-27 17:16:56.522 [main] INFO  liquibase.changelog - Reading from public.databasechangelog [trace=, span=]
+2025-07-27 17:16:56.881 [main] INFO  liquibase.lockservice - Successfully released change log lock [trace=, span=]
+2025-07-27 17:16:57.524 [main] INFO  o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default] [trace=, span=]
+2025-07-27 17:16:57.591 [main] INFO  org.hibernate.Version - HHH000412: Hibernate ORM core version 6.1.7.Final [trace=, span=]
+2025-07-27 17:16:57.929 [main] INFO  SQL dialect - HHH000400: Using dialect: org.hibernate.dialect.PostgreSQLDialect [trace=, span=]
+2025-07-27 17:16:58.863 [main] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000490: Using JtaPlatform implementation: [org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform] [trace=, span=]
+2025-07-27 17:16:58.874 [main] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default' [trace=, span=]
+2025-07-27 17:16:59.042 [main] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning [trace=, span=]
+2025-07-27 17:17:00.299 [main] INFO  o.s.cloud.commons.util.InetUtils - Cannot determine local hostname [trace=, span=]
+2025-07-27 17:17:00.408 [main] INFO  o.s.c.o.FeignClientFactoryBean - For 'user-service' URL not provided. Will try picking an instance via load-balancing. [trace=, span=]
+2025-07-27 17:17:01.334 [main] INFO  o.s.c.o.FeignClientFactoryBean - For 'project-service' URL not provided. Will try picking an instance via load-balancing. [trace=, span=]
+2025-07-27 17:17:04.380 [main] INFO  o.s.cloud.commons.util.InetUtils - Cannot determine local hostname [trace=, span=]
+2025-07-27 17:17:04.419 [main] WARN  o.s.c.l.c.LoadBalancerCacheAutoConfiguration$LoadBalancerCaffeineWarnLogger - Spring Cloud LoadBalancer is currently working with the default cache. While this cache implementation is useful for development and tests, it's recommended to use Caffeine cache in production.You can switch to using Caffeine cache, by adding it and org.springframework.cache.caffeine.CaffeineCacheManager to the classpath. [trace=, span=]
+2025-07-27 17:17:04.477 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 18 endpoint(s) beneath base path '/actuator' [trace=, span=]
+2025-07-27 17:17:04.665 [main] INFO  o.s.b.a.l.ConditionEvaluationReportLogger - 
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled. [trace=, span=]
+2025-07-27 17:17:04.681 [main] ERROR o.s.boot.SpringApplication - Application run failed [trace=, span=]
+java.lang.NoClassDefFoundError: org/jspecify/annotations/NonNull
+	at org.springframework.kafka.listener.adapter.MessagingMessageListenerAdapter.determineInferredType(MessagingMessageListenerAdapter.java:851)
+	at org.springframework.kafka.listener.adapter.MessagingMessageListenerAdapter.<init>(MessagingMessageListenerAdapter.java:183)
+	at org.springframework.kafka.listener.adapter.RecordMessagingMessageListenerAdapter.<init>(RecordMessagingMessageListenerAdapter.java:60)
+	at org.springframework.kafka.config.MethodKafkaListenerEndpoint.createMessageListenerInstance(MethodKafkaListenerEndpoint.java:226)
+	at org.springframework.kafka.config.MethodKafkaListenerEndpoint.createMessageListener(MethodKafkaListenerEndpoint.java:178)
+	at org.springframework.kafka.config.AbstractKafkaListenerEndpoint.setupMessageListener(AbstractKafkaListenerEndpoint.java:511)
+	at org.springframework.kafka.config.AbstractKafkaListenerEndpoint.setupListenerContainer(AbstractKafkaListenerEndpoint.java:494)
+	at org.springframework.kafka.config.AbstractKafkaListenerContainerFactory.createListenerContainer(AbstractKafkaListenerContainerFactory.java:367)
+	at org.springframework.kafka.config.AbstractKafkaListenerContainerFactory.createListenerContainer(AbstractKafkaListenerContainerFactory.java:67)
+	at org.springframework.kafka.config.KafkaListenerEndpointRegistry.createListenerContainer(KafkaListenerEndpointRegistry.java:342)
+	at org.springframework.kafka.config.KafkaListenerEndpointRegistry.registerListenerContainer(KafkaListenerEndpointRegistry.java:270)
+	at org.springframework.kafka.config.KafkaListenerEndpointRegistry.registerListenerContainer(KafkaListenerEndpointRegistry.java:242)
+	at org.springframework.kafka.config.KafkaListenerEndpointRegistrar.registerAllEndpoints(KafkaListenerEndpointRegistrar.java:202)
+	at org.springframework.kafka.config.KafkaListenerEndpointRegistrar.afterPropertiesSet(KafkaListenerEndpointRegistrar.java:190)
+	at org.springframework.kafka.annotation.KafkaListenerAnnotationBeanPostProcessor.afterSingletonsInstantiated(KafkaListenerAnnotationBeanPostProcessor.java:348)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:984)
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:917)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:584)
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:146)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:732)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:434)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:310)
+	at org.springframework.boot.builder.SpringApplicationBuilder.run(SpringApplicationBuilder.java:150)
+	at faang.school.postservice.PostServiceApp.main(PostServiceApp.java:20)
+Caused by: java.lang.ClassNotFoundException: org.jspecify.annotations.NonNull
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:641)
+	at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:188)
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:525)
+	... 24 common frames omitted
+2025-07-27 17:17:04.716 [main] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default' [trace=, span=]
+2025-07-27 17:17:04.719 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated... [trace=, span=]
+2025-07-27 17:17:04.723 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed. [trace=, span=]
+2025-07-27 17:28:10.350 [background-preinit] INFO  o.h.validator.internal.util.Version - HV000001: Hibernate Validator 8.0.0.Final [trace=, span=]
+2025-07-27 17:28:10.413 [main] INFO  f.school.postservice.PostServiceApp - Starting PostServiceApp using Java 17.0.14 with PID 11500 (D:\CorporationX\post_service\build\classes\java\main started by Home in D:\CorporationX\post_service) [trace=, span=]
+2025-07-27 17:28:10.414 [main] INFO  f.school.postservice.PostServiceApp - No active profile set, falling back to 1 default profile: "default" [trace=, span=]
+2025-07-27 17:28:15.596 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode [trace=, span=]
+2025-07-27 17:28:15.598 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JDBC repositories in DEFAULT mode. [trace=, span=]
+2025-07-27 17:28:15.638 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.ad.AdRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table. [trace=, span=]
+2025-07-27 17:28:15.639 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.AlbumRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table. [trace=, span=]
+2025-07-27 17:28:15.641 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.CommentRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table. [trace=, span=]
+2025-07-27 17:28:15.641 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.LikeRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table. [trace=, span=]
+2025-07-27 17:28:15.642 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.PostRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table. [trace=, span=]
+2025-07-27 17:28:15.643 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.ResourceRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table. [trace=, span=]
+2025-07-27 17:28:15.645 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.service.redis.repository.PostRedisRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table. [trace=, span=]
+2025-07-27 17:28:15.645 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 41 ms. Found 0 JDBC repository interfaces. [trace=, span=]
+2025-07-27 17:28:15.655 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode [trace=, span=]
+2025-07-27 17:28:15.656 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode. [trace=, span=]
+2025-07-27 17:28:15.825 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JPA - Could not safely identify store assignment for repository candidate interface faang.school.postservice.service.redis.repository.PostRedisRepository; If you want this repository to be a JPA repository, consider annotating your entities with one of these annotations: jakarta.persistence.Entity, jakarta.persistence.MappedSuperclass (preferred), or consider extending one of the following types with your repository: org.springframework.data.jpa.repository.JpaRepository [trace=, span=]
+2025-07-27 17:28:15.854 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 195 ms. Found 6 JPA repository interfaces. [trace=, span=]
+2025-07-27 17:28:15.875 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode [trace=, span=]
+2025-07-27 17:28:15.876 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode. [trace=, span=]
+2025-07-27 17:28:15.896 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.ad.AdRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository [trace=, span=]
+2025-07-27 17:28:15.896 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.AlbumRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository [trace=, span=]
+2025-07-27 17:28:15.896 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.CommentRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository [trace=, span=]
+2025-07-27 17:28:15.896 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.LikeRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository [trace=, span=]
+2025-07-27 17:28:15.896 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.PostRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository [trace=, span=]
+2025-07-27 17:28:15.897 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.ResourceRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository [trace=, span=]
+2025-07-27 17:28:15.907 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 20 ms. Found 1 Redis repository interfaces. [trace=, span=]
+2025-07-27 17:28:16.257 [main] INFO  o.s.cloud.context.scope.GenericScope - BeanFactory id=ed8e8c92-67bb-3262-a394-715365c89ea7 [trace=, span=]
+2025-07-27 17:28:16.382 [main] INFO  o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker - Bean 'faang.school.postservice.client.PaymentServiceClient' of type [org.springframework.cloud.openfeign.FeignClientFactoryBean] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying) [trace=, span=]
+2025-07-27 17:28:16.383 [main] INFO  o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker - Bean 'faang.school.postservice.client.ProjectServiceClient' of type [org.springframework.cloud.openfeign.FeignClientFactoryBean] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying) [trace=, span=]
+2025-07-27 17:28:16.384 [main] INFO  o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker - Bean 'faang.school.postservice.client.UserServiceClient' of type [org.springframework.cloud.openfeign.FeignClientFactoryBean] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying) [trace=, span=]
+2025-07-27 17:28:16.827 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port(s): 8081 (http) [trace=, span=]
+2025-07-27 17:28:16.843 [main] INFO  o.a.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8081"] [trace=, span=]
+2025-07-27 17:28:16.843 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat] [trace=, span=]
+2025-07-27 17:28:16.844 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.8] [trace=, span=]
+2025-07-27 17:28:16.925 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext [trace=, span=]
+2025-07-27 17:28:16.927 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 6451 ms [trace=, span=]
+2025-07-27 17:28:17.195 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting... [trace=, span=]
+2025-07-27 17:28:22.246 [main] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@1aa31454 [trace=, span=]
+2025-07-27 17:28:22.249 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed. [trace=, span=]
+2025-07-27 17:28:25.612 [main] INFO  liquibase.database - Set default schema name to public [trace=, span=]
+2025-07-27 17:28:27.007 [main] INFO  liquibase.lockservice - Changelog-Protokoll erfolgreich gesperrt. [trace=, span=]
+2025-07-27 17:28:31.719 [main] INFO  liquibase.changelog - Reading from public.databasechangelog [trace=, span=]
+2025-07-27 17:28:32.382 [main] INFO  liquibase.lockservice - Successfully released change log lock [trace=, span=]
+2025-07-27 17:28:33.276 [main] INFO  o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default] [trace=, span=]
+2025-07-27 17:28:33.352 [main] INFO  org.hibernate.Version - HHH000412: Hibernate ORM core version 6.1.7.Final [trace=, span=]
+2025-07-27 17:28:34.424 [main] INFO  SQL dialect - HHH000400: Using dialect: org.hibernate.dialect.PostgreSQLDialect [trace=, span=]
+2025-07-27 17:28:36.045 [main] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000490: Using JtaPlatform implementation: [org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform] [trace=, span=]
+2025-07-27 17:28:36.059 [main] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default' [trace=, span=]
+2025-07-27 17:28:36.253 [main] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning [trace=, span=]
+2025-07-27 17:28:37.514 [main] INFO  o.s.cloud.commons.util.InetUtils - Cannot determine local hostname [trace=, span=]
+2025-07-27 17:28:37.621 [main] INFO  o.s.c.o.FeignClientFactoryBean - For 'user-service' URL not provided. Will try picking an instance via load-balancing. [trace=, span=]
+2025-07-27 17:28:38.340 [main] INFO  o.s.c.o.FeignClientFactoryBean - For 'project-service' URL not provided. Will try picking an instance via load-balancing. [trace=, span=]
+2025-07-27 17:28:41.261 [main] INFO  o.s.cloud.commons.util.InetUtils - Cannot determine local hostname [trace=, span=]
+2025-07-27 17:28:41.296 [main] WARN  o.s.c.l.c.LoadBalancerCacheAutoConfiguration$LoadBalancerCaffeineWarnLogger - Spring Cloud LoadBalancer is currently working with the default cache. While this cache implementation is useful for development and tests, it's recommended to use Caffeine cache in production.You can switch to using Caffeine cache, by adding it and org.springframework.cache.caffeine.CaffeineCacheManager to the classpath. [trace=, span=]
+2025-07-27 17:28:41.305 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 18 endpoint(s) beneath base path '/actuator' [trace=, span=]
+2025-07-27 17:28:41.401 [main] INFO  o.s.b.a.l.ConditionEvaluationReportLogger - 
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled. [trace=, span=]
+2025-07-27 17:28:41.416 [main] ERROR o.s.boot.SpringApplication - Application run failed [trace=, span=]
+java.lang.NoClassDefFoundError: org/jspecify/annotations/NonNull
+	at org.springframework.kafka.listener.adapter.MessagingMessageListenerAdapter.determineInferredType(MessagingMessageListenerAdapter.java:851)
+	at org.springframework.kafka.listener.adapter.MessagingMessageListenerAdapter.<init>(MessagingMessageListenerAdapter.java:183)
+	at org.springframework.kafka.listener.adapter.RecordMessagingMessageListenerAdapter.<init>(RecordMessagingMessageListenerAdapter.java:60)
+	at org.springframework.kafka.config.MethodKafkaListenerEndpoint.createMessageListenerInstance(MethodKafkaListenerEndpoint.java:226)
+	at org.springframework.kafka.config.MethodKafkaListenerEndpoint.createMessageListener(MethodKafkaListenerEndpoint.java:178)
+	at org.springframework.kafka.config.AbstractKafkaListenerEndpoint.setupMessageListener(AbstractKafkaListenerEndpoint.java:511)
+	at org.springframework.kafka.config.AbstractKafkaListenerEndpoint.setupListenerContainer(AbstractKafkaListenerEndpoint.java:494)
+	at org.springframework.kafka.config.AbstractKafkaListenerContainerFactory.createListenerContainer(AbstractKafkaListenerContainerFactory.java:367)
+	at org.springframework.kafka.config.AbstractKafkaListenerContainerFactory.createListenerContainer(AbstractKafkaListenerContainerFactory.java:67)
+	at org.springframework.kafka.config.KafkaListenerEndpointRegistry.createListenerContainer(KafkaListenerEndpointRegistry.java:342)
+	at org.springframework.kafka.config.KafkaListenerEndpointRegistry.registerListenerContainer(KafkaListenerEndpointRegistry.java:270)
+	at org.springframework.kafka.config.KafkaListenerEndpointRegistry.registerListenerContainer(KafkaListenerEndpointRegistry.java:242)
+	at org.springframework.kafka.config.KafkaListenerEndpointRegistrar.registerAllEndpoints(KafkaListenerEndpointRegistrar.java:202)
+	at org.springframework.kafka.config.KafkaListenerEndpointRegistrar.afterPropertiesSet(KafkaListenerEndpointRegistrar.java:190)
+	at org.springframework.kafka.annotation.KafkaListenerAnnotationBeanPostProcessor.afterSingletonsInstantiated(KafkaListenerAnnotationBeanPostProcessor.java:348)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:984)
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:917)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:584)
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:146)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:732)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:434)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:310)
+	at org.springframework.boot.builder.SpringApplicationBuilder.run(SpringApplicationBuilder.java:150)
+	at faang.school.postservice.PostServiceApp.main(PostServiceApp.java:20)
+Caused by: java.lang.ClassNotFoundException: org.jspecify.annotations.NonNull
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:641)
+	at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:188)
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:525)
+	... 24 common frames omitted
+2025-07-27 17:28:41.447 [main] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default' [trace=, span=]
+2025-07-27 17:28:41.450 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated... [trace=, span=]
+2025-07-27 17:28:41.452 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed. [trace=, span=]
+2025-07-27 17:55:51.550 [background-preinit] INFO  o.h.validator.internal.util.Version - HV000001: Hibernate Validator 8.0.0.Final [trace=, span=]
+2025-07-27 17:55:51.619 [main] INFO  f.school.postservice.PostServiceApp - Starting PostServiceApp using Java 17.0.14 with PID 15868 (D:\CorporationX\post_service\build\classes\java\main started by Home in D:\CorporationX\post_service) [trace=, span=]
+2025-07-27 17:55:51.621 [main] INFO  f.school.postservice.PostServiceApp - No active profile set, falling back to 1 default profile: "default" [trace=, span=]
+2025-07-27 17:55:53.228 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode [trace=, span=]
+2025-07-27 17:55:53.230 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JDBC repositories in DEFAULT mode. [trace=, span=]
+2025-07-27 17:55:53.270 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.ad.AdRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table. [trace=, span=]
+2025-07-27 17:55:53.363 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.AlbumRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table. [trace=, span=]
+2025-07-27 17:55:53.365 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.CommentRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table. [trace=, span=]
+2025-07-27 17:55:53.366 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.LikeRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table. [trace=, span=]
+2025-07-27 17:55:53.367 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.PostRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table. [trace=, span=]
+2025-07-27 17:55:53.368 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.ResourceRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table. [trace=, span=]
+2025-07-27 17:55:53.370 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.service.redis.repository.PostRedisRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table. [trace=, span=]
+2025-07-27 17:55:53.371 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 136 ms. Found 0 JDBC repository interfaces. [trace=, span=]
+2025-07-27 17:55:53.382 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode [trace=, span=]
+2025-07-27 17:55:53.383 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode. [trace=, span=]
+2025-07-27 17:55:53.575 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JPA - Could not safely identify store assignment for repository candidate interface faang.school.postservice.service.redis.repository.PostRedisRepository; If you want this repository to be a JPA repository, consider annotating your entities with one of these annotations: jakarta.persistence.Entity, jakarta.persistence.MappedSuperclass (preferred), or consider extending one of the following types with your repository: org.springframework.data.jpa.repository.JpaRepository [trace=, span=]
+2025-07-27 17:55:53.600 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 212 ms. Found 6 JPA repository interfaces. [trace=, span=]
+2025-07-27 17:55:53.616 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode [trace=, span=]
+2025-07-27 17:55:53.618 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode. [trace=, span=]
+2025-07-27 17:55:53.648 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.ad.AdRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository [trace=, span=]
+2025-07-27 17:55:53.648 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.AlbumRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository [trace=, span=]
+2025-07-27 17:55:53.648 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.CommentRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository [trace=, span=]
+2025-07-27 17:55:53.649 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.LikeRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository [trace=, span=]
+2025-07-27 17:55:53.649 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.PostRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository [trace=, span=]
+2025-07-27 17:55:53.649 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.ResourceRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository [trace=, span=]
+2025-07-27 17:55:53.656 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 28 ms. Found 1 Redis repository interfaces. [trace=, span=]
+2025-07-27 17:55:54.458 [main] INFO  o.s.cloud.context.scope.GenericScope - BeanFactory id=ed8e8c92-67bb-3262-a394-715365c89ea7 [trace=, span=]
+2025-07-27 17:55:54.571 [main] INFO  o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker - Bean 'faang.school.postservice.client.PaymentServiceClient' of type [org.springframework.cloud.openfeign.FeignClientFactoryBean] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying) [trace=, span=]
+2025-07-27 17:55:54.617 [main] INFO  o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker - Bean 'faang.school.postservice.client.ProjectServiceClient' of type [org.springframework.cloud.openfeign.FeignClientFactoryBean] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying) [trace=, span=]
+2025-07-27 17:55:54.618 [main] INFO  o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker - Bean 'faang.school.postservice.client.UserServiceClient' of type [org.springframework.cloud.openfeign.FeignClientFactoryBean] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying) [trace=, span=]
+2025-07-27 17:55:55.661 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port(s): 8081 (http) [trace=, span=]
+2025-07-27 17:55:55.675 [main] INFO  o.a.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8081"] [trace=, span=]
+2025-07-27 17:55:55.676 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat] [trace=, span=]
+2025-07-27 17:55:55.676 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.8] [trace=, span=]
+2025-07-27 17:55:55.772 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext [trace=, span=]
+2025-07-27 17:55:55.774 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 4070 ms [trace=, span=]
+2025-07-27 17:55:56.051 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting... [trace=, span=]
+2025-07-27 17:56:02.378 [main] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@ba87c11 [trace=, span=]
+2025-07-27 17:56:02.380 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed. [trace=, span=]
+2025-07-27 17:56:06.151 [main] INFO  liquibase.database - Set default schema name to public [trace=, span=]
+2025-07-27 17:56:09.275 [main] INFO  liquibase.lockservice - Changelog-Protokoll erfolgreich gesperrt. [trace=, span=]
+2025-07-27 17:56:16.862 [main] INFO  liquibase.changelog - Reading from public.databasechangelog [trace=, span=]
+2025-07-27 17:56:17.455 [main] INFO  liquibase.lockservice - Successfully released change log lock [trace=, span=]
+2025-07-27 17:56:18.340 [main] INFO  o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default] [trace=, span=]
+2025-07-27 17:56:18.404 [main] INFO  org.hibernate.Version - HHH000412: Hibernate ORM core version 6.1.7.Final [trace=, span=]
+2025-07-27 17:56:18.733 [main] INFO  SQL dialect - HHH000400: Using dialect: org.hibernate.dialect.PostgreSQLDialect [trace=, span=]
+2025-07-27 17:56:19.604 [main] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000490: Using JtaPlatform implementation: [org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform] [trace=, span=]
+2025-07-27 17:56:19.613 [main] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default' [trace=, span=]
+2025-07-27 17:56:19.775 [main] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning [trace=, span=]
+2025-07-27 17:56:21.021 [main] INFO  o.s.cloud.commons.util.InetUtils - Cannot determine local hostname [trace=, span=]
+2025-07-27 17:56:21.123 [main] INFO  o.s.c.o.FeignClientFactoryBean - For 'user-service' URL not provided. Will try picking an instance via load-balancing. [trace=, span=]
+2025-07-27 17:56:21.710 [main] INFO  o.s.c.o.FeignClientFactoryBean - For 'project-service' URL not provided. Will try picking an instance via load-balancing. [trace=, span=]
+2025-07-27 17:56:24.502 [main] INFO  o.s.cloud.commons.util.InetUtils - Cannot determine local hostname [trace=, span=]
+2025-07-27 17:56:24.533 [main] WARN  o.s.c.l.c.LoadBalancerCacheAutoConfiguration$LoadBalancerCaffeineWarnLogger - Spring Cloud LoadBalancer is currently working with the default cache. While this cache implementation is useful for development and tests, it's recommended to use Caffeine cache in production.You can switch to using Caffeine cache, by adding it and org.springframework.cache.caffeine.CaffeineCacheManager to the classpath. [trace=, span=]
+2025-07-27 17:56:24.544 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 18 endpoint(s) beneath base path '/actuator' [trace=, span=]
+2025-07-27 17:56:24.636 [main] INFO  o.a.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8081"] [trace=, span=]
+2025-07-27 17:56:25.275 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port(s): 8081 (http) with context path '' [trace=, span=]
+2025-07-27 17:56:25.279 [main] INFO  o.s.c.c.s.ConsulServiceRegistry - Registering service with consul: NewService{id='post-service-8081', name='post-service', tags=[], address='localhost', meta={secure=false}, port=8081, enableTagOverride=null, check=Check{script='null', dockerContainerID='null', shell='null', interval='10s', ttl='null', http='http://localhost:8081/actuator/health', method='null', header={}, tcp='null', timeout='null', deregisterCriticalServiceAfter='null', tlsSkipVerify=null, status='null', grpc='null', grpcUseTLS=null}, checks=null} [trace=, span=]
+2025-07-27 17:57:08.822 [main] INFO  o.s.cloud.commons.util.InetUtils - Cannot determine local hostname [trace=, span=]
+2025-07-27 17:57:08.940 [main] INFO  o.a.k.c.consumer.ConsumerConfig - ConsumerConfig values: 
+	allow.auto.create.topics = true
+	auto.commit.interval.ms = 5000
+	auto.offset.reset = latest
+	bootstrap.servers = [localhost:9092, localhost:9094]
+	check.crcs = true
+	client.dns.lookup = use_all_dns_ips
+	client.id = consumer-post-service-1
+	client.rack = 
+	connections.max.idle.ms = 540000
+	default.api.timeout.ms = 60000
+	enable.auto.commit = false
+	exclude.internal.topics = true
+	fetch.max.bytes = 52428800
+	fetch.max.wait.ms = 500
+	fetch.min.bytes = 1
+	group.id = post-service
+	group.instance.id = null
+	heartbeat.interval.ms = 3000
+	interceptor.classes = []
+	internal.leave.group.on.close = true
+	internal.throw.on.fetch.stable.offset.unsupported = false
+	isolation.level = read_uncommitted
+	key.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+	max.partition.fetch.bytes = 1048576
+	max.poll.interval.ms = 300000
+	max.poll.records = 50
+	metadata.max.age.ms = 300000
+	metric.reporters = []
+	metrics.num.samples = 2
+	metrics.recording.level = INFO
+	metrics.sample.window.ms = 30000
+	partition.assignment.strategy = [class org.apache.kafka.clients.consumer.RangeAssignor, class org.apache.kafka.clients.consumer.CooperativeStickyAssignor]
+	receive.buffer.bytes = 65536
+	reconnect.backoff.max.ms = 1000
+	reconnect.backoff.ms = 50
+	request.timeout.ms = 30000
+	retry.backoff.ms = 100
+	sasl.client.callback.handler.class = null
+	sasl.jaas.config = null
+	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+	sasl.kerberos.min.time.before.relogin = 60000
+	sasl.kerberos.service.name = null
+	sasl.kerberos.ticket.renew.jitter = 0.05
+	sasl.kerberos.ticket.renew.window.factor = 0.8
+	sasl.login.callback.handler.class = null
+	sasl.login.class = null
+	sasl.login.connect.timeout.ms = null
+	sasl.login.read.timeout.ms = null
+	sasl.login.refresh.buffer.seconds = 300
+	sasl.login.refresh.min.period.seconds = 60
+	sasl.login.refresh.window.factor = 0.8
+	sasl.login.refresh.window.jitter = 0.05
+	sasl.login.retry.backoff.max.ms = 10000
+	sasl.login.retry.backoff.ms = 100
+	sasl.mechanism = GSSAPI
+	sasl.oauthbearer.clock.skew.seconds = 30
+	sasl.oauthbearer.expected.audience = null
+	sasl.oauthbearer.expected.issuer = null
+	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+	sasl.oauthbearer.jwks.endpoint.url = null
+	sasl.oauthbearer.scope.claim.name = scope
+	sasl.oauthbearer.sub.claim.name = sub
+	sasl.oauthbearer.token.endpoint.url = null
+	security.protocol = PLAINTEXT
+	security.providers = null
+	send.buffer.bytes = 131072
+	session.timeout.ms = 45000
+	socket.connection.setup.timeout.max.ms = 30000
+	socket.connection.setup.timeout.ms = 10000
+	ssl.cipher.suites = null
+	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+	ssl.endpoint.identification.algorithm = https
+	ssl.engine.factory.class = null
+	ssl.key.password = null
+	ssl.keymanager.algorithm = SunX509
+	ssl.keystore.certificate.chain = null
+	ssl.keystore.key = null
+	ssl.keystore.location = null
+	ssl.keystore.password = null
+	ssl.keystore.type = JKS
+	ssl.protocol = TLSv1.3
+	ssl.provider = null
+	ssl.secure.random.implementation = null
+	ssl.trustmanager.algorithm = PKIX
+	ssl.truststore.certificates = null
+	ssl.truststore.location = null
+	ssl.truststore.password = null
+	ssl.truststore.type = JKS
+	value.deserializer = class org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+ [trace=, span=]
+2025-07-27 17:57:09.132 [main] INFO  o.a.kafka.common.utils.AppInfoParser - Kafka version: 3.3.2 [trace=, span=]
+2025-07-27 17:57:09.132 [main] INFO  o.a.kafka.common.utils.AppInfoParser - Kafka commitId: b66af662e61082cb [trace=, span=]
+2025-07-27 17:57:09.132 [main] INFO  o.a.kafka.common.utils.AppInfoParser - Kafka startTimeMs: 1753631829129 [trace=, span=]
+2025-07-27 17:57:09.135 [main] INFO  o.s.k.c.DefaultKafkaConsumerFactory$ExtendedKafkaConsumer - [Consumer clientId=consumer-post-service-1, groupId=post-service] Subscribed to topic(s): comment-event-topic [trace=, span=]
+2025-07-27 17:57:09.162 [main] INFO  f.school.postservice.PostServiceApp - Started PostServiceApp in 88.179 seconds (process running for 90.045) [trace=, span=]
