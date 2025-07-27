@@ -43,6 +43,19 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
+  kafka:
+    retry:
+      attempts: 3
+      backoff-delay: 1000 # 1 секунда
+    consumer:
+      bootstrap-servers: localhost:9092, localhost:9094
+      group-id: post-service
+      max-poll-records: 50
+      offset-reset-config: latest
+    topics:
+     comment-event:
+      name: comment-event-topic
+      concurrency: 3
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
@@ -123,3 +136,9 @@ expired-ads:
     max-pool-size: 6
     queue-capacity: 100
     thread-name-prefix: expired-ads-thread
+
+app:
+  redis:
+    post:
+      max-comments: 3
+      retry: 5
