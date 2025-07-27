@@ -2,7 +2,7 @@ package faang.school.postservice.service.user;
 
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.model.cache.UserCacheModel;
-import faang.school.postservice.repository.UserCacheRepository;
+import faang.school.postservice.repository.cache.UserCacheRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class UserCacheService {
     private final UserCacheRepository userCacheRepository;
-
     @Value("${app.cache.user.ttl}")
     private long ttl;
 

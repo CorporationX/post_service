@@ -90,11 +90,22 @@ app:
   executor:
     thread_pool_core_size: 25
     thread_pool_max_size: 100
+    send-kafka-message:
+      core-pool-size: 2
+      max-pool-size: 4
+      queue-capacity: 100
+      prefix: send-kafka-message-
 
   cache:
     user:
       key-prefix: user
       ttl: 86400 # сутки
+    post:
+      key-prefix: post
+      ttl: 86400 # сутки
+    comment:
+      key-prefix: comment
+
 
 scheduled-post-publisher:
   comments:

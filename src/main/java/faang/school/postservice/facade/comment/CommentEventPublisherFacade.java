@@ -1,4 +1,4 @@
-package faang.school.postservice.service.comment;
+package faang.school.postservice.facade.comment;
 
 import faang.school.postservice.event.CommentEvent;
 import faang.school.postservice.mapper.comment.CommentEventMapper;
@@ -12,12 +12,11 @@ import org.springframework.stereotype.Component;
 @Component
 @Slf4j
 @RequiredArgsConstructor
-public class CommentEventFacade {
+public class CommentEventPublisherFacade {
     private final CommentPublisher commentPublisher;
     private final CommentEventMapper commentEventMapper;
 
-    // TODO: пулл потоков
-    @Async("")
+    @Async("sendKafkaMessageExecutor")
     public void sendCommentMessage(Comment comment) {
         CommentEvent commentEvent = commentEventMapper.toCommentEvent(comment);
         log.info("Mapping Comment entity to CommentEvent. Entity content: {}. Event content: {}.",

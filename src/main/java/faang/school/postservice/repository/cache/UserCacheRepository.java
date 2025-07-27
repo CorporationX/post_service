@@ -1,4 +1,4 @@
-package faang.school.postservice.repository;
+package faang.school.postservice.repository.cache;
 
 import faang.school.postservice.model.cache.UserCacheModel;
 import org.springframework.data.repository.CrudRepository;

@@ -5,6 +5,7 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CommentResponseImageDto;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.facade.comment.CommentEventPublisherFacade;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.service.user.UserCacheService;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +23,7 @@ public class CommentServiceFacade {
     private final UserCacheService userCacheService;
     private final UserServiceClient userServiceClient;
     private final UserContext userContext;
-    private final CommentEventFacade commentEventFacade;
+    private final CommentEventPublisherFacade commentEventPublisherFacade;
 
     @CommentCreationEventKafka
     public Comment createComment(long postId, String content) {
@@ -33,7 +34,7 @@ public class CommentServiceFacade {
 
         userCacheService.saveUser(userDto);
 
-        commentEventFacade.sendCommentMessage(commentCreate);
+        commentEventPublisherFacade.sendCommentMessage(commentCreate);
 
         return commentCreate;
     }
