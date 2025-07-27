@@ -1,6 +1,5 @@
 package faang.school.postservice.service.comment;
 
-import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CommentResponseImageDto;
 import faang.school.postservice.model.Comment;
@@ -27,8 +26,6 @@ import java.util.List;
 public class CommentService {
     private static final int MAX_SIZE_FOR_LARGE_IMAGE = 1080;
     private static final int MAX_SIZE_FOR_SMALL_IMAGE = 170;
-
-    private final UserServiceClient userServiceClient;
     private final CommentRepository commentRepository;
     private final CommentValidation commentValidation;
     private final UserContext userContext;
@@ -37,7 +34,8 @@ public class CommentService {
     private final ImageCompressor imageCompressor;
 
     @Transactional
-    public Comment createComment(long postId, String content, long authorId) {
+    public Comment createComment(long postId, String content) {
+        long authorId = userContext.getUserId();
         Post post = postService.getPostById(postId);
 
         commentValidation.validateLengthContentComment(content);

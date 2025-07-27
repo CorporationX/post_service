@@ -22,15 +22,18 @@ public class CommentServiceFacade {
     private final UserCacheService userCacheService;
     private final UserServiceClient userServiceClient;
     private final UserContext userContext;
+    private final CommentEventFacade commentEventFacade;
 
     @CommentCreationEventKafka
     public Comment createComment(long postId, String content) {
         long userId = userContext.getUserId();
         UserDto userDto = userServiceClient.getUser(userId);
 
-        Comment commentCreate = commentService.createComment(postId, content, userId);
+        Comment commentCreate = commentService.createComment(postId, content);
 
         userCacheService.saveUser(userDto);
+
+        commentEventFacade.sendCommentMessage(commentCreate);
 
         return commentCreate;
     }
