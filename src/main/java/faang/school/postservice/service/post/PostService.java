@@ -9,6 +9,8 @@ import faang.school.postservice.service.project.ProjectService;
 import faang.school.postservice.service.user.UserService;
 import faang.school.postservice.service.utils.PostServiceUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,6 +40,7 @@ public class PostService {
     }
 
     @Transactional
+    @CachePut(value = "posts", key = "#postId")
     public PostDto publishPost(long postId) {
         Post post = postServiceUtils.getPost(postId);
         if (post.isPublished()) {
@@ -49,6 +52,7 @@ public class PostService {
     }
 
     @Transactional
+    @CachePut(value = "posts", key = "#postId")
     public PostDto updateContent(long postId, String content) {
         Post post = postServiceUtils.getPost(postId);
         post.setContent(content);
@@ -56,6 +60,7 @@ public class PostService {
     }
 
     @Transactional
+    @CacheEvict(value = "posts", key = "#postId")
     public void delete(long postId) {
         Post post = postServiceUtils.getPost(postId);
         post.setDeleted(true);

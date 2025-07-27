@@ -1,4 +1,4 @@
-package faang.school.postservice.service.redis;
+package faang.school.postservice.service.redis.like;
 
 import faang.school.postservice.dto.LikeDto;
 import org.springframework.data.domain.Page;

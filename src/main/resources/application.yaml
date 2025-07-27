@@ -94,6 +94,7 @@ management:
       show-details: always
 
 cache:
+  default-ttl-seconds: 3600
   like:
     ttl:
       minutes: 10
