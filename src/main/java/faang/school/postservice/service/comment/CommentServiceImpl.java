@@ -16,8 +16,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -30,51 +28,26 @@ public class CommentServiceImpl implements CommentService {
     private final CommentValidator commentValidator;
 
     @Override
-    public CommentDto create(Long postId, Long authorId, SaveCommentDto saveCommentDto) {
+    public CommentDto update(Long commentId, Long authorId, SaveCommentDto dto) {
         ensureUserExists(authorId);
-        Post post = postService.getPostById(postId);
-        Comment comment = commentMapper.toComment(saveCommentDto);
-        comment.setAuthorId(authorId);
-        comment.setPost(post);
-        Comment savedComment = commentRepository.save(comment);
-        log.info("Comment id: {} for post id: {} created", savedComment.getId(), postId);
-        return commentMapper.toCommentDto(savedComment);
-    }
-
-    @Override
-    public CommentDto update(Long postId, Long commentId, Long authorId, SaveCommentDto dto) {
-        ensureUserExists(authorId);
-        boolean postExists = postService.existsById(postId);
-        commentValidator.ensurePostExists(postExists, postId);
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new EntityNotFoundException("Comment not found with id: " + commentId));
-        commentValidator.ensureCommentBelongsToPost(comment, postId);
         commentValidator.ensureUserIsAuthor(authorId, comment.getAuthorId());
         commentMapper.update(dto, comment);
         Comment savedComment = commentRepository.save(comment);
-        log.info("Comment id: {} for post id: {} updated", savedComment.getId(), postId);
+        log.info("Comment id: {} updated", savedComment.getId());
         return commentMapper.toCommentDto(savedComment);
     }
 
     @Override
-    public List<CommentDto> getByPostId(Long postId) {
-        boolean postExists = postService.existsById(postId);
-        commentValidator.ensurePostExists(postExists, postId);
-        List<Comment> comments = commentRepository.findAllByPostIdOrderByCreatedAtDesc(postId);
-        log.info("Retrieved {} comments for postId: {}", comments.size(), postId);
-        return commentMapper.toCommentDtos(comments);
-    }
-
-    @Override
-    public void delete(Long postId, Long commentId, Long userId) {
+    public void delete(Long commentId, Long userId) {
         ensureUserExists(userId);
-        Post post = postService.getPostById(postId);
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new EntityNotFoundException("Comment not found with id: " + commentId));
-        commentValidator.ensureCommentBelongsToPost(comment, postId);
+        Post post = postService.getPostById(comment.getPost().getId());
         commentValidator.ensureUserCanDeleteComment(comment, post, userId);
         commentRepository.deleteById(commentId);
-        log.info("Comment id: {} for post id: {} deleted", commentId, postId);
+        log.info("Comment id: {} deleted", commentId);
     }
 
     private void ensureUserExists(Long userId) {

@@ -1,5 +1,7 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.comment.SaveCommentDto;
 import faang.school.postservice.dto.post.CreatePostDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
@@ -31,4 +33,8 @@ public interface PostService {
     Post getPostById(Long postId);
 
     boolean existsById(Long postId);
+
+    CommentDto createComment(Long postId, Long authorId, SaveCommentDto saveCommentDto);
+
+    List<CommentDto> getCommentsByPostId(Long postId);
 }

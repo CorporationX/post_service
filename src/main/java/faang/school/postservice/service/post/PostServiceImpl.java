@@ -1,14 +1,23 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.comment.SaveCommentDto;
 import faang.school.postservice.dto.post.CreatePostDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.exception.EntityNotFoundException;
+import faang.school.postservice.exception.ServiceUnavailableException;
 import faang.school.postservice.mapper.PostMapper;
+import faang.school.postservice.mapper.comment.CommentMapper;
+import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.criteria.PostSearchCriteria;
+import faang.school.postservice.validation.comment.CommentValidator;
 import faang.school.postservice.validator.PostValidator;
+import feign.FeignException;
 import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotNull;
 import lombok.NonNull;
@@ -29,6 +38,11 @@ public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
     private final PostValidator postValidator;
     private final PostMapper postMapper;
+    private final CommentRepository commentRepository;
+    private final CommentMapper commentMapper;
+    private final UserServiceClient userServiceClient;
+    private final CommentValidator commentValidator;
+    private final UserFeignService userFeignService;
 
     @Override
     @Transactional
@@ -165,5 +179,26 @@ public class PostServiceImpl implements PostService {
     @Override
     public boolean existsById(Long postId) {
         return postRepository.existsById(postId);
+    }
+
+    @Override
+    public CommentDto createComment(Long postId, Long authorId, SaveCommentDto saveCommentDto) {
+        userFeignService.getUserOrFail(authorId);
+        Post post = getPostById(postId);
+        Comment comment = commentMapper.toComment(saveCommentDto);
+        comment.setAuthorId(authorId);
+        comment.setPost(post);
+        Comment savedComment = commentRepository.save(comment);
+        log.info("Comment id: {} for post id: {} created", savedComment.getId(), postId);
+        return commentMapper.toCommentDto(savedComment);
+    }
+
+    @Override
+    public List<CommentDto> getCommentsByPostId(Long postId) {
+        boolean postExists = existsById(postId);
+        commentValidator.ensurePostExists(postExists, postId);
+        List<Comment> comments = commentRepository.findAllByPostIdOrderByCreatedAtDesc(postId);
+        log.info("Retrieved {} comments for postId: {}", comments.size(), postId);
+        return commentMapper.toCommentDtos(comments);
     }
 }

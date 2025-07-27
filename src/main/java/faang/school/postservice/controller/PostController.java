@@ -1,5 +1,8 @@
 package faang.school.postservice.controller;
 
+import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.comment.SaveCommentDto;
 import faang.school.postservice.dto.post.CreatePostDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
@@ -7,6 +10,7 @@ import faang.school.postservice.service.post.PostService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -31,6 +35,7 @@ import java.util.List;
 @Tag(name = "Post", description = "Operations related to posts")
 public class PostController {
 
+    private final UserContext userContext;
     private final PostService postService;
 
     @Operation(
@@ -95,5 +100,25 @@ public class PostController {
     @GetMapping("/published/project/{id}")
     public List<PostDto> getPublishedByProject(@PathVariable("id") Long projectId) {
         return postService.getPublishedByProject(projectId);
+    }
+
+    @Operation(
+            summary = "Create a comment for a post",
+            description = "Creates a new comment for the specified post ID"
+    )
+    @PostMapping("/{postId}/comments")
+    @ResponseStatus(HttpStatus.CREATED)
+    public CommentDto create(@PathVariable @Positive Long postId,
+                             @RequestBody @Valid SaveCommentDto saveCommentDto) {
+        return postService.createComment(postId, userContext.getUserId(), saveCommentDto);
+    }
+
+    @Operation(
+            summary = "Get all comments for a post",
+            description = "Returns a list of all comments for the specified post, sorted by creation date"
+    )
+    @GetMapping("/{postId}/comments")
+    public List<CommentDto> getByPostId(@PathVariable @Positive Long postId) {
+        return postService.getCommentsByPostId(postId);
     }
 }
