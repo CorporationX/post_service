@@ -22,13 +22,13 @@ public class CommentLikeController {
         return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping("/removal/{commentId}")
+    @DeleteMapping("/{commentId}")
     public ResponseEntity<Void> likeRemoval(@PathVariable("commentId") @Validated @NotNull @NotBlank Long commentId) {
         commentLikeService.removeLike(commentId, userContext.getUserId());
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/comment/{commentId}/count")
+    @GetMapping("/{commentId}/count")
     public ResponseEntity<Integer> getLikeCount(@PathVariable Long commentId) {
         return ResponseEntity.ok(commentLikeService.getCommentLikeCount(commentId));
     }

@@ -24,13 +24,13 @@ public class PostLikeController {
         return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping("/removal/{postId}")
+    @DeleteMapping("/{postId}")
     public ResponseEntity<Void> likeRemoval(@PathVariable("postId") @Validated @NotNull @NotBlank Long postId) {
         postLikeService.removeLike(postId, userContext.getUserId());
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/post/{postId}/count")
+    @GetMapping("/{postId}/count")
     public ResponseEntity<Integer> getLikeCount(@PathVariable("postID") @Validated @NotNull @NotBlank Long postId) {
         return ResponseEntity.ok(postLikeService.getPostLikeCount(postId));
     }
