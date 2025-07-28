@@ -7,7 +7,7 @@ public interface LikeService {
      * <p>
      *  Условия:
      *  <ul>
-     *  <li> 1. Лайк не должен быть добавлен, если он уже существует для данного поста и пользователя. </li>
+     *  <li> 1. Лайк не должен быть добавлен, если он уже существует для данного поста/комментарий и пользователя. </li>
      *  <li> 2. Нельзя поставить два лайка от того же пользователя на тот же пост или комментарий. </li>
      *  <li> 3. Автор лайка должен быть зарегистрированным пользователем. </li>
      *  <li> 4. Нельзя поставить лайк одновременно на пост и комментарий. </li>
@@ -18,7 +18,7 @@ public interface LikeService {
      * @param userId ID пользователя, который ставит лайк
      *
      */
-    void addLikePost(Long postId, Long userId);
+    void addLike(Long postId, Long userId);
 
     /**
      * Удалить лайк с поста.
@@ -26,13 +26,13 @@ public interface LikeService {
      * <p>
      *  Условия:
      *  <ul>
-     *  <li> 1. Пользователь может удалить лайк ранее поставленный на пост. </li>
+     *  <li> 1. Пользователь может удалить лайк ранее поставленный на пост/комментарий. </li>
      *  </ul>
      *
      * @param postId ID поста, с которого удаляется лайк
      * @param userId ID пользователя, который удаляет лайк
      */
-    void removeLikePost(Long postId, Long userId);
+    void removeLike(Long postId, Long userId);
 
     /**
      * Добавить лайк к комментарию.
@@ -51,7 +51,7 @@ public interface LikeService {
      * @param commentId ID комментария, к которому добавляется лайк
      * @param userId ID пользователя, который ставит лайк
      */
-    void addLikeComment(Long commentId, Long userId);
+//    void addLikeComment(Long commentId, Long userId);
 
     /**
      * Удалить лайк с комментария.
@@ -66,5 +66,5 @@ public interface LikeService {
      * @param commentId ID комментария, с которого удаляется лайк
      * @param userId ID пользователя, который удаляет лайк
      */
-    void removeLikeComment(Long commentId, Long userId);
+//    void removeLikeComment(Long commentId, Long userId);
 }
