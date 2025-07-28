@@ -37,7 +37,7 @@ public class KafkaPostProducer implements MessagePublisher<Post> {
                     .toList();
             PostCreateEvent postEvent = new PostCreateEvent(post.getId(), followerIds);
             kafkaTemplate.send(kafkaProperties.topicNames().posts(), objectMapper.writeValueAsString(postEvent));
-            log.info("Message published in kafka. Created post id {}", post.getId());
+            log.info("Message published in kafka. Created post id [{}]", post.getId());
         } catch (JsonProcessingException e) {
             log.error("Message not published in kafka. Can't convert post event to json [{}]: {}", post, e.getMessage(), e);
         } catch (Exception e) {

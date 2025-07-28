@@ -42,6 +42,7 @@ spring:
       topic_names:
           comments: comments
           posts: posts
+          post_view: post_view
 
   task:
     execution:

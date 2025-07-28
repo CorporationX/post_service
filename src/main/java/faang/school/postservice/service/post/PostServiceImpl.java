@@ -17,6 +17,7 @@ import faang.school.postservice.publisher.MessagePublisher;
 import faang.school.postservice.repository.PostCacheRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.PostService;
+import jakarta.annotation.Resource;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,7 +41,7 @@ public class PostServiceImpl implements PostService {
     private final ProjectServiceClient projectServiceClient;
     @Qualifier(value = "redisUserPublisher")
     private final MessagePublisher<String> userPublisher;
-    @Qualifier(value = "postViewEventPublisher")
+    @Qualifier(value = "kafkaPostViewProducer")
     private final MessagePublisher<PostViewEvent> postViewPublisher;
     private final MessagePublisher<Post> kafkaPostProducer;
     private final UserContext userContext;
