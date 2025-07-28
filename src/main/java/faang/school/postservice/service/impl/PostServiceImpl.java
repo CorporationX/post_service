@@ -43,6 +43,7 @@ public class PostServiceImpl implements PostService {
     public void markPostAsDeleted(long id) {
           Post post = postRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Пост с id " + id + " не найден"));
           post.setDeleted(true);
+          post.setPublished(false);
           postRepository.save(post);
     }
 

@@ -32,4 +32,11 @@ public class PostController {
         postService.publishPost(postId, postDraftDto);
         return ResponseEntity.ok().build();
     }
+
+    @PutMapping("/markedPostAsDeleted/{postId}")
+    public ResponseEntity<Void> markPostAsDeleted(@PathVariable(required = true) Long postId) {
+        postService.markPostAsDeleted(postId);
+        return ResponseEntity.ok().build();
+    }
+
 }
