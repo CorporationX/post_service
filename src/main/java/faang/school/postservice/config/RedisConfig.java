@@ -23,16 +23,6 @@ public class RedisConfig {
         template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
         return template;
     }
-
-    @Bean(name = "postRedisTemplate")
-    public RedisTemplate<Long, Post> myEntityRedisTemplate(RedisConnectionFactory factory) {
-        RedisTemplate<Long, Post> template = new RedisTemplate<>();
-        template.setConnectionFactory(factory);
-        template.setKeySerializer(new GenericToStringSerializer<>(Long.class));
-        template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
-
-        return template;
-    }
   
     @Bean
     public LettuceConnectionFactory redisConnectionFactory() {
