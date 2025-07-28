@@ -9,6 +9,7 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
+import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
@@ -16,6 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Configuration
+@EnableRedisRepositories
 @RequiredArgsConstructor
 public class RedisConfiguration {
     private final RedisProperties redisProperties;

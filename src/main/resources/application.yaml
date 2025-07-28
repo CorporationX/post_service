@@ -28,6 +28,10 @@ spring:
           like_event_name: like_event
           comment_topic: comment_topic
           post_view_name: post_view
+      cache-names:
+          posts: posts
+      cache-duration:
+          posts: 24h
     kafka:
       active: true
       connection: localhost:9092, localhost:9192, localhost:9292
