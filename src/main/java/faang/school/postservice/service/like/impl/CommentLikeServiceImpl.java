@@ -74,8 +74,9 @@ public class CommentLikeServiceImpl implements LikeService {
 
     }
 
+    @Override
     @Cacheable(value = "commentLikes", key = "#commentId")
-    public int getCommentLikeCount(Long commentId) {
+    public int getLikeCount(Long commentId) {
         return likeRepository.countByCommentId(commentId);
     }
 

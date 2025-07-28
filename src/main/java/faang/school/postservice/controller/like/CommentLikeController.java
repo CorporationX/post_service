@@ -30,6 +30,6 @@ public class CommentLikeController {
 
     @GetMapping("/{commentId}/count")
     public ResponseEntity<Integer> getLikeCount(@PathVariable Long commentId) {
-        return ResponseEntity.ok(commentLikeService.getCommentLikeCount(commentId));
+        return ResponseEntity.ok(commentLikeService.getLikeCount(commentId));
     }
 }

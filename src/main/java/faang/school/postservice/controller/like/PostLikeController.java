@@ -1,7 +1,6 @@
 package faang.school.postservice.controller.like;
 
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.service.like.impl.CommentLikeServiceImpl;
 import faang.school.postservice.service.like.impl.PostLikeServiceImpl;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -32,7 +31,7 @@ public class PostLikeController {
 
     @GetMapping("/{postId}/count")
     public ResponseEntity<Integer> getLikeCount(@PathVariable("postID") @Validated @NotNull @NotBlank Long postId) {
-        return ResponseEntity.ok(postLikeService.getPostLikeCount(postId));
+        return ResponseEntity.ok(postLikeService.getLikeCount(postId));
     }
 
 }
