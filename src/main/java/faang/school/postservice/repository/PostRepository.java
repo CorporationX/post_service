@@ -1,13 +1,16 @@
 package faang.school.postservice.repository;
 
 import faang.school.postservice.model.Post;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
-import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-public interface PostRepository extends CrudRepository<Post, Long> {
+@Repository
+public interface PostRepository extends CrudRepository<Post, Long>, JpaSpecificationExecutor<Post> {
 
     List<Post> findByAuthorId(long authorId);
 
@@ -19,46 +22,42 @@ public interface PostRepository extends CrudRepository<Post, Long> {
     @Query("SELECT p FROM Post p LEFT JOIN FETCH p.likes WHERE p.authorId = :authorId")
     List<Post> findByAuthorIdWithLikes(long authorId);
 
-    @Query("SELECT p FROM Post p WHERE p.published = false AND p.deleted = false AND p.scheduledAt <= CURRENT_TIMESTAMP")
+    @Query(
+        "SELECT p FROM Post p WHERE p.published = false AND p.deleted = false AND p.scheduledAt <= CURRENT_TIMESTAMP"
+    )
     List<Post> findReadyToPublish();
 
-    @Query("""
-            SELECT * FROM Post p
-            WHERE p.author_id = :userId
-            AND p.published
-            AND p.deleted = false
-            ORDER BY p.published_at DESC;
-            """)
-    List<Post> getByUserPublishedPostsSortedByPublication(@Param("userId") Long userId);
+    default List<Post> findDraftsByUserId(Long userId) {
+        return findAll(
+                PostSpecifications.byAuthorId(userId)
+                        .and(PostSpecifications.drafts()),
+                Sort.by(Sort.Direction.DESC, "createdAt")
+        );
+    }
 
+    default List<Post> findPublishedByUserId(Long userId) {
+        return findAll(
+                PostSpecifications.byAuthorId(userId)
+                        .and(PostSpecifications.published()),
+                Sort.by(Sort.Direction.DESC, "publishedAt")
+        );
+    }
 
-    @Query("""
-            SELECT * FROM Post p
-            WHERE p.author_id = :userId
-            AND p.published = false
-            AND p.deleted = false
-            ORDER BY p.created_at DESC;
-            """)
-    List<Post> getByUserDraftPostsSortedByCreation(@Param("userId") Long userId);
+    default List<Post> findDraftsByProjectId(Long projectId) {
+        return findAll(
+                PostSpecifications.byProjectId(projectId)
+                        .and(PostSpecifications.drafts()),
+                Sort.by(Sort.Direction.DESC, "createdAt")
+        );
+    }
 
-
-    @Query("""
-            SELECT * FROM Post p
-            WHERE p.project_id = :projectId
-            AND p.published = false
-            AND p.deleted = false
-            ORDER BY p.created_at DESC;
-            """)
-    List<Post> getByProjectDraftPostsSortedByCreation(@Param("projectId") Long projectId);
-
-    @Query("""
-            SELECT * FROM Post p
-            WHERE p.project_id = :projectId
-            AND p.published
-            AND p.deleted = false
-            ORDER BY p.created_at DESC;
-            """)
-    List<Post> getByProjectPublishedPostsSortedByPublication(@Param("projectId") Long projectId);
+    default List<Post> findPublishedByProjectId(Long projectId) {
+        return findAll(
+                PostSpecifications.byProjectId(projectId)
+                        .and(PostSpecifications.published()),
+                Sort.by(Sort.Direction.DESC, "publishedAt")
+        );
+    }
 
 
 

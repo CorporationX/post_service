@@ -3,16 +3,18 @@ package faang.school.postservice.dto.post;
 import jakarta.validation.constraints.Size;
 
 /**
- * PostUpdateDto — описание класса.
+ * DTO для обновления содержимого поста.
  * <p>
- * TODO: добавить описание назначения и поведения класса.
+ * Используется для операций частичного обновления поста.
  * </p>
+ *
+ * @param content Новое содержимое поста. Должно быть не пустым и не превышать 4096 символов.
  *
  * @author Linempy
  * @since 25.07.2025
  */
 public record PostUpdateDto(
-        @Size(max = 4096)
+        @Size(min = 1, max = 4096)
         String content
 ) {
 }
