@@ -4,10 +4,8 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeEvent;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.EntityNotFoundException;
-import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.like.LikeService;
@@ -37,7 +35,8 @@ public class PostLikeServiceImpl implements LikeService {
     @Transactional
     public void addLike(Long postId, Long userId) {
         if (likeRepository.findByPostIdAndUserId(postId, userId).isPresent()) {
-            throw new IllegalArgumentException("Лайк под этим постом уже оставлен пользователем с id: " + userId + " id поста: " + postId);
+            throw new IllegalArgumentException("Лайк под этим постом уже оставлен пользователем с id: "
+                    + userId + " id поста: " + postId);
         }
 
         Post post = postRepository.findById(postId)
@@ -51,7 +50,12 @@ public class PostLikeServiceImpl implements LikeService {
         like.setUserId(userId);
         likeRepository.save(like);
 
-        kafkaLikePublisher.publishLikeEvent(new LikeEvent("POST_LIKE", userId, postId, null, LocalDateTime.now()));
+        kafkaLikePublisher.publishLikeEvent(new LikeEvent(
+                "POST_LIKE",
+                userId,
+                postId,
+                null,
+                LocalDateTime.now()));
         redisLikeCache.incrementLikes("post_likes:", postId);
     }
 
@@ -59,7 +63,8 @@ public class PostLikeServiceImpl implements LikeService {
     @Transactional
     public void removeLike(Long postId, Long userId) {
         if (likeRepository.findByPostIdAndUserId(postId, userId).isEmpty()) {
-            throw new IllegalArgumentException("Лайк под этим постом не найден у пользователя с id: " + userId + " id поста: " + postId);
+            throw new IllegalArgumentException("Лайк под этим постом не найден у пользователя с id: "
+                    + userId + " id поста: " + postId);
         }
 
         checkUserExists(userId);
@@ -67,7 +72,11 @@ public class PostLikeServiceImpl implements LikeService {
 
         likeRepository.deleteByPostIdAndUserId(postId, userId);
 
-        kafkaLikePublisher.publishLikeEvent(new LikeEvent("POST_UNLIKE", userId, postId, null, LocalDateTime.now()));
+        kafkaLikePublisher.publishLikeEvent(new LikeEvent("POST_UNLIKE",
+                userId,
+                postId,
+                null,
+                LocalDateTime.now()));
         redisLikeCache.decrementLikes("post_likes:", postId);
 
     }
@@ -80,12 +89,15 @@ public class PostLikeServiceImpl implements LikeService {
     }
 
     public void checkUserExists(Long userId) {
+        log.info("Проверяем существование пользователя с id: {}", userId);
         UserDto user = userServiceClient.getUser(userId);
         if (user == null) {
             throw new EntityNotFoundException("Пользователь с id " + userId + " не найден");
         }
     }
+
     public void checkPostExists(Long postId) {
+        log.info("Проверяем существование поста с id: {}", postId);
         if (!postRepository.existsById(postId)) {
             throw new EntityNotFoundException("Пост с id " + postId + " не найден");
         }

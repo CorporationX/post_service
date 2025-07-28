@@ -37,6 +37,6 @@ public class KafkaConfig {
 
     @Bean
     public ExecutorService kafkaExecutor() {
-        return Executors.newFixedThreadPool(5);
+        return Executors.newFixedThreadPool(10);
     }
 }

@@ -27,7 +27,6 @@ import java.time.LocalDateTime;
 public class CommentLikeServiceImpl implements LikeService {
 
     private final LikeRepository likeRepository;
-    private final PostRepository postRepository;
     private final RedisLikeCache redisLikeCache;
     private final KafkaLikePublisher kafkaLikePublisher;
     private final UserServiceClient userServiceClient;
@@ -40,11 +39,11 @@ public class CommentLikeServiceImpl implements LikeService {
             throw new IllegalArgumentException("Лайк под этим комментарием уже оставлен пользователем с id: " + userId + " id комментария: " + commentId);
         }
 
+        log.info("Ищем комментарий с id: {}", commentId);
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new IllegalArgumentException("Комментарий с id " + commentId + " не найден"));
 
         checkUserExists(userId);
-        checkCommentExists(commentId);
 
         Like like = Like.builder()
                 .comment(comment)
@@ -81,6 +80,7 @@ public class CommentLikeServiceImpl implements LikeService {
     }
 
     public void checkUserExists(Long userId) {
+        log.info("Проверяем существование пользователя с id: {}", userId);
         UserDto user = userServiceClient.getUser(userId);
         if (user == null) {
             throw new EntityNotFoundException("Пользователь с id " + userId + " не найден");
@@ -88,6 +88,7 @@ public class CommentLikeServiceImpl implements LikeService {
     }
 
     public void checkCommentExists(Long commentId) {
+        log.info("Проверяем существование комментария с id: {}", commentId);
         if (!commentRepository.existsById(commentId)) {
             throw new EntityNotFoundException("Комментарий с id " + commentId + " не найден");
         }

@@ -15,18 +15,18 @@ public class RedisLikeCache {
     private final ExecutorService redisCacheExecutor;
     private final RedisTemplate<String, Object> redisTemplate;
 
-    public void incrementLikes(String keyName, Long Id) {
-        log.info("Incrementing likes for {}: {}", keyName, Id);
+    public void incrementLikes(String keyName, Long objectId) {
+        log.info("Incrementing likes for {}: {}", keyName, objectId);
         redisCacheExecutor.execute(() -> {
-            String key = keyName + Id;
+            String key = keyName + objectId;
             redisTemplate.opsForValue().increment(key);
         });
     }
 
-    public void decrementLikes(String keyName, Long Id) {
-        log.info("Decrementing likes for {}: {}", keyName, Id);
+    public void decrementLikes(String keyName, Long objectId) {
+        log.info("Decrementing likes for {}: {}", keyName, objectId);
         redisCacheExecutor.execute(() -> {
-            String key = keyName + Id;
+            String key = keyName + objectId;
             redisTemplate.opsForValue().decrement(key);
         });
     }
