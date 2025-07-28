@@ -1,5 +1,7 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.comment.SaveCommentDto;
 import faang.school.postservice.dto.post.CreatePostDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
@@ -7,13 +9,19 @@ import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.post.RepeatPublishException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.mapper.PostMapperImpl;
+import faang.school.postservice.mapper.comment.CommentMapper;
+import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.criteria.PostSearchCriteria;
+import faang.school.postservice.validation.comment.CommentValidator;
 import faang.school.postservice.validator.PostValidator;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mapstruct.factory.Mappers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -29,10 +37,12 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -46,6 +56,18 @@ class PostServiceImplTest {
 
     @Mock
     private PostValidator postValidator;
+
+    @Mock
+    private CommentRepository commentRepository;
+
+    @Mock
+    private UserFeignService userFeignService;
+
+    @Mock
+    private CommentValidator commentValidator;
+
+    @Spy
+    private CommentMapper commentMapper = Mappers.getMapper(CommentMapper.class);
 
     @Spy
     private PostMapper postMapper = new PostMapperImpl();
@@ -61,6 +83,10 @@ class PostServiceImplTest {
     private final CreatePostDto createPostDto = new CreatePostDto(testOriginalContent, testAuthorId, null);
     private final UpdatePostDto updatePostDto = new UpdatePostDto(testUpdatedContent);
     private final Post post = new Post();
+    private static final long POST_ID = 1L;
+    private static final long AUTHOR_ID = 11L;
+    private static final long COMMENT_ID = 1L;
+    private static final String COMMENT_TEXT = "text";
 
     @Captor
     private ArgumentCaptor<Post> postCaptor;
@@ -279,5 +305,150 @@ class PostServiceImplTest {
         assertEquals(PostSearchCriteria.SortDirection.DESC, capturedCriteria.getSortDirection());
 
         assertSingleElementListWithTestPost(result);
+    }
+
+    @Test
+    @DisplayName("Should create a new comment")
+    public void shouldSaveCommentAndReturnDto() {
+        SaveCommentDto saveDto = buildSaveCommentDto();
+        Post post = buildPost();
+        Comment savedComment = buildComment(post);
+
+        when(postRepository.findById(POST_ID)).thenReturn(Optional.of(post));
+        when(commentRepository.save(any(Comment.class))).thenReturn(savedComment);
+
+        CommentDto result = postService.createComment(POST_ID, AUTHOR_ID, saveDto);
+
+        assertNotNull(result);
+        assertEquals(COMMENT_ID, result.id());
+        assertEquals(COMMENT_TEXT, result.content());
+        assertEquals(AUTHOR_ID, result.authorId());
+        assertEquals(POST_ID, result.postId());
+
+        verify(userFeignService).getUserOrFail(AUTHOR_ID);
+        verify(postRepository).findById(POST_ID);
+        verify(commentMapper).toComment(saveDto);
+        verify(commentRepository).save(any(Comment.class));
+        verify(commentMapper).toCommentDto(savedComment);
+    }
+
+    @Test
+    @DisplayName("Should throw EntityNotFoundException if user does not exist when creating comment")
+    void createCommentThrowsIfUserNotFound() {
+        SaveCommentDto saveDto = buildSaveCommentDto();
+
+        EntityNotFoundException expected = new EntityNotFoundException("User not found with id: " + AUTHOR_ID);
+
+        doThrow(expected).when(userFeignService).getUserOrFail(AUTHOR_ID);
+
+        EntityNotFoundException ex = assertThrows(EntityNotFoundException.class, () ->
+                postService.createComment(POST_ID, AUTHOR_ID, saveDto));
+
+        assertEquals("User not found with id: " + AUTHOR_ID, ex.getMessage());
+        verify(userFeignService).getUserOrFail(AUTHOR_ID);
+        verifyNoInteractions(postRepository, commentRepository, commentMapper);
+    }
+
+    @Test
+    @DisplayName("Should throw EntityNotFoundException if post does not exist when creating comment")
+    void createCommentThrowsIfPostNotFound() {
+        SaveCommentDto saveDto = buildSaveCommentDto();
+
+        when(postRepository.findById(POST_ID))
+                .thenThrow(new EntityNotFoundException("Post not found"));
+
+        EntityNotFoundException ex = assertThrows(EntityNotFoundException.class, () ->
+                postService.createComment(POST_ID, AUTHOR_ID, saveDto));
+
+        assertEquals("Post not found", ex.getMessage());
+
+        verify(userFeignService).getUserOrFail(AUTHOR_ID);
+        verify(postRepository).findById(POST_ID);
+        verifyNoInteractions(commentRepository);
+    }
+
+    @Test
+    @DisplayName("Should return list of comments for existing post")
+    void getByPostIdReturnsComments() {
+        Comment comment1 = buildCommentWithIdAndContent(COMMENT_ID, "first");
+        Comment comment2 = buildCommentWithIdAndContent(2L, "second");
+        List<Comment> comments = List.of(comment2, comment1);
+
+        when(postRepository.existsById(POST_ID)).thenReturn(true);
+        doNothing().when(commentValidator).ensurePostExists(true, POST_ID);
+        when(commentRepository.findAllByPostIdOrderByCreatedAtDesc(POST_ID)).thenReturn(comments);
+
+        List<CommentDto> result = postService.getCommentsByPostId(POST_ID);
+
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals(2L, result.get(0).id());
+        assertEquals(COMMENT_ID, result.get(1).id());
+
+        verify(postRepository).existsById(POST_ID);
+        verify(commentValidator).ensurePostExists(true, POST_ID);
+        verify(commentRepository).findAllByPostIdOrderByCreatedAtDesc(POST_ID);
+        verify(commentMapper).toCommentDtos(comments);
+    }
+
+    @Test
+    @DisplayName("Should throw EntityNotFoundException if post does not exist when retrieving comments")
+    void getByPostIdThrowsIfPostNotFound() {
+        when(postRepository.existsById(POST_ID)).thenReturn(false);
+        doThrow(new EntityNotFoundException("Post not found"))
+                .when(commentValidator).ensurePostExists(false, POST_ID);
+
+        EntityNotFoundException ex = assertThrows(EntityNotFoundException.class, () ->
+                postService.getCommentsByPostId(POST_ID));
+
+        assertEquals("Post not found", ex.getMessage());
+
+        verify(postRepository).existsById(POST_ID);
+        verify(commentValidator).ensurePostExists(false, POST_ID);
+        verifyNoInteractions(commentRepository);
+    }
+
+    @Test
+    @DisplayName("Should return empty list if no comments found for post")
+    void getByPostIdReturnsEmptyListIfNoComments() {
+        when(postRepository.existsById(POST_ID)).thenReturn(true);
+        doNothing().when(commentValidator).ensurePostExists(true, POST_ID);
+        when(commentRepository.findAllByPostIdOrderByCreatedAtDesc(POST_ID)).thenReturn(List.of());
+
+        List<CommentDto> result = postService.getCommentsByPostId(POST_ID);
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+
+        verify(postRepository).existsById(POST_ID);
+        verify(commentValidator).ensurePostExists(true, POST_ID);
+        verify(commentRepository).findAllByPostIdOrderByCreatedAtDesc(POST_ID);
+        verify(commentMapper).toCommentDtos(List.of());
+    }
+
+    private SaveCommentDto buildSaveCommentDto() {
+        return new SaveCommentDto(COMMENT_TEXT);
+    }
+
+    private Post buildPost() {
+        return Post.builder()
+                .id(POST_ID)
+                .build();
+    }
+
+    private Comment buildComment(Post post) {
+        return Comment.builder()
+                .id(COMMENT_ID)
+                .content(COMMENT_TEXT)
+                .authorId(AUTHOR_ID)
+                .post(post)
+                .build();
+    }
+
+    private Comment buildCommentWithIdAndContent(long id, String content) {
+        return Comment.builder()
+                .id(id)
+                .content(content)
+                .build();
     }
 }
