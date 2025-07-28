@@ -24,7 +24,7 @@ public class PostLikeController {
     }
 
     @DeleteMapping("/{postId}")
-    public ResponseEntity<Void> likeRemoval(@PathVariable("postId") @Validated @NotNull @NotBlank Long postId) {
+    public ResponseEntity<Void> unLike(@PathVariable("postId") @Validated @NotNull @NotBlank Long postId) {
         postLikeService.removeLike(postId, userContext.getUserId());
         return ResponseEntity.ok().build();
     }

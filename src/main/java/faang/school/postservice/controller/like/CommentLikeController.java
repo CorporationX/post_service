@@ -23,7 +23,7 @@ public class CommentLikeController {
     }
 
     @DeleteMapping("/{commentId}")
-    public ResponseEntity<Void> likeRemoval(@PathVariable("commentId") @Validated @NotNull @NotBlank Long commentId) {
+    public ResponseEntity<Void> unLike(@PathVariable("commentId") @Validated @NotNull @NotBlank Long commentId) {
         commentLikeService.removeLike(commentId, userContext.getUserId());
         return ResponseEntity.ok().build();
     }
