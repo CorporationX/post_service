@@ -13,9 +13,9 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/like/post")
 public class PostLikeController {
+
     private final UserContext userContext;
     private final PostLikeServiceImpl postLikeService;
-
 
     @PostMapping("/{postId}")
     public ResponseEntity<Void> like(@PathVariable("postId") @Validated @NotNull @NotBlank Long postId) {
