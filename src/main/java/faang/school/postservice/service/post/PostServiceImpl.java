@@ -1,16 +1,19 @@
 package faang.school.postservice.service.post;
 
 import faang.school.postservice.client.ProjectServiceClient;
-import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostCreateDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
 import faang.school.postservice.dto.post.PostViewDto;
 import faang.school.postservice.dto.project.ProjectDto;
+import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.exception.EntityNotFoundException;
+import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,17 +21,15 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * PostServiceImpl — описание класса.
- * <p>
- * TODO: добавить описание назначения и поведения класса.
- * </p>
+ * Реализация сервиса для работы с постами.
  *
  * @author Linempy
  * @since 25.07.2025
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
-public class PostServiceImpl implements PostService{
+public class PostServiceImpl implements PostService {
 
     private final PostRepository postRepository;
     private final ProjectServiceClient projectClient;
@@ -47,56 +48,54 @@ public class PostServiceImpl implements PostService{
         post.setProjectId(authorInfo.projectId());
 
         post = postRepository.save(post);
-
+        log.info("Пост id={} был создан (Автор: userId={} projectId={}",
+                post.getId(), authorInfo.authorId(), authorInfo.projectId());
         return mapper.toViewDto(post);
     }
 
     @Override
     @Transactional
     public void publication(Long id) {
-        Post post = postRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Пост не найден"));
+        Post post = findPostOrThrow(id);
 
         if (post.isPublished()) {
-            throw new IllegalArgumentException("Пост уже опубликован");
-            //throw new PostAlreadyPublishedException(id); // Кастомное исключение
+            throw new ForbiddenException("Пост уже опубликован");
         }
 
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
+        log.info("Пост id={} был опубликован в {}", post.getId(), post.getPublishedAt());
         postRepository.save(post);
     }
 
     @Override
     public PostViewDto update(Long id, PostUpdateDto dto) {
-        Post post = postRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Пост не найден"));
+        Post post = findPostOrThrow(id);
 
         mapper.update(post, dto);
         post = postRepository.save(post);
-
+        log.info("Пост id={} был обновлен", post.getId());
         return mapper.toViewDto(post);
     }
 
     @Override
     public void softDelete(Long id) {
-        Post post = postRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Пост не найден"));
+        Post post = findPostOrThrow(id);
 
         post.setDeleted(true);
+        log.info("Пост id={} был мягко удален", post.getId());
         postRepository.save(post);
     }
 
     @Override
     public PostViewDto getById(Long id) {
-        Post post = postRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Пост не найден"));
+        Post post = findPostOrThrow(id);
         return mapper.toViewDto(post);
     }
 
     @Override
     public List<PostViewDto> getByUserDraftPostsSortedByCreation(Long userId) {
-        List<Post> posts = postRepository.getByUserDraftPostsSortedByCreation(userId);
+        List<Post> posts = postRepository.findDraftsByUserId(userId);
 
         return posts.stream()
                 .map(mapper::toViewDto)
@@ -105,7 +104,7 @@ public class PostServiceImpl implements PostService{
 
     @Override
     public List<PostViewDto> getByUserPublishedPostsSortedByPublication(Long userId) {
-        List<Post> posts = postRepository.getByUserPublishedPostsSortedByPublication(userId);
+        List<Post> posts = postRepository.findPublishedByUserId(userId);
 
         return posts.stream()
                 .map(mapper::toViewDto)
@@ -114,7 +113,7 @@ public class PostServiceImpl implements PostService{
 
     @Override
     public List<PostViewDto> getByProjectDraftPostsSortedByCreation(Long projectId) {
-        List<Post> posts = postRepository.getByUserPublishedPostsSortedByPublication(projectId);
+        List<Post> posts = postRepository.findDraftsByProjectId(projectId);
 
         return posts.stream()
                 .map(mapper::toViewDto)
@@ -123,7 +122,7 @@ public class PostServiceImpl implements PostService{
 
     @Override
     public List<PostViewDto> getByProjectPublishedPostsSortedByPublication(Long projectId) {
-        List<Post> posts = postRepository.getByUserPublishedPostsSortedByPublication(projectId);
+        List<Post> posts = postRepository.findPublishedByProjectId(projectId);
 
         return posts.stream()
                 .map(mapper::toViewDto)
@@ -135,13 +134,12 @@ public class PostServiceImpl implements PostService{
         boolean hasProjectId = dto.projectId() != null;
 
         if (hasAuthorId && hasProjectId) {
-            throw new IllegalArgumentException("Должен быть указан только один идентификатор автора");
-            //GlobalExceptionHandler
+            throw new ForbiddenException("Должен быть указан только один идентификатор автора");
         }
 
         if (hasAuthorId) {
             if (!dto.authorId().equals(currentUserId)) {
-                throw new IllegalArgumentException("Нельзя публиковать от чужого имени!");
+                throw new ForbiddenException("Нельзя публиковать от чужого имени!");
             }
             return new AuthorInfo(currentUserId, null);
         }
@@ -149,12 +147,16 @@ public class PostServiceImpl implements PostService{
         if (hasProjectId) {
             ProjectDto project = projectClient.getProject(dto.projectId());
             if (!project.participants().contains(currentUserId)) {
-                throw new IllegalArgumentException("Вы не состоите в проекте!");
+                throw new ForbiddenException("Вы не состоите в проекте!");
             }
             return new AuthorInfo(currentUserId, project.id());
         }
 
-        throw new IllegalStateException("Не указан идентификатор автора");
+        throw new DataValidationException("Не указан идентификатор автора");
     }
 
+    private Post findPostOrThrow(Long id) {
+        return postRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Пост не найден"));
+    }
 }

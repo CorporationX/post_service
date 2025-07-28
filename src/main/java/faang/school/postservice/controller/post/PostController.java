@@ -21,7 +21,6 @@ import java.util.List;
 
 /**
  * REST-контроллер для управления постами
- *
  * Предоставляет endpoints для создания, обновления, получения списка
  * и получения поста по индентификатору.
  *
@@ -54,6 +53,7 @@ public class PostController {
      * @return HTTP 204 No Content при успешной публикации
      */
     @PutMapping("/posts/{postId}/publications")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public ResponseEntity<Void> publication(@PathVariable Long postId) {
         service.publication(postId);
         return ResponseEntity.noContent().build();
@@ -66,8 +66,8 @@ public class PostController {
      * @param dto DTO с обновленными данными поста {@link PostUpdateDto}
      * @return DTO обновленного поста {@link PostViewDto}
      */
-    @PutMapping("/posts")
-    public PostViewDto update(Long postId, @RequestBody PostUpdateDto dto) {
+    @PutMapping("/posts/{postId}")
+    public PostViewDto update(@PathVariable Long postId, @RequestBody PostUpdateDto dto) {
         return service.update(postId, dto);
     }
 
@@ -77,6 +77,7 @@ public class PostController {
      * @param postId ID поста для удаления
      */
     @DeleteMapping("/posts/{postId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public ResponseEntity<Void> softDelete(@PathVariable Long postId) {
         service.softDelete(postId);
         return ResponseEntity.noContent().build();
@@ -88,7 +89,7 @@ public class PostController {
      * @param postId ID поста
      * @return DTO запрошенного поста {@link PostViewDto}
      */
-    @GetMapping("/posts/{id}")
+    @GetMapping("/posts/{postId}")
     public PostViewDto getById(@PathVariable Long postId) {
         return service.getById(postId);
     }
