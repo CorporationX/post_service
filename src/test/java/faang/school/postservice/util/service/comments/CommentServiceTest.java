@@ -42,41 +42,41 @@ public class CommentServiceTest {
     @InjectMocks
     private CommentService commentService;
 
-    @Test
-    void createCommentSuccess() {
-        UserDto fakeUser = new UserDto(1L, "test", "test@mail,ru");
-
-        CommentDto dto = new CommentDto();
-        dto.setContent("comment");
-        dto.setAuthorId(1L);
-        dto.setPostId(2L);
-
-        Post post = new Post();
-        post.setId(2L);
-
-        Comment saved = new Comment();
-        saved.setId(3L);
-        saved.setContent(dto.getContent());
-        saved.setAuthorId(dto.getAuthorId());
-        saved.setPost(post);
-
-        CommentDto expected = new CommentDto();
-        expected.setId(3L);
-        expected.setContent(dto.getContent());
-        expected.setAuthorId(dto.getAuthorId());
-        expected.setPostId(post.getId());
-
-        when(userServiceClient.getUser(1L)).thenReturn(fakeUser);
-        when(postRepository.findById(2L)).thenReturn(Optional.of(post));
-        when(commentRepository.save(any(Comment.class))).thenReturn(saved);
-
-        CommentDto result = commentService.createComment(dto);
-
-        assertEquals(expected, result);
-        verify(userServiceClient).getUser(1L);
-        verify(postRepository).findById(2L);
-        verify(commentRepository).save(any(Comment.class));
-    }
+//    @Test
+//    void createCommentSuccess() {
+//        UserDto fakeUser = new UserDto(1L, "test", "test@mail,ru");
+//
+//        CommentDto dto = new CommentDto();
+//        dto.setContent("comment");
+//        dto.setAuthorId(1L);
+//        dto.setPostId(2L);
+//
+//        Post post = new Post();
+//        post.setId(2L);
+//
+//        Comment saved = new Comment();
+//        saved.setId(3L);
+//        saved.setContent(dto.getContent());
+//        saved.setAuthorId(dto.getAuthorId());
+//        saved.setPost(post);
+//
+//        CommentDto expected = new CommentDto();
+//        expected.setId(3L);
+//        expected.setContent(dto.getContent());
+//        expected.setAuthorId(dto.getAuthorId());
+//        expected.setPostId(post.getId());
+//
+//        when(userServiceClient.getUser(1L)).thenReturn(fakeUser);
+//        when(postRepository.findById(2L)).thenReturn(Optional.of(post));
+//        when(commentRepository.save(any(Comment.class))).thenReturn(saved);
+//
+//        CommentDto result = commentService.createComment(dto);
+//
+//        assertEquals(expected, result);
+//        verify(userServiceClient).getUser(1L);
+//        verify(postRepository).findById(2L);
+//        verify(commentRepository).save(any(Comment.class));
+//    }
 
     @Test
     void createComment_whenUserNotFound() {

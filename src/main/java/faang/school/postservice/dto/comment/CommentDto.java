@@ -25,4 +25,4 @@ public class CommentDto {
     private Integer likeCount;
     @NotNull(message = "Author must be specified")
     private LocalDateTime createdAt; // Readonly
-    }
+}

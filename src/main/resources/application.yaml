@@ -30,6 +30,24 @@ spring:
         path-style-access-enabled: true
         bucket-name: post-bucket
 
+  kafka:
+    producer:
+      bootstrap-servers: localhost:9092, localhost:9094
+      client-id: user-service
+      acks: all
+      properties:
+        linger:
+          ms: 0
+    topics:
+      comment-created:
+        name: comment-created-event-topic
+        partitions: 1
+        replication-factor: 3
+        dlt:
+          name: ${spring.kafka.topics.comment-created.name}.DLT
+          partitions: 1
+          replication-factor: 3
+
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://localhost:5432/postgres
