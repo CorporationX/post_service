@@ -1,7 +1,7 @@
 package faang.school.postservice.mapper;
 
+import faang.school.postservice.dto.post.PostCacheDto;
 import faang.school.postservice.dto.post.PostCreateDto;
-import faang.school.postservice.dto.post.PostCreateEvent;
 import faang.school.postservice.dto.post.PostOutputDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
 import faang.school.postservice.model.Album;
@@ -29,6 +29,8 @@ public interface PostMapper {
     PostOutputDto toPostDto(Post post);
 
     Post toPostEntity(PostCreateDto postCreateDto);
+
+    PostCacheDto toCacheDto(PostOutputDto post);
 
     void update(PostUpdateDto postUpdateDto, @MappingTarget Post post);
 
