@@ -14,6 +14,7 @@ import faang.school.postservice.exception.PostAlreadyPublishedException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.MessagePublisher;
+import faang.school.postservice.repository.AuthorCacheRepository;
 import faang.school.postservice.repository.PostCacheRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.PostService;
@@ -46,6 +47,7 @@ public class PostServiceImpl implements PostService {
     private final MessagePublisher<Post> kafkaPostProducer;
     private final UserContext userContext;
     private final PostCacheRepository postCacheRepository;
+    private final AuthorCacheRepository authorCacheRepository;
 
     @Value("${entity.post.max-unverified-count-for-ban}")
     private long maxUnverifiedPostsForBan;
@@ -141,6 +143,7 @@ public class PostServiceImpl implements PostService {
 
         PostOutputDto postDto = postMapper.toPostDto(publishedPost);
         postCacheRepository.set(postDto);
+        authorCacheRepository.set(postDto.getAuthorId());
         kafkaPostProducer.publish(publishedPost);
 
         return postDto;
