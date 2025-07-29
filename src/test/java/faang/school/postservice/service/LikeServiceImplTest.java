@@ -8,7 +8,7 @@ import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.LikeEventMapper;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.publisher.like.LikeEventPublisher;
+import faang.school.postservice.publisher.like.KafkaLikeProducer;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.like.LikeServiceImpl;
@@ -24,7 +24,10 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class LikeServiceImplTest {
@@ -36,7 +39,7 @@ public class LikeServiceImplTest {
     @Mock
     private UserServiceClient userServiceClient;
     @Mock
-    private LikeEventPublisher likeEventPublisher;
+    private KafkaLikeProducer likeEventPublisher;
     @Mock
     private LikeEventMapper likeEventMapper;
     @Mock
@@ -88,7 +91,7 @@ public class LikeServiceImplTest {
 
         likeService.addLikePost(postId, userId);
 
-        verify(likeEventPublisher, times(1)).publish(like);
+        verify(likeEventPublisher, times(1)).publish(likeEventMapper.likeToEvent(like));
         verifyNoMoreInteractions(likeEventPublisher);
     }
 }
