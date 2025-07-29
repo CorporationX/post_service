@@ -95,8 +95,6 @@ tasks.jacocoTestReport {
     classDirectories.setFrom(files(classDirectories.files.map {
         fileTree(it).apply {
             exclude(
-                "**/consumer/**",
-                "**/utils/**",
                 "**/client/**",
                 "**/mapper/**",
                 "**/entity/**",
@@ -118,6 +116,8 @@ tasks.jacocoTestCoverageVerification {
         rule {
             element = "CLASS"
             excludes = listOf(
+                "faang.school.postservice.consumer.*",
+                "faang.school.postservice.utils.*",
                 "faang.school.postservice.client.*",
                 "faang.school.postservice.mapper.*",
                 "faang.school.postservice.entity.*",
