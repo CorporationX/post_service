@@ -95,6 +95,8 @@ tasks.jacocoTestReport {
     classDirectories.setFrom(files(classDirectories.files.map {
         fileTree(it).apply {
             exclude(
+                "**/consumer/**",
+                "**/utils/**",
                 "**/client/**",
                 "**/mapper/**",
                 "**/entity/**",
