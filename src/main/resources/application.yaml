@@ -29,6 +29,20 @@ spring:
         postCreated: post_created
         calculations_channel:
           name: calculations_channel
+      ttlMins: 10
+      collections:
+        feed:
+          name: feed
+          ttlMins: 3600
+        posts:
+          name: posts
+          ttlMins: 1440
+        comments:
+          name: comments
+          ttlMins: 3600
+        likes:
+          name: likes
+          ttlMins: 3600
 
   servlet:
     multipart:
