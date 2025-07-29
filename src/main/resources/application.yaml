@@ -45,6 +45,7 @@ spring:
           comments: comments
           posts: posts
           post_view: post_view
+          likes: likes
 
   task:
     execution:

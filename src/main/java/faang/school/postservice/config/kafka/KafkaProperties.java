@@ -15,6 +15,7 @@ public record KafkaProperties(
     public record ChannelNames(
             String comments,
             String postView,
+            String likes,
             String posts
     ) {
     }
