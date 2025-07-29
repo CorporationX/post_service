@@ -131,6 +131,7 @@ class CommentServiceTest {
     void negative_whenUserNotFound_createThrowsException() {
         String expectedMessage = "User " + USER_ID + " not found";
         when(userContext.getUserId()).thenReturn(USER_ID);
+        when(postRepository.findById(POST_ID)).thenReturn(preparePost());
 
         verify(commentRepository, never()).save(any(Comment.class));
         String actualMessage = assertThrows(EntityNotFoundException.class,
@@ -143,7 +144,6 @@ class CommentServiceTest {
     void negative_whenPostNotFound_createThrowsException() {
         String expectedMessage = "Post " + POST_ID + " not found";
         when(userContext.getUserId()).thenReturn(USER_ID);
-        when(userServiceClient.getUser(USER_ID)).thenReturn(prepareUser());
         when(postRepository.findById(POST_ID)).thenReturn(Optional.empty());
 
         verify(commentRepository, never()).save(any(Comment.class));
@@ -167,6 +167,7 @@ class CommentServiceTest {
     void negative_whenUserNotFound_updateThrowsException() {
         String expectedMessage = "User " + USER_ID + " not found";
         when(userContext.getUserId()).thenReturn(USER_ID);
+        when(commentRepository.findById(COMMENT_ID)).thenReturn(prepareExistsComment());
 
         verify(commentRepository, never()).save(any(Comment.class));
         String actualMessage = assertThrows(EntityNotFoundException.class,
@@ -179,7 +180,6 @@ class CommentServiceTest {
     void negative_whenCommentNotFound_updateThrowsException() {
         String expectedMessage = "Comment " + COMMENT_ID + " not found";
         when(userContext.getUserId()).thenReturn(USER_ID);
-        when(userServiceClient.getUser(USER_ID)).thenReturn(prepareUser());
         when(commentRepository.findById(COMMENT_ID)).thenReturn(Optional.empty());
 
         verify(commentRepository, never()).save(any(Comment.class));

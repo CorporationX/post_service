@@ -3,6 +3,7 @@ package faang.school.postservice.service.comment;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.NotResourceOwnerException;
 import faang.school.postservice.mapper.CommentMapper;
@@ -29,7 +30,8 @@ public class CommentService {
         long currentUserId = userContext.getUserId();
         log.info("Start create comment for post {} by user {}", commentDto.postId(), currentUserId);
         validateAuthor(currentUserId, commentDto.authorId());
-        Post post = checkPostExists(commentDto.postId());
+        Post post = findPostById(commentDto.postId());
+        checkUserExists(currentUserId);
         Comment comment = mapper.toComment(commentDto);
         comment.setPost(post);
 
@@ -44,7 +46,8 @@ public class CommentService {
         long currentUserId = userContext.getUserId();
         log.info("Start update comment {} for post {} by user {}", commentId, commentDto.postId(), currentUserId);
         validateAuthor(currentUserId, commentDto.authorId());
-        Comment comment = checkCommentExists(commentId);
+        Comment comment = findCommentById(commentId);
+        checkUserExists(currentUserId);
         mapper.update(commentDto.content(), comment);
 
         comment = commentRepository.save(comment);
@@ -57,8 +60,9 @@ public class CommentService {
     public void delete(long commentId) {
         long currentUserId = userContext.getUserId();
         log.info("Start delete comment {} by user {}", commentId, currentUserId);
-        Comment comment = checkCommentExists(commentId);
+        Comment comment = findCommentById(commentId);
         validateAuthor(currentUserId, comment.getAuthorId());
+        checkUserExists(currentUserId);
 
         commentRepository.deleteById(commentId);
         log.info("Comment {} successfully deleted by user {}", commentId, currentUserId);
@@ -78,18 +82,21 @@ public class CommentService {
         if (currentUserId != authorId) {
             throw new NotResourceOwnerException("User {} is not owner", currentUserId);
         }
+    }
 
-        if (userServiceClient.getUser(currentUserId) == null) {
+    private void checkUserExists(long currentUserId) {
+        UserDto user = userServiceClient.getUser(currentUserId);
+        if (user == null) {
             throw new EntityNotFoundException("User {} not found", currentUserId);
         }
     }
 
-    private Post checkPostExists(long id) {
+    private Post findPostById(long id) {
         return postRepository.findById(id).orElseThrow(
                 () -> new EntityNotFoundException("Post {} not found", id));
     }
 
-    private Comment checkCommentExists(long id) {
+    private Comment findCommentById(long id) {
         return commentRepository.findById(id).orElseThrow(
                 () -> new EntityNotFoundException("Comment {} not found", id)
         );

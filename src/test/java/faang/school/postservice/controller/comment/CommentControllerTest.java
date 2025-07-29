@@ -118,6 +118,15 @@ class CommentControllerTest {
         verify(commentService, times(1)).findAllByPostId(POST_ID);
     }
 
+    private static Stream<Arguments> provideNotValidComment() {
+        return Stream.of(
+                Arguments.of(new CommentDto(COMMENT_ID, null, USER_ID, 0, POST_ID, null, null)),
+                Arguments.of(new CommentDto(COMMENT_ID, " ", USER_ID, 0, POST_ID, null, null)),
+                Arguments.of(new CommentDto(COMMENT_ID, LONG_CONTENT, USER_ID, 0, POST_ID, null, null)),
+                Arguments.of(new CommentDto(COMMENT_ID, CONTENT, null, 0, POST_ID, null, null)),
+                Arguments.of(new CommentDto(COMMENT_ID, CONTENT, USER_ID, 0, null, null, null)));
+    }
+
     @ParameterizedTest
     @MethodSource("provideNotValidComment")
     @DisplayName("Ошибка вызова POST /v1/comments - поля тела не валидны")
@@ -142,14 +151,5 @@ class CommentControllerTest {
 
     private String toJson(Object obj) throws JsonProcessingException {
         return OBJECT_MAPPER.writeValueAsString(obj);
-    }
-
-    private static Stream<Arguments> provideNotValidComment() {
-        return Stream.of(
-                Arguments.of(new CommentDto(COMMENT_ID, null, USER_ID, 0, POST_ID, null, null)),
-                Arguments.of(new CommentDto(COMMENT_ID, " ", USER_ID, 0, POST_ID, null, null)),
-                Arguments.of(new CommentDto(COMMENT_ID, LONG_CONTENT, USER_ID, 0, POST_ID, null, null)),
-                Arguments.of(new CommentDto(COMMENT_ID, CONTENT, null, 0, POST_ID, null, null)),
-                Arguments.of(new CommentDto(COMMENT_ID, CONTENT, USER_ID, 0, null, null, null)));
     }
 }
