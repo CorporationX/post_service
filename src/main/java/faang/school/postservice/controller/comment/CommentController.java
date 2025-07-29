@@ -63,7 +63,7 @@ public class CommentController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Updated successfully")
     })
-    public CommentDto update(@Valid @RequestBody CommentForUpdateDto commentDto) {
+    public CommentOutputDto update(@Valid @RequestBody CommentForUpdateDto commentDto) {
         log.info("Update a comment with id {} by user {} - Started"
                 , commentDto.getId(), userContext.getUserId());
         return service.updateComment(commentDto);
@@ -81,7 +81,7 @@ public class CommentController {
     @GetMapping("/{commentId}")
     @Operation(summary = "Gets comment by its ID",
             description= "Comment must exist")
-    public CommentDto findById(@NotNull @PathVariable long commentId) {
+    public CommentOutputDto findById(@NotNull @PathVariable long commentId) {
         log.info("Searching for a comment with id {} by user {} - Started"
                 , commentId, userContext.getUserId());
         return service.findCommentById(commentId);

@@ -6,6 +6,7 @@ import java.time.Duration;
 
 @ConfigurationProperties("spring.data.redis.cache-duration")
 public record CacheDuration(
-        Duration posts
+        Duration posts,
+        Duration authors
 ) {
 }

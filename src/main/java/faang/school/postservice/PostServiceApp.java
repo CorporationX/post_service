@@ -30,11 +30,6 @@ public class PostServiceApp {
     public ObjectMapper objectMapper() {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
-        objectMapper.activateDefaultTyping(
-                objectMapper.getPolymorphicTypeValidator(),
-                ObjectMapper.DefaultTyping.EVERYTHING,
-                JsonTypeInfo.As.PROPERTY
-        );
         return objectMapper;
     }
 }

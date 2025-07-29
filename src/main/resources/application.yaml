@@ -30,8 +30,10 @@ spring:
           post_view_name: post_view
       cache-names:
           posts: posts
+          authors: authors
       cache-duration:
           posts: 24h
+          authors: 24h
     kafka:
       active: true
       connection: localhost:9092, localhost:9192, localhost:9292
