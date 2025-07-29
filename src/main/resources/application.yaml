@@ -110,6 +110,7 @@ thread:
 entity:
     post:
         max-unverified-count-for-ban: 5
+        max_cached_comments: 3
     commentServiceFileLimitMb: 5
 languagetool:
   apiUrl: "https://api.languagetool.org/v2/check"

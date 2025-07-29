@@ -1,24 +1,33 @@
 package faang.school.postservice.dto.post;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.LinkedList;
 import java.util.List;
 
-public record PostCacheDto(
-        Long id,
-        String content,
-        Long authorId,
-        Long projectId,
-        List<Long> likeIds,
-        List<Long> commentIds,
-        List<Long> albumIds,
-        Long adId,
-        List<Long> resourceIds,
-        Boolean published,
-        LocalDateTime publishedAt,
-        LocalDateTime scheduledAt,
-        Boolean deleted,
-        LocalDateTime createdAt,
-        LocalDateTime updatedAt
-) implements Serializable {
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+public class PostCacheDto implements Serializable {
+    private Long id;
+    private String content;
+    private Long authorId;
+    private Long projectId;
+    private List<Long> likeIds;
+    private LinkedList<Long> commentIds;
+    private List<Long> albumIds;
+    private Long adId;
+    private List<Long> resourceIds;
+    private Boolean published;
+    private LocalDateTime publishedAt;
+    private LocalDateTime scheduledAt;
+    private Boolean deleted;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

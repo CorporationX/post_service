@@ -4,7 +4,7 @@ import faang.school.postservice.dto.post.PostCacheDto;
 import faang.school.postservice.dto.post.PostOutputDto;
 
 public interface PostCacheRepository {
-    void set(PostOutputDto post);
+    void set(PostCacheDto post);
 
     PostCacheDto get(long postId);
 }

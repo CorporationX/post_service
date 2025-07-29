@@ -7,6 +7,7 @@ import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.repository.PostCacheRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
@@ -20,9 +21,8 @@ public class PostCacheRepositoryImpl implements PostCacheRepository {
     private final PostMapper postMapper;
 
     @Override
-    public void set(PostOutputDto post) {
-        redisTemplate.opsForHash().put(redisProperties.getCacheNames().posts(),
-                String.valueOf(post.getId()), postMapper.toCacheDto(post));
+    public void set(PostCacheDto post) {
+        redisTemplate.opsForHash().put(redisProperties.getCacheNames().posts(), String.valueOf(post.getId()), post);
         redisTemplate.expire(redisProperties.getCacheNames().posts(), redisProperties.getCacheDuration().posts());
     }
 

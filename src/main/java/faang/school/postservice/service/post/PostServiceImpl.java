@@ -142,7 +142,7 @@ public class PostServiceImpl implements PostService {
         Post publishedPost = postRepository.save(foundPost);
 
         PostOutputDto postDto = postMapper.toPostDto(publishedPost);
-        postCacheRepository.set(postDto);
+        postCacheRepository.set(postMapper.toCacheDto(postDto));
         authorCacheRepository.set(postDto.getAuthorId());
         kafkaPostProducer.publish(publishedPost);
 
