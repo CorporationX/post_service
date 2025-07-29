@@ -17,7 +17,6 @@ spring:
       post-event: post_event
       post-viewed-event: post_viewed_event
 
-
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://localhost:5432/postgres
