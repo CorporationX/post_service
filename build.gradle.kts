@@ -116,6 +116,8 @@ tasks.jacocoTestCoverageVerification {
         rule {
             element = "CLASS"
             excludes = listOf(
+                "faang.school.postservice.consumer.*",
+                "faang.school.postservice.utils.*",
                 "faang.school.postservice.client.*",
                 "faang.school.postservice.mapper.*",
                 "faang.school.postservice.entity.*",

@@ -58,13 +58,22 @@ payment-service:
 
 kafka:
    host: "localhost:9092"
+   group: post-service
    topics:
+     like-post: "like-post"
      posts:
       create-post: "create-post"
-     like-post: "like-post"
+
    num-partitions: 2
    replication-factor: 1
    properties:
      security.protocol: SSL
      ssl.truststore.location: /path/to/truststore.jks
      ssl.truststore.password: password
+
+cache:
+  max-posts: 500
+  expiration-hours: 24
+
+feed:
+  feed-key: "Feed: "
