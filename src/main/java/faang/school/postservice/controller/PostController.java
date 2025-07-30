@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -26,9 +27,9 @@ public class PostController {
         return ResponseEntity.ok().build();
     }
 
-    @PutMapping("/publishPost/{postId}")
+    @PutMapping("/publishPost")
     public ResponseEntity<Void> publishPost(@RequestBody(required = false) @Validated PostDraftDto postDraftDto,
-                                            @PathVariable(required = false) Long postId) {
+                                            @RequestParam(required = false) Long postId) {
         postService.publishPost(postId, postDraftDto);
         return ResponseEntity.ok().build();
     }

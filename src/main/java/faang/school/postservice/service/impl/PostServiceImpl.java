@@ -60,6 +60,9 @@ public class PostServiceImpl implements PostService {
     public void publishPost(Long postId, PostDraftDto postDraftDto) {
         Post post;
         if (postId == null) {
+            if (postDraftDto == null) {
+                throw new NotSupportedDataException("Если postId = null, то postDraftDto != null");
+            }
             checkAuthorExists(postDraftDto);
             post = postMapper.postDraftDtoToPost(postDraftDto);
             post.setPublished(true);
