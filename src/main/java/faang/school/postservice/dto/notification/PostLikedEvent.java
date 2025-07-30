@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PostLikedEvent implements NotificationEvent {
-    private Long likeId;
+    private String likerUsername;
     private UserDto owner;
-    private Long postId;
+    private String content;
 }

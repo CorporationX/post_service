@@ -7,7 +7,6 @@ import faang.school.postservice.model.Like;
 import faang.school.postservice.publisher.CommentLikedEventPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
@@ -25,16 +24,17 @@ public class CommentLikedEventAspect {
             value = "@annotation(faang.school.postservice.annotation.PublishCommentLikedEventKafka)",
             returning = "result"
     )
-    public void publishCommentLikedEvent(JoinPoint joinPoint, Like result) {
-        Object[] args = joinPoint.getArgs();
-        long commentId = (long) args[0];
+    public void publishCommentLikedEvent(Like result) {
         Like like = result;
+        String content = like.getComment().getContent();
+
         UserDto authorDto = userServiceClient.getUser(like.getComment().getAuthorId());
+        UserDto likerDto = userServiceClient.getUser(like.getUserId());
 
         publisher.publish(CommentLikedEvent.builder()
-                .likeId(like.getId())
+                .likerUsername(likerDto.getUsername())
                 .owner(authorDto)
-                .commentId(commentId)
+                .content(content)
                 .build()
         );
     }

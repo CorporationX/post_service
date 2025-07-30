@@ -7,7 +7,6 @@ import faang.school.postservice.model.Like;
 import faang.school.postservice.publisher.PostLikedEventPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
@@ -25,16 +24,17 @@ public class PostLikedEventAspect {
             value = "@annotation(faang.school.postservice.annotation.PublishPostLikedEventKafka)",
             returning = "result"
     )
-    public void publishPostLikedEvent(JoinPoint joinPoint, Like result) {
-        Object[] args = joinPoint.getArgs();
-        long postId = (long) args[0];
+    public void publishPostLikedEvent(Like result) {
         Like like = result;
+        String content = like.getPost().getContent();
+
         UserDto authorDto = userServiceClient.getUser(like.getPost().getAuthorId());
+        UserDto likerDto = userServiceClient.getUser(like.getUserId());
 
         publisher.publish(PostLikedEvent.builder()
-                .likeId(like.getId())
+                .likerUsername(likerDto.getUsername())
                 .owner(authorDto)
-                .postId(postId)
+                .content(content)
                 .build()
         );
     }
