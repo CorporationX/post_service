@@ -11,6 +11,7 @@ import faang.school.postservice.dto.post.UserPostsDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.PostAlreadyPublishedException;
+import faang.school.postservice.kafka.producer.KafkaPostEventProducer;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.MessagePublisher;
@@ -40,6 +41,7 @@ public class PostServiceImpl implements PostService {
     @Qualifier(value = "postViewEventPublisher")
     private final MessagePublisher<PostViewEvent> postViewPublisher;
     private final UserContext userContext;
+    private final KafkaPostEventProducer kafkaPostEventProducer;
 
     @Value("${entity.post.max-unverified-count-for-ban}")
     private long maxUnverifiedPostsForBan;
@@ -119,6 +121,12 @@ public class PostServiceImpl implements PostService {
         postToCreate.setDeleted(false);
         postToCreate.setPublished(false);
         Post createdPost = postRepository.save(postToCreate);
+
+        List<Long> subscriberIds = userServiceClient.getFollowers(userId)
+                .stream()
+                .map(UserDto::id)
+                .toList();
+        if (!subscriberIds.isEmpty()) kafkaPostEventProducer.sendMessage(createdPost.getId(), subscriberIds);
         return postMapper.toPostDto(createdPost);
     }
 
