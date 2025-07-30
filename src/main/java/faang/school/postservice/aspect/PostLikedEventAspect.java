@@ -32,6 +32,7 @@ public class PostLikedEventAspect {
         UserDto likerDto = userServiceClient.getUser(like.getUserId());
 
         publisher.publish(PostLikedEvent.builder()
+                .postId(like.getPost().getId())
                 .likerUsername(likerDto.getUsername())
                 .owner(authorDto)
                 .content(content)

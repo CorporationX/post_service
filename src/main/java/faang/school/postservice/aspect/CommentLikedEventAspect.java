@@ -32,6 +32,7 @@ public class CommentLikedEventAspect {
         UserDto likerDto = userServiceClient.getUser(like.getUserId());
 
         publisher.publish(CommentLikedEvent.builder()
+                .commentId(like.getComment().getId())
                 .likerUsername(likerDto.getUsername())
                 .owner(authorDto)
                 .content(content)
