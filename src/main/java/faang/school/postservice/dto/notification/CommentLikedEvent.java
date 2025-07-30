@@ -14,5 +14,5 @@ public class CommentLikedEvent implements NotificationEvent {
     private Long commentId;
     private String likerUsername;
     private UserDto owner;
-    private String content;
+    private String shortContent;
 }

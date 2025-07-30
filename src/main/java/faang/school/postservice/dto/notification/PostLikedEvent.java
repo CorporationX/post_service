@@ -14,5 +14,5 @@ public class PostLikedEvent implements NotificationEvent {
     private Long postId;
     private String likerUsername;
     private UserDto owner;
-    private String content;
+    private String shortContent;
 }

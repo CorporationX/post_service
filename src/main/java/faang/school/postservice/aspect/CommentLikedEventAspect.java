@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Aspect
@@ -20,6 +21,9 @@ public class CommentLikedEventAspect {
     private final UserServiceClient userServiceClient;
     private final CommentLikedEventPublisher publisher;
 
+    @Value("${notifications.symbol-amount-for-short-content}")
+    private int symbolAmountForShortContent;
+
     @AfterReturning(
             value = "@annotation(faang.school.postservice.annotation.PublishCommentLikedEventKafka)",
             returning = "result"
@@ -27,6 +31,9 @@ public class CommentLikedEventAspect {
     public void publishCommentLikedEvent(Like result) {
         Like like = result;
         String content = like.getComment().getContent();
+        String shortContent = content.length() > symbolAmountForShortContent
+                ? content.substring(0, symbolAmountForShortContent) + "..."
+                : content;
 
         UserDto authorDto = userServiceClient.getUser(like.getComment().getAuthorId());
         UserDto likerDto = userServiceClient.getUser(like.getUserId());
@@ -35,7 +42,7 @@ public class CommentLikedEventAspect {
                 .commentId(like.getComment().getId())
                 .likerUsername(likerDto.getUsername())
                 .owner(authorDto)
-                .content(content)
+                .shortContent(shortContent)
                 .build()
         );
     }
