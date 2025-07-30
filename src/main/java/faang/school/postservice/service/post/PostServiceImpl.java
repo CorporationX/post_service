@@ -12,6 +12,7 @@ import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.PostAlreadyPublishedException;
 import faang.school.postservice.kafka.producer.KafkaPostEventProducer;
+import faang.school.postservice.kafka.producer.KafkaPostViewedEventProducer;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.MessagePublisher;
@@ -42,6 +43,7 @@ public class PostServiceImpl implements PostService {
     private final MessagePublisher<PostViewEvent> postViewPublisher;
     private final UserContext userContext;
     private final KafkaPostEventProducer kafkaPostEventProducer;
+    private final KafkaPostViewedEventProducer kafkaPostViewedEventProducer;
 
     @Value("${entity.post.max-unverified-count-for-ban}")
     private long maxUnverifiedPostsForBan;
@@ -50,6 +52,9 @@ public class PostServiceImpl implements PostService {
     public PostOutputDto getPostById(long postId) {
         Post foundPost = findPostById(postId);
         postViewPublisher.publish(createViewEvent(foundPost));
+        // Пост считается просмотренным только если пользователь нажал на него?
+        // Это не будет использоваться в фиде, там сущность поста получается из кэша
+        kafkaPostViewedEventProducer.sendMessage(postId);
         return postMapper.toPostDto(foundPost);
     }
 
