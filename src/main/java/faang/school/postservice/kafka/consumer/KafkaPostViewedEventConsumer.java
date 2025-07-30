@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class KafkaPostViewedEventConsumer {
-    @Value("${spring.kafka.topics.post-event}")
+    @Value("${spring.kafka.topics.post-viewed-event}")
     public final String topic;
 
     @KafkaListener(topics = "#{__listener.topic}", groupId = "my-group")
