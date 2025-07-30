@@ -4,7 +4,7 @@ import faang.school.postservice.dto.comment.CommentCreateDto;
 import faang.school.postservice.dto.comment.CommentDtoResponse;
 import faang.school.postservice.dto.comment.CommentResponseImageDto;
 import faang.school.postservice.dto.comment.CommentUpdateDto;
-import faang.school.postservice.service.comment.CommentServiceFacade;
+import faang.school.postservice.service.comment.CommentMappingFacade;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +30,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/comments")
 public class CommentControllerImpl implements CommentController {
-    private final CommentServiceFacade commentServiceF;
+    private final CommentMappingFacade commentServiceF;
 
     @PostMapping("/post/{postId}")
     @Override
