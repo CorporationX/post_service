@@ -10,10 +10,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.support.Acknowledgment;
+import org.springframework.kafka.support.KafkaHeaders;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Component;
 
-import java.util.Deque;
-import java.util.LinkedList;
+import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.locks.ReentrantLock;
 
 @Slf4j
 @Component
@@ -21,17 +24,19 @@ import java.util.LinkedList;
 public class KafkaCommentConsumer implements MessageConsumer<String> {
     private final PostCacheRepository postCacheRepository;
     private final ObjectMapper objectMapper;
+    private final ReentrantLock lock = new ReentrantLock();
 
     @Value("${entity.post.max_cached_comments}")
     private int maxCachedComments;
 
     @KafkaListener(topics = "${spring.data.kafka.topic_names.comments}")
-    public void consume(String json) {
+    public void consume(String json, @Header(KafkaHeaders.ACKNOWLEDGMENT) Acknowledgment ack) {
         log.info("Message received. Comment [{}]", json);
 
         try {
             CommentEvent comment = objectMapper.readValue(json, CommentEvent.class);
             updatePostCommentCache(comment);
+            ack.acknowledge();
         } catch (JsonProcessingException e) {
             log.info("Error on parsing json. Comment [{}]", json);
             throw new RuntimeException();
@@ -50,21 +55,31 @@ public class KafkaCommentConsumer implements MessageConsumer<String> {
             return;
         }
 
-        processComments(comment.commentId(), postCacheDto.getCommentIds());
+        ConcurrentLinkedDeque<Long> commentIds = processComments(comment.commentId(), postCacheDto.getCommentIds());
+        postCacheDto.setCommentIds(commentIds);
         postCacheRepository.set(postCacheDto);
 
         log.info("Message processed successfully. Comment [{}]", comment.commentId());
     }
 
-    private void processComments(long commentId, Deque<Long> currentCommentIds) {
-        if (currentCommentIds == null) {
-            currentCommentIds = new LinkedList<>();
+    private ConcurrentLinkedDeque<Long> processComments(long commentId, ConcurrentLinkedDeque<Long> currentCommentIds) {
+        ConcurrentLinkedDeque<Long> processedCommentIds = currentCommentIds == null
+                        ? new ConcurrentLinkedDeque<>()
+                        : currentCommentIds;
+
+        lock.lock();
+        try {
+            if (processedCommentIds.isEmpty() || commentId > processedCommentIds.getFirst()) {
+                processedCommentIds.addFirst(commentId);
+            }
+
+            while (processedCommentIds.size() > maxCachedComments) {
+                processedCommentIds.removeLast();
+            }
+        } finally {
+            lock.unlock();
         }
 
-        if (currentCommentIds.size() > maxCachedComments) {
-            currentCommentIds.removeLast();
-        }
-
-        currentCommentIds.addFirst(commentId);
+        return processedCommentIds;
     }
 }

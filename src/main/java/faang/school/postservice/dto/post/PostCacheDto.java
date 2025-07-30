@@ -7,8 +7,8 @@ import lombok.Setter;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 @Getter
 @Setter
@@ -20,7 +20,7 @@ public class PostCacheDto implements Serializable {
     private Long authorId;
     private Long projectId;
     private List<Long> likeIds;
-    private LinkedList<Long> commentIds;
+    private ConcurrentLinkedDeque<Long> commentIds = new ConcurrentLinkedDeque<>();
     private List<Long> albumIds;
     private Long adId;
     private List<Long> resourceIds;
