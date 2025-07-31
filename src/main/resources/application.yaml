@@ -142,3 +142,4 @@ app:
     post:
       max-comments: 3
       retry: 5
+      backoff-delay: 1000

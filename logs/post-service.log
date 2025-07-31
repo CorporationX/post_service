@@ -1039,3 +1039,183 @@ Caused by: java.lang.ClassNotFoundException: org.jspecify.annotations.NonNull
 2025-07-27 21:59:36.209 [Test worker] INFO  f.s.p.k.c.KafkaCommentConsumer - Successfully processed comment for post 42 [trace=, span=]
 2025-07-27 22:00:35.077 [Test worker] WARN  f.s.p.k.c.KafkaCommentConsumer - Optimistic lock conflict for post 42. Attempt 1/2 [trace=, span=]
 2025-07-27 22:00:35.085 [Test worker] WARN  f.s.p.k.c.KafkaCommentConsumer - Optimistic lock conflict for post 42. Attempt 2/2 [trace=, span=]
+2025-07-27 22:11:06.732 [background-preinit] INFO  o.h.validator.internal.util.Version - HV000001: Hibernate Validator 8.0.0.Final [trace=, span=]
+2025-07-27 22:11:06.803 [main] INFO  f.school.postservice.PostServiceApp - Starting PostServiceApp using Java 17.0.14 with PID 17152 (D:\CorporationX\post_service\build\classes\java\main started by Home in D:\CorporationX\post_service) [trace=, span=]
+2025-07-27 22:11:06.803 [main] INFO  f.school.postservice.PostServiceApp - No active profile set, falling back to 1 default profile: "default" [trace=, span=]
+2025-07-27 22:11:12.741 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode [trace=, span=]
+2025-07-27 22:11:12.741 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JDBC repositories in DEFAULT mode. [trace=, span=]
+2025-07-27 22:11:12.789 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.ad.AdRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table. [trace=, span=]
+2025-07-27 22:11:13.706 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.AlbumRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table. [trace=, span=]
+2025-07-27 22:11:13.708 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.CommentRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table. [trace=, span=]
+2025-07-27 22:11:13.709 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.LikeRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table. [trace=, span=]
+2025-07-27 22:11:13.710 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.PostRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table. [trace=, span=]
+2025-07-27 22:11:13.710 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.ResourceRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table. [trace=, span=]
+2025-07-27 22:11:13.712 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.service.redis.repository.PostRedisRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table. [trace=, span=]
+2025-07-27 22:11:13.713 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 958 ms. Found 0 JDBC repository interfaces. [trace=, span=]
+2025-07-27 22:11:13.727 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode [trace=, span=]
+2025-07-27 22:11:13.729 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode. [trace=, span=]
+2025-07-27 22:11:13.889 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JPA - Could not safely identify store assignment for repository candidate interface faang.school.postservice.service.redis.repository.PostRedisRepository; If you want this repository to be a JPA repository, consider annotating your entities with one of these annotations: jakarta.persistence.Entity, jakarta.persistence.MappedSuperclass (preferred), or consider extending one of the following types with your repository: org.springframework.data.jpa.repository.JpaRepository [trace=, span=]
+2025-07-27 22:11:13.917 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 183 ms. Found 6 JPA repository interfaces. [trace=, span=]
+2025-07-27 22:11:14.043 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode [trace=, span=]
+2025-07-27 22:11:14.045 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode. [trace=, span=]
+2025-07-27 22:11:14.070 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.ad.AdRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository [trace=, span=]
+2025-07-27 22:11:14.070 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.AlbumRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository [trace=, span=]
+2025-07-27 22:11:14.071 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.CommentRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository [trace=, span=]
+2025-07-27 22:11:14.072 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.LikeRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository [trace=, span=]
+2025-07-27 22:11:14.072 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.PostRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository [trace=, span=]
+2025-07-27 22:11:14.072 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.ResourceRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository [trace=, span=]
+2025-07-27 22:11:14.083 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 21 ms. Found 1 Redis repository interfaces. [trace=, span=]
+2025-07-27 22:11:14.663 [main] INFO  o.s.cloud.context.scope.GenericScope - BeanFactory id=ed8e8c92-67bb-3262-a394-715365c89ea7 [trace=, span=]
+2025-07-27 22:11:14.839 [main] INFO  o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker - Bean 'faang.school.postservice.client.PaymentServiceClient' of type [org.springframework.cloud.openfeign.FeignClientFactoryBean] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying) [trace=, span=]
+2025-07-27 22:11:14.841 [main] INFO  o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker - Bean 'faang.school.postservice.client.ProjectServiceClient' of type [org.springframework.cloud.openfeign.FeignClientFactoryBean] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying) [trace=, span=]
+2025-07-27 22:11:14.843 [main] INFO  o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker - Bean 'faang.school.postservice.client.UserServiceClient' of type [org.springframework.cloud.openfeign.FeignClientFactoryBean] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying) [trace=, span=]
+2025-07-27 22:11:17.874 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port(s): 8081 (http) [trace=, span=]
+2025-07-27 22:11:17.900 [main] INFO  o.a.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8081"] [trace=, span=]
+2025-07-27 22:11:17.901 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat] [trace=, span=]
+2025-07-27 22:11:17.901 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.8] [trace=, span=]
+2025-07-27 22:11:18.068 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext [trace=, span=]
+2025-07-27 22:11:18.068 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 11196 ms [trace=, span=]
+2025-07-27 22:11:18.430 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting... [trace=, span=]
+2025-07-27 22:11:21.435 [main] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@1df32c09 [trace=, span=]
+2025-07-27 22:11:21.435 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed. [trace=, span=]
+2025-07-27 22:11:24.565 [main] INFO  liquibase.database - Set default schema name to public [trace=, span=]
+2025-07-27 22:11:25.202 [main] INFO  liquibase.lockservice - Changelog-Protokoll erfolgreich gesperrt. [trace=, span=]
+2025-07-27 22:11:26.009 [main] INFO  liquibase.changelog - Reading from public.databasechangelog [trace=, span=]
+2025-07-27 22:11:26.080 [main] INFO  liquibase.lockservice - Successfully released change log lock [trace=, span=]
+2025-07-27 22:11:26.800 [main] INFO  o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default] [trace=, span=]
+2025-07-27 22:11:26.866 [main] INFO  org.hibernate.Version - HHH000412: Hibernate ORM core version 6.1.7.Final [trace=, span=]
+2025-07-27 22:11:27.249 [main] INFO  SQL dialect - HHH000400: Using dialect: org.hibernate.dialect.PostgreSQLDialect [trace=, span=]
+2025-07-27 22:11:28.237 [main] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000490: Using JtaPlatform implementation: [org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform] [trace=, span=]
+2025-07-27 22:11:28.264 [main] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default' [trace=, span=]
+2025-07-27 22:11:28.482 [main] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning [trace=, span=]
+2025-07-27 22:11:29.841 [main] INFO  o.s.cloud.commons.util.InetUtils - Cannot determine local hostname [trace=, span=]
+2025-07-27 22:11:29.960 [main] INFO  o.s.c.o.FeignClientFactoryBean - For 'user-service' URL not provided. Will try picking an instance via load-balancing. [trace=, span=]
+2025-07-27 22:11:30.737 [main] INFO  o.s.c.o.FeignClientFactoryBean - For 'project-service' URL not provided. Will try picking an instance via load-balancing. [trace=, span=]
+2025-07-27 22:11:34.699 [main] INFO  o.s.cloud.commons.util.InetUtils - Cannot determine local hostname [trace=, span=]
+2025-07-27 22:11:34.719 [main] WARN  o.s.c.l.c.LoadBalancerCacheAutoConfiguration$LoadBalancerCaffeineWarnLogger - Spring Cloud LoadBalancer is currently working with the default cache. While this cache implementation is useful for development and tests, it's recommended to use Caffeine cache in production.You can switch to using Caffeine cache, by adding it and org.springframework.cache.caffeine.CaffeineCacheManager to the classpath. [trace=, span=]
+2025-07-27 22:11:34.735 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 18 endpoint(s) beneath base path '/actuator' [trace=, span=]
+2025-07-27 22:11:34.868 [main] INFO  o.a.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8081"] [trace=, span=]
+2025-07-27 22:11:34.903 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port(s): 8081 (http) with context path '' [trace=, span=]
+2025-07-27 22:11:35.806 [main] INFO  o.s.c.c.s.ConsulServiceRegistry - Registering service with consul: NewService{id='post-service-8081', name='post-service', tags=[], address='localhost', meta={secure=false}, port=8081, enableTagOverride=null, check=Check{script='null', dockerContainerID='null', shell='null', interval='10s', ttl='null', http='http://localhost:8081/actuator/health', method='null', header={}, tcp='null', timeout='null', deregisterCriticalServiceAfter='null', tlsSkipVerify=null, status='null', grpc='null', grpcUseTLS=null}, checks=null} [trace=, span=]
+2025-07-27 22:11:39.106 [main] INFO  o.s.cloud.commons.util.InetUtils - Cannot determine local hostname [trace=, span=]
+2025-07-27 22:11:39.149 [main] INFO  o.a.k.c.consumer.ConsumerConfig - ConsumerConfig values: 
+	allow.auto.create.topics = true
+	auto.commit.interval.ms = 5000
+	auto.offset.reset = latest
+	bootstrap.servers = [localhost:9092, localhost:9094]
+	check.crcs = true
+	client.dns.lookup = use_all_dns_ips
+	client.id = consumer-post-service-1
+	client.rack = 
+	connections.max.idle.ms = 540000
+	default.api.timeout.ms = 60000
+	enable.auto.commit = false
+	exclude.internal.topics = true
+	fetch.max.bytes = 52428800
+	fetch.max.wait.ms = 500
+	fetch.min.bytes = 1
+	group.id = post-service
+	group.instance.id = null
+	heartbeat.interval.ms = 3000
+	interceptor.classes = []
+	internal.leave.group.on.close = true
+	internal.throw.on.fetch.stable.offset.unsupported = false
+	isolation.level = read_uncommitted
+	key.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+	max.partition.fetch.bytes = 1048576
+	max.poll.interval.ms = 300000
+	max.poll.records = 50
+	metadata.max.age.ms = 300000
+	metric.reporters = []
+	metrics.num.samples = 2
+	metrics.recording.level = INFO
+	metrics.sample.window.ms = 30000
+	partition.assignment.strategy = [class org.apache.kafka.clients.consumer.RangeAssignor, class org.apache.kafka.clients.consumer.CooperativeStickyAssignor]
+	receive.buffer.bytes = 65536
+	reconnect.backoff.max.ms = 1000
+	reconnect.backoff.ms = 50
+	request.timeout.ms = 30000
+	retry.backoff.ms = 100
+	sasl.client.callback.handler.class = null
+	sasl.jaas.config = null
+	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+	sasl.kerberos.min.time.before.relogin = 60000
+	sasl.kerberos.service.name = null
+	sasl.kerberos.ticket.renew.jitter = 0.05
+	sasl.kerberos.ticket.renew.window.factor = 0.8
+	sasl.login.callback.handler.class = null
+	sasl.login.class = null
+	sasl.login.connect.timeout.ms = null
+	sasl.login.read.timeout.ms = null
+	sasl.login.refresh.buffer.seconds = 300
+	sasl.login.refresh.min.period.seconds = 60
+	sasl.login.refresh.window.factor = 0.8
+	sasl.login.refresh.window.jitter = 0.05
+	sasl.login.retry.backoff.max.ms = 10000
+	sasl.login.retry.backoff.ms = 100
+	sasl.mechanism = GSSAPI
+	sasl.oauthbearer.clock.skew.seconds = 30
+	sasl.oauthbearer.expected.audience = null
+	sasl.oauthbearer.expected.issuer = null
+	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+	sasl.oauthbearer.jwks.endpoint.url = null
+	sasl.oauthbearer.scope.claim.name = scope
+	sasl.oauthbearer.sub.claim.name = sub
+	sasl.oauthbearer.token.endpoint.url = null
+	security.protocol = PLAINTEXT
+	security.providers = null
+	send.buffer.bytes = 131072
+	session.timeout.ms = 45000
+	socket.connection.setup.timeout.max.ms = 30000
+	socket.connection.setup.timeout.ms = 10000
+	ssl.cipher.suites = null
+	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+	ssl.endpoint.identification.algorithm = https
+	ssl.engine.factory.class = null
+	ssl.key.password = null
+	ssl.keymanager.algorithm = SunX509
+	ssl.keystore.certificate.chain = null
+	ssl.keystore.key = null
+	ssl.keystore.location = null
+	ssl.keystore.password = null
+	ssl.keystore.type = JKS
+	ssl.protocol = TLSv1.3
+	ssl.provider = null
+	ssl.secure.random.implementation = null
+	ssl.trustmanager.algorithm = PKIX
+	ssl.truststore.certificates = null
+	ssl.truststore.location = null
+	ssl.truststore.password = null
+	ssl.truststore.type = JKS
+	value.deserializer = class org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+ [trace=, span=]
+2025-07-27 22:11:39.302 [main] INFO  o.a.kafka.common.utils.AppInfoParser - Kafka version: 3.3.2 [trace=, span=]
+2025-07-27 22:11:39.302 [main] INFO  o.a.kafka.common.utils.AppInfoParser - Kafka commitId: b66af662e61082cb [trace=, span=]
+2025-07-27 22:11:39.302 [main] INFO  o.a.kafka.common.utils.AppInfoParser - Kafka startTimeMs: 1753647099302 [trace=, span=]
+2025-07-27 22:11:39.302 [main] INFO  o.s.k.c.DefaultKafkaConsumerFactory$ExtendedKafkaConsumer - [Consumer clientId=consumer-post-service-1, groupId=post-service] Subscribed to topic(s): comment-event-topic [trace=, span=]
+2025-07-27 22:11:39.343 [main] INFO  f.school.postservice.PostServiceApp - Started PostServiceApp in 39.461 seconds (process running for 40.638) [trace=, span=]
+2025-07-27 22:11:41.079 [org.springframework.kafka.KafkaListenerEndpointContainer#0-0-C-1] WARN  o.apache.kafka.clients.NetworkClient - [Consumer clientId=consumer-post-service-1, groupId=post-service] Error while fetching metadata with correlation id 2 : {comment-event-topic=UNKNOWN_TOPIC_OR_PARTITION} [trace=, span=]
+2025-07-27 22:11:41.079 [org.springframework.kafka.KafkaListenerEndpointContainer#0-0-C-1] INFO  org.apache.kafka.clients.Metadata - [Consumer clientId=consumer-post-service-1, groupId=post-service] Cluster ID: PVjHlx7ESeesq55jeB6Efg [trace=, span=]
+2025-07-27 22:11:41.201 [org.springframework.kafka.KafkaListenerEndpointContainer#0-0-C-1] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer clientId=consumer-post-service-1, groupId=post-service] Discovered group coordinator LAPTOP-TIT61AR0:9096 (id: 2147483644 rack: null) [trace=, span=]
+2025-07-27 22:11:41.203 [org.springframework.kafka.KafkaListenerEndpointContainer#0-0-C-1] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer clientId=consumer-post-service-1, groupId=post-service] (Re-)joining group [trace=, span=]
+2025-07-27 22:11:41.217 [org.springframework.kafka.KafkaListenerEndpointContainer#0-0-C-1] WARN  o.apache.kafka.clients.NetworkClient - [Consumer clientId=consumer-post-service-1, groupId=post-service] Error while fetching metadata with correlation id 6 : {comment-event-topic=UNKNOWN_TOPIC_OR_PARTITION} [trace=, span=]
+2025-07-27 22:11:41.340 [org.springframework.kafka.KafkaListenerEndpointContainer#0-0-C-1] WARN  o.apache.kafka.clients.NetworkClient - [Consumer clientId=consumer-post-service-1, groupId=post-service] Error while fetching metadata with correlation id 7 : {comment-event-topic=UNKNOWN_TOPIC_OR_PARTITION} [trace=, span=]
+2025-07-27 22:11:41.467 [org.springframework.kafka.KafkaListenerEndpointContainer#0-0-C-1] WARN  o.apache.kafka.clients.NetworkClient - [Consumer clientId=consumer-post-service-1, groupId=post-service] Error while fetching metadata with correlation id 8 : {comment-event-topic=UNKNOWN_TOPIC_OR_PARTITION} [trace=, span=]
+2025-07-27 22:11:41.529 [org.springframework.kafka.KafkaListenerEndpointContainer#0-0-C-1] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer clientId=consumer-post-service-1, groupId=post-service] Request joining group due to: need to re-join with the given member-id: consumer-post-service-1-79053335-a28f-4e26-b2b2-c3ce411ba092 [trace=, span=]
+2025-07-27 22:11:41.529 [org.springframework.kafka.KafkaListenerEndpointContainer#0-0-C-1] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer clientId=consumer-post-service-1, groupId=post-service] Request joining group due to: rebalance failed due to 'The group member needs to have a valid member id before actually entering a consumer group.' (MemberIdRequiredException) [trace=, span=]
+2025-07-27 22:11:41.529 [org.springframework.kafka.KafkaListenerEndpointContainer#0-0-C-1] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer clientId=consumer-post-service-1, groupId=post-service] (Re-)joining group [trace=, span=]
+2025-07-27 22:11:41.574 [org.springframework.kafka.KafkaListenerEndpointContainer#0-0-C-1] WARN  o.apache.kafka.clients.NetworkClient - [Consumer clientId=consumer-post-service-1, groupId=post-service] Error while fetching metadata with correlation id 10 : {comment-event-topic=UNKNOWN_TOPIC_OR_PARTITION} [trace=, span=]
+2025-07-27 22:11:41.682 [org.springframework.kafka.KafkaListenerEndpointContainer#0-0-C-1] WARN  o.apache.kafka.clients.NetworkClient - [Consumer clientId=consumer-post-service-1, groupId=post-service] Error while fetching metadata with correlation id 11 : {comment-event-topic=UNKNOWN_TOPIC_OR_PARTITION} [trace=, span=]
+2025-07-27 22:11:41.791 [org.springframework.kafka.KafkaListenerEndpointContainer#0-0-C-1] WARN  o.apache.kafka.clients.NetworkClient - [Consumer clientId=consumer-post-service-1, groupId=post-service] Error while fetching metadata with correlation id 12 : {comment-event-topic=UNKNOWN_TOPIC_OR_PARTITION} [trace=, span=]
+2025-07-27 22:11:41.902 [org.springframework.kafka.KafkaListenerEndpointContainer#0-0-C-1] INFO  org.apache.kafka.clients.Metadata - [Consumer clientId=consumer-post-service-1, groupId=post-service] Resetting the last seen epoch of partition comment-event-topic-0 to 0 since the associated topicId changed from null to kSFVcdlGRAyS27Li-S9c5w [trace=, span=]
+2025-07-27 22:11:44.563 [org.springframework.kafka.KafkaListenerEndpointContainer#0-0-C-1] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer clientId=consumer-post-service-1, groupId=post-service] Successfully joined group with generation Generation{generationId=1, memberId='consumer-post-service-1-79053335-a28f-4e26-b2b2-c3ce411ba092', protocol='range'} [trace=, span=]
+2025-07-27 22:11:44.565 [org.springframework.kafka.KafkaListenerEndpointContainer#0-0-C-1] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer clientId=consumer-post-service-1, groupId=post-service] Finished assignment for group at generation 1: {consumer-post-service-1-79053335-a28f-4e26-b2b2-c3ce411ba092=Assignment(partitions=[comment-event-topic-0])} [trace=, span=]
+2025-07-27 22:11:44.901 [org.springframework.kafka.KafkaListenerEndpointContainer#0-0-C-1] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer clientId=consumer-post-service-1, groupId=post-service] Successfully synced group in generation Generation{generationId=1, memberId='consumer-post-service-1-79053335-a28f-4e26-b2b2-c3ce411ba092', protocol='range'} [trace=, span=]
+2025-07-27 22:11:44.902 [org.springframework.kafka.KafkaListenerEndpointContainer#0-0-C-1] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer clientId=consumer-post-service-1, groupId=post-service] Notifying assignor about the new Assignment(partitions=[comment-event-topic-0]) [trace=, span=]
+2025-07-27 22:11:44.902 [org.springframework.kafka.KafkaListenerEndpointContainer#0-0-C-1] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer clientId=consumer-post-service-1, groupId=post-service] Adding newly assigned partitions: comment-event-topic-0 [trace=, span=]
+2025-07-27 22:11:45.032 [org.springframework.kafka.KafkaListenerEndpointContainer#0-0-C-1] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer clientId=consumer-post-service-1, groupId=post-service] Found no committed offset for partition comment-event-topic-0 [trace=, span=]
+2025-07-27 22:11:45.037 [org.springframework.kafka.KafkaListenerEndpointContainer#0-0-C-1] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer clientId=consumer-post-service-1, groupId=post-service] Found no committed offset for partition comment-event-topic-0 [trace=, span=]
+2025-07-27 22:11:45.077 [org.springframework.kafka.KafkaListenerEndpointContainer#0-0-C-1] INFO  o.a.k.c.c.i.SubscriptionState - [Consumer clientId=consumer-post-service-1, groupId=post-service] Resetting offset for partition comment-event-topic-0 to position FetchPosition{offset=0, offsetEpoch=Optional.empty, currentLeader=LeaderAndEpoch{leader=Optional[LAPTOP-TIT61AR0:9092 (id: 1 rack: null)], epoch=0}}. [trace=, span=]
+2025-07-27 22:11:45.176 [org.springframework.kafka.KafkaListenerEndpointContainer#0-0-C-1] INFO  o.s.k.l.KafkaMessageListenerContainer - post-service: partitions assigned: [comment-event-topic-0] [trace=, span=]
