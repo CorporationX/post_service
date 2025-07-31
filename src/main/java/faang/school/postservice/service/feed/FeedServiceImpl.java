@@ -27,6 +27,6 @@ public class FeedServiceImpl implements FeedService{
             startingFromId = userIds.get(userIds.size() - 1);
             lastBatchSize = userIds.size();
             kafkaFeedHeatEventProducer.sendMessage(userIds);
-        } while(lastBatchSize < batchSize);
+        } while(lastBatchSize == batchSize);
     }
 }
