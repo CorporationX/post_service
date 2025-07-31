@@ -21,7 +21,9 @@ public class AuthorCacheService {
     private int expirationHours;
 
     public void cacheAuthor(Long authorId) {
-        if (authorId == null) return;
+        if (authorId == null) {
+            return;
+        }
 
         SetOperations<String, Long> ops = redisTemplate.opsForSet();
         ops.add(authorsKey, authorId);
