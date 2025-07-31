@@ -1,5 +1,6 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.cache.AuthorCacheService;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.kafka.KafkaProducerService;
 import faang.school.postservice.dto.post.PostEventDto;
@@ -29,6 +30,7 @@ public class PostService {
     private final KafkaProducerService kafka;
     private final UserServiceClient feignClient;
     private final KafkaPostViewProducer kafkaPostViewProducer;
+    private final AuthorCacheService authorCacheService;
 
     public Post getPostById(Long id) {
         return postRepository.findById(id)
@@ -71,7 +73,12 @@ public class PostService {
         }
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
-        return postMapper.toDto(postRepository.save(post));
+
+        Post savedPost = postRepository.save(post);
+
+        authorCacheService.cacheAuthor(savedPost.getAuthorId());
+
+        return postMapper.toDto(savedPost);
     }
 
     public PostResponseDto updatePost(Long postId, PostRequestDto request) {
