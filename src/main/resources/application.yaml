@@ -16,6 +16,7 @@ spring:
       comment-event: comment_event
       post-event: post_event
       post-viewed-event: post_viewed_event
+      feed-heat-event: feed_heat_event
 
   datasource:
     driver-class-name: org.postgresql.Driver
