@@ -12,6 +12,7 @@ import java.time.Duration;
 public class RedisAuthorService {
 
     private final RedisTemplate<String, Long> redisTemplate;
+
     @Value("${redis.ttl.author}")
     private Duration authorTtl;
 
