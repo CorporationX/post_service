@@ -10,6 +10,7 @@ import faang.school.postservice.exception.PostAlreadyPublishedException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.MessagePublisher;
+import faang.school.postservice.publisher.post.KafkaPostProducer;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.PostService;
 import jakarta.persistence.EntityNotFoundException;
@@ -17,7 +18,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,10 +38,8 @@ public class PostServiceImpl implements PostService {
     private final MessagePublisher<String> userPublisher;
     @Qualifier(value = "postViewEventPublisher")
     private final MessagePublisher<PostViewEvent> postViewPublisher;
-    private final MessagePublisher<PostPublishedEvent> postPublishedPublisher;
+    private final KafkaPostProducer producer;
     private final UserContext userContext;
-    @Qualifier("postExecutor")
-    private final ThreadPoolTaskExecutor executor;
 
     @Value("${entity.post.max-unverified-count-for-ban}")
     private long maxUnverifiedPostsForBan;
@@ -186,14 +184,10 @@ public class PostServiceImpl implements PostService {
     }
 
     private void getFollowersAndPublishEvent(Post post) {
-        executor.execute(() -> {
-            List<Long> followersIds = findUserById(post.getAuthorId()).followersIds();
-            if (!followersIds.isEmpty()) {
-                log.debug("Find {} followers for author id {}", followersIds.size(), post.getAuthorId());
-                PostPublishedEvent event = new PostPublishedEvent(followersIds);
-                postPublishedPublisher.publish(event);
-                log.debug("Event published: {}", event);
-            }
-        });
+        List<Long> followersIds = findUserById(post.getAuthorId()).followersIds();
+        if (!followersIds.isEmpty()) {
+            PostPublishedEvent event = new PostPublishedEvent(followersIds);
+            producer.publish(event);
+        }
     }
 }
