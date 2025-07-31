@@ -25,6 +25,12 @@ spring:
           calculations_channel_name: cal
           user_ban_name: user_ban
           like_event_name: like_event
+    kafka:
+      bootstrap-servers: localhost:9092, localhost:9192, localhost:9292
+      group_id: event-listeners
+      auto_offset: earliest
+      concurrency: 3
+
 
   task:
     execution:

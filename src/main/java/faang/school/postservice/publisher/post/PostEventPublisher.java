@@ -1,0 +1,41 @@
+package faang.school.postservice.publisher.post;
+
+import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.post.PostEvent;
+import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.CommonPublisher;
+import faang.school.postservice.publisher.MessagePublisher;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+
+import java.time.LocalDateTime;
+
+@Component
+@RequiredArgsConstructor
+public class PostEventPublisher implements MessagePublisher<PostEvent> {
+    public static final String KAFKA_TOPIC = "post_published";
+    private UserServiceClient userServiceClient;
+    private CommonPublisher commonPublisher;
+
+    @Override
+    public void publish(PostEvent postEvent) {
+        commonPublisher.sendKafka(KAFKA_TOPIC, postEvent);
+    }
+
+    public void createAndPublishMessage(Post post) {
+        long userId = post.getAuthorId();
+        userServiceClient.getFollowers(userId)
+                .stream()
+                .map(UserDto::id)
+                .toList();
+        PostEvent event = new PostEvent(
+                post.getId(),
+                post.getContent(),
+                userId,
+                )
+                LocalDateTime.now());
+        publish(event);
+    }
+}
