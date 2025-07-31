@@ -77,3 +77,8 @@ cache:
 
 feed:
   feed-key: "Feed: "
+
+redis:
+  channels:
+    comment_event: comment_event_topic
+

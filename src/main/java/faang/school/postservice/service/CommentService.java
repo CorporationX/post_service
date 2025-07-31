@@ -27,7 +27,7 @@ public class CommentService {
 
     @Transactional(readOnly = true)
     public List<CommentDto> getCommentsByPostId(Long postId) {
-        postService.getPostById(postId); // Проверка, что пост существует
+        postService.getPostById(postId);
         return commentMapper.toDtoList(
                 commentRepository.findAllByPostId(postId).stream()
                         .sorted(Comparator.comparing(Comment::getCreatedAt).reversed())
