@@ -16,6 +16,7 @@ import jakarta.validation.constraints.Positive;
  * @since 24.07.2025
  */
 public record PostFilterDto(
+        @NotNull
         @Positive
         Long authorId,
         @NotNull

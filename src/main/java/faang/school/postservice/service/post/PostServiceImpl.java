@@ -1,15 +1,18 @@
-package faang.school.postservice.dto.post;
+package faang.school.postservice.service.post;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.post.PostCreateDto;
+import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.post.PostFilterDto;
+import faang.school.postservice.dto.post.PostUpdateDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.filter.FilterService;
-import faang.school.postservice.service.post.PostService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -47,13 +50,13 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional
     public PostDto create(PostCreateDto createDto) {
-        var currentUser = userContext.getUserId();
+        var currentUserId = userContext.getUserId();
         createDto.validate();
         var authorIsUser = createDto.authorId() != null;
         if (authorIsUser) {
-            if (currentUser != createDto.authorId()) {
+            if (currentUserId != createDto.authorId()) {
                 log.warn("Пользователь с id {} пытается создать публикацию от имени пользователя с id {}",
-                        currentUser, createDto.authorId());
+                        currentUserId, createDto.authorId());
                 throw new ForbiddenException(USER_HAS_NO_ACCESS_TO_CREATE_POST + createDto.authorId());
             }
             userClient.getUser(createDto.authorId());
@@ -69,9 +72,9 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional
     public void publish(long postId) {
-        var currentUser = userContext.getUserId();
+        var currentUserId = userContext.getUserId();
         var post = getPostById(postId);
-        checkUserAccess(currentUser, post);
+        checkUserAccess(currentUserId, post);
         if (post.isDeleted()) {
             throw new ForbiddenException("Пост удален, нельзя опубликовать");
         }
@@ -85,9 +88,9 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public PostDto update(long postId, PostUpdateDto updateDto) {
-        var currentUser = userContext.getUserId();
+        var currentUserId = userContext.getUserId();
         var post = getPostById(postId);
-        checkUserAccess(currentUser, post);
+        checkUserAccess(currentUserId, post);
         if (post.isDeleted()) {
             throw new ForbiddenException("Пост удален, нельзя редактировать");
         }
@@ -99,9 +102,9 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional
     public void delete(long postId) {
-        var currentUser = userContext.getUserId();
+        var currentUserId = userContext.getUserId();
         var post = getPostById(postId);
-        checkUserAccess(currentUser, post);
+        checkUserAccess(currentUserId, post);
         if (post.isDeleted()) {
             throw new ForbiddenException("Пост уже удален");
         }
