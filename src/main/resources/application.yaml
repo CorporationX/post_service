@@ -85,7 +85,10 @@ thread:
     coreSize: 5
     maxSize: 10
     prefix: "post-publisher-"
-
+  newsfeed:
+    coreSize: 5
+    maxSize: 10
+    prefix: "newsfeed-processor-"
 entity:
     post:
         max-unverified-count-for-ban: 5

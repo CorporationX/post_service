@@ -13,6 +13,7 @@ import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.PostAlreadyPublishedException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.newsfeed.NewsFeedProcessor;
 import faang.school.postservice.publisher.MessagePublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.PostService;
@@ -40,6 +41,7 @@ public class PostServiceImpl implements PostService {
     @Qualifier(value = "postViewEventPublisher")
     private final MessagePublisher<PostViewEvent> postViewPublisher;
     private final UserContext userContext;
+    private final NewsFeedProcessor newsFeedProcessor;
 
     @Value("${entity.post.max-unverified-count-for-ban}")
     private long maxUnverifiedPostsForBan;
@@ -133,7 +135,9 @@ public class PostServiceImpl implements PostService {
         foundPost.setPublishedAt(LocalDateTime.now());
         Post publishedPost = postRepository.save(foundPost);
 
-        return postMapper.toPostDto(publishedPost);
+        PostOutputDto postOutputDto = postMapper.toPostDto(publishedPost);
+        newsFeedProcessor.postPublish(postOutputDto);
+        return postOutputDto;
     }
 
     @Override
