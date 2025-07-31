@@ -18,6 +18,18 @@ spring:
     change-log: classpath:db/changelog/db.changelog-master.yaml
 
   data:
+    async:
+      core_pool_size: 2
+      max_pool_size: 4
+      queue_capacity: 500
+      thread_name_prefix: kafka-
+
+    kafka:
+      bootstrap_servers: localhost:9092, localhost:9192, localhost:9292
+      group_id: event-listeners
+      auto_offset: earliest
+      concurrency: 3
+
     redis:
       port: 6379
       host: localhost
@@ -27,6 +39,7 @@ spring:
           like_event_name: like_event
           comment_topic: comment_topic
           post_view_name: post_view
+
 
   task:
     execution:
