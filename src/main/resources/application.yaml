@@ -84,6 +84,9 @@ project:
       cron: 0 0 1 * * *
     post-publisher:
       cron: "0 * * * * *"
+    news-feed:
+      old_event_ids_clean_up_cron: "0 0 * * * *"
+      old_event_ids_clean_up_days: 1
 
 thread:
   pool:
