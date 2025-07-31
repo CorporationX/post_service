@@ -18,6 +18,8 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final PostMapper postMapper;
+    private final RedisAuthorService redisAuthorService;
+
 
     public Post getPostById(Long id) {
         return postRepository.findById(id)
@@ -42,6 +44,7 @@ public class PostService {
         }
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
+        redisAuthorService.cacheAuthor(post.getAuthorId());
         return postMapper.toDto(postRepository.save(post));
     }
 

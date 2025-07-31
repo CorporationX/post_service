@@ -20,6 +20,8 @@ spring:
   data:
     redis:
       port: 6379
+      ttl:
+        author: PT24H
       host: localhost
       channels:
         calculations_channel:
