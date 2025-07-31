@@ -118,3 +118,7 @@ retry:
     backoff:
       delay: 2000
       multiplier: 1.5
+
+news-feed:
+  heater:
+    batch-size: 1000
