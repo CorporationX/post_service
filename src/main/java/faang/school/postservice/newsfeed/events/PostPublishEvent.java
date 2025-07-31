@@ -1,14 +1,15 @@
 package faang.school.postservice.newsfeed.events;
 
-import lombok.Builder;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.List;
+import java.util.UUID;
 
 @Data
-@Builder
+@AllArgsConstructor
 public class PostPublishEvent {
     Long authorId;
     Long postId;
     List<Long> subscriberIds;
-    }
+}

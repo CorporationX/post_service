@@ -1,0 +1,1 @@
+CREATE TABLE processed_events_uuids (uuid UUID PRIMARY KEY);

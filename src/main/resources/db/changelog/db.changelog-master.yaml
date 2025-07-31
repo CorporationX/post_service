@@ -9,3 +9,5 @@ databaseChangeLog:
       file: db/changelog/changeset/post_V004_alter_comment_add_image_keys.sql
   - include:
       file: db/changelog/changeset/post_V005_alter_post_add_verified.sql
+  - include:
+      file: db/changelog/changeset/post_V006_processed_event_uuids.sql
