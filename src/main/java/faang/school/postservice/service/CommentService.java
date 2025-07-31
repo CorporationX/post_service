@@ -62,7 +62,6 @@ public class CommentService {
         return commentMapper.toDto(savedComment);
     }
 
-
     @Transactional
     public CommentDto updateComment(CommentUpdateDto dto, Long userId) {
         Comment comment = getCommentById(dto.commentId());
