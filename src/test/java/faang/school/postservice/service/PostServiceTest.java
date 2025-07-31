@@ -156,11 +156,13 @@ class PostServiceTest {
         when(postRepository.findById(postId))
                 .thenReturn(Optional.of(post));
 
+        when(postRepository.save(any(Post.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
         postService.publishPost(postId);
 
         verify(postRepository).save(postCaptor.capture());
         Post publishedPost = postCaptor.getValue();
-
         assertTrue(publishedPost.isPublished());
         assertNotNull(publishedPost.getPublishedAt());
 
