@@ -47,7 +47,7 @@ payment-service:
   port: 9080
 
 scheduler:
-  post-correction-cron: "0 * * * * *"
+  post-correction-cron: "0 0 2 * * *"
 
 post:
   correction:
