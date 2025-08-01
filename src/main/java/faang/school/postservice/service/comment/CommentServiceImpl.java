@@ -30,7 +30,7 @@ public class CommentServiceImpl implements CommentService {
     private final CommentRepository commentRepository;
     private final CommentMapper commentMapper;
     private final PostRepository postRepository;
-    private final UserServiceClient userServiceClient;
+`    private final UserServiceClient userServiceClient;`
     private final UserContext userContext;
     private final CommentEventPublisher commentPublisher;
 

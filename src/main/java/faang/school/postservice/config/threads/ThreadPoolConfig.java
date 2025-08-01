@@ -10,6 +10,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 public class ThreadPoolConfig {
 
     private final ThreadPoolProperties threadPoolProperties;
+    private final NewsfeedPoolProperties newsfeedPoolProperties;
 
     @Bean
     public ThreadPoolTaskExecutor taskExecutor() {
@@ -17,6 +18,16 @@ public class ThreadPoolConfig {
         executor.setCorePoolSize(threadPoolProperties.coreSize());
         executor.setMaxPoolSize(threadPoolProperties.maxSize());
         executor.setThreadNamePrefix(threadPoolProperties.prefix());
+        executor.initialize();
+        return executor;
+    }
+
+    @Bean
+    public ThreadPoolTaskExecutor newsFeedExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(newsfeedPoolProperties.coreSize());
+        executor.setMaxPoolSize(newsfeedPoolProperties.maxSize());
+        executor.setThreadNamePrefix(newsfeedPoolProperties.prefix());
         executor.initialize();
         return executor;
     }

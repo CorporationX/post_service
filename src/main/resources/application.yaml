@@ -27,6 +27,11 @@ spring:
           like_event_name: like_event
           comment_topic: comment_topic
           post_view_name: post_view
+    kafka:
+      bootstrap-servers: localhost:9092, localhost:9192, localhost:9292
+      group_id: event-listeners
+      auto_offset: earliest
+      concurrency: 3
 
   task:
     execution:
@@ -85,7 +90,10 @@ thread:
     coreSize: 5
     maxSize: 10
     prefix: "post-publisher-"
-
+  newsfeed:
+    coreSize: 5
+    maxSize: 10
+    prefix: "newsfeed-processor-"
 entity:
     post:
         max-unverified-count-for-ban: 5
@@ -100,3 +108,11 @@ retry:
     backoff:
       delay: 2000
       multiplier: 1.5
+
+news-feed:
+  cron:
+    old_event_ids_clean_up_cron: "0 0 * * * *"
+    old_event_ids_clean_up_days: 1
+  cache:
+    user_ttl: 24
+    post_ttl: 24
