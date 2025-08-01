@@ -42,7 +42,7 @@ public class NewsFeedProcessor {
         KafkaTransportDto dto = new KafkaTransportDto(uuid, json);
         String postPublishEventPayload = mapper.mapToJson(dto);
         kafkaTemplate.send(PREPOST_TOPIC, uuid, postPublishEventPayload);
-        cacheService.findAndPutUserToCache(postOutputDto.getAuthorId());
+        cacheService.findUserByIdAndPutToCache(postOutputDto.getAuthorId());
         cacheService.putPostToCache(postOutputDto);
     }
 
