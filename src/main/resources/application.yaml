@@ -11,12 +11,19 @@ spring:
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
         spring.json.trusted.packages: "*"
+    listener:
+      batch-listener: true
+      ack-mode: MANUAL_IMMEDIATE
+      concurrency: 2
     topics:
       like-event: like_event
       comment-event: comment_event
       post-event: post_event
       post-viewed-event: post_viewed_event
       feed-heat-event: feed_heat_event
+    variables:
+      partitions: 4
+      replicas: 1
 
   datasource:
     driver-class-name: org.postgresql.Driver
@@ -37,7 +44,7 @@ spring:
     change-log: classpath:db/changelog/db.changelog-master.yaml
 
   data:
-    redis:
+    redis-master:
       port: 6379
       host: localhost
       channels:
@@ -46,6 +53,9 @@ spring:
           like_event_name: like_event
           comment_topic: comment_topic
           post_view_name: post_view
+    redis-news-feed:
+      port: 6380
+      host: localhost
 
   task:
     execution:
@@ -122,4 +132,4 @@ retry:
 
 news-feed:
   heater:
-    batch-size: 1000
+    batch-size: 2

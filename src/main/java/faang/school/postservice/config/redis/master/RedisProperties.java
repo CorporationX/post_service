@@ -1,4 +1,4 @@
-package faang.school.postservice.config.redis;
+package faang.school.postservice.config.redis.master;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -9,7 +9,7 @@ import java.util.Map;
 
 @Component
 @Data
-@ConfigurationProperties("spring.data.redis")
+@ConfigurationProperties("spring.data.redis-master")
 public class RedisProperties {
     String host;
     int port;

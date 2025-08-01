@@ -1,6 +1,6 @@
 package faang.school.postservice.publisher.like;
 
-import faang.school.postservice.config.redis.RedisProperties;
+import faang.school.postservice.config.redis.master.RedisProperties;
 import faang.school.postservice.dto.like.LikeEvent;
 import faang.school.postservice.mapper.LikeEventMapper;
 import faang.school.postservice.model.Like;
