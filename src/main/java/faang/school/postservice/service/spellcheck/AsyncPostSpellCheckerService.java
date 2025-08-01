@@ -28,7 +28,7 @@ public class AsyncPostSpellCheckerService {
 
     @Async("postCorrectionExecutor")
     public void correctPostBatchAsync(List<Post> batch) {
-        log.info("Processing batch of {} posts in thread {}", batch.size(), Thread.currentThread().getName());
+        log.info("Processing batch of {} posts", batch.size());
         for (Post post : batch) {
             correctPost(post);
         }
