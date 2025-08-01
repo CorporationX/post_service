@@ -24,4 +24,6 @@ public interface PostRepository extends CrudRepository<Post, Long>, PostReposito
     List<Post> findReadyToPublish();
 
     Optional<Post> findByIdAndDeletedFalse(@NonNull Long postId);
+
+    List<Post> findAllByPublishedFalse();
 }
