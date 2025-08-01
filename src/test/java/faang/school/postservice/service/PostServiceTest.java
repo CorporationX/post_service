@@ -9,6 +9,7 @@ import faang.school.postservice.dto.post.PostResponseDto;
 import faang.school.postservice.kafka.KafkaPostViewProducer;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.redis.RedisService;
 import faang.school.postservice.repository.PostRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
@@ -50,6 +52,8 @@ class PostServiceTest {
     @Mock
     private AuthorCacheService authorCacheService;
 
+    @Mock
+    private RedisService redisService;
     @Spy
     private PostMapperImpl postMapper;
     @Captor
@@ -279,6 +283,30 @@ class PostServiceTest {
         assertEquals(List.of(post), result.stream()
                 .map(postMapper::toEntity)
                 .toList());
+    }
+
+    @Test
+    void banUsers() {
+        Long userId1 = 1L;
+        Long userId2 = 2L;
+        List<Long> usersId = List.of(userId1, userId2);
+
+        when(postRepository.findAllUsersWhereNotVerifiedMoreN(anyInt())).thenReturn(usersId);
+
+        postService.banUsers();
+
+        verify(redisService, times(2)).sendMessageToBanUsers(anyLong());
+    }
+
+    @Test
+    void banUsers_EmptyList() {
+        List<Long> usersId = List.of();
+
+        when(postRepository.findAllUsersWhereNotVerifiedMoreN(anyInt())).thenReturn(usersId);
+
+        postService.banUsers();
+
+        verify(redisService, times(0)).sendMessageToBanUsers(anyLong());
     }
 
     private Post createPost(long id) {

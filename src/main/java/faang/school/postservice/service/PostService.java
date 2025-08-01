@@ -11,7 +11,9 @@ import faang.school.postservice.kafka.KafkaPostViewProducer;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.redis.RedisService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -21,9 +23,13 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PostService {
     @Value("${kafka.topics.posts.create-post}")
     private String topic;
+
+    @Value("${limit_not_verified_posts}")
+    private int limitNotVerifiedPosts;
 
     private final PostRepository postRepository;
     private final PostMapper postMapper;
@@ -31,6 +37,7 @@ public class PostService {
     private final UserServiceClient feignClient;
     private final KafkaPostViewProducer kafkaPostViewProducer;
     private final AuthorCacheService authorCacheService;
+    private final RedisService redisService;
 
     public Post getPostById(Long id) {
         return postRepository.findById(id)
@@ -107,6 +114,15 @@ public class PostService {
 
     public List<PostResponseDto> getAllPostsByProjectId(Long projectId) {
         return getPostsById(postRepository.findByProjectId(projectId));
+    }
+
+    public void banUsers() {
+        List<Long> users = postRepository.findAllUsersWhereNotVerifiedMoreN(limitNotVerifiedPosts);
+
+        if (!users.isEmpty()) {
+            users.forEach(redisService::sendMessageToBanUsers);
+            log.info("__________________users id send________________________________________________ ");
+        }
     }
 
     private List<PostResponseDto> getDraftsById(List<Post> posts) {

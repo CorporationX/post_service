@@ -1,0 +1,1 @@
+ALTER TABLE post ADD COLUMN verified bool NOT NULL DEFAULT false
