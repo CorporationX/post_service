@@ -16,8 +16,8 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @Configuration
 public class RedisConfig {
 
-    @Value("${redis.channels.comment_event}")
-    private String commentEventChannel;
+    @Value("${redis.channels.create_comment}")
+    private String createCommentChannel;
 
     @Bean(name = "dequeRedisTemplate")
     public RedisTemplate<String, ConcurrentLinkedDeque<Long>> dequeRedisTemplate(RedisConnectionFactory factory) {
@@ -43,7 +43,7 @@ public class RedisConfig {
     }
 
     @Bean
-    public ChannelTopic commentEventTopic() {
-        return new ChannelTopic(commentEventChannel);
+    public ChannelTopic createCommentTopic() {
+        return new ChannelTopic(createCommentChannel);
     }
 }

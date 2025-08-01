@@ -57,19 +57,19 @@ payment-service:
   port: 9080
 
 kafka:
-   host: "localhost:9092"
-   group: post-service
-   topics:
-     like-post: "like-post"
-     posts:
+  host: "localhost:9092"
+  group: post-service
+  topics:
+    like-post: "like-post"
+    posts:
       create-post: "create-post"
 
-   num-partitions: 2
-   replication-factor: 1
-   properties:
-     security.protocol: SSL
-     ssl.truststore.location: /path/to/truststore.jks
-     ssl.truststore.password: password
+  num-partitions: 2
+  replication-factor: 1
+  properties:
+    security.protocol: SSL
+    ssl.truststore.location: /path/to/truststore.jks
+    ssl.truststore.password: password
 
 cache:
   max-posts: 500
@@ -80,5 +80,6 @@ feed:
 
 redis:
   channels:
-    comment_event: comment_event_topic
+    create_comment: create_comment_topic
+
 
