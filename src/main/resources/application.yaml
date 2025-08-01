@@ -71,6 +71,17 @@ kafka:
     ssl.truststore.location: /path/to/truststore.jks
     ssl.truststore.password: password
 
+cron:
+  author_baned: "0 0 0 * * *"
+
+limit_not_verified_posts: 5
+
+redis:
+  port: 6379
+  host: localhost
+  topics:
+    user_ban: "user_ban"
+
 cache:
   max-posts: 500
   expiration-hours: 24

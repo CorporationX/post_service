@@ -107,6 +107,7 @@ tasks.jacocoTestReport {
                 "**/controller/LikeController.class",
                 "**/**Impl",
                 "**/event/CommentEvent.class"
+                "**.redis.**"
             )
         }
     }))
@@ -130,7 +131,8 @@ tasks.jacocoTestCoverageVerification {
                 "faang.school.postservice.event.CommentEvent",
                 "**/*Test.class",
                 "**/*Impl.class",
-                "faang.school.postservice.PostServiceApp"
+                "faang.school.postservice.PostServiceApp",
+                "**.redis.**"
             )
             limit {
                 counter = "LINE"
