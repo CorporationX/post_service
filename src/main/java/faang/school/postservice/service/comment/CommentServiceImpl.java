@@ -56,7 +56,7 @@ public class CommentServiceImpl implements CommentService {
         commentPublisher.publish(savedComment);
 
         redisAuthorCache.save(cacheKeyValuePreparator.prepareCommentKey(savedComment),
-                cacheKeyValuePreparator.prepareCommentValue(savedComment, userServiceClient.getUser(userId)));
+                cacheKeyValuePreparator.prepareCommentAuthorValue(savedComment, userServiceClient.getUser(userId)));
 
         return commentMapper.toDto(savedComment);
     }

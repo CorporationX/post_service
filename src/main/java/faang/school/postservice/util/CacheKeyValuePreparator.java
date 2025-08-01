@@ -18,12 +18,12 @@ public class CacheKeyValuePreparator {
         return String.format("Comment-%d", comment.getId());
     }
 
-    public Object prepareCommentValue(Comment comment, UserDto userDto) {
+    public Object prepareCommentAuthorValue(Comment comment, UserDto userDto) {
         try {
             return objectMapper.writeValueAsString(userDto);
         } catch (JsonProcessingException e) {
             log.error(e.getMessage(), e);
-            throw new RuntimeException(String.format("Prepare Value for Comment id: %d failed", comment.getId()),e);
+            throw new RuntimeException(String.format("Prepare Author Value for Comment id: %d failed", comment.getId()),e);
         }
     }
 }
