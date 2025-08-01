@@ -28,9 +28,26 @@ spring:
     redis:
       port: 6379
       host: localhost
+      password: yourpassword
+      timeout: 1000ms
+      client-type: lettuce
+      default_ttl_seconds: 3600
+      lettuce:
+        pool:
+          max-active: 10
+          max-idle: 10
+          min-idle: 2
       channels:
         calculations_channel:
           name: calculations_channel
+
+    redis-cache:
+      default-days: 1
+      lock-timeout-seconds: 5
+      update-throttle-millis: 60000
+
+  redisson:
+    file: classpath:redisson.yaml
 
   kafka:
     bootstrap-servers: localhost:9092

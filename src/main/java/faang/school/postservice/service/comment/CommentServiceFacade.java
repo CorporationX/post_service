@@ -1,5 +1,7 @@
 package faang.school.postservice.service.comment;
 
+import faang.school.postservice.annotation.CacheCreateComment;
+import faang.school.postservice.annotation.CacheUpdateComment;
 import faang.school.postservice.dto.comment.CommentDtoResponse;
 import faang.school.postservice.dto.comment.CommentResponseImageDto;
 import faang.school.postservice.mapper.comment.MapperComment;
@@ -16,12 +18,14 @@ public class CommentServiceFacade {
     private final MapperComment mapperComment;
     private final CommentService commentService;
 
+    @CacheCreateComment
     public CommentDtoResponse createComment(long postId, String content) {
         Comment commentCreate = commentService.createComment(postId, content);
 
         return mapperComment.fromEntityToDto(commentCreate);
     }
 
+    @CacheUpdateComment
     public CommentDtoResponse updateComment(long commentId, String content) {
         Comment commentUpdate = commentService.updateComment(commentId, content);
 

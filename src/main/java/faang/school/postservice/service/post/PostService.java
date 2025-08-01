@@ -47,13 +47,13 @@ public class PostService {
     }
 
     @Transactional
-    public boolean publishPost(Long postId) {
+    public Post publishPost(Long postId) {
         Post post = getValidPostOrThrowException(postId);
         PostValidation.validateNotAlreadyPublishedPost(post);
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
         postRepository.save(post);
-        return post.isPublished();
+        return post;
     }
 
     @Transactional
