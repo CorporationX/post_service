@@ -1,7 +1,7 @@
 package faang.school.postservice.controller.feed;
 
 import faang.school.postservice.dto.feed.NewsFeedRequestDto;
-import faang.school.postservice.service.feed.FeedService;
+import faang.school.postservice.service.FeedService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;

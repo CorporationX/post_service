@@ -1,5 +1,6 @@
 package faang.school.postservice.client;
 
+import faang.school.postservice.dto.feed.UserFeedHeatDto;
 import faang.school.postservice.dto.user.UserDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,5 +24,5 @@ public interface UserServiceClient {
     List<UserDto> getFollowers(@PathVariable long followeeId);
 
     @GetMapping("/api/v1/users/batch")
-    List<Long> getUserIdsByBatch(@RequestParam int batchSize, @RequestParam long startingFromId);
+    List<UserFeedHeatDto> getUserIdsByBatch(@RequestParam int batchSize, @RequestParam long startingFromId);
 }

@@ -1,7 +1,12 @@
 package faang.school.postservice.service.feed;
 
+import faang.school.postservice.cache.RedisCache;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.feed.UserFeedHeatDto;
+import faang.school.postservice.dto.redis.RedisUserDto;
 import faang.school.postservice.kafka.producer.KafkaFeedHeatEventProducer;
+import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.FeedService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -10,23 +15,41 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class FeedServiceImpl implements FeedService{
+public class FeedServiceImpl implements FeedService {
 
     private final KafkaFeedHeatEventProducer kafkaFeedHeatEventProducer;
     private final UserServiceClient userServiceClient;
+    private final RedisCache cache;
+    private final PostRepository postRepository;
+
     @Value("${news-feed.heater.batch-size}")
     private int batchSize;
 
+    // PostConstruct?
+    // Add retry, timeout, try/catch
     @Override
     public void initializeFeedHeat() {
         int lastBatchSize = batchSize;
         long startingFromId = 0;
         do {
-            // Add retry, timeout, try/catch
-            List<Long> userIds = userServiceClient.getUserIdsByBatch(batchSize, startingFromId);
-            startingFromId = userIds.get(userIds.size() - 1);
-            lastBatchSize = userIds.size();
-            kafkaFeedHeatEventProducer.sendMessage(userIds);
-        } while(lastBatchSize == batchSize);
+            List<UserFeedHeatDto> userFeedHeatDtos = userServiceClient.getUserIdsByBatch(batchSize, startingFromId);
+            startingFromId = userFeedHeatDtos.get(userFeedHeatDtos.size() - 1).user().getId();
+            lastBatchSize = userFeedHeatDtos.size();
+            kafkaFeedHeatEventProducer.sendMessage(userFeedHeatDtos);
+        } while (lastBatchSize == batchSize);
+    }
+
+    public void fillCacheForUsers(List<UserFeedHeatDto> users) {
+        // Заполнение будет происходить через пользователя и его подписчиков.
+        // Кладём пользователя, проходимся по его подписчикам, им в фид выкидываем его посты(пускай последние 20-50)
+        // по мере заполнения - фид будет переполнятся и за счёт score будут оставаться только самые свежие фиды?
+
+        // а что если фоловеров несколько миллионов? надо разделить на батчи для кафки?
+        users.forEach(dto -> {
+            RedisUserDto user = dto.user();
+            List<Long> followerIds = dto.followerIds();
+
+            cache.putFeedForSubscribers(user, followerIds);
+        });
     }
 }
