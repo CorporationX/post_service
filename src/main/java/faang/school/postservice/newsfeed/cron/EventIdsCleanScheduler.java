@@ -20,6 +20,7 @@ public class EventIdsCleanScheduler {
         scheduler.schedule(this::deleteOldRecords, deleteOldRecordsTrigger);
     }
 
+    //add @SchedulerLock
     private void deleteOldRecords() {
         repository.cleanUpOldRecords(schedulingConfig.getOldEventIdsCleanUpDays());
     }
