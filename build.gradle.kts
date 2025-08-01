@@ -106,7 +106,7 @@ tasks.jacocoTestReport {
                 "**/PostServiceApp.class",
                 "**/controller/LikeController.class",
                 "**/**Impl",
-                "**/event/CommentEvent.class"
+                "**/event/CommentEvent.class",
                 "**.redis.**"
             )
         }
