@@ -12,7 +12,9 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.comment.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.RedisAuthorCache;
 import faang.school.postservice.service.CommentService;
+import faang.school.postservice.util.CacheKeyValuePreparator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +35,8 @@ public class CommentServiceImpl implements CommentService {
     private final UserServiceClient userServiceClient;
     private final UserContext userContext;
     private final CommentEventPublisher commentPublisher;
+    private final RedisAuthorCache redisAuthorCache;
+    private final CacheKeyValuePreparator cacheKeyValuePreparator;
 
     @Override
     public CommentOutputDto createComment(CommentForCreationDto commentDto){
@@ -50,6 +54,10 @@ public class CommentServiceImpl implements CommentService {
                 , userContext.getUserId(), commentDto.getPostId());
 
         commentPublisher.publish(savedComment);
+
+        redisAuthorCache.save(cacheKeyValuePreparator.prepareCommentKey(savedComment),
+                cacheKeyValuePreparator.prepareCommentValue(savedComment, userServiceClient.getUser(userId)));
+
         return commentMapper.toDto(savedComment);
     }
 
