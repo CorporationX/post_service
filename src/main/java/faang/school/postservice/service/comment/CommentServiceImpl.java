@@ -13,7 +13,9 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.comment.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.RedisAuthorCache;
 import faang.school.postservice.service.CommentService;
+import faang.school.postservice.util.CacheKeyValuePreparator;
 import faang.school.postservice.util.CommentEventCreator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +39,8 @@ public class CommentServiceImpl implements CommentService {
     private final CommentEventPublisher commentPublisher;
     private final KafkaCommentProducer kafkaCommentProducer;
     private final CommentEventCreator commentEventCreator;
+    private final RedisAuthorCache redisAuthorCache;
+    private final CacheKeyValuePreparator cacheKeyValuePreparator;
 
     @Override
     public CommentOutputDto createComment(CommentForCreationDto commentDto){
@@ -55,6 +59,10 @@ public class CommentServiceImpl implements CommentService {
 
         commentPublisher.publish(savedComment);
         kafkaCommentProducer.sendKafka(commentEventCreator.create(savedComment));
+
+        redisAuthorCache.save(cacheKeyValuePreparator.prepareCommentKey(savedComment),
+                cacheKeyValuePreparator.prepareCommentAuthorValue(savedComment, userServiceClient.getUser(userId)));
+
         return commentMapper.toDto(savedComment);
     }
 
