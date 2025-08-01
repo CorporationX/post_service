@@ -59,7 +59,6 @@ public class CommentServiceImpl implements CommentService {
 
         commentPublisher.publish(savedComment);
         kafkaCommentProducer.sendKafka(commentEventCreator.create(savedComment));
-
         redisAuthorCache.save(cacheKeyValuePreparator.prepareCommentKey(savedComment),
                 cacheKeyValuePreparator.prepareCommentAuthorValue(savedComment, userServiceClient.getUser(userId)));
 
