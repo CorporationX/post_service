@@ -21,4 +21,13 @@ public interface PostRepository extends CrudRepository<Post, Long> {
     @Query("SELECT p FROM Post p WHERE p.published = false AND " +
             "p.deleted = false AND p.scheduledAt <= CURRENT_TIMESTAMP")
     List<Post> findReadyToPublish();
+
+    @Query(nativeQuery = true, value = """
+            SELECT p.author_id FROM post p
+            JOIN users u ON p.author_id = u.id
+            WHERE p.verified = false AND u.banned = false
+            GROUP BY p.author_id
+            HAVING count(*) > :n
+            """)
+    List<Long> findAllUsersWhereNotVerifiedMoreN(int n);
 }
