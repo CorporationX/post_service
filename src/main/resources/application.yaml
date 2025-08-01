@@ -84,9 +84,6 @@ project:
       cron: 0 0 1 * * *
     post-publisher:
       cron: "0 * * * * *"
-    news-feed:
-      old_event_ids_clean_up_cron: "0 0 * * * *"
-      old_event_ids_clean_up_days: 1
 
 thread:
   pool:
@@ -111,3 +108,11 @@ retry:
     backoff:
       delay: 2000
       multiplier: 1.5
+
+news-feed:
+  cron:
+    old_event_ids_clean_up_cron: "0 0 * * * *"
+    old_event_ids_clean_up_days: 1
+  cache:
+    user_ttl: 24
+    post_ttl: 24

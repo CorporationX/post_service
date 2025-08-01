@@ -1,4 +1,4 @@
-package faang.school.postservice.newsfeed.util;
+package faang.school.postservice.newsfeed.util.mapping;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

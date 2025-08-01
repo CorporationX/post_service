@@ -4,7 +4,7 @@ import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @Data
-@ConfigurationProperties(prefix = "project.news-feed")
+@ConfigurationProperties(prefix = "news-feed.cron")
 public class SchedulingConfig {
     private String OldEventIdsCleanUpCron;
     private int OldEventIdsCleanUpDays;

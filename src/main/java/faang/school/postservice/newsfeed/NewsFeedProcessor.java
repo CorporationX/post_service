@@ -6,12 +6,12 @@ import faang.school.postservice.dto.post.PostOutputDto;
 import faang.school.postservice.newsfeed.dto.KafkaTransportDto;
 import faang.school.postservice.newsfeed.events.PostPublishEvent;
 import faang.school.postservice.newsfeed.repository.EventProcessedRepository;
-import faang.school.postservice.newsfeed.util.JsonMapper;
+import faang.school.postservice.newsfeed.service.CacheService;
+import faang.school.postservice.newsfeed.util.mapping.JsonMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,20 +29,21 @@ public class NewsFeedProcessor {
     private final JsonMapper mapper;
     private final EventProcessedRepository eventProcessedRepository;
     private final UserServiceClient userServiceClient;
+    private final CacheService cacheService;
 
     private static final String PREPOST_TOPIC = "prepost";
     private static final String POST_TOPIC = "posts";
     private static final int FOLLOWERS_SPLIT_NUMBER = 1000;
 
     @Async("newsFeedExecutor")
-    @Retryable
     public void postPublish(PostOutputDto postOutputDto) {
         String uuid = UUID.randomUUID().toString();
         String json = mapper.mapToJson(postOutputDto);
         KafkaTransportDto dto = new KafkaTransportDto(uuid, json);
         String postPublishEventPayload = mapper.mapToJson(dto);
         kafkaTemplate.send(PREPOST_TOPIC, uuid, postPublishEventPayload);
-        //save author and post to their caches
+        cacheService.findAndPutUserToCache(postOutputDto.getAuthorId());
+        cacheService.putPostToCache(postOutputDto);
     }
 
     @Async("newsFeedExecutor")

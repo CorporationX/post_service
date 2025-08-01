@@ -2,7 +2,9 @@ package faang.school.postservice.newsfeed.repository;
 
 import faang.school.postservice.newsfeed.dto.UserCacheDto;
 
+import java.util.Optional;
+
 public interface UsersCacheRepository {
     void putUser(UserCacheDto user);
-    UserCacheDto getUserById(Long id);
+    Optional<UserCacheDto> getUserById(Long id);
 }
