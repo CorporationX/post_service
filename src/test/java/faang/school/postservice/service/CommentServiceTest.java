@@ -6,6 +6,7 @@ import faang.school.postservice.exception.CommentValidationException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import feign.FeignException;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,6 +38,9 @@ public class CommentServiceTest {
     @Mock
     private CommentValidator commentValidator;
 
+    @Mock
+    private CommentEventPublisher commentEventPublisher;
+
     private CommentMapper commentMapper = Mappers.getMapper(CommentMapper.class);
 
     @InjectMocks
@@ -48,7 +52,7 @@ public class CommentServiceTest {
     @BeforeEach
     void setUp() {
         commentService = new CommentService(commentRepository, postService,
-                userServiceClient, commentMapper, commentValidator);
+                userServiceClient, commentMapper, commentValidator, commentEventPublisher);
 
         post = Post.builder().id(1L).build();
         comment = Comment.builder()

@@ -3,7 +3,7 @@ plugins {
     id("org.springframework.boot") version "3.0.6"
     id("io.spring.dependency-management") version "1.1.0"
     id("jacoco")
-    id("checkstyle") 
+    id("checkstyle")
 }
 
 group = "faang.school"
@@ -106,6 +106,7 @@ tasks.jacocoTestReport {
                 "**/PostServiceApp.class",
                 "**/controller/LikeController.class",
                 "**/**Impl",
+                "**/event/CommentEvent.class",
                 "**.redis.**"
             )
         }
@@ -127,6 +128,7 @@ tasks.jacocoTestCoverageVerification {
                 "faang.school.postservice.model.*",
                 "faang.school.postservice.repository.*",
                 "faang.school.postservice.controller.LikeController",
+                "faang.school.postservice.event.CommentEvent",
                 "**/*Test.class",
                 "**/*Impl.class",
                 "faang.school.postservice.PostServiceApp",

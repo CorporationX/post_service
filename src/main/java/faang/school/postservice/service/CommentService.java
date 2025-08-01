@@ -2,10 +2,12 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.*;
+import faang.school.postservice.event.CommentEvent;
 import faang.school.postservice.exception.CommentValidationException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
@@ -24,10 +26,11 @@ public class CommentService {
     private final UserServiceClient userServiceClient;
     private final CommentMapper commentMapper;
     private final CommentValidator commentValidator;
+    private final CommentEventPublisher commentEventPublisher;
 
     @Transactional(readOnly = true)
     public List<CommentDto> getCommentsByPostId(Long postId) {
-        postService.getPostById(postId); // Проверка, что пост существует
+        postService.getPostById(postId);
         return commentMapper.toDtoList(
                 commentRepository.findAllByPostId(postId).stream()
                         .sorted(Comparator.comparing(Comment::getCreatedAt).reversed())
@@ -41,11 +44,22 @@ public class CommentService {
 
         Post post = postService.getPostById(dto.postId());
         Comment comment = commentMapper.toEntityFromCreateDto(dto);
-
         comment.setAuthorId(authorId);
         comment.setPost(post);
 
-        return commentMapper.toDto(commentRepository.save(comment));
+        Comment savedComment = commentRepository.save(comment);
+
+        if (!authorId.equals(post.getAuthorId())) {
+            CommentEvent event = new CommentEvent(
+                    post.getId(),
+                    savedComment.getId(),
+                    authorId,
+                    post.getAuthorId(),
+                    savedComment.getContent()
+            );
+            commentEventPublisher.publish(event);
+        }
+        return commentMapper.toDto(savedComment);
     }
 
     @Transactional
