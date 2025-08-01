@@ -9,6 +9,10 @@ group = "faang.school"
 version = "1.0"
 java.sourceCompatibility = JavaVersion.VERSION_17
 
+springBoot {
+    mainClass.set("com.baeldung.spring.kafka.KafkaApplication")
+}
+
 repositories {
     mavenCentral()
 }
@@ -27,6 +31,7 @@ dependencies {
     implementation("org.springframework.retry:spring-retry:2.0.2")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2")
     implementation("org.springframework.retry:spring-retry:2.0.2")
+    implementation("org.springframework.kafka:spring-kafka:3.3.1")
 
     /**
      * Database
