@@ -1,0 +1,6 @@
+singleServerConfig:
+  address: "redis://localhost:6379"
+  connectionPoolSize: 64
+  connectionMinimumIdleSize: 24
+  threads: 8
+  nettyThreads: 32

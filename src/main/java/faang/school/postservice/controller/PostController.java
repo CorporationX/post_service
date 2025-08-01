@@ -1,10 +1,8 @@
 package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.post.PostCreateDto;
-import faang.school.postservice.dto.post.ResponsePostDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
-import faang.school.postservice.mapper.post.PostMapper;
-import faang.school.postservice.model.Post;
+import faang.school.postservice.dto.post.ResponsePostDto;
 import faang.school.postservice.service.post.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -27,27 +25,23 @@ import java.util.List;
 public class PostController {
 
     private final PostService postService;
+    private final PostControllerFacade postControllerFacade;
 
     @PostMapping
     public ResponseEntity<ResponsePostDto> createPost(@RequestBody PostCreateDto postCreateDto) {
-        Post post = PostMapper.postUpdateDtoToPost(postCreateDto);
-        Post savedPost = postService.createPost(post);
-        ResponsePostDto responsePostDto = PostMapper.postToResponsePostDto(savedPost);
+        ResponsePostDto responsePostDto = postControllerFacade.createPost(postCreateDto);
         return ResponseEntity.ok(responsePostDto);
-
     }
 
     @PutMapping("/{postId}/publish")
-    public ResponseEntity<Boolean> publishPost(@PathVariable Long postId) {
-        boolean isPublished = postService.publishPost(postId);
-        return ResponseEntity.ok(isPublished);
+    public ResponseEntity<ResponsePostDto> publishPost(@PathVariable Long postId) {
+        ResponsePostDto responsePostDto = postControllerFacade.publishPost(postId);
+        return ResponseEntity.ok(responsePostDto);
     }
 
     @PatchMapping("/{postId}")
     public ResponseEntity<ResponsePostDto> updatePost(@PathVariable Long postId, @RequestBody PostUpdateDto postUpdateDto) {
-        Post updatedFields = PostMapper.postUpdateDtoToPost(postUpdateDto);
-        Post updatedPost = postService.updatePost(postId, updatedFields);
-        ResponsePostDto responsePostDto = PostMapper.postToResponsePostDto(updatedPost);
+        ResponsePostDto responsePostDto = postControllerFacade.updatePost(postId, postUpdateDto);
         return ResponseEntity.ok(responsePostDto);
     }
 
@@ -59,36 +53,31 @@ public class PostController {
 
     @GetMapping
     public ResponseEntity<ResponsePostDto> getPostById(@RequestParam Long postId) {
-        Post post = postService.getPostById(postId);
-        ResponsePostDto responsePostDto = PostMapper.postToResponsePostDto(post);
+        ResponsePostDto responsePostDto = postControllerFacade.getPostById(postId);
         return ResponseEntity.ok(responsePostDto);
     }
 
     @GetMapping("/drafts/user")
     public ResponseEntity<List<ResponsePostDto>> getUserDrafts(@RequestParam Long authorId) {
-        List<Post> postList = postService.getAllDraftsByAuthorId(authorId);
-        List<ResponsePostDto> responseList = PostMapper.postListToResponsePostDtoList(postList);
+        List<ResponsePostDto> responseList = postControllerFacade.getUserDrafts(authorId);
         return ResponseEntity.ok(responseList);
     }
 
     @GetMapping("/drafts/project")
     public ResponseEntity<List<ResponsePostDto>> getProjectDrafts(@RequestParam Long projectId) {
-        List<Post> postList = postService.getAllDraftsByProjectId(projectId);
-        List<ResponsePostDto> responseList = PostMapper.postListToResponsePostDtoList(postList);
+        List<ResponsePostDto> responseList = postControllerFacade.getProjectDrafts(projectId);
         return ResponseEntity.ok(responseList);
     }
 
     @GetMapping("/user")
     public ResponseEntity<List<ResponsePostDto>> getUserPublished(@RequestParam Long authorId) {
-        List<Post> postList = postService.getAllPublishedByAuthorId(authorId);
-        List<ResponsePostDto> responseList = PostMapper.postListToResponsePostDtoList(postList);
+        List<ResponsePostDto> responseList = postControllerFacade.getUserPublished(authorId);
         return ResponseEntity.ok(responseList);
     }
 
     @GetMapping("/project")
     public ResponseEntity<List<ResponsePostDto>> getProjectPublished(@RequestParam Long projectId) {
-        List<Post> postList = postService.getAllPublishedByProjectId(projectId);
-        List<ResponsePostDto> responseList = PostMapper.postListToResponsePostDtoList(postList);
+        List<ResponsePostDto> responseList = postControllerFacade.getProjectPublished(projectId);
         return ResponseEntity.ok(responseList);
     }
 }
