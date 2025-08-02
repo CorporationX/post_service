@@ -8,6 +8,7 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
+import faang.school.postservice.model.redis.CachedPost;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
@@ -18,7 +19,7 @@ import org.mapstruct.ReportingPolicy;
 import java.util.List;
 
 
-@Mapper(componentModel = "Spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
+@Mapper(componentModel = "Spring", uses = {LikeEventMapper.class, CommentMapper.class}, unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface PostMapper {
     @Mapping(target = "likeIds", source = "likes", qualifiedByName = "mapLikes")
     @Mapping(target = "commentIds", source = "comments", qualifiedByName = "mapComments")
@@ -30,6 +31,8 @@ public interface PostMapper {
     Post toPostEntity(PostCreateDto postCreateDto);
 
     void update(PostUpdateDto postUpdateDto, @MappingTarget Post post);
+
+    CachedPost toCachedPost(Post post);
 
     @Named("mapLikes")
     default List<Long> mapLikesToIds(List<Like> likes) {
