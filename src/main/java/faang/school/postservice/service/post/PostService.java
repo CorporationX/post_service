@@ -1,6 +1,7 @@
 package faang.school.postservice.service.post;
 
 import faang.school.postservice.dto.post.PostCreateDto;
+import faang.school.postservice.dto.post.PostFilterDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
 import faang.school.postservice.dto.post.PostViewDto;
 
@@ -69,34 +70,10 @@ public interface PostService {
     PostViewDto getById(Long id);
 
     /**
-     * Получает черновики пользователя, отсортированные по дате создания (новые сначала).
+     * Выполняет фильтрацию по указанным не null полям в filterDto ({@link PostFilterDto})
      *
-     * @param userId идентификатор пользователя
-     * @return список DTO черновиков пользователя
+     * @param filterDto DTO с параметрами фильтрации
+     * @return список отфильтрованных DTO
      */
-    List<PostViewDto> getByUserDraftPostsSortedByCreation(Long userId);
-
-    /**
-     * Получает опубликованные посты пользователя, отсортированные по дате публикации (новые сначала).
-     *
-     * @param userId идентификатор пользователя
-     * @return список DTO опубликованных постов пользователя
-     */
-    List<PostViewDto> getByUserPublishedPostsSortedByPublication(Long userId);
-
-    /**
-     * Получает черновики проекта, отсортированные по дате создания (новые сначала).
-     *
-     * @param projectId идентификатор проекта
-     * @return список DTO черновиков проекта
-     */
-    List<PostViewDto> getByProjectDraftPostsSortedByCreation(Long projectId);
-
-    /**
-     * Получает опубликованные посты проекта, отсортированные по дате публикации (новые сначала).
-     *
-     * @param projectId идентификатор проекта
-     * @return список DTO опубликованных постов проекта
-     */
-    List<PostViewDto> getByProjectPublishedPostsSortedByPublication(Long projectId);
+    List<PostViewDto> findByFilter(PostFilterDto filterDto);
 }

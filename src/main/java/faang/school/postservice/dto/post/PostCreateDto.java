@@ -7,10 +7,14 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 /**
- * PostCreateDto — описание класса.
+ * DTO для создания нового поста.
  * <p>
- * TODO: добавить описание назначения и поведения класса.
+ * Содержит данные, необходимые для создания поста. Валидируется перед использованием.
  * </p>
+ *
+ * @param content   Текст поста (обязательное поле)
+ * @param authorId  ID автора-пользователя (обязательно ИЛИ projectId)
+ * @param projectId ID проекта-автора (обязательно ИЛИ authorId)
  *
  * @author Linempy
  * @since 25.07.2025
@@ -26,11 +30,10 @@ public record PostCreateDto(
         @Min(1)
         Long projectId
 ) {
-        @AssertTrue(message = "Укажите authorId ИЛИ projectId, но не оба")
-        boolean validate() {
-                return (authorId == null && projectId != null) ||
-                        (authorId != null && projectId == null);
-        }
+    @AssertTrue(message = "Укажите authorId ИЛИ projectId, но не оба")
+    boolean validate() {
+        return (authorId == null && projectId != null)
+                || (authorId != null && projectId == null);
+    }
 }
 
-//TODO: унести константы в отдельный класс PostDtoConstrains
