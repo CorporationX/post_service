@@ -26,7 +26,7 @@ public class LikeCreationEventAspect {
         UserDto userDto = userServiceClient.getUser(post.getAuthorId());
         Post postPublish = postService.getPostById(post.getId());
         LikeCreateNotificationEvent likeEvent = LikeCreateNotificationEvent.builder()
-                .userId(userDto.getId())
+                .userDto(userDto)
                 .postId(postPublish.getId())
                 .build();
 

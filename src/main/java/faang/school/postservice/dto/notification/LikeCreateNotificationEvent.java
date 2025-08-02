@@ -12,8 +12,8 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class LikeCreateNotificationEvent implements NotificationEvent{
+public class LikeCreateNotificationEvent {
 
-    private Long userId;
+    private UserDto userDto;
     private Long postId;
 }
