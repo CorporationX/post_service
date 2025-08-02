@@ -10,4 +10,5 @@ public interface FeedService {
     void initializeFeedHeat();
     void fillCacheForUsers(List<UserFeedHeatDto> userIds);
     void addCreatedPostToSubscribers(KafkaPostEventDto eventDto);
+    void putUserIntoCache(long userId);
 }
