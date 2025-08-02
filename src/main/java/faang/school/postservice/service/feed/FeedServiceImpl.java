@@ -3,7 +3,11 @@ package faang.school.postservice.service.feed;
 import faang.school.postservice.cache.RedisCache;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.feed.UserFeedHeatDto;
+import faang.school.postservice.dto.kafka.KafkaPostEventDto;
+import faang.school.postservice.dto.redis.RedisPostDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.kafka.producer.KafkaFeedHeatEventProducer;
+import faang.school.postservice.mapper.KafkaPostEventToRedisPostMapper;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.FeedService;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +26,7 @@ public class FeedServiceImpl implements FeedService {
     private final UserServiceClient userServiceClient;
     private final RedisCache cache;
     private final PostRepository postRepository;
+    private final KafkaPostEventToRedisPostMapper kafkaPostEventToRedisPostMapper;
 
     @Value("${news-feed.heater.batch-size}")
     private int batchSize;
@@ -53,5 +58,23 @@ public class FeedServiceImpl implements FeedService {
             List<Long> followerIds = dto.followerIds();
             cache.putFeedForSubscribers(user, followerIds);
         });
+        // тут использовать тот же запрос что и в addCreatedPostToSubscribers();
+        // Для каждого пользователя и получится мешать их батчами в кафку если возвращаемый батч был меньше стандарта, обработать сразу тут
     }
+
+    public void addCreatedPostToSubscribers(KafkaPostEventDto eventDto) {
+        RedisPostDto redisPostDto = kafkaPostEventToRedisPostMapper.postEventToRedisPostDto(eventDto);
+        cache.putPost(redisPostDto);
+
+        // надо бы добавить новый запрос - на получение батчами ид подписчиков для пользователя.
+        List<Long> subscriberIds = userServiceClient.getFollowers(eventDto.authorId())
+                .stream()
+                .map(UserDto::id)
+                .toList();
+        // воспользоваться тут той же логикой, что и для распределения по подписчикам в fillCacheForUsers();
+        subscriberIds.forEach(followerId ->
+                cache.putFeed(followerId, redisPostDto.getId(), redisPostDto.getCreatedAt()));
+    }
+
+
 }
