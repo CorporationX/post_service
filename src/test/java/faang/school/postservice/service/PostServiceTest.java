@@ -1,5 +1,6 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.cache.AuthorCacheService;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.kafka.KafkaProducerService;
 import faang.school.postservice.dto.kafka.PostViewEvent;
@@ -47,6 +48,10 @@ class PostServiceTest {
     private KafkaProducerService kafka;
     @Mock
     private KafkaPostViewProducer kafkaPostViewProducer;
+
+    @Mock
+    private AuthorCacheService authorCacheService;
+
     @Mock
     private RedisService redisService;
     @Spy
@@ -155,14 +160,19 @@ class PostServiceTest {
         when(postRepository.findById(postId))
                 .thenReturn(Optional.of(post));
 
+        when(postRepository.save(any(Post.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
         postService.publishPost(postId);
 
         verify(postRepository).save(postCaptor.capture());
         Post publishedPost = postCaptor.getValue();
-
         assertTrue(publishedPost.isPublished());
         assertNotNull(publishedPost.getPublishedAt());
+
+        verify(authorCacheService).cacheAuthor(post.getAuthorId());
     }
+
 
     @Test
     public void testPublishAlreadyPublishedPost() {
