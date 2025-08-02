@@ -19,7 +19,7 @@ spring:
 
   data:
     cache:
-      author_cache_ttl_days: 1
+      author_cache_ttl_hours: 24
     async:
       core_pool_size: 2
       max_pool_size: 4

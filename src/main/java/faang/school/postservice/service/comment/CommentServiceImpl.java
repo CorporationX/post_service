@@ -5,15 +5,17 @@ import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CommentForCreationDto;
 import faang.school.postservice.dto.comment.CommentForUpdateDto;
 import faang.school.postservice.dto.comment.CommentOutputDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.messaging.KafkaCommentProducer;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.redis.CachedAuthor;
 import faang.school.postservice.publisher.comment.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.repository.RedisAuthorCache;
+import faang.school.postservice.repository.redis.RedisAuthorCacheRepository;
 import faang.school.postservice.service.CommentService;
 import faang.school.postservice.util.CommentEventCreator;
 import jakarta.persistence.EntityNotFoundException;
@@ -38,10 +40,10 @@ public class CommentServiceImpl implements CommentService {
     private final CommentEventPublisher commentPublisher;
     private final KafkaCommentProducer kafkaCommentProducer;
     private final CommentEventCreator commentEventCreator;
-    private final RedisAuthorCache redisAuthorCache;
+    private final RedisAuthorCacheRepository redisAuthorCacheRepository;
 
     @Override
-    public CommentOutputDto createComment(CommentForCreationDto commentDto){
+    public CommentOutputDto createComment(CommentForCreationDto commentDto) {
         Long postId = commentDto.getPostId();
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("Post with id %d doesn't exist".formatted(postId)));
@@ -57,7 +59,8 @@ public class CommentServiceImpl implements CommentService {
 
         commentPublisher.publish(savedComment);
         kafkaCommentProducer.sendKafka(commentEventCreator.create(savedComment));
-        redisAuthorCache.save(Long.toString(userId), userServiceClient.getUser(userId));
+        UserDto userDto = userServiceClient.getUser(userId);
+        redisAuthorCacheRepository.saveAuthor(new CachedAuthor(userId, userDto.username(), userDto.email()));
 
         return commentMapper.toDto(savedComment);
     }
