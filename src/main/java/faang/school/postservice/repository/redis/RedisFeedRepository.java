@@ -16,9 +16,9 @@ import java.util.Set;
 @Slf4j
 public class RedisFeedRepository {
     private static final String FEED_PREFIX = "feed_";
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final RedisTemplate<String, String> redisTemplate;
 
-    private ZSetOperations<String, Object> zSetOps;
+    private ZSetOperations<String, String> zSetOps;
 
     @PostConstruct
     public void init() {
@@ -29,13 +29,13 @@ public class RedisFeedRepository {
         List<Long> followersIds = event.followersIds();
         long currentTimeMillis = System.currentTimeMillis();
         for (Long followerId : followersIds) {
-            zSetOps.add(FEED_PREFIX + followerId, event.postId(), currentTimeMillis);
+            zSetOps.add(FEED_PREFIX + followerId, String.valueOf(event.postId()), currentTimeMillis);
             zSetOps.removeRange(FEED_PREFIX + followerId, 0, -101);
         }
         log.info("Feed updated");
     }
 
-    public Set<Object> getFeed(Long userId) {
+    public Set<String> getFeed(Long userId) {
         return zSetOps.reverseRange(FEED_PREFIX + userId, 0, 19);
     }
 }

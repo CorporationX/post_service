@@ -6,7 +6,6 @@ import faang.school.postservice.dto.post.PostPublishedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -17,7 +16,6 @@ public class KafkaPostProducer {
     private final KafkaTemplate<String, String> kafkaTemplate;
     private final ObjectMapper mapper;
 
-    @Async("postExecutor")
     public void publish(PostPublishedEvent event) {
         try {
             String json = mapper.writeValueAsString(event);

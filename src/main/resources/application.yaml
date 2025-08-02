@@ -42,6 +42,10 @@ spring:
         size: 10
         max-size: 10
 
+  retry:
+    maxAttempts: 3
+    delay: 100
+
 server:
   port: 8081
 

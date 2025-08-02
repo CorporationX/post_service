@@ -9,7 +9,7 @@ import java.io.Serializable;
 
 @Data
 @AllArgsConstructor
-@RedisHash("user")
+@RedisHash
 public class CachedUser implements Serializable {
     @Id
     private Long id;
