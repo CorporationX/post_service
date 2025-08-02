@@ -33,6 +33,8 @@ spring:
       group_id: event-listeners
       auto_offset: earliest
       concurrency: 3
+      topic:
+        post_published: post_published
 
   task:
     execution:
