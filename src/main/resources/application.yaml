@@ -59,6 +59,8 @@ spring:
     topics:
       comment-created-topic:
         name: comment-created-notification
+      like_created-topic:
+        name: like-created-notification
 
 server:
   port: 8081

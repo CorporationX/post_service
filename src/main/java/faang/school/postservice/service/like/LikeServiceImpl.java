@@ -1,5 +1,6 @@
 package faang.school.postservice.service.like;
 
+import faang.school.postservice.annotation.LikeCreationEventKafka;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.user.UserDto;
@@ -30,6 +31,7 @@ public class LikeServiceImpl implements LikeService {
 
     @Override
     @Transactional
+    @LikeCreationEventKafka
     public Like likeThePost(long postId) {
         UserDto user = existenceCheckUser();
         Post post = postService.getPostById(postId);
