@@ -35,7 +35,7 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: none
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         format_sql: true
@@ -138,4 +138,4 @@ retry:
 
 news-feed:
   heater:
-    batch-size: 2
+    batch-size: 1000

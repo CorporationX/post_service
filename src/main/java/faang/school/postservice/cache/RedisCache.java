@@ -10,7 +10,7 @@ import java.util.Set;
 
 public interface RedisCache {
 
-    void putUser(RedisUserDto user);
+    void putUser(Long user);
 
     void putPost(RedisPostDto post);
 
@@ -23,5 +23,5 @@ public interface RedisCache {
     RedisPostDto getPost(Long postId);
 
     @Async("redisTaskExecutor")
-    void putFeedForSubscribers(RedisUserDto redisUserDto, List<Long> followerIds);
+    void putFeedForSubscribers(Long redisUserDto, List<Long> followerIds);
 }

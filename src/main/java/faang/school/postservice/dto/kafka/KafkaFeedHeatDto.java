@@ -5,6 +5,6 @@ import faang.school.postservice.dto.feed.UserFeedHeatDto;
 import java.util.List;
 
 public record KafkaFeedHeatDto(
-        List<UserFeedHeatDto> userIds
+        List<UserFeedHeatDto> users
 ) {
 }

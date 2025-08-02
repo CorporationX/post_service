@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -51,8 +52,8 @@ public class NewsFeedCache implements RedisCache {
     }
 
     @Override
-    public void putUser(RedisUserDto user) {
-        String key = USER_CACHE_KEY_PREFIX + user.getId();
+    public void putUser(Long user) {
+        String key = USER_CACHE_KEY_PREFIX + user;
         redisNewsFeedTemplate.opsForValue().set(key, user);
         log.info("Cached user with key: {}", key);
     }
@@ -61,7 +62,7 @@ public class NewsFeedCache implements RedisCache {
     public void putPost(RedisPostDto post) {
         String key = POST_CACHE_KEY_PREFIX + post.getId();
         redisNewsFeedTemplate.opsForValue().set(key, post);
-        log.info("Cached post with key: {}", key);
+//        log.info("Cached post with key: {}", key);
     }
 
     @Override
@@ -99,11 +100,17 @@ public class NewsFeedCache implements RedisCache {
 
     @Async("redisTaskExecutor")
     @Override
-    public void putFeedForSubscribers(RedisUserDto user, List<Long> followerIds) {
+    public void putFeedForSubscribers(Long user, List<Long> followerIds) {
+        Pageable pageable = PageRequest.of(0, feedSizeLimit);
+        List<RedisPostDto> posts = postRepository.findLatestPostsByAuthorId(user, pageable);
+        log.info("found {} Posts for user with ID {}", posts.size(), user);
+
+        if (posts.isEmpty()) {
+            log.info("No posts found for user {}. Skipping feed update for followers.", user);
+            return;
+        }
         putUser(user);
 
-        Pageable pageable = PageRequest.of(0, feedSizeLimit);
-        List<RedisPostDto> posts = postRepository.findLatestPostsByAuthorId(user.getId(), pageable);
         posts.forEach(this::putPost);
 
         List<Object> scriptArgs = posts.stream()
@@ -120,12 +127,19 @@ public class NewsFeedCache implements RedisCache {
 
     public void putFeedBatch(Long userId, List<Object> scriptArgs) {
         String key = FEED_CACHE_KEY_PREFIX + userId;
-        scriptArgs.add(0, feedSizeLimit);
 
+        // Создаем единый список, включающий feedSizeLimit и остальные аргументы.
+        // Это предотвращает ошибки, связанные с передачей массива в varargs.
+        List<Object> allScriptArgs = new ArrayList<>(scriptArgs.size() + 1);
+        allScriptArgs.add(feedSizeLimit);
+        allScriptArgs.addAll(scriptArgs);
+
+//        log.info("scriptArgs: {}", allScriptArgs);
         redisNewsFeedTemplate.execute(
                 addAndTrimScript,
                 Collections.singletonList(key),
-                scriptArgs.toArray()
+                allScriptArgs.toArray()
         );
+//        log.info("range 0-500: {}", redisNewsFeedTemplate.opsForZSet().range(key, 0, 500));
     }
 }

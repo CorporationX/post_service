@@ -1,10 +1,12 @@
 package faang.school.postservice.dto.redis;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
 
 @Getter
+@AllArgsConstructor
 public class RedisPostDto {
     private long id;
     private String content;
