@@ -24,6 +24,7 @@ public class PostCacheDto implements Serializable {
     private ConcurrentLinkedDeque<Long> commentIds = new ConcurrentLinkedDeque<>();
     private List<Long> albumIds;
     private Long adId;
+    private long viewCount;
     private List<Long> resourceIds;
     private Boolean published;
     private LocalDateTime publishedAt;
