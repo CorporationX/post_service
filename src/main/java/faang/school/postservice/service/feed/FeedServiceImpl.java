@@ -71,6 +71,8 @@ public class FeedServiceImpl implements FeedService {
                 .stream()
                 .map(UserDto::id)
                 .toList();
+
+        cache.putUser(userServiceClient.getUser(eventDto.authorId()).id());
         // воспользоваться тут той же логикой, что и для распределения по подписчикам в fillCacheForUsers();
         subscriberIds.forEach(followerId ->
                 cache.putFeed(followerId, redisPostDto.getId(), redisPostDto.getCreatedAt()));
