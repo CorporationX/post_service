@@ -61,6 +61,11 @@ spring:
         name: comment-created-notification
       like_created-topic:
         name: like-created-notification
+      news-feed:
+        posts:
+          name: posts
+    batch:
+      subscribers: 100
 
 server:
   port: 8081
