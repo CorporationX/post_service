@@ -1,9 +1,13 @@
 package faang.school.postservice.dto.kafka;
 
-import java.util.List;
+import java.time.LocalDateTime;
 
 public record KafkaPostEventDto(
-        long postId,
-        List<Long> subscriberIds
+        long id,
+        String content,
+        Long authorId,
+        Long likeCount,
+        Long commentCount,
+        LocalDateTime createdAt
 ) {
 }

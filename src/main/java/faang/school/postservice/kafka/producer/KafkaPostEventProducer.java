@@ -6,8 +6,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-
 @Component
 @RequiredArgsConstructor
 public class KafkaPostEventProducer {
@@ -16,7 +14,7 @@ public class KafkaPostEventProducer {
     private final String topic;
     private final KafkaTemplate<String, KafkaPostEventDto> kafkaTemplate;
 
-    public void sendMessage(long postId, List<Long> subscriberIds) {
-        kafkaTemplate.send(topic, new KafkaPostEventDto(postId, subscriberIds));
+    public void sendMessage(KafkaPostEventDto messageDto) {
+        kafkaTemplate.send(topic, messageDto);
     }
 }
