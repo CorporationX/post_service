@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -26,7 +27,7 @@ public class PostEventPublisher implements MessagePublisher<PostEvent> {
 
     public void createAndPublishMessage(Post post) {
         long userId = post.getAuthorId();
-        userServiceClient.getFollowers(userId)
+        List<Long> userFollowers = userServiceClient.getFollowers(userId)
                 .stream()
                 .map(UserDto::id)
                 .toList();
@@ -34,7 +35,7 @@ public class PostEventPublisher implements MessagePublisher<PostEvent> {
                 post.getId(),
                 post.getContent(),
                 userId,
-                )
+                userFollowers,
                 LocalDateTime.now());
         publish(event);
     }
