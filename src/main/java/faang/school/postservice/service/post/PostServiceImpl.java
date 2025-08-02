@@ -3,11 +3,11 @@ package faang.school.postservice.service.post;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostCreateDto;
+import faang.school.postservice.dto.post.PostFilterDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
 import faang.school.postservice.dto.post.PostViewDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.exception.DataValidationException;
-import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
@@ -24,6 +24,7 @@ import java.util.List;
  * Реализация сервиса для работы с постами.
  *
  * @author Linempy
+ * @see PostService
  * @since 25.07.2025
  */
 @Slf4j
@@ -56,7 +57,7 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional
     public void publication(Long id) {
-        Post post = findPostOrThrow(id);
+        Post post = postRepository.findPostOrThrow(id);
 
         if (post.isPublished()) {
             throw new ForbiddenException("Пост уже опубликован");
@@ -69,8 +70,9 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    @Transactional
     public PostViewDto update(Long id, PostUpdateDto dto) {
-        Post post = findPostOrThrow(id);
+        Post post = postRepository.findPostOrThrow(id);
 
         mapper.update(post, dto);
         post = postRepository.save(post);
@@ -79,8 +81,13 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    @Transactional
     public void softDelete(Long id) {
-        Post post = findPostOrThrow(id);
+        Post post = postRepository.findPostOrThrow(id);
+
+        if (post.isDeleted()) {
+            throw new ForbiddenException("Пост уже был удален");
+        }
 
         post.setDeleted(true);
         log.info("Пост id={} был мягко удален", post.getId());
@@ -89,41 +96,13 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public PostViewDto getById(Long id) {
-        Post post = findPostOrThrow(id);
+        Post post = postRepository.findPostOrThrow(id);
         return mapper.toViewDto(post);
     }
 
     @Override
-    public List<PostViewDto> getByUserDraftPostsSortedByCreation(Long userId) {
-        List<Post> posts = postRepository.findDraftsByUserId(userId);
-
-        return posts.stream()
-                .map(mapper::toViewDto)
-                .toList();
-    }
-
-    @Override
-    public List<PostViewDto> getByUserPublishedPostsSortedByPublication(Long userId) {
-        List<Post> posts = postRepository.findPublishedByUserId(userId);
-
-        return posts.stream()
-                .map(mapper::toViewDto)
-                .toList();
-    }
-
-    @Override
-    public List<PostViewDto> getByProjectDraftPostsSortedByCreation(Long projectId) {
-        List<Post> posts = postRepository.findDraftsByProjectId(projectId);
-
-        return posts.stream()
-                .map(mapper::toViewDto)
-                .toList();
-    }
-
-    @Override
-    public List<PostViewDto> getByProjectPublishedPostsSortedByPublication(Long projectId) {
-        List<Post> posts = postRepository.findPublishedByProjectId(projectId);
-
+    public List<PostViewDto> findByFilter(PostFilterDto filterDto) {
+        List<Post> posts = postRepository.findByFilter(filterDto);
         return posts.stream()
                 .map(mapper::toViewDto)
                 .toList();
@@ -153,10 +132,5 @@ public class PostServiceImpl implements PostService {
         }
 
         throw new DataValidationException("Не указан идентификатор автора");
-    }
-
-    private Post findPostOrThrow(Long id) {
-        return postRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Пост не найден"));
     }
 }

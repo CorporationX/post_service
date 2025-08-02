@@ -6,7 +6,7 @@ import faang.school.postservice.dto.post.PostCreateDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
 import faang.school.postservice.dto.post.PostViewDto;
 import faang.school.postservice.exception.EntityNotFoundException;
-import faang.school.postservice.service.post.PostServiceImpl;
+import faang.school.postservice.service.post.PostService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,8 +14,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-
-import java.util.List;
 
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
@@ -51,7 +49,7 @@ public class PostControllerTest {
     private UserContext context;
 
     @MockBean
-    private PostServiceImpl service;
+    private PostService service;
 
     @Test
     @DisplayName("POST /api/v1/posts - должен вернуть статус 201 Created при успешном создании поста")
@@ -139,73 +137,6 @@ public class PostControllerTest {
                 .andExpect(jsonPath("$.authorId").value(dto.authorId()))
                 .andExpect(jsonPath("$.published").value(dto.published()));
         verify(service, times(1)).getById(postId);
-    }
-
-    @Test
-    @DisplayName("GET /users/{userId}/posts/drafts должен возвращать 200 и список черновиков")
-    void shouldReturnUserDraftsWith200Status() throws Exception {
-        Long userId = 1L;
-        PostViewDto draft = getTestPostViewDto(false);
-        when(service.getByUserDraftPostsSortedByCreation(userId))
-                .thenReturn(List.of(draft));
-
-        mockMvc.perform(get(STRING_API_V1 + "/users/{userId}/posts/drafts", userId))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].published").value(false))
-                .andExpect(jsonPath("$[0].content").exists());
-
-        verify(service).getByUserDraftPostsSortedByCreation(userId);
-    }
-
-    @Test
-    @DisplayName("GET /users/{userId}/posts/published должен возвращать 200 и список опубликованных постов")
-    void shouldReturnUserPublishedPostsWith200Status() throws Exception {
-        Long userId = 2L;
-        PostViewDto publishedPost = getTestPostViewDto(true);
-        when(service.getByUserPublishedPostsSortedByPublication(userId))
-                .thenReturn(List.of(publishedPost));
-
-        mockMvc.perform(get(STRING_API_V1 + "/users/{userId}/posts/published", userId))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].published").value(true));
-
-        verify(service).getByUserPublishedPostsSortedByPublication(userId);
-    }
-
-    @Test
-    @DisplayName("GET /projects/{projectId}/posts/drafts должен возвращать 200 и список черновиков")
-    void shouldReturnProjectDraftsWith200Status() throws Exception {
-        Long projectId = 1L;
-        PostViewDto draft = getTestPostViewDto(false);
-        when(service.getByProjectDraftPostsSortedByCreation(projectId))
-                .thenReturn(List.of(draft));
-
-        mockMvc.perform(get(STRING_API_V1 + "/projects/{projectId}/posts/drafts", projectId))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].published").value(false));
-
-        verify(service).getByProjectDraftPostsSortedByCreation(projectId);
-    }
-
-    @Test
-    @DisplayName("GET /projects/{projectId}/posts/published должен возвращать 200 и список опубликованных постов")
-    void shouldReturnProjectPublishedPostsWith200Status() throws Exception {
-        Long projectId = 2L;
-        PostViewDto publishedPost = getTestPostViewDto(true);
-        when(service.getByProjectPublishedPostsSortedByPublication(projectId))
-                .thenReturn(List.of(publishedPost));
-
-        mockMvc.perform(get(STRING_API_V1 + "/projects/{projectId}/posts/published", projectId))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].published").value(true));
-
-        verify(service).getByProjectPublishedPostsSortedByPublication(projectId);
-    }
-
-    private PostViewDto getTestPostViewDto(boolean flag) {
-        return new PostViewDto(
-                "content", 1L, null, flag, false, null
-        );
     }
 
 }

@@ -1,9 +1,10 @@
 package faang.school.postservice.controller.post;
 
 import faang.school.postservice.dto.post.PostCreateDto;
+import faang.school.postservice.dto.post.PostFilterDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
 import faang.school.postservice.dto.post.PostViewDto;
-import faang.school.postservice.service.post.PostServiceImpl;
+import faang.school.postservice.service.post.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,11 +29,11 @@ import java.util.List;
  * @since 26.07.2025
  */
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/posts")
 @RequiredArgsConstructor
 public class PostController {
 
-    private final PostServiceImpl service;
+    private final PostService service;
 
     /**
      * Создает новый пост.
@@ -40,10 +41,11 @@ public class PostController {
      * @param createDto DTO с данными для создания поста {@link PostCreateDto}
      * @return DTO созданного поста {@link PostViewDto}
      */
-    @PostMapping("/posts")
+    @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
-    public PostViewDto create(@RequestBody PostCreateDto createDto) {
-        return service.create(createDto);
+    public ResponseEntity<PostViewDto> create(@RequestBody PostCreateDto createDto) {
+        PostViewDto result = service.create(createDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 
     /**
@@ -52,7 +54,7 @@ public class PostController {
      * @param postId ID поста для публикации
      * @return HTTP 204 No Content при успешной публикации
      */
-    @PutMapping("/posts/{postId}/publications")
+    @PutMapping("/{postId}/publications")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public ResponseEntity<Void> publication(@PathVariable Long postId) {
         service.publication(postId);
@@ -63,12 +65,13 @@ public class PostController {
      * Обновляет существующий пост.
      *
      * @param postId ID поста для обновления
-     * @param dto DTO с обновленными данными поста {@link PostUpdateDto}
+     * @param dto    DTO с обновленными данными поста {@link PostUpdateDto}
      * @return DTO обновленного поста {@link PostViewDto}
      */
-    @PutMapping("/posts/{postId}")
-    public PostViewDto update(@PathVariable Long postId, @RequestBody PostUpdateDto dto) {
-        return service.update(postId, dto);
+    @PutMapping("/{postId}")
+    public ResponseEntity<PostViewDto> update(@PathVariable Long postId, @RequestBody PostUpdateDto dto) {
+        PostViewDto result = service.update(postId, dto);
+        return ResponseEntity.ok().body(result);
     }
 
     /**
@@ -76,7 +79,7 @@ public class PostController {
      *
      * @param postId ID поста для удаления
      */
-    @DeleteMapping("/posts/{postId}")
+    @DeleteMapping("/{postId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public ResponseEntity<Void> softDelete(@PathVariable Long postId) {
         service.softDelete(postId);
@@ -89,54 +92,22 @@ public class PostController {
      * @param postId ID поста
      * @return DTO запрошенного поста {@link PostViewDto}
      */
-    @GetMapping("/posts/{postId}")
-    public PostViewDto getById(@PathVariable Long postId) {
-        return service.getById(postId);
+    @GetMapping("/{postId}")
+    public ResponseEntity<PostViewDto> getById(@PathVariable Long postId) {
+        PostViewDto result = service.getById(postId);
+        return ResponseEntity.ok().body(result);
     }
 
     /**
-     * Получает черновики пользователя, отсортированные по дате создания (новые сначала).
+     * Получает отфильтрованные посты в соответствии с параметрами filterDto ({@link PostFilterDto}).
+     * В цепочке фильтрации участвуют только не null параметры filterDto.
      *
-     * @param userId ID пользователя
+     * @param filterDto Dto с параметрами фильтрации постов
      * @return список DTO черновиков {@link PostViewDto}
      */
-    @GetMapping("/users/{userId}/posts/drafts")
-    public List<PostViewDto> getByUserDraftPostsSortedByCreation(@PathVariable Long userId) {
-        return service.getByUserDraftPostsSortedByCreation(userId);
+    @PostMapping("/filter")
+    public ResponseEntity<List<PostViewDto>> findByFilter(@RequestBody PostFilterDto filterDto) {
+        List<PostViewDto> result = service.findByFilter(filterDto);
+        return ResponseEntity.ok().body(result);
     }
-
-    /**
-     * Получает опубликованные посты пользователя, отсортированные по дате публикации (новые сначала).
-     *
-     * @param userId ID пользователя
-     * @return список DTO опубликованных постов {@link PostViewDto}
-     */
-    @GetMapping("/users/{userId}/posts/published")
-    public List<PostViewDto> getByUserPublishedPostsSortedByPublication(@PathVariable Long userId) {
-        return service.getByUserPublishedPostsSortedByPublication(userId);
-    }
-
-    /**
-     * Получает черновики проекта, отсортированные по дате создания (новые сначала).
-     *
-     * @param projectId ID проекта
-     * @return список DTO черновиков {@link PostViewDto}
-     */
-    @GetMapping("/projects/{projectId}/posts/drafts")
-    public List<PostViewDto> getByProjectDraftPostsSortedByCreation(@PathVariable Long projectId) {
-        return service.getByProjectDraftPostsSortedByCreation(projectId);
-    }
-
-    /**
-     * Получает опубликованные посты проекта, отсортированные по дате публикации (новые сначала).
-     *
-     * @param projectId ID проекта
-     * @return список DTO опубликованных постов {@link PostViewDto}
-     */
-    @GetMapping("/projects/{projectId}/posts/published")
-    public List<PostViewDto> getByProjectPublishedPostsSortedByPublication(@PathVariable Long projectId) {
-        return service.getByProjectPublishedPostsSortedByPublication(projectId);
-    }
-
-
 }
