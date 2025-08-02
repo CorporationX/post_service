@@ -20,6 +20,7 @@ public class PostCacheDto implements Serializable {
     private Long authorId;
     private Long projectId;
     private List<Long> likeIds;
+    private long likeCount;
     private ConcurrentLinkedDeque<Long> commentIds = new ConcurrentLinkedDeque<>();
     private List<Long> albumIds;
     private Long adId;

@@ -1,10 +1,11 @@
 package faang.school.postservice.repository;
 
 import faang.school.postservice.dto.post.PostCacheDto;
-import faang.school.postservice.dto.post.PostOutputDto;
+
+import java.util.Optional;
 
 public interface PostCacheRepository {
     void set(PostCacheDto post);
 
-    PostCacheDto get(long postId);
+    Optional<PostCacheDto> get(long postId);
 }

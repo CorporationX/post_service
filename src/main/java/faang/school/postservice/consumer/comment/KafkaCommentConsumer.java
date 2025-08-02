@@ -15,6 +15,7 @@ import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -53,15 +54,16 @@ public class KafkaCommentConsumer implements MessageConsumer<String> {
 
         lock.lock();
         try {
-            PostCacheDto postCacheDto = postCacheRepository.get(comment.postId());
-            if (postCacheDto == null) {
+            Optional<PostCacheDto> cache = postCacheRepository.get(comment.postId());
+            if (cache.isEmpty()) {
                 log.info("Message for comment [{}] wasn't processed cause: post [{}] cache not exists.", comment.commentId(), comment.postId());
                 return;
             }
 
-            ConcurrentLinkedDeque<Long> commentIds = processComments(comment.commentId(), postCacheDto.getCommentIds());
-            postCacheDto.setCommentIds(commentIds);
-            postCacheRepository.set(postCacheDto);
+            PostCacheDto postCache = cache.get();
+            ConcurrentLinkedDeque<Long> commentIds = processComments(comment.commentId(), postCache.getCommentIds());
+            postCache.setCommentIds(commentIds);
+            postCacheRepository.set(postCache);
         } finally {
             lock.unlock();
         }

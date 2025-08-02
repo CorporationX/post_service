@@ -12,6 +12,8 @@ import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Slf4j
 @Repository
 @RequiredArgsConstructor
@@ -27,9 +29,9 @@ public class PostCacheRepositoryImpl implements PostCacheRepository {
     }
 
     @Override
-    public PostCacheDto get(long postId) {
+    public Optional<PostCacheDto> get(long postId) {
         HashOperations<String, String, PostCacheDto> hashOps = redisTemplate.opsForHash();
 
-        return hashOps.get(redisProperties.getCacheNames().posts(), String.valueOf(postId));
+        return Optional.ofNullable(hashOps.get(redisProperties.getCacheNames().posts(), String.valueOf(postId)));
     }
 }
