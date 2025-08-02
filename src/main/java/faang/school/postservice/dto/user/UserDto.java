@@ -20,4 +20,10 @@ public class UserDto {
     public enum PreferredContact {
         EMAIL, PHONE, TELEGRAM
     }
+
+    public UserDto(long id, String name, String email) {
+        this.id = id;
+        this.username = name;
+        this.email = email;
+    }
 }

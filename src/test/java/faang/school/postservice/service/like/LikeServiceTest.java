@@ -48,15 +48,15 @@ public class LikeServiceTest {
         post.setId(1L);
         UserDto mockUser = new UserDto(1L, "name", "email");
 
-        when(userContext.getUserId()).thenReturn(mockUser.id());
-        when(userServiceClient.getUser(mockUser.id())).thenReturn(mockUser);
+        when(userContext.getUserId()).thenReturn(mockUser.getId());
+        when(userServiceClient.getUser(mockUser.getId())).thenReturn(mockUser);
         when(postService.getPostById(post.getId())).thenReturn(post);
-        when(likeRepository.findByPostIdAndUserId(post.getId(), mockUser.id())).thenReturn(Optional.empty());
+        when(likeRepository.findByPostIdAndUserId(post.getId(), mockUser.getId())).thenReturn(Optional.empty());
 
         Like saveLike = new Like();
         saveLike.setId(1L);
         saveLike.setPost(post);
-        saveLike.setUserId(mockUser.id());
+        saveLike.setUserId(mockUser.getId());
 
         when(likeRepository.save(any(Like.class))).thenReturn(saveLike);
 
@@ -71,12 +71,12 @@ public class LikeServiceTest {
         long postId= 1L;
         UserDto mockUser = new UserDto(1L, "name", "email");
 
-        when(userContext.getUserId()).thenReturn(mockUser.id());
-        when(userServiceClient.getUser(mockUser.id())).thenReturn(mockUser);
+        when(userContext.getUserId()).thenReturn(mockUser.getId());
+        when(userServiceClient.getUser(mockUser.getId())).thenReturn(mockUser);
 
         likeService.deleteLikeThePost(postId);
 
-        verify(likeRepository).deleteByPostIdAndUserId(postId, mockUser.id());
+        verify(likeRepository).deleteByPostIdAndUserId(postId, mockUser.getId());
     }
 
     @Test
@@ -105,15 +105,15 @@ public class LikeServiceTest {
         comment.setId(1L);
         UserDto mockUser = new UserDto(1L, "name", "email");
 
-        when(userContext.getUserId()).thenReturn(mockUser.id());
-        when(userServiceClient.getUser(mockUser.id())).thenReturn(mockUser);
+        when(userContext.getUserId()).thenReturn(mockUser.getId());
+        when(userServiceClient.getUser(mockUser.getId())).thenReturn(mockUser);
         when(commentService.getComment(comment.getId())).thenReturn(comment);
-        when(likeRepository.findByCommentIdAndUserId(comment.getId(), mockUser.id())).thenReturn(Optional.empty());
+        when(likeRepository.findByCommentIdAndUserId(comment.getId(), mockUser.getId())).thenReturn(Optional.empty());
 
         Like saveLike = new Like();
         saveLike.setId(1L);
         saveLike.setComment(comment);
-        saveLike.setUserId(mockUser.id());
+        saveLike.setUserId(mockUser.getId());
 
         when(likeRepository.save(any(Like.class))).thenReturn(saveLike);
 
