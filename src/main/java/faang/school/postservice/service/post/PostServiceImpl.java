@@ -201,6 +201,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    @Transactional
     public void updatePostContent(Post post, String correctedContent) {
         if (!postSpellCheckValidator.isContentChanged(post, correctedContent)) {
             return;
