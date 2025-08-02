@@ -1,7 +1,6 @@
 package faang.school.postservice.publisher.post;
 
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostEvent;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.model.Post;
@@ -17,8 +16,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PostEventPublisher implements MessagePublisher<PostEvent> {
     public static final String KAFKA_TOPIC = "post_published";
-    private UserServiceClient userServiceClient;
-    private CommonPublisher commonPublisher;
+    private final UserServiceClient userServiceClient;
+    private final CommonPublisher commonPublisher;
 
     @Override
     public void publish(PostEvent postEvent) {

@@ -12,6 +12,7 @@ import faang.school.postservice.exception.PostAlreadyPublishedException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.MessagePublisher;
+import faang.school.postservice.publisher.post.PostEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.PostService;
 import jakarta.persistence.EntityNotFoundException;
@@ -33,6 +34,7 @@ public class PostServiceImpl implements PostService {
     private final PostMapper postMapper;
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
+    private final PostEventPublisher postEventPublisher;
     @Qualifier(value = "redisUserPublisher")
     private final MessagePublisher<String> userPublisher;
 
@@ -124,7 +126,7 @@ public class PostServiceImpl implements PostService {
         foundPost.setPublished(true);
         foundPost.setPublishedAt(LocalDateTime.now());
         Post publishedPost = postRepository.save(foundPost);
-
+        postEventPublisher.createAndPublishMessage(publishedPost);
         return postMapper.toPostDto(publishedPost);
     }
 
