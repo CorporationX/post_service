@@ -51,12 +51,7 @@ public class PostCorrectionServiceTest {
         post2.setId(2L);
         post3 = new Post();
         post3.setId(3L);
-        SpellCheckAsyncProperties properties = new SpellCheckAsyncProperties(
-                2,
-                5,
-                10,
-                100
-        );
+        SpellCheckAsyncProperties properties = new SpellCheckAsyncProperties(2, 5, 10, 100);
         service = new PostCorrectionServiceImpl(postService, asyncService, properties);
     }
 
