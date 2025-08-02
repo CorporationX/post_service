@@ -76,5 +76,9 @@ public class FeedServiceImpl implements FeedService {
                 cache.putFeed(followerId, redisPostDto.getId(), redisPostDto.getCreatedAt()));
     }
 
-
+    public void putUserIntoCache(long userId) {
+        // Исправить на нормального юзера.
+        // Вместо своих дто, дополнить UserDto?
+        cache.putUser(userServiceClient.getUser(userId).id());
+    }
 }
