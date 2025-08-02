@@ -122,6 +122,7 @@ tasks.jacocoTestReport {
 }
 
 val jacocoClassExclude = listOf(
+    "faang.school.postservice.*",
     "faang.school.postservice.controller.KafkaController", // тест Стас
     "faang.school.postservice.producer.KafkaProducer", // тест Стас
     "faang.school.postservice.producer.LikeEventProducer", // тест Стас

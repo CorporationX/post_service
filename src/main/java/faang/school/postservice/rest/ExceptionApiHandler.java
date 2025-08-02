@@ -9,6 +9,7 @@ import faang.school.postservice.exception.PostNotFoundException;
 import faang.school.postservice.exception.UnauthorizedException;
 import faang.school.postservice.exception.UserNotFoundException;
 import faang.school.postservice.util.Utils;
+import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -55,6 +56,12 @@ public class ExceptionApiHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handlerUnrecognizedPropertyException(UnrecognizedPropertyException e) {
         return getErrorResponse("handleUnrecognizedPropertyException", e);
+    }
+
+    @ExceptionHandler(ValidationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handlerValidationException(ValidationException e) {
+        return getErrorResponse("handlerValidationException", e);
     }
 
     @ExceptionHandler({UserNotFoundException.class, LikeNotFoundException.class, PostNotFoundException.class,

@@ -27,9 +27,14 @@ spring:
 
   kafka:
     bootstrap-servers: localhost:9092
+    consumer:
+      group-id: post-group
+      auto-offset-reset: earliest
     topics:
       likeTopic: like-topic
       commentTopic: comment-topic
+      postTopic: post-topic
+      newsFeedTopic: newsfeed-topic
 
 server:
   port: 8081
@@ -54,3 +59,12 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+application:
+  followers:
+    chunk-size: 5
+  redis:
+    news-feed-cache-limit: 10
+    news-feed-time-to-live: 300 # in seconds
+    post-time-to-live: 300 # in seconds
+    user-time-to-live: 300 # in seconds

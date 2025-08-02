@@ -6,7 +6,7 @@ import faang.school.postservice.exception.CommentNotFoundException;
 import faang.school.postservice.mapper.comment.CommentMapperImpl;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.publisher.CommentEventPublisher;
+import faang.school.postservice.producer.impl.CommentEventProducer;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.util.Utils;
@@ -47,7 +47,7 @@ public class CommentServiceTest {
     private CommentMapperImpl commentMapper;
 
     @Mock
-    private CommentEventPublisher commentEventPublisher;
+    private CommentEventProducer commentEventProducer;
 
     @Mock
     private UserServiceClient userServiceClient;

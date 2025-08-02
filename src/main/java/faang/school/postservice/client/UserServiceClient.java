@@ -20,4 +20,7 @@ public interface UserServiceClient {
 
     @PostMapping("/users")
     List<UserDto> getUsersByIds(@RequestBody List<Long> ids);
+
+    @GetMapping("/subscription/{followeeId}/followers-id")
+    List<Long> findFollowersIdByFolloweeId(@PathVariable long followeeId);
 }
