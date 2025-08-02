@@ -10,6 +10,7 @@ public record KafkaProperties(
         String offset,
         int concurrency,
         int poolSize,
+        int maxBatchSize,
         ChannelNames topicNames
 ) {
     public record ChannelNames(

@@ -29,6 +29,7 @@ public class KafkaCommentConsumer implements MessageConsumer<String> {
     @Value("${entity.post.max_cached_comments}")
     private int maxCachedComments;
 
+    @Override
     @KafkaListener(topics = "${spring.data.kafka.topic_names.comments}")
     public void consume(String json, @Header(KafkaHeaders.ACKNOWLEDGMENT) Acknowledgment ack) {
         log.info("Message received. Comment [{}]", json);
@@ -37,9 +38,10 @@ public class KafkaCommentConsumer implements MessageConsumer<String> {
             CommentEvent comment = objectMapper.readValue(json, CommentEvent.class);
             updatePostCommentCache(comment);
             ack.acknowledge();
+
+            log.info("Message processed successfully. Comment [{}]", comment.commentId());
         } catch (JsonProcessingException e) {
-            log.info("Error on parsing json. Comment [{}]", json);
-            throw new RuntimeException();
+            log.info("Error on parsing json. Comment [{}]", json, e);
         }
     }
 
@@ -49,35 +51,32 @@ public class KafkaCommentConsumer implements MessageConsumer<String> {
             return;
         }
 
-        PostCacheDto postCacheDto = postCacheRepository.get(comment.postId());
-        if (postCacheDto == null) {
-            log.info("Message for comment [{}] wasn't processed cause: post [{}] cache not exists.", comment.commentId(), comment.postId());
-            return;
+        lock.lock();
+        try {
+            PostCacheDto postCacheDto = postCacheRepository.get(comment.postId());
+            if (postCacheDto == null) {
+                log.info("Message for comment [{}] wasn't processed cause: post [{}] cache not exists.", comment.commentId(), comment.postId());
+                return;
+            }
+
+            ConcurrentLinkedDeque<Long> commentIds = processComments(comment.commentId(), postCacheDto.getCommentIds());
+            postCacheDto.setCommentIds(commentIds);
+            postCacheRepository.set(postCacheDto);
+        } finally {
+            lock.unlock();
         }
-
-        ConcurrentLinkedDeque<Long> commentIds = processComments(comment.commentId(), postCacheDto.getCommentIds());
-        postCacheDto.setCommentIds(commentIds);
-        postCacheRepository.set(postCacheDto);
-
-        log.info("Message processed successfully. Comment [{}]", comment.commentId());
     }
 
     private ConcurrentLinkedDeque<Long> processComments(long commentId, ConcurrentLinkedDeque<Long> currentCommentIds) {
         ConcurrentLinkedDeque<Long> processedCommentIds = currentCommentIds == null
-                        ? new ConcurrentLinkedDeque<>()
-                        : currentCommentIds;
+                ? new ConcurrentLinkedDeque<>()
+                : currentCommentIds;
+        if (processedCommentIds.isEmpty() || commentId > processedCommentIds.getLast()) {
+            processedCommentIds.addFirst(commentId);
+        }
 
-        lock.lock();
-        try {
-            if (processedCommentIds.isEmpty() || commentId > processedCommentIds.getFirst()) {
-                processedCommentIds.addFirst(commentId);
-            }
-
-            while (processedCommentIds.size() > maxCachedComments) {
-                processedCommentIds.removeLast();
-            }
-        } finally {
-            lock.unlock();
+        while (processedCommentIds.size() > maxCachedComments) {
+            processedCommentIds.removeLast();
         }
 
         return processedCommentIds;
