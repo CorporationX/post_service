@@ -141,7 +141,7 @@ public class PostServiceImpl implements PostService {
         foundPost.setPublishedAt(LocalDateTime.now());
         Post publishedPost = postRepository.save(foundPost);
 
-        redisPostRepository.savePost(postMapper.toCachedPost(publishedPost));
+        redisPostRepository.savePost(publishedPost);
         redisUserRepository.saveUser(new CachedUser(publishedPost.getAuthorId()));
         findFollowersAndPublishEvent(publishedPost);
 

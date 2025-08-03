@@ -29,8 +29,9 @@ public class RedisFeedRepository {
         List<Long> followersIds = event.followersIds();
         long currentTimeMillis = System.currentTimeMillis();
         for (Long followerId : followersIds) {
-            zSetOps.add(FEED_PREFIX + followerId, String.valueOf(event.postId()), currentTimeMillis);
-            zSetOps.removeRange(FEED_PREFIX + followerId, 0, -101);
+            String key = FEED_PREFIX + followerId;
+            zSetOps.add(key, String.valueOf(event.postId()), currentTimeMillis);
+            zSetOps.removeRange(key, 0, -101);
         }
         log.info("Feed updated");
     }
