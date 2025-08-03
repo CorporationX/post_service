@@ -42,6 +42,7 @@ spring:
       auto_offset: earliest
       concurrency: 3
       topic:
+        likes: likes
         comments: comments
         post_published: post_published
 
