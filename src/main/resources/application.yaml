@@ -57,6 +57,8 @@ spring:
       port: 6380
       host: localhost
       size: 500
+      user-ttl: 1
+      comments-limit: 3
 
   task:
     execution:

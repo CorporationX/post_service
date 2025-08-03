@@ -2,9 +2,11 @@ package faang.school.postservice.dto.redis;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
+@Setter
 @Getter
 @AllArgsConstructor
 public class RedisPostDto {

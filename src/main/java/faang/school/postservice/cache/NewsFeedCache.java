@@ -1,5 +1,8 @@
 package faang.school.postservice.cache;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import faang.school.postservice.dto.kafka.KafkaCommentEventDto;
 import faang.school.postservice.dto.redis.RedisPostDto;
 import faang.school.postservice.dto.redis.RedisUserDto;
 import faang.school.postservice.repository.PostRepository;
@@ -14,6 +17,7 @@ import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
@@ -31,14 +35,21 @@ public class NewsFeedCache implements RedisCache {
     private static final String USER_CACHE_KEY_PREFIX = "user_cache:";
     private static final String POST_CACHE_KEY_PREFIX = "post_cache:";
     private static final String FEED_CACHE_KEY_PREFIX = "feed_cache:";
+    private static final String POST_COMMENTS_KEY_PREFIX = "comments_cache:";
 
     private final PostRepository postRepository;
     private final RedisTemplate<String, Object> redisNewsFeedTemplate;
+    private final ObjectMapper objectMapper;
 
     @Value("${spring.data.redis-news-feed.size}")
     private int feedSizeLimit;
+    @Value("${spring.data.redis-news-feed.user-ttl}")
+    private int userTTL;
+    @Value("${spring.data.redis-news-feed.comments-limit}")
+    private int commentsLimit;
 
     private DefaultRedisScript<Long> addAndTrimScript;
+    private DefaultRedisScript<Long> addCommentAndTrimScript;
 
     @PostConstruct
     public void init() {
@@ -49,12 +60,28 @@ public class NewsFeedCache implements RedisCache {
                     return redis.call('ZCARD', KEYS[1])
                 """);
         addAndTrimScript.setResultType(Long.class);
+
+        // Скрипт для комментариев к посту
+        addCommentAndTrimScript = new DefaultRedisScript<>();
+        addCommentAndTrimScript.setScriptText("""
+                     local key = KEYS[1]
+                     local limit = tonumber(ARGV[1])
+                     local score = tonumber(ARGV[2])
+                     local member = ARGV[3]
+                     -- ZADD идемпотентен.
+                     redis.call('ZADD', key, score, member)
+                     -- ZREMRANGEBYRANK 0, -limit-1 удаляет все элементы, кроме последних 'limit'.
+                     redis.call('ZREMRANGEBYRANK', key, 0, -limit-1)
+                     return redis.call('ZCARD', key)
+                """);
+        addCommentAndTrimScript.setResultType(Long.class);
     }
 
     @Override
     public void putUser(Long user) {
         String key = USER_CACHE_KEY_PREFIX + user;
-        redisNewsFeedTemplate.opsForValue().set(key, user);
+        redisNewsFeedTemplate.opsForValue().set(key, user, Duration.ofMinutes(5));
+//        redisNewsFeedTemplate.opsForValue().set(key, user, Duration.ofDays(userTTL)); // не забыть раскоментить после тестов.
         log.info("Cached user with key: {}", key);
     }
 
@@ -80,7 +107,7 @@ public class NewsFeedCache implements RedisCache {
 
     @Override
     public RedisPostDto getPost(Long postId) {
-        String key = USER_CACHE_KEY_PREFIX + postId;
+        String key = POST_CACHE_KEY_PREFIX + postId;
         return (RedisPostDto) redisNewsFeedTemplate.opsForValue().get(key);
     }
 
@@ -89,8 +116,7 @@ public class NewsFeedCache implements RedisCache {
         String key = FEED_CACHE_KEY_PREFIX + userId;
         Set<Object> postIds = redisNewsFeedTemplate.opsForZSet().reverseRange(key, start, end);
         if (postIds == null) {
-            // тут идём в бд и тащим фид от туда
-            return Set.of();
+            return Collections.emptySet();
         }
 
         return postIds.stream()
@@ -125,21 +151,59 @@ public class NewsFeedCache implements RedisCache {
         });
     }
 
+    @Async("redisTaskExecutor")
+    @Override
+    public void updatePostComment(long postId) {
+        RedisPostDto postToUpdate = getPost(postId);
+
+        if (postToUpdate != null) {
+            long currentCommentCount = postToUpdate.getCommentCount();
+            postToUpdate.setCommentCount(currentCommentCount + 1);
+            putPost(postToUpdate);
+            log.info("Successfully updated comment count for post {}. New count: {}"
+                    , postId, postToUpdate.getCommentCount());
+        } else {
+            log.warn("Post with ID {} not found in cache. Cannot update comment count.", postId);
+        }
+    }
+
+    @Override
+    public void addCommentToPostCache(KafkaCommentEventDto dto) {
+        String key = POST_COMMENTS_KEY_PREFIX + dto.postId();
+        long score = dto.createdAt().toEpochSecond(ZoneOffset.UTC);
+
+        String serializedComment = null;
+        try {
+            serializedComment = objectMapper.writeValueAsString(dto);
+        } catch (JsonProcessingException e) {
+            log.error("Failed to serialize CommentDto: {}", dto, e);
+            return;
+        }
+        List<Object> scriptArgs = new ArrayList<>();
+        scriptArgs.add(commentsLimit);
+        scriptArgs.add(score);
+        scriptArgs.add(serializedComment);
+
+        redisNewsFeedTemplate.execute(
+                addCommentAndTrimScript,
+                Collections.singletonList(key),
+                scriptArgs.toArray()
+        );
+
+        updatePostComment(dto.postId());
+    }
+
     public void putFeedBatch(Long userId, List<Object> scriptArgs) {
         String key = FEED_CACHE_KEY_PREFIX + userId;
 
-        // Создаем единый список, включающий feedSizeLimit и остальные аргументы.
-        // Это предотвращает ошибки, связанные с передачей массива в varargs.
         List<Object> allScriptArgs = new ArrayList<>(scriptArgs.size() + 1);
         allScriptArgs.add(feedSizeLimit);
         allScriptArgs.addAll(scriptArgs);
 
-//        log.info("scriptArgs: {}", allScriptArgs);
         redisNewsFeedTemplate.execute(
                 addAndTrimScript,
                 Collections.singletonList(key),
                 allScriptArgs.toArray()
         );
-//        log.info("range 0-500: {}", redisNewsFeedTemplate.opsForZSet().range(key, 0, 500));
     }
 }

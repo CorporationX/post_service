@@ -8,6 +8,7 @@ import faang.school.postservice.dto.comment.CommentOutputDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.kafka.producer.KafkaCommentEventProducer;
 import faang.school.postservice.mapper.CommentMapper;
+import faang.school.postservice.mapper.KafkaCommentEventMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.comment.CommentEventPublisher;
@@ -35,6 +36,7 @@ public class CommentServiceImpl implements CommentService {
     private final UserContext userContext;
     private final CommentEventPublisher commentPublisher;
     private final KafkaCommentEventProducer kafkaCommentEventProducer;
+    private final KafkaCommentEventMapper kafkaCommentEventMapper;
 
     @Override
     public CommentOutputDto createComment(CommentForCreationDto commentDto){
@@ -52,7 +54,7 @@ public class CommentServiceImpl implements CommentService {
                 , userContext.getUserId(), commentDto.getPostId());
 
         commentPublisher.publish(savedComment);
-        kafkaCommentEventProducer.sendMessage(postId, userId);
+        kafkaCommentEventProducer.sendMessage(kafkaCommentEventMapper.toKafkaCommentEventDto(savedComment));
         return commentMapper.toDto(savedComment);
     }
 
