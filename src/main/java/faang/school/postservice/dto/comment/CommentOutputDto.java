@@ -14,7 +14,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CommentOutputDto extends CommentDto{
+public class CommentOutputDto extends CommentDto {
 
     private Long id;
     private Long postId;

@@ -4,6 +4,7 @@ import faang.school.postservice.dto.post.PostCreateDto;
 import faang.school.postservice.dto.post.PostOutputDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface PostService {
@@ -26,5 +27,9 @@ public interface PostService {
     PostOutputDto updatePost(long postId, PostUpdateDto postUpdateDto);
 
     void publishUsersToBan();
+
+    List<PostOutputDto> fetchLatestPublishedPosts(Long userId, int limit);
+
+    List<PostOutputDto> fetchPublishedPostsBefore(Long userId, LocalDateTime publishedAt, int limit);
 
 }

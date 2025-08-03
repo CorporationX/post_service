@@ -31,8 +31,7 @@ public class ImageResizer {
         int targetSide;
         if (size == PictureSize.SMALL) {
             targetSide = SMALL_PICTURE_MAX_SIDE_PXL;
-        }
-        else {
+        } else {
             targetSide = LARGE_PICTURE_MAX_SIDE_PXL;
         }
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {

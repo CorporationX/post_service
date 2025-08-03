@@ -1,11 +1,11 @@
 package faang.school.postservice.controller.post;
 
-import faang.school.postservice.dto.post.TextCheckResponse;
-import faang.school.postservice.service.PostCorrectorService;
-import faang.school.postservice.dto.post.TextCheckRequest;
 import faang.school.postservice.dto.post.PostCreateDto;
 import faang.school.postservice.dto.post.PostOutputDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
+import faang.school.postservice.dto.post.TextCheckRequest;
+import faang.school.postservice.dto.post.TextCheckResponse;
+import faang.school.postservice.service.PostCorrectorService;
 import faang.school.postservice.service.PostService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

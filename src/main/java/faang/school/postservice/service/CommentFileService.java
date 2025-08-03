@@ -1,6 +1,5 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.model.ad.PictureSize;
 import org.apache.tomcat.util.http.fileupload.impl.FileSizeLimitExceededException;
 import org.springframework.expression.AccessException;
 import org.springframework.web.multipart.MultipartFile;

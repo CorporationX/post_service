@@ -1,6 +1,8 @@
 package faang.school.postservice.service.like;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.kafka.events.PostLikedEvent;
+import faang.school.postservice.kafka.producers.KafkaPostLikedProducer;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
@@ -24,6 +26,7 @@ public class LikeServiceImpl implements LikeService {
     private final CommentRepository commentRepository;
     @Qualifier(value = "likeEventPublisher")
     private final MessagePublisher<Like> likeEventPublisher;
+    private final KafkaPostLikedProducer kafkaPostLikedProducer;
 
 
     @Override
@@ -46,7 +49,8 @@ public class LikeServiceImpl implements LikeService {
                 .userId(userId)
                 .build();
         Like savedLike = likeRepository.save(like);
-
+        PostLikedEvent event = new PostLikedEvent(postId, userId);
+        kafkaPostLikedProducer.sendEvent(event);
         likeEventPublisher.publish(savedLike);
     }
 

@@ -6,6 +6,8 @@ import faang.school.postservice.dto.comment.CommentForCreationDto;
 import faang.school.postservice.dto.comment.CommentForUpdateDto;
 import faang.school.postservice.dto.comment.CommentOutputDto;
 import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.kafka.events.PostCommentedEvent;
+import faang.school.postservice.kafka.producers.KafkaCommentProducer;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
@@ -33,9 +35,10 @@ public class CommentServiceImpl implements CommentService {
     private final UserServiceClient userServiceClient;
     private final UserContext userContext;
     private final CommentEventPublisher commentPublisher;
+    private final KafkaCommentProducer kafkaCommentProducer;
 
     @Override
-    public CommentOutputDto createComment(CommentForCreationDto commentDto){
+    public CommentOutputDto createComment(CommentForCreationDto commentDto) {
         Long postId = commentDto.getPostId();
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("Post with id %d doesn't exist".formatted(postId)));
@@ -49,6 +52,9 @@ public class CommentServiceImpl implements CommentService {
         log.info("Creating a comment by user {} for post with id {} - Finished"
                 , userContext.getUserId(), commentDto.getPostId());
 
+        PostCommentedEvent event = new PostCommentedEvent(savedComment.getPost().getId(), savedComment.getAuthorId(),
+                savedComment.getId());
+        kafkaCommentProducer.sendEvent(event);
         commentPublisher.publish(savedComment);
         return commentMapper.toDto(savedComment);
     }

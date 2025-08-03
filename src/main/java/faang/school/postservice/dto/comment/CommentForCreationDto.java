@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CommentForCreationDto extends CommentDto{
+public class CommentForCreationDto extends CommentDto {
     @NotNull(message = "Post ID cannot be null")
     private Long postId;
 

@@ -21,6 +21,6 @@ public class PostViewEventPublisher implements MessagePublisher<PostViewEvent> {
     @Override
     public void publish(PostViewEvent postViewEvent) {
         redisTemplate.convertAndSend(topicName, postViewEvent);
-        log.info("Message published. Viewed post: {}", postViewEvent.toString());
+        log.info("Message published. Viewed post: {}", postViewEvent);
     }
 }

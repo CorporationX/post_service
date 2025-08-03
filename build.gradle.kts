@@ -27,6 +27,8 @@ dependencies {
     implementation("org.springframework.retry:spring-retry:2.0.2")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2")
     implementation("org.springframework.retry:spring-retry:2.0.2")
+    implementation("org.springframework.kafka:spring-kafka:3.1.3")
+    implementation("org.jspecify:jspecify:0.3.0")
 
     /**
      * Database

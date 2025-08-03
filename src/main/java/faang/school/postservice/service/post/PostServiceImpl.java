@@ -1,5 +1,6 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.async.AsyncFollowersFetcher;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
@@ -11,6 +12,10 @@ import faang.school.postservice.dto.post.UserPostsDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.PostAlreadyPublishedException;
+import faang.school.postservice.kafka.events.PostCreatedEvent;
+import faang.school.postservice.kafka.events.PostViewedEvent;
+import faang.school.postservice.kafka.producers.KafkaPostCreatedProducer;
+import faang.school.postservice.kafka.producers.KafkaPostViewedProducer;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.MessagePublisher;
@@ -20,6 +25,8 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,6 +47,10 @@ public class PostServiceImpl implements PostService {
     @Qualifier(value = "postViewEventPublisher")
     private final MessagePublisher<PostViewEvent> postViewPublisher;
     private final UserContext userContext;
+    private final KafkaPostCreatedProducer postCreatedProducer;
+    private final KafkaPostViewedProducer postViewedProducer;
+    private final AsyncFollowersFetcher followersFetcher;
+    private final KafkaPostCreatedProducer kafkaPostCreatedProducer;
 
     @Value("${entity.post.max-unverified-count-for-ban}")
     private long maxUnverifiedPostsForBan;
@@ -119,6 +130,12 @@ public class PostServiceImpl implements PostService {
         postToCreate.setDeleted(false);
         postToCreate.setPublished(false);
         Post createdPost = postRepository.save(postToCreate);
+        PostCreatedEvent event = new PostCreatedEvent(
+                followersFetcher.getFollowers(userId),
+                createdPost.getId(),
+                createdPost.getAuthorId()
+        );
+        kafkaPostCreatedProducer.sendEvent(event);
         return postMapper.toPostDto(createdPost);
     }
 
@@ -160,8 +177,11 @@ public class PostServiceImpl implements PostService {
     }
 
     private Post findPostById(long postId) {
-        return postRepository.findById(postId)
+        Post foundPost = postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("Post with id %d doesn't exist".formatted(postId)));
+        PostViewedEvent event = new PostViewedEvent(userContext.getUserId(), foundPost.getId());
+        postViewedProducer.sendEvent(event);
+        return foundPost;
     }
 
     private UserDto findUserById(long userId) {
@@ -179,5 +199,24 @@ public class PostServiceImpl implements PostService {
                 userContext.getUserId(),
                 LocalDateTime.now()
         );
+    }
+
+    @Override
+    public List<PostOutputDto> fetchLatestPublishedPosts(Long userId, int limit) {
+        Pageable pageable = PageRequest.of(0, limit);
+        List<Post> posts = postRepository.findTopByAuthorIdAndPublishedTrueOrderByPublishedAtDesc(userId, pageable);
+        return posts.stream()
+                .map(postMapper::toPostDto)
+                .toList();
+    }
+
+    @Override
+    public List<PostOutputDto> fetchPublishedPostsBefore(Long userId, LocalDateTime publishedAt, int limit) {
+        Pageable pageable = PageRequest.of(0, limit);
+        List<Post> posts = postRepository.findTopByAuthorIdAndPublishedTrueAndPublishedAtBeforeOrderByPublishedAtDesc(
+                userId, publishedAt, pageable);
+        return posts.stream()
+                .map(postMapper::toPostDto)
+                .toList();
     }
 }

@@ -2,9 +2,12 @@ package faang.school.postservice.repository;
 
 import faang.school.postservice.dto.post.UserPostsDto;
 import faang.school.postservice.model.Post;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface PostRepository extends CrudRepository<Post, Long> {
@@ -30,4 +33,15 @@ public interface PostRepository extends CrudRepository<Post, Long> {
                 HAVING COUNT(p.authorId) > :maxUnverifiedPostsForBan
             """)
     List<UserPostsDto> findUnverifiedPostsCountForUsers(long maxUnverifiedPostsForBan);
+
+    @Query("SELECT p FROM Post p WHERE p.authorId = :authorId AND p.published = true ORDER BY p.publishedAt DESC")
+    List<Post> findTopByAuthorIdAndPublishedTrueOrderByPublishedAtDesc(
+            @Param("authorId") Long authorId,
+            Pageable pageable);
+
+    @Query("SELECT p FROM Post p WHERE p.authorId = :authorId AND p.published = true AND p.publishedAt < :publishedAt ORDER BY p.publishedAt DESC")
+    List<Post> findTopByAuthorIdAndPublishedTrueAndPublishedAtBeforeOrderByPublishedAtDesc(
+            @Param("authorId") Long authorId,
+            @Param("publishedAt") LocalDateTime publishedAt,
+            Pageable pageable);
 }

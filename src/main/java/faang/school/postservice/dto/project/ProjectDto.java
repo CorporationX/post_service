@@ -1,7 +1,7 @@
 package faang.school.postservice.dto.project;
 
 public record ProjectDto(
-    long id,
-    String title
+        long id,
+        String title
 ) {
 }

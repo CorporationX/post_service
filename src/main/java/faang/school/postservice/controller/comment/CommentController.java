@@ -71,7 +71,7 @@ public class CommentController {
 
     @GetMapping("/post/{postId}")
     @Operation(summary = "Gets comments by postID",
-            description= "Post must exist")
+            description = "Post must exist")
     public List<CommentOutputDto> findByPostId(@NotNull @PathVariable long postId) {
         log.info("Searching for a list of comments for post with id {} by user {} - Started"
                 , postId, userContext.getUserId());
@@ -80,7 +80,7 @@ public class CommentController {
 
     @GetMapping("/{commentId}")
     @Operation(summary = "Gets comment by its ID",
-            description= "Comment must exist")
+            description = "Comment must exist")
     public CommentDto findById(@NotNull @PathVariable long commentId) {
         log.info("Searching for a comment with id {} by user {} - Started"
                 , commentId, userContext.getUserId());

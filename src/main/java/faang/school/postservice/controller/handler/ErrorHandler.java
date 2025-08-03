@@ -86,7 +86,7 @@ public class ErrorHandler {
         return new ErrorResponseDto(
                 HttpStatus.CONFLICT.name(),
                 "This action can only be performed once on an object." +
-                        " Undo previous changes to perform this operation again.",
+                " Undo previous changes to perform this operation again.",
                 e.getMessage(),
                 LocalDateTime.now().format(formatter)
         );

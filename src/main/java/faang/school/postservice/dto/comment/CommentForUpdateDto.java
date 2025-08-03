@@ -3,7 +3,6 @@ package faang.school.postservice.dto.comment;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -12,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CommentForUpdateDto extends CommentDto{
+public class CommentForUpdateDto extends CommentDto {
     @NotNull(message = "ID cannot be null")
     private Long id;
 

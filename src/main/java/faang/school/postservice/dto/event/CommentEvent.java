@@ -7,4 +7,5 @@ public record CommentEvent(
         Long postId,
         Long authorId,
         LocalDateTime createdAt
-){}
+) {
+}

@@ -21,13 +21,27 @@ spring:
     redis:
       port: 6379
       host: localhost
+      time-to-live: 86400
       channels:
           calculations_channel_name: cal
           user_ban_name: user_ban
           like_event_name: like_event
           comment_topic: comment_topic
           post_view_name: post_view
-
+      max-comments-to-cache: 3
+    kafka:
+      use-kafka: true
+      bootstrap-servers: localhost:9092
+      group_id: event-listeners
+      auto_offset: earliest
+      concurrency: 3
+      topics:
+        post-viewed: post.viewed
+        comment-made: comment.made
+        post-created: post.created
+        post-liked: post.liked
+      partitions: 3
+      replicas: 1
   task:
     execution:
       pool:
@@ -40,7 +54,8 @@ server:
 logging:
   level:
     root: info
-
+    org.apache.kafka: WARN
+    org.springframework.kafka: WARN
 services:
   s3:
     endpoint: http://localhost:9000
@@ -100,3 +115,5 @@ retry:
     backoff:
       delay: 2000
       multiplier: 1.5
+
+default-pagination-pagesize: 20

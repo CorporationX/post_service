@@ -1,7 +1,7 @@
 package faang.school.postservice.filter.album;
 
-import faang.school.postservice.dto.album.AlbumUpdateDto;
 import faang.school.postservice.dto.album.AlbumFilterDto;
+import faang.school.postservice.dto.album.AlbumUpdateDto;
 import org.springframework.stereotype.Component;
 
 import java.util.stream.Stream;

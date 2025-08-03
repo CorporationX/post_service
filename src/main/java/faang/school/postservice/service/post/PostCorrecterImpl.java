@@ -20,7 +20,7 @@ public class PostCorrecterImpl implements PostCorrectorService {
     @Override
     public TextCheckResponse checkText(String textToCheck) {
         String apiRequestParams = "text=" + URLEncoder.encode(textToCheck, StandardCharsets.UTF_8)
-                + "&language=" + properties.language();
+                                  + "&language=" + properties.language();
         CorrectionResponse correctionResponse = textCorrectionService.callCorrectionApi(apiRequestParams);
         int previousEnd = 0;
         StringBuilder correctedText = new StringBuilder();

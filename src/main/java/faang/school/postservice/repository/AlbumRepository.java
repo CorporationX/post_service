@@ -28,10 +28,10 @@ public interface AlbumRepository extends CrudRepository<Album, Long> {
     void deleteAlbumFromFavorites(long albumId, long userId);
 
     @Query(nativeQuery = true, value = """
-             SELECT * FROM album
-             WHERE id IN (
-                 SELECT album_id FROM favorite_albums WHERE user_id = :userId
-             )
-             """)
+            SELECT * FROM album
+            WHERE id IN (
+                SELECT album_id FROM favorite_albums WHERE user_id = :userId
+            )
+            """)
     List<Album> findFavoriteAlbumsByUserId(long userId);
 }

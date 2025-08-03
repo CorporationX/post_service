@@ -11,7 +11,9 @@ import java.util.Map;
 @Data
 @ConfigurationProperties("spring.data.redis")
 public class RedisProperties {
-    String host;
-    int port;
-    Map<String, String> channels = new HashMap<>();
+    private String host;
+    private int port;
+    private Map<String, String> channels = new HashMap<>();
+    private int timeToLive;
+    private int maxCommentsToCache;
 }
