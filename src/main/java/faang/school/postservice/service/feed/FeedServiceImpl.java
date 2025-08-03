@@ -86,4 +86,9 @@ public class FeedServiceImpl implements FeedService {
     public void updateCommentInCache(KafkaCommentEventDto dto) {
         cache.addCommentToPostCache(dto);
     }
+
+    @Override
+    public void updateViewsForPost(long postId){
+        cache.updatePostViews(postId);
+    }
 }

@@ -36,6 +36,7 @@ public class NewsFeedCache implements RedisCache {
     private static final String POST_CACHE_KEY_PREFIX = "post_cache:";
     private static final String FEED_CACHE_KEY_PREFIX = "feed_cache:";
     private static final String POST_COMMENTS_KEY_PREFIX = "comments_cache:";
+    private static final String POST_VIEWS_KEY_PREFIX = "post_views:";
 
     private final PostRepository postRepository;
     private final RedisTemplate<String, Object> redisNewsFeedTemplate;
@@ -108,7 +109,11 @@ public class NewsFeedCache implements RedisCache {
     @Override
     public RedisPostDto getPost(Long postId) {
         String key = POST_CACHE_KEY_PREFIX + postId;
-        return (RedisPostDto) redisNewsFeedTemplate.opsForValue().get(key);
+        RedisPostDto post = (RedisPostDto) redisNewsFeedTemplate.opsForValue().get(key);
+        if (post != null) {
+            post.setCommentCount(getPostViews(postId));
+        }
+        return post;
     }
 
     @Override
@@ -146,12 +151,11 @@ public class NewsFeedCache implements RedisCache {
                 })
                 .collect(Collectors.toList());
 
-        followerIds.forEach(followerId -> {
+        for (Long followerId : followerIds) {
             putFeedBatch(followerId, scriptArgs);
-        });
+        }
     }
 
-    @Async("redisTaskExecutor")
     @Override
     public void updatePostComment(long postId) {
         RedisPostDto postToUpdate = getPost(postId);
@@ -167,6 +171,7 @@ public class NewsFeedCache implements RedisCache {
         }
     }
 
+    @Async("redisTaskExecutor")
     @Override
     public void addCommentToPostCache(KafkaCommentEventDto dto) {
         String key = POST_COMMENTS_KEY_PREFIX + dto.postId();
@@ -191,6 +196,17 @@ public class NewsFeedCache implements RedisCache {
         );
 
         updatePostComment(dto.postId());
+    }
+
+    @Override
+    public void updatePostViews(long postId) {
+        String key = POST_VIEWS_KEY_PREFIX + postId;
+        redisNewsFeedTemplate.opsForValue().increment(key);
+    }
+
+    public Long getPostViews(long postId) {
+        String key = POST_VIEWS_KEY_PREFIX + postId;
+        return (Long) redisNewsFeedTemplate.opsForValue().get(key);
     }
 
     public void putFeedBatch(Long userId, List<Object> scriptArgs) {
