@@ -49,4 +49,16 @@ public class RedisConfiguration {
 
         return template;
     }
+
+    @Bean
+    public RedisTemplate<Long, Long> feedRedisTemplate(RedisConnectionFactory connectionFactory, ObjectMapper objectMapper) {
+        RedisTemplate<Long, Long> template = new RedisTemplate<>();
+        template.setConnectionFactory(connectionFactory);
+        GenericJackson2JsonRedisSerializer jsonSerializer = new GenericJackson2JsonRedisSerializer(objectMapper);
+
+        template.setKeySerializer(jsonSerializer);
+        template.setValueSerializer(jsonSerializer);
+
+        return template;
+    }
 }

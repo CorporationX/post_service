@@ -14,8 +14,6 @@ import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Component;
 
-import java.util.Optional;
-import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.locks.ReentrantLock;
 
 @Slf4j
@@ -48,24 +46,9 @@ public class KafkaPostConsumer implements MessageConsumer<String> {
     private void updateFeed(long userId, long postId) {
         lock.lock();
         try {
-            Optional<ConcurrentLinkedDeque<Long>> cache = feedCacheRepository.get(userId);
-            ConcurrentLinkedDeque<Long> postIds = cache.orElseGet(ConcurrentLinkedDeque::new);
-            ConcurrentLinkedDeque<Long> preparedPostIds = preparePostIds(postId, postIds);
-            feedCacheRepository.set(userId, preparedPostIds);
+            feedCacheRepository.set(userId, postId);
         } finally {
             lock.unlock();
         }
-    }
-
-    private ConcurrentLinkedDeque<Long> preparePostIds(long postId, ConcurrentLinkedDeque<Long> currentPostIds) {
-        if (!currentPostIds.contains(postId) || postId > currentPostIds.getLast()) {
-            currentPostIds.addFirst(postId);
-        }
-
-        while (currentPostIds.size() > maxFeedPosts) {
-            currentPostIds.removeLast();
-        }
-
-        return currentPostIds;
     }
 }

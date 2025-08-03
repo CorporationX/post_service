@@ -33,6 +33,10 @@ public interface PostMapper {
     @Mapping(target = "likeCount", source = "likeIds", qualifiedByName = "countLikes")
     PostCacheDto toCacheDto(PostOutputDto post);
 
+    PostCacheDto toCacheDto(Post post);
+
+    PostOutputDto toPostOutputDto(PostCacheDto post);
+
     void update(PostUpdateDto postUpdateDto, @MappingTarget Post post);
 
     @Named("mapLikes")

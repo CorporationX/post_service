@@ -11,6 +11,7 @@ public record KafkaProperties(
         int concurrency,
         int poolSize,
         int maxBatchSize,
+        int maxFeedSize,
         ChannelNames topicNames
 ) {
     public record ChannelNames(

@@ -22,6 +22,7 @@ spring:
       active: false
       port: 6379
       host: localhost
+      max_feed_size: 20
       channels:
           calculations_channel_name: cal
           user_ban_name: user_ban
@@ -115,6 +116,8 @@ entity:
         max-unverified-count-for-ban: 5
         max_cached_comments: 3
         max_feed_posts: 500
+    feed:
+        api_version: /api/v1
     commentServiceFileLimitMb: 5
 languagetool:
   apiUrl: "https://api.languagetool.org/v2/check"
