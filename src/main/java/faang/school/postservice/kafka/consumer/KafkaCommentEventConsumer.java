@@ -18,6 +18,7 @@ public class KafkaCommentEventConsumer {
     @KafkaListener(topics = "#{__listener.topic}", groupId = "my-group")
     public void listen(KafkaCommentEventDto dto) {
         System.out.println("Received message: " + dto);
-        feedService.putUserIntoCache(dto.userId());
+        feedService.putUserIntoCache(dto.authorId());
+        feedService.updateCommentInCache(dto);
     }
 }

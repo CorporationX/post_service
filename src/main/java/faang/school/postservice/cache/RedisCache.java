@@ -1,5 +1,6 @@
 package faang.school.postservice.cache;
 
+import faang.school.postservice.dto.kafka.KafkaCommentEventDto;
 import faang.school.postservice.dto.redis.RedisPostDto;
 import faang.school.postservice.dto.redis.RedisUserDto;
 import org.springframework.scheduling.annotation.Async;
@@ -24,4 +25,8 @@ public interface RedisCache {
 
     @Async("redisTaskExecutor")
     void putFeedForSubscribers(Long redisUserDto, List<Long> followerIds);
+
+    void updatePostComment(long postId);
+
+    void addCommentToPostCache(KafkaCommentEventDto dto);
 }

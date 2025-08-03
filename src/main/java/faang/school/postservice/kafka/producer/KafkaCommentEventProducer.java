@@ -14,7 +14,7 @@ public class KafkaCommentEventProducer {
     private final String topic;
     private final KafkaTemplate<String, KafkaCommentEventDto> kafkaTemplate;
 
-    public void sendMessage(long postId, long userId) {
-        kafkaTemplate.send(topic, new KafkaCommentEventDto(postId, userId));
+    public void sendMessage(KafkaCommentEventDto messageDto) {
+        kafkaTemplate.send(topic, messageDto);
     }
 }

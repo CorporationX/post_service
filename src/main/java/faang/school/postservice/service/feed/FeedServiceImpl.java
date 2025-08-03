@@ -3,6 +3,7 @@ package faang.school.postservice.service.feed;
 import faang.school.postservice.cache.RedisCache;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.feed.UserFeedHeatDto;
+import faang.school.postservice.dto.kafka.KafkaCommentEventDto;
 import faang.school.postservice.dto.kafka.KafkaPostEventDto;
 import faang.school.postservice.dto.redis.RedisPostDto;
 import faang.school.postservice.dto.user.UserDto;
@@ -35,15 +36,12 @@ public class FeedServiceImpl implements FeedService {
     // Add retry, timeout, try/catch
     @Override
     public void initializeFeedHeat() {
-        log.info("Initializing feed heat");
         int lastBatchSize = batchSize;
         long startingFromId = 0;
         do {
-            log.info("DO: lastBatchSize = {}, startingFromId = {}", lastBatchSize, startingFromId);
             List<UserFeedHeatDto> userFeedHeatDtos = userServiceClient.getUserIdsByBatch(batchSize, startingFromId);
             startingFromId = userFeedHeatDtos.get(userFeedHeatDtos.size() - 1).userId();
             lastBatchSize = userFeedHeatDtos.size();
-            log.info("userFeedHeatDtos = {} | lastBatchSize = {}, startingFromId = {}", userFeedHeatDtos, lastBatchSize, startingFromId);
             kafkaFeedHeatEventProducer.sendMessage(userFeedHeatDtos);
         } while (lastBatchSize == batchSize);
     }
@@ -72,7 +70,7 @@ public class FeedServiceImpl implements FeedService {
                 .map(UserDto::id)
                 .toList();
 
-        cache.putUser(userServiceClient.getUser(eventDto.authorId()).id());
+        putUserIntoCache(eventDto.authorId());
         // воспользоваться тут той же логикой, что и для распределения по подписчикам в fillCacheForUsers();
         subscriberIds.forEach(followerId ->
                 cache.putFeed(followerId, redisPostDto.getId(), redisPostDto.getCreatedAt()));
@@ -82,5 +80,10 @@ public class FeedServiceImpl implements FeedService {
         // Исправить на нормального юзера.
         // Вместо своих дто, дополнить UserDto?
         cache.putUser(userServiceClient.getUser(userId).id());
+    }
+
+    @Override
+    public void updateCommentInCache(KafkaCommentEventDto dto) {
+        cache.addCommentToPostCache(dto);
     }
 }
