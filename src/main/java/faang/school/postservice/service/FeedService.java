@@ -14,4 +14,6 @@ public interface FeedService {
     void putUserIntoCache(long userId);
     void updateCommentInCache(KafkaCommentEventDto postId);
     void updateViewsForPost(long postId);
+
+    void updateLikesForPost(long postId);
 }

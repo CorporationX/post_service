@@ -91,4 +91,9 @@ public class FeedServiceImpl implements FeedService {
     public void updateViewsForPost(long postId){
         cache.updatePostViews(postId);
     }
+
+    @Override
+    public void updateLikesForPost(long postId) {
+        cache.updatePostLikes(postId);
+    }
 }
