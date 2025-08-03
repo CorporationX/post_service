@@ -6,6 +6,7 @@ import faang.school.postservice.dto.comment.CommentForUpdateDto;
 import faang.school.postservice.dto.comment.CommentOutputDto;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
+import faang.school.postservice.model.redis.CachedComment;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
@@ -28,6 +29,8 @@ public interface CommentMapper {
     Comment toEntity(CommentForCreationDto commentDto);
 
     List<CommentOutputDto> toListDto(List<Comment> comments);
+
+    CachedComment toCachedComment(Comment comment);
 
     default List<Long> mapLikesToIds(List<Like> likes) {
         return likes != null ? likes.stream().map(Like::getId).collect(Collectors.toList()) : null;

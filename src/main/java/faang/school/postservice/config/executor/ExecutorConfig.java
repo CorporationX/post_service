@@ -5,6 +5,7 @@ import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -20,6 +21,17 @@ public class ExecutorConfig {
     public ExecutorService executorService() {
         this.executorService = Executors.newFixedThreadPool(executorProperties.getThreadsCount());
         return executorService;
+    }
+
+    @Bean(name = "postExecutor")
+    public ThreadPoolTaskExecutor postExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(executorProperties.getThreadsCount());
+        executor.setMaxPoolSize(executorProperties.getThreadsCount());
+        executor.setWaitForTasksToCompleteOnShutdown(true);
+        executor.setAwaitTerminationSeconds(executorProperties.getTerminationTimeout());
+        executor.initialize();
+        return executor;
     }
 
     @PreDestroy

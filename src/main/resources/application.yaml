@@ -39,6 +39,14 @@ spring:
           like_event_name: like_event
           comment_topic: comment_topic
           post_view_name: post_view
+      ttl-hours: 24
+    kafka:
+      bootstrap-servers: localhost:9092, localhost:9192, localhost:9292
+      group_id: event-listeners
+      auto_offset: earliest
+      concurrency: 3
+      topic:
+        post_published: post_published
 
 
   task:
@@ -46,6 +54,10 @@ spring:
       pool:
         size: 10
         max-size: 10
+
+  retry:
+    maxAttempts: 3
+    delay: 100
 
 server:
   port: 8081
