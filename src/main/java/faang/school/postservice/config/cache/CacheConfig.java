@@ -18,11 +18,10 @@ public class CacheConfig {
     public RedisCacheManager cacheManager(RedisConnectionFactory connectionFactory,
                                           CacheConfigProperties cacheConfigProperties) {
         Map<String, RedisCacheConfiguration> cacheConfigurations = new HashMap<>();
-        cacheConfigurations.put("users",
+        cacheConfigurations.put("authors",
                 RedisCacheConfiguration.defaultCacheConfig()
-                        .entryTtl(cacheConfigProperties.getUsersTtl())
+                        .entryTtl(cacheConfigProperties.getAuthorsTtl())
                         .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer())));
-
         return RedisCacheManager.builder(connectionFactory)
                 .cacheDefaults(RedisCacheConfiguration.defaultCacheConfig()
                         .entryTtl(cacheConfigProperties.getDefaultTtl())

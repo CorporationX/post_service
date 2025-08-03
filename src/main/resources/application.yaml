@@ -112,4 +112,4 @@ retry:
 cache:
   config:
     default-ttl: 10m
-    users-ttl: 24h
+    authors-ttl: 24h

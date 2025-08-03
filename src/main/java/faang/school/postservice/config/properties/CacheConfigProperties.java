@@ -11,5 +11,5 @@ import java.time.Duration;
 @RequiredArgsConstructor
 public class CacheConfigProperties {
     private final Duration defaultTtl;
-    private final Duration usersTtl;
+    private final Duration authorsTtl;
 }

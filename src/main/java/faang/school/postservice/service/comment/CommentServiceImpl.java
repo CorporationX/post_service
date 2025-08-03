@@ -98,7 +98,7 @@ public class CommentServiceImpl implements CommentService {
         userServiceClient.getUser(userId);
     }
 
-    @CachePut(value = "users", key = "#userDto.id")
+    @CachePut(value = "authors", key = "#userDto.id")
     public UserDto putAuthorIntoCache(UserDto userDto) {
         return userDto;
     }
