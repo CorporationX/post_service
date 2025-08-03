@@ -24,13 +24,8 @@ spring:
       queue_capacity: 500
       thread_name_prefix: kafka-
 
-    kafka:
-      bootstrap_servers: localhost:9092, localhost:9192, localhost:9292
-      group_id: event-listeners
-      auto_offset: earliest
-      concurrency: 3
-
     redis:
+      max_comment_per_post: 3
       port: 6379
       host: localhost
       channels:
@@ -40,12 +35,14 @@ spring:
           comment_topic: comment_topic
           post_view_name: post_view
       ttl-hours: 24
+
     kafka:
       bootstrap-servers: localhost:9092, localhost:9192, localhost:9292
       group_id: event-listeners
       auto_offset: earliest
       concurrency: 3
       topic:
+        comments: comments
         post_published: post_published
 
 
