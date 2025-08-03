@@ -1,7 +1,6 @@
 package faang.school.postservice.publisher.post;
 
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostEvent;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.model.Post;
@@ -11,13 +10,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
 public class PostEventPublisher implements MessagePublisher<PostEvent> {
     public static final String KAFKA_TOPIC = "post_published";
-    private UserServiceClient userServiceClient;
-    private CommonPublisher commonPublisher;
+    private final UserServiceClient userServiceClient;
+    private final CommonPublisher commonPublisher;
 
     @Override
     public void publish(PostEvent postEvent) {
@@ -26,7 +26,7 @@ public class PostEventPublisher implements MessagePublisher<PostEvent> {
 
     public void createAndPublishMessage(Post post) {
         long userId = post.getAuthorId();
-        userServiceClient.getFollowers(userId)
+        List<Long> userFollowers = userServiceClient.getFollowers(userId)
                 .stream()
                 .map(UserDto::id)
                 .toList();
@@ -34,7 +34,7 @@ public class PostEventPublisher implements MessagePublisher<PostEvent> {
                 post.getId(),
                 post.getContent(),
                 userId,
-                )
+                userFollowers,
                 LocalDateTime.now());
         publish(event);
     }

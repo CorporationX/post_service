@@ -25,12 +25,17 @@ spring:
           calculations_channel_name: cal
           user_ban_name: user_ban
           like_event_name: like_event
+          comment_topic: comment_topic
+          post_view_name: post_view
     kafka:
       bootstrap-servers: localhost:9092, localhost:9192, localhost:9292
       group_id: event-listeners
       auto_offset: earliest
       concurrency: 3
-
+    cache:
+      type: redis
+      redis:
+        cache-null-values: false
 
   task:
     execution:
@@ -104,3 +109,10 @@ retry:
     backoff:
       delay: 2000
       multiplier: 1.5
+
+cache:
+  config:
+    default-ttl: 10m
+    users-ttl: 24h
+    feed-ttl: 24h
+    posts-ttl: 24h
