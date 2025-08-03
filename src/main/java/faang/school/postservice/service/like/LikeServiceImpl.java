@@ -1,6 +1,7 @@
 package faang.school.postservice.service.like;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.messaging.KafkaLikeProducer;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
@@ -9,9 +10,11 @@ import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.LikeService;
+import faang.school.postservice.util.LikeEventCreator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +27,8 @@ public class LikeServiceImpl implements LikeService {
     private final CommentRepository commentRepository;
     @Qualifier(value = "likeEventPublisher")
     private final MessagePublisher<Like> likeEventPublisher;
+    private final KafkaLikeProducer kafkaLikeProducer;
+    private final LikeEventCreator likeEventCreator;
 
 
     @Override
@@ -48,6 +53,7 @@ public class LikeServiceImpl implements LikeService {
         Like savedLike = likeRepository.save(like);
 
         likeEventPublisher.publish(savedLike);
+        kafkaLikeProducer.sendKafka(likeEventCreator.create(like));
     }
 
     @Override
