@@ -19,14 +19,37 @@ spring:
 
   data:
     redis:
+      active: false
       port: 6379
       host: localhost
+      max_feed_size: 20
       channels:
           calculations_channel_name: cal
           user_ban_name: user_ban
           like_event_name: like_event
           comment_topic: comment_topic
           post_view_name: post_view
+      cache-names:
+          posts: posts
+          authors: authors
+          feed: feed
+      cache-duration:
+          posts: 24h
+          authors: 24h
+          feed: 24h
+    kafka:
+      active: true
+      connection: localhost:9092, localhost:9192, localhost:9292
+      group_id: event-listeners
+      offset: earliest
+      concurrency: 3
+      pool_size: 3
+      max_batch_size: 100
+      topic_names:
+          comments: comments
+          posts: posts
+          post_view: post_view
+          likes: likes
 
   task:
     execution:
@@ -51,6 +74,9 @@ services:
   user-service:
     host: localhost
     port: 8080
+    url: localhost:8080
+    path_subscriptions: /api/subscriptions
+    path: /api/v1/users
   project-service:
     host: localhost
     port: 8082
@@ -78,17 +104,25 @@ project:
     ban-user:
       cron: 0 0 1 * * *
     post-publisher:
-      cron: "0 * * * * *"
+      cron: "0 0 1 * * *"
 
 thread:
   pool:
     coreSize: 5
     maxSize: 10
     prefix: "post-publisher-"
+  feed:
+    coreSize: 5
+    maxSize: 10
+    prefix: "feed-"
 
 entity:
     post:
         max-unverified-count-for-ban: 5
+        max_cached_comments: 3
+        max_feed_posts: 500
+    feed:
+        api_version: /api/v1
     commentServiceFileLimitMb: 5
 languagetool:
   apiUrl: "https://api.languagetool.org/v2/check"

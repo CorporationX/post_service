@@ -10,6 +10,7 @@ import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.comment.CommentEventPublisher;
+import faang.school.postservice.repository.AuthorCacheRepository;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.CommentService;
@@ -33,9 +34,10 @@ public class CommentServiceImpl implements CommentService {
     private final UserServiceClient userServiceClient;
     private final UserContext userContext;
     private final CommentEventPublisher commentPublisher;
+    private final AuthorCacheRepository authorCacheRepository;
 
     @Override
-    public CommentOutputDto createComment(CommentForCreationDto commentDto){
+    public CommentOutputDto createComment(CommentForCreationDto commentDto) {
         Long postId = commentDto.getPostId();
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("Post with id %d doesn't exist".formatted(postId)));
@@ -49,7 +51,9 @@ public class CommentServiceImpl implements CommentService {
         log.info("Creating a comment by user {} for post with id {} - Finished"
                 , userContext.getUserId(), commentDto.getPostId());
 
+        authorCacheRepository.set(userServiceClient.getUser(savedComment.getAuthorId()));
         commentPublisher.publish(savedComment);
+
         return commentMapper.toDto(savedComment);
     }
 

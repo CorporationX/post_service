@@ -20,4 +20,15 @@ public class ThreadPoolConfig {
         executor.initialize();
         return executor;
     }
+
+    @Bean
+    public ThreadPoolTaskExecutor feedExecutor(FeedPoolProperties feedPoolProperties) {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(feedPoolProperties.coreSize());
+        executor.setMaxPoolSize(feedPoolProperties.maxSize());
+        executor.setThreadNamePrefix(feedPoolProperties.prefix());
+        executor.initialize();
+
+        return executor;
+    }
 }

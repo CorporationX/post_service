@@ -20,6 +20,8 @@ public class CommentEventPublisher implements MessagePublisher<Comment> {
     private final RedisTemplate<String, Object> redisTemplate;
     private final CommentEventMapper commentEventMapper;
     private final RedisProperties properties;
+    private final MessagePublisher<CommentEvent> kafkaCommentProducer;
+
     private String topic;
 
     @PostConstruct
@@ -30,8 +32,16 @@ public class CommentEventPublisher implements MessagePublisher<Comment> {
     @Override
     public void publish(Comment comment) {
         CommentEvent commentEvent = commentEventMapper.toEvent(comment);
-        redisTemplate.convertAndSend(topic, commentEvent);
-        log.info("Message published. Comment (id {}) has been created by user (id {}) for post (id {}). "
-                , commentEvent.commentId(), commentEvent.authorId(), commentEvent.postId());
+        publishEvent(commentEvent);
+        kafkaCommentProducer.publish(commentEvent);
+    }
+
+    private void publishEvent(CommentEvent comment) {
+        if (!properties.isActive()) {
+            return;
+        }
+
+        redisTemplate.convertAndSend(topic, comment);
+        log.info("Message published in redis. Comment {}", comment);
     }
 }

@@ -14,10 +14,13 @@ import faang.school.postservice.exception.PostAlreadyPublishedException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.MessagePublisher;
+import faang.school.postservice.repository.AuthorCacheRepository;
+import faang.school.postservice.repository.PostCacheRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.PostService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -27,6 +30,7 @@ import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -37,9 +41,12 @@ public class PostServiceImpl implements PostService {
     private final ProjectServiceClient projectServiceClient;
     @Qualifier(value = "redisUserPublisher")
     private final MessagePublisher<String> userPublisher;
-    @Qualifier(value = "postViewEventPublisher")
+    @Qualifier(value = "kafkaPostViewProducer")
     private final MessagePublisher<PostViewEvent> postViewPublisher;
+    private final MessagePublisher<Post> kafkaPostProducer;
     private final UserContext userContext;
+    private final PostCacheRepository postCacheRepository;
+    private final AuthorCacheRepository authorCacheRepository;
 
     @Value("${entity.post.max-unverified-count-for-ban}")
     private long maxUnverifiedPostsForBan;
@@ -133,7 +140,12 @@ public class PostServiceImpl implements PostService {
         foundPost.setPublishedAt(LocalDateTime.now());
         Post publishedPost = postRepository.save(foundPost);
 
-        return postMapper.toPostDto(publishedPost);
+        PostOutputDto postDto = postMapper.toPostDto(publishedPost);
+        postCacheRepository.set(postMapper.toCacheDto(postDto));
+        authorCacheRepository.set(userServiceClient.getUser(postDto.getAuthorId()));
+        kafkaPostProducer.publish(publishedPost);
+
+        return postDto;
     }
 
     @Override

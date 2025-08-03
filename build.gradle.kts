@@ -27,6 +27,7 @@ dependencies {
     implementation("org.springframework.retry:spring-retry:2.0.2")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2")
     implementation("org.springframework.retry:spring-retry:2.0.2")
+    implementation("org.springframework.kafka:spring-kafka")
 
     /**
      * Database
@@ -45,6 +46,7 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok:1.18.26")
     implementation("org.mapstruct:mapstruct:1.5.3.Final")
     annotationProcessor("org.mapstruct:mapstruct-processor:1.5.3.Final")
+    implementation("com.google.guava:guava:32.1.2-jre")
 
     /**
      * Test containers

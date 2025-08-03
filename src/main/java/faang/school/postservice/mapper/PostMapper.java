@@ -1,5 +1,6 @@
 package faang.school.postservice.mapper;
 
+import faang.school.postservice.dto.post.PostCacheDto;
 import faang.school.postservice.dto.post.PostCreateDto;
 import faang.school.postservice.dto.post.PostOutputDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
@@ -28,6 +29,13 @@ public interface PostMapper {
     PostOutputDto toPostDto(Post post);
 
     Post toPostEntity(PostCreateDto postCreateDto);
+
+    @Mapping(target = "likeCount", source = "likeIds", qualifiedByName = "countLikes")
+    PostCacheDto toCacheDto(PostOutputDto post);
+
+    PostCacheDto toCacheDto(Post post);
+
+    PostOutputDto toPostOutputDto(PostCacheDto post);
 
     void update(PostUpdateDto postUpdateDto, @MappingTarget Post post);
 
@@ -69,5 +77,14 @@ public interface PostMapper {
         return resources.stream()
                 .map(Resource::getId)
                 .toList();
+    }
+
+    @Named("countLikes")
+    default long summarizeLikes(List<Long> likes) {
+        if (likes == null) {
+            return 0;
+        }
+
+        return likes.size();
     }
 }
