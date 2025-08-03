@@ -21,9 +21,32 @@ spring:
     redis:
       port: 6379
       host: localhost
+      time-to-live: 86400
       channels:
-        calculations_channel:
-          name: calculations_channel
+          calculations_channel_name: cal
+          user_ban_name: user_ban
+          like_event_name: like_event
+          comment_topic: comment_topic
+          post_view_name: post_view
+      max-comments-to-cache: 3
+    kafka:
+      use-kafka: true
+      bootstrap-servers: localhost:9092
+      group_id: event-listeners
+      auto_offset: earliest
+      concurrency: 3
+      topics:
+        post-viewed: post.viewed
+        comment-made: comment.made
+        post-created: post.created
+        post-liked: post.liked
+      partitions: 3
+      replicas: 1
+  task:
+    execution:
+      pool:
+        size: 10
+        max-size: 10
 
 server:
   port: 8081
@@ -31,13 +54,66 @@ server:
 logging:
   level:
     root: info
+    org.apache.kafka: WARN
+    org.springframework.kafka: WARN
+services:
+  s3:
+    endpoint: http://localhost:9000
+    accessKey: user
+    secretKey: password
+    bucketName: projectbucket
+    isMocked: false
+  user-service:
+    host: localhost
+    port: 8080
+  project-service:
+    host: localhost
+    port: 8082
+  payment-service:
+    host: localhost
+    port: 9080
+scheduler:
+  expired-ad:
+    batch-size: 100
+    cron: 0 0 0 * * ?
 
-user-service:
-  host: localhost
-  port: 8080
-project-service:
-  host: localhost
-  port: 8082
-payment-service:
-  host: localhost
-  port: 9080
+executor-service:
+  threads-count: 2
+  termination-timeout: 30
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui
+    enabled: true
+  api-docs:
+    path: /api-docs
+
+
+project:
+    ban-user:
+      cron: 0 0 1 * * *
+    post-publisher:
+      cron: "0 * * * * *"
+
+thread:
+  pool:
+    coreSize: 5
+    maxSize: 10
+    prefix: "post-publisher-"
+
+entity:
+    post:
+        max-unverified-count-for-ban: 5
+    commentServiceFileLimitMb: 5
+languagetool:
+  apiUrl: "https://api.languagetool.org/v2/check"
+  language: "auto"
+
+retry:
+  text-auto-correction-api:
+    max-attempts: 3
+    backoff:
+      delay: 2000
+      multiplier: 1.5
+
+default-pagination-pagesize: 20

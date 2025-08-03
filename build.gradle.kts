@@ -24,6 +24,11 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.cloud:spring-cloud-starter-openfeign:4.0.2")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+    implementation("org.springframework.retry:spring-retry:2.0.2")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2")
+    implementation("org.springframework.retry:spring-retry:2.0.2")
+    implementation("org.springframework.kafka:spring-kafka:3.1.3")
+    implementation("org.jspecify:jspecify:0.3.0")
 
     /**
      * Database
@@ -57,6 +62,13 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.9.2")
     testImplementation("org.assertj:assertj-core:3.24.2")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+
+    implementation("com.amazonaws:aws-java-sdk-s3:1.12.481")
+
+    /**
+     * Formating images
+     */
+    implementation("net.coobird:thumbnailator:0.4.20")
 }
 
 tasks.test {
@@ -71,4 +83,53 @@ val test by tasks.getting(Test::class) { testLogging.showStandardStreams = true 
 
 tasks.bootJar {
     archiveFileName.set("service.jar")
+}
+
+jacoco {
+    toolVersion = "0.8.12"
+    reportsDirectory.set(layout.buildDirectory.dir("reports/jacoco"))
+}
+
+tasks.test {
+    finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+}
+
+tasks.jacocoTestReport {
+    reports {
+        xml.required.set(false)
+        csv.required.set(false)
+        html.outputLocation.set(layout.buildDirectory.dir("jacocoHtml"))
+    }
+
+    val mainSourceSet = sourceSets.main.get()
+    val compiledClasses = mainSourceSet.output.classesDirs
+
+    classDirectories.setFrom(files(compiledClasses.files.map {
+        fileTree(it) {
+            exclude(
+                "**/PostServiceApp.class",
+                "**/dto/**",
+                "**/mapper/**",
+                "**/exception/**",
+            )
+        }
+    }))
+}
+
+tasks.jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            limit {
+                minimum = "0.01".toBigDecimal()
+            }
+        }
+    }
+}
+
+tasks.check {
+    finalizedBy(tasks.jacocoTestCoverageVerification)
 }
