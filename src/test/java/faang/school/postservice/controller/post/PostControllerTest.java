@@ -5,6 +5,7 @@ import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostFilterDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
 import faang.school.postservice.service.post.PostService;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -29,6 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(PostController.class)
+@DisplayName("Тест для PostController")
 class PostControllerTest {
     @Autowired
     private MockMvc mockMvc;
@@ -40,6 +42,7 @@ class PostControllerTest {
     private ObjectMapper objMapper;
 
     @Test
+    @DisplayName("тест успешного создания поста")
     void create_success() throws Exception {
         var createDto = buildCreateDto(1L, null);
         var post = buildPost(1L, 1L, null, createDto.content());
@@ -53,6 +56,7 @@ class PostControllerTest {
     }
 
     @Test
+    @DisplayName("тест успешной публикации поста")
     void publish_success() throws Exception {
         var postId = 1L;
         mockMvc.perform(post("/posts/" + postId + "/publish"))
@@ -61,6 +65,7 @@ class PostControllerTest {
     }
 
     @Test
+    @DisplayName("тест успешной обновления поста")
     void update_success() throws Exception {
         var postId = 1L;
         var updateDto = new PostUpdateDto("New content");
@@ -76,6 +81,7 @@ class PostControllerTest {
     }
 
     @Test
+    @DisplayName("тест успешной удаления поста")
     void delete_success() throws Exception {
         var postId = 1L;
         mockMvc.perform(delete("/posts/" + postId))
@@ -84,6 +90,7 @@ class PostControllerTest {
     }
 
     @Test
+    @DisplayName("тест успешного получения поста по id")
     void getById_success() throws Exception {
         var postId = 1L;
         var post = buildPost(postId, 1L, null, "content");
@@ -95,6 +102,7 @@ class PostControllerTest {
     }
 
     @Test
+    @DisplayName("тест успешного получения постов")
     void getList() throws Exception {
         var post1 = buildPost(1L, 2L, null, "content");
         var post2 = buildPost(2L, 2L, null, "content2");

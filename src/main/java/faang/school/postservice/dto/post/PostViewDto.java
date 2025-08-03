@@ -21,7 +21,7 @@ import java.time.LocalDateTime;
  * @author Myrza
  * @since 24.07.2025
  */
-public record PostDto(
+public record PostViewDto(
         Long id,
         String content,
         Long authorId,

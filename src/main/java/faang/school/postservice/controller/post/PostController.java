@@ -1,9 +1,9 @@
 package faang.school.postservice.controller.post;
 
 import faang.school.postservice.dto.post.PostCreateDto;
-import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.PostFilterDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
+import faang.school.postservice.dto.post.PostViewDto;
 import faang.school.postservice.service.post.PostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,10 +21,12 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 /**
- * PostController — описание класса.
+ * REST-контроллер для управления постами.
  * <p>
- * TODO: описать, какие обязанности у класса.
- * </p>
+ * Предоставляет API для создания, публикации, обновления, удаления и получения постов.
+ * Использует сервис {@link PostService} для выполнения бизнес-логики.
+ * <p>
+ * Базовый путь: {@code /posts}
  *
  * @author Myrza
  * @since 24.07.2025
@@ -36,7 +38,7 @@ public class PostController {
     private final PostService service;
 
     @PostMapping
-    public ResponseEntity<PostDto> create(@Valid @RequestBody PostCreateDto createDto) {
+    public ResponseEntity<PostViewDto> create(@Valid @RequestBody PostCreateDto createDto) {
         var post = service.create(createDto);
         return ResponseEntity.ok(post);
     }
@@ -48,7 +50,7 @@ public class PostController {
     }
 
     @PutMapping("/{postId}")
-    public ResponseEntity<PostDto> update(@PathVariable Long postId, @Valid @RequestBody PostUpdateDto updateDto) {
+    public ResponseEntity<PostViewDto> update(@PathVariable Long postId, @Valid @RequestBody PostUpdateDto updateDto) {
         var post = service.update(postId, updateDto);
         return ResponseEntity.ok(post);
     }
@@ -60,16 +62,14 @@ public class PostController {
     }
 
     @GetMapping("/{postId}")
-    public ResponseEntity<PostDto> getById(@Valid @PathVariable Long postId) {
+    public ResponseEntity<PostViewDto> getById(@Valid @PathVariable Long postId) {
         var post = service.getById(postId);
         return ResponseEntity.ok(post);
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<PostDto>> getList(@Valid @ModelAttribute PostFilterDto filterDto) {
-        System.out.println(filterDto);
+    public ResponseEntity<List<PostViewDto>> getList(@Valid @ModelAttribute PostFilterDto filterDto) {
         var posts = service.getList(filterDto);
-        System.out.println(posts);
         return ResponseEntity.ok(posts);
     }
 }

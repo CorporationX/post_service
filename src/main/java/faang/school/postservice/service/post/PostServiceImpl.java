@@ -4,9 +4,9 @@ import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostCreateDto;
-import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.PostFilterDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
+import faang.school.postservice.dto.post.PostViewDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.mapper.PostMapper;
@@ -23,10 +23,16 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * PostServiceImpl — описание класса.
+ * Реализация сервиса для управления публикациями (постами).
  * <p>
- * TODO: описать, какие обязанности у класса.
- * </p>
+ * Предоставляет функционал для:
+ * <ul>
+ *   <li>Создания новых постов от имени пользователя или проекта</li>
+ *   <li>Публикации постов</li>
+ *   <li>Обновления и удаления постов</li>
+ *   <li>Получения постов по идентификатору и с применением фильтрации</li>
+ * </ul>
+ * <p>
  *
  * @author Myrza
  * @since 25.07.2025
@@ -36,7 +42,7 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class PostServiceImpl implements PostService {
     private static final String USER_HAS_NO_ACCESS_TO_CREATE_POST =
-            "Пользователь не имеет право на создание поста от имени пользователя с id ";
+            "Недостаточно прав для создания поста от имени пользователя с id ";
 
     private static final String USER_HAS_NO_ACCESS_TO_POST =
             "Пользователь не имеет право на данный пост";
@@ -49,7 +55,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     @Transactional
-    public PostDto create(PostCreateDto createDto) {
+    public PostViewDto create(PostCreateDto createDto) {
         var currentUserId = userContext.getUserId();
         createDto.validate();
         var authorIsUser = createDto.authorId() != null;
@@ -87,7 +93,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public PostDto update(long postId, PostUpdateDto updateDto) {
+    public PostViewDto update(long postId, PostUpdateDto updateDto) {
         var currentUserId = userContext.getUserId();
         var post = getPostById(postId);
         checkUserAccess(currentUserId, post);
@@ -113,13 +119,13 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public PostDto getById(long postId) {
+    public PostViewDto getById(long postId) {
         var post = getPostById(postId);
         return postMapper.toViewDto(post);
     }
 
     @Override
-    public List<PostDto> getList(PostFilterDto filterDto) {
+    public List<PostViewDto> getList(PostFilterDto filterDto) {
         List<Post> posts = null;
         if (filterDto.authorIsUser()) {
             posts = postRepository.findByAuthorId(filterDto.authorId());

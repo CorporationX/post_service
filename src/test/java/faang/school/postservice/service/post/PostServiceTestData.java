@@ -1,7 +1,7 @@
 package faang.school.postservice.service.post;
 
 import faang.school.postservice.dto.post.PostCreateDto;
-import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.post.PostViewDto;
 import faang.school.postservice.model.Post;
 
 import java.time.LocalDateTime;
@@ -13,7 +13,7 @@ public class PostServiceTestData {
         return new PostCreateDto("some content", authorId, projectId);
     }
 
-    public static Post buildEntity(Long postId, Long authorId, Long projectId, LocalDateTime now) {
+    public static Post buildPostEntity(Long postId, Long authorId, Long projectId, LocalDateTime now) {
         Post.PostBuilder post = Post.builder();
         post.content("some content");
         post.id(postId);
@@ -38,19 +38,19 @@ public class PostServiceTestData {
         return post.build();
     }
 
-    public static List<PostDto> toViewDtoList(List<Post> entities) {
+    public static List<PostViewDto> toViewDtoList(List<Post> entities) {
         if (entities == null) {
             return null;
         }
 
-        List<PostDto> list = new ArrayList<PostDto>(entities.size());
+        List<PostViewDto> list = new ArrayList<PostViewDto>(entities.size());
         for (Post post : entities) {
             list.add(toViewDto(post));
         }
         return list;
     }
 
-    public static PostDto toViewDto(Post entity) {
+    public static PostViewDto toViewDto(Post entity) {
         if (entity == null) {
             return null;
         }
@@ -65,6 +65,6 @@ public class PostServiceTestData {
         LocalDateTime scheduledAt = entity.getScheduledAt();
         LocalDateTime createdAt = entity.getCreatedAt();
         LocalDateTime updatedAt = entity.getUpdatedAt();
-        return new PostDto(id, content, authorId, projectId, published, deleted, publishedAt, scheduledAt, createdAt, updatedAt);
+        return new PostViewDto(id, content, authorId, projectId, published, deleted, publishedAt, scheduledAt, createdAt, updatedAt);
     }
 }

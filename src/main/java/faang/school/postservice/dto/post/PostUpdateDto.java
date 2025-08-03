@@ -4,10 +4,10 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 /**
- * PostUpdateDto — неизменяемая структура данных (record).
+ * DTO для обновления существующего поста.
  * <p>
- * TODO: описать предназначение record и его поля.
- * </p>
+ * Содержит данные, которые могут быть изменены при редактировании поста.
+ * Используются аннотации валидации для проверки корректности входных данных.
  *
  * @param content Новое содержимое публикации (макс. 4096 символов).
  * @author Myrza

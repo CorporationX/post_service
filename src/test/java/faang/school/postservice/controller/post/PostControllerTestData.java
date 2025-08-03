@@ -1,7 +1,7 @@
 package faang.school.postservice.controller.post;
 
 import faang.school.postservice.dto.post.PostCreateDto;
-import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.post.PostViewDto;
 import faang.school.postservice.dto.post.PostFilterDto;
 import faang.school.postservice.model.Post;
 
@@ -27,8 +27,8 @@ public class PostControllerTestData {
                 .build();
     }
 
-    public static PostDto toViewDto(Post post) {
-        return new PostDto(
+    public static PostViewDto toViewDto(Post post) {
+        return new PostViewDto(
                 post.getId(),
                 post.getContent(),
                 post.getAuthorId(),

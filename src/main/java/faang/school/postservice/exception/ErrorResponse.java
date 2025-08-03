@@ -7,10 +7,15 @@ import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 
 /**
- * ErrorResponse — описание класса.
+ * DTO для представления информации об ошибке в HTTP-ответах.
  * <p>
- * Класс для возврата из обработчиков ошибок
- * </p>
+ * Используется для возврата клиенту структурированного сообщения об ошибке,
+ * содержащего:
+ * <ul>
+ *   <li>HTTP-статус ошибки ({@link #status})</li>
+ *   <li>Сообщение об ошибке ({@link #message})</li>
+ *   <li>Время возникновения ошибки ({@link #timestamp})</li>
+ * </ul>
  *
  * @author agent
  * @since 05.07.2025
