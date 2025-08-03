@@ -9,7 +9,9 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 public class PostCreatedEvent {
+
     List<UserDto> followers;
     private Long postId;
     private Long authorId;
+
 }
