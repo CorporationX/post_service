@@ -37,6 +37,7 @@ public class NewsFeedCache implements RedisCache {
     private static final String FEED_CACHE_KEY_PREFIX = "feed_cache:";
     private static final String POST_COMMENTS_KEY_PREFIX = "comments_cache:";
     private static final String POST_VIEWS_KEY_PREFIX = "post_views:";
+    private static final String POST_LIKES_KEY_PREFIX = "post_likes:";
 
     private final PostRepository postRepository;
     private final RedisTemplate<String, Object> redisNewsFeedTemplate;
@@ -207,6 +208,20 @@ public class NewsFeedCache implements RedisCache {
     public void updatePostViews(long postId) {
         String key = POST_VIEWS_KEY_PREFIX + postId;
         redisNewsFeedTemplate.opsForValue().increment(key);
+    }
+
+    @Override
+    public void updatePostLikes(long postId) {
+        String key = POST_LIKES_KEY_PREFIX + postId;
+        redisNewsFeedTemplate.opsForValue().increment(key);
+        log.info("Successfully incremented likes for post {}.", postId);
+    }
+
+    @Override
+    public Long getPostLikes(long postId) {
+        String key = POST_LIKES_KEY_PREFIX + postId;
+        Object likes = redisNewsFeedTemplate.opsForValue().get(key);
+        return likes != null ? Long.parseLong(likes.toString()) : 0L;
     }
 
     public Long getPostViews(long postId) {

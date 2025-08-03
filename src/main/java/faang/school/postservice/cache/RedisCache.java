@@ -31,4 +31,8 @@ public interface RedisCache {
     void addCommentToPostCache(KafkaCommentEventDto dto);
 
     void updatePostViews(long postId);
+
+    void updatePostLikes(long postId);
+
+    Long getPostLikes(long postId);
 }
