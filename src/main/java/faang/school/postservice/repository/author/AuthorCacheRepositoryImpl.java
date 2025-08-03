@@ -1,6 +1,5 @@
 package faang.school.postservice.repository.author;
 
-import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.redis.RedisProperties;
 import faang.school.postservice.dto.user.UserCacheDto;
 import faang.school.postservice.dto.user.UserDto;
@@ -18,18 +17,16 @@ import org.springframework.stereotype.Repository;
 public class AuthorCacheRepositoryImpl implements AuthorCacheRepository {
     private final RedisTemplate<String, Object> redisTemplate;
     private final RedisProperties redisProperties;
-    private final UserServiceClient userService;
     private final UserMapper userMapper;
 
     @Override
-    public void set(long authorId) {
+    public void set(UserDto user) {
         try {
-            UserDto user = userService.getUser(authorId);
             redisTemplate.opsForHash().put(redisProperties.getCacheNames().authors(),
-                    String.valueOf(authorId), userMapper.dtoToCache(user));
+                    String.valueOf(user.id()), userMapper.dtoToCache(user));
             redisTemplate.expire(redisProperties.getCacheNames().authors(), redisProperties.getCacheDuration().authors());
         } catch (Exception e) {
-            log.error("Unexpected exception on author caching [{}].", authorId, e);
+            log.error("Unexpected exception on author caching [{}].", user.id(), e);
         }
     }
 

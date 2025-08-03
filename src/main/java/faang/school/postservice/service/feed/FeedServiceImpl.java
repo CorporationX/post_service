@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.locks.ReentrantLock;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +29,8 @@ public class FeedServiceImpl implements FeedService {
     private final UserServiceClient userServiceCLient;
     private final UserContext userContext;
     private final PostMapper postMapper;
+
+    private final ReentrantLock postLock = new ReentrantLock();
 
     @Override
     public List<PostOutputDto> getFeed(Integer offset) {
@@ -43,6 +46,16 @@ public class FeedServiceImpl implements FeedService {
                 ).stream()
                 .map(postMapper::toPostDto)
                 .toList();
+    }
+
+    @Override
+    public void addPostToUser(long postId, long userId) {
+        postLock.lock();
+        try {
+            feedCacheRepository.set(userId, postId);
+        } finally {
+            postLock.unlock();
+        }
     }
 
     private List<PostOutputDto> getFromCache(int offset) {

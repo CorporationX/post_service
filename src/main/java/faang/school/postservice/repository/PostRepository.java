@@ -28,6 +28,9 @@ public interface PostRepository extends CrudRepository<Post, Long> {
     @Query("SELECT p FROM Post p WHERE p.published = false AND p.deleted = false AND p.scheduledAt <= CURRENT_TIMESTAMP")
     List<Post> findReadyToPublish();
 
+    @Query(nativeQuery = true, value = "select * from post order by id asc offset :offset limit :limit")
+    List<Post> findPage(long offset, long limit);
+
     @Query("""
             SELECT new faang.school.postservice.dto.post.UserPostsDto(p.authorId, COUNT(p.id) as count) 
                 FROM Post p

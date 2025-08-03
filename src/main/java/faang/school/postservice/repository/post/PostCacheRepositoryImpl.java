@@ -2,12 +2,10 @@ package faang.school.postservice.repository.post;
 
 import faang.school.postservice.config.redis.RedisProperties;
 import faang.school.postservice.dto.post.PostCacheDto;
-import faang.school.postservice.dto.post.PostOutputDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.repository.PostCacheRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;

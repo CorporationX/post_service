@@ -18,7 +18,6 @@ import faang.school.postservice.repository.AuthorCacheRepository;
 import faang.school.postservice.repository.PostCacheRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.PostService;
-import jakarta.annotation.Resource;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -143,7 +142,7 @@ public class PostServiceImpl implements PostService {
 
         PostOutputDto postDto = postMapper.toPostDto(publishedPost);
         postCacheRepository.set(postMapper.toCacheDto(postDto));
-        authorCacheRepository.set(postDto.getAuthorId());
+        authorCacheRepository.set(userServiceClient.getUser(postDto.getAuthorId()));
         kafkaPostProducer.publish(publishedPost);
 
         return postDto;

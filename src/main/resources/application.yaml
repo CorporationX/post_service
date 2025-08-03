@@ -76,6 +76,7 @@ services:
     port: 8080
     url: localhost:8080
     path_subscriptions: /api/subscriptions
+    path: /api/v1/users
   project-service:
     host: localhost
     port: 8082
@@ -110,6 +111,10 @@ thread:
     coreSize: 5
     maxSize: 10
     prefix: "post-publisher-"
+  feed:
+    coreSize: 5
+    maxSize: 10
+    prefix: "feed-"
 
 entity:
     post:

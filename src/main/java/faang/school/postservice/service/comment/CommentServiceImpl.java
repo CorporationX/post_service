@@ -51,7 +51,7 @@ public class CommentServiceImpl implements CommentService {
         log.info("Creating a comment by user {} for post with id {} - Finished"
                 , userContext.getUserId(), commentDto.getPostId());
 
-        authorCacheRepository.set(savedComment.getAuthorId());
+        authorCacheRepository.set(userServiceClient.getUser(savedComment.getAuthorId()));
         commentPublisher.publish(savedComment);
 
         return commentMapper.toDto(savedComment);

@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -16,6 +17,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class PostCacheServiceImpl implements PostCacheService {
     private final PostCacheRepository postCacheRepository;
     private final ReentrantLock viewLock = new ReentrantLock();
+    private final ReentrantLock likeLock = new ReentrantLock();
 
     @Override
     public void addView(long postId) {
@@ -35,5 +37,35 @@ public class PostCacheServiceImpl implements PostCacheService {
         } finally {
             viewLock.unlock();
         }
+    }
+
+    @Override
+    public void addLike(long postId, long userId) {
+        likeLock.lock();
+        try {
+            Optional<PostCacheDto> cache = postCacheRepository.get(postId);
+            if (cache.isEmpty()) {
+                log.info("Message for liked post [{}] on user [{}] wasn't processed cause: post cache not exists.", postId, userId);
+                return;
+            }
+
+            PostCacheDto postCache = cache.get();
+            postCacheRepository.set(preparePostCache(postCache, userId));
+        } finally {
+            likeLock.unlock();
+        }
+    }
+
+    private PostCacheDto preparePostCache(PostCacheDto post, long userId) {
+        List<Long> likeIds = post.getLikeIds();
+        if (likeIds.contains(userId)) {
+            return post;
+        }
+
+        likeIds.add(userId);
+        post.setLikeIds(likeIds);
+        post.setLikeCount(post.getLikeCount() + 1);
+
+        return post;
     }
 }

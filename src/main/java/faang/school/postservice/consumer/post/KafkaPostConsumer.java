@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.consumer.MessageConsumer;
 import faang.school.postservice.dto.post.PostCreateEvent;
 import faang.school.postservice.repository.FeedCacheRepository;
+import faang.school.postservice.service.FeedService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,6 +22,7 @@ import java.util.concurrent.locks.ReentrantLock;
 @RequiredArgsConstructor
 public class KafkaPostConsumer implements MessageConsumer<String> {
     private final FeedCacheRepository feedCacheRepository;
+    private final FeedService feedService;
     private final ObjectMapper objectMapper;
     private final ReentrantLock lock = new ReentrantLock();
 
@@ -34,21 +36,12 @@ public class KafkaPostConsumer implements MessageConsumer<String> {
 
         try {
             PostCreateEvent post = objectMapper.readValue(json, PostCreateEvent.class);
-            post.followerIds().forEach((followerId) -> updateFeed(followerId, post.id()));
+            post.followerIds().forEach((followerId) -> feedService.addPostToUser(post.id(), followerId));
             ack.acknowledge();
 
             log.info("Message for published post [{}] processed successfully.", post.id());
         } catch (JsonProcessingException e) {
             log.info("Error on json parsing for published post [{}].", json, e);
-        }
-    }
-
-    private void updateFeed(long userId, long postId) {
-        lock.lock();
-        try {
-            feedCacheRepository.set(userId, postId);
-        } finally {
-            lock.unlock();
         }
     }
 }

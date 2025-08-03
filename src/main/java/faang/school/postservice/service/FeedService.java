@@ -6,4 +6,6 @@ import java.util.List;
 
 public interface FeedService {
     List<PostOutputDto> getFeed(Integer offset);
+
+    void addPostToUser(long postId, long userId);
 }
