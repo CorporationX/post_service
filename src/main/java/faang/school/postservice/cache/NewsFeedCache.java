@@ -96,7 +96,12 @@ public class NewsFeedCache implements RedisCache {
     @Override
     public void putFeed(Long userId, Long postId, LocalDateTime postCreatedAt) {
         String key = FEED_CACHE_KEY_PREFIX + userId;
-        redisNewsFeedTemplate.opsForZSet().add(key, postId, System.currentTimeMillis());
+        long score = postCreatedAt.toEpochSecond(ZoneOffset.UTC);
+        redisNewsFeedTemplate.execute(
+                addAndTrimScript,
+                Collections.singletonList(key),
+                feedSizeLimit, score, postId
+        );
         log.info("Added post {} to user {} feed with score {}", postId, userId, postCreatedAt);
     }
 
