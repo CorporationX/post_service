@@ -1,7 +1,6 @@
 package faang.school.postservice.publisher.post;
 
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostEvent;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.model.Post;
@@ -34,7 +33,6 @@ public class PostEventPublisher implements MessagePublisher<PostEvent> {
                 post.getId(),
                 post.getContent(),
                 userId,
-                )
                 LocalDateTime.now());
         publish(event);
     }

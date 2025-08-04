@@ -5,6 +5,7 @@ import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CommentForCreationDto;
 import faang.school.postservice.dto.comment.CommentForUpdateDto;
 import faang.school.postservice.dto.comment.CommentOutputDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
@@ -15,6 +16,7 @@ import faang.school.postservice.service.CommentService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -38,7 +40,7 @@ public class CommentServiceImpl implements CommentService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("Post with id %d doesn't exist".formatted(postId)));
         long userId = userContext.getUserId();
-        userServiceClient.getUser(userId);
+        UserDto commentAuthor = userServiceClient.getUser(userId);
         Comment commentEntity = commentMapper.toEntity(commentDto);
         commentEntity.setAuthorId(userId);
         commentEntity.setCreatedAt(LocalDateTime.now());
@@ -46,6 +48,7 @@ public class CommentServiceImpl implements CommentService {
         Comment savedComment = commentRepository.save(commentEntity);
         log.info("Creating a comment by user {} for post with id {} - Finished"
                 , userContext.getUserId(), commentDto.getPostId());
+        putAuthorIntoCache(commentAuthor);
         return commentMapper.toDto(savedComment);
     }
 
@@ -93,5 +96,10 @@ public class CommentServiceImpl implements CommentService {
             throw new DataValidationException("Comment can be changed only by their authors");
         }
         userServiceClient.getUser(userId);
+    }
+
+    @CachePut(value = "authors", key = "#userDto.id")
+    public UserDto putAuthorIntoCache(UserDto userDto) {
+        return userDto;
     }
 }

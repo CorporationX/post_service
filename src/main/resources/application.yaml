@@ -31,6 +31,10 @@ spring:
       auto_offset: earliest
       concurrency: 3
 
+    cache:
+      type: redis
+      redis:
+        cache-null-values: false
 
   task:
     execution:
@@ -104,3 +108,8 @@ retry:
     backoff:
       delay: 2000
       multiplier: 1.5
+
+cache:
+  config:
+    default-ttl: 10m
+    authors-ttl: 24h
