@@ -56,7 +56,7 @@ public class PostLikeServiceImpl implements LikeService {
                 postId,
                 null,
                 LocalDateTime.now()));
-        redisLikeCache.incrementLikes("post_likes:", postId);
+        redisLikeCache.incrementLikes("postLikes:", postId);
     }
 
     @Override
@@ -77,7 +77,7 @@ public class PostLikeServiceImpl implements LikeService {
                 postId,
                 null,
                 LocalDateTime.now()));
-        redisLikeCache.decrementLikes("post_likes:", postId);
+        redisLikeCache.decrementLikes("postLikes:", postId);
 
     }
 
