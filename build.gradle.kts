@@ -49,11 +49,12 @@ dependencies {
     implementation("redis.clients:jedis:4.3.2")
     runtimeOnly("org.postgresql:postgresql")
 
-    /**
-     * S3 Service
-     */
-    implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:3.1.1")
-
+    /** Amazon S3
+    */
+    implementation(platform("software.amazon.awssdk:bom:2.31.63"))
+    implementation("software.amazon.awssdk:s3")
+    implementation("software.amazon.awssdk:url-connection-client")
+    implementation("net.coobird:thumbnailator:0.4.20")
     /**
      * Tika
      */

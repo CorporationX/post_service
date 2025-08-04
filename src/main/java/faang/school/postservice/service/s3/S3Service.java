@@ -3,10 +3,10 @@ package faang.school.postservice.service.s3;
 import faang.school.postservice.exception.FileDownloadFailedException;
 import faang.school.postservice.exception.FileUploadFailedException;
 import faang.school.postservice.model.Resource;
-import io.awspring.cloud.s3.ObjectMetadata;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,17 +15,16 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import software.amazon.awssdk.services.s3.model.S3Object;
 
-
+import java.io.IOException;
+import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.UUID;
-import java.io.InputStream;
-import java.io.IOException;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Getter
 public class S3Service {
     private final S3Client s3Client;
 
@@ -36,7 +35,7 @@ public class S3Service {
         long fileSize = file.getSize();
         String extension = StringUtils.getFilenameExtension(file.getOriginalFilename());
         String mediaKey = String.format("%s/%s.%s", folder, UUID.randomUUID(), extension);
-        
+
         try (InputStream inputStream = file.getInputStream()) {
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                     .bucket(bucketName)
@@ -80,5 +79,23 @@ public class S3Service {
                 .key(key)
                 .build());
         log.info("File deleted successfully from S3: {}", key);
+    }
+
+    public Resource uploadBytesAsResource(byte[] data, String key, String contentType) {
+        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                .bucket(bucketName)
+                .key(key)
+                .contentType(contentType)
+                .contentLength((long) data.length)
+                .build();
+        s3Client.putObject(putObjectRequest, RequestBody.fromBytes(data));
+        log.info("Bytes uploaded successfully to S3: {}", key);
+        return Resource.builder()
+                .key(key)
+                .size((long) data.length)
+                .name(key)
+                .type(contentType)
+                .createdAt(LocalDateTime.now())
+                .build();
     }
 }
