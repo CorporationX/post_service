@@ -37,6 +37,8 @@ dependencies {
     implementation("io.micrometer:context-propagation")
     implementation("io.zipkin.brave:brave-instrumentation-spring-web")
     implementation ("org.springframework.cloud:spring-cloud-starter-loadbalancer")
+    implementation("org.springframework.kafka:spring-kafka:4.0.0-M3")
+    implementation("org.jspecify:jspecify:0.3.0")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
 
