@@ -41,3 +41,9 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+ad-remover:
+  batch-size: 10
+  thread-pool:
+    size: 20
+  cron: "0 0 2 * * ?"
