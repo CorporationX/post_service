@@ -2,6 +2,7 @@ package faang.school.postservice.service.redis;
 
 import faang.school.postservice.dto.LikeDto;
 import faang.school.postservice.service.LikeDataFetcher;
+import faang.school.postservice.service.redis.like.RedisCommentLikeCacheService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

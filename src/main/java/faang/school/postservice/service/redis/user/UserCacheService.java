@@ -1,4 +1,4 @@
-package faang.school.postservice.service.redis;
+package faang.school.postservice.service.redis.user;
 
 import faang.school.postservice.dto.user.UserDto;
 

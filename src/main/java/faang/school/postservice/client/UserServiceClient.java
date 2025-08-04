@@ -32,5 +32,5 @@ public interface UserServiceClient {
     List<UserDto> getUsersByIds(@RequestBody List<Long> ids);
 
     @GetMapping("/users/{userId}/exists")
-    ResponseEntity<Void> checkUserExists(Long userId);
+    ResponseEntity<Void> checkUserExists(@PathVariable Long userId);
 }
