@@ -18,6 +18,8 @@ spring:
     change-log: classpath:db/changelog/db.changelog-master.yaml
 
   data:
+    cache:
+      author_cache_ttl_days: 1
     async:
       core_pool_size: 2
       max_pool_size: 4
