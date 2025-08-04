@@ -1,8 +1,6 @@
 package faang.school.postservice.util.service.like.impl;
 
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.dto.like.LikeEvent;
-import faang.school.postservice.dto.user.UserClientDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
@@ -18,14 +16,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.testcontainers.junit.jupiter.Container;
+
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
-
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.utility.DockerImageName;
-
 
 import java.time.LocalDateTime;
 import java.util.Optional;

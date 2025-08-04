@@ -7,31 +7,19 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.dto.like.LikeEvent;
-import faang.school.postservice.dto.user.UserClientDto;
 import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
-import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
-import faang.school.postservice.service.like.impl.CommentLikeServiceImpl;
 import faang.school.postservice.service.like.kafka.KafkaLikePublisher;
 import faang.school.postservice.service.like.redis.RedisLikeCache;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.testcontainers.junit.jupiter.Container;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
-
-import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.mockito.Mockito.doNothing;
