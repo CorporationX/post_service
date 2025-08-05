@@ -3,7 +3,8 @@ package faang.school.postservice.repository;
 import faang.school.postservice.dto.post.PostFilterDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.model.Post;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -45,9 +46,8 @@ public interface PostRepository extends CrudRepository<Post, Long>, JpaSpecifica
                 .orElseThrow(() -> new EntityNotFoundException("Пост не найден"));
     }
 
-    default List<Post> findByFilter(PostFilterDto filter) {
+    default Page<Post> findByFilter(PostFilterDto filter, Pageable pageable) {
         Specification<Post> spec = PostSpecificationBuilder.buildSpecification(filter);
-        Sort sort = PostSpecificationBuilder.buildSort(filter);
-        return findAll(spec, sort);
+        return findAll(spec, pageable);
     }
 }

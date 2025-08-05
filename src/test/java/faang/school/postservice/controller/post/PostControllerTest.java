@@ -37,7 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(PostController.class)
 public class PostControllerTest {
 
-    private static final String STRING_API_V1 = "/api/v1";
+    private static final String STRING_POSTS = "/posts";
 
     @Autowired
     private MockMvc mockMvc;
@@ -60,20 +60,20 @@ public class PostControllerTest {
         );
         when(service.create(createDto)).thenReturn(viewDto);
 
-        mockMvc.perform(post(STRING_API_V1 + "/posts")
+        mockMvc.perform(post(STRING_POSTS)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objMapper.writeValueAsString(createDto)))
                 .andExpect(status().isCreated());
     }
 
     @Test
-    @DisplayName("PUT /api/v1/posts/{postId}/publications - должен вернуть 204 No Content при успешной публикации")
+    @DisplayName("PUT /posts/{postId}/publications - должен вернуть 204 No Content при успешной публикации")
     public void shouldReturnStatusNoContent_WhenValidRequest() throws Exception {
         Long postId = 1L;
 
         doNothing().when(service).publication(postId);
 
-        mockMvc.perform(put(STRING_API_V1 + "/posts/{postId}/publications", postId))
+        mockMvc.perform(put(STRING_POSTS + "/{postId}/publications", postId))
                 .andExpect(status().isNoContent())
                 .andExpect(content().string(""));
 
@@ -81,13 +81,13 @@ public class PostControllerTest {
     }
 
     @Test
-    @DisplayName("PUT /api/v1/posts/{postId}/publications - должен вернуть 404 Not Found при отсутствии поста")
+    @DisplayName("PUT /posts/{postId}/publications - должен вернуть 404 Not Found при отсутствии поста")
     public void shouldReturn404NotFound_WhenPostNotExist() throws Exception {
         Long postId = 999L;
         doThrow(new EntityNotFoundException("Post not found"))
                 .when(service).publication(postId);
 
-        mockMvc.perform(put(STRING_API_V1 + "/posts/{postId}/publications", postId))
+        mockMvc.perform(put(STRING_POSTS + "/{postId}/publications", postId))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Post not found"));
     }
@@ -102,7 +102,7 @@ public class PostControllerTest {
         );
         when(service.update(postId, updateDto)).thenReturn(viewDto);
 
-        mockMvc.perform(put(STRING_API_V1 + "/posts/{postId}", postId)
+        mockMvc.perform(put(STRING_POSTS + "/{postId}", postId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objMapper.writeValueAsString(updateDto)))
                 .andExpect(status().isOk())
@@ -115,7 +115,7 @@ public class PostControllerTest {
         Long postId = 1L;
         doNothing().when(service).softDelete(postId);
 
-        mockMvc.perform(delete(STRING_API_V1 + "/posts/{postId}", postId))
+        mockMvc.perform(delete(STRING_POSTS + "/{postId}", postId))
                 .andExpect(status().isNoContent())
                 .andExpect(content().string(""));
     }
@@ -131,7 +131,7 @@ public class PostControllerTest {
 
         when(service.getById(postId)).thenReturn(dto);
 
-        mockMvc.perform(get(STRING_API_V1 + "/posts/{postId}", postId))
+        mockMvc.perform(get(STRING_POSTS + "/{postId}", postId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").value(dto.content()))
                 .andExpect(jsonPath("$.authorId").value(dto.authorId()))

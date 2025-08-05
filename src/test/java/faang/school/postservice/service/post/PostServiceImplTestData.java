@@ -2,11 +2,9 @@ package faang.school.postservice.service.post;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.dto.post.AuthorFilter;
 import faang.school.postservice.dto.post.PostCreateDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.model.enums.AuthorType;
 import faang.school.postservice.model.enums.PostStatus;
 import org.junit.jupiter.params.provider.Arguments;
 
@@ -80,8 +78,8 @@ public class PostServiceImplTestData {
 
     public static Stream<Arguments> provideAuthorFilterCases() {
         return Stream.of(
-                Arguments.of(new AuthorFilter(AuthorType.USER, 1L), 1L, null),
-                Arguments.of(new AuthorFilter(AuthorType.PROJECT, 1L), null, 1L)
+                Arguments.of( USER_ID_1, null, USER_ID_1, null),
+                Arguments.of(null, PROJECT_ID_1, null, PROJECT_ID_1)
         );
     }
 
@@ -98,26 +96,9 @@ public class PostServiceImplTestData {
         Post deletedPost = Post.builder().authorId(1L).published(true).deleted(true).build();
 
         return Stream.of(
-                Arguments.of(
-                        new AuthorFilter(AuthorType.USER, 1L),
-                        PostStatus.PUBLISHED,
-                        false,
-                        List.of(user1Published)
-                ),
-
-                Arguments.of(
-                        new AuthorFilter(AuthorType.PROJECT, 2L),
-                        null,
-                        false,
-                        List.of(project2Published)
-                ),
-
-                Arguments.of(
-                        null,
-                        null,
-                        true,
-                        List.of(deletedPost)
-                )
+                Arguments.of(USER_ID_1, null, PostStatus.PUBLISHED, false, List.of(user1Published)),
+                Arguments.of(null, 2L, null, false, List.of(project2Published)),
+                Arguments.of(null, null, null, true, List.of(deletedPost))
         );
     }
 

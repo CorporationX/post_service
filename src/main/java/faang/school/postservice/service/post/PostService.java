@@ -4,8 +4,8 @@ import faang.school.postservice.dto.post.PostCreateDto;
 import faang.school.postservice.dto.post.PostFilterDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
 import faang.school.postservice.dto.post.PostViewDto;
-
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 /**
  * Сервис для управления постами
@@ -75,5 +75,5 @@ public interface PostService {
      * @param filterDto DTO с параметрами фильтрации
      * @return список отфильтрованных DTO
      */
-    List<PostViewDto> findByFilter(PostFilterDto filterDto);
+    Page<PostViewDto> findByFilter(PostFilterDto filterDto, Pageable pageable);
 }

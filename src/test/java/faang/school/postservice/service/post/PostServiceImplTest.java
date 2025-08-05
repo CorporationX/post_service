@@ -2,7 +2,6 @@ package faang.school.postservice.service.post;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.dto.post.AuthorFilter;
 import faang.school.postservice.dto.post.PostCreateDto;
 import faang.school.postservice.dto.post.PostFilterDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
@@ -24,11 +23,17 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.util.Objects;
 
 import static faang.school.postservice.service.post.PostServiceImplTestData.POST_ID_1;
 import static faang.school.postservice.service.post.PostServiceImplTestData.PROJECT_ID_1;
+import static faang.school.postservice.service.post.PostServiceImplTestData.USER_ID_1;
 import static faang.school.postservice.service.post.PostServiceImplTestData.buildExpectedPost;
 import static faang.school.postservice.service.post.PostServiceImplTestData.buildPost;
 import static faang.school.postservice.service.post.PostServiceImplTestData.mockProjectClients;
@@ -253,20 +258,24 @@ public class PostServiceImplTest {
     @ParameterizedTest
     @MethodSource("faang.school.postservice.service.post.PostServiceImplTestData#provideAuthorFilterCases")
     @DisplayName("Фильтрация по автору")
-    public void testFilterAuthor(AuthorFilter authorFilter,
+    public void testFilterAuthor(Long userId,
+                                 Long projectId,
                                  Long expectedAuthorId,
                                  Long expectedProjectId) {
-        PostFilterDto filterDto = new PostFilterDto(authorFilter, null, null, null);
+        PostFilterDto filterDto = new PostFilterDto(userId, projectId, null, null);
+        Pageable pageable = PageRequest.of(0, 20);
+
         Post post = Post.builder()
                 .content("Content")
                 .authorId(expectedAuthorId)
                 .projectId(expectedProjectId)
                 .build();
-        when(postRepository.findByFilter(filterDto)).thenReturn(List.of(post));
+        when(postRepository.findByFilter(filterDto, pageable)).thenReturn(new PageImpl<>(List.of(post)));
 
-        List<PostViewDto> result = service.findByFilter(filterDto);
+        Page<PostViewDto> result = service.findByFilter(filterDto, pageable);
 
-        assertEquals(1, result.size());
+        assertEquals(1, result.getContent().size());
+        verify(postRepository, times(1)).findByFilter(filterDto, pageable);
         verify(mapper).toViewDto(post);
     }
 
@@ -274,22 +283,26 @@ public class PostServiceImplTest {
     @MethodSource("faang.school.postservice.service.post.PostServiceImplTestData#provideStatusFilterCases")
     @DisplayName("Фильтрация по статусу")
     public void testFilterStatus(PostStatus status) {
-        PostFilterDto filterDto = new PostFilterDto(null, status, null, null);
+        PostFilterDto filterDto = new PostFilterDto(USER_ID_1, null, status, null);
+        Pageable pageable = PageRequest.of(0, 20);
 
         boolean expectedPublished = status == PostStatus.PUBLISHED;
         Post post = Post.builder()
                 .content("Content")
+                .authorId(USER_ID_1)
                 .published(expectedPublished)
                 .build();
         PostViewDto expectedDto = new PostViewDto(
                 post.getContent(), null, null, expectedPublished, false, null
         );
-        when(postRepository.findByFilter(filterDto)).thenReturn(List.of(post));
+        when(postRepository.findByFilter(filterDto, pageable)).thenReturn(new PageImpl<>(List.of(post)));
         doReturn(expectedDto).when(mapper).toViewDto(post);
 
-        List<PostViewDto> result = service.findByFilter(filterDto);
+        Page<PostViewDto> result = service.findByFilter(filterDto, pageable);
 
-        assertEquals(expectedPublished, result.get(0).published());
+        assertEquals(expectedPublished, result.getContent().get(0).published());
+        assertEquals(1, result.getContent().size());
+        verify(postRepository, times(1)).findByFilter(filterDto, pageable);
         verify(mapper).toViewDto(post);
     }
 
@@ -297,16 +310,18 @@ public class PostServiceImplTest {
     @MethodSource("faang.school.postservice.service.post.PostServiceImplTestData#provideMixedFilterCases")
     @DisplayName("Комбинированная фильтрация: корректно обрабатывает сочетание author + status + includeDeleted")
     void testMixedFilters(
-            AuthorFilter authorFilter,
+            Long userId,
+            Long projectId,
             PostStatus status,
             boolean includeDeleted,
             List<Post> expectedPosts) {
 
-        PostFilterDto filterDto = new PostFilterDto(authorFilter, status, null, includeDeleted);
+        PostFilterDto filterDto = new PostFilterDto(userId, projectId, status, includeDeleted);
+        Pageable pageable = PageRequest.of(0, 20);
 
-        when(postRepository.findByFilter(filterDto)).thenReturn(expectedPosts);
+        when(postRepository.findByFilter(filterDto, pageable)).thenReturn(new PageImpl<>(expectedPosts));
 
-        when(mapper.toViewDto(any())).thenAnswer(inv -> {
+        when(mapper.toViewDto(any(Post.class))).thenAnswer(inv -> {
             Post p = inv.getArgument(0);
             return new PostViewDto(
                     null,
@@ -318,14 +333,16 @@ public class PostServiceImplTest {
             );
         });
 
-        List<PostViewDto> result = service.findByFilter(filterDto);
+        Page<PostViewDto> result = service.findByFilter(filterDto, pageable);
 
-        assertThat(result).hasSize(expectedPosts.size());
-
-        verify(postRepository).findByFilter(filterDto);
-
-        expectedPosts.forEach(post ->
-                verify(mapper).toViewDto(post)
-        );
+        assertThat(result.getContent()).hasSize(expectedPosts.size());
+        expectedPosts.forEach(expectedPost -> assertThat(result.getContent())
+                .anyMatch(dto ->
+                        Objects.equals(dto.authorId(), expectedPost.getAuthorId()) &&
+                        Objects.equals(dto.projectId(), expectedPost.getProjectId()) &&
+                        dto.published() == expectedPost.isPublished() &&
+                        dto.deleted() == expectedPost.isDeleted()
+                ));
+        verify(postRepository, times(1)).findByFilter(filterDto, pageable);
     }
 }
