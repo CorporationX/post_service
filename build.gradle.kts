@@ -26,7 +26,6 @@ dependencies {
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     implementation("org.springframework.retry:spring-retry:2.0.12")
 
-
     /**
      * Database
      */
@@ -49,7 +48,7 @@ dependencies {
     /**
      * Message Broker
      */
-    implementation ("org.springframework.kafka:spring-kafka:3.3.6")
+    implementation ("org.springframework.kafka:spring-kafka")
 
     /**
      * Test containers

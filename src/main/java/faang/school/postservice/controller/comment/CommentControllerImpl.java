@@ -59,6 +59,13 @@ public class CommentControllerImpl implements CommentController {
         return ResponseEntity.ok(commentDtoResponseList);
     }
 
+    @GetMapping
+    @Override
+    public ResponseEntity<CommentDtoResponse> getComment(@RequestParam long commentId) {
+        CommentDtoResponse commentDtoResponse = commentServiceF.getComment(commentId);
+        return ResponseEntity.ok(commentDtoResponse);
+    }
+
     @DeleteMapping("/{commentId}")
     @Override
     public ResponseEntity<Long> deleteComment(@PathVariable long commentId) {

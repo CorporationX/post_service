@@ -34,6 +34,12 @@ public class CommentServiceFacade {
         return mapperComment.fromDtoListToEntityList(comments);
     }
 
+    public CommentDtoResponse getComment(long commentId) {
+        Comment comment = commentService.getComment(commentId);
+
+        return mapperComment.fromEntityToDto(comment);
+    }
+
     public void deleteComment(long commentId) {
         commentService.deleteComment(commentId);
     }
