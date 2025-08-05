@@ -1,0 +1,39 @@
+package faang.school.postservice.controller.like;
+
+import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.service.like.impl.CommentLikeServiceImpl;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/api/v1/like/comment")
+public class CommentLikeController {
+
+    private final UserContext userContext;
+    private final CommentLikeServiceImpl commentLikeService;
+
+    @PostMapping("/{commentId}")
+    public void like(@PathVariable() @Validated @NotNull @NotBlank Long commentId) {
+        commentLikeService.addLike(commentId, userContext.getUserId());
+    }
+
+    @DeleteMapping("/{commentId}")
+    public void unLike(@PathVariable() @Validated @NotNull @NotBlank Long commentId) {
+        commentLikeService.removeLike(commentId, userContext.getUserId());
+    }
+
+    @GetMapping("/{commentId}/count")
+    public int getLikeCount(@PathVariable() Long commentId) {
+        return commentLikeService.getLikeCount(commentId);
+    }
+}
