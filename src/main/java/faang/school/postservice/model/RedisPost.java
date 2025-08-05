@@ -19,6 +19,8 @@ public class RedisPost {
     @Id
     private Long id;
     private String content;
+    private Long totalLikes;
+    private Long totalComments;
     private Long authorId;
     private LocalDateTime publishedAt;
 }

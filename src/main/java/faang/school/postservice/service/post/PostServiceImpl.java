@@ -52,6 +52,7 @@ public class PostServiceImpl implements PostService {
     private final RedisPostCreateEventPublisher redisPostCreateEventPublisher;
     private final RedisPostRepository redisPostRepository;
     private final RedisPostMapper redisPostMapper;
+    private final RecentPostService recentPostService;
 
     @Override
     @Transactional
@@ -88,6 +89,8 @@ public class PostServiceImpl implements PostService {
         redisPostCreateEventPublisher.publish(postMapper.toPostCreateEventDto(updatedPost));
 
         redisPostRepository.save(redisPostMapper.toRedisPost(updatedPost));
+        recentPostService.addPostToUser(userContext.getUserId(), updatedPost.getId());
+        log.info("the list {}", recentPostService.getRecentPosts(userContext.getUserId()));
 
         return postMapper.toDto(updatedPost);
     }
@@ -219,6 +222,7 @@ public class PostServiceImpl implements PostService {
         }
     }
 
+    @SuppressWarnings("null")
     private void validateAuthor(Long authorId, Long projectId) {
         if ((authorId == null && projectId == null) || (authorId != null && projectId != null)) {
             throw new DataValidationException("Author must be either a user or a project, but not both or neither");
