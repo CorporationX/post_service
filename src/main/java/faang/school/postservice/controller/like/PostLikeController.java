@@ -22,17 +22,17 @@ public class PostLikeController {
     private final PostLikeServiceImpl postLikeService;
 
     @PostMapping("/{postId}")
-    public void like(@PathVariable("postId") @Validated @NotNull @NotBlank Long postId) {
+    public void like(@PathVariable() @Validated @NotNull @NotBlank Long postId) {
         postLikeService.addLike(postId, userContext.getUserId());
     }
 
     @DeleteMapping("/{postId}")
-    public void unLike(@PathVariable("postId") @Validated @NotNull @NotBlank Long postId) {
+    public void unLike(@PathVariable() @Validated @NotNull @NotBlank Long postId) {
         postLikeService.removeLike(postId, userContext.getUserId());
     }
 
     @GetMapping("/{postId}/count")
-    public int getLikeCount(@PathVariable("postID") @Validated @NotNull @NotBlank Long postId) {
+    public int getLikeCount(@PathVariable() @Validated @NotNull @NotBlank Long postId) {
         return postLikeService.getLikeCount(postId);
     }
 
