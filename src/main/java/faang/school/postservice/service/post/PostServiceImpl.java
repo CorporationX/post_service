@@ -94,7 +94,7 @@ public class PostServiceImpl implements PostService {
         redisPostRepository.save(redisPostMapper.toRedisPost(updatedPost));
         // recentPostService.addPostToUser(userContext.getUserId(), updatedPost.getId());
         // log.info("the list {}", recentPostService.getRecentPosts(userContext.getUserId()));
-        kafkaProducer.sendMessage(new KafkaPostMessage(updatedPost.getId(), updatedPost.getContent()));
+        kafkaProducer.sendMessage(new KafkaPostMessage(updatedPost.getId().toString(), updatedPost.getContent()));
 
         return postMapper.toDto(updatedPost);
     }
