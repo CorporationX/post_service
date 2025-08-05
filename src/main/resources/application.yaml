@@ -61,6 +61,11 @@ spring:
         name: comment-created-notification
       like_created-topic:
         name: like-created-notification
+      news-feed:
+        posts:
+          name: posts
+    batch:
+      subscribers: 100
 
 server:
   port: 8081
@@ -109,6 +114,13 @@ app:
   executor:
     thread_pool_core_size: 25
     thread_pool_max_size: 100
+
+  async:
+    post-kafka-publish-executor:
+      thread-name-prefix: post-kafka-publish-
+      core-pool-size: 5
+      max-pool-size: 10
+      queue-capacity: 100
 
 scheduled-post-publisher:
   comments:

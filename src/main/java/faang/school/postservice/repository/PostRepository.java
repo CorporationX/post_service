@@ -84,4 +84,10 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     WHERE p.verified is NULL
             """)
     Integer countNotVerifiedPosts();
+
+    @Query(nativeQuery = true, value = """
+                    SELECT s.follower_id FROM subscription s
+                    WHERE s.followee_id = :authorId
+            """)
+    List<Long> getAllFollowersOfPostAuthor(Long authorId);
 }

@@ -1,5 +1,6 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.annotation.PostPublishingEventKafka;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
@@ -46,6 +47,7 @@ public class PostService {
         return postRepository.save(post);
     }
 
+    @PostPublishingEventKafka
     @Transactional
     public Post publishPost(Long postId) {
         Post post = getValidPostOrThrowException(postId);
