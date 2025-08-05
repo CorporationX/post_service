@@ -1,4 +1,4 @@
-package faang.school.accountservice.config.kafka;
+package faang.school.postservice.config.kafka;
 
 import org.springframework.context.annotation.Configuration;
 
