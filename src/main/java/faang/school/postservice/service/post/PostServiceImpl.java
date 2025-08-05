@@ -4,6 +4,7 @@ import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.client.languagetool.LanguageToolClient;
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.kafka.KafkaPostMessage;
 import faang.school.postservice.dto.languagetool.LanguageToolResponseDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.DataValidationException;
@@ -13,6 +14,7 @@ import faang.school.postservice.mapper.redis.RedisPostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.publisher.post.RedisPostCreateEventPublisher;
+import faang.school.postservice.publisher.post.kafka.KafkaProducer;
 import faang.school.postservice.repository.RedisPostRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.resource.ResourceService;
@@ -52,7 +54,8 @@ public class PostServiceImpl implements PostService {
     private final RedisPostCreateEventPublisher redisPostCreateEventPublisher;
     private final RedisPostRepository redisPostRepository;
     private final RedisPostMapper redisPostMapper;
-    private final RecentPostService recentPostService;
+    // private final RecentPostService recentPostService;
+    private final KafkaProducer kafkaProducer;
 
     @Override
     @Transactional
@@ -89,8 +92,9 @@ public class PostServiceImpl implements PostService {
         redisPostCreateEventPublisher.publish(postMapper.toPostCreateEventDto(updatedPost));
 
         redisPostRepository.save(redisPostMapper.toRedisPost(updatedPost));
-        recentPostService.addPostToUser(userContext.getUserId(), updatedPost.getId());
-        log.info("the list {}", recentPostService.getRecentPosts(userContext.getUserId()));
+        // recentPostService.addPostToUser(userContext.getUserId(), updatedPost.getId());
+        // log.info("the list {}", recentPostService.getRecentPosts(userContext.getUserId()));
+        kafkaProducer.sendMessage(new KafkaPostMessage(updatedPost.getId(), updatedPost.getContent()));
 
         return postMapper.toDto(updatedPost);
     }
