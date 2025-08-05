@@ -10,7 +10,9 @@ import faang.school.postservice.dto.post.PostViewDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.mapper.PostMapper;
+import faang.school.postservice.messaging.producer.EventProducerService;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.message.Event;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.filter.FilterService;
 import jakarta.transaction.Transactional;
@@ -52,6 +54,7 @@ public class PostServiceImpl implements PostService {
     private final UserContext userContext;
     private final PostMapper postMapper;
     private final FilterService<Post, PostFilterDto> filterService;
+    private final EventProducerService<PostViewDto> postEventProducerService;
 
     @Override
     @Transactional
@@ -72,7 +75,9 @@ public class PostServiceImpl implements PostService {
 
         var post = postMapper.toEntity(createDto);
         post = postRepository.save(post);
-        return postMapper.toViewDto(post);
+        var view = postMapper.toViewDto(post);
+        postEventProducerService.produce(Event.POST_CREATE, view);
+        return view;
     }
 
     @Override
