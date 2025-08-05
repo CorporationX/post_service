@@ -1,9 +1,8 @@
 package faang.school.postservice.repository;
 
-import faang.school.postservice.dto.post.AuthorFilter;
 import faang.school.postservice.dto.post.PostFilterDto;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.model.enums.AuthorType;
+import faang.school.postservice.model.Post_;
 import faang.school.postservice.model.enums.PostStatus;
 import faang.school.postservice.model.enums.SortType;
 import org.springframework.data.domain.Sort;
@@ -23,41 +22,37 @@ import org.springframework.data.jpa.domain.Specification;
  */
 public class PostSpecificationBuilder {
     public static Specification<Post> buildSpecification(PostFilterDto filter) {
-        return Specification.where(byAuthorId(filter.author()))
-                .and(byStatus(filter.status()))
-                .and(byDeleted(filter.includeDeleted()));
+        return Specification.allOf(
+                byUserId(filter.userId()),
+                byProjectId(filter.projectId()),
+                byStatus(filter.status()),
+                byDeleted(filter.includeDeleted())
+        );
     }
 
-    public static Specification<Post> byAuthorId(AuthorFilter author) {
-        if (author == null) {
+    public static Specification<Post> byUserId(Long userId) {
+        if (userId == null) {
             return null;
         }
 
-        return (root, query, cb) -> {
-            String field = author.type() == AuthorType.USER ? "authorId" : "projectId";
-            return cb.equal(root.get(field), author.id());
-        };
+        return (root, query, cb) -> cb.equal(root.get(Post_.AUTHOR_ID), userId);
+    }
+
+    public static Specification<Post> byProjectId(Long projectId) {
+        if (projectId == null) {
+            return null;
+        }
+
+        return (root, query, cb) -> cb.equal(root.get(Post_.PROJECT_ID), projectId);
     }
 
     public static Specification<Post> byStatus(PostStatus status) {
         return status == null ? null :
-                (root, query, cb) -> cb.equal(root.get("published"), status == PostStatus.PUBLISHED);
-    }
-
-    public static Sort buildSort(PostFilterDto filter) {
-        String fieldName = filter.getSortFieldName();
-
-        if (filter.sort() == null) {
-            return Sort.by(fieldName).descending();
-        }
-
-        return filter.sort() == SortType.ASC
-                ? Sort.by(fieldName).ascending()
-                : Sort.by(fieldName).descending();
+                (root, query, cb) -> cb.equal(root.get(Post_.PUBLISHED), status == PostStatus.PUBLISHED);
     }
 
     public static Specification<Post> byDeleted(Boolean isDeleted) {
         return isDeleted == null ? null :
-                ((root, query, cb) -> cb.equal(root.get("deleted"), isDeleted));
+                ((root, query, cb) -> cb.equal(root.get(Post_.DELETED), isDeleted));
     }
 }

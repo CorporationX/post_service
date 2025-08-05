@@ -14,11 +14,12 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 /**
  * Реализация сервиса для работы с постами.
@@ -101,11 +102,9 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public List<PostViewDto> findByFilter(PostFilterDto filterDto) {
-        List<Post> posts = postRepository.findByFilter(filterDto);
-        return posts.stream()
-                .map(mapper::toViewDto)
-                .toList();
+    public Page<PostViewDto> findByFilter(PostFilterDto filterDto, Pageable pageable) {
+        Page<Post> posts = postRepository.findByFilter(filterDto, pageable);
+        return posts.map(mapper::toViewDto);
     }
 
     private AuthorInfo resolveAuthor(PostCreateDto dto, Long currentUserId) {
