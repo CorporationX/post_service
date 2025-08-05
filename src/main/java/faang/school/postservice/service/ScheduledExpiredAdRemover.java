@@ -10,7 +10,7 @@ public class ScheduledExpiredAdRemover {
     private final AdService adService;
 
     @Scheduled(cron = "${ad-remover.cron}")
-    public void removeDueAdds() {
-        adService.removeDueAdds();
+    public void removeDueAds() {
+        adService.removeDueAds();
     }
 }

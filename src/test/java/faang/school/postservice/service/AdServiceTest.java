@@ -32,7 +32,8 @@ public class AdServiceTest {
 
     @BeforeEach
     public void setUp() {
-        adService = new AdService(adRepository, 2,
+        int batchsize = 2;
+        adService = new AdService(adRepository, batchsize,
                 Executors.newFixedThreadPool(3));
     }
 
@@ -55,7 +56,7 @@ public class AdServiceTest {
 
         when(adRepository.findAll()).thenReturn(ads);
 
-        adService.removeDueAdds();
+        adService.removeDueAds();
         Thread.sleep(1000);
 
         Mockito.verify(adRepository, times(2))
@@ -70,14 +71,14 @@ public class AdServiceTest {
         Iterable<Ad> emptyAdsList = Collections.emptyList();
         when(adRepository.findAll()).thenReturn(emptyAdsList);
 
-        adService.removeDueAdds();
+        adService.removeDueAds();
         Thread.sleep(1000);
 
         Mockito.verify(adRepository, times(0))
                 .delete(any());
     }
 
-    private static Ad getAdBuild(int id, LocalDateTime endDate, int appearancesLeft) {
+    private Ad getAdBuild(int id, LocalDateTime endDate, int appearancesLeft) {
         return Ad.builder()
                 .id(id)
                 .endDate(endDate)

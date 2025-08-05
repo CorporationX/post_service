@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.StreamSupport;
 
 @Slf4j
@@ -29,7 +30,7 @@ public class AdService {
         this.adRemoverThreadPool = adRemoverThreadPool;
     }
 
-    public void removeDueAdds() {
+    public void removeDueAds() {
         List<Ad> allAdsList = StreamSupport
                 .stream(adRepository.findAll().spliterator(), false)
                 .toList();
@@ -37,7 +38,25 @@ public class AdService {
             log.info("No ads found for clean-up");
         } else {
             List<List<Ad>> partitions = partition(allAdsList, batchSize);
-            partitions.forEach(subList -> CompletableFuture.runAsync(() -> deleteAdFromSublist(subList), adRemoverThreadPool));
+            List<CompletableFuture<Void>> futures = partitions.stream()
+                    .map(subList -> CompletableFuture.runAsync(() ->
+                                    deleteAdFromSublist(subList), adRemoverThreadPool)
+                            .exceptionally(ex -> {
+                                log.error("Error cleaning due ads");
+                                return null;
+                            })
+                    )
+                    .toList();
+            futures.forEach(CompletableFuture::join);
+            try {
+                adRemoverThreadPool.shutdown();
+                if (!adRemoverThreadPool.awaitTermination(60, TimeUnit.SECONDS)) {
+                    adRemoverThreadPool.shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                adRemoverThreadPool.shutdownNow();
+            }
         }
     }
 
