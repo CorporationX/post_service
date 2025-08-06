@@ -3,8 +3,7 @@ package faang.school.postservice.controller;
 import faang.school.postservice.dto.post.PostCreateDto;
 import faang.school.postservice.dto.post.ResponsePostDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
-import faang.school.postservice.mapper.post.PostMapper;
-import faang.school.postservice.model.Post;
+import faang.school.postservice.facade.PostFacade;
 import faang.school.postservice.service.post.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -27,12 +26,11 @@ import java.util.List;
 public class PostController {
 
     private final PostService postService;
+    private final PostFacade postFacade;
 
     @PostMapping
     public ResponseEntity<ResponsePostDto> createPost(@RequestBody PostCreateDto postCreateDto) {
-        Post post = PostMapper.postUpdateDtoToPost(postCreateDto);
-        Post savedPost = postService.createPost(post);
-        ResponsePostDto responsePostDto = PostMapper.postToResponsePostDto(savedPost);
+        ResponsePostDto responsePostDto = postFacade.createPost(postCreateDto);
         return ResponseEntity.ok(responsePostDto);
 
     }
@@ -45,9 +43,7 @@ public class PostController {
 
     @PatchMapping("/{postId}")
     public ResponseEntity<ResponsePostDto> updatePost(@PathVariable Long postId, @RequestBody PostUpdateDto postUpdateDto) {
-        Post updatedFields = PostMapper.postUpdateDtoToPost(postUpdateDto);
-        Post updatedPost = postService.updatePost(postId, updatedFields);
-        ResponsePostDto responsePostDto = PostMapper.postToResponsePostDto(updatedPost);
+        ResponsePostDto responsePostDto = postFacade.updatePost(postId, postUpdateDto);
         return ResponseEntity.ok(responsePostDto);
     }
 
@@ -59,36 +55,31 @@ public class PostController {
 
     @GetMapping
     public ResponseEntity<ResponsePostDto> getPostById(@RequestParam Long postId) {
-        Post post = postService.getPostById(postId);
-        ResponsePostDto responsePostDto = PostMapper.postToResponsePostDto(post);
+        ResponsePostDto responsePostDto = postFacade.getPostById(postId);
         return ResponseEntity.ok(responsePostDto);
     }
 
     @GetMapping("/drafts/user")
     public ResponseEntity<List<ResponsePostDto>> getUserDrafts(@RequestParam Long authorId) {
-        List<Post> postList = postService.getAllDraftsByAuthorId(authorId);
-        List<ResponsePostDto> responseList = PostMapper.postListToResponsePostDtoList(postList);
+        List<ResponsePostDto> responseList = postFacade.getUserDrafts(authorId);
         return ResponseEntity.ok(responseList);
     }
 
     @GetMapping("/drafts/project")
     public ResponseEntity<List<ResponsePostDto>> getProjectDrafts(@RequestParam Long projectId) {
-        List<Post> postList = postService.getAllDraftsByProjectId(projectId);
-        List<ResponsePostDto> responseList = PostMapper.postListToResponsePostDtoList(postList);
+        List<ResponsePostDto> responseList =  postFacade.getProjectDrafts(projectId);
         return ResponseEntity.ok(responseList);
     }
 
     @GetMapping("/user")
     public ResponseEntity<List<ResponsePostDto>> getUserPublished(@RequestParam Long authorId) {
-        List<Post> postList = postService.getAllPublishedByAuthorId(authorId);
-        List<ResponsePostDto> responseList = PostMapper.postListToResponsePostDtoList(postList);
+        List<ResponsePostDto> responseList = postFacade.getUserPublished(authorId);
         return ResponseEntity.ok(responseList);
     }
 
     @GetMapping("/project")
     public ResponseEntity<List<ResponsePostDto>> getProjectPublished(@RequestParam Long projectId) {
-        List<Post> postList = postService.getAllPublishedByProjectId(projectId);
-        List<ResponsePostDto> responseList = PostMapper.postListToResponsePostDtoList(postList);
+        List<ResponsePostDto> responseList = postFacade.getProjectPublished(projectId);
         return ResponseEntity.ok(responseList);
     }
 }
