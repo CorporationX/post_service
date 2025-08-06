@@ -33,8 +33,9 @@ public class AdServiceTest {
     @BeforeEach
     public void setUp() {
         int batchsize = 2;
+        int threadPoolSize = 3;
         adService = new AdService(adRepository, batchsize,
-                Executors.newFixedThreadPool(3));
+                Executors.newFixedThreadPool(threadPoolSize));
     }
 
     @Test
