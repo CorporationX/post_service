@@ -1,10 +1,7 @@
-package faang.school.postservice.integration.project;
+package faang.school.postservice.integration.project.service;
 
 import faang.school.postservice.integration.project.config.ProjectClientProperties;
 import faang.school.postservice.integration.project.dto.ProjectResponseDto;
-import faang.school.postservice.integration.project.service.ProjectServiceClient;
-import faang.school.postservice.integration.user.config.UserClientProperties;
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -15,7 +12,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientException;
 import org.springframework.web.reactive.function.client.WebClientRequestException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.server.ResponseStatusException;
@@ -34,7 +30,8 @@ public class ProjectClient implements ProjectServiceClient {
     @Override
     public ProjectResponseDto getProject(long id) {
 
-        ResponseEntity<ProjectResponseDto> responseEntity = WebClient.builder().baseUrl("http://" + properties.host() + ":" + properties.port()).build()
+        ResponseEntity<ProjectResponseDto> responseEntity = WebClient.builder()
+                .baseUrl("http://" + properties.host() + ":" + properties.port()).build()
                 .get()
                 .uri(u -> {
                     return u.path(properties.getProjectUrl() + "/" + id)
