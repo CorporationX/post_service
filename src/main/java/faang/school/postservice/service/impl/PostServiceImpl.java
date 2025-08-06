@@ -1,6 +1,7 @@
 package faang.school.postservice.service.impl;
 
 import faang.school.postservice.dto.post.PostDraftDto;
+import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.NotExistsException;
 import faang.school.postservice.exception.NotSupportedDataException;
 import faang.school.postservice.integration.project.service.ProjectServiceClient;
@@ -15,6 +16,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -28,9 +31,9 @@ public class PostServiceImpl implements PostService {
     private final UserServiceClient userServiceClient;
 
     @Override
-    public PostDraftDto findById(long id) {
+    public PostDto findById(long id) {
         return postRepository.findById(id)
-                .map(p -> postMapper.postToPostDraftDto(p))
+                .map(p -> postMapper.postToPostDto(p))
                 .orElseThrow(() -> new EntityNotFoundException("Пост с id " + id + " не найден"));
     }
 
@@ -41,7 +44,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public void markPostAsDeleted(long id) {
-          Post post = postRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Пост с id " + id + " не найден"));
+          Post post = findPostEntityById(id);
           post.setDeleted(true);
           post.setPublished(false);
           postRepository.save(post);
@@ -69,12 +72,61 @@ public class PostServiceImpl implements PostService {
             post.setPublishedAt(LocalDateTime.now());
             post.setDeleted(false);
         } else {
-            post = postRepository.findById(postId)
-                    .orElseThrow(() -> new EntityNotFoundException("Пост с id " + postId + " не найден"));
+            post = findPostEntityById(postId);
+            if (post.isPublished()) {
+                throw new NotSupportedDataException("Нельзя опубликовать пост повторно");
+            }
             post.setPublished(true);
             post.setPublishedAt(LocalDateTime.now());
         }
         postRepository.save(post);
+    }
+
+    @Override
+    public void updatePost(PostDto postDto, Long postId) {
+            Post post = findPostEntityById(postId);
+            post.setContent(postDto.getContent());
+            postRepository.save(post);
+    }
+
+    @Override
+    public List<PostDto> getAllPostsByAuthorId(long userId) {
+        List<Post> posts = postRepository.findByAuthorId(userId);
+        return posts.stream()
+                .filter(post -> !post.isDeleted() && !post.isPublished())
+                .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
+                .map(post -> postMapper.postToPostDto(post))
+                .toList();
+    }
+
+    @Override
+    public List<PostDto> getAllPostsByProjectId(long projectId) {
+        List<Post> posts = postRepository.findByProjectId(projectId);
+        return posts.stream()
+                .filter(post -> !post.isDeleted() && !post.isPublished())
+                .sorted(Comparator.comparing(Post::getPublishedAt).reversed())
+                .map(post -> postMapper.postToPostDto(post))
+                .toList();
+    }
+
+    @Override
+    public List<PostDto> getAllPublishedPostsByAuthorId(long userId) {
+        List<Post> posts = postRepository.findByAuthorId(userId);
+        return posts.stream()
+                .filter(post -> !post.isDeleted() && post.isPublished())
+                .sorted(Comparator.comparing(Post::getPublishedAt).reversed())
+                .map(post -> postMapper.postToPostDto(post))
+                .toList();
+    }
+
+    @Override
+    public List<PostDto> getAllPublishedPostsByProjectId(long projectId) {
+        List<Post> posts = postRepository.findByProjectId(projectId);
+        return posts.stream()
+                .filter(post -> !post.isDeleted() && post.isPublished())
+                .sorted(Comparator.comparing(Post::getPublishedAt).reversed())
+                .map(post -> postMapper.postToPostDto(post))
+                .toList();
     }
 
     private void checkAuthor(PostDraftDto postDraftDto) {
@@ -96,5 +148,10 @@ public class PostServiceImpl implements PostService {
                 throw new NotExistsException("Проект с id " + postDraftDto.getProjectId() + " не найден в базе");
             }
         }
+    }
+
+    private Post findPostEntityById(long postId) {
+        return postRepository.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException("Пост с id " + postId + " не найден"));
     }
 }
