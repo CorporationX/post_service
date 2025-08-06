@@ -43,20 +43,20 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public void markPostAsDeleted(long id) {
-          Post post = findPostEntityById(id);
-          post.setDeleted(true);
-          post.setPublished(false);
-          postRepository.save(post);
+    public PostDto markPostAsDeleted(long id) {
+        Post post = findPostEntityById(id);
+        post.setDeleted(true);
+        post.setPublished(false);
+        return postMapper.postToPostDto(postRepository.save(post));
     }
 
     @Override
-    public void createPostDraft(PostDraftDto postDraftDto) {
+    public PostDto createPostDraft(PostDraftDto postDraftDto) {
         checkAuthorExists(postDraftDto);
         Post post = postMapper.postDraftDtoToPost(postDraftDto);
         post.setPublished(false);
         post.setDeleted(false);
-        postRepository.save(post);
+        return postMapper.postToPostDto(postRepository.save(post));
     }
 
     @Override
@@ -84,9 +84,9 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public void updatePost(PostDto postDto, Long postId) {
-            Post post = findPostEntityById(postId);
-            post.setContent(postDto.getContent());
-            postRepository.save(post);
+        Post post = findPostEntityById(postId);
+        post.setContent(postDto.getContent());
+        postRepository.save(post);
     }
 
     @Override
