@@ -9,7 +9,7 @@ import faang.school.postservice.dto.post.PostUpdateDto;
 import faang.school.postservice.dto.post.PostViewDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.ForbiddenException;
-import faang.school.postservice.mapper.PostMapper;
+import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.messaging.producer.EventProducerService;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.message.Event;
