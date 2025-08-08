@@ -44,6 +44,10 @@ spring:
         calculations_channel:
           name: calculations_channel
   kafka:
+    producer:
+      bootstrap-servers: localhost:9092, localhost:9094
+      topics:
+        post-views: post-views
     retry:
       attempts: 3
       backoff-delay: 1000 # 1 секунда

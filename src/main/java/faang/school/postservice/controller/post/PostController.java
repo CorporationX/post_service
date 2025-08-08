@@ -1,32 +1,31 @@
 package faang.school.postservice.controller.post;
 
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.CreatePostDto;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.kafka.producer.KafkaPostViewProducer;
 import faang.school.postservice.service.post.PostService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @Validated
 @RestController
 @RequestMapping("/posts")
 @RequiredArgsConstructor
 public class PostController {
     private final PostService postService;
+    private final KafkaPostViewProducer kafkaPostViewProducer;
+    private final UserContext userContext;
+
 
     @PostMapping
     public PostDto createPost(@RequestBody @Valid CreatePostDto createPostDto) {
@@ -52,7 +51,16 @@ public class PostController {
 
     @GetMapping("/{postId}")
     public PostDto getById(@PathVariable @NotNull @Positive Long postId) {
-        return postService.getById(postId);
+        PostDto postDto = postService.getById(postId);
+        try {
+            Long userId = userContext.getUserId();
+            if (userId != null) {
+                kafkaPostViewProducer.sendViewEvent(userId, postId);
+            }
+        } catch (Exception e) {
+            log.warn("Failed to send view event for postId={} userId={}", postId, userContext.getUserId(), e);
+        }
+        return postDto;
     }
 
     @GetMapping("/scratches/by_author")
