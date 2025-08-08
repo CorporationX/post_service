@@ -18,6 +18,6 @@ public class KafkaPostViewedEventConsumer {
     @KafkaListener(topics = "#{__listener.topic}", groupId = "my-group")
     public void listen(KafkaPostViewedEventDto dto) {
         System.out.println("Received message: " + dto);
-        feedService.updateViewsForPost(dto.postId());
+        feedService.updatePost(dto.postId(), topic);
     }
 }

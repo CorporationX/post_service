@@ -17,6 +17,6 @@ public class KafkaLikeEventConsumer {
 
     @KafkaListener(topics = "#{__listener.topic}", groupId = "my-group")
     public void listen(KafkaLikeEventDto dto) {
-        System.out.println("Received message: " + dto);
+        feedService.updatePost(dto.postId(), topic);
     }
 }
