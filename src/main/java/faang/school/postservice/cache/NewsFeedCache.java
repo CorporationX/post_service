@@ -23,9 +23,10 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Slf4j
 @Component
@@ -36,8 +37,6 @@ public class NewsFeedCache implements RedisCache {
     private static final String POST_CACHE_KEY_PREFIX = "post_cache:";
     private static final String FEED_CACHE_KEY_PREFIX = "feed_cache:";
     private static final String POST_COMMENTS_KEY_PREFIX = "comments_cache:";
-    private static final String POST_VIEWS_KEY_PREFIX = "post_views:";
-    private static final String POST_LIKES_KEY_PREFIX = "post_likes:";
 
     private final PostRepository postRepository;
     private final RedisTemplate<String, Object> redisNewsFeedTemplate;
@@ -49,9 +48,14 @@ public class NewsFeedCache implements RedisCache {
     private int userTTL;
     @Value("${spring.data.redis-news-feed.comments-limit}")
     private int commentsLimit;
+    @Value("${spring.data.redis-news-feed.post-ttl}")
+    private int postTTL;
 
     private DefaultRedisScript<Long> addAndTrimScript;
     private DefaultRedisScript<Long> addCommentAndTrimScript;
+    private DefaultRedisScript<Long> incrementPostCounterScript;
+    private DefaultRedisScript<Long> batchFeedUpdateScript;
+    private DefaultRedisScript<Long> batchMultiPostFeedUpdateScript;
 
     @PostConstruct
     public void init() {
@@ -77,21 +81,144 @@ public class NewsFeedCache implements RedisCache {
                      return redis.call('ZCARD', key)
                 """);
         addCommentAndTrimScript.setResultType(Long.class);
+        //incrementPostCounterScript,
+        //Collections.singletonList(postKey),
+        //event,
+        //String.valueOf(currentVersion)
+        incrementPostCounterScript = new DefaultRedisScript<>();
+        incrementPostCounterScript.setScriptText("""
+                    -- KEYS[1]: Ключ для RedisPostDto (post_cache:{postId})
+                    -- ARGV[1]: Тип счетчика для инкремента ("likes", "comments", "views")
+                    -- ARGV[2]: Ожидаемая версия (для оптимистической блокировки)
+                
+                    local postKey = KEYS[1]
+                    local incrementType = ARGV[1]
+                    local expectedVersion = tonumber(ARGV[2])
+                
+                    local postJson = redis.call('GET', postKey)
+                
+                    if not postJson then
+                        -- Пост не найден в кэше, не можем обновить.
+                        return 0
+                    end
+                
+                    local post = cjson.decode(postJson)
+                
+                    -- Проверка оптимистической блокировки
+                    if post.version ~= expectedVersion then
+                        -- Версия не совпадает, произошла конкурентная модификация.
+                        return 0
+                    end
+                
+                    -- Инкремент соответствующего счетчика
+                    if incrementType == 'like_event' then
+                        post.likeCount = (post.likeCount or 0) + 1
+                    elseif incrementType == 'comment_event' then
+                        post.commentCount = (post.commentCount or 0) + 1
+                    elseif incrementType == 'post_viewed_event' then
+                        post.viewsCount = (post.viewsCount or 0) + 1
+                    else
+                        -- Неизвестный тип инкремента
+                        return 0
+                    end
+                
+                    -- Инкремент версии
+                    post.version = post.version + 1
+                
+                    -- Сериализуем обратно в JSON и сохраняем
+                    local updatedPostJson = cjson.encode(post)
+                    redis.call('SET', postKey, updatedPostJson)
+                
+                    return 1 -- Успешное обновление
+                """);
+        incrementPostCounterScript.setResultType(Long.class);
+
+        batchFeedUpdateScript = new DefaultRedisScript<>();
+        batchFeedUpdateScript.setScriptText("""
+                local postId = KEYS[1]
+                local score = tonumber(KEYS[2])
+                local ttl = tonumber(KEYS[3])
+                local feedSizeLimit = tonumber(KEYS[4])
+                local feedKeyPrefix = 'feed_cache:'
+                
+                -- Итерируемся по каждому userId в ARGV
+                for i = 1, #ARGV, 1 do
+                    local userId = ARGV[i]
+                    local feedKey = feedKeyPrefix .. userId
+                
+                    -- Добавляем пост в отсортированное множество
+                    redis.call('ZADD', feedKey, score, postId)
+                
+                    -- Обрезаем множество, оставляя только feedSizeLimit самых новых постов
+                    redis.call('ZREMRANGEBYRANK', feedKey, 0, -feedSizeLimit - 1)
+                
+                    -- Устанавливаем срок жизни для ключа фида
+                    redis.call('EXPIRE', feedKey, ttl)
+                end
+                
+                return 1
+                """);
+        batchFeedUpdateScript.setResultType(Long.class);
+
+        batchMultiPostFeedUpdateScript = new DefaultRedisScript<>();
+        batchMultiPostFeedUpdateScript.setScriptText("""
+                local ttl = tonumber(KEYS[1])
+                local feedSizeLimit = tonumber(KEYS[2])
+                local feedKeyPrefix = 'feed_cache:'
+                
+                local userIds = {}
+                local postArgs = {}
+                local isPostArgs = false
+                
+                for i = 1, #ARGV do
+                    if ARGV[i] == 'POSTS_START' then
+                        isPostArgs = true
+                    elseif not isPostArgs then
+                        table.insert(userIds, ARGV[i])
+                    else
+                        table.insert(postArgs, ARGV[i])
+                    end
+                end
+                
+                for i = 1, #userIds do
+                    local userId = userIds[i]
+                    local feedKey = feedKeyPrefix .. userId
+                
+                    redis.call('ZADD', feedKey, unpack(postArgs))
+                
+                    redis.call('ZREMRANGEBYRANK', feedKey, 0, -feedSizeLimit - 1)
+                
+                    redis.call('EXPIRE', feedKey, ttl)
+                end
+                
+                return 1
+                """);
+        batchMultiPostFeedUpdateScript.setResultType(Long.class);
     }
 
+    // change to get save User
     @Override
-    public void putUser(Long user) {
-        String key = USER_CACHE_KEY_PREFIX + user;
-        redisNewsFeedTemplate.opsForValue().set(key, user, Duration.ofMinutes(5));
-//        redisNewsFeedTemplate.opsForValue().set(key, user, Duration.ofDays(userTTL)); // не забыть раскоментить после тестов.
-        log.info("Cached user with key: {}", key);
+    public void putUser(Long userId) {
+        try {
+            String key = USER_CACHE_KEY_PREFIX + userId;
+            redisNewsFeedTemplate.opsForValue().set(key, userId, Duration.ofDays(userTTL));
+            log.info("User {} cached successfully", userId);
+        } catch (Exception e) {
+            log.error("Failed to cache user {}: {}", userId, e.getMessage());
+            throw new RuntimeException("Failed to cache user", e); // Custom exception
+        }
     }
 
     @Override
     public void putPost(RedisPostDto post) {
-        String key = POST_CACHE_KEY_PREFIX + post.getId();
-        redisNewsFeedTemplate.opsForValue().set(key, post);
-//        log.info("Cached post with key: {}", key);
+        try {
+            String key = POST_CACHE_KEY_PREFIX + post.getPostId();
+            redisNewsFeedTemplate.opsForValue().set(key, post, Duration.ofSeconds(postTTL));
+            log.info("Post {} cached successfully", post.getPostId());
+        } catch (Exception e) {
+            log.error("Failed to cache post {}: {}", post.getPostId(), e.getMessage());
+            throw new RuntimeException("Failed to cache post", e); // Custom exception
+        }
     }
 
     @Override
@@ -107,6 +234,25 @@ public class NewsFeedCache implements RedisCache {
     }
 
     @Override
+    public void putFeedForUserBatch(List<Long> userIds, Long postId, LocalDateTime postCreatedAt) {
+        if (userIds.isEmpty()) {
+            return;
+        }
+
+        long score = postCreatedAt.toEpochSecond(ZoneOffset.UTC);
+        long ttlInSeconds = Duration.ofMinutes(userTTL).getSeconds();
+
+        List<Object> scriptArgs = userIds.stream().map(Object.class::cast).toList();
+
+        redisNewsFeedTemplate.execute(
+                batchFeedUpdateScript,
+                List.of(String.valueOf(postId), String.valueOf(score), String.valueOf(ttlInSeconds), String.valueOf(feedSizeLimit)),
+                scriptArgs.toArray()
+        );
+        log.info("Added post {} to {} users' feeds in a batch.", postId, userIds.size());
+    }
+
+    @Override
     public RedisUserDto getUser(Long userId) {
         String key = USER_CACHE_KEY_PREFIX + userId;
         return (RedisUserDto) redisNewsFeedTemplate.opsForValue().get(key);
@@ -117,13 +263,44 @@ public class NewsFeedCache implements RedisCache {
         String key = POST_CACHE_KEY_PREFIX + postId;
         RedisPostDto post = (RedisPostDto) redisNewsFeedTemplate.opsForValue().get(key);
         if (post != null) {
-            post.setCommentCount(getPostViews(postId));
         }
         return post;
     }
 
     @Override
-    public Set<RedisPostDto> getFeed(Long userId, long start, long end) {
+    public List<Long> getComments(Long postId) {
+        return List.of();
+    }
+
+    @Override
+    public boolean updatePost(long postId, String event) {
+        RedisPostDto postToUpdate = getPost(postId);
+        if (postToUpdate == null) {
+            log.warn("Post with ID {} not found in cache. Cannot update counter for event: {}.", postId, event);
+            return false;
+        }
+
+        String postKey = POST_CACHE_KEY_PREFIX + postId;
+        long currentVersion = postToUpdate.getVersion();
+
+        Long result = redisNewsFeedTemplate.execute(
+                incrementPostCounterScript,
+                Collections.singletonList(postKey),
+                event,
+                String.valueOf(currentVersion)
+        );
+
+        if (result != null && result == 1L) {
+            log.info("Successfully updated post {} counter for event {}. Old version: {}", postId, event, currentVersion);
+            return true;
+        } else {
+            log.warn("Failed to update post {} counter for event {}. Optimistic locking failed or post not found. Old version: {}", postId, event, currentVersion);
+            return false;
+        }
+    }
+
+    @Override
+    public Set<Long> getFeed(Long userId, long start, long end) {
         String key = FEED_CACHE_KEY_PREFIX + userId;
         Set<Object> postIds = redisNewsFeedTemplate.opsForZSet().reverseRange(key, start, end);
         if (postIds == null) {
@@ -131,11 +308,10 @@ public class NewsFeedCache implements RedisCache {
         }
 
         return postIds.stream()
-                .map(id -> getPost((Long) id))
+                .map(id -> (Long) id)
                 .collect(Collectors.toSet());
     }
 
-    @Async("redisTaskExecutor")
     @Override
     public void putFeedForSubscribers(Long user, List<Long> followerIds) {
         Pageable pageable = PageRequest.of(0, feedSizeLimit);
@@ -146,24 +322,54 @@ public class NewsFeedCache implements RedisCache {
             log.info("No posts found for user {}. Skipping feed update for followers.", user);
             return;
         }
+
         putUser(user);
+        putPostsBatch(posts);
 
-        posts.forEach(this::putPost);
+        List<Object> scriptArgs = new ArrayList<>();
+        scriptArgs.addAll(followerIds.stream().map(Object.class::cast).toList());
+        scriptArgs.add("POSTS_START");
 
-        List<Object> scriptArgs = posts.stream()
-                .flatMap(post -> {
-                    double score = post.getCreatedAt().toEpochSecond(ZoneOffset.UTC) * 1000.0;
-                    return Stream.of(score, (Object) post.getId());
-                })
-                .collect(Collectors.toList());
+        posts.forEach(post -> {
+            scriptArgs.add((double) post.getCreatedAt().toEpochSecond(ZoneOffset.UTC));
+            scriptArgs.add(post.getPostId());
+        });
 
-        for (Long followerId : followerIds) {
-            putFeedBatch(followerId, scriptArgs);
-        }
+        long ttlInSeconds = Duration.ofMinutes(userTTL).getSeconds();
+
+        redisNewsFeedTemplate.execute(
+                batchMultiPostFeedUpdateScript,
+                List.of(String.valueOf(ttlInSeconds), String.valueOf(feedSizeLimit)),
+                scriptArgs.toArray()
+        );
+        log.info("Added {} posts from author {} to {} followers' feeds.", posts.size(), user, followerIds.size());
     }
 
     @Override
-    public void updatePostComment(long postId) {
+    public void putPostsBatch(List<RedisPostDto> posts) {
+        if (posts.isEmpty()) {
+            return;
+        }
+
+        Map<String, Object> postMap = posts.stream()
+                .collect(Collectors.toMap(
+                        post -> POST_CACHE_KEY_PREFIX + post.getPostId(),
+                        Function.identity()
+                ));
+        redisNewsFeedTemplate.opsForValue().multiSet(postMap);
+
+        // Установка TTL для каждого поста в отдельном цикле
+        // К сожалению, multiSet не поддерживает TTL, поэтому требуется отдельный вызов EXPIRE для каждого поста
+        // Хотя это и создает N вызовов, это всё равно более эффективно, чем N вызовов SET
+        posts.forEach(post ->
+                redisNewsFeedTemplate.expire(POST_CACHE_KEY_PREFIX + post.getPostId(), Duration.ofSeconds(postTTL))
+        );
+
+        log.info("Successfully cached {} posts in a batch.", posts.size());
+    }
+
+    @Override
+    public void updateComment(long postId) {
         RedisPostDto postToUpdate = getPost(postId);
 
         if (postToUpdate != null) {
@@ -179,11 +385,11 @@ public class NewsFeedCache implements RedisCache {
 
     @Async("redisTaskExecutor")
     @Override
-    public void addCommentToPostCache(KafkaCommentEventDto dto) {
+    public void putComment(KafkaCommentEventDto dto) {
         String key = POST_COMMENTS_KEY_PREFIX + dto.postId();
         long score = dto.createdAt().toEpochSecond(ZoneOffset.UTC);
 
-        String serializedComment = null;
+        String serializedComment;
         try {
             serializedComment = objectMapper.writeValueAsString(dto);
         } catch (JsonProcessingException e) {
@@ -201,32 +407,7 @@ public class NewsFeedCache implements RedisCache {
                 scriptArgs.toArray()
         );
 
-        updatePostComment(dto.postId());
-    }
-
-    @Override
-    public void updatePostViews(long postId) {
-        String key = POST_VIEWS_KEY_PREFIX + postId;
-        redisNewsFeedTemplate.opsForValue().increment(key);
-    }
-
-    @Override
-    public void updatePostLikes(long postId) {
-        String key = POST_LIKES_KEY_PREFIX + postId;
-        redisNewsFeedTemplate.opsForValue().increment(key);
-        log.info("Successfully incremented likes for post {}.", postId);
-    }
-
-    @Override
-    public Long getPostLikes(long postId) {
-        String key = POST_LIKES_KEY_PREFIX + postId;
-        Object likes = redisNewsFeedTemplate.opsForValue().get(key);
-        return likes != null ? Long.parseLong(likes.toString()) : 0L;
-    }
-
-    public Long getPostViews(long postId) {
-        String key = POST_VIEWS_KEY_PREFIX + postId;
-        return (Long) redisNewsFeedTemplate.opsForValue().get(key);
+        updateComment(dto.postId());
     }
 
     public void putFeedBatch(Long userId, List<Object> scriptArgs) {
@@ -242,4 +423,6 @@ public class NewsFeedCache implements RedisCache {
                 allScriptArgs.toArray()
         );
     }
+
+
 }

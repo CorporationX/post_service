@@ -10,10 +10,11 @@ import java.time.LocalDateTime;
 @Getter
 @AllArgsConstructor
 public class RedisPostDto {
-    private long id;
+    private long postId;
     private String content;
     private Long authorId;
     private Long likeCount;
     private Long commentCount;
     private LocalDateTime createdAt;
+    private Long version;
 }

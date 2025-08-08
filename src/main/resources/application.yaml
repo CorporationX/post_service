@@ -21,6 +21,7 @@ spring:
       post-event: post_event
       post-viewed-event: post_viewed_event
       feed-heat-event: feed_heat_event
+      subscribers-feed-heat-event: subscribers_feed_heat_event
     variables:
       partitions: 4
       replicas: 1
@@ -58,6 +59,7 @@ spring:
       host: localhost
       size: 500
       user-ttl: 1
+      post-ttl: 1
       comments-limit: 3
 
   task:

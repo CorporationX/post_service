@@ -17,22 +17,24 @@ public interface RedisCache {
 
     void putFeed(Long userId, Long postId, LocalDateTime postCreatedAt);
 
-    Set<RedisPostDto> getFeed(Long userId, long start, long end);
+    void putFeedForUserBatch(List<Long> userId, Long postId, LocalDateTime postCreatedAt);
+
+    void putPostsBatch(List<RedisPostDto> posts);
+
+    void updateComment(long postId);
+
+    void putComment(KafkaCommentEventDto dto);
+
+    boolean updatePost(long postId, String event);
+
+    Set<Long> getFeed(Long userId, long start, long end);
 
     RedisUserDto getUser(Long userId);
 
     RedisPostDto getPost(Long postId);
 
+    List<Long> getComments(Long postId);
+
     @Async("redisTaskExecutor")
-    void putFeedForSubscribers(Long redisUserDto, List<Long> followerIds);
-
-    void updatePostComment(long postId);
-
-    void addCommentToPostCache(KafkaCommentEventDto dto);
-
-    void updatePostViews(long postId);
-
-    void updatePostLikes(long postId);
-
-    Long getPostLikes(long postId);
+    void putFeedForSubscribers(Long user, List<Long> followerIds);
 }

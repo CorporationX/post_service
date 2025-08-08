@@ -1,5 +1,6 @@
 package faang.school.postservice.controller.feed;
 
+import faang.school.postservice.dto.feed.FeedDto;
 import faang.school.postservice.dto.feed.NewsFeedRequestDto;
 import faang.school.postservice.service.FeedService;
 import lombok.RequiredArgsConstructor;
@@ -15,8 +16,8 @@ public class FeedController {
     private final FeedService feedService;
 
     @GetMapping
-    public void getFeed(NewsFeedRequestDto dto) {
-
+    public FeedDto getFeed(NewsFeedRequestDto dto) {
+        return feedService.getFeed(dto.postId());
     }
 
     // По хорошему ведь вынести это в PostConstruct что-бы при запуске приложения он запускался автоматом

@@ -19,6 +19,6 @@ public class KafkaPostEventConsumer {
     @KafkaListener(topics = "#{__listener.topic}", groupId = "my-group")
     public void listen(KafkaPostEventDto dto) {
         System.out.println("Received message: " + dto);
-        feedService.addCreatedPostToSubscribers(dto);
+        feedService.newPostCreated(dto);
     }
 }
