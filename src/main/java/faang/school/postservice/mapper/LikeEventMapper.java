@@ -2,6 +2,7 @@ package faang.school.postservice.mapper;
 
 import faang.school.postservice.dto.like.LikeEvent;
 import faang.school.postservice.model.Like;
+import faang.school.postservice.model.redis.CachedLike;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
@@ -12,4 +13,6 @@ public interface LikeEventMapper {
     @Mapping(target = "postId", source = "post.id")
     @Mapping(target = "authorId", source = "post.authorId")
     LikeEvent likeToEvent(Like like);
+
+    CachedLike toCachedLike(Like like);
 }

@@ -3,23 +3,25 @@ package faang.school.postservice.service.post;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.dto.post.PostCreateDto;
-import faang.school.postservice.dto.post.PostOutputDto;
-import faang.school.postservice.dto.post.PostUpdateDto;
-import faang.school.postservice.dto.post.PostViewEvent;
-import faang.school.postservice.dto.post.UserPostsDto;
+import faang.school.postservice.dto.post.*;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.PostAlreadyPublishedException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.redis.CachedUser;
 import faang.school.postservice.publisher.MessagePublisher;
+import faang.school.postservice.publisher.post.KafkaPostProducer;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.redis.RedisPostRepository;
+import faang.school.postservice.repository.redis.RedisUserRepository;
 import faang.school.postservice.service.PostService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,8 +32,11 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+@Slf4j
 public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
+    private final RedisPostRepository redisPostRepository;
+    private final RedisUserRepository redisUserRepository;
     private final PostMapper postMapper;
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
@@ -39,7 +44,10 @@ public class PostServiceImpl implements PostService {
     private final MessagePublisher<String> userPublisher;
     @Qualifier(value = "postViewEventPublisher")
     private final MessagePublisher<PostViewEvent> postViewPublisher;
+    private final KafkaPostProducer producer;
     private final UserContext userContext;
+    @Qualifier("postExecutor")
+    private final ThreadPoolTaskExecutor executor;
 
     @Value("${entity.post.max-unverified-count-for-ban}")
     private long maxUnverifiedPostsForBan;
@@ -133,6 +141,10 @@ public class PostServiceImpl implements PostService {
         foundPost.setPublishedAt(LocalDateTime.now());
         Post publishedPost = postRepository.save(foundPost);
 
+        redisPostRepository.savePost(publishedPost);
+        redisUserRepository.saveUser(new CachedUser(publishedPost.getAuthorId()));
+        findFollowersAndPublishEvent(publishedPost);
+
         return postMapper.toPostDto(publishedPost);
     }
 
@@ -165,6 +177,7 @@ public class PostServiceImpl implements PostService {
     }
 
     private UserDto findUserById(long userId) {
+        userContext.setUserId(userId);
         return userServiceClient.getUser(userId);
     }
 
@@ -179,5 +192,15 @@ public class PostServiceImpl implements PostService {
                 userContext.getUserId(),
                 LocalDateTime.now()
         );
+    }
+
+    private void findFollowersAndPublishEvent(Post post) {
+        executor.execute(() -> {
+            List<Long> followersIds = findUserById(post.getAuthorId()).followersIds();
+            if (!followersIds.isEmpty()) {
+                PostPublishedEvent event = new PostPublishedEvent(post.getId(), post.getAuthorId(), followersIds);
+                producer.publish(event);
+            }
+        });
     }
 }
