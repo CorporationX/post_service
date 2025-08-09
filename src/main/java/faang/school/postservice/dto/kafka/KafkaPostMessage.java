@@ -1,6 +1,6 @@
 package faang.school.postservice.dto.kafka;
 
-// import java.time.LocalDateTime;
+import java.time.LocalDateTime;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,10 +12,10 @@ import lombok.Setter;
 @Getter
 @Setter
 public class KafkaPostMessage {
-    private String id;
+    private Long id;
     private String content;
-    // private Long totalLikes;
-    // private Long totalComments;
-    // private Long authorId;
-    // private LocalDateTime publishedAt;
+    private Long totalLikes;
+    private Long totalComments;
+    private Long authorId;
+    private LocalDateTime publishedAt;
 }
