@@ -2,10 +2,10 @@ package faang.school.postservice.cache;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import faang.school.postservice.dto.feed.CommentFeedDto;
 import faang.school.postservice.dto.feed.UserFeedDto;
 import faang.school.postservice.dto.kafka.KafkaCommentEventDto;
 import faang.school.postservice.dto.redis.RedisPostDto;
-import faang.school.postservice.dto.redis.RedisUserDto;
 import faang.school.postservice.repository.PostRepository;
 import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityNotFoundException;
@@ -82,10 +82,7 @@ public class NewsFeedCache implements RedisCache {
                      return redis.call('ZCARD', key)
                 """);
         addCommentAndTrimScript.setResultType(Long.class);
-        //incrementPostCounterScript,
-        //Collections.singletonList(postKey),
-        //event,
-        //String.valueOf(currentVersion)
+
         incrementPostCounterScript = new DefaultRedisScript<>();
         incrementPostCounterScript.setScriptText("""
                     -- KEYS[1]: Ключ для RedisPostDto (post_cache:{postId})
@@ -208,7 +205,6 @@ public class NewsFeedCache implements RedisCache {
         batchSetAndExpireScript.setResultType(Long.class);
     }
 
-    // change to get save User
     @Override
     public void putUser(UserFeedDto user) {
         try {
@@ -216,8 +212,8 @@ public class NewsFeedCache implements RedisCache {
             redisNewsFeedTemplate.opsForValue().set(key, user, Duration.ofDays(userTTL));
             log.info("User {} cached successfully", user.userId());
         } catch (Exception e) {
+            // Изменено: убрали RuntimeException для большей отказоустойчивости
             log.error("Failed to cache user {}: {}", user.userId(), e.getMessage());
-            throw new RuntimeException("Failed to cache user", e); // Custom exception
         }
     }
 
@@ -228,21 +224,9 @@ public class NewsFeedCache implements RedisCache {
             redisNewsFeedTemplate.opsForValue().set(key, post, Duration.ofSeconds(postTTL));
             log.info("Post {} cached successfully", post.getPostId());
         } catch (Exception e) {
+            // Изменено: убрали RuntimeException для большей отказоустойчивости
             log.error("Failed to cache post {}: {}", post.getPostId(), e.getMessage());
-            throw new RuntimeException("Failed to cache post", e); // Custom exception
         }
-    }
-
-    @Override
-    public void putFeed(Long userId, Long postId, LocalDateTime postCreatedAt) {
-        String key = FEED_CACHE_KEY_PREFIX + userId;
-        long score = postCreatedAt.toEpochSecond(ZoneOffset.UTC);
-        redisNewsFeedTemplate.execute(
-                addAndTrimScript,
-                Collections.singletonList(key),
-                feedSizeLimit, score, postId
-        );
-        log.info("Added post {} to user {} feed with score {}", postId, userId, postCreatedAt);
     }
 
     @Override
@@ -265,9 +249,9 @@ public class NewsFeedCache implements RedisCache {
     }
 
     @Override
-    public RedisUserDto getUser(Long userId) {
+    public UserFeedDto getUser(Long userId) {
         String key = USER_CACHE_KEY_PREFIX + userId;
-        return (RedisUserDto) redisNewsFeedTemplate.opsForValue().get(key);
+        return (UserFeedDto) redisNewsFeedTemplate.opsForValue().get(key);
     }
 
     @Override
@@ -289,8 +273,33 @@ public class NewsFeedCache implements RedisCache {
     }
 
     @Override
-    public List<Long> getComments(Long postId) {
-        return List.of();
+    public List<CommentFeedDto> getComments(Long postId) {
+        String key = POST_COMMENTS_KEY_PREFIX + postId;
+        // Получаем элементы ZSET в обратном порядке (от новых к старым)
+        Set<Object> serializedComments = redisNewsFeedTemplate.opsForZSet().reverseRange(key, 0, -1);
+
+        if (serializedComments == null || serializedComments.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<CommentFeedDto> comments = new ArrayList<>();
+        for (Object serializedComment : serializedComments) {
+            if (serializedComment instanceof String) {
+                try {
+                    CommentFeedDto comment = objectMapper.readValue(
+                            (String) serializedComment,
+                            CommentFeedDto.class
+                    );
+                    comments.add(comment);
+                } catch (JsonProcessingException e) {
+                    log.error("Failed to deserialize comment for post {}: {}", postId, e.getMessage());
+                }
+            } else {
+                log.warn("Unexpected comment type in Redis for post {}: {}",
+                        postId, serializedComment.getClass());
+            }
+        }
+        return comments;
     }
 
     @Override
@@ -395,7 +404,6 @@ public class NewsFeedCache implements RedisCache {
                 })
                 .toList();
 
-        // Оптимизация 2: используем новый атомарный скрипт
         Object[] args = new Object[serializedPosts.size() + 1];
         args[0] = String.valueOf(postTTL);
         System.arraycopy(serializedPosts.toArray(), 0, args, 1, serializedPosts.size());
@@ -450,20 +458,4 @@ public class NewsFeedCache implements RedisCache {
 
         updateComment(dto.postId());
     }
-
-    public void putFeedBatch(Long userId, List<Object> scriptArgs) {
-        String key = FEED_CACHE_KEY_PREFIX + userId;
-
-        List<Object> allScriptArgs = new ArrayList<>(scriptArgs.size() + 1);
-        allScriptArgs.add(feedSizeLimit);
-        allScriptArgs.addAll(scriptArgs);
-
-        redisNewsFeedTemplate.execute(
-                addAndTrimScript,
-                Collections.singletonList(key),
-                allScriptArgs.toArray()
-        );
-    }
-
-
 }
