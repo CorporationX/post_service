@@ -1,5 +1,6 @@
 package faang.school.postservice.client;
 
+import faang.school.postservice.dto.feed.UserFeedDto;
 import faang.school.postservice.dto.user.UserDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,4 +25,7 @@ public interface UserServiceClient {
 
     @GetMapping("/api/v1/users/batch")
     List<Long> getUserIdsByBatch(@RequestParam int batchSize, @RequestParam long startingFromId);
+
+    @GetMapping("/api/v1/users/{userId}/feed}")
+    UserFeedDto getUserForFeed(@PathVariable long userId);
 }

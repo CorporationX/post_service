@@ -15,6 +15,7 @@ public class RedisPostDto {
     private Long authorId;
     private Long likeCount;
     private Long commentCount;
+    private Long viewCount;
     private LocalDateTime createdAt;
     private Long version;
 }

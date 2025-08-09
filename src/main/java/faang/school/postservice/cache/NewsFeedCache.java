@@ -2,11 +2,13 @@ package faang.school.postservice.cache;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import faang.school.postservice.dto.feed.UserFeedDto;
 import faang.school.postservice.dto.kafka.KafkaCommentEventDto;
 import faang.school.postservice.dto.redis.RedisPostDto;
 import faang.school.postservice.dto.redis.RedisUserDto;
 import faang.school.postservice.repository.PostRepository;
 import jakarta.annotation.PostConstruct;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,9 +25,7 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -56,6 +56,7 @@ public class NewsFeedCache implements RedisCache {
     private DefaultRedisScript<Long> incrementPostCounterScript;
     private DefaultRedisScript<Long> batchFeedUpdateScript;
     private DefaultRedisScript<Long> batchMultiPostFeedUpdateScript;
+    private DefaultRedisScript<Long> batchSetAndExpireScript;
 
     @PostConstruct
     public void init() {
@@ -194,17 +195,28 @@ public class NewsFeedCache implements RedisCache {
                 return 1
                 """);
         batchMultiPostFeedUpdateScript.setResultType(Long.class);
+
+        batchSetAndExpireScript = new DefaultRedisScript<>();
+        batchSetAndExpireScript.setScriptText("""
+            local ttl = tonumber(ARGV[1])
+            for i = 1, #KEYS do
+                redis.call('SET', KEYS[i], ARGV[i+1])
+                redis.call('EXPIRE', KEYS[i], ttl)
+            end
+            return #KEYS
+        """);
+        batchSetAndExpireScript.setResultType(Long.class);
     }
 
     // change to get save User
     @Override
-    public void putUser(Long userId) {
+    public void putUser(UserFeedDto user) {
         try {
-            String key = USER_CACHE_KEY_PREFIX + userId;
-            redisNewsFeedTemplate.opsForValue().set(key, userId, Duration.ofDays(userTTL));
-            log.info("User {} cached successfully", userId);
+            String key = USER_CACHE_KEY_PREFIX + user.userId();
+            redisNewsFeedTemplate.opsForValue().set(key, user, Duration.ofDays(userTTL));
+            log.info("User {} cached successfully", user.userId());
         } catch (Exception e) {
-            log.error("Failed to cache user {}: {}", userId, e.getMessage());
+            log.error("Failed to cache user {}: {}", user.userId(), e.getMessage());
             throw new RuntimeException("Failed to cache user", e); // Custom exception
         }
     }
@@ -261,10 +273,19 @@ public class NewsFeedCache implements RedisCache {
     @Override
     public RedisPostDto getPost(Long postId) {
         String key = POST_CACHE_KEY_PREFIX + postId;
-        RedisPostDto post = (RedisPostDto) redisNewsFeedTemplate.opsForValue().get(key);
-        if (post != null) {
-        }
-        return post;
+        return (RedisPostDto) redisNewsFeedTemplate.opsForValue().get(key);
+    }
+
+    @Override
+    public List<RedisPostDto> getPostsBatch(Set<Long> postIds) {
+        List<String> keys = postIds.stream()
+                .map(id -> POST_CACHE_KEY_PREFIX + id)
+                .collect(Collectors.toList());
+        return redisNewsFeedTemplate.opsForValue().multiGet(keys)
+                .stream()
+                .filter(obj -> obj instanceof RedisPostDto)
+                .map(obj -> (RedisPostDto) obj)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -276,8 +297,17 @@ public class NewsFeedCache implements RedisCache {
     public boolean updatePost(long postId, String event) {
         RedisPostDto postToUpdate = getPost(postId);
         if (postToUpdate == null) {
-            log.warn("Post with ID {} not found in cache. Cannot update counter for event: {}.", postId, event);
-            return false;
+            // Оптимизация 3: Fallback. Если пост не найден в кэше, загружаем его из БД
+            postToUpdate = postRepository.findPostForRedisByPostId(postId) // Предположим, есть маппер из Post в RedisPostDto
+                    .orElseThrow(() -> new EntityNotFoundException("Post doesn't exist in cache or db"));
+
+            if (postToUpdate == null) {
+                log.warn("Post with ID {} not found in DB. Cannot update counter for event: {}.", postId, event);
+                return false;
+            }
+
+            // Добавляем свежий пост в кэш
+            putPost(postToUpdate);
         }
 
         String postKey = POST_CACHE_KEY_PREFIX + postId;
@@ -313,17 +343,16 @@ public class NewsFeedCache implements RedisCache {
     }
 
     @Override
-    public void putFeedForSubscribers(Long user, List<Long> followerIds) {
+    public void putFeedForSubscribers(Long userId, List<Long> followerIds) {
         Pageable pageable = PageRequest.of(0, feedSizeLimit);
-        List<RedisPostDto> posts = postRepository.findLatestPostsByAuthorId(user, pageable);
-        log.info("found {} Posts for user with ID {}", posts.size(), user);
+        List<RedisPostDto> posts = postRepository.findLatestPostsByAuthorId(userId, pageable);
+        log.info("found {} Posts for user with ID {}", posts.size(), userId);
 
         if (posts.isEmpty()) {
-            log.info("No posts found for user {}. Skipping feed update for followers.", user);
+            log.info("No posts found for user {}. Skipping feed update for followers.", userId);
             return;
         }
 
-        putUser(user);
         putPostsBatch(posts);
 
         List<Object> scriptArgs = new ArrayList<>();
@@ -342,7 +371,7 @@ public class NewsFeedCache implements RedisCache {
                 List.of(String.valueOf(ttlInSeconds), String.valueOf(feedSizeLimit)),
                 scriptArgs.toArray()
         );
-        log.info("Added {} posts from author {} to {} followers' feeds.", posts.size(), user, followerIds.size());
+        log.info("Added {} posts from author {} to {} followers' feeds.", posts.size(), userId, followerIds.size());
     }
 
     @Override
@@ -351,21 +380,33 @@ public class NewsFeedCache implements RedisCache {
             return;
         }
 
-        Map<String, Object> postMap = posts.stream()
-                .collect(Collectors.toMap(
-                        post -> POST_CACHE_KEY_PREFIX + post.getPostId(),
-                        Function.identity()
-                ));
-        redisNewsFeedTemplate.opsForValue().multiSet(postMap);
+        List<String> keys = posts.stream()
+                .map(post -> POST_CACHE_KEY_PREFIX + post.getPostId())
+                .collect(Collectors.toList());
 
-        // Установка TTL для каждого поста в отдельном цикле
-        // К сожалению, multiSet не поддерживает TTL, поэтому требуется отдельный вызов EXPIRE для каждого поста
-        // Хотя это и создает N вызовов, это всё равно более эффективно, чем N вызовов SET
-        posts.forEach(post ->
-                redisNewsFeedTemplate.expire(POST_CACHE_KEY_PREFIX + post.getPostId(), Duration.ofSeconds(postTTL))
+        List<String> serializedPosts = posts.stream()
+                .map(post -> {
+                    try {
+                        return objectMapper.writeValueAsString(post);
+                    } catch (JsonProcessingException e) {
+                        log.error("Failed to serialize post {}: {}", post.getPostId(), e.getMessage());
+                        return null;
+                    }
+                })
+                .toList();
+
+        // Оптимизация 2: используем новый атомарный скрипт
+        Object[] args = new Object[serializedPosts.size() + 1];
+        args[0] = String.valueOf(postTTL);
+        System.arraycopy(serializedPosts.toArray(), 0, args, 1, serializedPosts.size());
+
+        redisNewsFeedTemplate.execute(
+                batchSetAndExpireScript,
+                keys,
+                args
         );
 
-        log.info("Successfully cached {} posts in a batch.", posts.size());
+        log.info("Successfully cached {} posts in a batch with atomic TTL setting.", posts.size());
     }
 
     @Override

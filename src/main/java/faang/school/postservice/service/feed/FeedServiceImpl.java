@@ -37,7 +37,6 @@ public class FeedServiceImpl implements FeedService {
     @Value("${news-feed.heater.batch-size}")
     private int batchSize;
 
-    // PostConstruct?
     // Add retry, timeout, try/catch
     @Override
     public void initializeFeedHeat() {
@@ -52,6 +51,7 @@ public class FeedServiceImpl implements FeedService {
         } while (lastBatchSize == batchSize);
     }
 
+    @Override
     public void gatherFollowersForUsers(List<Long> users) {
         // 2) Распределяем подписчиков пользователя по батчам
         users.forEach(userId -> {
@@ -67,11 +67,14 @@ public class FeedServiceImpl implements FeedService {
         });
     }
 
+    @Override
     public void fillFollowersFeed(KafkaSubscribersFeedHeatDto dto) {
         // 3) Сохраняем батчу подписчиков - батч постов
+        putUserIntoCache(dto.userId());
         cache.putFeedForSubscribers(dto.userId(), dto.followerIds());
     }
 
+    @Override
     public void newPostCreated(KafkaPostEventDto eventDto) {
         RedisPostDto redisPostDto = kafkaPostEventToRedisPostMapper.postEventToRedisPostDto(eventDto);
         cache.putPost(redisPostDto);
@@ -88,10 +91,11 @@ public class FeedServiceImpl implements FeedService {
         } while (lastBatchSize == batchSize);
     }
 
+    @Override
     public void putUserIntoCache(long userId) {
         // Исправить на нормального юзера.
         // Вместо своих дто, дополнить UserDto?
-        cache.putUser(userServiceClient.getUser(userId).id());
+        cache.putUser(userServiceClient.getUserForFeed(userId));
     }
 
     @Override
@@ -110,8 +114,8 @@ public class FeedServiceImpl implements FeedService {
         long startIndex = postId != null ? postId : 0L;
         long toIndex = startIndex == 0L ? 20 : startIndex + 20;
         Set<Long> postIds = cache.getFeed(userId, startIndex, toIndex);
-        // Добавить что-бы при сборке коммента подтягивались коменты
-        List<RedisPostDto> posts = postIds.stream().map(cache::getPost).toList();
+        List<RedisPostDto> posts = cache.getPostsBatch(postIds);
+        // Добавить что-бы при сборке поста подтягивались комменты!!!!!!
         return new FeedDto(posts);
     }
 }

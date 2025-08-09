@@ -1,5 +1,6 @@
 package faang.school.postservice.cache;
 
+import faang.school.postservice.dto.feed.UserFeedDto;
 import faang.school.postservice.dto.kafka.KafkaCommentEventDto;
 import faang.school.postservice.dto.redis.RedisPostDto;
 import faang.school.postservice.dto.redis.RedisUserDto;
@@ -11,7 +12,7 @@ import java.util.Set;
 
 public interface RedisCache {
 
-    void putUser(Long user);
+    void putUser(UserFeedDto user);
 
     void putPost(RedisPostDto post);
 
@@ -32,6 +33,8 @@ public interface RedisCache {
     RedisUserDto getUser(Long userId);
 
     RedisPostDto getPost(Long postId);
+
+    List<RedisPostDto> getPostsBatch(Set<Long> postIds);
 
     List<Long> getComments(Long postId);
 

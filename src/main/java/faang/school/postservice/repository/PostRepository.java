@@ -9,6 +9,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface PostRepository extends CrudRepository<Post, Long> {
 
@@ -51,4 +52,21 @@ public interface PostRepository extends CrudRepository<Post, Long> {
             ORDER BY p.createdAt DESC
             """)
     List<RedisPostDto> findLatestPostsByAuthorId(@Param("authorId")long authorId, Pageable pageable);
+
+    @Query("""
+            SELECT new faang.school.postservice.dto.redis.RedisPostDto(
+                p.id,
+                p.content,
+                p.authorId,
+                COUNT(l.id),
+                COUNT(c.id),
+                p.createdAt
+            )
+            FROM Post p
+            LEFT JOIN p.likes l
+            LEFT JOIN p.comments c
+            WHERE p.id = :postId
+            GROUP BY p.id, p.content, p.authorId, p.createdAt
+            """)
+    Optional<RedisPostDto> findPostForRedisByPostId(@Param("postId")long postId);
 }
