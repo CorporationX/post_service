@@ -2,7 +2,6 @@ package faang.school.postservice.messaging.producer.kafka;
 
 import faang.school.postservice.dto.post.PostViewDto;
 import faang.school.postservice.messaging.producer.EventProducer;
-import faang.school.postservice.model.message.Event;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,11 +24,6 @@ public class PostCreateEventProducer implements EventProducer<PostViewDto> {
     @Value("${kafka.topics.create-post}")
     private String createTopic;
     private final KafkaTemplate<String, PostViewDto> kafkaTemplate;
-
-    @Override
-    public boolean isApplicable(Event type) {
-        return Event.POST_CREATE.equals(type);
-    }
 
     @Override
     public void send(PostViewDto event) {

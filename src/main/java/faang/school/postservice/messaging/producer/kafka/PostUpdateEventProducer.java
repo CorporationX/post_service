@@ -1,8 +1,7 @@
 package faang.school.postservice.messaging.producer.kafka;
 
-import faang.school.postservice.dto.post.PostViewDto;
+import faang.school.postservice.messaging.dto.PostUpdatedEvent;
 import faang.school.postservice.messaging.producer.EventProducer;
-import faang.school.postservice.model.message.Event;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,19 +20,14 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class PostUpdateEventProducer implements EventProducer<PostViewDto> {
+public class PostUpdateEventProducer implements EventProducer<PostUpdatedEvent> {
     @Value("${kafka.topics.update-post}")
     private String updateTopic;
-    private final KafkaTemplate<String, PostViewDto> kafkaTemplate;
+    private final KafkaTemplate<String, PostUpdatedEvent> kafkaTemplate;
 
     @Override
-    public boolean isApplicable(Event type) {
-        return Event.POST_UPDATE.equals(type);
-    }
-
-    @Override
-    public void send(PostViewDto event) {
-        log.info("send post update event to topic: {}\npostId:{}", updateTopic, event.id());
+    public void send(PostUpdatedEvent event) {
+        log.info("send post update event to topic: {}\npostId:{}", updateTopic, event.oldPost().id());
         kafkaTemplate.send(updateTopic, event);
     }
 }

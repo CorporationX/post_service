@@ -10,9 +10,9 @@ import faang.school.postservice.dto.post.PostViewDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.mapper.post.PostMapper;
-import faang.school.postservice.messaging.producer.EventProducerService;
+import faang.school.postservice.messaging.dto.PostUpdatedEvent;
+import faang.school.postservice.messaging.producer.EventProducer;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.model.message.Event;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.filter.FilterService;
 import jakarta.transaction.Transactional;
@@ -54,7 +54,8 @@ public class PostServiceImpl implements PostService {
     private final UserContext userContext;
     private final PostMapper postMapper;
     private final FilterService<Post, PostFilterDto> filterService;
-    private final EventProducerService<PostViewDto> postEventProducerService;
+    private final EventProducer<PostViewDto> postCreateProducer;
+    private final EventProducer<PostUpdatedEvent> postUpdatedEventProducer;
 
     @Override
     @Transactional
@@ -76,7 +77,7 @@ public class PostServiceImpl implements PostService {
         var post = postMapper.toEntity(createDto);
         post = postRepository.save(post);
         var view = postMapper.toViewDto(post);
-        postEventProducerService.produce(Event.POST_CREATE, view);
+        postCreateProducer.send(view);
         return view;
     }
 
@@ -105,9 +106,13 @@ public class PostServiceImpl implements PostService {
         if (post.isDeleted()) {
             throw new ForbiddenException("Пост удален, нельзя редактировать");
         }
+        var oldPostDto = postMapper.toViewDto(post);
         postMapper.update(updateDto, post);
         post = postRepository.save(post);
-        return postMapper.toViewDto(post);
+        var newPostDto = postMapper.toViewDto(post);
+        var postUpdatedEvent = new PostUpdatedEvent(oldPostDto, newPostDto);
+        postUpdatedEventProducer.send(postUpdatedEvent);
+        return newPostDto;
     }
 
     @Override
