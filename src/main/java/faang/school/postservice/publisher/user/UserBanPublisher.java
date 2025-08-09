@@ -1,6 +1,6 @@
 package faang.school.postservice.publisher.user;
 
-import faang.school.postservice.config.redis.RedisProperties;
+import faang.school.postservice.config.properties.RedisProperties;
 import faang.school.postservice.publisher.MessagePublisher;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;

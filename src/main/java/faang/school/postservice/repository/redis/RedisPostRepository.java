@@ -1,7 +1,7 @@
 package faang.school.postservice.repository.redis;
 
-import faang.school.postservice.config.properties.RetryProperties;
-import faang.school.postservice.mapper.JsonMapper;
+import faang.school.postservice.config.properties.CachedPostHashKeysProperties;
+import faang.school.postservice.util.JsonMapperUtil;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.redis.CachedComment;
 import faang.school.postservice.model.redis.CachedLike;
@@ -28,22 +28,22 @@ public class RedisPostRepository {
     private static final long COMMENT_THRESHOLD = 3L;
     private final RedisTemplate<String, Object> hashTemplate;
     private final RedisTemplate<String, String> stringTemplate;
-    private final RetryProperties retryProperties;
-    private final JsonMapper jsonMapper;
+    private final CachedPostHashKeysProperties properties;
+    private final JsonMapperUtil jsonMapper;
 
     @Value("${spring.data.redis.ttl-hours}")
     private long ttlHours;
 
     public void savePost(Post post) {
         String key = POST_PREFIX + post.getId();
-        hashTemplate.opsForHash().put(key, "postId", post.getId());
-        hashTemplate.opsForHash().put(key, "content", post.getContent());
-        hashTemplate.opsForHash().put(key, "authorId", post.getAuthorId());
-        hashTemplate.opsForHash().put(key, "projectId", post.getProjectId());
-        hashTemplate.opsForHash().put(key, "publishedAt", post.getPublishedAt());
-        hashTemplate.opsForHash().put(key, "updatedAt", post.getUpdatedAt());
-        hashTemplate.opsForHash().put(key, "views", 0);
-        hashTemplate.opsForHash().put(key, "likesCount", 0);
+        hashTemplate.opsForHash().put(key, properties.postId(), post.getId());
+        hashTemplate.opsForHash().put(key, properties.content(), post.getContent());
+        hashTemplate.opsForHash().put(key, properties.authorId(), post.getAuthorId());
+        hashTemplate.opsForHash().put(key, properties.projectId(), post.getProjectId());
+        hashTemplate.opsForHash().put(key, properties.publishedAt(), post.getPublishedAt());
+        hashTemplate.opsForHash().put(key, properties.updatedAt(), post.getUpdatedAt());
+        hashTemplate.opsForHash().put(key, properties.views(), 0);
+        hashTemplate.opsForHash().put(key, properties.likesCount(), 0);
         hashTemplate.expire(key, ttlHours, TimeUnit.HOURS);
         log.info("Saved post in Redis");
     }
@@ -116,7 +116,6 @@ public class RedisPostRepository {
 
     private void incrementLikesCount(Long postId) {
         String key = POST_PREFIX + postId;
-        String hashKey = "likesCount";
-        hashTemplate.opsForHash().increment(key, hashKey, 1);
+        hashTemplate.opsForHash().increment(key, properties.likesCount(), 1);
     }
 }

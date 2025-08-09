@@ -1,4 +1,4 @@
-package faang.school.postservice.mapper;
+package faang.school.postservice.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class JsonMapper {
+public class JsonMapperUtil {
     private final ObjectMapper mapper;
 
     public <T> String mapToJson(T entity) {

@@ -28,6 +28,15 @@ spring:
           comment_topic: comment_topic
           post_view_name: post_view
       ttl-hours: 24
+      cached-post-hash-keys:
+        postId: id
+        content: content
+        authorId: author
+        projectId: project
+        publishedAt: publishedAt
+        updatedAt: updatedAt
+        views: views
+        likesCount: likesCount
     kafka:
       bootstrap-servers: localhost:9092, localhost:9192, localhost:9292
       group_id: event-listeners
@@ -41,10 +50,6 @@ spring:
       pool:
         size: 10
         max-size: 10
-
-  retry:
-    maxAttempts: 3
-    delay: 100
 
 server:
   port: 8081

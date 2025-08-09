@@ -1,4 +1,4 @@
-package faang.school.postservice.config.kafka;
+package faang.school.postservice.config.properties;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
