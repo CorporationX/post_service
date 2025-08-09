@@ -11,7 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 public class KafkaProducer {
-    private final KafkaTemplate<String, KafkaPostMessage> kafkaTemplate;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
     public void sendMessage(KafkaPostMessage kafkaPostMessage) {
         kafkaTemplate.send("post-create-event", kafkaPostMessage.getId().toString(), kafkaPostMessage);
