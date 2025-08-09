@@ -83,7 +83,7 @@ public class LikeServiceImplTest {
     @Test
     public void test_addLikePost_publish_successful() throws JsonProcessingException {
         when(postRepository.findById(any())).thenReturn(Optional.of(post));
-        when(userServiceClient.getUser(userId)).thenReturn(new UserDto(userId, "name", "email"));
+        when(userServiceClient.getUser(userId)).thenReturn(new UserDto(userId, "name", "email", List.of()));
         when(likeRepository.save(any())).thenReturn(like);
 
         likeService.addLikePost(postId, userId);
