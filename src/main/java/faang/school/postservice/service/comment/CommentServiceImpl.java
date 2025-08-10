@@ -36,10 +36,6 @@ public class CommentServiceImpl implements CommentService {
             throw new EntityNotFoundException("User with id " + authorId + " not found");
         }
 
-        if (!postRepository.existsById(postId)) {
-            throw new EntityNotFoundException("Post with id " + postId + " not found");
-        }
-
         var post = postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("Post not found"));
 
