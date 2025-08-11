@@ -6,6 +6,7 @@ import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.feed.FeedDto;
 import faang.school.postservice.dto.feed.UserFeedDto;
 import faang.school.postservice.dto.kafka.KafkaCommentEventDto;
+import faang.school.postservice.dto.kafka.KafkaFeedHeatDto;
 import faang.school.postservice.dto.kafka.KafkaPostEventDto;
 import faang.school.postservice.dto.kafka.KafkaSubscribersFeedHeatDto;
 import faang.school.postservice.dto.redis.RedisPostDto;
@@ -66,7 +67,7 @@ public class FeedServiceImpl implements FeedService {
 
             startingFromId = userIds.get(userIds.size() - 1);
             lastBatchSize = userIds.size();
-            kafkaFeedHeatEventProducer.sendMessage(userIds);
+            kafkaFeedHeatEventProducer.sendMessage(new KafkaFeedHeatDto(userIds));
         } while (lastBatchSize == batchSize);
     }
 
@@ -74,7 +75,9 @@ public class FeedServiceImpl implements FeedService {
     public void gatherFollowersForUsers(List<Long> users) {
         users.forEach(userId -> {
             putUserIntoCache(userId);
-            processFollowersInBatches(userId, followerIds -> kafkaSubscribersFeedEventProducer.sendMessage(userId, followerIds));
+            processFollowersInBatches(userId, followerIds ->
+                    kafkaSubscribersFeedEventProducer.sendMessage(new KafkaSubscribersFeedHeatDto(userId, followerIds))
+            );
         });
     }
 
@@ -121,6 +124,8 @@ public class FeedServiceImpl implements FeedService {
         long userId = userContext.getUserId();
         long startIndex = postId != null ? postId : 0L;
         long toIndex = startIndex == 0L ? 20 : startIndex + 20;
+        // порядок ид может быть абсолютно рандомным ведь?
+        // Надо бы наверное через скрипт делать фор луп и брать 20 постов после нахождения поста по ид в списке фида
         Set<Long> postIds = cache.getFeed(userId, startIndex, toIndex);
         List<RedisPostDto> posts = cache.getPostsBatch(postIds);
         posts.forEach(post -> post.setComments(cache.getComments(post.getPostId())));

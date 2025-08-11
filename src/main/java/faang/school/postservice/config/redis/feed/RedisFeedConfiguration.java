@@ -28,19 +28,11 @@ public class RedisFeedConfiguration {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(redisNewsFeedConnectionFactory);
 
-        // Создаем и настраиваем ObjectMapper
         ObjectMapper objectMapper = new ObjectMapper();
-
-        // Регистрируем модуль для поддержки Java 8 Time API
         objectMapper.registerModule(new JavaTimeModule());
-
-        // Отключаем сериализацию полей-дат как timestamp-чисел для лучшей читаемости в Redis
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-
-        // Создаем сериализатор Jackson с настроенным ObjectMapper
         GenericJackson2JsonRedisSerializer jackson2JsonRedisSerializer = new GenericJackson2JsonRedisSerializer(objectMapper);
 
-        // Устанавливаем настроенный сериализатор для значений
         template.setKeySerializer(new StringRedisSerializer());
         template.setValueSerializer(jackson2JsonRedisSerializer);
         template.setHashKeySerializer(new StringRedisSerializer());

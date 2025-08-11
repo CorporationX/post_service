@@ -4,13 +4,13 @@ import faang.school.postservice.dto.feed.FeedDto;
 import faang.school.postservice.dto.feed.NewsFeedRequestDto;
 import faang.school.postservice.service.FeedService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-@RequestMapping("/api/v1/feed")
+@RequestMapping("${news-feed.api-version}${news-feed.api-endpoint}")
 @RequiredArgsConstructor
-@Controller
+@RestController
 public class FeedController {
 
     private final FeedService feedService;
@@ -20,7 +20,6 @@ public class FeedController {
         return feedService.getFeed(dto.postId());
     }
 
-    // По хорошему ведь вынести это в PostConstruct что-бы при запуске приложения он запускался автоматом
     @GetMapping("/heat")
     public void heatFeed() {
         feedService.initializeFeedHeat();

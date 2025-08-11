@@ -57,7 +57,7 @@ spring:
     redis-news-feed:
       port: 6380
       host: localhost
-      size: 500
+      feed-size: 500
       user-ttl: 1
       post-ttl: 1
       comments-limit: 3
@@ -143,3 +143,5 @@ retry:
 news-feed:
   heater:
     batch-size: 1000
+  api-version: "/api/v1"
+  api-endpoint: "/feed"

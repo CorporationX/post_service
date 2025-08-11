@@ -1,6 +1,7 @@
 package faang.school.postservice.kafka.producer;
 
 import faang.school.postservice.dto.kafka.KafkaPostEventDto;
+import faang.school.postservice.kafka.KafkaEventProducer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -8,7 +9,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class KafkaPostEventProducer {
+public class KafkaPostEventProducer implements KafkaEventProducer<KafkaPostEventDto> {
 
     @Value("${spring.kafka.topics.post-event}")
     private final String topic;

@@ -3,6 +3,7 @@ package faang.school.postservice.service.post;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.kafka.KafkaPostViewedEventDto;
 import faang.school.postservice.dto.post.PostCreateDto;
 import faang.school.postservice.dto.post.PostOutputDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
@@ -56,7 +57,7 @@ public class PostServiceImpl implements PostService {
         postViewPublisher.publish(createViewEvent(foundPost));
         // Пост считается просмотренным только если пользователь нажал на него?
         // Это не будет использоваться в фиде, там сущность поста получается из кэша
-        kafkaPostViewedEventProducer.sendMessage(postId);
+        kafkaPostViewedEventProducer.sendMessage(new KafkaPostViewedEventDto(postId));
         return postMapper.toPostDto(foundPost);
     }
 

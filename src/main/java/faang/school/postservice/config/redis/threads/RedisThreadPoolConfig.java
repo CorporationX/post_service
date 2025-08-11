@@ -9,10 +9,8 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 @RequiredArgsConstructor
 public class RedisThreadPoolConfig {
 
-    private final RedisThreadPoolProperties redisThreadPoolProperties;
-
     @Bean("redisTaskExecutor")
-    public ThreadPoolTaskExecutor redisTaskExecutor() {
+    public ThreadPoolTaskExecutor redisTaskExecutor(RedisThreadPoolProperties redisThreadPoolProperties) {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(redisThreadPoolProperties.coreSize());
         executor.setMaxPoolSize(redisThreadPoolProperties.maxSize());

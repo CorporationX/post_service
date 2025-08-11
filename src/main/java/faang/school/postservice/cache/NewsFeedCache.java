@@ -11,12 +11,13 @@ import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scripting.support.ResourceScriptSource;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
@@ -41,17 +42,8 @@ public class NewsFeedCache implements RedisCache {
     private final PostRepository postRepository;
     private final RedisTemplate<String, Object> redisNewsFeedTemplate;
     private final ObjectMapper objectMapper;
+    private final NewsFeedConfiguration newsFeedConfiguration;
 
-    @Value("${spring.data.redis-news-feed.size}")
-    private int feedSizeLimit;
-    @Value("${spring.data.redis-news-feed.user-ttl}")
-    private int userTTL;
-    @Value("${spring.data.redis-news-feed.comments-limit}")
-    private int commentsLimit;
-    @Value("${spring.data.redis-news-feed.post-ttl}")
-    private int postTTL;
-
-    private DefaultRedisScript<Long> addAndTrimScript;
     private DefaultRedisScript<Long> addCommentAndTrimScript;
     private DefaultRedisScript<Long> incrementPostCounterScript;
     private DefaultRedisScript<Long> batchFeedUpdateScript;
@@ -60,148 +52,24 @@ public class NewsFeedCache implements RedisCache {
 
     @PostConstruct
     public void init() {
-        addAndTrimScript = new DefaultRedisScript<>();
-        addAndTrimScript.setScriptText("""
-                    redis.call('ZADD', KEYS[1], unpack(ARGV, 2))
-                    redis.call('ZREMRANGEBYRANK', KEYS[1], 0, -tonumber(ARGV[1] + 1))
-                    return redis.call('ZCARD', KEYS[1])
-                """);
-        addAndTrimScript.setResultType(Long.class);
-
-        // Скрипт для комментариев к посту
         addCommentAndTrimScript = new DefaultRedisScript<>();
-        addCommentAndTrimScript.setScriptText("""
-                     local key = KEYS[1]
-                     local limit = tonumber(ARGV[1])
-                     local score = tonumber(ARGV[2])
-                     local member = ARGV[3]
-                     -- ZADD идемпотентен.
-                     redis.call('ZADD', key, score, member)
-                     -- ZREMRANGEBYRANK 0, -limit-1 удаляет все элементы, кроме последних 'limit'.
-                     redis.call('ZREMRANGEBYRANK', key, 0, -limit-1)
-                     return redis.call('ZCARD', key)
-                """);
+        addCommentAndTrimScript.setScriptSource(new ResourceScriptSource(new ClassPathResource("lua/add-comment-and-trim.lua")));
         addCommentAndTrimScript.setResultType(Long.class);
 
         incrementPostCounterScript = new DefaultRedisScript<>();
-        incrementPostCounterScript.setScriptText("""
-                    -- KEYS[1]: Ключ для RedisPostDto (post_cache:{postId})
-                    -- ARGV[1]: Тип счетчика для инкремента ("likes", "comments", "views")
-                    -- ARGV[2]: Ожидаемая версия (для оптимистической блокировки)
-                
-                    local postKey = KEYS[1]
-                    local incrementType = ARGV[1]
-                    local expectedVersion = tonumber(ARGV[2])
-                
-                    local postJson = redis.call('GET', postKey)
-                
-                    if not postJson then
-                        -- Пост не найден в кэше, не можем обновить.
-                        return 0
-                    end
-                
-                    local post = cjson.decode(postJson)
-                
-                    -- Проверка оптимистической блокировки
-                    if post.version ~= expectedVersion then
-                        -- Версия не совпадает, произошла конкурентная модификация.
-                        return 0
-                    end
-                
-                    -- Инкремент соответствующего счетчика
-                    if incrementType == 'like_event' then
-                        post.likeCount = (post.likeCount or 0) + 1
-                    elseif incrementType == 'comment_event' then
-                        post.commentCount = (post.commentCount or 0) + 1
-                    elseif incrementType == 'post_viewed_event' then
-                        post.viewsCount = (post.viewsCount or 0) + 1
-                    else
-                        -- Неизвестный тип инкремента
-                        return 0
-                    end
-                
-                    -- Инкремент версии
-                    post.version = post.version + 1
-                
-                    -- Сериализуем обратно в JSON и сохраняем
-                    local updatedPostJson = cjson.encode(post)
-                    redis.call('SET', postKey, updatedPostJson)
-                
-                    return 1 -- Успешное обновление
-                """);
+        incrementPostCounterScript.setScriptSource(new ResourceScriptSource(new ClassPathResource("lua/increment-post-counter.lua")));
         incrementPostCounterScript.setResultType(Long.class);
 
         batchFeedUpdateScript = new DefaultRedisScript<>();
-        batchFeedUpdateScript.setScriptText("""
-                local postId = KEYS[1]
-                local score = tonumber(KEYS[2])
-                local ttl = tonumber(KEYS[3])
-                local feedSizeLimit = tonumber(KEYS[4])
-                local feedKeyPrefix = 'feed_cache:'
-                
-                -- Итерируемся по каждому userId в ARGV
-                for i = 1, #ARGV, 1 do
-                    local userId = ARGV[i]
-                    local feedKey = feedKeyPrefix .. userId
-                
-                    -- Добавляем пост в отсортированное множество
-                    redis.call('ZADD', feedKey, score, postId)
-                
-                    -- Обрезаем множество, оставляя только feedSizeLimit самых новых постов
-                    redis.call('ZREMRANGEBYRANK', feedKey, 0, -feedSizeLimit - 1)
-                
-                    -- Устанавливаем срок жизни для ключа фида
-                    redis.call('EXPIRE', feedKey, ttl)
-                end
-                
-                return 1
-                """);
+        batchFeedUpdateScript.setScriptSource(new ResourceScriptSource(new ClassPathResource("lua/batch-feed-update.lua")));
         batchFeedUpdateScript.setResultType(Long.class);
 
         batchMultiPostFeedUpdateScript = new DefaultRedisScript<>();
-        batchMultiPostFeedUpdateScript.setScriptText("""
-                local ttl = tonumber(KEYS[1])
-                local feedSizeLimit = tonumber(KEYS[2])
-                local feedKeyPrefix = 'feed_cache:'
-                
-                local userIds = {}
-                local postArgs = {}
-                local isPostArgs = false
-                
-                for i = 1, #ARGV do
-                    if ARGV[i] == 'POSTS_START' then
-                        isPostArgs = true
-                    elseif not isPostArgs then
-                        table.insert(userIds, ARGV[i])
-                    else
-                        table.insert(postArgs, ARGV[i])
-                    end
-                end
-                
-                for i = 1, #userIds do
-                    local userId = userIds[i]
-                    local feedKey = feedKeyPrefix .. userId
-                
-                    redis.call('ZADD', feedKey, unpack(postArgs))
-                
-                    redis.call('ZREMRANGEBYRANK', feedKey, 0, -feedSizeLimit - 1)
-                
-                    redis.call('EXPIRE', feedKey, ttl)
-                end
-                
-                return 1
-                """);
+        batchMultiPostFeedUpdateScript.setScriptSource(new ResourceScriptSource(new ClassPathResource("lua/batch-multi-post-feed-update.lua")));
         batchMultiPostFeedUpdateScript.setResultType(Long.class);
 
         batchSetAndExpireScript = new DefaultRedisScript<>();
-        batchSetAndExpireScript.setScriptText("""
-            local ttl = tonumber(ARGV[1])
-            for i = 1, #KEYS do
-                redis.call('SET', KEYS[i], ARGV[i+1])
-                redis.call('EXPIRE', KEYS[i], ttl)
-            end
-            return #KEYS
-        """);
+        batchSetAndExpireScript.setScriptSource(new ResourceScriptSource(new ClassPathResource("lua/batch-set-and-expire.lua")));
         batchSetAndExpireScript.setResultType(Long.class);
     }
 
@@ -209,7 +77,7 @@ public class NewsFeedCache implements RedisCache {
     public void putUser(UserFeedDto user) {
         try {
             String key = USER_CACHE_KEY_PREFIX + user.userId();
-            redisNewsFeedTemplate.opsForValue().set(key, user, Duration.ofDays(userTTL));
+            redisNewsFeedTemplate.opsForValue().set(key, user, Duration.ofDays(newsFeedConfiguration.getUserTtl()));
             log.info("User {} cached successfully", user.userId());
         } catch (Exception e) {
             // Изменено: убрали RuntimeException для большей отказоустойчивости
@@ -221,7 +89,7 @@ public class NewsFeedCache implements RedisCache {
     public void putPost(RedisPostDto post) {
         try {
             String key = POST_CACHE_KEY_PREFIX + post.getPostId();
-            redisNewsFeedTemplate.opsForValue().set(key, post, Duration.ofSeconds(postTTL));
+            redisNewsFeedTemplate.opsForValue().set(key, post, Duration.ofSeconds(newsFeedConfiguration.getPostTtl()));
             log.info("Post {} cached successfully", post.getPostId());
         } catch (Exception e) {
             // Изменено: убрали RuntimeException для большей отказоустойчивости
@@ -236,13 +104,18 @@ public class NewsFeedCache implements RedisCache {
         }
 
         long score = postCreatedAt.toEpochSecond(ZoneOffset.UTC);
-        long ttlInSeconds = Duration.ofMinutes(userTTL).getSeconds();
+        long ttlInSeconds = Duration.ofMinutes(newsFeedConfiguration.getUserTtl()).getSeconds();
 
         List<Object> scriptArgs = userIds.stream().map(Object.class::cast).toList();
 
         redisNewsFeedTemplate.execute(
                 batchFeedUpdateScript,
-                List.of(String.valueOf(postId), String.valueOf(score), String.valueOf(ttlInSeconds), String.valueOf(feedSizeLimit)),
+                List.of(
+                        String.valueOf(postId),
+                        String.valueOf(score),
+                        String.valueOf(ttlInSeconds),
+                        String.valueOf(newsFeedConfiguration.getFeedSize())
+                ),
                 scriptArgs.toArray()
         );
         log.info("Added post {} to {} users' feeds in a batch.", postId, userIds.size());
@@ -353,7 +226,7 @@ public class NewsFeedCache implements RedisCache {
 
     @Override
     public void putFeedForSubscribers(Long userId, List<Long> followerIds) {
-        Pageable pageable = PageRequest.of(0, feedSizeLimit);
+        Pageable pageable = PageRequest.of(0, newsFeedConfiguration.getFeedSize());
         List<RedisPostDto> posts = postRepository.findLatestPostsByAuthorId(userId, pageable);
         log.info("found {} Posts for user with ID {}", posts.size(), userId);
 
@@ -373,11 +246,11 @@ public class NewsFeedCache implements RedisCache {
             scriptArgs.add(post.getPostId());
         });
 
-        long ttlInSeconds = Duration.ofMinutes(userTTL).getSeconds();
+        long ttlInSeconds = Duration.ofMinutes(newsFeedConfiguration.getUserTtl()).getSeconds();
 
         redisNewsFeedTemplate.execute(
                 batchMultiPostFeedUpdateScript,
-                List.of(String.valueOf(ttlInSeconds), String.valueOf(feedSizeLimit)),
+                List.of(String.valueOf(ttlInSeconds), String.valueOf(newsFeedConfiguration.getFeedSize())),
                 scriptArgs.toArray()
         );
         log.info("Added {} posts from author {} to {} followers' feeds.", posts.size(), userId, followerIds.size());
@@ -405,7 +278,7 @@ public class NewsFeedCache implements RedisCache {
                 .toList();
 
         Object[] args = new Object[serializedPosts.size() + 1];
-        args[0] = String.valueOf(postTTL);
+        args[0] = String.valueOf(newsFeedConfiguration.getPostTtl());
         System.arraycopy(serializedPosts.toArray(), 0, args, 1, serializedPosts.size());
 
         redisNewsFeedTemplate.execute(
@@ -446,7 +319,7 @@ public class NewsFeedCache implements RedisCache {
             return;
         }
         List<Object> scriptArgs = new ArrayList<>();
-        scriptArgs.add(commentsLimit);
+        scriptArgs.add(newsFeedConfiguration.getCommentsLimit());
         scriptArgs.add(score);
         scriptArgs.add(serializedComment);
 
