@@ -11,6 +11,7 @@ import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import feign.FeignException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +28,7 @@ public class CommentServiceImpl implements CommentService {
     private final UserContext userContext;
 
     @Override
+    @Transactional
     public CommentViewDto create(Long postId, CommentCreateDto commentDto) {
         var authorId = userContext.getUserId();
 
@@ -37,12 +39,9 @@ public class CommentServiceImpl implements CommentService {
         }
 
         var post = postRepository.findById(postId)
-                .orElseThrow(() -> new EntityNotFoundException("Post not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Post with id " + postId + " not found"));
 
-        var comment = mapper.toEntity(commentDto);
-
-        comment.setAuthorId(authorId);
-        comment.setPost(post);
+        var comment = mapper.toEntityWithAuthorAndPost(commentDto, authorId, post);
 
         var savedComment = commentRepository.save(comment);
 
@@ -50,9 +49,9 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public CommentViewDto update(Long postId, Long commentId, CommentUpdateDto commentDto) {
-        var comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new EntityNotFoundException("Comment not found"));
+    @Transactional
+    public CommentViewDto update(Long commentId, CommentUpdateDto commentDto) {
+        var comment = commentRepository.getRequiredById(commentId);
 
         var currentUserId = userContext.getUserId();
 
@@ -75,9 +74,9 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
+    @Transactional
     public void delete(Long commentId) {
-        var comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new EntityNotFoundException("Comment not found"));
+        var comment = commentRepository.getRequiredById(commentId);
 
         var currentUserId = userContext.getUserId();
 

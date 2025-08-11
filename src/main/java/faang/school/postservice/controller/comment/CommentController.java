@@ -44,29 +44,28 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CommentController {
 
-    private final CommentService commentService;
+    private final CommentService service;
 
-    @PostMapping("/{postId}/comments")
+    @PostMapping
     public ResponseEntity<CommentViewDto> createComment(@PathVariable Long postId,
                                                         @Valid @RequestBody CommentCreateDto dto) {
-        return ResponseEntity.ok(commentService.create(postId, dto));
+        return ResponseEntity.ok(service.create(postId, dto));
     }
 
-    @PatchMapping("/{postId}/{commentId}")
-    public ResponseEntity<CommentViewDto> updateComment(@PathVariable Long postId,
-                                                        @PathVariable Long commentId,
+    @PatchMapping("/{commentId}")
+    public ResponseEntity<CommentViewDto> updateComment(@PathVariable Long commentId,
                                                         @Valid @RequestBody CommentUpdateDto dto) {
-        return ResponseEntity.ok(commentService.update(postId, commentId, dto));
+        return ResponseEntity.ok(service.update(commentId, dto));
     }
 
     @GetMapping
     public ResponseEntity<List<CommentViewDto>> getAllComments(@PathVariable Long postId) {
-        return ResponseEntity.ok(commentService.getAllByPostId(postId));
+        return ResponseEntity.ok(service.getAllByPostId(postId));
     }
 
     @DeleteMapping("/{commentId}")
     public ResponseEntity<Void> deleteComment(@PathVariable Long commentId) {
-        commentService.delete(commentId);
+        service.delete(commentId);
         return ResponseEntity.ok().build();
     }
 }

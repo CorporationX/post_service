@@ -36,12 +36,11 @@ public interface CommentService {
      * Обновление ограничивается изменением содержимого комментария.
      * Выполняется проверка авторства и валидация входных данных.
      *
-     * @param postId    идентификатор поста, к которому относится комментарий
      * @param commentId идентификатор обновляемого комментария
      * @param dto       DTO с обновленными данными комментария
      * @return DTO обновленного комментария
      */
-    CommentViewDto update(Long postId, Long commentId, CommentUpdateDto dto);
+    CommentViewDto update(Long commentId, CommentUpdateDto dto);
 
     /**
      * Возвращает список всех комментариев для заданного поста,
