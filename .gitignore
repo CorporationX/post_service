@@ -56,6 +56,7 @@ out/
 docker-compose.yaml
 javabc-db.session.sql
 /src/main/resources/application-dev.yaml
+/src/main/resources/log.ini
 
 ### VS Code ###
 .vscode/
