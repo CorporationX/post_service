@@ -81,6 +81,7 @@ public interface CommentMapper {
      * @param post     сущность поста, к которому относится комментарий
      * @return новая сущность {@link Comment} с установленными authorId и post
      */
+    @Mapping(target = "content", source = "dto.content")
     @Mapping(target = "authorId", source = "authorId")
     @Mapping(target = "post", source = "post")
     Comment toEntityWithAuthorAndPost(CommentCreateDto dto, Long authorId, Post post);
