@@ -11,6 +11,7 @@ public record PostDto(
         LocalDateTime publishedAt,
         boolean deleted,
         LocalDateTime createdAt,
-        LocalDateTime updatedAt
+        LocalDateTime updatedAt,
+        long numberOfLikes
 ) {
 }
