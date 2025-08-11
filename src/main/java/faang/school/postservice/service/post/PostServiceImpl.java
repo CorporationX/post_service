@@ -14,7 +14,7 @@ import faang.school.postservice.mapper.redis.RedisPostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.publisher.post.RedisPostCreateEventPublisher;
-import faang.school.postservice.publisher.post.kafka.KafkaProducer;
+import faang.school.postservice.publisher.post.kafka.KafkaPostCreateProducer;
 import faang.school.postservice.repository.RedisPostRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.resource.ResourceService;
@@ -54,7 +54,7 @@ public class PostServiceImpl implements PostService {
     private final RedisPostCreateEventPublisher redisPostCreateEventPublisher;
     private final RedisPostRepository redisPostRepository;
     private final RedisPostMapper redisPostMapper;
-    private final KafkaProducer kafkaProducer;
+    private final KafkaPostCreateProducer kafkaProducer;
     private final KafkaPostMapper kafkaPostMapper;
 
     @Override

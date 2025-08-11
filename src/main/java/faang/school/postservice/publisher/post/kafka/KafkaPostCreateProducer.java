@@ -11,7 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class KafkaProducer {
+public class KafkaPostCreateProducer {
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private final KafkaTopicsConfig kafkaTopicsConfig;
 

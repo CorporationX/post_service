@@ -80,6 +80,11 @@ kafka:
     heatPostRequest: heat-post-reqeust
     heatUserRequest: heat-user-request
 
+heatpagesize:
+  heatFeedPageSize: 1
+  heatPostPageSize: 1
+  heatUserPageSize: 1
+
 user-service:
   host: localhost:8080
 project-service:
