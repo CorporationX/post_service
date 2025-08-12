@@ -1,8 +1,5 @@
 package faang.school.postservice.dto.post;
 
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.Size;
-
 import java.time.LocalDateTime;
 
 /**
@@ -31,6 +28,7 @@ public record PostViewDto(
         LocalDateTime publishedAt,
         LocalDateTime scheduledAt,
         LocalDateTime createdAt,
-        LocalDateTime updatedAt
+        LocalDateTime updatedAt,
+        Long likeCount
 ) {
 }

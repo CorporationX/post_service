@@ -50,6 +50,7 @@ public interface CommentMapper {
      * @param entity сущность комментария
      * @return DTO представление комментария
      */
+    @Mapping(target = "likeCount", expression = "java(entity.getLikes() != null ? (long) entity.getLikes().size() : 0L)")
     CommentViewDto toViewDto(Comment entity);
 
     /**

@@ -128,9 +128,9 @@ public class PostServiceImpl implements PostService {
     public List<PostViewDto> getList(PostFilterDto filterDto) {
         List<Post> posts = null;
         if (filterDto.authorIsUser()) {
-            posts = postRepository.findByAuthorId(filterDto.authorId());
+            posts = postRepository.findByAuthorIdWithLikes(filterDto.authorId());
         } else {
-            posts = postRepository.findByProjectId(filterDto.authorId());
+            posts = postRepository.findByProjectIdWithLikes(filterDto.authorId());
         }
         posts = filterService.getFilteredList(posts, filterDto);
         return postMapper.toViewDtoList(posts);
