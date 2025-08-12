@@ -6,9 +6,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * HashtagUtils — описание класса.
+ * Утилитный класс для работы с хэштегами.
  * <p>
- * TODO: описать, какие обязанности у класса.
+ * Содержит методы для извлечения хэштегов из текстового содержимого.
  * </p>
  *
  * @author Myrza
@@ -16,6 +16,17 @@ import java.util.regex.Pattern;
  */
 
 public class HashtagUtils {
+    /**
+     * Извлекает все хэштеги из переданного текста.
+     * <p>
+     * Хэштег определяется как символ {@code #}, за которым следует одна или более буквенно-цифровых символов или
+     * символов подчёркивания ({@code [a-zA-Z0-9_]}).
+     * </p>
+     *
+     * @param content текст, из которого нужно извлечь хэштеги
+     * @return список найденных хэштегов в порядке их появления в тексте;
+     * если хэштегов нет, возвращается пустой список
+     */
     public static List<String> getHashtags(String content) {
         Pattern pattern = Pattern.compile("#\\w+");
         Matcher matcher = pattern.matcher(content);

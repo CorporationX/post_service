@@ -18,6 +18,7 @@ import faang.school.postservice.service.filter.FilterService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -54,8 +55,11 @@ public class PostServiceImpl implements PostService {
     private final UserContext userContext;
     private final PostMapper postMapper;
     private final FilterService<Post, PostFilterDto> filterService;
+    @Qualifier("postCreateEventProducer")
     private final EventProducer<PostViewDto> postCreateProducer;
     private final EventProducer<PostUpdatedEvent> postUpdatedEventProducer;
+    @Qualifier("postDeleteEventProducer")
+    private final EventProducer<PostViewDto> postDeleteProducer;
 
     @Override
     @Transactional
@@ -124,6 +128,7 @@ public class PostServiceImpl implements PostService {
         if (post.isDeleted()) {
             throw new ForbiddenException("Пост уже удален");
         }
+        postDeleteProducer.send(postMapper.toViewDto(post));
         post.setDeleted(true);
         postRepository.save(post);
     }

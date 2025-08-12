@@ -18,11 +18,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Hashtag — описание класса.
- * <p>
- * TODO: описать, какие обязанности у класса.
- * </p>
- *
  * @author Myrza
  * @since 08.08.2025
  */

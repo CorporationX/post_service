@@ -19,9 +19,10 @@ import java.util.Set;
 import static faang.school.postservice.util.HashtagUtils.getHashtags;
 
 /**
- * HashtagServiceImpl — описание класса.
+ * Реализация сервиса {@link HashtagService}, отвечающая за управление связями между постами и хэштегами.
  * <p>
- * TODO: описать, какие обязанности у класса.
+ * Осуществляет создание, обновление и удаление связей в базе данных, а также синхронизацию кеша Redis.
+ * Работает с репозиториями {@link HashtagRepository} и {@link PostRepository}, а также с кеш-сервисом {@link PostCacheService}.
  * </p>
  *
  * @author Myrza

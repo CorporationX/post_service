@@ -41,6 +41,7 @@ kafka:
   topics:
     create-post: create_post
     update-post: update_post
+    delete-post: delete_post
 
 server:
   port: 8081

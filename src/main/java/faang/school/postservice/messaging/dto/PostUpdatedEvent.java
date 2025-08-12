@@ -3,12 +3,14 @@ package faang.school.postservice.messaging.dto;
 import faang.school.postservice.dto.post.PostViewDto;
 
 /**
- * PostUpdateDto — неизменяемая структура данных (record).
+ * Событие обновления поста.
  * <p>
- * TODO: описать предназначение record и его поля.
+ * Используется для передачи информации о предыдущем и новом состоянии поста
+ * между сервисами через Kafka или другие механизмы обмена сообщениями.
  * </p>
  *
- * @param oldPost описание первого поля
+ * @param oldPost предыдущее состояние поста
+ * @param newPost новое состояние поста
  * @author Myrza
  * @since 09.08.2025
  */

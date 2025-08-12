@@ -9,9 +9,11 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
 /**
- * PostUpdateEventConsume — описание класса.
+ * Kafka consumer для обработки событий обновления поста.
  * <p>
- * TODO: описать, какие обязанности у класса.
+ * Подписан на топик, указанный в {@code kafka.topics.update-post}.
+ * Получает событие {@link PostUpdatedEvent}, содержащее старую и новую версию поста,
+ * и передаёт их в {@link HashtagService} для обновления информации о хэштегах.
  * </p>
  *
  * @author Myrza
@@ -22,6 +24,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class PostUpdateEventConsumer implements EventConsumer<PostUpdatedEvent> {
     private final HashtagService service;
+
     @Override
     @KafkaListener(topics = "${kafka.topics.update-post}",
             groupId = "${spring.kafka.consumer.group-id}")

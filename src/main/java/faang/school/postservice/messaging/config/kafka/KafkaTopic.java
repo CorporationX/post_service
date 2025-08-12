@@ -7,9 +7,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.TopicBuilder;
 
 /**
- * KafkaTopic — описание класса.
+ * Конфигурация Kafka-топиков, используемых сервисом.
  * <p>
- * TODO: описать, какие обязанности у класса.
+ * Определяет бины {@link NewTopic} для автоматического создания топиков Kafka
+ * при запуске приложения (если включена настройка auto-create в брокере или
+ * используется AdminClient).
  * </p>
  *
  * @author Myrza
@@ -21,6 +23,8 @@ public class KafkaTopic {
     private String createTopicName;
     @Value("${kafka.topics.update-post}")
     private String updateTopicName;
+    @Value("${kafka.topics.delete-post}")
+    private String deleteTopicName;
 
     @Bean
     public NewTopic createTopic() {
@@ -30,5 +34,10 @@ public class KafkaTopic {
     @Bean
     public NewTopic updateTopic() {
         return TopicBuilder.name(updateTopicName).build();
+    }
+
+    @Bean
+    public NewTopic deleteTopic() {
+        return TopicBuilder.name(deleteTopicName).build();
     }
 }

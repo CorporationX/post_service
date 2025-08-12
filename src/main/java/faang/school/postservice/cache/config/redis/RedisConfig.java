@@ -15,9 +15,12 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 import java.util.List;
 
 /**
- * RedisConfig — описание класса.
+ * Конфигурация Redis для работы с кешированием данных в приложении.
  * <p>
- * TODO: описать, какие обязанности у класса.
+ * Для сериализации значений применяется {@link Jackson2JsonRedisSerializer},
+ * настроенный с {@link ObjectMapper}, в который подключен модуль
+ * {@link com.fasterxml.jackson.datatype.jsr310.JavaTimeModule} для корректной
+ * работы с типами времени и дат.
  * </p>
  *
  * @author Myrza
@@ -25,11 +28,29 @@ import java.util.List;
  */
 @Configuration
 public class RedisConfig {
+    /**
+     * Создаёт бин {@link StringRedisTemplate} для упрощённой работы с Redis,
+     * где ключи и значения представлены в строковом формате.
+     *
+     * @param factory фабрика подключений Redis
+     * @return настроенный {@link StringRedisTemplate}
+     */
     @Bean
     public StringRedisTemplate stringRedisTemplate(RedisConnectionFactory factory) {
         return new StringRedisTemplate(factory);
     }
 
+    /**
+     * Создаёт бин {@link RedisTemplate} для хранения в Redis списков объектов {@link PostViewDto}.
+     * <p>
+     * Настраивает {@link ObjectMapper} с модулем {@link JavaTimeModule} для сериализации
+     * и десериализации типов Java 8 Time API, а также отключает преобразование дат в таймстампы.
+     * </p>
+     *
+     * @param factory фабрика подключений Redis
+     * @return настроенный {@link RedisTemplate} с сериализацией ключей как строк
+     *         и значений в формате JSON
+     */
     @Bean
     public RedisTemplate<String, List<PostViewDto>> redisTemplate(RedisConnectionFactory factory) {
         RedisTemplate<String, List<PostViewDto>> template = new RedisTemplate<>();

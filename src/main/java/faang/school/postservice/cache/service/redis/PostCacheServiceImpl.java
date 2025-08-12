@@ -15,9 +15,17 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * PostCacheServiceImpl — описание класса.
+ * Реализация {@link PostCacheService} для работы с кэшем постов и статистикой хэштегов в Redis.
  * <p>
- * TODO: описать, какие обязанности у класса.
+ * Использует:
+ * <ul>
+ *     <li>{@link StringRedisTemplate} — для хранения и обновления счётчиков популярности хэштегов
+ *         в отсортированном множестве Redis.</li>
+ *     <li>{@link RedisTemplate} — для хранения списков постов, связанных с конкретным хэштегом.</li>
+ * </ul>
+ * <p>
+ * Класс поддерживает добавление, удаление и выборку постов, а также определение популярных хэштегов.
+ * Ограничивает количество хранимых постов по каждому хэштегу до {@value #MAX_POSTS_COUNT}.
  * </p>
  *
  * @author Myrza
@@ -33,6 +41,13 @@ public class PostCacheServiceImpl implements PostCacheService {
     private final StringRedisTemplate stringRedisTemplate;
     private final RedisTemplate<String, List<PostViewDto>> redisTemplate;
 
+    /**
+     * Добавляет пост в кэш для заданного хэштега и увеличивает его популярность.
+     * Если постов больше {@value #MAX_POSTS_COUNT}, удаляется самый старый.
+     *
+     * @param hashtag хэштег, с которым связан пост
+     * @param post    объект поста
+     */
     @Override
     public void addPost(String hashtag, PostViewDto post) {
         List<PostViewDto> posts = redisTemplate.opsForValue().get(hashtag);
@@ -48,6 +63,13 @@ public class PostCacheServiceImpl implements PostCacheService {
         log.info("успешно создали связь между постом с id {} и хэштега '{}'", post.id(), hashtag);
     }
 
+    /**
+     * Удаляет пост из кэша по заданному хэштегу и уменьшает его популярность.
+     * Если пост не найден, выводит предупреждение в лог.
+     *
+     * @param hashtag хэштег, с которым связан пост
+     * @param post    объект поста для удаления
+     */
     @Override
     public void deletePost(String hashtag, PostViewDto post) {
         List<PostViewDto> posts = redisTemplate.opsForValue().get(hashtag);
@@ -57,12 +79,21 @@ public class PostCacheServiceImpl implements PostCacheService {
 
         var success = posts.remove(post);
         if (!success) {
-            log.warn("удаление связи поста с id {} и хэштега '{}' не удалась", post, hashtag);
+            log.warn("удаление связи поста с id {} и хэштега '{}' не удалась", post.id(), hashtag);
             return;
         }
+        redisTemplate.opsForValue().set(hashtag, posts);
         stringRedisTemplate.opsForZSet().incrementScore(HASHTAG_COUNT_KEY, hashtag, -1);
+        log.info("успешно удалили связь поста с id {} и хэштегом '{}'", post.id(), hashtag);
     }
 
+    /**
+     * Возвращает список популярных хэштегов по убыванию популярности.
+     *
+     * @param offset смещение в выборке
+     * @param limit  максимальное количество хэштегов
+     * @return список хэштегов в порядке популярности
+     */
     @Override
     public List<String> getPopularHashtags(long offset, long limit) {
         Set<ZSetOperations.TypedTuple<String>> hashtags = stringRedisTemplate.opsForZSet()
@@ -76,6 +107,12 @@ public class PostCacheServiceImpl implements PostCacheService {
                 .toList();
     }
 
+    /**
+     * Получает список постов, связанных с указанным хэштегом.
+     *
+     * @param hashtag хэштег, для которого запрашиваются посты
+     * @return список постов, либо пустой список, если посты не найдены
+     */
     @Override
     public List<PostViewDto> getList(String hashtag) {
         var posts = redisTemplate.opsForValue().get(hashtag);

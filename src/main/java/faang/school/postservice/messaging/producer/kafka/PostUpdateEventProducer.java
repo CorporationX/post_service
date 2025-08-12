@@ -9,9 +9,10 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 /**
- * PostUpdateEventProducer — описание класса.
+ * Kafka-продюсер для отправки событий об обновлении поста.
  * <p>
- * TODO: описать, какие обязанности у класса.
+ * Использует {@link KafkaTemplate} для сериализации и публикации {@link PostUpdatedEvent}
+ * в топик, заданный в настройках {@code kafka.topics.update-post}.
  * </p>
  *
  * @author Myrza

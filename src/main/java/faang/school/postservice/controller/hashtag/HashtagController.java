@@ -13,10 +13,13 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 /**
- * HashtagController — описание класса.
+ * REST-контроллер для работы с хэштегами.
  * <p>
- * TODO: описать, какие обязанности у класса.
- * </p>
+ * Предоставляет методы для получения:
+ * <ul>
+ *     <li>Списка самых популярных хэштегов с пагинацией</li>
+ *     <li>Списка постов, связанных с конкретным хэштегом</li>
+ * </ul>
  *
  * @author Myrza
  * @since 09.08.2025
@@ -35,7 +38,6 @@ public class HashtagController {
 
     @GetMapping("/{hashtag}")
     public List<PostViewDto> getList(@PathVariable String hashtag) {
-        return service.getList("#"+hashtag);
+        return service.getList("#" + hashtag);
     }
-
 }

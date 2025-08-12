@@ -9,26 +9,26 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 /**
- * Kafka-продюсер для отправки событий о создании поста.
+ * Kafka-продюсер для отправки событий об удалении поста.
  * <p>
  * Использует {@link KafkaTemplate} для сериализации и публикации {@link PostViewDto}
- * в топик, заданный в настройках {@code kafka.topics.create-post}.
+ * в топик, заданный в настройках {@code kafka.topics.delete-post}.
  * </p>
  *
  * @author Myrza
- * @since 05.08.2025
+ * @since 13.08.2025
  */
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class PostCreateEventProducer implements EventProducer<PostViewDto> {
-    @Value("${kafka.topics.create-post}")
-    private String createTopic;
+public class PostDeleteEventProducer implements EventProducer<PostViewDto> {
+    @Value("${kafka.topics.delete-post}")
+    private String deleteTopic;
     private final KafkaTemplate<String, PostViewDto> kafkaTemplate;
 
     @Override
     public void send(PostViewDto event) {
-        log.info("send post create event to topic: {}\npostId:{}", createTopic, event.id());
-        kafkaTemplate.send(createTopic, event);
+        log.info("send post delete event to topic: {}\npostId:{}", deleteTopic, event.id());
+        kafkaTemplate.send(deleteTopic, event);
     }
 }
