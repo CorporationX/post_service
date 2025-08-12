@@ -36,12 +36,4 @@ public class KafkaConfig {
                 .replicas(3)
                 .build();
     }
-
-    @Bean
-    public NewTopic heatUser() {
-        return TopicBuilder.name(kafkaTopicsConfig.getHeatUserRequest())
-                .partitions(1)
-                .replicas(3)
-                .build();
-    }
 }

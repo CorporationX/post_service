@@ -19,9 +19,7 @@ public class RecentPostService {
 
     public void addPostToUser(Long userId, Long postId) {
         String key = String.format(ZSET_PREFIX, userId.toString());
-
         redisTemplate.opsForZSet().add(key, postId, System.currentTimeMillis());
-        
         redisTemplate.opsForZSet().removeRange(key, 0, -MAX_SIZE - 1);
     }
 
