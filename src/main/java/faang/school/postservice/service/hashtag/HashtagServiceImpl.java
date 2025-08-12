@@ -42,10 +42,14 @@ public class HashtagServiceImpl implements HashtagService {
         var hashtagNames = getHashtags(post.getContent());
         var hashtags = new ArrayList<Hashtag>();
         for (String hashtagName : hashtagNames) {
-            hashtags.add(getOrCreateHashtag(hashtagName));
+            var hashtag = getOrCreateHashtag(hashtagName);
+            hashtag.getPosts().add(post);
+            post.getHashtags().add(hashtag);
+            hashtags.add(hashtag);
             cacheService.addPost(hashtagName, postDto);
         }
         hashtagRepository.saveAll(hashtags);
+        postRepository.save(post);
     }
 
     private Hashtag getOrCreateHashtag(String name) {
@@ -65,7 +69,10 @@ public class HashtagServiceImpl implements HashtagService {
         var hasOldHashtags = oldHashtags != null;
         if (hasOldHashtags) {
             oldHashtags.forEach(hashtag -> cacheService.deletePost(hashtag.getName(), oldPostDto));
+        } else {
+            oldHashtags = new HashSet<>();
         }
+
         var hashtagNames = getHashtags(newPostDto.content());
         var newHashtags = new HashSet<Hashtag>();
         for (String hashtagName : hashtagNames) {
@@ -77,6 +84,8 @@ public class HashtagServiceImpl implements HashtagService {
             cacheService.addPost(hashtagName, newPostDto);
         }
         post.setHashtags(newHashtags);
+        hashtagRepository.saveAll(newHashtags);
+        hashtagRepository.saveAll(oldHashtags);
         postRepository.save(post);
     }
 

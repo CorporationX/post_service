@@ -35,15 +35,15 @@ public class PostCacheServiceImpl implements PostCacheService {
 
     @Override
     public void addPost(String hashtag, PostViewDto post) {
-        List<PostViewDto> postIds = redisTemplate.opsForValue().get(hashtag);
-        if (postIds == null) {
-            postIds = new LinkedList<>();
+        List<PostViewDto> posts = redisTemplate.opsForValue().get(hashtag);
+        if (posts == null) {
+            posts = new LinkedList<>();
         }
-        postIds.add(post);
-        if (postIds.size() > MAX_POSTS_COUNT) {
-            postIds.remove(FIRST_INDEX);
+        posts.add(post);
+        if (posts.size() > MAX_POSTS_COUNT) {
+            posts.remove(FIRST_INDEX);
         }
-        redisTemplate.opsForValue().set(hashtag, postIds);
+        redisTemplate.opsForValue().set(hashtag, posts);
         stringRedisTemplate.opsForZSet().incrementScore(HASHTAG_COUNT_KEY, hashtag, 1);
         log.info("успешно создали связь между постом с id {} и хэштега '{}'", post.id(), hashtag);
     }

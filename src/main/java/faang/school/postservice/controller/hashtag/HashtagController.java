@@ -35,7 +35,7 @@ public class HashtagController {
 
     @GetMapping("/{hashtag}")
     public List<PostViewDto> getList(@PathVariable String hashtag) {
-        return service.getList(hashtag);
+        return service.getList("#"+hashtag);
     }
 
 }
