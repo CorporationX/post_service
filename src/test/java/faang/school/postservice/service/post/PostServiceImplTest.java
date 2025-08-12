@@ -153,7 +153,7 @@ class PostServiceImplTest {
         var views = toViewDtoList(posts);
         var filterDto = new PostFilterDto(currentUserId, true, false);
 
-        when(postRepository.findByAuthorId(currentUserId)).thenReturn(posts);
+        when(postRepository.findByAuthorIdWithLikes(currentUserId)).thenReturn(posts);
         when(filterService.getFilteredList(eq(posts), eq(filterDto))).thenReturn(posts);
         when(postMapper.toViewDtoList(eq(posts))).thenReturn(views);
 
