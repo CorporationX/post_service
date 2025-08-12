@@ -46,20 +46,20 @@ public class FeedService {
         }
 
         // send post heat event
-        for (int i = 0; i < authorsPages; i++) {
-            kafkaHeatFeadProducer.sendMessage(
-                new KafkaHeatFeedSizeDto(i, kafkaHeatMessageSizeConfig.getHeatPostPageSize()), 
-                kafkaTopicsConfig.getHeatPostRequest()
-            );
-        }
+        // for (int i = 0; i < authorsPages; i++) {
+        //     kafkaHeatFeadProducer.sendMessage(
+        //         new KafkaHeatFeedSizeDto(i, kafkaHeatMessageSizeConfig.getHeatPostPageSize()), 
+        //         kafkaTopicsConfig.getHeatPostRequest()
+        //     );
+        // }
 
         // send user heat event
-        for (int i = 0; i < authorsPages; i++) {
-            kafkaHeatFeadProducer.sendMessage(
-                new KafkaHeatFeedSizeDto(i, kafkaHeatMessageSizeConfig.getHeatUserPageSize()), 
-                kafkaTopicsConfig.getHeatPostRequest()
-            );
-        }
+        // for (int i = 0; i < authorsPages; i++) {
+        //     kafkaHeatFeadProducer.sendMessage(
+        //         new KafkaHeatFeedSizeDto(i, kafkaHeatMessageSizeConfig.getHeatUserPageSize()), 
+        //         kafkaTopicsConfig.getHeatPostRequest()
+        //     );
+        // }
     }
 
     private int getNubmerOfPages(int totalRecords, int pageSize) {

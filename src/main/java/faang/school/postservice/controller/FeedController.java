@@ -4,6 +4,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.service.feed.FeedService;
 import lombok.RequiredArgsConstructor;
 
