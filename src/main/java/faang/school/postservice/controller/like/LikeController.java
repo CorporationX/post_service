@@ -23,14 +23,14 @@ import java.util.List;
 public class LikeController {
     LikeServiceImpl likeService;
 
-    @GetMapping("/post/{postId}/like")
+    @GetMapping("/post/{postId}")
     ResponseEntity<List<UserDto>> getAllLikesFromUsersToPost(@PathVariable Long postId) {
         List<UserDto> users = likeService.getUsersWhoLikedPost(postId);
 
         return ResponseEntity.ok(users);
     }
 
-    @GetMapping("/post/{postId}/comment/{commentId}/like")
+    @GetMapping("/post/{postId}/comment/{commentId}")
     ResponseEntity<List<UserDto>> getAllLikesFromUsersToComment(@PathVariable Long postId,
                                                                 @PathVariable Long commentId) {
         List<UserDto> users = likeService.getUsersWhoLikedComment(postId, commentId);

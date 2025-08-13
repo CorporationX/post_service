@@ -22,8 +22,6 @@ spring:
       port: 6379
       host: localhost
       channels:
-        post-published-topic:
-          name: post_published_topic
         calculations_channel:
           name: calculations_channel
 
@@ -44,13 +42,3 @@ payment-service:
   host: localhost
   port: 9080
 
-retry:
-  config:
-    max-attempts: 3
-    initial-interval-ms: 1000
-    multiplier: 2.0
-    max-interval-ms: 10_000
-
-redis:
-  topic:
-    post-published: "post_published_topic"
