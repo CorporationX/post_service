@@ -2,6 +2,8 @@ package faang.school.postservice.service.comment;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.config.redis.RedisCommentEventPublisher;
+import faang.school.postservice.config.redis.dto.CommentEvent;
 import faang.school.postservice.dto.comment.CommentCreateDto;
 import faang.school.postservice.dto.comment.CommentUpdateDto;
 import faang.school.postservice.dto.comment.CommentViewDto;
@@ -26,6 +28,7 @@ public class CommentServiceImpl implements CommentService {
     private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
     private final UserContext userContext;
+    private final RedisCommentEventPublisher publisher;
 
     @Override
     @Transactional
@@ -44,6 +47,15 @@ public class CommentServiceImpl implements CommentService {
         var comment = mapper.toEntityWithAuthorAndPost(commentDto, authorId, post);
 
         var savedComment = commentRepository.save(comment);
+
+        CommentEvent event = new CommentEvent(
+                savedComment.getId(),
+                post.getAuthorId(),
+                authorId,
+                postId,
+                savedComment.getContent()
+        );
+        publisher.publish(event);
 
         return mapper.toViewDto(savedComment);
     }
