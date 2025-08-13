@@ -20,12 +20,12 @@ public interface UserServiceClient {
     @PostMapping("/api/v1/users")
     List<UserDto> getUsersByIds(@RequestBody List<Long> ids);
 
-    @GetMapping("/api/subscriptions/followers/{followeeId}")
-    List<Long> getFollowerIdsByBatch(@PathVariable long followeeId, @RequestParam int batchSize, @RequestParam long startingFromId);
+    @GetMapping("/api/v1/users/followers/batch")
+    List<Long> getFollowerIdsByBatch(@RequestParam long followeeId, @RequestParam int batchSize, @RequestParam long startingFromId);
 
     @GetMapping("/api/v1/users/batch")
     List<Long> getUserIdsByBatch(@RequestParam int batchSize, @RequestParam long startingFromId);
 
-    @GetMapping("/api/v1/users/{userId}/feed}")
+    @GetMapping("/api/v1/users/{userId}/feed")
     UserFeedDto getUserForFeed(@PathVariable long userId);
 }

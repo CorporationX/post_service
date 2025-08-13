@@ -4,7 +4,6 @@ import faang.school.postservice.dto.feed.CommentFeedDto;
 import faang.school.postservice.dto.feed.UserFeedDto;
 import faang.school.postservice.dto.kafka.KafkaCommentEventDto;
 import faang.school.postservice.dto.redis.RedisPostDto;
-import org.springframework.scheduling.annotation.Async;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -36,6 +35,5 @@ public interface RedisCache {
 
     List<CommentFeedDto> getComments(Long postId);
 
-    @Async("redisTaskExecutor")
     void putFeedForSubscribers(Long user, List<Long> followerIds);
 }

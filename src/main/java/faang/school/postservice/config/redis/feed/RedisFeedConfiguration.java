@@ -41,4 +41,17 @@ public class RedisFeedConfiguration {
         template.afterPropertiesSet();
         return template;
     }
+
+    @Bean("redisNewsFeedStringLuaTemplate")
+    public RedisTemplate<String, String> redisNewsFeedStringLuaTemplate(RedisConnectionFactory redisNewsFeedConnectionFactory) {
+        RedisTemplate<String, String> template = new RedisTemplate<>();
+        template.setConnectionFactory(redisNewsFeedConnectionFactory);
+
+        // Этот RedisTemplate будет работать только со строками
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setValueSerializer(new StringRedisSerializer());
+
+        template.afterPropertiesSet();
+        return template;
+    }
 }

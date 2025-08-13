@@ -50,6 +50,7 @@ public class FeedServiceImpl implements FeedService {
         CircuitBreaker circuitBreaker = circuitBreakerRegistry.circuitBreaker("userServiceCircuitBreaker");
         int lastBatchSize;
         long startingFromId = 0;
+
         do {
             long finalStartingFromId = startingFromId;
             Supplier<List<Long>> userIdsSupplier = () -> userServiceClient.getUserIdsByBatch(batchSize, finalStartingFromId);
@@ -83,7 +84,6 @@ public class FeedServiceImpl implements FeedService {
 
     @Override
     public void fillFollowersFeed(KafkaSubscribersFeedHeatDto dto) {
-        putUserIntoCache(dto.userId());
         cache.putFeedForSubscribers(dto.userId(), dto.followerIds());
     }
 
@@ -101,11 +101,16 @@ public class FeedServiceImpl implements FeedService {
     @Override
     public void putUserIntoCache(long userId) {
         CircuitBreaker circuitBreaker = circuitBreakerRegistry.circuitBreaker("userServiceCircuitBreaker");
-        Supplier<UserFeedDto> userSupplier = () -> userServiceClient.getUserForFeed(userId);
+        try {
+            userContext.setUserId(1);
+            Supplier<UserFeedDto> userSupplier = () -> userServiceClient.getUserForFeed(userId);
 
-        Try.ofSupplier(CircuitBreaker.decorateSupplier(circuitBreaker, userSupplier))
-                .onSuccess(cache::putUser)
-                .onFailure(throwable -> log.error("Failed to fetch or cache user {}: {}", userId, throwable.getMessage()));
+            Try.ofSupplier(CircuitBreaker.decorateSupplier(circuitBreaker, userSupplier))
+                    .onSuccess(cache::putUser)
+                    .onFailure(throwable -> log.error("Failed to fetch or cache user {}: {}", userId, throwable.getMessage()));
+        } finally {
+            userContext.clear();
+        }
     }
 
     @Override
@@ -136,22 +141,30 @@ public class FeedServiceImpl implements FeedService {
         CircuitBreaker circuitBreaker = circuitBreakerRegistry.circuitBreaker("userServiceCircuitBreaker");
         long startingFromId = 0;
         List<Long> followerIds;
-        do {
-            long finalStartingFromId = startingFromId;
-            Supplier<List<Long>> followerIdsSupplier = () -> userServiceClient.getFollowerIdsByBatch(userId, batchSize, finalStartingFromId);
-            followerIds = Try.ofSupplier(CircuitBreaker.decorateSupplier(circuitBreaker, followerIdsSupplier))
-                    .recover(throwable -> {
-                        log.error("UserServiceClient is down, skipping followers for user {}. Error: {}", userId, throwable.getMessage());
-                        return Collections.emptyList();
-                    })
-                    .get();
+        try {
+            // Вручную устанавливаем технический ID для этого потока
+            userContext.setUserId(1);
 
-            if (followerIds.isEmpty()) {
-                break;
-            }
+            do {
+                long finalStartingFromId = startingFromId;
+                Supplier<List<Long>> followerIdsSupplier = () -> userServiceClient.getFollowerIdsByBatch(userId, batchSize, finalStartingFromId);
+                followerIds = Try.ofSupplier(CircuitBreaker.decorateSupplier(circuitBreaker, followerIdsSupplier))
+                        .recover(throwable -> {
+                            log.error("UserServiceClient is down, skipping followers for user {}. Error: {}", userId, throwable.getMessage());
+                            return Collections.emptyList();
+                        })
+                        .get();
 
-            startingFromId = followerIds.get(followerIds.size() - 1);
-            action.accept(followerIds);
-        } while (followerIds.size() == batchSize);
+                if (followerIds.isEmpty()) {
+                    break;
+                }
+
+                startingFromId = followerIds.get(followerIds.size() - 1);
+                action.accept(followerIds);
+            } while (followerIds.size() == batchSize);
+        } finally {
+            // Очищаем ThreadLocal после завершения
+            userContext.clear();
+        }
     }
 }

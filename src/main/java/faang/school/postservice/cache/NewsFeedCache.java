@@ -16,9 +16,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.scripting.support.ResourceScriptSource;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -41,6 +41,7 @@ public class NewsFeedCache implements RedisCache {
 
     private final PostRepository postRepository;
     private final RedisTemplate<String, Object> redisNewsFeedTemplate;
+    private final RedisTemplate<String, String> redisNewsFeedStringLuaTemplate;
     private final ObjectMapper objectMapper;
     private final NewsFeedConfiguration newsFeedConfiguration;
 
@@ -225,6 +226,7 @@ public class NewsFeedCache implements RedisCache {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public void putFeedForSubscribers(Long userId, List<Long> followerIds) {
         Pageable pageable = PageRequest.of(0, newsFeedConfiguration.getFeedSize());
         List<RedisPostDto> posts = postRepository.findLatestPostsByAuthorId(userId, pageable);
@@ -237,21 +239,22 @@ public class NewsFeedCache implements RedisCache {
 
         putPostsBatch(posts);
 
-        List<Object> scriptArgs = new ArrayList<>();
-        scriptArgs.addAll(followerIds.stream().map(Object.class::cast).toList());
-        scriptArgs.add("POSTS_START");
+        List<String> args = new ArrayList<>();
+        args.addAll(followerIds.stream().map(String::valueOf).toList());
+        args.add("POSTS_START");
 
         posts.forEach(post -> {
-            scriptArgs.add((double) post.getCreatedAt().toEpochSecond(ZoneOffset.UTC));
-            scriptArgs.add(post.getPostId());
+            args.add(String.valueOf(post.getCreatedAt().toEpochSecond(ZoneOffset.UTC)));
+            args.add(String.valueOf(post.getPostId()));
         });
 
-        long ttlInSeconds = Duration.ofMinutes(newsFeedConfiguration.getUserTtl()).getSeconds();
+        long ttlInSeconds = Duration.ofMinutes(newsFeedConfiguration.getUserTtl() * 10L).getSeconds();
 
-        redisNewsFeedTemplate.execute(
+        log.info("args: {}", args);
+        redisNewsFeedStringLuaTemplate.execute(
                 batchMultiPostFeedUpdateScript,
                 List.of(String.valueOf(ttlInSeconds), String.valueOf(newsFeedConfiguration.getFeedSize())),
-                scriptArgs.toArray()
+                args.toArray()
         );
         log.info("Added {} posts from author {} to {} followers' feeds.", posts.size(), userId, followerIds.size());
     }
@@ -262,26 +265,28 @@ public class NewsFeedCache implements RedisCache {
             return;
         }
 
-        List<String> keys = posts.stream()
-                .map(post -> POST_CACHE_KEY_PREFIX + post.getPostId())
-                .collect(Collectors.toList());
+        List<String> keys = new ArrayList<>();
+        List<String> serializedPosts = new ArrayList<>();
 
-        List<String> serializedPosts = posts.stream()
-                .map(post -> {
-                    try {
-                        return objectMapper.writeValueAsString(post);
-                    } catch (JsonProcessingException e) {
-                        log.error("Failed to serialize post {}: {}", post.getPostId(), e.getMessage());
-                        return null;
-                    }
-                })
-                .toList();
+        posts.forEach(post -> {
+            try {
+                String serializedPost = objectMapper.writeValueAsString(post);
+                keys.add(POST_CACHE_KEY_PREFIX + post.getPostId());
+                serializedPosts.add(serializedPost);
+            } catch (JsonProcessingException e) {
+                log.error("Failed to serialize post {}: {}", post.getPostId(), e.getMessage());
+            }
+        });
+
+        if (serializedPosts.isEmpty()) return;
+
+        long ttlInSeconds = Duration.ofMinutes(newsFeedConfiguration.getPostTtl() * 10L).getSeconds();
 
         Object[] args = new Object[serializedPosts.size() + 1];
-        args[0] = String.valueOf(newsFeedConfiguration.getPostTtl());
+        args[0] = String.valueOf(ttlInSeconds);
         System.arraycopy(serializedPosts.toArray(), 0, args, 1, serializedPosts.size());
 
-        redisNewsFeedTemplate.execute(
+        redisNewsFeedStringLuaTemplate.execute(
                 batchSetAndExpireScript,
                 keys,
                 args
@@ -305,7 +310,6 @@ public class NewsFeedCache implements RedisCache {
         }
     }
 
-    @Async("redisTaskExecutor")
     @Override
     public void putComment(KafkaCommentEventDto dto) {
         String key = POST_COMMENTS_KEY_PREFIX + dto.postId();

@@ -20,7 +20,7 @@ public class KafkaSubscribersFeedEventConsumer {
 
     @KafkaListener(topics = "#{__listener.topic}", groupId = "my-group")
     public void listen(KafkaSubscribersFeedHeatDto dto, Acknowledgment acknowledgment) {
-        System.out.println("Received message: " + dto);
+        log.info("Received message: {}", dto);
         try {
             feedService.fillFollowersFeed(dto);
             acknowledgment.acknowledge();

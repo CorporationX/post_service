@@ -27,10 +27,10 @@ public interface PostRepository extends CrudRepository<Post, Long> {
     List<Post> findReadyToPublish();
 
     @Query("""
-            SELECT new faang.school.postservice.dto.post.UserPostsDto(p.authorId, COUNT(p.id) as count) 
+            SELECT new faang.school.postservice.dto.post.UserPostsDto(p.authorId, COUNT(p.id) as count)
                 FROM Post p
                 WHERE p.verified = false
-                GROUP BY p.authorId 
+                GROUP BY p.authorId
                 HAVING COUNT(p.authorId) > :maxUnverifiedPostsForBan
             """)
     List<UserPostsDto> findUnverifiedPostsCountForUsers(long maxUnverifiedPostsForBan);
@@ -42,7 +42,9 @@ public interface PostRepository extends CrudRepository<Post, Long> {
                 p.authorId,
                 COUNT(l.id),
                 COUNT(c.id),
-                p.createdAt
+                0L,
+                p.createdAt,
+                0L
             )
             FROM Post p
             LEFT JOIN p.likes l
@@ -51,7 +53,7 @@ public interface PostRepository extends CrudRepository<Post, Long> {
             GROUP BY p.id, p.content, p.authorId, p.createdAt
             ORDER BY p.createdAt DESC
             """)
-    List<RedisPostDto> findLatestPostsByAuthorId(@Param("authorId")long authorId, Pageable pageable);
+    List<RedisPostDto> findLatestPostsByAuthorId(long authorId, Pageable pageable);
 
     @Query("""
             SELECT new faang.school.postservice.dto.redis.RedisPostDto(
@@ -68,5 +70,5 @@ public interface PostRepository extends CrudRepository<Post, Long> {
             WHERE p.id = :postId
             GROUP BY p.id, p.content, p.authorId, p.createdAt
             """)
-    Optional<RedisPostDto> findPostForRedisByPostId(@Param("postId")long postId);
+    Optional<RedisPostDto> findPostForRedisByPostId(@Param("postId") long postId);
 }
