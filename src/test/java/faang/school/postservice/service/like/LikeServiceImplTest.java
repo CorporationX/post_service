@@ -34,7 +34,7 @@ class LikeServiceImplTest {
     @InjectMocks private LikeServiceImpl likeService;
 
     @Test
-    void getUsersWhoLikedComment_NullCommentId_ThrowsException() {
+    void getUsersWhoLikedCommentNullCommentIdThrowsException() {
         DataValidationException exception = assertThrows(DataValidationException.class,
                 () -> likeService.getUsersWhoLikedComment(1L, null));
 
@@ -47,7 +47,7 @@ class LikeServiceImplTest {
     }
 
     @Test
-    void getUsersWhoLikedPost_Success() {
+    void getUsersWhoLikedPostSuccess() {
         Long postId = 1L;
         Long userId = 3L;
         Post post = Post.builder().id(postId).build();
@@ -68,7 +68,7 @@ class LikeServiceImplTest {
     }
 
     @Test
-    void getUsersWhoLikedComment_Success() {
+    void getUsersWhoLikedCommentSuccess() {
         Long postId = 1L;
         Long commentId = 2L;
         Long userId = 3L;
@@ -90,7 +90,7 @@ class LikeServiceImplTest {
     }
 
     @Test
-    void getUsersWhoLikedComment_NullPostId_ThrowsException() {
+    void getUsersWhoLikedCommentNullPostIdThrowsException() {
         assertThrows(DataValidationException.class,
                 () -> likeService.getUsersWhoLikedComment(null, 1L));
 
@@ -101,7 +101,7 @@ class LikeServiceImplTest {
     }
 
     @Test
-    void getUsersWhoLikedComment_BothIdsNull_ThrowsExceptionForPostFirst() {
+    void getUsersWhoLikedCommentBothIdsNullThrowsExceptionForPostFirst() {
         assertThrows(DataValidationException.class,
                 () -> likeService.getUsersWhoLikedComment(null, null));
 
