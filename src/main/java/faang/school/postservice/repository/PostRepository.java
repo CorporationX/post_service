@@ -3,6 +3,7 @@ package faang.school.postservice.repository;
 import faang.school.postservice.model.Post;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -59,4 +60,11 @@ public interface PostRepository extends CrudRepository<Post, Long> {
                 ORDER BY p.publishedAt DESC
             """)
     List<Post> findPublishedByProject(Long projectId);
+
+    @Query(value = """
+    SELECT s.follower_id
+    FROM subscription s
+    WHERE s.followee_id = :authorId
+    """, nativeQuery = true)
+    List<Long> findFollowersIdsByAuthorId(@Param("authorId") Long authorId);
 }

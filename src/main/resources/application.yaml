@@ -30,6 +30,18 @@ spring:
         calculations_channel:
           name: calculations_channel
 
+  kafka:
+    bootstrap-servers: localhost:9094
+    acks: all
+    retries: 5
+    delivery-timeout-ms: 20000
+    linger-ms: 5
+    request-timeout-ms: 3000
+    batch-size: 16384
+    enable-idempotence: true
+    topics:
+      posts-topic: posts
+
   servlet:
     multipart:
       max-file-size: 50MB

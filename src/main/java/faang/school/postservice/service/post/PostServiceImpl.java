@@ -4,6 +4,7 @@ import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.client.languagetool.LanguageToolClient;
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.event.PostCreateEventDto;
 import faang.school.postservice.dto.languagetool.LanguageToolResponseDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.DataValidationException;
@@ -12,6 +13,7 @@ import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.publisher.post.RedisPostCreateEventPublisher;
+import faang.school.postservice.publisher.post.kafka.PostEventKafkaPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.resource.ResourceService;
 import faang.school.postservice.util.LanguageTool;
@@ -47,6 +49,7 @@ public class PostServiceImpl implements PostService {
     private final PostActionService postActionService;
     private final ExecutorService scheduledPostExecutorService;
     private final RedisPostCreateEventPublisher redisPostCreateEventPublisher;
+    private final PostEventKafkaPublisher postEventKafkaPublisher;
 
     @Override
     @Transactional
@@ -80,9 +83,20 @@ public class PostServiceImpl implements PostService {
         post.setPublishedAt(LocalDateTime.now());
 
         Post updatedPost = postRepository.save(post);
-        redisPostCreateEventPublisher.publish(postMapper.toPostCreateEventDto(updatedPost));
+        PostCreateEventDto event = postMapper.toPostCreateEventDto(updatedPost);
+
+        redisPostCreateEventPublisher.publish(event);
+
+        event.setId(updatedPost.getId());
+        event.setUserId(updatedPost.getAuthorId());
+        event.setFollowersIds(getFollowersIds(updatedPost));
+        postEventKafkaPublisher.publish(event);
 
         return postMapper.toDto(updatedPost);
+    }
+
+    private List<Long> getFollowersIds(Post post) {
+        return postRepository.findFollowersIdsByAuthorId(post.getAuthorId());
     }
 
     @Override
