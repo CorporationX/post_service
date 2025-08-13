@@ -21,6 +21,8 @@ public interface PostMapper {
     Post toEntity(PostDto dto);
 
     @Mapping(target = "userId", source = "authorId")
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "followersIds", ignore = true)
     PostCreateEventDto toPostCreateEventDto(Post post);
 
     default List<String> mapKeys(Post post) {
