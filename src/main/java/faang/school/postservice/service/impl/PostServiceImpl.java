@@ -83,10 +83,11 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public void updatePost(PostDto postDto, Long postId) {
+    public PostDto updatePost(PostDto postDto, Long postId) {
         Post post = findPostEntityById(postId);
         post.setContent(postDto.getContent());
         postRepository.save(post);
+        return postMapper.postToPostDto(post);
     }
 
     @Override

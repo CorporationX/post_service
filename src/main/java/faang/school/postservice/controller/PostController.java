@@ -43,15 +43,15 @@ public class PostController {
     }
 
     @PutMapping("/markedPostAsDeleted/{postId}")
-    public ResponseEntity<Void> markPostAsDeleted(@PathVariable @NotNull(message = "PostId не может быть равен null") Long postId) {
-        postService.markPostAsDeleted(postId);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<PostDto> markPostAsDeleted(@PathVariable @NotNull(message = "PostId не может быть равен null") Long postId) {
+        PostDto postDto = postService.markPostAsDeleted(postId);
+        return ResponseEntity.ok(postDto);
     }
 
     @PutMapping("/update/{postId}")
-    public ResponseEntity<Void> update(@RequestBody @Validated PostDto postDto, @PathVariable @NotNull(message = "PostId не может быть равен null") Long postId) {
-        postService.updatePost(postDto, postId);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<PostDto> update(@RequestBody @Validated PostDto postDto, @PathVariable @NotNull(message = "PostId не может быть равен null") Long postId) {
+        PostDto result = postService.updatePost(postDto, postId);
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping("/{postId}")

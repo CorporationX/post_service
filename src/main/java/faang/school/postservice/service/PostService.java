@@ -11,7 +11,7 @@ public interface PostService {
     PostDto markPostAsDeleted(long id);
     PostDto createPostDraft(PostDraftDto postDraftDto);
     void publishPost(Long postId, PostDraftDto postDraftDto);
-    void updatePost(PostDto postDto, Long postId);
+    PostDto updatePost(PostDto postDto, Long postId);
     List<PostDto> getAllPostsByAuthorId (long userId);
     List<PostDto> getAllPostsByProjectId (long projectId);
     List<PostDto> getAllPublishedPostsByAuthorId (long userId);
