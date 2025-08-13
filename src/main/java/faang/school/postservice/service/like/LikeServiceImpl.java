@@ -79,7 +79,8 @@ public class LikeServiceImpl implements LikeService {
                 postRepository.findById(postId)
                         .orElseThrow(() -> new EntityNotFoundException("Поста с id " + postId + " не существует")),
                 commentRepository.findById(commentId)
-                        .orElseThrow(() -> new EntityNotFoundException("Комментария с id " + commentId + " не существует")));
+                        .orElseThrow(() ->
+                                new EntityNotFoundException("Комментария с id " + commentId + " не существует")));
 
         return likes.stream()
                 .map(Like::getUserId)
@@ -88,13 +89,13 @@ public class LikeServiceImpl implements LikeService {
     }
 
     private void checkPostIdNotNull(Long postId) {
-        if(postId == null) {
+        if (postId == null) {
             throw new DataValidationException("Id поста не может быть null");
         }
     }
 
     private void checkCommentIdNotNull(Long commentId) {
-        if(commentId == null) {
+        if (commentId == null) {
             throw new DataValidationException("Id комментария не может быть null");
         }
     }
