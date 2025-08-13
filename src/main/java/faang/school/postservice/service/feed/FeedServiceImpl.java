@@ -12,6 +12,7 @@ import faang.school.postservice.dto.kafka.KafkaSubscribersFeedHeatDto;
 import faang.school.postservice.dto.redis.RedisPostDto;
 import faang.school.postservice.kafka.producer.KafkaFeedHeatEventProducer;
 import faang.school.postservice.kafka.producer.KafkaSubscribersFeedEventProducer;
+import faang.school.postservice.mapper.KafkaCommentEventMapper;
 import faang.school.postservice.mapper.KafkaPostEventToRedisPostMapper;
 import faang.school.postservice.service.FeedService;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
@@ -24,7 +25,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -37,9 +37,10 @@ public class FeedServiceImpl implements FeedService {
     private final UserServiceClient userServiceClient;
     private final RedisCache cache;
     private final KafkaPostEventToRedisPostMapper kafkaPostEventToRedisPostMapper;
+    private final KafkaCommentEventMapper kafkaCommentEventMapper;
     private final KafkaSubscribersFeedEventProducer kafkaSubscribersFeedEventProducer;
     private final UserContext userContext;
-    private final CircuitBreakerRegistry circuitBreakerRegistry; // Добавлен для Circuit Breaker
+    private final CircuitBreakerRegistry circuitBreakerRegistry;
 
     @Value("${news-feed.heater.batch-size}")
     private int batchSize;
@@ -115,8 +116,7 @@ public class FeedServiceImpl implements FeedService {
 
     @Override
     public void putCommentInCache(KafkaCommentEventDto dto) {
-        // Нужен ли маппер если сущности идентичны?
-        cache.putComment(dto);
+        cache.putComment(kafkaCommentEventMapper.toCommentFeedDto(dto));
     }
 
     @Override
@@ -127,13 +127,25 @@ public class FeedServiceImpl implements FeedService {
     @Override
     public FeedDto getFeed(Long postId) {
         long userId = userContext.getUserId();
-        long startIndex = postId != null ? postId : 0L;
-        long toIndex = startIndex == 0L ? 20 : startIndex + 20;
-        // порядок ид может быть абсолютно рандомным ведь?
-        // Надо бы наверное через скрипт делать фор луп и брать 20 постов после нахождения поста по ид в списке фида
-        Set<Long> postIds = cache.getFeed(userId, startIndex, toIndex);
+        long start = 0L;
+        long end = 20L;
+        if (postId != null) {
+            Long postRank = cache.getPostRank(userId, postId);
+            if (postRank != null) {
+                start = postRank + 1;
+                end = start + 20;
+            } else {
+                log.warn("Post with ID {} not found in user {}'s feed. Returning default feed.", postId, userId);
+            }
+        }
+
+        log.info("user: {} | start: {}| end: {}", userId, start, end);
+        List<Long> postIds = cache.getFeed(userId, start, end);
+        log.info("postIds: {}", postIds);
         List<RedisPostDto> posts = cache.getPostsBatch(postIds);
+        log.info("posts: {}", posts);
         posts.forEach(post -> post.setComments(cache.getComments(post.getPostId())));
+        log.info("posts after added comments: {}", posts);
         return new FeedDto(posts);
     }
 

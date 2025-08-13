@@ -4,8 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.dto.feed.CommentFeedDto;
 import faang.school.postservice.dto.feed.UserFeedDto;
-import faang.school.postservice.dto.kafka.KafkaCommentEventDto;
 import faang.school.postservice.dto.redis.RedisPostDto;
+import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityNotFoundException;
@@ -40,6 +40,7 @@ public class NewsFeedCache implements RedisCache {
     private static final String POST_COMMENTS_KEY_PREFIX = "comments_cache:";
 
     private final PostRepository postRepository;
+    private final CommentRepository commentRepository;
     private final RedisTemplate<String, Object> redisNewsFeedTemplate;
     private final RedisTemplate<String, String> redisNewsFeedStringLuaTemplate;
     private final ObjectMapper objectMapper;
@@ -81,7 +82,6 @@ public class NewsFeedCache implements RedisCache {
             redisNewsFeedTemplate.opsForValue().set(key, user, Duration.ofDays(newsFeedConfiguration.getUserTtl()));
             log.info("User {} cached successfully", user.userId());
         } catch (Exception e) {
-            // Изменено: убрали RuntimeException для большей отказоустойчивости
             log.error("Failed to cache user {}: {}", user.userId(), e.getMessage());
         }
     }
@@ -93,7 +93,6 @@ public class NewsFeedCache implements RedisCache {
             redisNewsFeedTemplate.opsForValue().set(key, post, Duration.ofSeconds(newsFeedConfiguration.getPostTtl()));
             log.info("Post {} cached successfully", post.getPostId());
         } catch (Exception e) {
-            // Изменено: убрали RuntimeException для большей отказоустойчивости
             log.error("Failed to cache post {}: {}", post.getPostId(), e.getMessage());
         }
     }
@@ -135,14 +134,15 @@ public class NewsFeedCache implements RedisCache {
     }
 
     @Override
-    public List<RedisPostDto> getPostsBatch(Set<Long> postIds) {
+    public List<RedisPostDto> getPostsBatch(List<Long> postIds) {
         List<String> keys = postIds.stream()
                 .map(id -> POST_CACHE_KEY_PREFIX + id)
                 .collect(Collectors.toList());
-        return redisNewsFeedTemplate.opsForValue().multiGet(keys)
+        List<Object> postObjects = redisNewsFeedTemplate.opsForValue().multiGet(keys);
+        if (postObjects == null || postObjects.isEmpty()) return List.of();
+        return postObjects
                 .stream()
-                .filter(obj -> obj instanceof RedisPostDto)
-                .map(obj -> (RedisPostDto) obj)
+                .map(obj -> objectMapper.convertValue(obj, RedisPostDto.class))
                 .collect(Collectors.toList());
     }
 
@@ -151,9 +151,11 @@ public class NewsFeedCache implements RedisCache {
         String key = POST_COMMENTS_KEY_PREFIX + postId;
         // Получаем элементы ZSET в обратном порядке (от новых к старым)
         Set<Object> serializedComments = redisNewsFeedTemplate.opsForZSet().reverseRange(key, 0, -1);
-
+        log.info("serializedComments: {}", serializedComments);
         if (serializedComments == null || serializedComments.isEmpty()) {
-            return Collections.emptyList();
+            List<CommentFeedDto> comments = commentRepository.findLastCommentsForPost(postId, newsFeedConfiguration.getCommentsLimit());
+            comments.forEach(this::putComment);
+            return comments;
         }
 
         List<CommentFeedDto> comments = new ArrayList<>();
@@ -164,6 +166,7 @@ public class NewsFeedCache implements RedisCache {
                             (String) serializedComment,
                             CommentFeedDto.class
                     );
+                    log.info("Comment: {}", comment);
                     comments.add(comment);
                 } catch (JsonProcessingException e) {
                     log.error("Failed to deserialize comment for post {}: {}", postId, e.getMessage());
@@ -173,6 +176,8 @@ public class NewsFeedCache implements RedisCache {
                         postId, serializedComment.getClass());
             }
         }
+
+        log.info("Comments: {}", comments);
         return comments;
     }
 
@@ -181,7 +186,7 @@ public class NewsFeedCache implements RedisCache {
         RedisPostDto postToUpdate = getPost(postId);
         if (postToUpdate == null) {
             // Оптимизация 3: Fallback. Если пост не найден в кэше, загружаем его из БД
-            postToUpdate = postRepository.findPostForRedisByPostId(postId) // Предположим, есть маппер из Post в RedisPostDto
+            postToUpdate = postRepository.findPostForRedisByPostId(postId)
                     .orElseThrow(() -> new EntityNotFoundException("Post doesn't exist in cache or db"));
 
             if (postToUpdate == null) {
@@ -213,22 +218,28 @@ public class NewsFeedCache implements RedisCache {
     }
 
     @Override
-    public Set<Long> getFeed(Long userId, long start, long end) {
+    public List<Long> getFeed(Long userId, long start, long end) {
         String key = FEED_CACHE_KEY_PREFIX + userId;
         Set<Object> postIds = redisNewsFeedTemplate.opsForZSet().reverseRange(key, start, end);
         if (postIds == null) {
-            return Collections.emptySet();
+            return Collections.emptyList();
         }
 
         return postIds.stream()
-                .map(id -> (Long) id)
-                .collect(Collectors.toSet());
+                .map(id -> {
+                    if (id instanceof Integer) {
+                        return ((Integer) id).longValue();
+                    }
+                    return (Long) id;
+                })
+                .collect(Collectors.toList());
     }
 
     @Override
     @Transactional(readOnly = true)
     public void putFeedForSubscribers(Long userId, List<Long> followerIds) {
         Pageable pageable = PageRequest.of(0, newsFeedConfiguration.getFeedSize());
+        // Это ведь вызывается по несколько раз? может сначала проверять что посты пользователя уже есть в кэше7
         List<RedisPostDto> posts = postRepository.findLatestPostsByAuthorId(userId, pageable);
         log.info("found {} Posts for user with ID {}", posts.size(), userId);
 
@@ -250,13 +261,18 @@ public class NewsFeedCache implements RedisCache {
 
         long ttlInSeconds = Duration.ofMinutes(newsFeedConfiguration.getUserTtl() * 10L).getSeconds();
 
-        log.info("args: {}", args);
         redisNewsFeedStringLuaTemplate.execute(
                 batchMultiPostFeedUpdateScript,
                 List.of(String.valueOf(ttlInSeconds), String.valueOf(newsFeedConfiguration.getFeedSize())),
                 args.toArray()
         );
         log.info("Added {} posts from author {} to {} followers' feeds.", posts.size(), userId, followerIds.size());
+    }
+
+    @Override
+    public Long getPostRank(long userId, Long postId) {
+        String key = FEED_CACHE_KEY_PREFIX + userId;
+        return redisNewsFeedTemplate.opsForZSet().reverseRank(key, postId);
     }
 
     @Override
@@ -296,22 +312,7 @@ public class NewsFeedCache implements RedisCache {
     }
 
     @Override
-    public void updateComment(long postId) {
-        RedisPostDto postToUpdate = getPost(postId);
-
-        if (postToUpdate != null) {
-            long currentCommentCount = postToUpdate.getCommentCount();
-            postToUpdate.setCommentCount(currentCommentCount + 1);
-            putPost(postToUpdate);
-            log.info("Successfully updated comment count for post {}. New count: {}"
-                    , postId, postToUpdate.getCommentCount());
-        } else {
-            log.warn("Post with ID {} not found in cache. Cannot update comment count.", postId);
-        }
-    }
-
-    @Override
-    public void putComment(KafkaCommentEventDto dto) {
+    public void putComment(CommentFeedDto dto) {
         String key = POST_COMMENTS_KEY_PREFIX + dto.postId();
         long score = dto.createdAt().toEpochSecond(ZoneOffset.UTC);
 
@@ -332,7 +333,5 @@ public class NewsFeedCache implements RedisCache {
                 Collections.singletonList(key),
                 scriptArgs.toArray()
         );
-
-        updateComment(dto.postId());
     }
 }

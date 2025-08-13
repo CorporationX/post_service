@@ -1,6 +1,7 @@
 package faang.school.postservice.mapper;
 
 
+import faang.school.postservice.dto.feed.CommentFeedDto;
 import faang.school.postservice.dto.kafka.KafkaCommentEventDto;
 import faang.school.postservice.model.Comment;
 import org.mapstruct.Mapper;
@@ -21,4 +22,6 @@ public interface KafkaCommentEventMapper {
         }
         return comment.getPost().getId();
     }
+
+    CommentFeedDto toCommentFeedDto(KafkaCommentEventDto dto);
 }
