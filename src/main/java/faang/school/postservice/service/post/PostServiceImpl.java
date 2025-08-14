@@ -1,11 +1,14 @@
 package faang.school.postservice.service.post;
 
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.comment.CommentEvent;
 import faang.school.postservice.dto.comment.SaveCommentDto;
 import faang.school.postservice.dto.post.CreatePostDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.exception.EntityNotFoundException;
+import faang.school.postservice.exception.ServiceUnavailableException;
+import faang.school.postservice.kafka.producer.comment.CommentProducer;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
@@ -41,6 +44,8 @@ public class PostServiceImpl implements PostService {
     private final CommentValidator commentValidator;
     private final UserFeignService userFeignService;
     private final PostSpellCheckValidator postSpellCheckValidator;
+
+    private final CommentProducer commentProducer;
 
     @Override
     @Transactional
@@ -188,6 +193,8 @@ public class PostServiceImpl implements PostService {
         comment.setPost(post);
         Comment savedComment = commentRepository.save(comment);
         log.info("Comment id: {} for post id: {} created", savedComment.getId(), postId);
+        CommentEvent event = commentMapper.toCommentEvent(savedComment);
+        commentProducer.publishCommentEvent(event);
         return commentMapper.toCommentDto(savedComment);
     }
 
