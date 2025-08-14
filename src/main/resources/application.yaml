@@ -28,7 +28,7 @@ spring:
     redis:
       port: 6379
       host: localhost
-      password: yourpassword
+#      password: yourpassword
       timeout: 1000ms
       client-type: lettuce
       default_ttl_seconds: 3600
@@ -59,8 +59,8 @@ spring:
     topics:
       comment-created-topic:
         name: comment-created-notification
-      like_created-topic:
-        name: like-created-notification
+      like-created-topic:
+        name: like-created-feed
 
 server:
   port: 8081
