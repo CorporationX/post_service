@@ -11,12 +11,11 @@
         </encoder>
     </appender>
 
-    <logger name="faang.school" additivity="false">
-        <level value="DEBUG"/>
+    <logger name="faang.school" level="OFF" additivity="false">
         <appender-ref ref="CONSOLE2"/>
     </logger>
 
-    <root level="INFO">
+    <root level="OFF">
         <appender-ref ref="CONSOLE"/>
     </root>
 </configuration>

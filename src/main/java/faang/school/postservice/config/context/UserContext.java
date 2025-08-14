@@ -29,4 +29,8 @@ public class UserContext {
     public void clear() {
         userIdHolder.remove();
     }
+
+    public String toString() {
+        return "UserContext(userIdHolder=%s)".formatted(String.valueOf(this.userIdHolder.get()));
+    }
 }
