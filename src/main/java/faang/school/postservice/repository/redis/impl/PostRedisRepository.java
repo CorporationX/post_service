@@ -16,11 +16,13 @@ public class PostRedisRepository extends AbstractRedisRepository<PostRedisEntity
 
     private final HashOperations<String, String, String> opsForHash;
 
-    @Value("${application.redis.post-time-to-live:100}")
-    private Long postTimeToLive;
-
-    public PostRedisRepository(StringRedisTemplate stringRedisTemplate, ObjectMapper objectMapper, Utils utils) {
-        super(stringRedisTemplate, objectMapper, utils);
+    public PostRedisRepository(
+        StringRedisTemplate stringRedisTemplate,
+        ObjectMapper objectMapper,
+        Utils utils,
+        @Value("${application.redis.post-time-to-live:100}") long timeToLive
+    ) {
+        super(stringRedisTemplate, objectMapper, utils, timeToLive);
         this.opsForHash = redisTemplate.opsForHash();
     }
 
@@ -29,10 +31,5 @@ public class PostRedisRepository extends AbstractRedisRepository<PostRedisEntity
         String key = getKey(PREFIX, postRedisEntity.getPostId());
         opsForHash.put(key, "post", getJsonText(postRedisEntity));
         return key;
-    }
-
-    @Override
-    public long getTimeToLive() {
-        return postTimeToLive;
     }
 }

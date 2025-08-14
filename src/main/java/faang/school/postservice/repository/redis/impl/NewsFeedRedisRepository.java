@@ -20,11 +20,14 @@ public class NewsFeedRedisRepository extends AbstractRedisRepository<NewsFeedRed
 
     @Value("${application.redis.news-feed-cache-limit:100}")
     private Long newsFeedLimit;
-    @Value("${application.redis.news-feed-time-to-live:100}")
-    private Long newsFeedTimeToLive;
 
-    public NewsFeedRedisRepository(StringRedisTemplate redisTemplate, ObjectMapper objectMapper, Utils utils) {
-        super(redisTemplate, objectMapper, utils);
+    public NewsFeedRedisRepository(
+        StringRedisTemplate redisTemplate,
+        ObjectMapper objectMapper,
+        Utils utils,
+        @Value("${application.redis.news-feed-time-to-live:100}") long timeToLive
+    ) {
+        super(redisTemplate, objectMapper, utils, timeToLive);
         this.opsSet = this.redisTemplate.opsForZSet();
     }
 
@@ -35,10 +38,5 @@ public class NewsFeedRedisRepository extends AbstractRedisRepository<NewsFeedRed
         opsSet.add(key, newsFeedRedisEntity.getPostId(), newsFeedRedisEntity.getTimeStamp());
         opsSet.removeRange(key, 0L, newsFeedLimit * -1 - 1);
         return key;
-    }
-
-    @Override
-    protected long getTimeToLive() {
-        return newsFeedTimeToLive;
     }
 }

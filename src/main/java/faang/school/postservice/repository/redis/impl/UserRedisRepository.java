@@ -16,11 +16,13 @@ public class UserRedisRepository extends AbstractRedisRepository<UserRedisEntity
 
     private final HashOperations<String, String, String> opsForHash;
 
-    @Value("${application.redis.user-time-to-live:100}")
-    private Long userTimeToLive;
-
-    public UserRedisRepository(StringRedisTemplate stringRedisTemplate, ObjectMapper objectMapper, Utils utils) {
-        super(stringRedisTemplate, objectMapper, utils);
+    public UserRedisRepository(
+        StringRedisTemplate stringRedisTemplate,
+        ObjectMapper objectMapper,
+        Utils utils,
+        @Value("${application.redis.user-time-to-live:100}") long timeToLive
+    ) {
+        super(stringRedisTemplate, objectMapper, utils, timeToLive);
         this.opsForHash = redisTemplate.opsForHash();
     }
 
@@ -29,10 +31,5 @@ public class UserRedisRepository extends AbstractRedisRepository<UserRedisEntity
         String key = getKey(PREFIX, userRedisEntity.getUserId());
         opsForHash.put(key, "user", getJsonText(userRedisEntity));
         return key;
-    }
-
-    @Override
-    public long getTimeToLive() {
-        return userTimeToLive;
     }
 }

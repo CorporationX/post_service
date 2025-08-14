@@ -5,20 +5,16 @@ import faang.school.postservice.dto.event.NewsFeedEventDto;
 import faang.school.postservice.producer.AbstractEventProducer;
 import faang.school.postservice.producer.KafkaProducer;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-@Service
+@Component
 public class NewsFeedEventProducer extends AbstractEventProducer<NewsFeedEventDto> {
 
-    @Value("${spring.kafka.topics.newsFeedTopic}")
-    private String topic;
-
-    public NewsFeedEventProducer(KafkaProducer kafkaProducer, ObjectMapper objectMapper) {
-        super(kafkaProducer, objectMapper);
-    }
-
-    @Override
-    public String getTopic() {
-        return topic;
+    public NewsFeedEventProducer(
+        @Value("${spring.kafka.topics.newsFeedTopic}") String topic,
+        KafkaProducer kafkaProducer,
+        ObjectMapper objectMapper
+    ) {
+        super(topic, kafkaProducer, objectMapper);
     }
 }

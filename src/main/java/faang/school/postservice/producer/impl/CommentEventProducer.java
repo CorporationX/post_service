@@ -5,20 +5,16 @@ import faang.school.postservice.dto.event.CommentEventDto;
 import faang.school.postservice.producer.AbstractEventProducer;
 import faang.school.postservice.producer.KafkaProducer;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-@Service
+@Component
 public class CommentEventProducer extends AbstractEventProducer<CommentEventDto> {
 
-    @Value("${spring.kafka.topics.commentTopic}")
-    private String topic;
-
-    public CommentEventProducer(KafkaProducer kafkaProducer, ObjectMapper objectMapper) {
-        super(kafkaProducer, objectMapper);
-    }
-
-    @Override
-    public String getTopic() {
-        return topic;
+    public CommentEventProducer(
+        @Value("${spring.kafka.topics.commentTopic}") String topic,
+        KafkaProducer kafkaProducer,
+        ObjectMapper objectMapper
+    ) {
+        super(topic, kafkaProducer, objectMapper);
     }
 }

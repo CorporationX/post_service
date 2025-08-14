@@ -14,17 +14,15 @@ public abstract class AbstractRedisRepository<D> implements RedisRepository<Stri
     protected final StringRedisTemplate redisTemplate;
     protected final ObjectMapper objectMapper;
     protected final Utils utils;
+    protected final long timeToLive;
 
     @Override
     public void save(D d) {
         String key = add(d);
-        long ttl = getTimeToLive();
-        if (ttl > 0) {
-            setTtl(redisTemplate, key, getTimeToLive());
+        if (timeToLive > 0) {
+            setTtl(redisTemplate, key, timeToLive);
         }
     }
-
-    protected abstract long getTimeToLive();
 
     /**
      * Реализация процесса сохранения объекта в redis
