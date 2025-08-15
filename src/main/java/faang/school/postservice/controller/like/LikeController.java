@@ -34,29 +34,29 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class LikeController {
 
-    private final LikeService likeService;
+    private final LikeService service;
 
     @PostMapping("/posts/{postId}")
     public ResponseEntity<Void> addLikeToPost(@PathVariable long postId) {
-        likeService.addLikeToPost(postId);
+        service.addLikeToPost(postId);
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/posts/{postId}")
     public ResponseEntity<Void> removeLikeFromPost(@PathVariable long postId) {
-        likeService.removeLikeFromPost(postId);
+        service.removeLikeFromPost(postId);
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/comments/{commentId}")
     public ResponseEntity<Void> addLikeToComment(@PathVariable long commentId) {
-        likeService.addLikeToComment(commentId);
+        service.addLikeToComment(commentId);
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/comments/{commentId}")
     public ResponseEntity<Void> removeLikeFromComment(@PathVariable long commentId) {
-        likeService.removeLikeFromComment(commentId);
+        service.removeLikeFromComment(commentId);
         return ResponseEntity.noContent().build();
     }
 }

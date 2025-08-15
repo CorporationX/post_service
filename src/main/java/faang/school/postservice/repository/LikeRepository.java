@@ -3,7 +3,6 @@ package faang.school.postservice.repository;
 import faang.school.postservice.model.Like;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
-import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
@@ -20,12 +19,12 @@ public interface LikeRepository extends CrudRepository<Like, Long> {
     Optional<Like> findByCommentIdAndUserId(long commentId, long userId);
 
     @Query("""
-                SELECT CASE WHEN COUNT(l) > 0 THEN TRUE ELSE FALSE END
-                FROM Like l
-                JOIN l.comment c
-                WHERE c.post.id = :postId AND l.userId = :userId
+             SELECT CASE WHEN COUNT(l) > 0 THEN TRUE ELSE FALSE END
+             FROM Like l
+             JOIN l.comment c
+             WHERE c.post.id = :postId AND l.userId = :userId
             """)
-    boolean existsByUserIdAndPostIdOnComments(@Param("userId") long userId, @Param("postId") long postId);
+    boolean existsByUserIdAndPostIdOnComments(long userId, long postId);
 
     boolean existsByPostIdAndUserId(long postId, long userId);
 

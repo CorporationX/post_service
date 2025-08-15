@@ -37,7 +37,7 @@ public interface PostMapper {
 
     void update(PostUpdateDto updateDto, @MappingTarget Post entity);
 
-    @Mapping(target = "likeCount", expression = "java(entity.getLikes() != null ? (long) entity.getLikes().size() : 0L)")
+    @Mapping(target = "likeCount", source = "likeCount")
     PostViewDto toViewDto(Post entity);
 
     List<PostViewDto> toViewDtoList(List<Post> entities);

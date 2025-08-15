@@ -2,9 +2,7 @@ package faang.school.postservice.service.like;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
-import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -27,7 +25,7 @@ public class LikeServiceImpl implements LikeService {
     @Transactional
     public void addLikeToPost(long postId) {
         var userId = getCurrentUserIdAndValidate();
-        var post = getPostOrThrow(postId);
+        var post = postRepository.getRequiredById(postId);
 
         if (likeRepository.existsByPostIdAndUserId(postId, userId)) {
             throw new IllegalStateException("You already liked this post");
@@ -46,7 +44,7 @@ public class LikeServiceImpl implements LikeService {
     @Override
     @Transactional
     public void removeLikeFromPost(long postId) {
-        var userId = getCurrentUserId();
+        var userId = getCurrentUserIdAndValidate();
         if (!likeRepository.existsByPostIdAndUserId(postId, userId)) {
             throw new IllegalStateException("Like on post not found");
         }
@@ -57,7 +55,7 @@ public class LikeServiceImpl implements LikeService {
     @Transactional
     public void addLikeToComment(long commentId) {
         var userId = getCurrentUserIdAndValidate();
-        var comment = getCommentOrThrow(commentId);
+        var comment = commentRepository.getRequiredById(commentId);
 
         if (likeRepository.existsByCommentIdAndUserId(commentId, userId)) {
             throw new IllegalStateException("You already liked this comment");
@@ -77,32 +75,20 @@ public class LikeServiceImpl implements LikeService {
     @Override
     @Transactional
     public void removeLikeFromComment(long commentId) {
-        var userId = getCurrentUserId();
+        var userId = getCurrentUserIdAndValidate();
         if (!likeRepository.existsByCommentIdAndUserId(commentId, userId)) {
             throw new IllegalStateException("Like on comment not found");
         }
         likeRepository.deleteByCommentIdAndUserId(commentId, userId);
     }
 
-    private long getCurrentUserId() {
-        return userContext.getUserId();
-    }
-
     private long getCurrentUserIdAndValidate() {
-        var userId = getCurrentUserId();
+        var userId = userContext.getUserId();
         try {
             userServiceClient.getUser(userId);
         } catch (FeignException.NotFound e) {
             throw new IllegalArgumentException("User not found");
         }
         return userId;
-    }
-
-    private Post getPostOrThrow(long postId) {
-        return postRepository.getRequiredById(postId);
-    }
-
-    private Comment getCommentOrThrow(long commentId) {
-        return commentRepository.getRequiredById(commentId);
     }
 }

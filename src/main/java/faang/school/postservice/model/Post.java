@@ -82,4 +82,7 @@ public class Post {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(name = "like_count", nullable = false)
+    private long likeCount = 0L;
 }
