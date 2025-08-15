@@ -91,7 +91,8 @@ public class FeedServiceImpl implements FeedService {
     @Override
     public void newPostCreated(KafkaPostEventDto eventDto) {
         RedisPostDto redisPostDto = kafkaPostEventToRedisPostMapper.postEventToRedisPostDto(eventDto);
-        cache.putPost(redisPostDto);
+        cache.putPostsBatch(List.of(redisPostDto));
+//        cache.putPost(redisPostDto);
         putUserIntoCache(redisPostDto.getAuthorId());
 
         processFollowersInBatches(eventDto.authorId(), followerIds ->

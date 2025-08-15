@@ -90,7 +90,14 @@ public class NewsFeedCache implements RedisCache {
     public void putPost(RedisPostDto post) {
         try {
             String key = POST_CACHE_KEY_PREFIX + post.getPostId();
-            redisNewsFeedTemplate.opsForValue().set(key, post, Duration.ofSeconds(newsFeedConfiguration.getPostTtl()));
+            // --- MODIFICATION START ---
+            // Manually serialize the object to a JSON string using ObjectMapper
+            String serializedPost = objectMapper.writeValueAsString(post);
+            // Use the redisNewsFeedStringLuaTemplate (configured with StringRedisSerializer)
+            // to ensure a consistent, clean string format.
+            log.info("PutPost -> serializedPost: {}", serializedPost);
+            redisNewsFeedStringLuaTemplate.opsForValue().set(key, serializedPost, Duration.ofMinutes(newsFeedConfiguration.getPostTtl() + 10L).getSeconds());
+            // --- MODIFICATION END ---
             log.info("Post {} cached successfully", post.getPostId());
         } catch (Exception e) {
             log.error("Failed to cache post {}: {}", post.getPostId(), e.getMessage());
@@ -130,7 +137,24 @@ public class NewsFeedCache implements RedisCache {
     @Override
     public RedisPostDto getPost(Long postId) {
         String key = POST_CACHE_KEY_PREFIX + postId;
-        return (RedisPostDto) redisNewsFeedTemplate.opsForValue().get(key);
+        // Corrected: Use the template configured for strings to retrieve the JSON string
+        String serializedPost = redisNewsFeedStringLuaTemplate.opsForValue().get(key);
+        log.info("GetPost: serializedPost: {}", serializedPost);
+
+        if (serializedPost == null) {
+            log.warn("Post with ID {} not found in cache.", postId);
+            return null;
+        }
+
+        try {
+            // Corrected: Use objectMapper.readValue to deserialize the JSON string
+            RedisPostDto post = objectMapper.readValue(serializedPost, RedisPostDto.class);
+            log.info("GetPost: post: {}", post);
+            return post;
+        } catch (JsonProcessingException e) {
+            log.error("Failed to deserialize post {} from cache: {}", postId, e.getMessage());
+            return null;
+        }
     }
 
     @Override
@@ -151,7 +175,6 @@ public class NewsFeedCache implements RedisCache {
         String key = POST_COMMENTS_KEY_PREFIX + postId;
         // Получаем элементы ZSET в обратном порядке (от новых к старым)
         Set<Object> serializedComments = redisNewsFeedTemplate.opsForZSet().reverseRange(key, 0, -1);
-        log.info("serializedComments: {}", serializedComments);
         if (serializedComments == null || serializedComments.isEmpty()) {
             List<CommentFeedDto> comments = commentRepository.findLastCommentsForPost(postId, newsFeedConfiguration.getCommentsLimit());
             comments.forEach(this::putComment);
@@ -166,7 +189,6 @@ public class NewsFeedCache implements RedisCache {
                             (String) serializedComment,
                             CommentFeedDto.class
                     );
-                    log.info("Comment: {}", comment);
                     comments.add(comment);
                 } catch (JsonProcessingException e) {
                     log.error("Failed to deserialize comment for post {}: {}", postId, e.getMessage());
@@ -183,37 +205,34 @@ public class NewsFeedCache implements RedisCache {
 
     @Override
     public boolean updatePost(long postId, String event) {
-        RedisPostDto postToUpdate = getPost(postId);
-        if (postToUpdate == null) {
-            // Оптимизация 3: Fallback. Если пост не найден в кэше, загружаем его из БД
-            postToUpdate = postRepository.findPostForRedisByPostId(postId)
-                    .orElseThrow(() -> new EntityNotFoundException("Post doesn't exist in cache or db"));
-
-            if (postToUpdate == null) {
-                log.warn("Post with ID {} not found in DB. Cannot update counter for event: {}.", postId, event);
-                return false;
-            }
-
-            // Добавляем свежий пост в кэш
-            putPost(postToUpdate);
-        }
+        // We no longer need to get the post here since the Lua script will handle it.
+        // The previous code was failing here due to the deserialization issue.
 
         String postKey = POST_CACHE_KEY_PREFIX + postId;
-        long currentVersion = postToUpdate.getVersion();
 
-        Long result = redisNewsFeedTemplate.execute(
+        // Corrected: Use the template configured for strings
+        Long result = redisNewsFeedStringLuaTemplate.execute(
                 incrementPostCounterScript,
                 Collections.singletonList(postKey),
-                event,
-                String.valueOf(currentVersion)
+                event
         );
-
+        log.info("result: {}", result);
         if (result != null && result == 1L) {
-            log.info("Successfully updated post {} counter for event {}. Old version: {}", postId, event, currentVersion);
+            log.info("Successfully updated post {} counter for event {}.", postId, event);
             return true;
         } else {
-            log.warn("Failed to update post {} counter for event {}. Optimistic locking failed or post not found. Old version: {}", postId, event, currentVersion);
-            return false;
+            // The post might not be in the cache, so we load it from the DB and put it back.
+            // This is the fallback logic that was previously attempted but failed.
+            try {
+                RedisPostDto postToUpdate = postRepository.findPostForRedisByPostId(postId)
+                        .orElseThrow(() -> new EntityNotFoundException("Post doesn't exist in cache or db"));
+                putPost(postToUpdate);
+                log.info("Post with ID {} was not in cache. Loaded from DB and re-cached.", postId);
+                return updatePost(postId, event); // Retry the update
+            } catch (EntityNotFoundException e) {
+                log.warn("Failed to update post {} counter for event {}. Post not found in DB.", postId, event);
+                return false;
+            }
         }
     }
 
@@ -285,10 +304,13 @@ public class NewsFeedCache implements RedisCache {
         List<String> serializedPosts = new ArrayList<>();
 
         posts.forEach(post -> {
+            post.setViewCount(post.getViewCount() == null ? 0L : post.getViewCount());
+            post.setVersion(post.getVersion() == null ? 0L : post.getVersion());
             try {
                 String serializedPost = objectMapper.writeValueAsString(post);
                 keys.add(POST_CACHE_KEY_PREFIX + post.getPostId());
                 serializedPosts.add(serializedPost);
+                log.info("serializedPost: {}", serializedPost);
             } catch (JsonProcessingException e) {
                 log.error("Failed to serialize post {}: {}", post.getPostId(), e.getMessage());
             }
