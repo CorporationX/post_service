@@ -38,7 +38,7 @@ integration:
     port: 8888
     get-user-url: /api/user
   project-service:
-    host: localhost
+    host: ${PROJECT_SERVICE_HOST:localhost}
     port: 8082
     get-project-url: /api/project
   payment-service:

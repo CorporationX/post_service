@@ -4,6 +4,7 @@ import faang.school.postservice.integration.project.config.ProjectClientProperti
 import faang.school.postservice.integration.project.dto.ProjectResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
