@@ -1,5 +1,6 @@
 package faang.school.postservice.service.like;
 
+import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
@@ -21,6 +22,7 @@ public class LikeServiceImpl implements LikeService{
     private final LikeValidator likeValidator;
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
+    private final LikeMapper likeMapper;
 
     @Override
     public void likePost(long userId, long postId) {
@@ -29,9 +31,7 @@ public class LikeServiceImpl implements LikeService{
 
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("Post not found, id: " + postId));
-        Like like = createLikeOnPost(userId, post);
-        post.getLikes().add(like);
-        postRepository.save(post);
+        Like like = likeMapper.toPostLike(userId, post);
 
         likeRepository.save(like);
         log.info("Like on post was created, id: {}", like.getId());
@@ -44,9 +44,7 @@ public class LikeServiceImpl implements LikeService{
 
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new EntityNotFoundException("Comment not found, id: " + commentId));
-        Like like = createLikeOnComment(userId, comment);
-        comment.getLikes().add(like);
-        commentRepository.save(comment);
+        Like like = likeMapper.toCommentLike(userId, comment);
 
         likeRepository.save(like);
         log.info("Like on comment was created, id: {}", like.getId());
@@ -56,15 +54,6 @@ public class LikeServiceImpl implements LikeService{
     public void deleteLikeFromPost(long userId, long postId) {
         likeValidator.ensureUserExists(userId);
 
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new EntityNotFoundException("Post not found, id: " + postId));
-        Like like = likeRepository.findByPostIdAndUserId(postId, userId)
-                .orElseThrow(() -> new EntityNotFoundException(
-                        String.format("Like not found, postId: %s, userId: %s %n", postId, userId))
-                );
-        post.getLikes().remove(like);
-        postRepository.save(post);
-
         likeRepository.deleteByPostIdAndUserId(postId, userId);
         log.info("Like on post was deleted, postId: {}, userId: {}", postId, userId);
     }
@@ -73,30 +62,7 @@ public class LikeServiceImpl implements LikeService{
     public void deleteLikeFromComment(long userId, long commentId) {
         likeValidator.ensureUserExists(userId);
 
-        Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new EntityNotFoundException("Comment not found, id: " + commentId));
-        Like like = likeRepository.findByCommentIdAndUserId(commentId, userId)
-                .orElseThrow(() -> new EntityNotFoundException(
-                        String.format("Like not found, commentId: %s, userId: %s %n", commentId, userId))
-                );
-        comment.getLikes().remove(like);
-        commentRepository.save(comment);
-
         likeRepository.deleteByCommentIdAndUserId(commentId, userId);
         log.info("Like on comment was deleted, commentId: {}, userId: {}", commentId, userId);
-    }
-
-    private Like createLikeOnPost(long userId, Post post) {
-        return Like.builder()
-                .userId(userId)
-                .post(post)
-                .build();
-    }
-
-    private static Like createLikeOnComment(long userId, Comment comment) {
-        return Like.builder()
-                .userId(userId)
-                .comment(comment)
-                .build();
     }
 }

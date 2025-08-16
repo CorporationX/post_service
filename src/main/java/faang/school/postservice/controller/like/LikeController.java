@@ -46,7 +46,7 @@ public class LikeController {
             description = "Remove like from comment by ID, user can only delete a previously placed like"
     )
     @DeleteMapping("/posts/{postId}")
-    public void DeleteLikeFromPost(@PathVariable @Positive long postId){
+    public void deleteLikeFromPost(@PathVariable @Positive long postId){
         likeService.deleteLikeFromPost(userContext.getUserId(), postId);
     }
 
