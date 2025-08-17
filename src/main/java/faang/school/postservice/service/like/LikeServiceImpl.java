@@ -39,6 +39,9 @@ public class LikeServiceImpl implements LikeService {
         like.setUserId(userId);
         like.setPost(post);
         likeRepository.save(like);
+
+        post.setLikeCount(post.getLikeCount() + 1);
+        postRepository.save(post);
     }
 
     @Override
@@ -49,6 +52,11 @@ public class LikeServiceImpl implements LikeService {
             throw new IllegalStateException("Like on post not found");
         }
         likeRepository.deleteByPostIdAndUserId(postId, userId);
+
+        var post = postRepository.getRequiredById(postId);
+        post.setLikeCount(post.getLikeCount() - 1);
+        postRepository.save(post);
+
     }
 
     @Override
@@ -70,6 +78,9 @@ public class LikeServiceImpl implements LikeService {
         like.setUserId(userId);
         like.setComment(comment);
         likeRepository.save(like);
+
+        comment.setLikeCount(comment.getLikeCount() + 1);
+        commentRepository.save(comment);
     }
 
     @Override
@@ -80,6 +91,10 @@ public class LikeServiceImpl implements LikeService {
             throw new IllegalStateException("Like on comment not found");
         }
         likeRepository.deleteByCommentIdAndUserId(commentId, userId);
+
+        var comment = commentRepository.getRequiredById(commentId);
+        comment.setLikeCount(comment.getLikeCount() - 1);
+        commentRepository.save(comment);
     }
 
     private long getCurrentUserIdAndValidate() {
