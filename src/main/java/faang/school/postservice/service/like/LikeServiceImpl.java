@@ -2,6 +2,8 @@ package faang.school.postservice.service.like;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
@@ -11,10 +13,17 @@ import faang.school.postservice.repository.PostRepository;
 import feign.FeignException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class LikeServiceImpl implements LikeService {
 
     private final LikeRepository likeRepository;
@@ -105,4 +114,38 @@ public class LikeServiceImpl implements LikeService {
     private Comment getCommentOrThrow(long commentId) {
         return commentRepository.getRequiredById(commentId);
     }
+
+    @Override
+    public List<UserDto> getListUsersWhoLikesThisPost(long postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException("Post not found"));
+
+        List<Like> likes = Optional.ofNullable(post.getLikes())
+                .orElseGet(() -> {
+                    log.info("Post with id {} has no likes", postId);
+                    return Collections.emptyList();
+                });
+
+        return likes.stream()
+                .map(like -> userServiceClient.getUser(like.getUserId()))
+                .collect(Collectors.toList());
+
+    }
+
+    @Override
+    public List<UserDto> getListUsersWhoLikesThisComment(long commentId) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new EntityNotFoundException("Comment not found"));
+
+        List<Like> likes = Optional.ofNullable(comment.getLikes())
+                .orElseGet(() -> {
+                    log.info("Comment with id {} has no likes", commentId);
+                    return Collections.emptyList();
+                });
+
+        return likes.stream()
+                .map(like -> userServiceClient.getUser(like.getUserId()))
+                .collect(Collectors.toList());
+    }
+
 }

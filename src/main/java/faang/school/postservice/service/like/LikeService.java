@@ -1,5 +1,9 @@
 package faang.school.postservice.service.like;
 
+import faang.school.postservice.dto.user.UserDto;
+
+import java.util.List;
+
 /**
  * Сервис для управления лайками под постами и комментариями.
  * <p>
@@ -49,4 +53,21 @@ public interface LikeService {
      * @throws IllegalStateException если лайк не найден
      */
     void removeLikeFromComment(long commentId);
+
+    /**
+     * Возвращает список Пользователей поставивших лайк под постом.
+     *
+     * @param postId ID поста, у которого ищем пользователей поставивших лайк.
+     * @return список пользователей, поставивших лайк, или пустой список, если лайков нет
+     */
+    List<UserDto> getListUsersWhoLikesThisPost(long postId);
+
+    /**
+     * Возвращает список Пользователей поставивших лайк под коментарием.
+     *
+     * @param commentId ID коментария, у которого ищем пользователей поставивших лайк.
+     * @return список пользователей, поставивших лайк, или пустой список, если лайков нет
+     */
+    List<UserDto> getListUsersWhoLikesThisComment(long commentId);
+
 }
