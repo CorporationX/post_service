@@ -45,3 +45,18 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+scheduler:
+  post-correction-cron: "0 0 2 * * *"
+
+post:
+  correction:
+    batch-size: 50
+    core-size: 4
+    max-size: 8
+    queue-capacity: 100
+
+textgears:
+  api-key: 1a182906femsh131affb2a9303e2p1b4081jsn3a0dd3484d73
+  host: textgears-textgears-v1.p.rapidapi.com
+  url: https://textgears-textgears-v1.p.rapidapi.com

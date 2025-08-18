@@ -37,4 +37,8 @@ public interface PostService {
     CommentDto createComment(Long postId, Long authorId, SaveCommentDto saveCommentDto);
 
     List<CommentDto> getCommentsByPostId(Long postId);
+
+    void updatePostContent(Post post, String correctedContent);
+
+    List<Post> getUnpublishedPosts();
 }
