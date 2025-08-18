@@ -21,6 +21,11 @@ spring:
     bootstrap-servers: localhost:9092
     group-id: post_service
 
+    topics:
+      post-comment-published:
+        name: posts.comments.published
+
+
   data:
     redis:
       port: 6379
