@@ -1,6 +1,7 @@
 package faang.school.postservice.dto.spellcheck;
 
 public record SpellCheckResponse(
+
         SpellCheckResultDto response,
 
         boolean status

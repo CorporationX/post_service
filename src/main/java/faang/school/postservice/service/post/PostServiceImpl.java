@@ -204,6 +204,7 @@ public class PostServiceImpl implements PostService {
     @Transactional
     public void updatePostContent(Post post, String correctedContent) {
         if (!postSpellCheckValidator.isContentChanged(post, correctedContent)) {
+            log.info("Skip update: content unchanged for postId={}", post.getId());
             return;
         }
         post.setContent(correctedContent);
