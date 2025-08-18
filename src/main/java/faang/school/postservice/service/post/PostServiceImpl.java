@@ -46,6 +46,7 @@ public class PostServiceImpl implements PostService {
     private final UserContext userContext;
     private final PostActionService postActionService;
     private final ExecutorService scheduledPostExecutorService;
+    private final faang.school.postservice.service.cache.PostCachePort postCachePort;
     private final RedisPostCreateEventPublisher redisPostCreateEventPublisher;
 
     @Override
@@ -80,6 +81,11 @@ public class PostServiceImpl implements PostService {
         post.setPublishedAt(LocalDateTime.now());
 
         Post updatedPost = postRepository.save(post);
+
+        faang.school.postservice.service.cache.model.PostCacheDto cacheDto =
+                faang.school.postservice.service.cache.mapper.PostCacheMapper.fromEntity(updatedPost);
+        postCachePort.put(cacheDto);
+
         redisPostCreateEventPublisher.publish(postMapper.toPostCreateEventDto(updatedPost));
 
         return postMapper.toDto(updatedPost);
