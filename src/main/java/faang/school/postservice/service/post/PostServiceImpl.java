@@ -1,13 +1,11 @@
 package faang.school.postservice.service.post;
 
-import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.SaveCommentDto;
 import faang.school.postservice.dto.post.CreatePostDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.exception.EntityNotFoundException;
-import faang.school.postservice.exception.ServiceUnavailableException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
@@ -16,8 +14,8 @@ import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.criteria.PostSearchCriteria;
 import faang.school.postservice.validation.comment.CommentValidator;
+import faang.school.postservice.validation.spellcheck.PostSpellCheckValidator;
 import faang.school.postservice.validator.PostValidator;
-import feign.FeignException;
 import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotNull;
 import lombok.NonNull;
@@ -40,9 +38,9 @@ public class PostServiceImpl implements PostService {
     private final PostMapper postMapper;
     private final CommentRepository commentRepository;
     private final CommentMapper commentMapper;
-    private final UserServiceClient userServiceClient;
     private final CommentValidator commentValidator;
     private final UserFeignService userFeignService;
+    private final PostSpellCheckValidator postSpellCheckValidator;
 
     @Override
     @Transactional
@@ -200,5 +198,22 @@ public class PostServiceImpl implements PostService {
         List<Comment> comments = commentRepository.findAllByPostIdOrderByCreatedAtDesc(postId);
         log.info("Retrieved {} comments for postId: {}", comments.size(), postId);
         return commentMapper.toCommentDtos(comments);
+    }
+
+    @Override
+    @Transactional
+    public void updatePostContent(Post post, String correctedContent) {
+        if (!postSpellCheckValidator.isContentChanged(post, correctedContent)) {
+            log.info("Skip update: content unchanged for postId={}", post.getId());
+            return;
+        }
+        post.setContent(correctedContent);
+        postRepository.save(post);
+        log.info("Post ID {} updated with corrected content", post.getId());
+    }
+
+    @Override
+    public List<Post> getUnpublishedPosts() {
+        return postRepository.findAllByPublishedFalse();
     }
 }
