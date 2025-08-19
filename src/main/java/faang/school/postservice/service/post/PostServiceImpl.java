@@ -195,5 +195,6 @@ public class PostServiceImpl implements PostService {
                 log.error("ошибка публикации события {}", e.getMessage(), e);
             }
         });
+        executorService.shutdown();
     }
 }
