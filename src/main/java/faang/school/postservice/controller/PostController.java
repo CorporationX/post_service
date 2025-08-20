@@ -94,43 +94,169 @@ public class PostController {
                                     })
                             })
             })
-    public ResponseEntity<PostDto> markPostAsDeleted(@PathVariable @NotNull(message = "PostId не может быть равен null") Long postId) {
+    public ResponseEntity<PostDto> markPostAsDeleted(@PathVariable @NotNull(message = "PostId не может быть равен null")
+                                                         Long postId) {
         PostDto postDto = postService.markPostAsDeleted(postId);
         return ResponseEntity.ok(postDto);
     }
 
     @PutMapping("/update/{postId}")
+    @Operation(method = "PUT", parameters = {
+            @Parameter(name = "postId", required = true, description = "id поста")
+    },
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Пост,"
+                    + " обновляемый пользователем", required = true),
+            responses = {
+                    @ApiResponse(responseCode = "201", description = "Пост успешно обновлен пользователем"),
+                    @ApiResponse(responseCode = "500", description = "Внутренняя ошибка"),
+                    @ApiResponse(responseCode = "403", description = "Отказано в доступе",
+                            content = {
+                                    @Content(examples = {
+                                            @ExampleObject(name = "ErrorResponse", value = "{\n  \"status\": 403\n  "
+                                                    + "\"message\":\"Текущему пользователю операция недоступна\"\n  "
+                                                    + "\"exceptionMessage\": \"Текст ошибки\"\n  "
+                                                    + "\"timestamp\": 1752087981\n}", description = "Объект ошибки")
+                                    })
+                            }),
+                    @ApiResponse(responseCode = "404", description = "Не удалось найти сущность в базе",
+                            content = {
+                                    @Content(examples = {
+                                            @ExampleObject(name = "ErrorResponse", value = "{\n  \"status\": 404\n  "
+                                                    + "\"message\":\"Не удалось найти сущность в базе\"\n  "
+                                                    + "\"exceptionMessage\": \"Текст ошибки\"\n  "
+                                                    + "\"timestamp\": 1752087981\n}", description = "Объект ошибки")
+                                    })
+                            })
+            })
     public ResponseEntity<PostDto> update(@RequestBody @Validated PostDto postDto, @PathVariable @NotNull(message = "PostId не может быть равен null") Long postId) {
         PostDto result = postService.updatePost(postDto, postId);
         return ResponseEntity.ok(result);
     }
 
     @GetMapping("/{postId}")
-    public ResponseEntity<PostDto> getPost(@PathVariable @NotNull(message = "PostId не может быть равен null") Long postId) {
+    @Operation(method = "GET", parameters = {
+            @Parameter(name = "postId", required = true, description = "id поста")
+    },
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Пост,"
+                    + " запрашиваемый пользователем", required = true),
+            responses = {
+                    @ApiResponse(responseCode = "201", description = "Пост найден"),
+                    @ApiResponse(responseCode = "500", description = "Внутренняя ошибка"),
+                    @ApiResponse(responseCode = "404", description = "Не удалось найти сущность в базе",
+                            content = {
+                                    @Content(examples = {
+                                            @ExampleObject(name = "ErrorResponse", value = "{\n  \"status\": 404\n  "
+                                                    + "\"message\":\"Не удалось найти сущность в базе\"\n  "
+                                                    + "\"exceptionMessage\": \"Текст ошибки\"\n  "
+                                                    + "\"timestamp\": 1752087981\n}", description = "Объект ошибки")
+                                    })
+                            })
+            })
+    public ResponseEntity<PostDto> getPost(@PathVariable @NotNull(message = "PostId не может быть равен null")
+                                               Long postId) {
         PostDto post = postService.findById(postId);
         return ResponseEntity.ok(post);
     }
 
     @GetMapping("/byAuthor/{userId}")
-    public ResponseEntity<List<PostDto>> getPostsByAuthor(@PathVariable @NotNull(message = "UserId не может быть равен null") Long userId) {
+    @Operation(method = "GET", parameters = {
+            @Parameter(name = "userId", required = true, description = "id автора")
+    },
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Посты,"
+                    + " запрашиваемые пользователем", required = true),
+            responses = {
+                    @ApiResponse(responseCode = "201", description = "Посты найдены"),
+                    @ApiResponse(responseCode = "500", description = "Внутренняя ошибка"),
+                    @ApiResponse(responseCode = "404", description = "Не удалось найти сущность в базе",
+                            content = {
+                                    @Content(examples = {
+                                            @ExampleObject(name = "ErrorResponse", value = "{\n  \"status\": 404\n  "
+                                                    + "\"message\":\"Не удалось найти сущность в базе\"\n  "
+                                                    + "\"exceptionMessage\": \"Текст ошибки\"\n  "
+                                                    + "\"timestamp\": 1752087981\n}", description = "Объект ошибки")
+                                    })
+                            })
+            })
+    public ResponseEntity<List<PostDto>> getPostsByAuthor(@PathVariable @NotNull(
+            message = "UserId не может быть равен null") Long userId) {
         List<PostDto> allPostsByAuthorId = postService.getAllPostsByAuthorId(userId);
         return ResponseEntity.ok(allPostsByAuthorId);
     }
 
     @GetMapping("/byProject/{projectId}")
-    public ResponseEntity<List<PostDto>> getPostsByProject(@PathVariable @NotNull(message = "ProjectId не может быть равен null") Long projectId) {
+    @Operation(method = "GET", parameters = {
+            @Parameter(name = "projectId", required = true, description = "id проекта")
+    },
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Посты,"
+                    + " запрашиваемые пользователем", required = true),
+            responses = {
+                    @ApiResponse(responseCode = "201", description = "Посты найдены"),
+                    @ApiResponse(responseCode = "500", description = "Внутренняя ошибка"),
+                    @ApiResponse(responseCode = "404", description = "Не удалось найти сущность в базе",
+                            content = {
+                                    @Content(examples = {
+                                            @ExampleObject(name = "ErrorResponse", value = "{\n  \"status\": 404\n  "
+                                                    + "\"message\":\"Не удалось найти сущность в базе\"\n  "
+                                                    + "\"exceptionMessage\": \"Текст ошибки\"\n  "
+                                                    + "\"timestamp\": 1752087981\n}", description = "Объект ошибки")
+                                    })
+                            })
+            })
+    public ResponseEntity<List<PostDto>> getPostsByProject(@PathVariable @NotNull(
+            message = "ProjectId не может быть равен null"
+    ) Long projectId) {
         List<PostDto> allPostsByProjectId = postService.getAllPostsByProjectId(projectId);
         return ResponseEntity.ok(allPostsByProjectId);
     }
 
     @GetMapping("/publishedPostsByAuthor/{userId}")
-    public ResponseEntity<List<PostDto>> getPublishedPostsByAuthor(@PathVariable @NotNull(message = "UserId не может быть равен null") Long userId) {
+    @Operation(method = "GET", parameters = {
+            @Parameter(name = "userId", required = true, description = "id автора")
+    },
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Опубликованные посты,"
+                    + " запрашиваемые пользователем", required = true),
+            responses = {
+                    @ApiResponse(responseCode = "201", description = "Посты найдены"),
+                    @ApiResponse(responseCode = "500", description = "Внутренняя ошибка"),
+                    @ApiResponse(responseCode = "404", description = "Не удалось найти сущность в базе",
+                            content = {
+                                    @Content(examples = {
+                                            @ExampleObject(name = "ErrorResponse", value = "{\n  \"status\": 404\n  "
+                                                    + "\"message\":\"Не удалось найти сущность в базе\"\n  "
+                                                    + "\"exceptionMessage\": \"Текст ошибки\"\n  "
+                                                    + "\"timestamp\": 1752087981\n}", description = "Объект ошибки")
+                                    })
+                            })
+            })
+    public ResponseEntity<List<PostDto>> getPublishedPostsByAuthor(@PathVariable @NotNull(
+            message = "UserId не может быть равен null"
+    ) Long userId) {
         List<PostDto> allPublishedPostsByAuthorId = postService.getAllPublishedPostsByAuthorId(userId);
         return ResponseEntity.ok(allPublishedPostsByAuthorId);
     }
 
     @GetMapping("/publishedPostsByProject/{projectId}")
-    public ResponseEntity<List<PostDto>> getPublishedPostsByProject(@PathVariable @NotNull(message = "ProjectId не может быть равен null") Long projectId) {
+    @Operation(method = "GET", parameters = {
+            @Parameter(name = "projectId", required = true, description = "id проекта")
+    },
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Опубликованные посты,"
+                    + " запрашиваемые пользователем", required = true),
+            responses = {
+                    @ApiResponse(responseCode = "201", description = "Посты найдены"),
+                    @ApiResponse(responseCode = "500", description = "Внутренняя ошибка"),
+                    @ApiResponse(responseCode = "404", description = "Не удалось найти сущность в базе",
+                            content = {
+                                    @Content(examples = {
+                                            @ExampleObject(name = "ErrorResponse", value = "{\n  \"status\": 404\n  "
+                                                    + "\"message\":\"Не удалось найти сущность в базе\"\n  "
+                                                    + "\"exceptionMessage\": \"Текст ошибки\"\n  "
+                                                    + "\"timestamp\": 1752087981\n}", description = "Объект ошибки")
+                                    })
+                            })
+            })
+    public ResponseEntity<List<PostDto>> getPublishedPostsByProject(@PathVariable @NotNull(
+            message = "ProjectId не может быть равен null"
+    ) Long projectId) {
         List<PostDto> allPublishedPostsByProjectId = postService.getAllPublishedPostsByProjectId(projectId);
         return ResponseEntity.ok(allPublishedPostsByProjectId);
     }
