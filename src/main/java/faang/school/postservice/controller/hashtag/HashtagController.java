@@ -30,7 +30,7 @@ import java.util.List;
 public class HashtagController {
     private final HashtagService service;
 
-    @GetMapping("/top")
+    @GetMapping
     public List<HashtagViewDto> getTop(@RequestParam(defaultValue = "0") Long offset,
                                        @RequestParam(defaultValue = "10") Long limit) {
         return service.getPopularHashtags(offset, limit);

@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
 
 import static faang.school.postservice.service.post.PostServiceTestData.buildCreateDto;
 import static faang.school.postservice.service.post.PostServiceTestData.buildPostEntity;
@@ -54,6 +55,8 @@ class PostServiceImplTest {
     private EventProducer<PostViewDto> postCreateProducer;
     @Mock
     private EventProducer<PostUpdatedEvent> postUpdatedEventProducer;
+    @Mock
+    private ExecutorService executor;
     @InjectMocks
     private PostServiceImpl service;
 

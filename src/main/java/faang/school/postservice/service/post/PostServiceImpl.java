@@ -16,16 +16,20 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.filter.FilterService;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * Реализация сервиса для управления публикациями (постами).
@@ -44,6 +48,7 @@ import java.util.concurrent.Executors;
  */
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class PostServiceImpl implements PostService {
     private static final String USER_HAS_NO_ACCESS_TO_CREATE_POST =
             "Недостаточно прав для создания поста от имени пользователя с id ";
@@ -56,32 +61,14 @@ public class PostServiceImpl implements PostService {
     private final UserContext userContext;
     private final PostMapper postMapper;
     private final FilterService<Post, PostFilterDto> filterService;
+    @Qualifier("postCreateEventProducer")
     private final EventProducer<PostViewDto> postCreateProducer;
     private final EventProducer<PostUpdatedEvent> postUpdatedEventProducer;
+    @Qualifier("postDeleteEventProducer")
     private final EventProducer<PostViewDto> postDeleteProducer;
-
-    public PostServiceImpl(PostRepository postRepository,
-                           UserServiceClient userClient,
-                           ProjectServiceClient projectClient,
-                           UserContext userContext,
-                           PostMapper postMapper,
-                           FilterService<Post, PostFilterDto> filterService,
-                           @Qualifier(value = "postCreateEventProducer") EventProducer<PostViewDto> postCreateProducer,
-                           EventProducer<PostUpdatedEvent> postUpdatedEventProducer,
-                           @Qualifier("postDeleteEventProducer") EventProducer<PostViewDto> postDeleteProducer) {
-        this.postRepository = postRepository;
-        this.userClient = userClient;
-        this.projectClient = projectClient;
-        this.userContext = userContext;
-        this.postMapper = postMapper;
-        this.filterService = filterService;
-        this.postCreateProducer = postCreateProducer;
-        this.postUpdatedEventProducer = postUpdatedEventProducer;
-        this.postDeleteProducer = postDeleteProducer;
-    }
+    private final ExecutorService executor;
 
     @Override
-    @Transactional
     public PostViewDto create(PostCreateDto createDto) {
         var currentUserId = userContext.getUserId();
         createDto.validate();
@@ -100,7 +87,7 @@ public class PostServiceImpl implements PostService {
         var post = postMapper.toEntity(createDto);
         post = postRepository.save(post);
         var view = postMapper.toViewDto(post);
-        sendEvent(postCreateProducer, view);
+        sendEventInNewTransaction(postCreateProducer, view);
         return view;
     }
 
@@ -116,9 +103,13 @@ public class PostServiceImpl implements PostService {
         if (post.isPublished()) {
             throw new ForbiddenException("Пост уже опубликован");
         }
+        var oldView = postMapper.toViewDto(post);
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
         postRepository.save(post);
+        var newView = postMapper.toViewDto(post);
+        var event = new PostUpdatedEvent(oldView, newView);
+        sendEventInNewTransaction(postUpdatedEventProducer, event);
     }
 
     @Override
@@ -134,7 +125,7 @@ public class PostServiceImpl implements PostService {
         post = postRepository.save(post);
         var newPostDto = postMapper.toViewDto(post);
         var postUpdatedEvent = new PostUpdatedEvent(oldPostDto, newPostDto);
-        sendEvent(postUpdatedEventProducer, postUpdatedEvent);
+        sendEventInNewTransaction(postUpdatedEventProducer, postUpdatedEvent);
         return newPostDto;
     }
 
@@ -148,9 +139,9 @@ public class PostServiceImpl implements PostService {
             throw new ForbiddenException("Пост уже удален");
         }
         var view = postMapper.toViewDto(post);
-        sendEvent(postDeleteProducer, view);
         post.setDeleted(true);
         postRepository.save(post);
+        sendEventInNewTransaction(postDeleteProducer, view);
     }
 
     @Override
@@ -187,14 +178,24 @@ public class PostServiceImpl implements PostService {
     }
 
     private <E> void sendEvent(EventProducer<E> producer, E event) {
-        ExecutorService executorService = Executors.newSingleThreadExecutor();
-        executorService.execute(() -> {
-            try {
-                producer.send(event);
-            } catch (Exception e) {
-                log.error("ошибка публикации события {}", e.getMessage(), e);
+        CompletableFuture.runAsync(() -> producer.send(event), executor)
+                .exceptionally(ex -> {
+                    log.error("Ошибка публикации события {}", ex.getMessage(), ex);
+                    return null;
+                });
+    }
+
+    private <E> void sendEventInNewTransaction(EventProducer<E> producer, E event) {
+        if (!TransactionSynchronizationManager.isSynchronizationActive()) {
+            sendEvent(producer, event);
+            return;
+        }
+        var synchronizer = new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                sendEvent(producer, event);
             }
-        });
-        executorService.shutdown();
+        };
+        TransactionSynchronizationManager.registerSynchronization(synchronizer);
     }
 }

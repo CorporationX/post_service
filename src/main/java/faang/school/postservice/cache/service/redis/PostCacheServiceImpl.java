@@ -96,12 +96,12 @@ public class PostCacheServiceImpl implements PostCacheService {
      */
     @Override
     public List<String> getPopularHashtags(long offset, long limit) {
+        var end = offset + limit - 1;
         Set<ZSetOperations.TypedTuple<String>> hashtags = stringRedisTemplate.opsForZSet()
-                .reverseRangeWithScores(HASHTAG_COUNT_KEY, offset, offset + limit);
+                .reverseRangeWithScores(HASHTAG_COUNT_KEY, offset, end);
         if (hashtags == null) {
             return Collections.emptyList();
         }
-
         return hashtags.stream()
                 .map(ZSetOperations.TypedTuple::getValue)
                 .toList();
