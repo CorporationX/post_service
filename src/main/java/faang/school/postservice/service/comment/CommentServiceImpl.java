@@ -2,23 +2,24 @@ package faang.school.postservice.service.comment;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.config.redis.RedisCommentEventPublisher;
-import faang.school.postservice.config.redis.dto.CommentEvent;
 import faang.school.postservice.dto.comment.CommentCreateDto;
 import faang.school.postservice.dto.comment.CommentUpdateDto;
 import faang.school.postservice.dto.comment.CommentViewDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.mapper.CommentMapper;
+import faang.school.postservice.model.Comment;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import feign.FeignException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CommentServiceImpl implements CommentService {
@@ -28,10 +29,10 @@ public class CommentServiceImpl implements CommentService {
     private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
     private final UserContext userContext;
-    private final RedisCommentEventPublisher publisher;
+    private final CommentEventPublisherService eventPublisherService;
 
-    @Override
     @Transactional
+    @Override
     public CommentViewDto create(Long postId, CommentCreateDto commentDto) {
         var authorId = userContext.getUserId();
 
@@ -41,21 +42,16 @@ public class CommentServiceImpl implements CommentService {
             throw new EntityNotFoundException("User with id " + authorId + " not found");
         }
 
-        var post = postRepository.findById(postId)
-                .orElseThrow(() -> new EntityNotFoundException("Post with id " + postId + " not found"));
+        var post = postRepository.getRequiredById(postId);
 
-        var comment = mapper.toEntityWithAuthorAndPost(commentDto, authorId, post);
+        Comment comment = new Comment();
+        comment.setAuthorId(authorId);
+        comment.setPost(post);
+        comment.setContent(commentDto.content());
 
-        var savedComment = commentRepository.save(comment);
+        Comment savedComment = commentRepository.save(comment);
 
-        CommentEvent event = new CommentEvent(
-                savedComment.getId(),
-                post.getAuthorId(),
-                authorId,
-                postId,
-                savedComment.getContent()
-        );
-        publisher.publish(event);
+        eventPublisherService.publishAsync(savedComment, post);
 
         return mapper.toViewDto(savedComment);
     }

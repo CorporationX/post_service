@@ -1,22 +1,10 @@
 package faang.school.postservice.config.redis;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.config.redis.dto.CommentEvent;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.stereotype.Component;
-
-/**
- * RedisCommentEventPublisher — описание класса.
- * <p>
- * TODO: добавить описание назначения и поведения класса.
- * </p>
- *
- * @author agent
- * @since 13.08.2025
- */
 
 @Component
 @Slf4j
@@ -35,7 +23,6 @@ public class RedisCommentEventPublisher {
 
     public void publish(CommentEvent event) {
         log.info("📢 Публикация CommentEvent в топик '{}': {}", commentTopic.getTopic(), event);
-        // Отправляем объект напрямую
         redisTemplate.convertAndSend(commentTopic.getTopic(), event);
     }
 }
