@@ -2,6 +2,7 @@ package faang.school.postservice.repository;
 
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.model.Post;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
@@ -26,5 +27,13 @@ public interface PostRepository extends CrudRepository<Post, Long> {
         return findById(id).orElseThrow(() ->
                 new EntityNotFoundException("Post with id " + id + " not found"));
     }
+
+    @Modifying
+    @Query("UPDATE Post p SET p.likeCount = p.likeCount + 1 WHERE p.id = :postId")
+    void incrementLikeCount(long postId);
+
+    @Modifying
+    @Query("UPDATE Post p SET p.likeCount = p.likeCount - 1 WHERE p.id = :postId")
+    void decrementLikeCount(long postId);
 
 }
