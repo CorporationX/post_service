@@ -65,6 +65,6 @@ public class PostServiceTestData {
         LocalDateTime scheduledAt = entity.getScheduledAt();
         LocalDateTime createdAt = entity.getCreatedAt();
         LocalDateTime updatedAt = entity.getUpdatedAt();
-        return new PostViewDto(id, content, authorId, projectId, published, deleted, publishedAt, scheduledAt, createdAt, updatedAt);
+        return new PostViewDto(id, content, authorId, projectId, published, deleted, publishedAt, scheduledAt, createdAt, updatedAt, null);
     }
 }

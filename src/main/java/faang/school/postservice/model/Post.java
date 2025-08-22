@@ -87,6 +87,9 @@ public class Post {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Column(name = "like_count", nullable = false)
+    private long likeCount = 0L;
+
     @ManyToMany
     @JoinTable(
             name = "post_hashtags",

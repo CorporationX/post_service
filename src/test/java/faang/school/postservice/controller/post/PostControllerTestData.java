@@ -38,7 +38,8 @@ public class PostControllerTestData {
                 post.getPublishedAt(),
                 post.getScheduledAt(),
                 post.getCreatedAt(),
-                post.getUpdatedAt()
+                post.getUpdatedAt(),
+                null
         );
     }
 }
