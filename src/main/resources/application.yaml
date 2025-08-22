@@ -25,6 +25,14 @@ spring:
         calculations_channel:
           name: calculations_channel
 
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      enable-idempotence: true
+      acks: all
+    topic:
+      commentNew: comment.new
+
 server:
   port: 8081
 
