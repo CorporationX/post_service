@@ -2,7 +2,7 @@ package faang.school.postservice.dto.comment;
 
 import java.time.LocalDateTime;
 
-public record CommentViewDto (
+public record CommentViewDto(
         Long id,
         String content,
         Long authorId,
@@ -10,6 +10,7 @@ public record CommentViewDto (
         String largeImageFileKey,
         String smallImageFileKey,
         LocalDateTime createdAt,
-        LocalDateTime updatedAt
+        LocalDateTime updatedAt,
+        Long likeCount
 ) {
 }

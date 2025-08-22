@@ -61,4 +61,7 @@ public class Comment {
 
     @Column(name = "small_image_file_key")
     private String smallImageFileKey;
+
+    @Column(name = "like_count", nullable = false)
+    private long likeCount = 0L;
 }
