@@ -9,9 +9,11 @@ import org.springframework.data.repository.CrudRepository;
 import java.util.List;
 
 public interface PostRepository extends CrudRepository<Post, Long> {
+
     default Post findByIdOrThrow(long postId) {
         return findById(postId)
-                .orElseThrow(() -> new EntityNotFoundException(String.format("User %d not found", postId)));
+                .orElseThrow(() -> new EntityNotFoundException(
+                        String.format("User %d not found", postId)));
     }
 
     List<Post> findByAuthorId(long authorId);
@@ -28,8 +30,8 @@ public interface PostRepository extends CrudRepository<Post, Long> {
     List<Post> findReadyToPublish();
 
     default Post getRequiredById(long id) {
-        return findById(id).orElseThrow(() ->
-                new EntityNotFoundException("Post with id " + id + " not found"));
+        return findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Post with id " + id + " not found"));
     }
 
     @Modifying
@@ -39,10 +41,4 @@ public interface PostRepository extends CrudRepository<Post, Long> {
     @Modifying
     @Query("UPDATE Post p SET p.likeCount = p.likeCount - 1 WHERE p.id = :postId")
     void decrementLikeCount(long postId);
-
-    default Post getRequiredById(long id) {
-        return findById(id)
-                .orElseThrow(() -> new RuntimeException("Could not find post with id " + id));
-    }
-
 }
