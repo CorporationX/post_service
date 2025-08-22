@@ -84,9 +84,9 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional
     public void delete(Long commentId) {
-        var comment = commentRepository.getRequiredById(commentId);
-
         var currentUserId = userContext.getUserId();
+
+        var comment = commentRepository.getRequiredById(commentId);
 
         if (!comment.getAuthorId().equals(currentUserId)) {
             throw new ForbiddenException("You are not the author of this comment");
