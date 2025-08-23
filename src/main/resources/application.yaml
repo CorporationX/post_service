@@ -21,10 +21,20 @@ spring:
     bootstrap-servers: localhost:9092
     group-id: post_service
 
+    topics:
+      post-comment-published:
+        name: posts.comments.published
+
+
   data:
     redis:
       port: 6379
       host: localhost
+      cache:
+        comments:
+          max: 3
+          ttl: 86400
+
       channels:
         calculations_channel:
           name: calculations_channel

@@ -8,7 +8,7 @@ public record ValidationErrorDetail(
         @Schema(description = "Name of the field that failed validation")
         String field,
 
-        @Schema(description = "Validation error message")
+        @Schema(description = "Validation error comment")
         String message,
 
         @Schema(description = "The invalid value that was provided")
