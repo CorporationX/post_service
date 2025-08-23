@@ -334,7 +334,7 @@ public class NewsFeedCache implements RedisCache {
     }
 
     @Override
-    public void putComment(CommentFeedDto dto) {
+    public boolean putComment(CommentFeedDto dto) {
         String key = POST_COMMENTS_KEY_PREFIX + dto.postId();
         long score = dto.createdAt().toEpochSecond(ZoneOffset.UTC);
 
@@ -343,17 +343,17 @@ public class NewsFeedCache implements RedisCache {
             serializedComment = objectMapper.writeValueAsString(dto);
         } catch (JsonProcessingException e) {
             log.error("Failed to serialize CommentDto: {}", dto, e);
-            return;
+            return false;
         }
         List<Object> scriptArgs = new ArrayList<>();
         scriptArgs.add(newsFeedConfiguration.getCommentsLimit());
         scriptArgs.add(score);
         scriptArgs.add(serializedComment);
 
-        redisNewsFeedTemplate.execute(
+        return redisNewsFeedTemplate.execute(
                 addCommentAndTrimScript,
                 Collections.singletonList(key),
                 scriptArgs.toArray()
-        );
+        ) > 0;
     }
 }

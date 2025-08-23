@@ -22,6 +22,7 @@ spring:
       post-viewed-event: post_viewed_event
       feed-heat-event: feed_heat_event
       subscribers-feed-heat-event: subscribers_feed_heat_event
+    group-id: news_feed_group
     variables:
       partitions: 4
       replicas: 1

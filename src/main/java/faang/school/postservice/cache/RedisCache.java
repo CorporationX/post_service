@@ -17,7 +17,7 @@ public interface RedisCache {
 
     void putPostsBatch(List<RedisPostDto> posts);
 
-    void putComment(CommentFeedDto dto);
+    boolean putComment(CommentFeedDto dto);
 
     boolean updatePost(long postId, String event);
 

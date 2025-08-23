@@ -92,7 +92,6 @@ public class FeedServiceImpl implements FeedService {
     public void newPostCreated(KafkaPostEventDto eventDto) {
         RedisPostDto redisPostDto = kafkaPostEventToRedisPostMapper.postEventToRedisPostDto(eventDto);
         cache.putPostsBatch(List.of(redisPostDto));
-//        cache.putPost(redisPostDto);
         putUserIntoCache(redisPostDto.getAuthorId());
 
         processFollowersInBatches(eventDto.authorId(), followerIds ->
@@ -116,13 +115,13 @@ public class FeedServiceImpl implements FeedService {
     }
 
     @Override
-    public void putCommentInCache(KafkaCommentEventDto dto) {
-        cache.putComment(kafkaCommentEventMapper.toCommentFeedDto(dto));
+    public boolean putCommentInCache(KafkaCommentEventDto dto) {
+        return cache.putComment(kafkaCommentEventMapper.toCommentFeedDto(dto));
     }
 
     @Override
-    public void updatePost(long postId, String event) {
-        cache.updatePost(postId, event);
+    public boolean updatePost(long postId, String event) {
+        return cache.updatePost(postId, event);
     }
 
     @Override

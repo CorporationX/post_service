@@ -19,9 +19,9 @@ public interface FeedService {
 
     void putUserIntoCache(long userId);
 
-    void putCommentInCache(KafkaCommentEventDto commentEventDto);
+    boolean putCommentInCache(KafkaCommentEventDto commentEventDto);
 
-    void updatePost(long postId, String event);
+    boolean updatePost(long postId, String event);
 
     FeedDto getFeed(Long postId);
 }

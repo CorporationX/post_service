@@ -16,7 +16,7 @@ public class KafkaPostEventConsumer {
     @Value("${spring.kafka.topics.post-event}")
     public final String topic;
 
-    @KafkaListener(topics = "#{__listener.topic}", groupId = "my-group")
+    @KafkaListener(topics = "#{__listener.topic}", groupId = "${spring.kafka.group-id}")
     public void listen(KafkaPostEventDto dto) {
         System.out.println("Received message: " + dto);
         feedService.newPostCreated(dto);

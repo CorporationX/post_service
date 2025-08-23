@@ -18,7 +18,7 @@ public class KafkaFeedHeatEventConsumer {
     @Value("${spring.kafka.topics.feed-heat-event}")
     public final String topic;
 
-    @KafkaListener(topics = "#{__listener.topic}", groupId = "my-group")
+    @KafkaListener(topics = "#{__listener.topic}", groupId = "${spring.kafka.group-id}")
     public void listen(KafkaFeedHeatDto dto, Acknowledgment acknowledgment) {
         log.info("Received message for topic {}: {}", topic, dto);
         try {

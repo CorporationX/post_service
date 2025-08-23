@@ -15,7 +15,7 @@ public class KafkaLikeEventConsumer {
     @Value("${spring.kafka.topics.like-event}")
     public final String topic;
 
-    @KafkaListener(topics = "#{__listener.topic}", groupId = "my-group")
+    @KafkaListener(topics = "#{__listener.topic}", groupId = "${spring.kafka.group-id}")
     public void listen(KafkaLikeEventDto dto) {
         feedService.updatePost(dto.postId(), topic);
     }

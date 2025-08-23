@@ -15,7 +15,7 @@ public class KafkaPostViewedEventConsumer {
     @Value("${spring.kafka.topics.post-viewed-event}")
     public final String topic;
 
-    @KafkaListener(topics = "#{__listener.topic}", groupId = "my-group")
+    @KafkaListener(topics = "#{__listener.topic}", groupId = "${spring.kafka.group-id}")
     public void listen(KafkaPostViewedEventDto dto) {
         System.out.println("Received message: " + dto);
         feedService.updatePost(dto.postId(), topic);
