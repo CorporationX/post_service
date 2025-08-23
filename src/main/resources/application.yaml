@@ -1,4 +1,32 @@
 spring:
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      group-id: my-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+    listener:
+      batch-listener: true
+      ack-mode: MANUAL_IMMEDIATE
+      concurrency: 2
+    topics:
+      like-event: like_event
+      comment-event: comment_event
+      post-event: post_event
+      post-viewed-event: post_viewed_event
+      feed-heat-event: feed_heat_event
+      subscribers-feed-heat-event: subscribers_feed_heat_event
+    group-id: news_feed_group
+    variables:
+      partitions: 4
+      replicas: 1
+
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://localhost:5432/postgres
@@ -9,7 +37,7 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: none
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         format_sql: true
@@ -18,7 +46,7 @@ spring:
     change-log: classpath:db/changelog/db.changelog-master.yaml
 
   data:
-    redis:
+    redis-master:
       port: 6379
       host: localhost
       channels:
@@ -27,6 +55,13 @@ spring:
           like_event_name: like_event
           comment_topic: comment_topic
           post_view_name: post_view
+    redis-news-feed:
+      port: 6380
+      host: localhost
+      feed-size: 500
+      user-ttl: 1
+      post-ttl: 1
+      comments-limit: 3
 
   task:
     execution:
@@ -85,6 +120,11 @@ thread:
     coreSize: 5
     maxSize: 10
     prefix: "post-publisher-"
+  redis:
+    pool:
+      coreSize: 5
+      maxSize: 10
+      prefix: "news-feed-cache-"
 
 entity:
     post:
@@ -100,3 +140,9 @@ retry:
     backoff:
       delay: 2000
       multiplier: 1.5
+
+news-feed:
+  heater:
+    batch-size: 1000
+  api-version: "/api/v1"
+  api-endpoint: "/feed"

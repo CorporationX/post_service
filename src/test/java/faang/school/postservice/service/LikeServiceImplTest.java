@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeEvent;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.kafka.producer.KafkaLikeEventProducer;
 import faang.school.postservice.mapper.LikeEventMapper;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
@@ -39,6 +40,8 @@ public class LikeServiceImplTest {
     private LikeEventPublisher likeEventPublisher;
     @Mock
     private LikeEventMapper likeEventMapper;
+    @Mock
+    private KafkaLikeEventProducer kafkaLikeEventProducer;
     @Mock
     private ObjectMapper objectMapper;
     @InjectMocks

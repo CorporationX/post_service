@@ -26,7 +26,8 @@ dependencies {
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     implementation("org.springframework.retry:spring-retry:2.0.2")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2")
-    implementation("org.springframework.retry:spring-retry:2.0.2")
+    implementation("org.springframework.kafka:spring-kafka")
+    implementation("io.github.resilience4j:resilience4j-spring-boot2:2.1.0")
 
     /**
      * Database
@@ -39,12 +40,14 @@ dependencies {
      * Utils & Logging
      */
     implementation("com.fasterxml.jackson.core:jackson-databind:2.14.2")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.2")
     implementation("org.slf4j:slf4j-api:2.0.5")
     implementation("ch.qos.logback:logback-classic:1.4.6")
     implementation("org.projectlombok:lombok:1.18.26")
     annotationProcessor("org.projectlombok:lombok:1.18.26")
     implementation("org.mapstruct:mapstruct:1.5.3.Final")
     annotationProcessor("org.mapstruct:mapstruct-processor:1.5.3.Final")
+    implementation("io.vavr:vavr:0.10.4")
 
     /**
      * Test containers

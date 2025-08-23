@@ -3,6 +3,7 @@ package faang.school.postservice.service.post;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.kafka.KafkaPostViewedEventDto;
 import faang.school.postservice.dto.post.PostCreateDto;
 import faang.school.postservice.dto.post.PostOutputDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
@@ -11,7 +12,10 @@ import faang.school.postservice.dto.post.UserPostsDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.PostAlreadyPublishedException;
+import faang.school.postservice.kafka.producer.KafkaPostEventProducer;
+import faang.school.postservice.kafka.producer.KafkaPostViewedEventProducer;
 import faang.school.postservice.mapper.PostMapper;
+import faang.school.postservice.mapper.PostToKafkaEventMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.MessagePublisher;
 import faang.school.postservice.repository.PostRepository;
@@ -40,6 +44,9 @@ public class PostServiceImpl implements PostService {
     @Qualifier(value = "postViewEventPublisher")
     private final MessagePublisher<PostViewEvent> postViewPublisher;
     private final UserContext userContext;
+    private final KafkaPostEventProducer kafkaPostEventProducer;
+    private final KafkaPostViewedEventProducer kafkaPostViewedEventProducer;
+    private final PostToKafkaEventMapper postToKafkaEventMapper;
 
     @Value("${entity.post.max-unverified-count-for-ban}")
     private long maxUnverifiedPostsForBan;
@@ -48,6 +55,9 @@ public class PostServiceImpl implements PostService {
     public PostOutputDto getPostById(long postId) {
         Post foundPost = findPostById(postId);
         postViewPublisher.publish(createViewEvent(foundPost));
+        // Пост считается просмотренным только если пользователь нажал на него?
+        // Это не будет использоваться в фиде, там сущность поста получается из кэша
+        kafkaPostViewedEventProducer.sendMessage(new KafkaPostViewedEventDto(postId));
         return postMapper.toPostDto(foundPost);
     }
 
@@ -119,6 +129,9 @@ public class PostServiceImpl implements PostService {
         postToCreate.setDeleted(false);
         postToCreate.setPublished(false);
         Post createdPost = postRepository.save(postToCreate);
+
+        kafkaPostEventProducer.sendMessage(postToKafkaEventMapper.postToKafkaEvent(createdPost));
+
         return postMapper.toPostDto(createdPost);
     }
 

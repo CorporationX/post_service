@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 public class PostViewEventPublisher implements MessagePublisher<PostViewEvent> {
     private final RedisTemplate<String, Object> redisTemplate;
 
-    @Value("${spring.data.redis.channels.post_view_name}")
+    @Value("${spring.data.redis-master.channels.post_view_name}")
     private String topicName;
 
     @Override

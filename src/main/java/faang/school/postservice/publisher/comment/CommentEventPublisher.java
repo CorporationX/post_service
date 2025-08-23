@@ -1,6 +1,6 @@
 package faang.school.postservice.publisher.comment;
 
-import faang.school.postservice.config.redis.RedisProperties;
+import faang.school.postservice.config.redis.master.RedisProperties;
 import faang.school.postservice.dto.event.CommentEvent;
 import faang.school.postservice.mapper.CommentEventMapper;
 import faang.school.postservice.model.Comment;
