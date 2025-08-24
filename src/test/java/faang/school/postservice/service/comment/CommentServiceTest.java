@@ -5,7 +5,7 @@ import faang.school.postservice.entity.comment.Comment;
 import faang.school.postservice.entity.post.Post;
 import faang.school.postservice.exception.comment.CommentNotFoundException;
 import faang.school.postservice.exception.comment.CommentValidationException;
-import faang.school.postservice.facade.comment.CommentKafkaFacade;
+import faang.school.postservice.facade.comment.CommentEventPublisherFacade;
 import faang.school.postservice.repository.comment.CommentRepository;
 import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.validation.comment.CommentValidator;
@@ -40,7 +40,7 @@ public class CommentServiceTest {
     @Mock
     private UserContext userContext;
     @Mock
-    private CommentKafkaFacade commentKafkaFacade;
+    private CommentEventPublisherFacade commentKafkaFacade;
     @InjectMocks
     private CommentService commentService;
 

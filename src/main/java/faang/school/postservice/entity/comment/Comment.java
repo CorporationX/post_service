@@ -16,6 +16,7 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -27,6 +28,7 @@ import java.util.List;
 
 @Getter
 @Setter
+@Builder
 @ToString(exclude = {"post", "likes"})
 @Entity
 @Table(name = "comment")

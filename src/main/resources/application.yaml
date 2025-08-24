@@ -32,12 +32,26 @@ spring:
           name: calculations_channel
 
     kafka:
-      host: localhost
-      port: 29092
-      topic:
-        comment:
-          name: comment_topic
-          partitions: 1
+      bootstrap-servers: localhost:29092
+      producer:
+        key-serializer: org.apache.kafka.common.serialization.StringDeserializer
+        value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+        properties:
+          spring.json.add.type.headers: false
+        acks: 1
+        retries: 5
+        spring.json.add.type.headers: false
+      consumer:
+        group-id: news-feed
+        key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+        value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+        auto-offset-reset: earliest
+        enable-auto-commit: false
+      topics:
+        comment-created-topic:
+          name: comment-created-notification
+        comments:
+          name: comments
 
 file:
   max-size: 10485760
@@ -80,3 +94,23 @@ jobs:
   spellcheck:
     cron: "0 * * * * *"
     # каждую минуту
+
+app:
+  executor:
+    thread_pool_core_size: 25
+    thread_pool_max_size: 100
+    send-kafka-message:
+      core-pool-size: 2
+      max-pool-size: 4
+      queue-capacity: 100
+      prefix: send-kafka-message-
+
+  cache:
+    user:
+      key-prefix: user
+      ttl: 86400
+    post:
+      key-prefix: post
+      ttl: 86400
+    comment:
+      key-prefix: comment

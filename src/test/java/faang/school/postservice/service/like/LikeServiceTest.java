@@ -2,7 +2,7 @@ package faang.school.postservice.service.like;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.dto.user.UserClientResponseDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.authorization.UserUnauthorizedException;
 import faang.school.postservice.exception.client.RemoteNotFoundException;
 import faang.school.postservice.exception.comment.CommentNotFoundException;
@@ -66,7 +66,7 @@ class LikeServiceTest {
     private Like like;
     private Post post;
     private Comment comment;
-    private UserClientResponseDto userDto;
+    private UserDto userDto;
 
     @BeforeEach
     public void setUp() {
@@ -76,7 +76,7 @@ class LikeServiceTest {
         post.setId(POST_ID);
         comment = new Comment();
         comment.setId(COMMENT_ID);
-        userDto = new UserClientResponseDto(USER_ID, "user", "user@gmail.com");
+        userDto = new UserDto(USER_ID, "user", "user@gmail.com");
     }
 
     @Test
