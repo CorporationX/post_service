@@ -1,7 +1,7 @@
 package faang.school.postservice.service.s3;
 
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.dto.user.UserClientResponseDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.entity.comment.Comment;
 import faang.school.postservice.entity.post.Post;
 import faang.school.postservice.repository.comment.CommentRepository;
@@ -99,7 +99,7 @@ public class S3ServiceIT extends TestContainersConfig {
     void shouldUploadAndDownloadImage() throws Exception {
         Long commentId = comment.getId();
 
-        UserClientResponseDto user = new UserClientResponseDto(USER_ID, "name", "email");
+        UserDto user = new UserDto(USER_ID, "name", "email");
         when(userServiceClient.getUserById(USER_ID)).thenReturn(user);
 
         mockMvc.perform(multipart(String.format("/api/v1/comments/%d/images", commentId))

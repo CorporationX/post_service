@@ -3,7 +3,7 @@ package faang.school.postservice.validation.post;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.project.ProjectClientResponseDto;
-import faang.school.postservice.dto.user.UserClientResponseDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.client.RemoteNotFoundException;
 import faang.school.postservice.exception.post.PostAlreadyPublishedException;
 import faang.school.postservice.entity.post.Post;
@@ -43,7 +43,7 @@ public class PostValidatorTest {
     @Test
     public void testCheckPostForCurrentUser_AuthorFound() {
         when(userServiceClient.getCurrentUser()).thenAnswer(invocation -> {
-            UserClientResponseDto userDto = new UserClientResponseDto();
+            UserDto userDto = new UserDto();
             userDto.setId(1L);
             return userDto;
         });

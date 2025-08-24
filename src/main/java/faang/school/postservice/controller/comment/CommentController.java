@@ -1,7 +1,7 @@
 package faang.school.postservice.controller.comment;
 
 import faang.school.postservice.dto.comment.CommentCreateDto;
-import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.comment.CommentDtoResponse;
 import faang.school.postservice.dto.comment.CommentUpdateDto;
 import faang.school.postservice.facade.comment.CommentFacade;
 import jakarta.validation.Valid;
@@ -30,30 +30,30 @@ public class CommentController {
     private final CommentFacade commentFacade;
 
     @PostMapping
-    public ResponseEntity<CommentDto> create(@RequestBody @Valid CommentCreateDto dto) {
-        CommentDto created = commentFacade.create(dto);
+    public ResponseEntity<CommentDtoResponse> create(@RequestBody @Valid CommentCreateDto dto) {
+        CommentDtoResponse created = commentFacade.create(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @PatchMapping
-    public ResponseEntity<CommentDto> update(@RequestBody @Valid CommentUpdateDto dto) {
-        CommentDto updated = commentFacade.update(dto);
+    public ResponseEntity<CommentDtoResponse> update(@RequestBody @Valid CommentUpdateDto dto) {
+        CommentDtoResponse updated = commentFacade.update(dto);
         return ResponseEntity.ok(updated);
     }
 
     @GetMapping("/{commentId}")
-    public ResponseEntity<CommentDto> getCommentById(@PathVariable long commentId) {
+    public ResponseEntity<CommentDtoResponse> getCommentById(@PathVariable long commentId) {
         log.debug("Post controller accepted request get comment with id {}", commentId);
 
-        CommentDto response = commentFacade.getCommentById(commentId);
+        CommentDtoResponse response = commentFacade.getCommentById(commentId);
         log.debug("Comment controller return response get comment {}", response);
 
         return ResponseEntity.ok(response);
     }
 
     @GetMapping
-    public ResponseEntity<List<CommentDto>> getAllByPostId(@RequestParam Long postId) {
-        List<CommentDto> comments = commentFacade.getAllByPostId(postId);
+    public ResponseEntity<List<CommentDtoResponse>> getAllByPostId(@RequestParam Long postId) {
+        List<CommentDtoResponse> comments = commentFacade.getAllByPostId(postId);
         return ResponseEntity.ok(comments);
     }
 

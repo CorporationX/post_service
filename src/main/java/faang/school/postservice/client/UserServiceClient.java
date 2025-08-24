@@ -1,7 +1,7 @@
 package faang.school.postservice.client;
 
 import faang.school.postservice.config.client.feign.FeignClientConfig;
-import faang.school.postservice.dto.user.UserClientResponseDto;
+import faang.school.postservice.dto.user.UserDto;
 import feign.FeignException;
 import feign.RetryableException;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -24,19 +24,19 @@ public interface UserServiceClient {
             backoff = @Backoff(delay = 1000, multiplier = 2)
     )
     @GetMapping("/me")
-    UserClientResponseDto getCurrentUser();
+    UserDto getCurrentUser();
     @Retryable(
             retryFor = { FeignException.class, RetryableException.class },
             maxAttempts = 5,
             backoff = @Backoff(delay = 1000, multiplier = 2)
     )
     @GetMapping("/{userId}")
-    UserClientResponseDto getUserById(@PathVariable long userId);
+    UserDto getUserById(@PathVariable long userId);
     @Retryable(
             retryFor = { FeignException.class, RetryableException.class },
             maxAttempts = 5,
             backoff = @Backoff(delay = 1000, multiplier = 2)
     )
     @GetMapping()
-    List<UserClientResponseDto> getUsersByIds(@RequestParam List<Long> userIds);
+    List<UserDto> getUsersByIds(@RequestParam List<Long> userIds);
 }

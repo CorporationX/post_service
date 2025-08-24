@@ -1,7 +1,7 @@
 package faang.school.postservice.mapper.comment;
 
 import faang.school.postservice.dto.comment.CommentCreateDto;
-import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.comment.CommentDtoResponse;
 import faang.school.postservice.dto.comment.CommentUpdateDto;
 import faang.school.postservice.entity.comment.Comment;
 import org.mapstruct.BeanMapping;
@@ -23,12 +23,12 @@ public interface CommentMapper {
     Comment toEntityFromCreateDto(CommentCreateDto dto);
 
     @Mapping(source = "post.id", target = "postId")
-    CommentDto toDto(Comment entity);
+    CommentDtoResponse toDto(Comment entity);
 
     @Mapping(target = "likes", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateEntityFromDto(CommentUpdateDto dto, @MappingTarget Comment entity);
 
-    List<CommentDto> toDtoList(List<Comment> entities);
+    List<CommentDtoResponse> toDtoList(List<Comment> entities);
 }

@@ -5,7 +5,7 @@ import faang.school.postservice.exception.comment.CommentNotFoundException;
 import faang.school.postservice.exception.comment.CommentValidationException;
 import faang.school.postservice.entity.comment.Comment;
 import faang.school.postservice.entity.post.Post;
-import faang.school.postservice.facade.comment.CommentKafkaFacade;
+import faang.school.postservice.facade.comment.CommentEventPublisherFacade;
 import faang.school.postservice.repository.comment.CommentRepository;
 import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.validation.comment.CommentValidator;
@@ -28,7 +28,26 @@ public class CommentService {
     private final CommentValidator commentValidator;
     private final PostService postService;
     private final UserContext userContext;
-    private final CommentKafkaFacade commentKafkaFacade;
+    private final CommentEventPublisherFacade commentKafkaFacade;
+
+    @Transactional
+    public Comment createComment(long postId, String content) {
+        long authorId = userContext.getUserId();
+        Post post = postService.getPostById(postId);
+
+        commentValidator.validateLengthContentComment(content);
+
+        Comment comment = Comment.builder()
+                .authorId(authorId)
+                .post(post)
+                .content(content)
+                .build();
+
+        Comment savedComment = commentRepository.save(comment);
+        log.info("Comment {} has been saved", savedComment);
+
+        return savedComment;
+    }
 
     @Transactional
     public Comment create(long postId, Comment comment) {
@@ -44,7 +63,7 @@ public class CommentService {
         log.info("Создан комментарий с id={}", comment.getId());
 
         if (post.getAuthorId() != null) {
-            commentKafkaFacade.createCommentEvent(savedComment);
+            commentKafkaFacade.sendCommentMessage(savedComment);
         }
 
         return savedComment;
