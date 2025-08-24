@@ -36,7 +36,6 @@ public class CommentService {
 
         comment = commentRepository.save(comment);
 
-        // Отправляем событие только если комментарий не от автора поста
         if (!authorId.equals(post.getAuthorId())) {
             CommentEvent event = new CommentEvent(
                     comment.getId(),
