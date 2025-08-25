@@ -20,6 +20,8 @@ spring:
   kafka:
     bootstrap-servers: localhost:9092
     group-id: post_service
+    topic:
+      comment: post.comment.created
 
   data:
     redis:

@@ -1,12 +1,14 @@
 package faang.school.postservice.service.post;
 
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.comment.CommentEvent;
 import faang.school.postservice.dto.comment.SaveCommentDto;
 import faang.school.postservice.dto.post.CreatePostDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.post.RepeatPublishException;
+import faang.school.postservice.kafka.producer.comment.CommentProducer;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.mapper.comment.CommentMapper;
@@ -46,6 +48,7 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -65,6 +68,9 @@ class PostServiceImplTest {
 
     @Mock
     private CommentValidator commentValidator;
+
+    @Mock
+    private CommentProducer commentProducer;
 
     @Spy
     private CommentMapper commentMapper = Mappers.getMapper(CommentMapper.class);
@@ -87,6 +93,12 @@ class PostServiceImplTest {
     private static final long AUTHOR_ID = 11L;
     private static final long COMMENT_ID = 1L;
     private static final String COMMENT_TEXT = "text";
+
+    @Captor
+    private ArgumentCaptor<CommentEvent> eventCaptor;
+
+    @Captor
+    private ArgumentCaptor<Comment> commentCaptor;
 
     @Captor
     private ArgumentCaptor<Post> postCaptor;
@@ -308,8 +320,8 @@ class PostServiceImplTest {
     }
 
     @Test
-    @DisplayName("Should create a new comment")
-    public void shouldSaveCommentAndReturnDto() {
+    @DisplayName("Should create a new comment and publish event to Kafka")
+    void shouldSaveCommentReturnDtoAndPublishEvent() {
         SaveCommentDto saveDto = buildSaveCommentDto();
         Post post = buildPost();
         Comment savedComment = buildComment(post);
@@ -328,8 +340,23 @@ class PostServiceImplTest {
         verify(userFeignService).getUserOrFail(AUTHOR_ID);
         verify(postRepository).findById(POST_ID);
         verify(commentMapper).toComment(saveDto);
-        verify(commentRepository).save(any(Comment.class));
+
+        verify(commentRepository).save(commentCaptor.capture());
+        Comment toSave = commentCaptor.getValue();
+        assertEquals(AUTHOR_ID, toSave.getAuthorId());
+        assertEquals(POST_ID, toSave.getPost().getId());
+
+        verify(commentMapper).toCommentEvent(savedComment);
+        verify(commentProducer).publishCommentEvent(eventCaptor.capture());
+        CommentEvent actualEvent = eventCaptor.getValue();
+        assertEquals(POST_ID, actualEvent.postId());
+        assertEquals(post.getAuthorId(), actualEvent.postAuthorId());
+        assertEquals(AUTHOR_ID, actualEvent.authorId());
+        assertEquals(savedComment.getId(), actualEvent.commentId());
+        assertEquals(savedComment.getContent(), actualEvent.content());
+
         verify(commentMapper).toCommentDto(savedComment);
+        verifyNoMoreInteractions(commentProducer);
     }
 
     @Test
@@ -346,7 +373,7 @@ class PostServiceImplTest {
 
         assertEquals("User not found with id: " + AUTHOR_ID, ex.getMessage());
         verify(userFeignService).getUserOrFail(AUTHOR_ID);
-        verifyNoInteractions(postRepository, commentRepository, commentMapper);
+        verifyNoInteractions(postRepository, commentRepository, commentMapper, commentProducer);
     }
 
     @Test
@@ -364,7 +391,7 @@ class PostServiceImplTest {
 
         verify(userFeignService).getUserOrFail(AUTHOR_ID);
         verify(postRepository).findById(POST_ID);
-        verifyNoInteractions(commentRepository);
+        verifyNoInteractions(commentRepository, commentMapper, commentProducer);
     }
 
     @Test
