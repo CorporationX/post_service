@@ -3,7 +3,6 @@ package faang.school.postservice.service.like;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
@@ -19,7 +18,6 @@ import org.springframework.stereotype.Service;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -116,9 +114,8 @@ public class LikeServiceImpl implements LikeService {
     }
 
     @Override
-    public List<UserDto> getListUsersWhoLikesThisPost(long postId) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new EntityNotFoundException("Post not found"));
+    public List<UserDto> getPostLikers(long postId) {
+        Post post = postRepository.getRequiredById(postId);
 
         List<Like> likes = Optional.ofNullable(post.getLikes())
                 .orElseGet(() -> {
@@ -128,14 +125,13 @@ public class LikeServiceImpl implements LikeService {
 
         return likes.stream()
                 .map(like -> userServiceClient.getUser(like.getUserId()))
-                .collect(Collectors.toList());
+                .toList();
 
     }
 
     @Override
     public List<UserDto> getListUsersWhoLikesThisComment(long commentId) {
-        Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new EntityNotFoundException("Comment not found"));
+        Comment comment = commentRepository.getRequiredById(commentId);
 
         List<Like> likes = Optional.ofNullable(comment.getLikes())
                 .orElseGet(() -> {
@@ -145,7 +141,7 @@ public class LikeServiceImpl implements LikeService {
 
         return likes.stream()
                 .map(like -> userServiceClient.getUser(like.getUserId()))
-                .collect(Collectors.toList());
+                .toList();
     }
 
 }
