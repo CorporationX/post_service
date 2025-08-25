@@ -130,7 +130,7 @@ public class LikeServiceImpl implements LikeService {
     }
 
     @Override
-    public List<UserDto> getListUsersWhoLikesThisComment(long commentId) {
+    public List<UserDto> getCommentLikers(long commentId) {
         Comment comment = commentRepository.getRequiredById(commentId);
 
         List<Like> likes = Optional.ofNullable(comment.getLikes())

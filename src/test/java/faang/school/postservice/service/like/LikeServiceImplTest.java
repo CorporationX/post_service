@@ -67,14 +67,14 @@ public class LikeServiceImplTest {
 
     @Test
     @DisplayName("тест успешного получения списка пользователей поставивших лайк коментарию")
-    public void getListUsersWhoLikesThisComment() {
+    public void getCommentLikers() {
         like.setUserId(userId);
         comment.setLikes(likesList);
         Optional<Comment> optionalComment = Optional.of(comment);
         when(commentRepository.findById(commentId)).thenReturn(optionalComment);
         when(userClient.getUser(like.getUserId())).thenReturn(userDto);
 
-        List<UserDto> resultList = likeService.getListUsersWhoLikesThisComment(commentId);
+        List<UserDto> resultList = likeService.getCommentLikers(commentId);
 
         assertThat(resultList).usingRecursiveAssertion().isEqualTo(userDtoList);
         verify(userClient).getUser(userId);
