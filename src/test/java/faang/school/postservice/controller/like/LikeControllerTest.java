@@ -41,7 +41,7 @@ public class LikeControllerTest {
     public void getPostLikers_ShouldReturnListOfUsers() throws Exception {
         when(likeService.getPostLikers(postId)).thenReturn(List.of(userDto));
 
-        mockMvc.perform(get("/likes/posts/{postId}", postId)
+        mockMvc.perform(get("/likes/posts/" + postId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(userDto.id()))
@@ -55,7 +55,7 @@ public class LikeControllerTest {
     public void getPostLikers_ShouldReturnEmptyList() throws Exception {
         when(likeService.getPostLikers(postId)).thenReturn(List.of());
 
-        mockMvc.perform(get("/likes/posts/{postId}", postId))
+        mockMvc.perform(get("/likes/posts/" + postId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$").isEmpty());
@@ -67,7 +67,7 @@ public class LikeControllerTest {
     public void getCommentLikers_ShouldReturnListOfUsers() throws Exception {
         when(likeService.getCommentLikers(commentId)).thenReturn(List.of(userDto));
 
-        mockMvc.perform(get("/likes/comments/{commentId}", commentId)
+        mockMvc.perform(get("/likes/comments/" + commentId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(userDto.id()))
@@ -81,7 +81,7 @@ public class LikeControllerTest {
     public void getCommentLikers_ShouldReturnEmptyList() throws Exception {
         when(likeService.getCommentLikers(commentId)).thenReturn(List.of());
 
-        mockMvc.perform(get("/likes/comments/{postId}", commentId))
+        mockMvc.perform(get("/likes/comments/" + commentId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$").isEmpty());
