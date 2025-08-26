@@ -137,6 +137,7 @@ public class S3Service {
                             .object(key)
                             .build()
             );
+
             StatObjectResponse stat = minioClient.statObject(
                     StatObjectArgs.builder()
                             .bucket(bucketName)
