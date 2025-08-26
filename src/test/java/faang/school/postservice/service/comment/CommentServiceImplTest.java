@@ -102,16 +102,6 @@ class CommentServiceImplTest {
     }
 
     @Test
-    void update() {
-
-    }
-
-    @Test
-    void getAllByPostId() {
-
-    }
-
-    @Test
     void delete() {
         var commentId = 1L;
         var currentUserId = 2L;
