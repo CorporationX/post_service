@@ -5,7 +5,10 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostFilterDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
-import faang.school.postservice.mapper.PostMapper;
+import faang.school.postservice.dto.post.PostViewDto;
+import faang.school.postservice.mapper.post.PostMapper;
+import faang.school.postservice.messaging.dto.PostUpdatedEvent;
+import faang.school.postservice.messaging.producer.EventProducer;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.filter.FilterService;
@@ -15,10 +18,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
 
 import static faang.school.postservice.service.post.PostServiceTestData.buildCreateDto;
 import static faang.school.postservice.service.post.PostServiceTestData.buildPostEntity;
@@ -46,6 +51,12 @@ class PostServiceImplTest {
     private PostMapper postMapper;
     @Mock
     private FilterService<Post, PostFilterDto> filterService;
+    @Mock
+    private EventProducer<PostViewDto> postCreateProducer;
+    @Mock
+    private EventProducer<PostUpdatedEvent> postUpdatedEventProducer;
+    @Mock
+    private ExecutorService executor;
     @InjectMocks
     private PostServiceImpl service;
 
@@ -95,17 +106,19 @@ class PostServiceImplTest {
         var updateDto = new PostUpdateDto("new content");
         var updatedPost = buildPostEntity(postId, currentUserId, null, now);
         updatedPost.setContent(updateDto.content());
-        var post = buildPostEntity(postId, currentUserId, null, now);
-        var view = toViewDto(updatedPost);
+        var oldPost = buildPostEntity(postId, currentUserId, null, now);
+        var oldPostView = toViewDto(oldPost);
+        var updatedPostView = toViewDto(updatedPost);
 
+        when(postMapper.toViewDto(eq(oldPost))).thenReturn(oldPostView);
         when(userContext.getUserId()).thenReturn(currentUserId);
-        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
-        when(postRepository.save(eq(post))).thenReturn(updatedPost);
-        when(postMapper.toViewDto(eq(updatedPost))).thenReturn(view);
+        when(postRepository.findById(postId)).thenReturn(Optional.of(oldPost));
+        when(postRepository.save(eq(oldPost))).thenReturn(updatedPost);
+        when(postMapper.toViewDto(eq(updatedPost))).thenReturn(updatedPostView);
 
         var actual = service.update(postId, updateDto);
-        assertEquals(view, actual);
-        verify(postMapper).update(eq(updateDto), eq(post));
+        assertEquals(updatedPostView, actual);
+        verify(postMapper).update(eq(updateDto), eq(oldPost));
     }
 
     @Test

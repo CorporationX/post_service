@@ -41,39 +41,41 @@ import java.util.List;
 @RequiredArgsConstructor
 public class LikeController {
 
-    private final LikeService likeService;
+    private final LikeService service;
 
     @PostMapping("/posts/{postId}")
     public ResponseEntity<Void> addLikeToPost(@PathVariable long postId) {
-        likeService.addLikeToPost(postId);
+        service.addLikeToPost(postId);
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/posts/{postId}")
     public ResponseEntity<Void> removeLikeFromPost(@PathVariable long postId) {
-        likeService.removeLikeFromPost(postId);
+        service.removeLikeFromPost(postId);
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/comments/{commentId}")
     public ResponseEntity<Void> addLikeToComment(@PathVariable long commentId) {
-        likeService.addLikeToComment(commentId);
+        service.addLikeToComment(commentId);
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/comments/{commentId}")
     public ResponseEntity<Void> removeLikeFromComment(@PathVariable long commentId) {
-        likeService.removeLikeFromComment(commentId);
+        service.removeLikeFromComment(commentId);
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/posts/{postId}")
-    public ResponseEntity<List<UserDto>> getPostLikers(@PathVariable long postId) {
-        return ResponseEntity.ok(likeService.getPostLikers(postId));
+
+    @GetMapping("/posts/{postId}/likes")
+    public ResponseEntity<List<UserDto>> getListUsersWhoLikesThisPost(@PathVariable long postId) {
+        return ResponseEntity.ok(service.getListUsersWhoLikesThisPost(postId));
     }
 
-    @GetMapping("/comments/{commentId}")
-    public ResponseEntity<List<UserDto>> getCommentLikers(@PathVariable long commentId) {
-        return ResponseEntity.ok(likeService.getCommentLikers(commentId));
+
+    @GetMapping("/comments/{commentId}/likes")
+    public ResponseEntity<List<UserDto>> getListUsersWhoLikesThisComment(@PathVariable long commentId) {
+        return ResponseEntity.ok(service.getListUsersWhoLikesThisComment(commentId));
     }
 }

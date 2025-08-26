@@ -8,15 +8,18 @@ import faang.school.postservice.dto.comment.CommentViewDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.mapper.CommentMapper;
+import faang.school.postservice.model.Comment;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import feign.FeignException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CommentServiceImpl implements CommentService {
@@ -26,9 +29,10 @@ public class CommentServiceImpl implements CommentService {
     private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
     private final UserContext userContext;
+    private final CommentEventPublisherService eventPublisherService;
 
-    @Override
     @Transactional
+    @Override
     public CommentViewDto create(Long postId, CommentCreateDto commentDto) {
         var authorId = userContext.getUserId();
 
@@ -38,12 +42,16 @@ public class CommentServiceImpl implements CommentService {
             throw new EntityNotFoundException("User with id " + authorId + " not found");
         }
 
-        var post = postRepository.findById(postId)
-                .orElseThrow(() -> new EntityNotFoundException("Post with id " + postId + " not found"));
+        var post = postRepository.getRequiredById(postId);
 
-        var comment = mapper.toEntityWithAuthorAndPost(commentDto, authorId, post);
+        Comment comment = new Comment();
+        comment.setAuthorId(authorId);
+        comment.setPost(post);
+        comment.setContent(commentDto.content());
 
-        var savedComment = commentRepository.save(comment);
+        Comment savedComment = commentRepository.save(comment);
+
+        eventPublisherService.publishAsync(savedComment, post);
 
         return mapper.toViewDto(savedComment);
     }
@@ -76,9 +84,9 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional
     public void delete(Long commentId) {
-        var comment = commentRepository.getRequiredById(commentId);
-
         var currentUserId = userContext.getUserId();
+
+        var comment = commentRepository.getRequiredById(commentId);
 
         if (!comment.getAuthorId().equals(currentUserId)) {
             throw new ForbiddenException("You are not the author of this comment");

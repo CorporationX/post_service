@@ -9,18 +9,27 @@ import faang.school.postservice.dto.post.PostUpdateDto;
 import faang.school.postservice.dto.post.PostViewDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.ForbiddenException;
-import faang.school.postservice.mapper.PostMapper;
+import faang.school.postservice.mapper.post.PostMapper;
+import faang.school.postservice.messaging.dto.PostUpdatedEvent;
+import faang.school.postservice.messaging.producer.EventProducer;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.filter.FilterService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 
 /**
  * Реализация сервиса для управления публикациями (постами).
@@ -52,9 +61,14 @@ public class PostServiceImpl implements PostService {
     private final UserContext userContext;
     private final PostMapper postMapper;
     private final FilterService<Post, PostFilterDto> filterService;
+    @Qualifier("postCreateEventProducer")
+    private final EventProducer<PostViewDto> postCreateProducer;
+    private final EventProducer<PostUpdatedEvent> postUpdatedEventProducer;
+    @Qualifier("postDeleteEventProducer")
+    private final EventProducer<PostViewDto> postDeleteProducer;
+    private final ExecutorService executor;
 
     @Override
-    @Transactional
     public PostViewDto create(PostCreateDto createDto) {
         var currentUserId = userContext.getUserId();
         createDto.validate();
@@ -72,7 +86,9 @@ public class PostServiceImpl implements PostService {
 
         var post = postMapper.toEntity(createDto);
         post = postRepository.save(post);
-        return postMapper.toViewDto(post);
+        var view = postMapper.toViewDto(post);
+        sendEventInNewTransaction(postCreateProducer, view);
+        return view;
     }
 
     @Override
@@ -87,9 +103,13 @@ public class PostServiceImpl implements PostService {
         if (post.isPublished()) {
             throw new ForbiddenException("Пост уже опубликован");
         }
+        var oldView = postMapper.toViewDto(post);
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
         postRepository.save(post);
+        var newView = postMapper.toViewDto(post);
+        var event = new PostUpdatedEvent(oldView, newView);
+        sendEventInNewTransaction(postUpdatedEventProducer, event);
     }
 
     @Override
@@ -100,9 +120,13 @@ public class PostServiceImpl implements PostService {
         if (post.isDeleted()) {
             throw new ForbiddenException("Пост удален, нельзя редактировать");
         }
+        var oldPostDto = postMapper.toViewDto(post);
         postMapper.update(updateDto, post);
         post = postRepository.save(post);
-        return postMapper.toViewDto(post);
+        var newPostDto = postMapper.toViewDto(post);
+        var postUpdatedEvent = new PostUpdatedEvent(oldPostDto, newPostDto);
+        sendEventInNewTransaction(postUpdatedEventProducer, postUpdatedEvent);
+        return newPostDto;
     }
 
     @Override
@@ -114,8 +138,10 @@ public class PostServiceImpl implements PostService {
         if (post.isDeleted()) {
             throw new ForbiddenException("Пост уже удален");
         }
+        var view = postMapper.toViewDto(post);
         post.setDeleted(true);
         postRepository.save(post);
+        sendEventInNewTransaction(postDeleteProducer, view);
     }
 
     @Override
@@ -149,5 +175,27 @@ public class PostServiceImpl implements PostService {
                     userId, post.getId());
             throw new ForbiddenException(USER_HAS_NO_ACCESS_TO_POST);
         }
+    }
+
+    private <E> void sendEvent(EventProducer<E> producer, E event) {
+        CompletableFuture.runAsync(() -> producer.send(event), executor)
+                .exceptionally(ex -> {
+                    log.error("Ошибка публикации события {}", ex.getMessage(), ex);
+                    return null;
+                });
+    }
+
+    private <E> void sendEventInNewTransaction(EventProducer<E> producer, E event) {
+        if (!TransactionSynchronizationManager.isSynchronizationActive()) {
+            sendEvent(producer, event);
+            return;
+        }
+        var synchronizer = new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                sendEvent(producer, event);
+            }
+        };
+        TransactionSynchronizationManager.registerSynchronization(synchronizer);
     }
 }

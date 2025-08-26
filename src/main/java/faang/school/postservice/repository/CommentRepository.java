@@ -3,6 +3,7 @@ package faang.school.postservice.repository;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.model.Comment;
 import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
@@ -20,4 +21,12 @@ public interface CommentRepository extends CrudRepository<Comment, Long> {
         return findById(id).orElseThrow(() ->
                 new EntityNotFoundException("Comment with id " + id + " not found"));
     }
+
+    @Modifying
+    @Query("UPDATE Comment p SET p.likeCount = p.likeCount + 1 WHERE p.id = :commentId")
+    void incrementLikeCount(long commentId);
+
+    @Modifying
+    @Query("UPDATE Comment p SET p.likeCount = p.likeCount - 1 WHERE p.id = :commentId")
+    void decrementLikeCount(long commentId);
 }

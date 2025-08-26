@@ -2,7 +2,6 @@ package faang.school.postservice.controller.post;
 
 import faang.school.postservice.dto.post.PostCreateDto;
 import faang.school.postservice.dto.post.PostViewDto;
-import faang.school.postservice.dto.post.PostFilterDto;
 import faang.school.postservice.model.Post;
 
 import java.time.LocalDateTime;
