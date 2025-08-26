@@ -11,6 +11,6 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "app.cache.feed")
 public class FeedCacheProperties {
 
-    private String keyPrefix = "feed";
-    private int maxSize = 1000;
+    private String keyPrefix;
+    private int maxSize;
 }

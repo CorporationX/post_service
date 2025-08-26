@@ -33,12 +33,6 @@ public class RedisPostCacheAdapter implements PostCachePort {
         return (value instanceof PostCacheDto dto) ? dto : null;
     }
 
-    @Override
-    public void evict(Long postId) {
-        if (postId == null) return;
-        redisTemplate.delete(key(postId));
-    }
-
     private String key(Long postId) {
         return props.getKeyPrefix() + ":" + postId;
     }

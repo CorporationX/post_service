@@ -25,10 +25,9 @@ spring:
         comment: comment_channel
         postView: post_view_channel
         like: like_channel
+      channel:
         likeReceived: likes_received
         postCreated: post_created
-        calculations_channel:
-          name: calculations_channel
 
   servlet:
     multipart:
@@ -86,9 +85,6 @@ resource:
 post:
   correcter:
     cron: "0 0 3 * * *"
-    retry:
-      max-attempts: 3
-      delay: 2000
 
 language-tool:
   url: https://api.languagetool.org/v2/check
@@ -98,3 +94,14 @@ scheduler:
   batch-size: 1000
   thread-pool-size: 10
   cron-expression: "0 * * * * *"
+
+app:
+  cache:
+    feed:
+      key-prefix: feed
+      max-size: 1000
+
+  feed:
+    heater:
+      threads: 8
+      per-user-post-limit: 500

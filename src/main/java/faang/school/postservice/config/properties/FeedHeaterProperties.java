@@ -11,6 +11,6 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "app.feed.heater")
 public class FeedHeaterProperties {
 
-    private int threads = 8;
-    private int perUserPostLimit = 500;
+    private int threads;
+    private int perUserPostLimit;
 }
