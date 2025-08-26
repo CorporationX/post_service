@@ -48,6 +48,7 @@ public class PostServiceImpl implements PostService {
     private final ExecutorService scheduledPostExecutorService;
     private final faang.school.postservice.service.cache.PostCachePort postCachePort;
     private final RedisPostCreateEventPublisher redisPostCreateEventPublisher;
+    private final faang.school.postservice.publisher.kafka.KafkaPostProducer kafkaPostProducer;
 
     @Override
     @Transactional
@@ -87,6 +88,7 @@ public class PostServiceImpl implements PostService {
         postCachePort.put(cacheDto);
 
         redisPostCreateEventPublisher.publish(postMapper.toPostCreateEventDto(updatedPost));
+        kafkaPostProducer.publishPostCreated(updatedPost);
 
         return postMapper.toDto(updatedPost);
     }
