@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -39,7 +40,12 @@ public class PostController {
 
     @PostMapping
     public ResponseEntity<PostViewDto> create(@Valid @RequestBody PostCreateDto createDto) {
-        var post = service.create(createDto);
+        PostViewDto post = null;
+        try {
+            post = service.create(createDto);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
         return ResponseEntity.ok(post);
     }
 

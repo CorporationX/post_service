@@ -41,3 +41,16 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+services:
+  s3:
+    endpoint: http://95.105.127.80:9001
+    accessKey: user
+    secretKey: password
+    bucketName: corpbucket
+
+minio:
+  endpoint: http://localhost:9000
+  access-key: user
+  secret-key: password
+  bucket-name: corpbucket

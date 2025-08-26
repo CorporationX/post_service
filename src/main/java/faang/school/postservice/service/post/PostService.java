@@ -4,6 +4,7 @@ import faang.school.postservice.dto.post.PostCreateDto;
 import faang.school.postservice.dto.post.PostFilterDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
 import faang.school.postservice.dto.post.PostViewDto;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
