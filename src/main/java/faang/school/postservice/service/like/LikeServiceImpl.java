@@ -36,7 +36,7 @@ public class LikeServiceImpl implements LikeService {
     @Transactional
     public void addLikeToPost(long postId) {
         var userId = getCurrentUserIdAndValidate();
-        var post = getPostOrThrow(postId);
+        var post = postRepository.getRequiredById(postId);
 
         if (likeRepository.existsByPostIdAndUserId(postId, userId)) {
             throw new IllegalStateException("You already liked this post");
@@ -50,23 +50,28 @@ public class LikeServiceImpl implements LikeService {
         like.setUserId(userId);
         like.setPost(post);
         likeRepository.save(like);
+        postRepository.incrementLikeCount(postId);
     }
 
     @Override
     @Transactional
     public void removeLikeFromPost(long postId) {
-        var userId = getCurrentUserId();
+        var userId = getCurrentUserIdAndValidate();
         if (!likeRepository.existsByPostIdAndUserId(postId, userId)) {
             throw new IllegalStateException("Like on post not found");
         }
         likeRepository.deleteByPostIdAndUserId(postId, userId);
+
+        var post = postRepository.getRequiredById(postId);
+        postRepository.decrementLikeCount(postId);
+
     }
 
     @Override
     @Transactional
     public void addLikeToComment(long commentId) {
         var userId = getCurrentUserIdAndValidate();
-        var comment = getCommentOrThrow(commentId);
+        var comment = commentRepository.getRequiredById(commentId);
 
         if (likeRepository.existsByCommentIdAndUserId(commentId, userId)) {
             throw new IllegalStateException("You already liked this comment");
@@ -81,24 +86,24 @@ public class LikeServiceImpl implements LikeService {
         like.setUserId(userId);
         like.setComment(comment);
         likeRepository.save(like);
+        commentRepository.incrementLikeCount(commentId);
     }
 
     @Override
     @Transactional
     public void removeLikeFromComment(long commentId) {
-        var userId = getCurrentUserId();
+        var userId = getCurrentUserIdAndValidate();
         if (!likeRepository.existsByCommentIdAndUserId(commentId, userId)) {
             throw new IllegalStateException("Like on comment not found");
         }
         likeRepository.deleteByCommentIdAndUserId(commentId, userId);
-    }
 
-    private long getCurrentUserId() {
-        return userContext.getUserId();
+        var comment = commentRepository.getRequiredById(commentId);
+        commentRepository.decrementLikeCount(commentId);
     }
 
     private long getCurrentUserIdAndValidate() {
-        var userId = getCurrentUserId();
+        var userId = userContext.getUserId();
         try {
             userServiceClient.getUser(userId);
         } catch (FeignException.NotFound e) {
@@ -106,15 +111,6 @@ public class LikeServiceImpl implements LikeService {
         }
         return userId;
     }
-
-    private Post getPostOrThrow(long postId) {
-        return postRepository.getRequiredById(postId);
-    }
-
-    private Comment getCommentOrThrow(long commentId) {
-        return commentRepository.getRequiredById(commentId);
-    }
-
     @Override
     public List<UserDto> getListUsersWhoLikesThisPost(long postId) {
         Post post = postRepository.findById(postId)

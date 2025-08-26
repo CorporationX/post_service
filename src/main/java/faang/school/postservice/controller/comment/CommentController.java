@@ -40,7 +40,7 @@ import java.util.List;
  * @since 10.08.2025
  */
 @RestController
-@RequestMapping("/comments")
+@RequestMapping("/posts/{postId}/comments")
 @RequiredArgsConstructor
 public class CommentController {
 
