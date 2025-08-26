@@ -16,7 +16,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
@@ -51,33 +50,31 @@ public class LikeServiceImplTest {
 
     @Test
     @DisplayName("тест успешного получения списка пользователей поставивших лайк посту")
-    public void getListUsersWhoLikesThisPost() {
+    public void getPostLikers() {
         like.setUserId(userId);
         post.setLikes(likesList);
-        Optional<Post> optionalPost = Optional.of(post);
-        when(postRepository.findById(postId)).thenReturn(optionalPost);
+        when(postRepository.getRequiredById(postId)).thenReturn(post);
         when(userClient.getUser(like.getUserId())).thenReturn(userDto);
 
-        List<UserDto> resultList = likeService.getListUsersWhoLikesThisPost(postId);
+        List<UserDto> resultList = likeService.getPostLikers(postId);
 
         assertThat(resultList).usingRecursiveAssertion().isEqualTo(userDtoList);
         verify(userClient).getUser(userId);
-        verify(postRepository).findById(postId);
+        verify(postRepository).getRequiredById(postId);
     }
 
     @Test
     @DisplayName("тест успешного получения списка пользователей поставивших лайк коментарию")
-    public void getListUsersWhoLikesThisComment() {
+    public void getCommentLikers() {
         like.setUserId(userId);
         comment.setLikes(likesList);
-        Optional<Comment> optionalComment = Optional.of(comment);
-        when(commentRepository.findById(commentId)).thenReturn(optionalComment);
+        when(commentRepository.getRequiredById(commentId)).thenReturn(comment);
         when(userClient.getUser(like.getUserId())).thenReturn(userDto);
 
-        List<UserDto> resultList = likeService.getListUsersWhoLikesThisComment(commentId);
+        List<UserDto> resultList = likeService.getCommentLikers(commentId);
 
         assertThat(resultList).usingRecursiveAssertion().isEqualTo(userDtoList);
         verify(userClient).getUser(userId);
-        verify(commentRepository).findById(commentId);
+        verify(commentRepository).getRequiredById(commentId);
     }
 }

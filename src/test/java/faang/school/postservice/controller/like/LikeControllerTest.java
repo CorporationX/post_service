@@ -38,54 +38,54 @@ public class LikeControllerTest {
 
     @Test
     @DisplayName("тест успешного получения списка пользователей поставивших лайк посту")
-    public void getListUsersWhoLikesThisPost_ShouldReturnListOfUsers() throws Exception {
-        when(likeService.getListUsersWhoLikesThisPost(postId)).thenReturn(List.of(userDto));
+    public void getPostLikers_ShouldReturnListOfUsers() throws Exception {
+        when(likeService.getPostLikers(postId)).thenReturn(List.of(userDto));
 
-        mockMvc.perform(get("/likes/posts/{postId}/likes", postId)
+        mockMvc.perform(get("/likes/posts/" + postId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(userDto.id()))
                 .andExpect(jsonPath("$[0].username").value(userDto.username()))
                 .andExpect(jsonPath("$[0].email").value(userDto.email()));
-        verify(likeService).getListUsersWhoLikesThisPost(postId);
+        verify(likeService).getPostLikers(postId);
     }
 
     @Test
     @DisplayName("тест получения пустого списка пользователей при отсутвии лайкнувших пост")
-    public void getListUsersWhoLikesThisPost_ShouldReturnEmptyList() throws Exception {
-        when(likeService.getListUsersWhoLikesThisPost(postId)).thenReturn(List.of());
+    public void getPostLikers_ShouldReturnEmptyList() throws Exception {
+        when(likeService.getPostLikers(postId)).thenReturn(List.of());
 
-        mockMvc.perform(get("/likes/posts/{postId}/likes", postId))
+        mockMvc.perform(get("/likes/posts/" + postId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$").isEmpty());
-        verify(likeService).getListUsersWhoLikesThisPost(postId);
+        verify(likeService).getPostLikers(postId);
     }
 
     @Test
     @DisplayName("тест успешного получения списка пользователей поставивших лайк коментарию")
-    public void getListUsersWhoLikesThisComment_ShouldReturnListOfUsers() throws Exception {
-        when(likeService.getListUsersWhoLikesThisComment(commentId)).thenReturn(List.of(userDto));
+    public void getCommentLikers_ShouldReturnListOfUsers() throws Exception {
+        when(likeService.getCommentLikers(commentId)).thenReturn(List.of(userDto));
 
-        mockMvc.perform(get("/likes/comments/{commentId}/likes", commentId)
+        mockMvc.perform(get("/likes/comments/" + commentId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(userDto.id()))
                 .andExpect(jsonPath("$[0].email").value(userDto.email()))
                 .andExpect(jsonPath("$[0].username").value(userDto.username()));
-        verify(likeService).getListUsersWhoLikesThisComment(commentId);
+        verify(likeService).getCommentLikers(commentId);
     }
 
     @Test
     @DisplayName("тест получения пустого списка пользователей при отсутвии лайкнувших коментарий")
-    public void getListUsersWhoLikesThisComment_ShouldReturnEmptyList() throws Exception {
-        when(likeService.getListUsersWhoLikesThisComment(commentId)).thenReturn(List.of());
+    public void getCommentLikers_ShouldReturnEmptyList() throws Exception {
+        when(likeService.getCommentLikers(commentId)).thenReturn(List.of());
 
-        mockMvc.perform(get("/likes/comments/{postId}/likes", commentId))
+        mockMvc.perform(get("/likes/comments/" + commentId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$").isEmpty());
-        verify(likeService).getListUsersWhoLikesThisComment(commentId);
+        verify(likeService).getCommentLikers(commentId);
     }
 
 

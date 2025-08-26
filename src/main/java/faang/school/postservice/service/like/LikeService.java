@@ -60,7 +60,7 @@ public interface LikeService {
      * @param postId ID поста, у которого ищем пользователей поставивших лайк.
      * @return список пользователей, поставивших лайк, или пустой список, если лайков нет
      */
-    List<UserDto> getListUsersWhoLikesThisPost(long postId);
+    List<UserDto> getPostLikers(long postId);
 
     /**
      * Возвращает список Пользователей поставивших лайк под коментарием.
@@ -68,6 +68,6 @@ public interface LikeService {
      * @param commentId ID коментария, у которого ищем пользователей поставивших лайк.
      * @return список пользователей, поставивших лайк, или пустой список, если лайков нет
      */
-    List<UserDto> getListUsersWhoLikesThisComment(long commentId);
+    List<UserDto> getCommentLikers(long commentId);
 
 }
