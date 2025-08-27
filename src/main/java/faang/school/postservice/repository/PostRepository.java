@@ -41,6 +41,8 @@ public interface PostRepository extends CrudRepository<Post, Long>, JpaSpecifica
     )
     List<Post> findReadyToPublish();
 
+
+
     default Post findPostOrThrow(Long id) {
         return findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Пост не найден"));
