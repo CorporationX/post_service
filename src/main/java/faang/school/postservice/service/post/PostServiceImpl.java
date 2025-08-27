@@ -2,6 +2,7 @@ package faang.school.postservice.service.post;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.client.FollowServiceClient;
 import faang.school.postservice.client.languagetool.LanguageToolClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.languagetool.LanguageToolResponseDto;
@@ -49,6 +50,7 @@ public class PostServiceImpl implements PostService {
     private final faang.school.postservice.service.cache.PostCachePort postCachePort;
     private final RedisPostCreateEventPublisher redisPostCreateEventPublisher;
     private final faang.school.postservice.publisher.kafka.KafkaPostProducer kafkaPostProducer;
+    private final FollowServiceClient followServiceClient;
 
     @Override
     @Transactional
@@ -88,7 +90,8 @@ public class PostServiceImpl implements PostService {
         postCachePort.put(cacheDto);
 
         redisPostCreateEventPublisher.publish(postMapper.toPostCreateEventDto(updatedPost));
-        kafkaPostProducer.publishPostCreated(updatedPost);
+        List<Long> followerIds = followServiceClient.getFollowerIds(updatedPost.getAuthorId());
+        kafkaPostProducer.publishPostCreated(updatedPost, followerIds);
 
         return postMapper.toDto(updatedPost);
     }

@@ -1,6 +1,5 @@
 package faang.school.postservice.publisher.kafka;
 
-import faang.school.postservice.client.FollowServiceClient;
 import faang.school.postservice.config.properties.AppKafkaProperties;
 import faang.school.postservice.dto.event.PostCreatedKafkaEvent;
 import faang.school.postservice.model.Post;
@@ -19,19 +18,15 @@ public class KafkaPostProducer {
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private final AppKafkaProperties appKafkaProperties;
-    private final FollowServiceClient followServiceClient;
 
-    public void publishPostCreated(Post post) {
-        List<Long> followerIds = safeList(followServiceClient.getFollowerIds(post.getAuthorId()));
-        long publishedAt = post.getPublishedAt() == null
-                ? System.currentTimeMillis()
-                : post.getPublishedAt().toInstant(ZoneOffset.UTC).toEpochMilli();
+    public void publishPostCreated(Post post, List<Long> followerIds) {
+        long publishedAt = post.getPublishedAt().toInstant(ZoneOffset.UTC).toEpochMilli();
 
         PostCreatedKafkaEvent event = PostCreatedKafkaEvent.builder()
                 .postId(post.getId())
                 .authorId(post.getAuthorId())
                 .publishedAtEpochMillis(publishedAt)
-                .followerIds(followerIds)
+                .followerIds(safeList(followerIds))
                 .build();
 
         String topic = appKafkaProperties.getTopics().getPosts();
