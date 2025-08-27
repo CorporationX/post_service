@@ -29,6 +29,19 @@ spring:
         likeReceived: likes_received
         postCreated: post_created
 
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+      group-id: ${KAFKA_POSTS_GROUP_ID:post-service-posts}
+      enable-auto-commit: false
+
   servlet:
     multipart:
       max-file-size: 50MB
@@ -105,3 +118,7 @@ app:
     heater:
       threads: 8
       per-user-post-limit: 500
+
+  kafka:
+    topics:
+      posts: ${KAFKA_POSTS_TOPIC:posts}
