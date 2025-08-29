@@ -29,12 +29,12 @@ public class LikeControllerTest {
     @MockBean
     private UserContext userContext;
 
-    long userId = 1L;
-    String userName = "User";
-    String userEmail = "@123";
-    long postId = 2L;
-    UserDto userDto = new UserDto(userId, userName, userEmail);
-    long commentId = 1L;
+    private long userId = 1L;
+    private String userName = "User";
+    private String userEmail = "@123";
+    private long postId = 2L;
+    private UserDto userDto = new UserDto(userId, userName, userEmail);
+    private long commentId = 1L;
 
     @Test
     @DisplayName("тест успешного получения списка пользователей поставивших лайк посту")

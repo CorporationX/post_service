@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface LikeRepository extends CrudRepository<Like, Long> {
@@ -29,4 +30,6 @@ public interface LikeRepository extends CrudRepository<Like, Long> {
     boolean existsByPostIdAndUserId(long postId, long userId);
 
     boolean existsByCommentIdAndUserId(long commentId, long userId);
+
+    List<Like> findAllByPostId(Long id);
 }
