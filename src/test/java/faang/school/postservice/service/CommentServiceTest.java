@@ -5,6 +5,7 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -37,6 +38,7 @@ class CommentServiceTest {
     private CommentService commentService;
 
     @Test
+    @DisplayName("Должен создать комментарий и опубликовать событие")
     void shouldCreateCommentAndPublishEvent() {
         Long postId = 1L;
         Long authorId = 2L;
@@ -76,6 +78,7 @@ class CommentServiceTest {
     }
 
     @Test
+    @DisplayName("Не должен публиковать событие, когда автор комментария является автором поста")
     void shouldNotPublishEventWhenCommentAuthorIsPostAuthor() {
         Long postId = 1L;
         Long authorId = 2L;

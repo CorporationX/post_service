@@ -1,6 +1,7 @@
 package faang.school.postservice.events;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -31,6 +32,7 @@ class CommentEventPublisherTest {
     private CommentEventPublisherImpl publisher;
 
     @Test
+    @DisplayName("Должен опубликовать событие комментария")
     void shouldPublishCommentEvent() throws Exception {
         CommentEvent event = new CommentEvent(1L, 2L, 4L, 3L, "Test comment", LocalDateTime.now());
         String serializedEvent = "{\"commentId\":1}";
@@ -43,6 +45,7 @@ class CommentEventPublisherTest {
     }
 
     @Test
+    @DisplayName("Должен обработать ошибку сериализации")
     void shouldHandleSerializationError() throws Exception {
         CommentEvent event = new CommentEvent(1L, 2L, 4L, 3L, "Test comment", LocalDateTime.now());
 
