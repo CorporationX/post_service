@@ -7,6 +7,7 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
+import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -28,6 +29,8 @@ public class LikeServiceImplTest {
     @Mock
     private PostRepository postRepository;
     @Mock
+    private LikeRepository likeRepository;
+    @Mock
     private CommentRepository commentRepository;
     @Mock
     private UserServiceClient userClient;
@@ -47,34 +50,33 @@ public class LikeServiceImplTest {
     UserDto userDto = new UserDto(userId, userName, userEmail);
     List<UserDto> userDtoList = List.of(userDto);
     List<Like> likesList = List.of(like);
+    List<Long> userIdList = List.of(userId);
 
     @Test
     @DisplayName("тест успешного получения списка пользователей поставивших лайк посту")
-    public void getPostLikers() {
+    public void getPostLikersTest() {
         like.setUserId(userId);
-        post.setLikes(likesList);
-        when(postRepository.getRequiredById(postId)).thenReturn(post);
-        when(userClient.getUser(like.getUserId())).thenReturn(userDto);
+        when(likeRepository.findAllByPostId(postId)).thenReturn(likesList);
+        when(userClient.getListUsers(userIdList)).thenReturn(userDtoList);
 
         List<UserDto> resultList = likeService.getPostLikers(postId);
 
         assertThat(resultList).usingRecursiveAssertion().isEqualTo(userDtoList);
-        verify(userClient).getUser(userId);
-        verify(postRepository).getRequiredById(postId);
+        verify(userClient).getListUsers(userIdList);
+        verify(likeRepository).findAllByPostId(postId);
     }
 
     @Test
     @DisplayName("тест успешного получения списка пользователей поставивших лайк коментарию")
-    public void getCommentLikers() {
+    public void getCommentLikersTest() {
         like.setUserId(userId);
-        comment.setLikes(likesList);
-        when(commentRepository.getRequiredById(commentId)).thenReturn(comment);
-        when(userClient.getUser(like.getUserId())).thenReturn(userDto);
+        when(likeRepository.findAllByPostId(commentId)).thenReturn(likesList);
+        when(userClient.getListUsers(userIdList)).thenReturn(userDtoList);
 
         List<UserDto> resultList = likeService.getCommentLikers(commentId);
 
         assertThat(resultList).usingRecursiveAssertion().isEqualTo(userDtoList);
-        verify(userClient).getUser(userId);
-        verify(commentRepository).getRequiredById(commentId);
+        verify(userClient).getListUsers(userIdList);
+        verify(likeRepository).findAllByPostId(commentId);
     }
 }
