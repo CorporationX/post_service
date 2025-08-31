@@ -48,6 +48,13 @@ dependencies {
     implementation("org.mapstruct:mapstruct:1.5.3.Final")
     annotationProcessor("org.mapstruct:mapstruct-processor:1.5.3.Final")
     implementation("software.amazon.awssdk:s3:2.20.138")
+
+    /**
+     * Kafka (для работы с Redpanda Cloud)
+     */
+    implementation("org.springframework.kafka:spring-kafka:3.0.12")
+    implementation("org.apache.kafka:kafka-clients:3.0.0")
+
     /**
      * Test containers
      */
