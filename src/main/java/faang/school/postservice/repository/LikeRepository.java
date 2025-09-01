@@ -1,6 +1,5 @@
 package faang.school.postservice.repository;
 
-import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,5 +20,5 @@ public interface LikeRepository extends CrudRepository<Like, Long> {
 
     List<Like> findByPostId(Long postId);
 
-    List<Like> findByCommentId(Comment comment);
+    List<Like> findByCommentId(Long commentId);
 }

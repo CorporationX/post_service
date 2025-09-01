@@ -21,7 +21,7 @@ import java.util.List;
 @RequestMapping("/likes")
 @RestController
 public class LikeController {
-    LikeService likeService;
+    private LikeService likeService;
 
     /**
      * Получает список всех пользователей, поставивших лайк указанному посту.
@@ -32,7 +32,7 @@ public class LikeController {
      * @throws faang.school.postservice.exception.EntityNotFoundException если пост с указанным ID не найден
      */
     @GetMapping("/post/{postId}")
-    ResponseEntity<List<UserDto>> getAllLikesFromUsersToPost(@PathVariable Long postId) {
+    public ResponseEntity<List<UserDto>> getAllLikesFromUsersToPost(@PathVariable Long postId) {
         List<UserDto> users = likeService.getUsersWhoLikedPost(postId);
 
         return ResponseEntity.ok(users);
@@ -49,7 +49,7 @@ public class LikeController {
      * @return ResponseEntity со списком UserDto и статусом 200 OK
      */
     @GetMapping("/comment/{commentId}")
-    ResponseEntity<List<UserDto>> getAllLikesFromUsersToComment(@PathVariable Long commentId) {
+    public ResponseEntity<List<UserDto>> getAllLikesFromUsersToComment(@PathVariable Long commentId) {
         List<UserDto> users = likeService.getUsersWhoLikedComment(commentId);
 
         return ResponseEntity.ok(users);
