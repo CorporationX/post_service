@@ -16,34 +16,27 @@ public class LikeTestData {
     public static String userName = "User";
     public static String userEmail = "@123";
 
-    private Like like = new Like();
-    private UserDto userDto = new UserDto(userId, userName, userEmail);
+    private static final Like like = getLike();
+    private static final UserDto userDto = new UserDto(userId, userName, userEmail);
 
-    private List<UserDto> userDtoList = List.of(userDto);
-    private List<Like> likesList = List.of(like);
-    private List<Long> userIdList = List.of(userId);
-
-    public static LikeTestData createData() {
-        return new LikeTestData();
-    }
-
-    public Like getLike() {
+    public static Like getLike() {
+        Like like = new Like();
+        like.setUserId(userId);
         return like;
     }
-
     public UserDto getUserDto() {
         return userDto;
     }
 
-    public List<UserDto> getUserDtoList() {
-        return userDtoList;
+    public static List<UserDto> getUserDtoList() {
+        return List.of(userDto);
     }
 
-    public List<Like> getLikesList() {
-        return likesList;
+    public static List<Like> getLikesList() {
+        return List.of(like);
     }
 
-    public List<Long> getUserIdList() {
-        return userIdList;
+    public static List<Long> getUserIdList() {
+        return List.of(userId);
     }
 }

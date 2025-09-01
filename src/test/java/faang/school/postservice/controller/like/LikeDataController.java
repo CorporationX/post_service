@@ -8,13 +8,8 @@ public class LikeDataController {
     public static String userEmail = "@123";
     public static long postId = 2L;
     public static long commentId = 1L;
-    private final UserDto userDto = new UserDto(userId, userName, userEmail);
 
-    public UserDto getUserDto() {
-        return userDto;
-    }
-
-    public static LikeDataController createData() {
-        return new LikeDataController();
+    public static UserDto getUserDto() {
+        return new UserDto(userId, userName, userEmail);
     }
 }

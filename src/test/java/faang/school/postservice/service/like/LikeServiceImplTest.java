@@ -3,6 +3,7 @@ package faang.school.postservice.service.like;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.model.Like;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -15,7 +16,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 
-import static faang.school.postservice.service.like.LikeTestData.createData;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -37,33 +37,41 @@ public class LikeServiceImplTest {
     @InjectMocks
     private LikeServiceImpl likeService;
 
-    LikeTestData data = createData();
-
     @Test
     @DisplayName("тест успешного получения списка пользователей поставивших лайк посту")
     public void getPostLikersTest() {
-        data.getLike().setUserId(LikeTestData.userId);
-        when(likeRepository.findAllByPostId(LikeTestData.postId)).thenReturn(data.getLikesList());
-        when(userClient.getUsersByIds(data.getUserIdList())).thenReturn(data.getUserDtoList());
+        List<Like> likeList = LikeTestData.getLikesList();
+        long postId = LikeTestData.postId;
+        long userId = LikeTestData.userId;
+        List<UserDto> userDtoList = LikeTestData.getUserDtoList();
+        List<Long> userIdList = LikeTestData.getUserIdList();
 
-        List<UserDto> resultList = likeService.getPostLikers(LikeTestData.postId);
+        when(likeRepository.findAllByPostId(postId)).thenReturn(likeList);
+        when(userClient.getUsersByIds(List.of(userId))).thenReturn(userDtoList);
 
-        assertThat(resultList).usingRecursiveAssertion().isEqualTo(data.getUserDtoList());
-        verify(userClient).getUsersByIds(data.getUserIdList());
-        verify(likeRepository).findAllByPostId(LikeTestData.postId);
+        List<UserDto> resultList = likeService.getPostLikers(postId);
+
+        assertThat(resultList).usingRecursiveAssertion().isEqualTo(userDtoList);
+        verify(userClient).getUsersByIds(userIdList);
+        verify(likeRepository).findAllByPostId(postId);
     }
 
     @Test
     @DisplayName("тест успешного получения списка пользователей поставивших лайк коментарию")
     public void getCommentLikersTest() {
-        data.getLike().setUserId(LikeTestData.userId);
-        when(likeRepository.findAllByCommentId(LikeTestData.commentId)).thenReturn(data.getLikesList());
-        when(userClient.getUsersByIds(data.getUserIdList())).thenReturn(data.getUserDtoList());
+        List<Like> likeList = LikeTestData.getLikesList();
+        long commentId = LikeTestData.commentId;
+        long userId = LikeTestData.userId;
+        List<UserDto> userDtoList = LikeTestData.getUserDtoList();
+        List<Long> userIdList = LikeTestData.getUserIdList();
 
-        List<UserDto> resultList = likeService.getCommentLikers(LikeTestData.commentId);
+        when(likeRepository.findAllByCommentId(commentId)).thenReturn(likeList);
+        when(userClient.getUsersByIds(List.of(userId))).thenReturn(userDtoList);
 
-        assertThat(resultList).usingRecursiveAssertion().isEqualTo(data.getUserDtoList());
-        verify(userClient).getUsersByIds(data.getUserIdList());
-        verify(likeRepository).findAllByCommentId(LikeTestData.commentId);
+        List<UserDto> resultList = likeService.getCommentLikers(commentId);
+
+        assertThat(resultList).usingRecursiveAssertion().isEqualTo(userDtoList);
+        verify(userClient).getUsersByIds(userIdList);
+        verify(likeRepository).findAllByCommentId(commentId);
     }
 }
