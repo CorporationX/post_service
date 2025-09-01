@@ -20,23 +20,28 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class LikeServiceImplTest {
-    @Mock private LikeRepository likeRepository;
-    @Mock private PostRepository postRepository;
-    @Mock private CommentRepository commentRepository;
-    @Mock private UserServiceClient serviceClient;
+    @Mock
+    private LikeRepository likeRepository;
+    @Mock
+    private PostRepository postRepository;
+    @Mock
+    private CommentRepository commentRepository;
+    @Mock
+    private UserServiceClient serviceClient;
 
-    @InjectMocks private LikeServiceImpl likeService;
+    @InjectMocks
+    private LikeServiceImpl likeService;
 
     @Test
     void getUsersWhoLikedCommentNullCommentIdThrowsException() {
         DataValidationException exception = assertThrows(DataValidationException.class,
-                () -> likeService.getUsersWhoLikedComment(1L, null));
+                () -> likeService.getUsersWhoLikedComment(null));
 
         assertEquals("Id комментария не может быть null", exception.getMessage());
 
@@ -54,16 +59,14 @@ class LikeServiceImplTest {
         Like like = Like.builder().userId(userId).build();
         UserDto userDto = UserDto.builder().id(userId).build();
 
-        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
-        when(likeRepository.getLikesByPost(post)).thenReturn(List.of(like));
+        when(likeRepository.findByPostId(post.getId())).thenReturn(List.of(like));
         when(serviceClient.getUser(userId)).thenReturn(userDto);
 
         List<UserDto> result = likeService.getUsersWhoLikedPost(postId);
 
         assertEquals(1, result.size());
         assertEquals(userId, result.get(0).id());
-        verify(postRepository).findById(postId);
-        verify(likeRepository).getLikesByPost(post);
+        verify(likeRepository).findByPostId(postId);
         verify(serviceClient).getUser(userId);
     }
 
@@ -77,13 +80,12 @@ class LikeServiceImplTest {
         Like like = Like.builder().userId(userId).build();
         UserDto userDto = UserDto.builder().id(userId).build();
 
-        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
         when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
-        when(likeRepository.getLikesByPostAndComment(post, comment))
+        when(likeRepository.findByCommentId(comment))
                 .thenReturn(List.of(like));
         when(serviceClient.getUser(userId)).thenReturn(userDto);
 
-        List<UserDto> result = likeService.getUsersWhoLikedComment(postId, commentId);
+        List<UserDto> result = likeService.getUsersWhoLikedComment(commentId);
 
         assertEquals(1, result.size());
         assertEquals(userId, result.get(0).id());
@@ -92,7 +94,7 @@ class LikeServiceImplTest {
     @Test
     void getUsersWhoLikedCommentNullPostIdThrowsException() {
         assertThrows(DataValidationException.class,
-                () -> likeService.getUsersWhoLikedComment(null, 1L));
+                () -> likeService.getUsersWhoLikedComment(null));
 
         verifyNoInteractions(postRepository);
         verifyNoInteractions(commentRepository);
@@ -103,7 +105,7 @@ class LikeServiceImplTest {
     @Test
     void getUsersWhoLikedCommentBothIdsNullThrowsExceptionForPostFirst() {
         assertThrows(DataValidationException.class,
-                () -> likeService.getUsersWhoLikedComment(null, null));
+                () -> likeService.getUsersWhoLikedComment(null));
 
         verifyNoInteractions(postRepository);
         verifyNoInteractions(commentRepository);

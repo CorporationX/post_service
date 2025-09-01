@@ -23,6 +23,14 @@ import java.util.List;
 public class LikeController {
     LikeServiceImpl likeService;
 
+    /**
+     * Получает список всех пользователей, поставивших лайк указанному посту.
+     *
+     * @apiNote Возвращает список UserDto объектов, содержащих информацию о пользователях
+     * @param postId идентификатор поста, для которого запрашиваются лайки
+     * @return ResponseEntity со списком UserDto и статусом 200 OK
+     * @throws faang.school.postservice.exception.EntityNotFoundException если пост с указанным ID не найден
+     */
     @GetMapping("/post/{postId}")
     ResponseEntity<List<UserDto>> getAllLikesFromUsersToPost(@PathVariable Long postId) {
         List<UserDto> users = likeService.getUsersWhoLikedPost(postId);
@@ -30,10 +38,19 @@ public class LikeController {
         return ResponseEntity.ok(users);
     }
 
-    @GetMapping("/post/{postId}/comment/{commentId}")
-    ResponseEntity<List<UserDto>> getAllLikesFromUsersToComment(@PathVariable Long postId,
-                                                                @PathVariable Long commentId) {
-        List<UserDto> users = likeService.getUsersWhoLikedComment(postId, commentId);
+    /**
+     * Получает список всех пользователей, поставивших лайк указанному комментарию.
+     *
+     * @apiNote Возвращает список UserDto объектов, содержащих информацию о пользователях,
+     * которые поставили лайк комментарию. Для корректной работы требуется указать
+     * идентификатор поста, к которому принадлежит комментарий.
+     *
+     * @param commentId идентификатор комментария, для которого запрашиваются лайки
+     * @return ResponseEntity со списком UserDto и статусом 200 OK
+     */
+    @GetMapping("/comment/{commentId}")
+    ResponseEntity<List<UserDto>> getAllLikesFromUsersToComment(@PathVariable Long commentId) {
+        List<UserDto> users = likeService.getUsersWhoLikedComment(commentId);
 
         return ResponseEntity.ok(users);
     }
