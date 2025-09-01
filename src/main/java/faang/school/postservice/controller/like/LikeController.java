@@ -1,7 +1,7 @@
 package faang.school.postservice.controller.like;
 
 import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.service.like.LikeServiceImpl;
+import faang.school.postservice.service.like.LikeService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,7 +21,7 @@ import java.util.List;
 @RequestMapping("/likes")
 @RestController
 public class LikeController {
-    LikeServiceImpl likeService;
+    LikeService likeService;
 
     /**
      * Получает список всех пользователей, поставивших лайк указанному посту.
