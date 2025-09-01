@@ -109,23 +109,21 @@ public class LikeServiceImpl implements LikeService {
     public List<UserDto> getPostLikers(long postId) {
         List<Like> likes = likeRepository.findAllByPostId(postId);
 
-        List<Long> userIdList = likes.stream()
+        List<Long> userIds = likes.stream()
                 .map(Like::getUserId)
                 .toList();
-
-        return userServiceClient.getListUsers(userIdList);
+        return userServiceClient.getUsersByIds(userIds);
 
     }
 
     @Override
     public List<UserDto> getCommentLikers(long commentId) {
-        List<Like> likes = likeRepository.findAllByPostId(commentId);
+        List<Like> likes = likeRepository.findAllByCommentId(commentId);
 
-        List<Long> userIdList = likes.stream()
+        List<Long> userIds = likes.stream()
                 .map(Like::getUserId)
                 .toList();
-
-        return userServiceClient.getListUsers(userIdList);
+        return userServiceClient.getUsersByIds(userIds);
     }
 
 }

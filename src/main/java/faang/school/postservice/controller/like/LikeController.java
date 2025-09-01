@@ -67,12 +67,10 @@ public class LikeController {
         return ResponseEntity.noContent().build();
     }
 
-
     @GetMapping("/posts/{postId}")
     public ResponseEntity<List<UserDto>> getListUsersWhoLikesThisPost(@PathVariable long postId) {
         return ResponseEntity.ok(service.getPostLikers(postId));
     }
-
 
     @GetMapping("/comments/{commentId}")
     public ResponseEntity<List<UserDto>> getListUsersWhoLikesThisComment(@PathVariable long commentId) {
