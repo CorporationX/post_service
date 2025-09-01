@@ -7,7 +7,6 @@ import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
-import faang.school.postservice.repository.PostRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -33,26 +32,14 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class LikeServiceImpl implements LikeService {
     LikeRepository likeRepository;
-    PostRepository postRepository;
     CommentRepository commentRepository;
     UserServiceClient serviceClient;
 
-    /**
-     * Получает список пользователей, поставивших лайк указанному посту.
-     *
-     * @param postId идентификатор поста (не может быть null)
-     * @return список DTO пользователей, поставивших лайк
-     * @throws DataValidationException если postId равен null
-     * @throws EntityNotFoundException если пост с указанным id не найден
-     * @see UserDto
-     */
     @Override
     public List<UserDto> getUsersWhoLikedPost(Long postId) {
         checkPostIdNotNull(postId);
 
-        List<Like> likes = likeRepository.getLikesByPost(
-                postRepository.findById(postId)
-                .orElseThrow(() -> new EntityNotFoundException("Поста с id " + postId + " не существует")));
+        List<Like> likes = likeRepository.findByPostId(postId);
 
         return likes.stream()
                 .map(Like::getUserId)
@@ -60,24 +47,11 @@ public class LikeServiceImpl implements LikeService {
                 .toList();
     }
 
-    /**
-     * Получает список пользователей, поставивших лайк указанному комментарию.
-     *
-     * @param postId идентификатор поста (не может быть null)
-     * @param commentId идентификатор комментария (не может быть null)
-     * @return список DTO пользователей, поставивших лайк
-     * @throws DataValidationException если postId или commentId равны null
-     * @throws EntityNotFoundException если пост или комментарий с указанными id не найдены
-     * @see UserDto
-     */
     @Override
-    public List<UserDto> getUsersWhoLikedComment(Long postId, Long commentId) {
-        checkPostIdNotNull(postId);
+    public List<UserDto> getUsersWhoLikedComment(Long commentId) {
         checkCommentIdNotNull(commentId);
 
-        List<Like> likes = likeRepository.getLikesByPostAndComment(
-                postRepository.findById(postId)
-                        .orElseThrow(() -> new EntityNotFoundException("Поста с id " + postId + " не существует")),
+        List<Like> likes = likeRepository.findByCommentId(
                 commentRepository.findById(commentId)
                         .orElseThrow(() ->
                                 new EntityNotFoundException("Комментария с id " + commentId + " не существует")));
