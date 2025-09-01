@@ -17,7 +17,6 @@ import java.util.List;
  * @author bozya
  * @since 12.08.2025
  */
-
 public interface LikeService {
     /**
      * Возвращает список пользователей, лайкнувших пост.
