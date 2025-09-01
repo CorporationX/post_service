@@ -1,4 +1,5 @@
 package faang.school.postservice.config.context;
+
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.parameters.Parameter;
