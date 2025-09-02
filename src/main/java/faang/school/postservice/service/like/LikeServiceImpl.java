@@ -2,6 +2,7 @@ package faang.school.postservice.service.like;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
@@ -9,10 +10,14 @@ import faang.school.postservice.repository.PostRepository;
 import feign.FeignException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class LikeServiceImpl implements LikeService {
 
     private final LikeRepository likeRepository;
@@ -100,4 +105,25 @@ public class LikeServiceImpl implements LikeService {
         }
         return userId;
     }
+    @Override
+    public List<UserDto> getPostLikers(long postId) {
+        List<Like> likes = likeRepository.findAllByPostId(postId);
+
+        List<Long> userIds = likes.stream()
+                .map(Like::getUserId)
+                .toList();
+        return userServiceClient.getUsersByIds(userIds);
+
+    }
+
+    @Override
+    public List<UserDto> getCommentLikers(long commentId) {
+        List<Like> likes = likeRepository.findAllByCommentId(commentId);
+
+        List<Long> userIds = likes.stream()
+                .map(Like::getUserId)
+                .toList();
+        return userServiceClient.getUsersByIds(userIds);
+    }
+
 }
