@@ -338,10 +338,10 @@ public class PostServiceImplTest {
         assertThat(result.getContent()).hasSize(expectedPosts.size());
         expectedPosts.forEach(expectedPost -> assertThat(result.getContent())
                 .anyMatch(dto ->
-                        Objects.equals(dto.authorId(), expectedPost.getAuthorId()) &&
-                        Objects.equals(dto.projectId(), expectedPost.getProjectId()) &&
-                        dto.published() == expectedPost.isPublished() &&
-                        dto.deleted() == expectedPost.isDeleted()
+                        Objects.equals(dto.authorId(), expectedPost.getAuthorId())
+                                && Objects.equals(dto.projectId(), expectedPost.getProjectId())
+                                && dto.published() == expectedPost.isPublished()
+                                && dto.deleted() == expectedPost.isDeleted()
                 ));
         verify(postRepository, times(1)).findByFilter(filterDto, pageable);
     }
