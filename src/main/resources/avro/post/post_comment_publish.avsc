@@ -1,5 +1,5 @@
 {
-	"name": "PostCommentEvent",
+	"name": "CommentEvent",
 	"type": "record",
 	"namespace": "school.faang.avro.post",
 	"fields": [

@@ -1,5 +1,5 @@
 {
-  "name": "LikePublishEvent",
+  "name": "PostViewEvent",
   "type": "record",
   "namespace": "school.faang.avro.post",
   "fields": [
@@ -11,6 +11,5 @@
       "name": "authorId",
       "type": "long"
     }
-
   ]
 }

@@ -15,7 +15,7 @@ public class PostLikeProducerImpl implements PostLikeProducer {
     private final KafkaTemplate<String, LikePublishEvent> template;
 
     @Override
-    public void onLikePublished(LikePublishEvent dto) {
-        template.send(publishLikeTopic, String.valueOf(dto.getPostId()), dto);
+    public void onLikePublished(LikePublishEvent event) {
+        template.send(publishLikeTopic, String.valueOf(event.getPostId()), event);
     }
 }

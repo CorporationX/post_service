@@ -38,6 +38,8 @@ spring:
         name: posts.comments.publish
       post-like-publish:
         name: posts.likes.publish
+      post-view:
+        name: posts.view
 
 
   data:
