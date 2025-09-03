@@ -35,7 +35,6 @@ public class UserClient implements UserServiceClient {
                 .get()
                 .uri(u -> {
                     return u.path(properties.getUserUrl() + "/" + id)
-//                            .queryParam("id", id)
                             .build();
                 })
                 .accept(MediaType.APPLICATION_JSON)

@@ -79,12 +79,6 @@ public class PostServiceTest {
         Assertions.assertFalse(postDto.isPublished());
     }
 
-//    @Test
-//    public void testMarkPostAsDeleted_notFound() {
-//        when(postRepository.findById(Mockito.anyLong())).thenReturn(null);
-//        Assertions.assertThrows(EntityNotFoundException.class, () -> postService.markPostAsDeleted(1L));
-//    }
-
     @Test
     public void testCreatePostDraft_success() {
         PostDraftDto postDraftDto = createPostDraftDto();
