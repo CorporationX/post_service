@@ -1,0 +1,37 @@
+{
+  "name": "PostCreateEvent",
+  "type": "record",
+  "namespace": "school.faang.avro.post",
+  "fields": [
+    {
+      "name": "id",
+      "type": "long"
+    },
+    {
+      "name": "content",
+      "type": "string"
+    },
+    {
+      "name": "authorId",
+      "type": "long"
+    },
+    {
+      "name": "projectId",
+      "type": "long"
+    },
+    {
+      "name": "publishedAt",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      }
+    },
+    {
+      "name": "createdAt",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      }
+    }
+  ]
+}

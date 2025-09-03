@@ -14,6 +14,8 @@ public class KafkaTopicConfig {
     private String postLikePublishedTopic;
     @Value("${spring.kafka.topics.post-view.name}")
     private String postViewTopic;
+    @Value("${spring.kafka.topics.post.name}")
+    private String postTopic;
 
     @Bean
     public NewTopic postCommentPublishedTopic() {
@@ -28,5 +30,10 @@ public class KafkaTopicConfig {
     @Bean
     public NewTopic postViewTopic() {
         return TopicBuilder.name(postViewTopic).build();
+    }
+
+    @Bean
+    public NewTopic postCreateTopic() {
+        return TopicBuilder.name(postTopic).build();
     }
 }
