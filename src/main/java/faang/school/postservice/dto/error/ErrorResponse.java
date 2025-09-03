@@ -10,7 +10,7 @@ public record ErrorResponse(
         @Schema(description = "Short description of the error type")
         String error,
 
-        @Schema(description = "Detailed message describing the error")
+        @Schema(description = "Detailed comment describing the error")
         String message,
 
         @Schema(description = "Optional list of validation error details; null for non-validation errors")
