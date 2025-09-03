@@ -19,11 +19,25 @@ spring:
 
   kafka:
     bootstrap-servers: localhost:9092
-    group-id: post_service
+    properties:
+      schema.registry.url: http://localhost:8081
+    consumer:
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: io.confluent.kafka.serializers.KafkaAvroDeserializer
+      group-id: post_service
+      properties:
+        specific.avro.reader: true
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
+      properties:
+        value.subject.name.strategy: io.confluent.kafka.serializers.subject.RecordNameStrategy
 
     topics:
-      post-comment-published:
-        name: posts.comments.published
+      post-comment-publish:
+        name: posts.comments.publish
+      post-like-publish:
+        name: posts.likes.publish
 
 
   data:

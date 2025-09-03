@@ -1,0 +1,15 @@
+{
+  "name": "LikePublishEvent",
+  "type": "record",
+  "namespace": "school.faang.avro.post",
+  "fields": [
+    {
+      "name": "authorId",
+      "type": "long"
+    },
+    {
+      "name": "postId",
+      "type": "long"
+    }
+  ]
+}

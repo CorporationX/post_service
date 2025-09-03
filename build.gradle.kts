@@ -1,8 +1,11 @@
+import com.github.davidmc24.gradle.plugin.avro.GenerateAvroJavaTask
+
 plugins {
     java
     id("org.springframework.boot") version "3.0.6"
     id("io.spring.dependency-management") version "1.1.0"
     id("jacoco")
+    id("com.github.davidmc24.gradle.plugin.avro") version "1.9.1"
 }
 
 group = "faang.school"
@@ -11,6 +14,7 @@ java.sourceCompatibility = JavaVersion.VERSION_17
 
 repositories {
     mavenCentral()
+    maven("https://packages.confluent.io/maven/")
 }
 
 dependencies {
@@ -33,6 +37,8 @@ dependencies {
      */
     implementation("org.springframework.kafka:spring-kafka")
     testImplementation("org.springframework.kafka:spring-kafka-test")
+    implementation("io.confluent:kafka-avro-serializer:7.6.0")
+    implementation("org.apache.avro:avro:1.12.0")
 
     /**
      * Database
@@ -69,6 +75,10 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.9.2")
     testImplementation("org.assertj:assertj-core:3.24.2")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+}
+
+tasks.named<GenerateAvroJavaTask>("generateAvroJava") {
+    setSource("src/main/resources/avro")
 }
 
 tasks.test {

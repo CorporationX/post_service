@@ -8,11 +8,19 @@ import org.springframework.kafka.config.TopicBuilder;
 
 @Configuration
 public class KafkaTopicConfig {
-    @Value("${spring.kafka.topics.post-comment-published.name}")
-    private String postCommentPublishedTopicName;
+    @Value("${spring.kafka.topics.post-comment-publish.name}")
+    private String postCommentPublishedTopic;
+
+    @Value("${spring.kafka.topics.post-like-publish.name}")
+    private String postLikePublishedTopic;
 
     @Bean
     public NewTopic postCommentPublishedTopic() {
-        return TopicBuilder.name(postCommentPublishedTopicName).build();
+        return TopicBuilder.name(postCommentPublishedTopic).build();
+    }
+
+    @Bean
+    public NewTopic postLikePublishedTopic() {
+        return TopicBuilder.name(postLikePublishedTopic).build();
     }
 }

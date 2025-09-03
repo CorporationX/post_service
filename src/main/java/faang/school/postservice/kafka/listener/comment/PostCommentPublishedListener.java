@@ -14,7 +14,7 @@ public class PostCommentPublishedListener {
     private final ObjectMapper objectMapper;
     private final PostCommentCache cache;
 
-    @KafkaListener(topics = "${spring.kafka.topics.post-comment-published.name}")
+    @KafkaListener(topics = "${spring.kafka.topics.post-comment-publish.name}")
     public void listen(String message) throws JsonProcessingException {
         CommentDto dto = objectMapper.readValue(message, CommentDto.class);
         cache.add(dto);

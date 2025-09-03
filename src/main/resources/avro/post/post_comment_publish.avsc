@@ -1,0 +1,46 @@
+{
+	"name": "PostCommentEvent",
+	"type": "record",
+	"namespace": "school.faang.avro.post",
+	"fields": [
+		{
+			"name": "id",
+			"type": [
+				"null",
+				"long"
+			],
+			"default": null
+		},
+		{
+			"name": "content",
+			"type": [
+				"null",
+				"string"
+			],
+			"default": null
+		},
+		{
+			"name": "authorId",
+			"type": [
+				"null",
+				"long"
+			],
+			"default": null
+		},
+		{
+			"name": "postId",
+			"type": [
+				"null",
+				"long"
+			],
+			"default": null
+		},
+		{
+			"name": "createdAt",
+			"type": {
+				"type": "long",
+				"logicalType": "local-timestamp-millis"
+			}
+		}
+	]
+}
