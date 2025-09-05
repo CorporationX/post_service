@@ -9,7 +9,6 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.impl.PostServiceImpl;
 import jakarta.persistence.EntityNotFoundException;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,6 +24,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -49,48 +54,42 @@ public class PostServiceTest {
 
     @BeforeEach
     public void setUp() {
-        postService = new PostServiceImpl(postMapper, postRepository, projectClient, userClient);
+        postService = new PostServiceImpl(postMapper, postRepository, projectClient, userClient, null);
     }
 
     @Test
     public void testFindById_success() {
-        when(postRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(createPost()));
+        when(postRepository.findById(anyLong())).thenReturn(Optional.of(createPost()));
         PostDto post = postService.findById(1L);
-        verify(postRepository, times(1)).findById(Mockito.anyLong());
-        Assertions.assertNotNull(post);
+        verify(postRepository, times(1)).findById(anyLong());
+        assertNotNull(post);
     }
 
     @Test
     public void testFindById_notFound() {
-        Assertions.assertThrows(EntityNotFoundException.class, () -> postService.findById(1L));
+        assertThrows(EntityNotFoundException.class, () -> postService.findById(1L));
     }
 
     @Test
     public void testMarkPostAsDeleted_success() {
-        when(postRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(createPost()));
+        when(postRepository.findById(anyLong())).thenReturn(Optional.of(createPost()));
         Post deletedPost = createPost();
         deletedPost.setDeleted(true);
         deletedPost.setPublished(false);
-        when(postRepository.save(Mockito.any(Post.class))).thenReturn(deletedPost);
+        when(postRepository.save(any(Post.class))).thenReturn(deletedPost);
         PostDto postDto = postService.markPostAsDeleted(1L);
-        verify(postRepository, times(1)).findById(Mockito.anyLong());
-        verify(postRepository, times(1)).save(Mockito.any(Post.class));
-        Assertions.assertTrue(postDto.isDeleted());
-        Assertions.assertFalse(postDto.isPublished());
+        verify(postRepository, times(1)).findById(anyLong());
+        verify(postRepository, times(1)).save(any(Post.class));
+        assertTrue(postDto.isDeleted());
+        assertFalse(postDto.isPublished());
     }
-
-//    @Test
-//    public void testMarkPostAsDeleted_notFound() {
-//        when(postRepository.findById(Mockito.anyLong())).thenReturn(null);
-//        Assertions.assertThrows(EntityNotFoundException.class, () -> postService.markPostAsDeleted(1L));
-//    }
 
     @Test
     public void testCreatePostDraft_success() {
         PostDraftDto postDraftDto = createPostDraftDto();
         PostDto postDto = postService.createPostDraft(postDraftDto);
-        verify(postRepository, times(1)).save(Mockito.any(Post.class));
-        Assertions.assertNotNull(postDto);
+        verify(postRepository, times(1)).save(any(Post.class));
+        assertNotNull(postDto);
     }
 
     @Test
@@ -98,11 +97,11 @@ public class PostServiceTest {
         when(postRepository.findByAuthorId(1L)).thenReturn(getPostsWithAuthorId_1_success());
         List<PostDto> postDtos = postService.getAllPostsByAuthorId(1L);
         verify(postRepository, times(1)).findByAuthorId(1L);
-        Assertions.assertEquals(2, postDtos.size());
-        Assertions.assertEquals(2, postDtos.stream()
+        assertEquals(2, postDtos.size());
+        assertEquals(2, postDtos.stream()
                 .filter(p -> p.getAuthorId() == 1L)
                 .count());
-        Assertions.assertEquals(4, postDtos.get(0).getId());
+        assertEquals(4, postDtos.get(0).getId());
     }
 
     private Post createPost() {

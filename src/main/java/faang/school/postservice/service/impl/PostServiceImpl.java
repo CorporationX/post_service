@@ -8,6 +8,8 @@ import faang.school.postservice.integration.project.service.ProjectServiceClient
 import faang.school.postservice.integration.user.service.UserServiceClient;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.AnalyticsEventProducer;
+import faang.school.postservice.producer.AnalyticsEventProducer.AnalyticsEvent;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.PostService;
 import jakarta.persistence.EntityNotFoundException;
@@ -20,6 +22,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
+import static faang.school.postservice.producer.AnalyticsEventProducer.EventType.*;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -29,6 +33,7 @@ public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
     private final ProjectServiceClient projectServiceClient;
     private final UserServiceClient userServiceClient;
+    private final AnalyticsEventProducer analyticsEventProducer;
 
     @Override
     public PostDto findById(long id) {
@@ -80,6 +85,12 @@ public class PostServiceImpl implements PostService {
             post.setPublishedAt(LocalDateTime.now());
         }
         postRepository.save(post);
+        analyticsEventProducer.sendAnalyticsEvent(new AnalyticsEvent()
+                .setEventType(POST_PUBLISHED)
+                .setReceivedAt(LocalDateTime.now())
+                .setActorId(postDraftDto.getAuthorId() != null ? postDraftDto.getAuthorId() : postDraftDto.getProjectId())
+                .setReceiverId(0)
+        );
     }
 
     @Override

@@ -5,7 +5,7 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.model.Post;
 import org.mapstruct.Mapper;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", unmappedTargetPolicy = org.mapstruct.ReportingPolicy.IGNORE)
 public interface PostMapper {
     Post postDraftDtoToPost(PostDraftDto postDraftDto);
     PostDraftDto postToPostDraftDto(Post post);

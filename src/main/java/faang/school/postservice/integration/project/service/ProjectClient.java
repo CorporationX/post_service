@@ -40,6 +40,7 @@ public class ProjectClient implements ProjectServiceClient {
                 })
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
+                .onStatus()
                 .toEntity(ProjectResponseDto.class)
                 .onErrorMap(e -> {
                     try {
