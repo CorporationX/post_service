@@ -22,6 +22,8 @@ public class FeedCacheImpl implements FeedCache {
     private static final String KEY_PATTERN = "feed:%s";
     @Value("${spring.data.redis.cache.feed.ttl}")
     private int ttl;
+    @Value("${spring.data.redis.cache.feed.limit}")
+    private int limit;
 
     private final RedisTemplate<String, Long> cache;
     private final PostCache postCache;
@@ -37,6 +39,7 @@ public class FeedCacheImpl implements FeedCache {
         if (score != null) {
             cache.opsForZSet().add(key, postId, score);
         }
+        trimFeed(key);
     }
 
     @Override
@@ -54,6 +57,7 @@ public class FeedCacheImpl implements FeedCache {
                 if (rawKey != null && rawValue != null) {
                     connection.zAdd(rawKey, score, rawValue);
                 }
+                trimFeed(key);
             }
             return null;
         });
@@ -78,5 +82,9 @@ public class FeedCacheImpl implements FeedCache {
             return Collections.emptyList();
         }
         return postCache.getAll(new ArrayList<>(ids));
+    }
+
+    private void trimFeed(String key){
+        cache.opsForZSet().removeRange(key, 0, -limit - 1);
     }
 }
