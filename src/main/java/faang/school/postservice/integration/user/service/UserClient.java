@@ -3,6 +3,7 @@ package faang.school.postservice.integration.user.service;
 import faang.school.postservice.integration.user.config.UserClientProperties;
 import faang.school.postservice.integration.user.dto.UserResponseDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -25,13 +26,15 @@ public class UserClient implements UserServiceClient {
 
     private final UserClientProperties properties;
 
+    @Qualifier("userWebClient")
+    private final WebClient webClient;
+
     @Override
     public UserResponseDto getUser(long id) {
-        ResponseEntity<UserResponseDto> responseEntity = WebClient.builder().baseUrl("http://" + properties.host() + ":" + properties.port()).build()
+        ResponseEntity<UserResponseDto> responseEntity = webClient
                 .get()
                 .uri(u -> {
                     return u.path(properties.getUserUrl() + "/" + id)
-//                            .queryParam("id", id)
                             .build();
                 })
                 .accept(MediaType.APPLICATION_JSON)

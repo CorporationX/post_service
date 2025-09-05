@@ -4,6 +4,7 @@ import faang.school.postservice.integration.project.config.ProjectClientProperti
 import faang.school.postservice.integration.project.dto.ProjectResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.http.HttpHeaders;
@@ -28,11 +29,13 @@ public class ProjectClient implements ProjectServiceClient {
 
     private final ProjectClientProperties properties;
 
+    @Qualifier("projectWebClient")
+    private final WebClient webClient;
+
     @Override
     public ProjectResponseDto getProject(long id) {
 
-        ResponseEntity<ProjectResponseDto> responseEntity = WebClient.builder()
-                .baseUrl("http://" + properties.host() + ":" + properties.port()).build()
+        ResponseEntity<ProjectResponseDto> responseEntity = webClient
                 .get()
                 .uri(u -> {
                     return u.path(properties.getProjectUrl() + "/" + id)
