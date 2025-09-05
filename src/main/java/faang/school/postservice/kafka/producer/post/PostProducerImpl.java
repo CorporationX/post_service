@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 import school.faang.avro.post.PostCreateEvent;
+import school.faang.avro.post.PostCreateFanoutEvent;
 import school.faang.avro.post.PostViewEvent;
 
 @RequiredArgsConstructor
@@ -18,6 +19,7 @@ public class PostProducerImpl implements PostProducer {
 
     private final KafkaTemplate<String, PostViewEvent> onViewTemplate;
     private final KafkaTemplate<String, PostCreateEvent> onCreateTemplate;
+    private final KafkaTemplate<String, PostCreateFanoutEvent> onPostCreateFanoutTemplate;
 
     @Override
     public void onPostView(PostViewEvent event) {
@@ -27,5 +29,10 @@ public class PostProducerImpl implements PostProducer {
     @Override
     public void onPostCreate(PostCreateEvent event) {
         onCreateTemplate.send(postTopic, String.valueOf(event.getId()), event);
+    }
+
+    @Override
+    public void onPostFanoutBatch(PostCreateFanoutEvent event) {
+        onPostCreateFanoutTemplate.send(postTopic, String.valueOf(event.getId()), event);
     }
 }

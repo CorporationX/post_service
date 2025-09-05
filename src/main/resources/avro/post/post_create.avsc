@@ -3,28 +3,33 @@
   "type": "record",
   "namespace": "school.faang.avro.post",
   "fields": [
-    {
+{
       "name": "id",
-      "type": "long"
+      "type": ["null", "long"],
+      "default": null
     },
     {
       "name": "content",
-      "type": "string"
+      "type": ["null", "string"],
+      "default": null
     },
     {
       "name": "authorId",
-      "type": "long"
+      "type": ["null", "long"],
+      "default": null
     },
     {
       "name": "projectId",
-      "type": "long"
+      "type": ["null", "long"],
+      "default": null
     },
     {
       "name": "publishedAt",
-      "type": {
+      "type": ["null", {
         "type": "long",
         "logicalType": "timestamp-millis"
-      }
+      }],
+      "default": null
     },
     {
       "name": "createdAt",

@@ -2,6 +2,8 @@ package faang.school.postservice.config.redis;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.user.UserDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -46,6 +48,45 @@ public class RedisConfig {
         template.setConnectionFactory(jedisConnectionFactory);
 
         configureRedisTemplate(template, mapper, CommentDto.class);
+
+        return template;
+    }
+
+    @Bean
+    public RedisTemplate<String, UserDto> redisUserDtoTemplate(
+            JedisConnectionFactory jedisConnectionFactory,
+            ObjectMapper mapper
+    ) {
+        RedisTemplate<String, UserDto> template = new RedisTemplate<>();
+        template.setConnectionFactory(jedisConnectionFactory);
+
+        configureRedisTemplate(template, mapper, UserDto.class);
+
+        return template;
+    }
+
+    @Bean
+    public RedisTemplate<String, PostDto> redisPostDtoTemplate(
+            JedisConnectionFactory jedisConnectionFactory,
+            ObjectMapper mapper
+    ) {
+        RedisTemplate<String, PostDto> template = new RedisTemplate<>();
+        template.setConnectionFactory(jedisConnectionFactory);
+
+        configureRedisTemplate(template, mapper, PostDto.class);
+
+        return template;
+    }
+
+    @Bean
+    public RedisTemplate<String, Long> redisLongTemplate(
+            JedisConnectionFactory jedisConnectionFactory,
+            ObjectMapper mapper
+    ) {
+        RedisTemplate<String, Long> template = new RedisTemplate<>();
+        template.setConnectionFactory(jedisConnectionFactory);
+
+        configureRedisTemplate(template, mapper, Long.class);
 
         return template;
     }

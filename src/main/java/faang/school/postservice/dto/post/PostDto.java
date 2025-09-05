@@ -7,10 +7,7 @@ public record PostDto(
         String content,
         Long authorId,
         Long projectId,
-        boolean published,
         LocalDateTime publishedAt,
-        boolean deleted,
-        LocalDateTime createdAt,
-        LocalDateTime updatedAt
+        LocalDateTime createdAt
 ) {
 }

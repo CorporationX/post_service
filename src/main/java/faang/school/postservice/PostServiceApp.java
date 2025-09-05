@@ -3,7 +3,9 @@ package faang.school.postservice;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import faang.school.postservice.kafka.producer.post.PostProducerImpl;
 import org.springframework.boot.Banner;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
@@ -11,6 +13,10 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Bean;
 import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import school.faang.avro.post.PostCreateEvent;
+
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
 @SpringBootApplication
 @EnableScheduling

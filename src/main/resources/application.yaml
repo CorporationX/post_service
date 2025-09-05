@@ -42,6 +42,8 @@ spring:
         name: posts.view
       post:
         name: posts
+        batch: 100
+
 
 
   data:
@@ -54,13 +56,19 @@ spring:
           ttl: 86400
         authors:
           ttl: 86400
+        posts:
+          ttl: 86400
+        feed:
+          ttl: 86400
+          limit: 500
+          per-page: 20
 
       channels:
         calculations_channel:
           name: calculations_channel
 
 server:
-  port: 8081
+  port: 8085
 
 logging:
   level:
