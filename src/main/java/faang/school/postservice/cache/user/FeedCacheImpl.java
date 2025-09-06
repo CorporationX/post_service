@@ -43,7 +43,7 @@ public class FeedCacheImpl implements FeedCache {
     }
 
     @Override
-    public void AddAll(List<Long> followersIds, long postId, Instant createdAt) {
+    public void addAll(List<Long> followersIds, long postId, Instant createdAt) {
         double score = createdAt.toEpochMilli();
 
         cache.executePipelined((RedisCallback<Object>) connection -> {
@@ -84,7 +84,7 @@ public class FeedCacheImpl implements FeedCache {
         return postCache.getAll(new ArrayList<>(ids));
     }
 
-    private void trimFeed(String key){
+    private void trimFeed(String key) {
         cache.opsForZSet().removeRange(key, 0, -limit - 1);
     }
 }

@@ -20,7 +20,10 @@ public class PostSearchCriteria {
         PUBLISHED_AT("publishedAt");
 
         private final String field;
-        SortField(String field) { this.field = field; }
+
+        SortField(String field) {
+            this.field = field;
+        }
     }
 
     public enum SortDirection {

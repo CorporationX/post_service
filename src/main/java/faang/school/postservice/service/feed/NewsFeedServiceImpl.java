@@ -31,7 +31,7 @@ public class NewsFeedServiceImpl implements NewsFeedService {
 
         if (remaining > 0 && (request.searchAfter() != null || !userFeed.isEmpty())) {
             Long lastId = userFeed.isEmpty() ? request.searchAfter() : userFeed.get(userFeed.size() - 1).id();
-            List<Post> postsAfterId = postRepository.getPostsAfterIdForFollower(lastId, remaining);
+            List<Post> postsAfterId = postRepository.getPostsAfterIdForFollower(lastId, remaining, userId);
             userFeed.addAll(postMapper.toPostDtoList(postsAfterId));
         }
 

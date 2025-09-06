@@ -9,7 +9,7 @@ import java.util.List;
 public interface FeedCache {
     void add(long followerId, long postId, Instant createdAt);
 
-    void AddAll(List<Long> followersIds, long postId, Instant createdAt);
+    void addAll(List<Long> followersIds, long postId, Instant createdAt);
 
     List<PostDto> getUserFeed(long userId, FeedRequest request, int perPage);
 }

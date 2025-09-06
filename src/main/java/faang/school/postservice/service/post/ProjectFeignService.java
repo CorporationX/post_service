@@ -17,7 +17,7 @@ public class ProjectFeignService {
 
     public ProjectDto getProjectOrFail(@NonNull Long projectId) {
         try {
-           return projectServiceClient.getProject(projectId);
+            return projectServiceClient.getProject(projectId);
         } catch (FeignException feignException) {
             throw feignExceptionHandler.handleFeignException(
                     feignException,

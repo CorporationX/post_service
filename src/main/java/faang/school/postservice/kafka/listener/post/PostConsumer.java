@@ -4,18 +4,17 @@ import faang.school.postservice.cache.post.PostCache;
 import faang.school.postservice.cache.user.FeedCache;
 import faang.school.postservice.kafka.producer.post.PostProducer;
 import faang.school.postservice.mapper.PostMapper;
+import faang.school.postservice.repository.FollowerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.kafka.annotation.KafkaHandler;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 import school.faang.avro.post.PostCreateEvent;
 import school.faang.avro.post.PostCreateFanoutEvent;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 @RequiredArgsConstructor
 @KafkaListener(topics = "${spring.kafka.topics.post.name}")
@@ -29,37 +28,33 @@ public class PostConsumer {
     private final FeedCache feedCache;
     private final PostMapper mapper;
     private final PostProducer producer;
+    private final FollowerRepository followerRepository;
 
     @KafkaHandler
     public void onPostCreate(PostCreateEvent event) {
         postCache.set(mapper.toPostDto(event));
-        //todo запросы на получение подписчиков
-        for (int i = 0; i < FOLLOWERS_GAPE_COUNT; i++) {
+        int page = 0;
+        while (true) {
+            List<Long> followerIds = followerRepository.findAllAuthorFollowerIds(
+                    event.getAuthorId(),
+                    PageRequest.of(page, batch)
+            );
+            if (followerIds.isEmpty()) {
+                break;
+            }
             producer.onPostFanoutBatch(
                     PostCreateFanoutEvent.newBuilder()
                             .setId(event.getId())
-                            .setFollowerIds(getFollowers(i))
+                            .setFollowerIds(followerIds)
                             .setCreatedAt(event.getCreatedAt())
                             .build()
             );
+            page++;
         }
     }
 
     @KafkaHandler
     public void onPostCreate(PostCreateFanoutEvent event) {
-        feedCache.AddAll(event.getFollowerIds(), event.getId(), event.getCreatedAt());
-    }
-
-    //todo заглушка
-    List<Long> getFollowers(int p) {
-        int from = p * batch + 1;
-        List<Long> numbers = IntStream.rangeClosed(from, from + batch * 10)
-                .mapToLong(i -> i)
-                .boxed()
-                .collect(Collectors.toList());
-
-        Collections.shuffle(numbers);
-
-        return numbers.subList(0, batch);
+        feedCache.addAll(event.getFollowerIds(), event.getId(), event.getCreatedAt());
     }
 }

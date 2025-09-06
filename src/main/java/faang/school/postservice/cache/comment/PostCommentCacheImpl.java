@@ -26,7 +26,7 @@ public class PostCommentCacheImpl implements PostCommentCache {
     private int ttl;
 
     private final RedisTemplate<String, CommentDto> cache;
-    private final StringRedisTemplate zSetCache;
+    private final StringRedisTemplate zsetCache;
 
     private String getPostCommentsKey(long postId) {
         return String.format(KEY_POST_COMMENT_PATTERN, postId);
@@ -48,13 +48,13 @@ public class PostCommentCacheImpl implements PostCommentCache {
         ZoneId zone = ZoneId.systemDefault();
         long score = comment.createdAt().atZone(zone).toInstant().toEpochMilli();
 
-        zSetCache.opsForZSet().add(postCommentsKey, String.valueOf(comment.id()), score);
+        zsetCache.opsForZSet().add(postCommentsKey, String.valueOf(comment.id()), score);
         cache.opsForValue().set(commentKey, comment);
         Long size = cache.opsForZSet().size(postCommentsKey);
 
         if (size != null && size > max) {
             long difference = size - max;
-            Set<String> toDelete = zSetCache.opsForZSet().range(postCommentsKey, 0, difference - 1);
+            Set<String> toDelete = zsetCache.opsForZSet().range(postCommentsKey, 0, difference - 1);
             if (toDelete != null) {
                 List<String> ids = new ArrayList<>();
                 for (String id : toDelete) {
@@ -69,7 +69,7 @@ public class PostCommentCacheImpl implements PostCommentCache {
     @Override
     public List<CommentDto> getPostComments(long postId) {
         String key = getPostCommentsKey(postId);
-        Set<String> ids = zSetCache.opsForZSet().reverseRange(key, 0, max - 1);
+        Set<String> ids = zsetCache.opsForZSet().reverseRange(key, 0, max - 1);
         if (Objects.isNull(ids) || ids.isEmpty()) {
             return Collections.emptyList();
         }

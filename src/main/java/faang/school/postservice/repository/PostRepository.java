@@ -21,7 +21,11 @@ public interface PostRepository extends CrudRepository<Post, Long>, PostReposito
     @Query("SELECT p FROM Post p LEFT JOIN FETCH p.likes WHERE p.authorId = :authorId")
     List<Post> findByAuthorIdWithLikes(long authorId);
 
-    @Query("SELECT p FROM Post p WHERE p.published = false AND p.deleted = false AND p.scheduledAt <= CURRENT_TIMESTAMP")
+    @Query("""
+            SELECT p FROM Post p WHERE p.published = false 
+            AND p.deleted = false 
+            AND p.scheduledAt <= CURRENT_TIMESTAMP
+            """)
     List<Post> findReadyToPublish();
 
     Optional<Post> findByIdAndDeletedFalse(@NonNull Long postId);
@@ -32,8 +36,11 @@ public interface PostRepository extends CrudRepository<Post, Long>, PostReposito
         return findById(id).orElseThrow(() -> new EntityNotFoundException("Post no found, id:" + id));
     }
 
-    @Query(value = "SELECT * FROM post WHERE id < :id ORDER BY created_at DESC LIMIT :limit", nativeQuery = true)
-    List<Post> getPostsAfterIdForFollower(long id, int limit);
+    @Query(value = """
+            SELECT post.* FROM post JOIN followers ON post.id = followers.post_id
+            WHERE post.id < :id and followers.user_id = :followerId ORDER BY post.created_at DESC LIMIT :limit
+            """, nativeQuery = true)
+    List<Post> getPostsAfterIdForFollower(long id, int limit, long followerId);
 
     @Query(value = "SELECT * FROM post WHERE id IN :ids", nativeQuery = true)
     List<Post> getByIds(List<Long> ids);

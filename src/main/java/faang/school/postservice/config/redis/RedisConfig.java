@@ -94,9 +94,9 @@ public class RedisConfig {
     private <T> void configureRedisTemplate(
             RedisTemplate<String, T> template,
             ObjectMapper mapper,
-            Class<T> tClass
+            Class<T> typeClass
     ) {
-        Jackson2JsonRedisSerializer<T> jsonSerializer = new Jackson2JsonRedisSerializer<>(mapper, tClass);
+        Jackson2JsonRedisSerializer<T> jsonSerializer = new Jackson2JsonRedisSerializer<>(mapper, typeClass);
         StringRedisSerializer stringSerializer = new StringRedisSerializer();
 
         template.setKeySerializer(stringSerializer);
