@@ -12,7 +12,6 @@ import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -73,13 +72,13 @@ public class FeedCacheImpl implements FeedCache {
         } else {
             Double afterScore = cache.opsForZSet().score(key, request.searchAfter());
             if (afterScore == null) {
-                return Collections.emptyList();
+                return new ArrayList<>();
             }
             ids = cache.opsForZSet()
                     .reverseRangeByScore(key, 0, afterScore, 0, perPage);
         }
         if (ids == null) {
-            return Collections.emptyList();
+            return new ArrayList<>();
         }
         return postCache.getAll(new ArrayList<>(ids));
     }

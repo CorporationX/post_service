@@ -37,10 +37,16 @@ public interface PostRepository extends CrudRepository<Post, Long>, PostReposito
     }
 
     @Query(value = """
-            SELECT post.* FROM post JOIN followers ON post.id = followers.post_id
-            WHERE post.id < :id and followers.user_id = :followerId ORDER BY post.created_at DESC LIMIT :limit
+            SELECT post.* FROM post JOIN followers ON post.author_id = followers.author_id
+            WHERE post.id < :id and followers.follower_id = :followerId ORDER BY post.created_at DESC LIMIT :limit
             """, nativeQuery = true)
-    List<Post> getPostsAfterIdForFollower(long id, int limit, long followerId);
+    List<Post> getPostsAfterIdForFollower(long id, long followerId, int limit);
+
+    @Query(value = """
+            SELECT post.* FROM post JOIN followers ON post.author_id = followers.author_id
+            WHERE followers.follower_id = :followerId ORDER BY post.created_at DESC LIMIT :limit
+            """, nativeQuery = true)
+    List<Post> getPostsForFollower(long followerId, int limit);
 
     @Query(value = "SELECT * FROM post WHERE id IN :ids", nativeQuery = true)
     List<Post> getByIds(List<Long> ids);

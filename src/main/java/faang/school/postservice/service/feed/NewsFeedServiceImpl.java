@@ -26,17 +26,30 @@ public class NewsFeedServiceImpl implements NewsFeedService {
     @Override
     public List<PostDto> getUserFeed(FeedRequest request) {
         long userId = userContext.getUserId();
-        List<PostDto> userFeed = feedCache.getUserFeed(userId, request, perPage);
-        int remaining = perPage - userFeed.size();
 
-        if (remaining > 0 && (request.searchAfter() != null || !userFeed.isEmpty())) {
-            Long lastId = userFeed.isEmpty() ? request.searchAfter() : userFeed.get(userFeed.size() - 1).id();
-            List<Post> postsAfterId = postRepository.getPostsAfterIdForFollower(lastId, remaining, userId);
-            userFeed.addAll(postMapper.toPostDtoList(postsAfterId));
+        List<PostDto> cachedFeed = feedCache.getUserFeed(userId, request, perPage);
+
+        int remaining = perPage - cachedFeed.size();
+        if (remaining <= 0) {
+            return cachedFeed;
         }
 
-        return userFeed;
+        Long cursorId = !cachedFeed.isEmpty()
+                ? cachedFeed.get(cachedFeed.size() - 1).id()
+                : request.searchAfter();
+
+        List<Post> postsFromDb;
+        if (cursorId != null) {
+            postsFromDb = postRepository.getPostsAfterIdForFollower(cursorId, userId, remaining);
+        } else {
+            postsFromDb = postRepository.getPostsForFollower(userId, remaining);
+        }
+
+        List<PostDto> dbDtos = postMapper.toPostDtoList(postsFromDb);
+        if (dbDtos != null) {
+            cachedFeed.addAll(dbDtos);
+        }
+
+        return cachedFeed;
     }
-
-
 }
