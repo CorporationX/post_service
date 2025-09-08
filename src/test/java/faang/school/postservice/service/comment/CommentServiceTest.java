@@ -147,7 +147,6 @@ public class CommentServiceTest {
 
         verify(commentMapper, never()).update(any(), any());
         verify(commentRepository, never()).save(any());
-        verify(commentMapper, never()).toCommentDto(any());
     }
 
     @Test

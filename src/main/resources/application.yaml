@@ -36,6 +36,10 @@ spring:
     topics:
       post-comment-publish:
         name: posts.comments.publish
+        executor:
+          core-pool-size: 2
+          max-pool-size: 5
+          queue-capacity: 50
       post-like-publish:
         name: posts.likes.publish
       post-view:
@@ -43,8 +47,6 @@ spring:
       post:
         name: posts
         batch: 100
-
-
 
   data:
     redis:
@@ -56,6 +58,8 @@ spring:
           ttl: 86400
         authors:
           ttl: 86400
+          lock-sec-ttl: 10
+          waiting-sec-lock: 5
         posts:
           ttl: 86400
         feed:

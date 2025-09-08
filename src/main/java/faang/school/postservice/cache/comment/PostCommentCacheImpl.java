@@ -7,7 +7,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
-import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -45,8 +45,7 @@ public class PostCommentCacheImpl implements PostCommentCache {
         }
 
         String commentKey = getCommentKey(String.valueOf(comment.id()));
-        ZoneId zone = ZoneId.systemDefault();
-        long score = comment.createdAt().atZone(zone).toInstant().toEpochMilli();
+        long score = comment.createdAt().toInstant(ZoneOffset.UTC).toEpochMilli();
 
         zsetCache.opsForZSet().add(postCommentsKey, String.valueOf(comment.id()), score);
         cache.opsForValue().set(commentKey, comment);

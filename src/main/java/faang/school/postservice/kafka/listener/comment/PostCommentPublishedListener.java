@@ -1,22 +1,20 @@
 package faang.school.postservice.kafka.listener.comment;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.cache.comment.PostCommentCache;
-import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.mapper.comment.CommentMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
+import school.faang.avro.post.CommentEvent;
 
 @RequiredArgsConstructor
 @Component
 public class PostCommentPublishedListener {
-    private final ObjectMapper objectMapper;
     private final PostCommentCache cache;
+    private final CommentMapper mapper;
 
     @KafkaListener(topics = "${spring.kafka.topics.post-comment-publish.name}")
-    public void listen(String message) throws JsonProcessingException {
-        CommentDto dto = objectMapper.readValue(message, CommentDto.class);
-        cache.add(dto);
+    public void listen(CommentEvent event) {
+        cache.add(mapper.toCommentDto(event));
     }
 }
