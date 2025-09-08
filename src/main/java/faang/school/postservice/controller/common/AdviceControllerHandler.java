@@ -26,7 +26,7 @@ public class AdviceControllerHandler {
         log.error(e.getMessage());
         ApiExceptionDto apiExceptionDto = new ApiExceptionDto();
         apiExceptionDto.setMessage(e.getMessage());
-        apiExceptionDto.setStatus(HttpStatus.NOT_FOUND.value());
+        apiExceptionDto.setStatus(HttpStatus.NOT_FOUND.name());
         apiExceptionDto.setTimestamp(System.currentTimeMillis());
         apiExceptionDto.setErrorType(SERVER_ERROR);
         return apiExceptionDto;
@@ -39,7 +39,7 @@ public class AdviceControllerHandler {
         log.error(e.getMessage());
         ApiExceptionDto apiExceptionDto = new ApiExceptionDto();
         apiExceptionDto.setMessage(e.getMessage());
-        apiExceptionDto.setStatus(HttpStatus.UNPROCESSABLE_ENTITY.value());
+        apiExceptionDto.setStatus(HttpStatus.UNPROCESSABLE_ENTITY.name());
         apiExceptionDto.setTimestamp(System.currentTimeMillis());
         apiExceptionDto.setErrorType(BUSINESS_ERROR);
         return apiExceptionDto;

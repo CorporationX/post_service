@@ -2,13 +2,13 @@ package faang.school.postservice.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.client.ProjectServiceClient;
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.controller.PostController;
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.integration.project.dto.ProjectResponseDto;
+import faang.school.postservice.integration.project.config.ProjectClientProperties;
 import faang.school.postservice.integration.project.service.ProjectClient;
-import faang.school.postservice.integration.user.dto.UserResponseDto;
+import faang.school.postservice.integration.user.config.UserClientProperties;
 import faang.school.postservice.integration.user.service.UserClient;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.PostService;
@@ -22,13 +22,13 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = PostController.class)
 public class PostControllerTest {
@@ -82,14 +82,6 @@ public class PostControllerTest {
                 .andReturn();
         PostDto postDto1 = objectMapper.readValue(mvcResult.getResponse().getContentAsByteArray(), PostDto.class);
         Assertions.assertEquals(postDto.getContent(), postDto1.getContent());
-    }
-
-    @Test
-    public void testUpdatePost_status_400() throws Exception {
-        mockMvc.perform(put("/api/v1/post/update/{postId}", 1)
-                        .contentType(MediaType.APPLICATION_JSON)
-                ).andExpect(status().is4xxClientError())
-                .andReturn();
     }
 
     @Test

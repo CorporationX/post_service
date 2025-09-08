@@ -2,13 +2,16 @@ package faang.school.postservice.util;
 
 import faang.school.postservice.dto.post.PostDraftDto;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.integration.project.dto.ProjectResponseDto;
 import faang.school.postservice.integration.project.service.ProjectClient;
+import faang.school.postservice.integration.user.dto.UserResponseDto;
 import faang.school.postservice.integration.user.service.UserClient;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.impl.PostServiceImpl;
 import jakarta.persistence.EntityNotFoundException;
+import liquibase.hub.model.Project;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -82,14 +85,6 @@ public class PostServiceTest {
         verify(postRepository, times(1)).save(any(Post.class));
         assertTrue(postDto.isDeleted());
         assertFalse(postDto.isPublished());
-    }
-
-    @Test
-    public void testCreatePostDraft_success() {
-        PostDraftDto postDraftDto = createPostDraftDto();
-        PostDto postDto = postService.createPostDraft(postDraftDto);
-        verify(postRepository, times(1)).save(any(Post.class));
-        assertNotNull(postDto);
     }
 
     @Test

@@ -26,12 +26,11 @@ public class UserClient implements UserServiceClient {
 
     private final UserClientProperties properties;
 
-    @Qualifier("userWebClient")
-    private final WebClient webClient;
+    private final WebClient userWebClient;
 
     @Override
     public UserResponseDto getUser(long id) {
-        ResponseEntity<UserResponseDto> responseEntity = webClient
+        ResponseEntity<UserResponseDto> responseEntity = userWebClient
                 .get()
                 .uri(u -> {
                     return u.path(properties.getUserUrl() + "/" + id)

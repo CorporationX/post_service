@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ApiExceptionDto {
     private String message;
-    private int status;
+    private String status;
     private long timestamp;
     private ErrorType errorType;
 

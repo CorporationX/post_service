@@ -29,13 +29,13 @@ public class ProjectClient implements ProjectServiceClient {
 
     private final ProjectClientProperties properties;
 
-    @Qualifier("projectWebClient")
-    private final WebClient webClient;
+//    @Qualifier("projectWebClient")
+    private final WebClient projectWebClient;
 
     @Override
     public ProjectResponseDto getProject(long id) {
 
-        ResponseEntity<ProjectResponseDto> responseEntity = webClient
+        ResponseEntity<ProjectResponseDto> responseEntity = projectWebClient
                 .get()
                 .uri(u -> {
                     return u.path(properties.getProjectUrl() + "/" + id)
@@ -43,7 +43,6 @@ public class ProjectClient implements ProjectServiceClient {
                 })
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
-                .onStatus()
                 .toEntity(ProjectResponseDto.class)
                 .onErrorMap(e -> {
                     try {
