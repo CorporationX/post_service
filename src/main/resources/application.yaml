@@ -44,6 +44,14 @@ spring:
     deserialization:
       fail-on-unknown-properties: false
 
+  cloud:
+    openfeign:
+      client:
+        config:
+          user-service:
+            connect-timeout: 5000
+            read-timeout: 5000
+
 server:
   port: 8081
 
@@ -76,3 +84,18 @@ events:
     retry:
       max-attempts: 3
       delay: 1000ms
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    tags:
+      service: post-service
