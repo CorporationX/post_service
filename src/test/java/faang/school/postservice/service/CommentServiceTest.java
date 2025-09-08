@@ -1,5 +1,6 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.events.CommentEvent;
 import faang.school.postservice.events.CommentEventPublisher;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
@@ -64,11 +65,11 @@ class CommentServiceTest {
 
         assertEquals(comment.getId(), result.getId());
 
-        ArgumentCaptor<faang.school.postservice.events.CommentEvent> eventCaptor =
-                ArgumentCaptor.forClass(faang.school.postservice.events.CommentEvent.class);
+        ArgumentCaptor<CommentEvent> eventCaptor =
+                ArgumentCaptor.forClass(CommentEvent.class);
         verify(commentEventPublisher).publishCommentEvent(eventCaptor.capture());
 
-        faang.school.postservice.events.CommentEvent capturedEvent = eventCaptor.getValue();
+        CommentEvent capturedEvent = eventCaptor.getValue();
         assertEquals(10L, capturedEvent.commentId());
         assertEquals(authorId, capturedEvent.commentAuthorId());
         assertEquals(postId, capturedEvent.postId());

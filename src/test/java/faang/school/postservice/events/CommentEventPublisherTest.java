@@ -11,6 +11,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 
 import java.time.LocalDateTime;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -52,7 +53,7 @@ class CommentEventPublisherTest {
         when(objectMapper.writeValueAsString(event))
                 .thenThrow(new RuntimeException("Serialization error"));
 
-        org.junit.jupiter.api.Assertions.assertThrows(RuntimeException.class, () -> {
+        assertThrows(RuntimeException.class, () -> {
             publisher.publishCommentEvent(event);
         });
 
