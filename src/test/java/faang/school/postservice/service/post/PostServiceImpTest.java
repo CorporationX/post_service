@@ -1,10 +1,12 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.cache.author.AuthorCache;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.SaveCommentDto;
 import faang.school.postservice.dto.post.CreatePostDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.post.RepeatPublishException;
 import faang.school.postservice.mapper.PostMapper;
@@ -42,6 +44,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
@@ -65,6 +68,9 @@ class PostServiceImplTest {
 
     @Mock
     private CommentValidator commentValidator;
+
+    @Mock
+    private AuthorCache authorCache;
 
     @Spy
     private CommentMapper commentMapper = Mappers.getMapper(CommentMapper.class);
@@ -316,6 +322,7 @@ class PostServiceImplTest {
 
         when(postRepository.findById(POST_ID)).thenReturn(Optional.of(post));
         when(commentRepository.save(any(Comment.class))).thenReturn(savedComment);
+        when(userFeignService.getUserOrFail(anyLong())).thenReturn(new UserDto(1L, "test", "mail"));
 
         CommentDto result = postService.createComment(POST_ID, AUTHOR_ID, saveDto);
 
@@ -330,6 +337,7 @@ class PostServiceImplTest {
         verify(commentMapper).toComment(saveDto);
         verify(commentRepository).save(any(Comment.class));
         verify(commentMapper).toCommentDto(savedComment);
+        verify(authorCache).set(any(UserDto.class));
     }
 
     @Test

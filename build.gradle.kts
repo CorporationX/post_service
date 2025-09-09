@@ -1,8 +1,12 @@
+import com.github.davidmc24.gradle.plugin.avro.GenerateAvroJavaTask
+
 plugins {
     java
     id("org.springframework.boot") version "3.0.6"
     id("io.spring.dependency-management") version "1.1.0"
     id("jacoco")
+    id("com.github.davidmc24.gradle.plugin.avro") version "1.9.1"
+    checkstyle
 }
 
 group = "faang.school"
@@ -11,6 +15,7 @@ java.sourceCompatibility = JavaVersion.VERSION_17
 
 repositories {
     mavenCentral()
+    maven("https://packages.confluent.io/maven/")
 }
 
 dependencies {
@@ -20,6 +25,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
+    implementation("org.redisson:redisson-spring-boot-starter:3.45.1")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.cloud:spring-cloud-starter-openfeign:4.0.2")
@@ -33,6 +39,8 @@ dependencies {
      */
     implementation("org.springframework.kafka:spring-kafka")
     testImplementation("org.springframework.kafka:spring-kafka-test")
+    implementation("io.confluent:kafka-avro-serializer:7.6.0")
+    implementation("org.apache.avro:avro:1.12.0")
 
     /**
      * Database
@@ -71,6 +79,10 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
 
+tasks.named<GenerateAvroJavaTask>("generateAvroJava") {
+    setSource("src/main/resources/avro")
+}
+
 tasks.test {
     useJUnitPlatform()
 }
@@ -83,4 +95,22 @@ val test by tasks.getting(Test::class) { testLogging.showStandardStreams = true 
 
 tasks.bootJar {
     archiveFileName.set("service.jar")
+}
+
+checkstyle {
+    toolVersion = "10.17.0"
+    configFile = file("${project.rootDir}/config/checkstyle/checkstyle.xml")
+    checkstyle.enableExternalDtdLoad.set(true)
+}
+
+tasks.checkstyleMain {
+    source = fileTree("${project.rootDir}/src/main/java")
+    include("**/*.java")
+    exclude("**/resources/**")
+
+    classpath = files()
+}
+
+tasks.checkstyleTest {
+    enabled = false
 }

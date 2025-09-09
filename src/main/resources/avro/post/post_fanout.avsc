@@ -1,0 +1,20 @@
+{
+  "name": "PostCreateFanoutEvent",
+  "type": "record",
+  "namespace": "school.faang.avro.post",
+  "fields": [
+    {
+      "name": "id",
+      "type": ["null", "long"],
+      "default": null
+    },
+    { "name": "followerIds", "type": { "type": "array", "items": "long" } },
+    {
+      "name": "createdAt",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      }
+    }
+  ]
+}

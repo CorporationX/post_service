@@ -19,18 +19,60 @@ spring:
 
   kafka:
     bootstrap-servers: localhost:9092
-    group-id: post_service
+    properties:
+      schema.registry.url: http://localhost:8081
+    consumer:
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: io.confluent.kafka.serializers.KafkaAvroDeserializer
+      group-id: post_service
+      properties:
+        specific.avro.reader: true
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
+      properties:
+        value.subject.name.strategy: io.confluent.kafka.serializers.subject.RecordNameStrategy
+
+    topics:
+      post-comment-publish:
+        name: posts.comments.publish
+        executor:
+          core-pool-size: 2
+          max-pool-size: 5
+          queue-capacity: 50
+      post-like-publish:
+        name: posts.likes.publish
+      post-view:
+        name: posts.view
+      post:
+        name: posts
+        batch: 100
 
   data:
     redis:
       port: 6379
       host: localhost
+      cache:
+        comments:
+          max: 3
+          ttl: 86400
+        authors:
+          ttl: 86400
+          lock-sec-ttl: 10
+          waiting-sec-lock: 5
+        posts:
+          ttl: 86400
+        feed:
+          ttl: 86400
+          limit: 500
+          per-page: 20
+
       channels:
         calculations_channel:
           name: calculations_channel
 
 server:
-  port: 8081
+  port: 8085
 
 logging:
   level:

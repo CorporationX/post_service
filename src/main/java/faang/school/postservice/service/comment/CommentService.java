@@ -5,5 +5,6 @@ import faang.school.postservice.dto.comment.SaveCommentDto;
 
 public interface CommentService {
     CommentDto update(Long commentId, Long authorId, SaveCommentDto dto);
+
     void delete(Long commentId, Long userId);
 }

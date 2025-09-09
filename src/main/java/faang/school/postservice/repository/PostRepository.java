@@ -1,5 +1,6 @@
 package faang.school.postservice.repository;
 
+import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.model.Post;
 import lombok.NonNull;
 import org.springframework.data.jpa.repository.Query;
@@ -20,10 +21,33 @@ public interface PostRepository extends CrudRepository<Post, Long>, PostReposito
     @Query("SELECT p FROM Post p LEFT JOIN FETCH p.likes WHERE p.authorId = :authorId")
     List<Post> findByAuthorIdWithLikes(long authorId);
 
-    @Query("SELECT p FROM Post p WHERE p.published = false AND p.deleted = false AND p.scheduledAt <= CURRENT_TIMESTAMP")
+    @Query("""
+            SELECT p FROM Post p WHERE p.published = false 
+            AND p.deleted = false 
+            AND p.scheduledAt <= CURRENT_TIMESTAMP
+            """)
     List<Post> findReadyToPublish();
 
     Optional<Post> findByIdAndDeletedFalse(@NonNull Long postId);
 
     List<Post> findAllByPublishedFalse();
+
+    default Post findByIdOrThrow(long id) {
+        return findById(id).orElseThrow(() -> new EntityNotFoundException("Post no found, id:" + id));
+    }
+
+    @Query(value = """
+            SELECT post.* FROM post JOIN followers ON post.author_id = followers.author_id
+            WHERE post.id < :id and followers.follower_id = :followerId ORDER BY post.created_at DESC LIMIT :limit
+            """, nativeQuery = true)
+    List<Post> getPostsAfterIdForFollower(long id, long followerId, int limit);
+
+    @Query(value = """
+            SELECT post.* FROM post JOIN followers ON post.author_id = followers.author_id
+            WHERE followers.follower_id = :followerId ORDER BY post.created_at DESC LIMIT :limit
+            """, nativeQuery = true)
+    List<Post> getPostsForFollower(long followerId, int limit);
+
+    @Query(value = "SELECT * FROM post WHERE id IN :ids", nativeQuery = true)
+    List<Post> getByIds(List<Long> ids);
 }

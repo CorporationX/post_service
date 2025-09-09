@@ -1,10 +1,12 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.cache.author.AuthorCache;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.SaveCommentDto;
 import faang.school.postservice.dto.post.CreatePostDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.mapper.comment.CommentMapper;
@@ -41,6 +43,7 @@ public class PostServiceImpl implements PostService {
     private final CommentValidator commentValidator;
     private final UserFeignService userFeignService;
     private final PostSpellCheckValidator postSpellCheckValidator;
+    private final AuthorCache authorCache;
 
     @Override
     @Transactional
@@ -181,12 +184,13 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public CommentDto createComment(Long postId, Long authorId, SaveCommentDto saveCommentDto) {
-        userFeignService.getUserOrFail(authorId);
+        UserDto user = userFeignService.getUserOrFail(authorId);
         Post post = getPostById(postId);
         Comment comment = commentMapper.toComment(saveCommentDto);
         comment.setAuthorId(authorId);
         comment.setPost(post);
         Comment savedComment = commentRepository.save(comment);
+        authorCache.set(user);
         log.info("Comment id: {} for post id: {} created", savedComment.getId(), postId);
         return commentMapper.toCommentDto(savedComment);
     }

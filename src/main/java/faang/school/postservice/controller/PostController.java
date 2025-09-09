@@ -108,7 +108,7 @@ public class PostController {
     )
     @PostMapping("/{postId}/comments")
     @ResponseStatus(HttpStatus.CREATED)
-    public CommentDto create(@PathVariable @Positive Long postId,
+    public CommentDto createComment(@PathVariable @Positive Long postId,
                              @RequestBody @Valid SaveCommentDto saveCommentDto) {
         return postService.createComment(postId, userContext.getUserId(), saveCommentDto);
     }
