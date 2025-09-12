@@ -101,6 +101,4 @@ public class PostServiceImplTestData {
                 Arguments.of(null, null, null, true, List.of(deletedPost))
         );
     }
-
-
 }
