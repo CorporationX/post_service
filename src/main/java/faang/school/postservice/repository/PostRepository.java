@@ -21,14 +21,14 @@ public interface PostRepository extends CrudRepository<Post, Long>, JpaSpecifica
     @Query("""
             SELECT p FROM Post p
             LEFT JOIN FETCH p.likes
-            WHERE p.projectId = :projectId
+                WHERE p.projectId = :projectId
             """)
     List<Post> findByProjectIdWithLikes(long projectId);
 
     @Query("""
             SELECT p FROM Post p
             LEFT JOIN FETCH p.likes
-            WHERE p.authorId = :authorId
+                WHERE p.authorId = :authorId
             """)
     List<Post> findByAuthorIdWithLikes(long authorId);
 
