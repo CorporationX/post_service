@@ -78,7 +78,7 @@ public class PostServiceImplTestData {
 
     public static Stream<Arguments> provideAuthorFilterCases() {
         return Stream.of(
-                Arguments.of( USER_ID_1, null, USER_ID_1, null),
+                Arguments.of(USER_ID_1, null, USER_ID_1, null),
                 Arguments.of(null, PROJECT_ID_1, null, PROJECT_ID_1)
         );
     }
