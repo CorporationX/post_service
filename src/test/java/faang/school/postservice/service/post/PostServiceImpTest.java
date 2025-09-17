@@ -8,7 +8,7 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.post.RepeatPublishException;
-import faang.school.postservice.kafka.producer.comment.CommentProducer;
+import faang.school.postservice.kafka.producer.CommentProducer;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.mapper.comment.CommentMapper;

@@ -1,8 +1,7 @@
-package faang.school.postservice.kafka.producer.comment;
+package faang.school.postservice.kafka.producer;
 
 import faang.school.postservice.config.properties.kafka.KafkaTopicsProperties;
 import faang.school.postservice.dto.comment.CommentEvent;
-import faang.school.postservice.kafka.producer.AbstractKafkaProducer;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
