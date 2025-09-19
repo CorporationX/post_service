@@ -24,6 +24,8 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
+        feed-channel: feed_channel
+      feed-ids-max: 500
 
   kafka:
     bootstrap-servers: localhost:9092
@@ -42,6 +44,9 @@ kafka:
     create-post: create_post
     update-post: update_post
     delete-post: delete_post
+    publish-post: publish_post
+  group:
+    publish-event: "publish-event-group"
 
 server:
   port: 8081
