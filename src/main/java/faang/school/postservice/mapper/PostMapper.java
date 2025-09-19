@@ -3,20 +3,47 @@ package faang.school.postservice.mapper;
 import faang.school.postservice.dto.post.CreatePostDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
+import faang.school.postservice.mapper.comment.CommentMapper;
+import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.redis.CommentCache;
+import faang.school.postservice.model.redis.PostCache;
+import faang.school.postservice.repository.CommentRepository;
+import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring", unmappedTargetPolicy = org.mapstruct.ReportingPolicy.IGNORE)
-public interface PostMapper {
+@Mapper(
+        componentModel = "spring",
+        unmappedTargetPolicy = org.mapstruct.ReportingPolicy.IGNORE,
+        uses = { CommentMapper.class }
+)
+public abstract class PostMapper {
 
-    Post toPost(CreatePostDto createPostDto);
+    @Autowired CommentRepository commentRepository;
+    @Autowired CommentMapper commentMapper;
 
-    void update(UpdatePostDto updatePostDto, @MappingTarget Post entity);
+    public abstract Post toPost(CreatePostDto createPostDto);
 
-    PostDto toPostDto(Post post);
+    public abstract void update(UpdatePostDto updatePostDto, @MappingTarget Post entity);
 
-    List<PostDto> toPostDtoList(List<Post> posts);
+    public abstract PostDto toPostDto(Post post);
+
+    public abstract List<PostDto> toPostDtoList(List<Post> posts);
+
+    @Mapping(target = "lastComments", ignore = true)
+    public abstract PostCache toPostCache(Post post);
+
+    @AfterMapping
+    protected void fillLastComments(Post post, @MappingTarget PostCache postCache) {
+        List<Comment> last3 = commentRepository
+                .findTop3ByPostIdOrderByCreatedAtDesc(post.getId());
+        postCache.setLastComments(
+                last3.stream().map(commentMapper::toCommentCache).toList()
+        );
+    }
 }

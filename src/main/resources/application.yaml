@@ -36,7 +36,12 @@ server:
 
 logging:
   level:
-    root: info
+    root: INFO
+#    com.fasterxml.jackson.databind: DEBUG
+#    org.springframework.cloud.openfeign: DEBUG
+#    org.springframework.web.client.RestTemplate: DEBUG
+#    feign: DEBUG
+#    feign.Logger: DEBUG
 
 user-service:
   host: localhost
@@ -62,3 +67,7 @@ textgears:
   api-key: 1a182906femsh131affb2a9303e2p1b4081jsn3a0dd3484d73
   host: textgears-textgears-v1.p.rapidapi.com
   url: https://textgears-textgears-v1.p.rapidapi.com
+
+cache:
+  post:
+    ttl-seconds: 86400

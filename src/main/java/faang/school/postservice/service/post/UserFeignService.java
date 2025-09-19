@@ -15,14 +15,14 @@ public class UserFeignService {
     private final UserServiceClient userServiceClient;
     private final FeignExceptionHandler feignExceptionHandler;
 
-    public UserDto getUserOrFail(@NonNull Long authorId) {
+    public UserDto getUserOrFail(@NonNull Long userId) {
         try {
-            return userServiceClient.getUser(authorId);
+            return userServiceClient.getUser(userId);
         } catch (FeignException feignException) {
             throw feignExceptionHandler.handleFeignException(
                     feignException,
                     "User",
-                    authorId
+                    userId
             );
         }
     }

@@ -8,14 +8,17 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.ServiceUnavailableException;
+import faang.school.postservice.factory.PostCacheFactory;
 import faang.school.postservice.kafka.producer.comment.CommentProducer;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.redis.PostCache;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.criteria.PostSearchCriteria;
+import faang.school.postservice.repository.redis.PostCacheRepository;
 import faang.school.postservice.validation.comment.CommentValidator;
 import faang.school.postservice.validation.spellcheck.PostSpellCheckValidator;
 import faang.school.postservice.validator.PostValidator;
@@ -37,8 +40,10 @@ import java.util.Optional;
 public class PostServiceImpl implements PostService {
 
     private final PostRepository postRepository;
+    private final PostCacheRepository postCacheRepository;
     private final PostValidator postValidator;
     private final PostMapper postMapper;
+    private final PostCacheFactory postCacheFactory;
     private final CommentRepository commentRepository;
     private final CommentMapper commentMapper;
     private final CommentValidator commentValidator;
@@ -64,11 +69,14 @@ public class PostServiceImpl implements PostService {
     @Transactional
     public PostDto publish(@NonNull Long postId) {
         Post post = getNonDeletedPostByIdOrFail(postId);
-        postValidator.validatePublish(post);
+        //postValidator.validatePublish(post);
 
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
         postRepository.save(post);
+
+        PostCache mappedPost = postCacheFactory.from(post);
+        postCacheRepository.save(mappedPost);
 
         log.info("Post id: {} published", post.getId());
         return postMapper.toPostDto(post);
