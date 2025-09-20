@@ -13,4 +13,9 @@ public class KafkaTopicConfig {
     public NewTopic createCommentTopic(KafkaTopicsProperties topics) {
         return TopicBuilder.name(topics.comment()).build();
     }
+
+    @Bean
+    public NewTopic createPostPublishedTopic(KafkaTopicsProperties topics) {
+        return TopicBuilder.name(topics.post_published()).build();
+    }
 }

@@ -4,6 +4,7 @@ import faang.school.postservice.model.Post;
 import lombok.NonNull;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -26,4 +27,20 @@ public interface PostRepository extends CrudRepository<Post, Long>, PostReposito
     Optional<Post> findByIdAndDeletedFalse(@NonNull Long postId);
 
     List<Post> findAllByPublishedFalse();
+
+    @Query(value = """
+    (
+      SELECT s.follower_id
+      FROM subscription s
+      WHERE (:authorId IS NOT NULL AND s.followee_id = :authorId)
+    )
+    UNION
+    (
+      SELECT ps.follower_id
+      FROM project_subscription ps
+      WHERE (:projectId IS NOT NULL AND ps.project_id = :projectId)
+    )
+    """, nativeQuery = true)
+    List<Long> findAllFollowers(@Param("authorId") Long authorId,
+                                @Param("projectId") Long projectId);
 }

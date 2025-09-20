@@ -22,6 +22,7 @@ spring:
     group-id: post_service
     topic:
       comment: post.comment.created
+      post_published: post.published
 
   data:
     redis:
@@ -48,7 +49,7 @@ user-service:
   port: 8080
 project-service:
   host: localhost
-  port: 8082
+  port: 8092
 payment-service:
   host: localhost
   port: 9080
@@ -70,4 +71,6 @@ textgears:
 
 cache:
   post:
+    ttl-seconds: 86400
+  user:
     ttl-seconds: 86400

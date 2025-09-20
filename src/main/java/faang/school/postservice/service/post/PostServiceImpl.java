@@ -9,7 +9,9 @@ import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.ServiceUnavailableException;
 import faang.school.postservice.factory.PostCacheFactory;
+import faang.school.postservice.factory.UserCacheFactory;
 import faang.school.postservice.kafka.producer.comment.CommentProducer;
+import faang.school.postservice.kafka.producer.post.PostProducer;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
@@ -19,6 +21,7 @@ import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.criteria.PostSearchCriteria;
 import faang.school.postservice.repository.redis.PostCacheRepository;
+import faang.school.postservice.repository.redis.UserCacheRepository;
 import faang.school.postservice.validation.comment.CommentValidator;
 import faang.school.postservice.validation.spellcheck.PostSpellCheckValidator;
 import faang.school.postservice.validator.PostValidator;
@@ -44,6 +47,9 @@ public class PostServiceImpl implements PostService {
     private final PostValidator postValidator;
     private final PostMapper postMapper;
     private final PostCacheFactory postCacheFactory;
+    private final PostProducer postProducer;
+    private final UserCacheRepository userCacheRepository;
+    private final UserCacheFactory userCacheFactory;
     private final CommentRepository commentRepository;
     private final CommentMapper commentMapper;
     private final CommentValidator commentValidator;
@@ -74,9 +80,8 @@ public class PostServiceImpl implements PostService {
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
         postRepository.save(post);
-
-        PostCache mappedPost = postCacheFactory.from(post);
-        postCacheRepository.save(mappedPost);
+        postProducer.publishPostPublishedEvent(postMapper.toPostPublishedEvent(post));
+        cacheOnPublish(post);
 
         log.info("Post id: {} published", post.getId());
         return postMapper.toPostDto(post);
@@ -230,5 +235,14 @@ public class PostServiceImpl implements PostService {
     @Override
     public List<Post> getUnpublishedPosts() {
         return postRepository.findAllByPublishedFalse();
+    }
+
+    private void cacheOnPublish(Post post) {
+        postCacheRepository.save(postCacheFactory.from(post));
+        log.info("Post id {} added to cache." , post.getId());
+        if(post.getAuthorId() != null){
+            userCacheRepository.save(userCacheFactory.from(userFeignService.getUserOrFail(post.getAuthorId())));
+            log.info("User id {} added to cache." , post.getAuthorId());
+        }
     }
 }
