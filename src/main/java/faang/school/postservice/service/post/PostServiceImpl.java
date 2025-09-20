@@ -56,9 +56,9 @@ import java.util.concurrent.ExecutorService;
 public class PostServiceImpl implements PostService {
     private static final String USER_HAS_NO_ACCESS_TO_CREATE_POST =
             "Недостаточно прав для создания поста от имени пользователя с id ";
-
     private static final String USER_HAS_NO_ACCESS_TO_POST =
             "Пользователь не имеет право на данный пост";
+
     private final PostRepository postRepository;
     private final UserServiceClient userClient;
     private final ProjectServiceClient projectClient;
@@ -66,11 +66,13 @@ public class PostServiceImpl implements PostService {
     private final PostMapper postMapper;
     private final FilterService<Post, PostFilterDto> filterService;
     @Qualifier("postCreateEventProducer")
+
     private final EventProducer<PostViewDto> postCreateProducer;
     private final EventProducer<PostUpdatedEvent> postUpdatedEventProducer;
     @Qualifier("postDeleteEventProducer")
     private final EventProducer<PostViewDto> postDeleteProducer;
     private final ExecutorService executor;
+
     private final PostRedisRepository postRedisRepository;
     private final UserRedisRepository userRedisRepository;
     @Qualifier("postPublishEventProducer")
@@ -127,6 +129,7 @@ public class PostServiceImpl implements PostService {
         log.info("Кэширование поста и его автора в редис и отправка события в кафку");
         Long authorId = postRedis.getAuthorId();
         UserDto author = userClient.getUser(authorId);
+
         userRedisRepository.save(new UserRedis(author.id(), author.username()));
         postRedisRepository.save(postRedis);
 

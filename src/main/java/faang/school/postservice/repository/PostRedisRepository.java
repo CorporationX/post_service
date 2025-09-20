@@ -1,7 +1,7 @@
 package faang.school.postservice.repository;
 
 import faang.school.postservice.config.redis.entity.PostRedis;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.CrudRepository;
 
-public interface PostRedisRepository extends JpaRepository<PostRedis, Long> {
+public interface PostRedisRepository extends CrudRepository<PostRedis, Long> {
 }
