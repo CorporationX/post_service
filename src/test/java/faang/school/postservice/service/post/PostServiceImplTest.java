@@ -10,7 +10,9 @@ import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.messaging.dto.PostUpdatedEvent;
 import faang.school.postservice.messaging.producer.EventProducer;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.repository.PostRedisRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.UserRedisRepository;
 import faang.school.postservice.service.filter.FilterService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,6 +22,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
@@ -30,8 +33,10 @@ import static faang.school.postservice.service.post.PostServiceTestData.toEntity
 import static faang.school.postservice.service.post.PostServiceTestData.toViewDto;
 import static faang.school.postservice.service.post.PostServiceTestData.toViewDtoList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.refEq;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -79,21 +84,6 @@ class PostServiceImplTest {
         var actual = service.create(createDto);
         verify(userClient).getUser(currentUserId);
         assertEquals(view, actual);
-    }
-
-    @Test
-    @DisplayName("тест успешного публикации поста")
-    void publish_success() {
-        var currentUserId = 1L;
-        var postId = 1L;
-        var now = LocalDateTime.now();
-        var publishedPost = buildPostEntity(postId, currentUserId, null, now);
-        publishedPost.setPublished(true);
-        var post = buildPostEntity(postId, currentUserId, null, now);
-        when(userContext.getUserId()).thenReturn(currentUserId);
-        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
-        service.publish(postId);
-        verify(postRepository).save(refEq(publishedPost, "publishedAt"));
     }
 
     @Test

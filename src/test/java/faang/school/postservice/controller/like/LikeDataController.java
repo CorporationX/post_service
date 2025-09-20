@@ -2,6 +2,8 @@ package faang.school.postservice.controller.like;
 
 import faang.school.postservice.dto.user.UserDto;
 
+import java.util.ArrayList;
+
 public class LikeDataController {
     public static long userId = 1L;
     public static String userName = "User";
@@ -10,6 +12,6 @@ public class LikeDataController {
     public static long commentId = 1L;
 
     public static UserDto getUserDto() {
-        return new UserDto(userId, userName, userEmail);
+        return new UserDto(userId, userName, userEmail, new ArrayList<>());
     }
 }
