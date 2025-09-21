@@ -75,7 +75,7 @@ public class PostServiceImpl implements PostService {
     @Transactional
     public PostDto publish(@NonNull Long postId) {
         Post post = getNonDeletedPostByIdOrFail(postId);
-        //postValidator.validatePublish(post);
+        postValidator.validatePublish(post);
 
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
