@@ -34,6 +34,9 @@ public class FeedController {
         feedService.queueCacheWarmUp();
     }
 
+    @Operation(
+            summary = "Get feed for current user"
+    )
     @GetMapping
     public List<FeedPostDto> getFeed(@RequestParam @Nullable Long lastPostId) {
         return feedService.getFeed(lastPostId);

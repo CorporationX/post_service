@@ -238,10 +238,10 @@ public class PostServiceImpl implements PostService {
     }
 
     private void cacheOnPublish(Post post) {
-        postCacheRepository.save(postCacheFactory.from(post));
+        postCacheRepository.save(postCacheFactory.fromPost(post));
         log.info("Post id {} added to cache." , post.getId());
         if(post.getAuthorId() != null){
-            userCacheRepository.save(userCacheFactory.from(userFeignService.getUserOrFail(post.getAuthorId())));
+            userCacheRepository.save(userCacheFactory.fromUserDto(userFeignService.getUserOrFail(post.getAuthorId())));
             log.info("User id {} added to cache." , post.getAuthorId());
         }
     }

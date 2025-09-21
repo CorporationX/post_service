@@ -39,13 +39,4 @@ public class RedisConfig {
         template.afterPropertiesSet();
         return template;
     }
-
-    @Bean
-    public RedisTemplate<String, UserCache> userCacheRedisTemplate(RedisConnectionFactory factory) {
-        RedisTemplate<String, UserCache> template = new RedisTemplate<>();
-        template.setConnectionFactory(factory);
-        template.setKeySerializer(new StringRedisSerializer());
-        template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
-        return template;
-    }
 }

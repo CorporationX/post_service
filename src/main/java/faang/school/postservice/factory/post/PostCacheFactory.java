@@ -24,7 +24,7 @@ public class PostCacheFactory {
     private int ttl;
 
 
-    public PostCache from(Post post) {
+    public PostCache fromPost(Post post) {
         PostCache cache = postMapper.toPostCache(post);
         cache.setTtl((long) ttl);
 

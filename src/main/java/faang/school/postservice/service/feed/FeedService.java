@@ -63,7 +63,6 @@ public class FeedService {
         for (Long subscriberId : postPublishedEvent.getSubscribers()) {
             feedCacheRepository.addPostToFeed(subscriberId, post);
         }
-        updateUserAndPostCaches(List.of(post));
     }
 
     public void queueCacheWarmUp() {
@@ -108,6 +107,7 @@ public class FeedService {
         Post post = postRepository.findById(postId).orElseThrow(
                 () -> new IllegalStateException("Received unknown post ID: " + postId)
         );
+        //postCacheRepository.saveIfAbsent(postCacheFactory.fromPost(post));
 
         return feedPostFactory.fromPost(post);
     }
@@ -138,8 +138,9 @@ public class FeedService {
             );
         }
 
-        for (Post p : morePosts) {
-            feed.add(feedPostFactory.fromPost(p));
+        for (Post post : morePosts) {
+            feed.add(feedPostFactory.fromPost(post));
+            //postCacheRepository.saveIfAbsent(postCacheFactory.fromPost(post));
         }
         return feed;
     }
@@ -148,12 +149,12 @@ public class FeedService {
         HashSet<Long> authorIds = new HashSet<>();
         for (Post post : posts) {
             authorIds.add(post.getAuthorId());
-            postCacheRepository.saveIfAbsent(postCacheFactory.from(post));
+            postCacheRepository.saveIfAbsent(postCacheFactory.fromPost(post));
         }
 
         List<UserDto> users = cacheRepository.getUsers(authorIds.stream().toList());
         for (UserDto userDto : users) {
-            UserCache userCache = userCacheFactory.from(userDto);
+            UserCache userCache = userCacheFactory.fromUserDto(userDto);
             boolean cached = userCacheRepository.saveIfAbsent(userCache);
             if (cached) {
                 log.info("UserCache added for ID: {}", userCache.getId());

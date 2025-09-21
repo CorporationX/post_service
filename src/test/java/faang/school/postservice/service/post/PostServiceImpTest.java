@@ -169,6 +169,8 @@ class PostServiceImplTest {
         verify(postRepository, Mockito.never()).save(any());
     }
 
+    //@todo jevgeni amend publish tests with event sending and caching
+
     @Test
     void updateThrowsIfPostNotFound() {
         when(postRepository.findByIdAndDeletedFalse(testPostId)).thenReturn(Optional.empty());

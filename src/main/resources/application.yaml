@@ -24,6 +24,8 @@ spring:
       comment: post.comment.created
       post_published: post.published
       feed_warmer: feed.warmup-tasks
+    feed-warmer-partitions: 5
+    feed-warmer-replicas: 1
 
   data:
     redis:

@@ -1,10 +1,7 @@
 package faang.school.postservice.factory;
 
 import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.mapper.UserMapper;
-import faang.school.postservice.model.Post;
-import faang.school.postservice.model.redis.PostCache;
 import faang.school.postservice.model.redis.UserCache;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,7 +17,7 @@ public class UserCacheFactory {
     private int ttl;
 
 
-    public UserCache from(UserDto user) {
+    public UserCache fromUserDto(UserDto user) {
         UserCache cache = userMapper.toUserCache(user);
         cache.setTtl((long) ttl);
         return cache;
