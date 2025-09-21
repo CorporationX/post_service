@@ -67,7 +67,7 @@ public class FeedPostFactory {
             UserDto userDto = cacheRepository.getUser(feedPost.getAuthorId());
             log.info("Retrieved user ID: {} from DB.", feedPost.getAuthorId());
             feedPost.setAuthorUser(userMapper.toFeedUserDto(userDto));
-//            userCacheRepository.saveIfAbsent(userMapper.toUserCache(userDto));
+            userCacheRepository.saveIfAbsent(userMapper.toUserCache(userDto));
         }
     }
 }

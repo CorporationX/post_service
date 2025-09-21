@@ -107,7 +107,7 @@ public class FeedService {
         Post post = postRepository.findById(postId).orElseThrow(
                 () -> new IllegalStateException("Received unknown post ID: " + postId)
         );
-        //postCacheRepository.saveIfAbsent(postCacheFactory.fromPost(post));
+        postCacheRepository.saveIfAbsent(postCacheFactory.fromPost(post));
 
         return feedPostFactory.fromPost(post);
     }
@@ -140,7 +140,7 @@ public class FeedService {
 
         for (Post post : morePosts) {
             feed.add(feedPostFactory.fromPost(post));
-            //postCacheRepository.saveIfAbsent(postCacheFactory.fromPost(post));
+            postCacheRepository.saveIfAbsent(postCacheFactory.fromPost(post));
         }
         return feed;
     }
