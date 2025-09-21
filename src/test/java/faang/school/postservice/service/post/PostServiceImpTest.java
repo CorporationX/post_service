@@ -5,10 +5,15 @@ import faang.school.postservice.dto.comment.CommentEvent;
 import faang.school.postservice.dto.comment.SaveCommentDto;
 import faang.school.postservice.dto.post.CreatePostDto;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.post.PostPublishedEvent;
 import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.post.RepeatPublishException;
+import faang.school.postservice.factory.UserCacheFactory;
+import faang.school.postservice.factory.post.PostCacheFactory;
+import faang.school.postservice.factory.post.PostPublishedEventFactory;
 import faang.school.postservice.kafka.producer.comment.CommentProducer;
+import faang.school.postservice.kafka.producer.post.PostProducer;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.mapper.comment.CommentMapper;
@@ -17,6 +22,8 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.criteria.PostSearchCriteria;
+import faang.school.postservice.repository.redis.post.PostCacheRepository;
+import faang.school.postservice.repository.redis.user.UserCacheRepository;
 import faang.school.postservice.validation.comment.CommentValidator;
 import faang.school.postservice.validator.PostValidator;
 import org.junit.jupiter.api.BeforeEach;
@@ -71,6 +78,24 @@ class PostServiceImplTest {
 
     @Mock
     private CommentProducer commentProducer;
+
+    @Mock
+    private PostProducer postProducer;
+
+    @Mock
+    private PostPublishedEventFactory postPublishedEventFactory;
+
+    @Mock
+    private PostCacheFactory postCacheFactory;
+
+    @Mock
+    private PostCacheRepository postCacheRepository;
+
+    @Mock
+    private UserCacheRepository userCacheRepository;
+
+    @Mock
+    private UserCacheFactory userCacheFactory;
 
     @Spy
     private CommentMapper commentMapper = Mappers.getMapper(CommentMapper.class);
@@ -139,13 +164,16 @@ class PostServiceImplTest {
     }
 
     @Test
-    void publishSetsPublishedFieldsAndReturnsDto() {
+    void publishSetsPublishedFieldsPublishesEventAndReturnsDto() {
         when(postRepository.findByIdAndDeletedFalse(testPostId)).thenReturn(Optional.of(post));
+        PostPublishedEvent event = new PostPublishedEvent();
+        when(postPublishedEventFactory.fromPost(post)).thenReturn(event);
 
         PostDto result = postService.publish(testPostId);
 
         verify(postValidator).validatePublish(post);
         verify(postRepository).save(post);
+        verify(postProducer).publishPostPublishedEvent(event);
         assertTrue(post.isPublished());
         assertInstanceOf(LocalDateTime.class, post.getPublishedAt());
         assertEquals(post.getContent(), result.content());
