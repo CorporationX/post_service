@@ -25,12 +25,39 @@ spring:
         calculations_channel:
           name: calculations_channel
 
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      client-id: post-service-producer
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      retries: 3
+      properties:
+        retry.backoff.ms: 1000
+        delivery.timeout.ms: 120000
+        linger.ms: 5
+        batch.size: 16384
+        compression.type: snappy
+        enable.idempotence: true
+
+app:
+  kafka:
+    topics:
+      posts:
+        name: posts
+        partitions: 3
+        replication-factor: 1
+
 server:
   port: 8081
 
 logging:
   level:
     root: info
+    org.apache.kafka: INFO
+    org.springframework.kafka: DEBUG
+    faang.school.postservice.producer: DEBUG
 
 user-service:
   host: localhost

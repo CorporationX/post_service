@@ -1,0 +1,179 @@
+package faang.school.postservice.controller;
+
+import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.model.Post;
+import faang.school.postservice.service.PostService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.time.LocalDateTime;
+
+@Slf4j
+@RestController
+@RequestMapping("/api/posts")
+@RequiredArgsConstructor
+@Validated
+public class PostController {
+
+    private final PostService postService;
+    private final UserContext userContext;
+
+    public static class CreatePostRequest {
+        @NotBlank(message = "Content cannot be blank")
+        @Size(max = 4096, message = "Content cannot exceed 4096 characters")
+        private String content;
+
+        private Long projectId;
+        private boolean published = true;
+
+        public String getContent() { return content; }
+        public void setContent(String content) { this.content = content; }
+
+        public Long getProjectId() { return projectId; }
+        public void setProjectId(Long projectId) { this.projectId = projectId; }
+
+        public boolean isPublished() { return published; }
+        public void setPublished(boolean published) { this.published = published; }
+    }
+
+    public static class UpdatePostRequest {
+        @NotBlank(message = "Content cannot be blank")
+        @Size(max = 4096, message = "Content cannot exceed 4096 characters")
+        private String content;
+
+        public String getContent() { return content; }
+        public void setContent(String content) { this.content = content; }
+    }
+
+    @PostMapping
+    public ResponseEntity<Post> createPost(@Valid @RequestBody CreatePostRequest request) {
+        Long currentUserId = userContext.getUserId();
+        log.info("Creating post for user ID: {}, published: {}", currentUserId, request.isPublished());
+
+        Post createdPost = postService.createPost(
+                request.getContent(),
+                currentUserId,
+                request.getProjectId(),
+                request.isPublished()
+        );
+
+        log.info("Successfully created post with ID: {} for user: {}",
+                createdPost.getId(), currentUserId);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdPost);
+    }
+
+    @PostMapping("/draft")
+    public ResponseEntity<Post> createDraft(@Valid @RequestBody CreatePostRequest request) {
+        Long currentUserId = userContext.getUserId();
+        log.info("Creating draft for user ID: {}", currentUserId);
+
+        Post draft = postService.createPost(
+                request.getContent(),
+                currentUserId,
+                request.getProjectId(),
+                false
+        );
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(draft);
+    }
+
+    @PostMapping("/{postId}/publish")
+    public ResponseEntity<Post> publishPost(@PathVariable Long postId) {
+        Long currentUserId = userContext.getUserId();
+        log.info("Publishing post ID: {} by user ID: {}", postId, currentUserId);
+
+        Post publishedPost = postService.publishPost(postId, currentUserId);
+
+        log.info("Successfully published post ID: {}", postId);
+
+        return ResponseEntity.ok(publishedPost);
+    }
+
+    @PostMapping("/schedule")
+    public ResponseEntity<Post> schedulePost(
+            @Valid @RequestBody CreatePostRequest request,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime scheduledAt) {
+
+        Long currentUserId = userContext.getUserId();
+        log.info("Scheduling post for user ID: {} at {}", currentUserId, scheduledAt);
+
+        Post scheduledPost = postService.schedulePost(
+                request.getContent(),
+                currentUserId,
+                request.getProjectId(),
+                scheduledAt
+        );
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(scheduledPost);
+    }
+
+    @GetMapping("/{postId}")
+    public ResponseEntity<Post> getPost(@PathVariable Long postId) {
+        log.info("Fetching post with ID: {}", postId);
+
+        Post post = postService.getPostById(postId);
+
+        return ResponseEntity.ok(post);
+    }
+
+    @PutMapping("/{postId}")
+    public ResponseEntity<Post> updatePost(
+            @PathVariable Long postId,
+            @Valid @RequestBody UpdatePostRequest request) {
+
+        Long currentUserId = userContext.getUserId();
+        log.info("Updating post ID: {} by user ID: {}", postId, currentUserId);
+
+        Post updatedPost = postService.updatePost(postId, request.getContent(), currentUserId);
+
+        log.info("Successfully updated post ID: {}", postId);
+
+        return ResponseEntity.ok(updatedPost);
+    }
+
+    @DeleteMapping("/{postId}")
+    public ResponseEntity<Void> deletePost(@PathVariable Long postId) {
+        Long currentUserId = userContext.getUserId();
+        log.info("Deleting post ID: {} by user ID: {}", postId, currentUserId);
+
+        postService.deletePost(postId, currentUserId);
+
+        log.info("Successfully deleted post ID: {}", postId);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{postId}/likes/count")
+    public ResponseEntity<Integer> getPostLikesCount(@PathVariable Long postId) {
+        Post post = postService.getPostById(postId);
+        int likesCount = post.getLikes() != null ? post.getLikes().size() : 0;
+
+        return ResponseEntity.ok(likesCount);
+    }
+
+    @GetMapping("/{postId}/comments/count")
+    public ResponseEntity<Integer> getPostCommentsCount(@PathVariable Long postId) {
+        Post post = postService.getPostById(postId);
+        int commentsCount = post.getComments() != null ? post.getComments().size() : 0;
+
+        return ResponseEntity.ok(commentsCount);
+    }
+}
