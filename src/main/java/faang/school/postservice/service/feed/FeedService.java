@@ -5,6 +5,7 @@ import faang.school.postservice.dto.feed.CacheWarmupTask;
 import faang.school.postservice.dto.feed.FeedPostDto;
 import faang.school.postservice.dto.post.PostPublishedEvent;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.factory.UserCacheFactory;
 import faang.school.postservice.factory.post.FeedPostFactory;
 import faang.school.postservice.factory.post.PostCacheFactory;
@@ -57,7 +58,7 @@ public class FeedService {
 
     public void updateUserFeeds(PostPublishedEvent postPublishedEvent) {
         Post post = postRepository.findById(postPublishedEvent.getPostId()).orElseThrow(
-                () -> new IllegalStateException("Published unknown post id: "
+                () -> new EntityNotFoundException("Published unknown post id: "
                         + postPublishedEvent.getPostId())
         );
         for (Long subscriberId : postPublishedEvent.getSubscribers()) {
@@ -112,7 +113,7 @@ public class FeedService {
         return feedPostFactory.fromPost(post);
     }
 
-    private List<FeedPostDto> maybeExtendFeed(Long lastPostId, List<FeedPostDto> feed) {
+    List<FeedPostDto> maybeExtendFeed(Long lastPostId, List<FeedPostDto> feed) {
         if (feed.size() >= feedPageSize) {
             return feed;
         }
@@ -145,7 +146,7 @@ public class FeedService {
         return feed;
     }
 
-    private void updateUserAndPostCaches(@NonNull List<Post> posts) {
+    void updateUserAndPostCaches(@NonNull List<Post> posts) {
         HashSet<Long> authorIds = new HashSet<>();
         for (Post post : posts) {
             authorIds.add(post.getAuthorId());
