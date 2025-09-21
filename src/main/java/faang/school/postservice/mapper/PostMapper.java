@@ -1,16 +1,13 @@
 package faang.school.postservice.mapper;
 
+import faang.school.postservice.dto.feed.FeedPostDto;
 import faang.school.postservice.dto.post.CreatePostDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.PostPublishedEvent;
 import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.mapper.comment.CommentMapper;
-import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.model.redis.CommentCache;
 import faang.school.postservice.model.redis.PostCache;
-import faang.school.postservice.repository.CommentRepository;
-import faang.school.postservice.repository.PostRepository;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -21,15 +18,10 @@ import java.util.List;
 
 @Mapper(
         componentModel = "spring",
-        unmappedTargetPolicy = org.mapstruct.ReportingPolicy.IGNORE,
-        uses = { CommentMapper.class }
+        unmappedTargetPolicy = org.mapstruct.ReportingPolicy.IGNORE
 )
 public abstract class PostMapper {
 
-    @Autowired
-    PostRepository postRepository;
-    @Autowired
-    CommentRepository commentRepository;
     @Autowired
     CommentMapper commentMapper;
 
@@ -48,20 +40,22 @@ public abstract class PostMapper {
     @Mapping(target = "lastComments", ignore = true)
     public abstract PostCache toPostCache(Post post);
 
-    @AfterMapping
-    protected void fillLastComments(Post post, @MappingTarget PostCache postCache) {
-        List<Comment> last3 = commentRepository
-                .findTop3ByPostIdOrderByCreatedAtDesc(post.getId());
-        postCache.setLastComments(
-                last3.stream().map(commentMapper::toCommentCache).toList()
-        );
-    }
+    @Mapping(target = "authorUser", ignore = true)
+    @Mapping(target = "lastComments", ignore = true)
+    public abstract FeedPostDto toFeedPostDto(PostCache postCache);
+
+    @Mapping(target = "authorUser", ignore = true)
+    @Mapping(target = "lastComments", ignore = true)
+    public abstract FeedPostDto toFeedPostDto(Post post);
 
     @AfterMapping
-    protected void fillSubscribers(Post post, @MappingTarget PostPublishedEvent event) {
-        List<Long> subscribers = postRepository.findAllFollowers(post.getAuthorId(), post.getProjectId());
-        event.setSubscribers(
-                subscribers
-        );
+    protected void fillLastComments(PostCache postCache, @MappingTarget FeedPostDto feedPostDto) {
+        if (postCache.getLastComments() == null) {
+            feedPostDto.setLastComments(List.of());
+        } else {
+            feedPostDto.setLastComments(
+                    postCache.getLastComments().stream().map(commentMapper::toFeedCommentDto).toList()
+            );
+        }
     }
 }

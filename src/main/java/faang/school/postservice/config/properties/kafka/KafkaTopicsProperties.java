@@ -8,6 +8,8 @@ import org.springframework.validation.annotation.Validated;
 @ConfigurationProperties(prefix = "spring.kafka.topic")
 public record KafkaTopicsProperties(
         @NotBlank String comment,
-        @NotBlank String post_published
+        @NotBlank String post_published,
+        @NotBlank String feed_warmer
+
 ) {
 }

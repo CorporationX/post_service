@@ -9,7 +9,7 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: none
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         format_sql: true
@@ -23,6 +23,7 @@ spring:
     topic:
       comment: post.comment.created
       post_published: post.published
+      feed_warmer: feed.warmup-tasks
 
   data:
     redis:
@@ -38,11 +39,6 @@ server:
 logging:
   level:
     root: INFO
-#    com.fasterxml.jackson.databind: DEBUG
-#    org.springframework.cloud.openfeign: DEBUG
-#    org.springframework.web.client.RestTemplate: DEBUG
-#    feign: DEBUG
-#    feign.Logger: DEBUG
 
 user-service:
   host: localhost
@@ -74,3 +70,10 @@ cache:
     ttl-seconds: 86400
   user:
     ttl-seconds: 86400
+  feed:
+    max-records: 10
+    warm-up-batch-size: 2
+    warm-up-concurrency: 3
+
+feed:
+  page-size: 5

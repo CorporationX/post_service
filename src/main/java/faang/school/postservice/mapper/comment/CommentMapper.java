@@ -3,6 +3,7 @@ package faang.school.postservice.mapper.comment;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CommentEvent;
 import faang.school.postservice.dto.comment.SaveCommentDto;
+import faang.school.postservice.dto.feed.FeedCommentDto;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.redis.CommentCache;
 import org.mapstruct.Mapper;
@@ -29,4 +30,7 @@ public interface CommentMapper {
     CommentEvent toCommentEvent(Comment comment);
 
     CommentCache toCommentCache(Comment comment);
+
+    FeedCommentDto toFeedCommentDto(Comment comment);
+    FeedCommentDto toFeedCommentDto(CommentCache commentCache);
 }

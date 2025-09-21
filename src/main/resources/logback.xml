@@ -4,6 +4,19 @@
             <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
+
+    <!-- Hibernate core -->
+    <logger name="org.hibernate" level="OFF"/>
+    <!-- SQL query logs -->
+    <logger name="org.hibernate.SQL" level="OFF"/>
+    <!-- Bound parameters -->
+    <logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="OFF"/>
+    <logger name="org.hibernate.type.descriptor.sql" level="OFF"/>
+    <!-- JPA if Spring Data logs SQL too -->
+    <logger name="org.springframework.orm.jpa" level="OFF"/>
+    <!-- Jakarta persistence if relevant -->
+    <logger name="jakarta.persistence" level="OFF"/>
+
     <root level="INFO">
         <appender-ref ref="CONSOLE" />
     </root>

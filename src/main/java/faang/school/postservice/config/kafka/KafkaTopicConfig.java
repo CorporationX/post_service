@@ -18,4 +18,12 @@ public class KafkaTopicConfig {
     public NewTopic createPostPublishedTopic(KafkaTopicsProperties topics) {
         return TopicBuilder.name(topics.post_published()).build();
     }
+
+    @Bean
+    public NewTopic createFeedWarmer(KafkaTopicsProperties topics) {
+        return TopicBuilder.name(topics.feed_warmer())
+                .partitions(5)
+                .replicas(1)
+                .build();
+    }
 }
