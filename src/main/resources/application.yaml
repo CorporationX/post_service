@@ -4,6 +4,10 @@ spring:
     url: jdbc:postgresql://localhost:5432/postgres
     username: user
     password: password
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 20000
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
@@ -25,6 +29,31 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
+      jedis:
+        pool:
+          max-active: 20
+          max-idle: 10
+          min-idle: 5
+          max-wait: -1ms
+        channels:
+          calculations_channel:
+            name: calculations_channel
+          comment_events:
+            name: comment.events
+
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
+
+  cloud:
+    openfeign:
+      client:
+        config:
+          user-service:
+            connect-timeout: 5000
+            read-timeout: 5000
 
   kafka:
     bootstrap-servers: localhost:9092
@@ -81,3 +110,26 @@ ad-remover:
   thread-pool:
     size: 20
   cron: "0 0 2 * * ?"
+
+events:
+  redis:
+    topics:
+      comment: "comment.events"
+    retry:
+      max-attempts: 3
+      delay: 1000ms
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    tags:
+      service: post-service
