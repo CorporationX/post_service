@@ -21,9 +21,38 @@ spring:
     redis:
       port: 6379
       host: localhost
+      timeout: 2000ms
       channels:
         calculations_channel:
           name: calculations_channel
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      client-id: post-service-producer
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      retries: 3
+      properties:
+        retry.backoff.ms: 1000
+        delivery.timeout.ms: 120000
+        linger.ms: 5
+        batch.size: 16384
+        compression.type: snappy
+        enable.idempotence: true
+
+app:
+  kafka:
+    topics:
+      posts:
+        name: posts
+        partitions: 3
+        replication-factor: 1
+      post-views:
+        name: post_views
+        partitions: 5
+        replication-factor: 1
 
 server:
   port: 8081
@@ -31,6 +60,11 @@ server:
 logging:
   level:
     root: info
+    org.apache.kafka: info
+    org.springframework.kafka: debug
+    faang.school.postservice.producer: debug
+    faang.school.postservice.events: debug
+    org.springframework.data.redis: info
 
 user-service:
   host: localhost
