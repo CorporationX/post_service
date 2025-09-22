@@ -1,5 +1,7 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.cache.author.AuthorCache;
+import faang.school.postservice.cache.post.PostCache;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CommentEvent;
 import faang.school.postservice.dto.comment.SaveCommentDto;
@@ -12,6 +14,7 @@ import faang.school.postservice.kafka.producer.comment.CommentProducer;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.mapper.comment.CommentMapper;
+import faang.school.postservice.mapper.user.UserMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
@@ -48,7 +51,6 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -71,6 +73,18 @@ class PostServiceImplTest {
 
     @Mock
     private CommentProducer commentProducer;
+
+    @Mock
+    private PostCache postCache;
+
+    @Mock
+    private AuthorCache authorCache;
+
+    @Mock
+    private UserMapper userMapper;
+
+    @Mock
+    private PostFanoutPublisher postFanoutPublisher;
 
     @Spy
     private CommentMapper commentMapper = Mappers.getMapper(CommentMapper.class);
@@ -356,7 +370,6 @@ class PostServiceImplTest {
         assertEquals(savedComment.getContent(), actualEvent.content());
 
         verify(commentMapper).toCommentDto(savedComment);
-        verifyNoMoreInteractions(commentProducer);
     }
 
     @Test

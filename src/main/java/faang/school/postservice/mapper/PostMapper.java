@@ -1,5 +1,6 @@
 package faang.school.postservice.mapper;
 
+import faang.school.postservice.dto.cache.PostCacheDto;
 import faang.school.postservice.dto.post.CreatePostDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
@@ -19,4 +20,6 @@ public interface PostMapper {
     PostDto toPostDto(Post post);
 
     List<PostDto> toPostDtoList(List<Post> posts);
+
+    PostCacheDto toCacheEntry(Post post);
 }

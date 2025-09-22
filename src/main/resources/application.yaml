@@ -32,7 +32,7 @@ spring:
           name: calculations_channel
 
 server:
-  port: 8081
+  port: 8085
 
 logging:
   level:
@@ -62,3 +62,46 @@ textgears:
   api-key: 1a182906femsh131affb2a9303e2p1b4081jsn3a0dd3484d73
   host: textgears-textgears-v1.p.rapidapi.com
   url: https://textgears-textgears-v1.p.rapidapi.com
+
+feed:
+  page-size: 20
+  cache:
+    post:
+      key-prefix: "feed:post:"
+      ttl: PT24H
+    author:
+      key-prefix: "feed:author:"
+      ttl: "PT24H"
+      lock-wait-seconds: 2
+      lock-lease-seconds: 5
+      ttl-jitter-seconds: 0
+    feed:
+      key-prefix: "feed:"
+      max-size: 500
+      ttl: PT0S
+    comment:
+      list-key-prefix: "feed:post:comments:"
+      ids-key-prefix: "feed:post:commentIds:"
+      set-key-prefix: "feed:post:commentSet:"
+      max-size: 3
+    warm-up:
+      limit: 500
+      concurrency: 8
+      partitions: 24
+      lock-ttl-hours: 6
+      batch-size: 500
+  kafka:
+    topics:
+      post: feed.posts
+      like: feed.likes
+      comment: feed.comments
+      warmer: feed.heat.tasks
+    batch-size: 200
+  followers:
+    page-size: 1000
+  post-fanout:
+    executor:
+      core-size: 2
+      max-size: 8
+      queue-capacity: 1000
+      thread-name-prefix: "post-fanout-"
