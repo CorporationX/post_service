@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class PostPublishedEventFactoryTest {
 
     @Test
-    void fromPost() {
+    void fromPostAndFollowerIds() {
         //@todo jevgeni
     }
 }

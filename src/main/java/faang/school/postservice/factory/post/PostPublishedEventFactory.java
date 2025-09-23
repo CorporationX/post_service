@@ -14,12 +14,10 @@ import java.util.List;
 public class PostPublishedEventFactory {
 
     private final PostMapper postMapper;
-    private final PostRepository postRepository;
 
-    public PostPublishedEvent fromPost(Post post) {
+    public PostPublishedEvent fromPostAndFollowerIds(Post post, List<Long> followerIds) {
         PostPublishedEvent event = postMapper.toPostPublishedEvent(post);
-        List<Long> followers = postRepository.findAllFollowers(post.getAuthorId(), post.getProjectId());
-        event.setSubscribers(followers);
+        event.setSubscribers(followerIds);
         return event;
     }
 }

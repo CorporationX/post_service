@@ -46,6 +46,15 @@ public interface PostRepository extends CrudRepository<Post, Long>, PostReposito
                                 @Param("projectId") Long projectId);
 
     @Query(value = """
+        SELECT DISTINCT follower_id
+            FROM subscription
+            WHERE follower_id > :lastId
+        ORDER BY follower_id
+        LIMIT :batchSize
+    """, nativeQuery = true)
+    List<Long> getFollowerIdsBatch(@Param("lastId") Long lastId, @Param("batchSize") int batchSize);
+
+    @Query(value = """
              WITH cursor_values AS (
                  SELECT published_at
                  FROM post

@@ -167,13 +167,12 @@ class PostServiceImplTest {
     void publishSetsPublishedFieldsPublishesEventAndReturnsDto() {
         when(postRepository.findByIdAndDeletedFalse(testPostId)).thenReturn(Optional.of(post));
         PostPublishedEvent event = new PostPublishedEvent();
-        when(postPublishedEventFactory.fromPost(post)).thenReturn(event);
 
         PostDto result = postService.publish(testPostId);
 
         verify(postValidator).validatePublish(post);
         verify(postRepository).save(post);
-        verify(postProducer).publishPostPublishedEvent(event);
+        verify(postProducer).publishPostPublishedEventsBatched(post);
         assertTrue(post.isPublished());
         assertInstanceOf(LocalDateTime.class, post.getPublishedAt());
         assertEquals(post.getContent(), result.content());

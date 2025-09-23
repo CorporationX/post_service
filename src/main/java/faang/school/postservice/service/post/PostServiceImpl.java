@@ -29,6 +29,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -54,7 +55,6 @@ public class PostServiceImpl implements PostService {
     private final CommentValidator commentValidator;
     private final UserFeignService userFeignService;
     private final PostSpellCheckValidator postSpellCheckValidator;
-    private final PostPublishedEventFactory postPublishedEventFactory;
 
     private final CommentProducer commentProducer;
 
@@ -80,7 +80,7 @@ public class PostServiceImpl implements PostService {
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
         postRepository.save(post);
-        postProducer.publishPostPublishedEvent(postPublishedEventFactory.fromPost(post));
+        postProducer.publishPostPublishedEventsBatched(post);
         cacheOnPublish(post);
 
         log.info("Post id: {} published", post.getId());

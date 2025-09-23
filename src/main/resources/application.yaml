@@ -61,6 +61,9 @@ post:
     core-size: 4
     max-size: 8
     queue-capacity: 100
+  publish:
+    event-subscriber-batch-size: 3
+    db-subscriber-batch-size: 10000
 
 textgears:
   api-key: 1a182906femsh131affb2a9303e2p1b4081jsn3a0dd3484d73
