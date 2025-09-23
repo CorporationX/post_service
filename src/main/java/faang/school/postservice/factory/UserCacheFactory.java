@@ -14,12 +14,12 @@ public class UserCacheFactory {
     private final UserMapper userMapper;
 
     @Value("${cache.user.ttl-seconds}")
-    private int ttl;
+    private long ttl;
 
 
     public UserCache fromUserDto(UserDto user) {
         UserCache cache = userMapper.toUserCache(user);
-        cache.setTtl((long) ttl);
+        cache.setTtl(ttl);
         return cache;
     }
 }

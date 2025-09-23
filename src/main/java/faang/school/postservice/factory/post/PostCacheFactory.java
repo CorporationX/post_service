@@ -29,7 +29,7 @@ public class PostCacheFactory {
         cache.setTtl((long) ttl);
 
         List<Comment> last3Comments = commentRepository.findTop3ByPostIdOrderByCreatedAtDesc(post.getId());
-        cache.setLastComments(last3Comments.stream().map(commentMapper::toCommentCache).toList());
+        cache.setLastComments(commentMapper.toCommentCacheList(last3Comments));
         return cache;
     }
 }

@@ -1,5 +1,6 @@
 package faang.school.postservice.repository;
 
+import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.model.Post;
 import lombok.NonNull;
 import org.springframework.data.jpa.repository.Query;

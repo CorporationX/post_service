@@ -30,6 +30,7 @@ public interface CommentMapper {
     CommentEvent toCommentEvent(Comment comment);
 
     CommentCache toCommentCache(Comment comment);
+    List<CommentCache> toCommentCacheList(List<Comment> commentList);
 
     FeedCommentDto toFeedCommentDto(Comment comment);
     FeedCommentDto toFeedCommentDto(CommentCache commentCache);
