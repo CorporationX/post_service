@@ -15,6 +15,7 @@ import faang.school.postservice.repository.redis.RedisUserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -27,7 +28,8 @@ import java.util.TreeSet;
 @RequiredArgsConstructor
 public class FeedService {
 
-    private static final int FEED_PAGE_SIZE = 20;
+    @Value("${feed.page-size:20}")
+    private int feedPageSize;
 
     private final UserContext userContext;
     private final RedisUserRepository redisUserRepository;
@@ -45,20 +47,25 @@ public class FeedService {
 
         Set<Long> postIds;
         if (lastPostId == null) {
-            log.info("Getting first page of feed");
-            postIds = new TreeSet<>(redisFeedRepository.getFirstPostIds(subscriberId,
-                    FEED_PAGE_SIZE));
+            log.info("Getting first page ({} posts) of feed", feedPageSize);
+            postIds = new TreeSet<>(redisFeedRepository
+                    .getLimitPostIdsBySubscriberId(
+                            subscriberId,
+                            feedPageSize));
         } else {
             log.info("Getting next page of feed");
-            postIds = new TreeSet<>(redisFeedRepository.getPostIdsAfter(subscriberId,
-                    lastPostId, FEED_PAGE_SIZE));
+            postIds = new TreeSet<>(redisFeedRepository
+                    .getLimitPostIdsBySubscriberIdAfterLastPostId(
+                            subscriberId,
+                            lastPostId,
+                            feedPageSize));
         }
 
         log.info("Got {} posts from cache", postIds.size());
-        if (postIds.size() < FEED_PAGE_SIZE) {
+        if (postIds.size() < feedPageSize) {
             log.info("Fetching postIds from database");
             Set<Long> dbPostIds = postRepository.findPostIds(subscriberId,
-                    lastPostId, FEED_PAGE_SIZE - postIds.size());
+                    lastPostId, feedPageSize - postIds.size());
             postIds.addAll(dbPostIds);
         }
 

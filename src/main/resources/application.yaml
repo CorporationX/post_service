@@ -42,3 +42,6 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+feed:
+  page-size: 3

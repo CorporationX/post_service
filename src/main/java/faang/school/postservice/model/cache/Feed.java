@@ -6,7 +6,7 @@ import org.springframework.data.redis.core.RedisHash;
 import java.io.Serializable;
 import java.util.TreeSet;
 
-@RedisHash("Feed")
+@RedisHash("feed")
 public class Feed implements Serializable {
 
     @Id

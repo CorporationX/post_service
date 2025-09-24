@@ -1,6 +1,6 @@
 package faang.school.postservice.model.cache;
 
-import lombok.Data;
+import lombok.Getter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.redis.core.RedisHash;
@@ -8,8 +8,8 @@ import org.springframework.data.redis.core.RedisHash;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-@Data
-@RedisHash(value = "Post", timeToLive = 86400)
+@Getter
+@RedisHash(value = "post", timeToLive = 86400)
 public class Post implements Serializable {
 
     @Id

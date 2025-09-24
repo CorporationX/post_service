@@ -8,10 +8,10 @@ import java.util.Set;
 
 @Repository
 public interface RedisFeedRepository extends CrudRepository<Feed, Long> {
-    // Получить первые N постов из фида пользователя
-    Set<Long> getFirstPostIds(Long subscriberId, int limit);
 
-    // Получить N постов после указанного
-    Set<Long> getPostIdsAfter(Long subscriberId, Long lastPostId, int limit);
+    Set<Long> getLimitPostIdsBySubscriberId(Long subscriberId, int limit);
 
+    Set<Long> getLimitPostIdsBySubscriberIdAfterLastPostId(Long subscriberId,
+                                                           Long lastPostId,
+                                                           int limit);
 }
