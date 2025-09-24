@@ -1,19 +1,10 @@
 package faang.school.postservice.controller;
 
 import com.redis.testcontainers.RedisContainer;
-import faang.school.postservice.PostServiceApp;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.DependsOn;
-import org.springframework.context.annotation.Primary;
-import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
-import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -26,11 +17,11 @@ import org.testcontainers.utility.DockerImageName;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(classes = {PostServiceApp.class,
-        FeedControllerMockMvcIntTest.RedisTestConfiguration.class})
-@Testcontainers
+
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
+@Testcontainers
+@SpringBootTest
 class FeedControllerMockMvcIntTest {
 
     @Autowired
@@ -62,20 +53,10 @@ class FeedControllerMockMvcIntTest {
         registry.add("spring.data.redis.host", REDIS_CONTAINER::getHost);
 
         try {
-            Thread.sleep(3_000);
+            Thread.sleep(1000);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-
-        System.out.println("Redis container running: " + REDIS_CONTAINER.isRunning());
-        System.out.println("Redis container host: " + REDIS_CONTAINER.getHost());
-        System.out.println("Redis container port: " + REDIS_CONTAINER.getMappedPort(6379));
-    }
-
-    @BeforeAll
-    static void setUp() {
-        REDIS_CONTAINER.start();
-        System.out.println("Redis container started: " + REDIS_CONTAINER.isRunning());
     }
 
     @Test
@@ -85,30 +66,5 @@ class FeedControllerMockMvcIntTest {
                                 .header("x-user-id", 999)
                 )
                 .andExpect(status().isOk());
-    }
-
-    @TestConfiguration
-    static class RedisTestConfiguration {
-
-        @Bean
-        @Primary // Важно для переопределения существующего бина
-        public JedisConnectionFactory testRedisConnectionFactory() {
-            // Получаем адрес и порт из контейнера
-            RedisStandaloneConfiguration redisConfig = new RedisStandaloneConfiguration();
-            redisConfig.setHostName(REDIS_CONTAINER.getHost());
-            redisConfig.setPort(REDIS_CONTAINER.getMappedPort(6379));
-
-            return new JedisConnectionFactory(redisConfig);
-        }
-
-        @DependsOn("testRedisConnectionFactory")
-        @Bean
-        @Primary
-        public RedisTemplate<Long, Object> testRedisTemplate(JedisConnectionFactory connectionFactory) {
-            RedisTemplate<Long, Object> redisTemplate = new RedisTemplate<>();
-            redisTemplate.setConnectionFactory(connectionFactory);
-            // Здесь можно настроить сериализаторы, если необходимо
-            return redisTemplate;
-        }
     }
 }
