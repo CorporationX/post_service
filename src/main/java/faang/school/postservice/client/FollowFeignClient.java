@@ -13,11 +13,11 @@ public interface FollowFeignClient {
     FollowersPage getFollowerIds(
             @PathVariable long authorId,
             @RequestParam(required = false) String cursor,
-            @RequestParam(defaultValue = "1000") int limit);
+            @RequestParam int limit);
 
     @GetMapping("/api/v1/follows/{userId}/following/ids")
     FollowersPage getFollowingIds(
             @PathVariable long userId,
             @RequestParam(required = false) String cursor,
-            @RequestParam(defaultValue = "1000") int limit);
+            @RequestParam int limit);
 }
