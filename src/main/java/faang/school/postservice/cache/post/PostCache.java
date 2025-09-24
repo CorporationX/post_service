@@ -10,4 +10,5 @@ public interface PostCache {
     Optional<PostCacheDto> get(Long postId);
     List<PostCacheDto> getAll(List<Long> ids);
     void delete(Long postId);
+    void putAll(List<PostCacheDto> posts);
 }

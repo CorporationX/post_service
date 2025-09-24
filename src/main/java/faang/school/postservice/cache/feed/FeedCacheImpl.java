@@ -79,8 +79,8 @@ public class FeedCacheImpl implements FeedCache {
 
     @Override
     public List<Long> getIds(long userId, Long afterPostId, int limit) {
-        final String feedKey = buildFeedKey(userId);
-        final ZSetOperations<String, String> zset = stringRedis.opsForZSet();
+        String feedKey = buildFeedKey(userId);
+        ZSetOperations<String, String> zset = stringRedis.opsForZSet();
 
         Set<String> range;
         if (afterPostId == null) {
@@ -104,4 +104,34 @@ public class FeedCacheImpl implements FeedCache {
         }
         return ids;
     }
+
+    @Override
+    public void addAllPostsForUser(long userId, List<Long> postIds, List<Instant> publishedAts) {
+        if (postIds == null || publishedAts == null) {
+            return;
+        }
+        if (postIds.isEmpty() || postIds.size() != publishedAts.size()) {
+            return;
+        }
+
+        String feedKey = buildFeedKey(userId);
+        long removeUntil = -(props.maxSize() + 1L);
+        int ttl = props.ttlSeconds();
+
+        stringRedis.executePipelined((RedisCallback<Object>) conn0 -> {
+            StringRedisConnection conn = new DefaultStringRedisConnection(conn0);
+
+            for (int i = 0; i < postIds.size(); i++) {
+                String member = String.valueOf(postIds.get(i));
+                double score = publishedAts.get(i).toEpochMilli();
+                conn.zAdd(feedKey, score, member);
+            }
+
+            conn.zRemRange(feedKey, 0, removeUntil);
+            if (ttl > 0) conn.expire(feedKey, ttl);
+
+            return null;
+        });
+    }
+
 }

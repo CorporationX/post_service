@@ -7,13 +7,16 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.SessionCallback;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 @Component
 @RequiredArgsConstructor
@@ -32,9 +35,42 @@ public class PostCacheImpl implements PostCache {
     @Override
     public void put(PostCacheDto postCacheDto) {
         try {
-            redisTemplate.opsForValue().set(buildKey(postCacheDto.id()), postCacheDto, properties.ttl());
+            String key = buildKey(postCacheDto.id());
+            redisTemplate.opsForValue().set(key, postCacheDto);
+            long ttlSeconds = properties.ttl().toSeconds();
+            if (ttlSeconds > 0) {
+                redisTemplate.expire(key, ttlSeconds, TimeUnit.SECONDS);
+            }
         } catch (Exception e) {
             log.warn("Redis put failed id={}", postCacheDto.id(), e);
+        }
+    }
+
+    @Override
+    public void putAll(List<PostCacheDto> posts) {
+        if (posts == null || posts.isEmpty()) {
+            return;
+        }
+        try {
+            long ttlSeconds = properties.ttl().toSeconds();
+            redisTemplate.executePipelined(new SessionCallback<>() {
+                @Override
+                public Object execute(RedisOperations operations) {
+                    for (PostCacheDto p : posts) {
+                        if (p == null || p.id() == null) {
+                            continue;
+                        }
+                        String key = buildKey(p.id());
+                        operations.opsForValue().set(key, p);
+                        if (ttlSeconds > 0) {
+                            operations.expire(key, ttlSeconds, TimeUnit.SECONDS);
+                        }
+                    }
+                    return null;
+                }
+            });
+        } catch (Exception e) {
+            log.warn("Redis putAll failed count={}", posts.size(), e);
         }
     }
 
@@ -72,9 +108,7 @@ public class PostCacheImpl implements PostCache {
             if (!missingIds.isEmpty()) {
                 List<Post> postsFromDb = postRepository.getByIds(missingIds);
                 fetchedPosts = feedMapper.toPostCacheEntryList(postsFromDb);
-                for (PostCacheDto post : fetchedPosts) {
-                    put(post);
-                }
+                putAll(fetchedPosts);
             }
 
             List<PostCacheDto> result = new ArrayList<>(postIds.size());

@@ -9,12 +9,15 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class PostCommentCacheImpl implements PostCommentCache {
 
-    private final StringRedisTemplate stringTemplate;
+    private final StringRedisTemplate redisTemplate;
     private final ObjectMapper objectMapper;
     private final CommentCacheProperties properties;
 
@@ -50,22 +53,42 @@ public class PostCommentCacheImpl implements PostCommentCache {
         String cid = String.valueOf(entry.id());
 
         try {
-            Boolean firstTime = stringTemplate.opsForHash().putIfAbsent(setKey, cid, "1");
+            Boolean firstTime = redisTemplate.opsForHash().putIfAbsent(setKey, cid, "1");
             if (Boolean.FALSE.equals(firstTime)) {
                 return false;
             }
 
             String json = objectMapper.writeValueAsString(entry);
-            stringTemplate.opsForList().leftPush(listKey, json);
-            stringTemplate.opsForList().leftPush(idsKey, cid);
+            redisTemplate.opsForList().leftPush(listKey, json);
+            redisTemplate.opsForList().leftPush(idsKey, cid);
 
             int max = properties.maxSize();
-            stringTemplate.opsForList().trim(listKey, 0, max - 1);
-            stringTemplate.opsForList().trim(idsKey, 0, max - 1);
+            redisTemplate.opsForList().trim(listKey, 0, max - 1);
+            redisTemplate.opsForList().trim(idsKey, 0, max - 1);
             return true;
         } catch (Exception e) {
             log.warn("Redis addLast comment failed postId={} commentId={}", postId, entry.id(), e);
             return false;
+        }
+    }
+
+    @Override
+    public List<FeedCommentCacheDto> getLast(long postId, int limit) {
+        String listKey = listKey(postId);
+        try {
+            List<String> raw = redisTemplate.opsForList().range(listKey, 0, Math.max(0, limit - 1));
+            if (raw == null || raw.isEmpty()) {
+                return List.of();
+            }
+
+            List<FeedCommentCacheDto> out = new ArrayList<>(raw.size());
+            for (String s : raw) {
+                out.add(objectMapper.readValue(s, FeedCommentCacheDto.class));
+            }
+            return out;
+        } catch (Exception e) {
+            log.warn("Redis getLast comments failed postId={}", postId, e);
+            return List.of();
         }
     }
 }

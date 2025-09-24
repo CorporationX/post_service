@@ -13,6 +13,14 @@ import org.springframework.stereotype.Component;
 
 import faang.school.postservice.dto.user.UserDto;
 
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 @RequiredArgsConstructor
@@ -99,5 +107,89 @@ public class AuthorCacheImpl implements AuthorCache {
         } catch (Exception e) {
             log.warn("Author evict failed authorId={}", authorId, e);
         }
+    }
+
+    @Override
+    public List<AuthorCacheDto> getAll(List<Long> authorIds) {
+        if (authorIds == null || authorIds.isEmpty()) {
+            return List.of();
+        }
+
+        try {
+            List<String> keys = authorIds.stream()
+                    .map(this::buildCacheKey)
+                    .toList();
+
+            List<AuthorCacheDto> values = redisTemplate.opsForValue().multiGet(keys);
+            if (values == null) {
+                return List.of();
+            }
+
+            return values;
+        } catch (Exception e) {
+            log.warn("Redis mget authors failed ids={}", authorIds, e);
+            return List.of();
+        }
+    }
+
+    @Override
+    public void preloadAll(List<Long> authorIds) {
+        List<Long> normalizedAuthorIds = normalizeIds(authorIds);
+        if (normalizedAuthorIds.isEmpty()) {
+            return;
+        }
+
+        List<String> keys = normalizedAuthorIds.stream()
+                .map(this::buildCacheKey)
+                .toList();
+
+        List<AuthorCacheDto> cachedAuthors = redisTemplate.opsForValue().multiGet(keys);
+        if (cachedAuthors == null) {
+            cachedAuthors = Collections.nCopies(keys.size(), null);
+        }
+
+        List<Long> missingAuthorIds = new ArrayList<>();
+        for (int i = 0; i < normalizedAuthorIds.size(); i++) {
+            if (cachedAuthors.get(i) == null) {
+                missingAuthorIds.add(normalizedAuthorIds.get(i));
+            }
+        }
+        if (missingAuthorIds.isEmpty()) {
+            return;
+        }
+
+        List<UserDto> users = userFeignService.getUsersByIds(missingAuthorIds);
+        if (users == null || users.isEmpty()) {
+            return;
+        }
+
+        List<AuthorCacheDto> authorsToCache = userMapper.toCacheEntryList(users);
+
+        Map<String, AuthorCacheDto> cacheEntriesByKey = new HashMap<>(authorsToCache.size());
+        for (AuthorCacheDto author : authorsToCache) {
+            cacheEntriesByKey.put(buildCacheKey(author.id()), author);
+        }
+
+        redisTemplate.opsForValue().multiSet(cacheEntriesByKey);
+
+        Duration ttl = properties.ttl();
+        if (ttl != null && !ttl.isZero() && !ttl.isNegative()) {
+            for (String key : cacheEntriesByKey.keySet()) {
+                redisTemplate.expire(key, ttl);
+            }
+        }
+    }
+
+    private List<Long> normalizeIds(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+        Set<Long> uniqueIds = new HashSet<>();
+        for (Long id : ids) {
+            if (id != null) {
+                uniqueIds.add(id);
+            }
+        }
+        return new ArrayList<>(uniqueIds);
     }
 }
