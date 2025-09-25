@@ -41,7 +41,7 @@ class CommentControllerTest {
     private ObjectMapper objectMapper;
 
     @Test
-    void create_ValidRequest_ReturnsCreated() throws Exception {
+    void createValidRequestReturnsCreated() throws Exception {
         CommentCreateDto createDto = new CommentCreateDto(
                 "Test content", AUTHOR_ID, POST_ID, "large.jpg", "small.jpg"
         );
@@ -63,7 +63,7 @@ class CommentControllerTest {
     }
 
     @Test
-    void create_InvalidRequest_ReturnsBadRequest() throws Exception {
+    void createInvalidRequestReturnsBadRequest() throws Exception {
         CommentCreateDto invalidDto = new CommentCreateDto(
                 "", null, null, null, null
         );
@@ -77,7 +77,7 @@ class CommentControllerTest {
     }
 
     @Test
-    void update_ValidRequest_ReturnsOk() throws Exception {
+    void updateValidRequestReturnsOk() throws Exception {
         CommentUpdateDto updateDto = new CommentUpdateDto(
                 "Updated content", AUTHOR_ID, POST_ID, "large-updated.jpg", "small-updated.jpg"
         );
@@ -100,7 +100,7 @@ class CommentControllerTest {
     }
 
     @Test
-    void getAllCommentsByPostId_ValidRequest_ReturnsComments() throws Exception {
+    void getAllCommentsByPostIdValidRequestReturnsComments() throws Exception {
         CommentViewDto comment1 = new CommentViewDto(
                 1L, "Comment 1", 1L, POST_ID, "img1.jpg", "thumb1.jpg"
         );
@@ -123,7 +123,7 @@ class CommentControllerTest {
     }
 
     @Test
-    void getAllCommentsByPostId_NoComments_ReturnsEmptyList() throws Exception {
+    void getAllCommentsByPostIdNoComments_ReturnsEmptyList() throws Exception {
         when(commentService.getAllCommentByPostId(POST_ID)).thenReturn(List.of());
 
         mockMvc.perform(get("/posts/{postId}/comments", POST_ID))
@@ -134,7 +134,7 @@ class CommentControllerTest {
     }
 
     @Test
-    void delete_ValidRequest_ReturnsNoContent() throws Exception {
+    void deleteValidRequestReturnsNoContent() throws Exception {
         mockMvc.perform(delete("/posts/{postId}/comments/{commentId}", POST_ID, COMMENT_ID))
                 .andExpect(status().isNoContent());
 
