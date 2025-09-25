@@ -28,7 +28,6 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -91,24 +90,27 @@ public class FeedService {
         List<Long> feedPostIds = feedCacheRepository.getFeedAfter(userContext.getUserId(), lastPostId, feedPageSize);
         List<FeedPostDto> feed = new ArrayList<>();
 
-        for (long postId : feedPostIds) {
-            feed.add(getFeedPost(postId));
+        List<PostCache> postListWithCached = postCacheRepository.getMany(feedPostIds);
+
+        for (int i = 0; i < feedPostIds.size(); i++) {
+            long postId = feedPostIds.get(i);
+            PostCache maybePostFromCache = postListWithCached.get(i);
+            if (maybePostFromCache == null) {
+                feed.add(getFeedPostDb(postId));
+            } else {
+                feed.add(feedPostFactory.fromPostCache(maybePostFromCache));
+            }
         }
 
         return maybeExtendFeed(lastPostId, feed);
     }
 
-    private FeedPostDto getFeedPost(long postId) {
-        Optional<PostCache> cachePost = postCacheRepository.findById(String.valueOf(postId));
-        if (cachePost.isPresent()) {
-            return feedPostFactory.fromPostCache(cachePost.get());
-        }
-
+    private FeedPostDto getFeedPostDb(long postId) {
         log.info("Post ID: {} cache miss.", postId);
         Post post = postRepository.findById(postId).orElseThrow(
                 () -> new IllegalStateException("Received unknown post ID: " + postId)
         );
-        postCacheRepository.saveIfAbsent(postCacheFactory.fromPost(post));
+        postCacheRepository.save(postCacheFactory.fromPost(post));
 
         return feedPostFactory.fromPost(post);
     }
@@ -141,7 +143,7 @@ public class FeedService {
 
         for (Post post : morePosts) {
             feed.add(feedPostFactory.fromPost(post));
-            postCacheRepository.saveIfAbsent(postCacheFactory.fromPost(post));
+            postCacheRepository.save(postCacheFactory.fromPost(post));
         }
         return feed;
     }
@@ -150,7 +152,7 @@ public class FeedService {
         HashSet<Long> authorIds = new HashSet<>();
         for (Post post : posts) {
             authorIds.add(post.getAuthorId());
-            postCacheRepository.saveIfAbsent(postCacheFactory.fromPost(post));
+            postCacheRepository.save(postCacheFactory.fromPost(post));
         }
 
         List<UserDto> users = cacheRepository.getUsers(authorIds.stream().toList());

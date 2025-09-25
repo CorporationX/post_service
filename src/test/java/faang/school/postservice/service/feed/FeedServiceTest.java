@@ -27,6 +27,8 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,10 +36,8 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -181,64 +181,79 @@ class FeedServiceTest {
     }
 
     @Test
-    void getFeed_shouldFetchFromDBIfCacheMissAndReturnDtos() {
+    void getFeed_allPostsFromCache() {
         long userId = 42L;
-        long postId1 = 1001L;
-        long postId2 = 1002L;
-        when(userContext.getUserId()).thenReturn(userId);
-        when(
-                feedCacheRepository.getFeedAfter(userId, null, feedPageSize))
-                .thenReturn(List.of(postId1, postId2)
+        List<Long> postIds = List.of(1L, 2L, 3L);
+        List<PostCache> postCaches = List.of(new PostCache(), new PostCache(), new PostCache());
+        List<FeedPostDto> expectedDtos = List.of(
+                new FeedPostDto(), new FeedPostDto(), new FeedPostDto()
         );
-        when(postCacheRepository.findById(String.valueOf(postId1))).thenReturn(Optional.empty());
-        when(postCacheRepository.findById(String.valueOf(postId2))).thenReturn(Optional.empty());
-        Post post1 = mock(Post.class);
-        Post post2 = mock(Post.class);
-        when(postRepository.findById(postId1)).thenReturn(Optional.of(post1));
-        when(postRepository.findById(postId2)).thenReturn(Optional.of(post2));
-        FeedPostDto dto1 = mock(FeedPostDto.class);
-        FeedPostDto dto2 = mock(FeedPostDto.class);
-        when(feedPostFactory.fromPost(post1)).thenReturn(dto1);
-        when(feedPostFactory.fromPost(post2)).thenReturn(dto2);
+        expectedDtos.get(0).setId(1L);
+        expectedDtos.get(1).setId(2L);
+        expectedDtos.get(2).setId(3L);
 
-        FeedService spyService = Mockito.spy(feedService);
-        ReflectionTestUtils.setField(spyService, "feedPageSize", feedPageSize);
-        doReturn(List.of(dto1, dto2)).when(spyService).maybeExtendFeed(null, List.of(dto1, dto2));
-        List<FeedPostDto> result = spyService.getFeed(null);
+        when(userContext.getUserId()).thenReturn(userId);
+        when(feedCacheRepository.getFeedAfter(userId, null, feedPageSize)).thenReturn(postIds);
+        when(postCacheRepository.getMany(postIds)).thenReturn(postCaches);
+        when(feedPostFactory.fromPostCache(any()))
+                .thenReturn(expectedDtos.get(0), expectedDtos.get(1), expectedDtos.get(2));
 
-        verify(feedCacheRepository).getFeedAfter(userId, null, feedPageSize);
-        verify(postCacheRepository).findById(String.valueOf(postId1));
-        verify(postCacheRepository).findById(String.valueOf(postId2));
-        verify(postRepository).findById(postId1);
-        verify(postRepository).findById(postId2);
-        verify(feedPostFactory).fromPost(post1);
-        verify(feedPostFactory).fromPost(post2);
-        verify(spyService).maybeExtendFeed(null, List.of(dto1, dto2));
 
-        assertThat(result).containsExactly(dto1, dto2);
+        List<FeedPostDto> result = feedService.getFeed(null);
+
+        assertThat(result).containsExactlyElementsOf(expectedDtos);
+        verify(postRepository, never()).findById(any());
     }
 
     @Test
-    void getFeed_shouldUseCacheIfPresent() {
-        long userId = 99L;
-        long postId = 2001L;
+    void getFeed_someRedisMisses() {
+        long userId = 42L;
+        List<Long> postIds = List.of(1L, 2L);
+        PostCache cachedPost = new PostCache();
+        Post dbPost = new Post();
+        FeedPostDto cachedDto = new FeedPostDto();
+        cachedDto.setId(1L);
+        FeedPostDto dbDto = new FeedPostDto();
+        dbDto.setId(2L);
+
 
         when(userContext.getUserId()).thenReturn(userId);
-        when(feedCacheRepository.getFeedAfter(userId, null, feedPageSize)).thenReturn(List.of(postId));
+        when(feedCacheRepository.getFeedAfter(userId, null, feedPageSize)).thenReturn(postIds);
+        when(postCacheRepository.getMany(postIds))
+                .thenReturn(new ArrayList<>(Arrays.asList(cachedPost, null)));
+        when(feedPostFactory.fromPostCache(cachedPost)).thenReturn(cachedDto);
+        when(postRepository.findById(2L)).thenReturn(Optional.of(dbPost));
+        when(postCacheFactory.fromPost(dbPost)).thenReturn(new PostCache());
+        when(postCacheRepository.save(any())).thenReturn(null);
+        when(feedPostFactory.fromPost(dbPost)).thenReturn(dbDto);
 
-        PostCache postCache = mock(PostCache.class);
-        when(postCacheRepository.findById(String.valueOf(postId))).thenReturn(Optional.of(postCache));
+        List<FeedPostDto> result = feedService.getFeed(null);
 
-        FeedPostDto dto = mock(FeedPostDto.class);
-        when(feedPostFactory.fromPostCache(postCache)).thenReturn(dto);
+        assertThat(result).containsExactly(cachedDto, dbDto);
+    }
 
-        FeedService spyService = Mockito.spy(feedService);
-        ReflectionTestUtils.setField(spyService, "feedPageSize", feedPageSize);
-        doReturn(List.of(dto)).when(spyService).maybeExtendFeed(null, List.of(dto));
+    @Test
+    void getFeed_extendsFromDbWhenFeedShort() {
+        long userId = 42L;
+        List<Long> postIds = List.of(1L);
+        PostCache cachedPost = new PostCache();
+        FeedPostDto cachedDto = new FeedPostDto();
+        cachedDto.setId(1L);
 
-        List<FeedPostDto> result = spyService.getFeed(null);
+        Post extraPost = new Post();
+        FeedPostDto extraDto = new FeedPostDto();
+        extraDto.setId(2L);
 
-        verify(postRepository, never()).findById(anyLong());
-        assertThat(result).containsExactly(dto);
+        when(userContext.getUserId()).thenReturn(userId);
+        when(feedCacheRepository.getFeedAfter(userId, null, feedPageSize)).thenReturn(postIds);
+        when(postCacheRepository.getMany(postIds)).thenReturn(List.of(cachedPost));
+        when(feedPostFactory.fromPostCache(cachedPost)).thenReturn(cachedDto);
+        when(postRepository.getFeedForUser(userId, feedPageSize -1, 1L)).thenReturn(List.of(extraPost));
+        when(feedPostFactory.fromPost(extraPost)).thenReturn(extraDto);
+        when(postCacheFactory.fromPost(extraPost)).thenReturn(new PostCache());
+
+        List<FeedPostDto> result = feedService.getFeed(null);
+
+        assertThat(result).containsExactly(cachedDto, extraDto);
     }
 }

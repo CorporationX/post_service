@@ -2,6 +2,8 @@ package faang.school.postservice.repository.redis.post;
 
 import faang.school.postservice.model.redis.PostCache;
 
+import java.util.List;
+
 public interface PostCacheRepositoryCustom {
-    boolean saveIfAbsent(PostCache postCache);
+    List<PostCache> getMany(List<Long> ids);
 }
