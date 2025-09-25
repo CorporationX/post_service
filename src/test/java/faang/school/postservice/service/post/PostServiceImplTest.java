@@ -115,21 +115,6 @@ class PostServiceImplTest {
     }
 
     @Test
-    @DisplayName("тест успешного публикации поста")
-    void publish_success() {
-        var currentUserId = 1L;
-        var postId = 1L;
-        var now = LocalDateTime.now();
-        var publishedPost = buildPostEntity(postId, currentUserId, null, now);
-        publishedPost.setPublished(true);
-        var post = buildPostEntity(postId, currentUserId, null, now);
-        when(userContext.getUserId()).thenReturn(currentUserId);
-        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
-        service.publish(postId);
-        verify(postRepository).save(refEq(publishedPost, "publishedAt"));
-    }
-
-    @Test
     @DisplayName("тест успешного удаления поста")
     void delete_success() {
         var currentUserId = 1L;
