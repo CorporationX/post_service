@@ -26,6 +26,8 @@ spring:
           name: calculations_channel
         feed-channel: feed_channel
       feed-ids-max: 500
+      post-ttl: 86400
+      user-ttl: 86400
 
   kafka:
     bootstrap-servers: localhost:9092

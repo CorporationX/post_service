@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
-@RedisHash(value = "Post", timeToLive = 86400)
+@RedisHash(value = "Post")
 @AllArgsConstructor
 public class PostRedis implements Serializable {
     private Long id;

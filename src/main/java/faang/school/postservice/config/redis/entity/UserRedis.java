@@ -9,7 +9,7 @@ import java.io.Serializable;
 
 @Getter
 @Setter
-@RedisHash(value = "User", timeToLive = 86400)
+@RedisHash(value = "User")
 @AllArgsConstructor
 public class UserRedis implements Serializable {
     private Long id;

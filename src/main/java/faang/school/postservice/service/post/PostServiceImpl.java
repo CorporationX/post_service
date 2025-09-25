@@ -25,10 +25,13 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
@@ -77,6 +80,12 @@ public class PostServiceImpl implements PostService {
     private final UserRedisRepository userRedisRepository;
     @Qualifier("postPublishEventProducer")
     private final EventProducer<PostPublishEvent> postPublishProducer;
+
+    private final RedisTemplate<String, Object> redisTemplate;
+    @Value("${spring.data.redis.post-ttl}")
+    private Long postRedisTtl;
+    @Value("${spring.data.redis.user-ttl}")
+    private Long userRedisTtl;
 
     @Override
     public PostViewDto create(PostCreateDto createDto) {
@@ -131,7 +140,10 @@ public class PostServiceImpl implements PostService {
         UserDto author = userClient.getUser(authorId);
 
         userRedisRepository.save(new UserRedis(author.id(), author.username()));
+        redisTemplate.expire(String.valueOf(author.id()), Duration.ofSeconds(userRedisTtl));
+
         postRedisRepository.save(postRedis);
+        redisTemplate.expire(String.valueOf(postRedis.getId()), Duration.ofSeconds(postRedisTtl));
 
         PostPublishEvent postPublishEvent = new PostPublishEvent(postRedis.getAuthorId(), postRedis.getId(), author.followersIds());
         sendEventInNewTransaction(postPublishProducer, postPublishEvent);
