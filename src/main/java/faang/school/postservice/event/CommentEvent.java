@@ -1,4 +1,4 @@
-package faang.school.postservice.events;
+package faang.school.postservice.event;
 
 import java.time.LocalDateTime;
 

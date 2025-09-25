@@ -1,0 +1,12 @@
+package faang.school.postservice.dto.response;
+
+public enum ErrorCode {
+    POST_NOT_FOUND,
+    UNAUTHORIZED_ACCESS,
+    POST_ALREADY_PUBLISHED,
+    POST_ALREADY_DELETED,
+    INVALID_POST_SCHEDULE,
+    INVALID_POST_CONTENT,
+    VALIDATION_ERROR,
+    INTERNAL_ERROR
+}

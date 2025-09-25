@@ -1,6 +1,6 @@
 package faang.school.postservice.mapper.event;
 
-import faang.school.postservice.events.CommentEvent;
+import faang.school.postservice.event.CommentEvent;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import org.springframework.stereotype.Component;

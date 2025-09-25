@@ -1,7 +1,7 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.events.CommentEvent;
-import faang.school.postservice.events.CommentEventPublisher;
+import faang.school.postservice.event.CommentEvent;
+import faang.school.postservice.event.CommentEventPublisher;
 import faang.school.postservice.exception.PostNotFoundException;
 import faang.school.postservice.mapper.event.CommentEventMapper;
 import faang.school.postservice.model.Comment;
@@ -40,7 +40,7 @@ public class CommentService {
         validateInput(postId, authorId, content);
 
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new PostNotFoundException("Post not found with id: " + postId));
+                .orElseThrow(() -> new PostNotFoundException(postId));
 
         Comment comment = Comment.builder()
                 .post(post)
