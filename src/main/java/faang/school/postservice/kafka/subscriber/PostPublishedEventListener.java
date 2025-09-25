@@ -16,7 +16,7 @@ public class PostPublishedEventListener {
     private final ObjectMapper objectMapper;
     private final FeedService feedService;
 
-    @KafkaListener(topics = "${spring.kafka.topic.post_published}")
+    @KafkaListener(topics = "${spring.kafka.topic.post-published}")
     public void listen(String eventText) {
         log.info("Received new event: {}", eventText);
         PostPublishedEvent event = null;
