@@ -1,0 +1,13 @@
+{
+  "type": "record",
+  "name": "FeedBatchEventAvro",
+  "namespace": "faang.school.postservice.dto.avro",
+  "fields": [
+    {"name": "postId", "type": "string"},
+    {"name": "authorId", "type": "string"},
+    {"name": "subscriberIds", "type": {"type": "array", "items": "string"}},
+    {"name": "batchNumber", "type": "int"},
+    {"name": "totalBatches", "type": "int"},
+    {"name": "publishedAt", "type": {"type": "long", "logicalType": "timestamp-millis"}}
+  ]
+}

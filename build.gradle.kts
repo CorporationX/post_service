@@ -1,8 +1,11 @@
+import com.github.davidmc24.gradle.plugin.avro.AvroExtension
+
 plugins {
     java
     id("org.springframework.boot") version "3.0.6"
     id("io.spring.dependency-management") version "1.1.0"
     id("jacoco")
+    id("com.github.davidmc24.gradle.plugin.avro") version "1.9.1"
     checkstyle
 
 
@@ -14,6 +17,7 @@ java.sourceCompatibility = JavaVersion.VERSION_17
 
 repositories {
     mavenCentral()
+    maven(url = "https://packages.confluent.io/maven/")
 }
 
 dependencies {
@@ -62,7 +66,20 @@ dependencies {
     testImplementation("org.assertj:assertj-core:3.24.2")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 
+    /**
+     * Swagger
+     */
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0")
+
+    /**
+     * Message Broker
+     */
+    implementation("org.springframework.kafka:spring-kafka")
+    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.apache.avro:avro:1.11.1")
+    implementation("io.confluent:kafka-avro-serializer:7.4.0")
+    implementation("io.confluent:kafka-schema-registry-client:7.4.0")
+
 }
 
 tasks.test {
@@ -107,3 +124,16 @@ tasks.checkstyleTest {
 
     classpath = files()
 }
+
+configure<AvroExtension> {
+    isCreateSetters.set(false)
+    fieldVisibility.set("PRIVATE")
+    outputCharacterEncoding.set("UTF-8")
+}
+
+tasks.withType<com.github.davidmc24.gradle.plugin.avro.GenerateAvroJavaTask> {
+    setSource(file("src/main/resources/avro"))
+    setOutputDir(file("$buildDir/generated-sources/avro"))
+}
+
+

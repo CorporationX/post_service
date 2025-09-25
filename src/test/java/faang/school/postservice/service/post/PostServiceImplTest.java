@@ -12,6 +12,7 @@ import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.enums.PostStatus;
+import faang.school.postservice.publisher.PostPublishedEventProducer;
 import faang.school.postservice.repository.PostRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -67,6 +68,9 @@ public class PostServiceImplTest {
 
     @Spy
     private PostMapper mapper;
+
+    @Mock
+    private PostPublishedEventProducer publisher;
 
     @Mock
     private UserContext context;
