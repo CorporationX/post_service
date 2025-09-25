@@ -52,10 +52,9 @@ public class RedisConfig {
         template.setValueSerializer(serializer);
         return template;
     }
-
+  
     @Bean("FeedRedis")
     public RedisTemplate<String, Object> redisTemplateFeed(JedisConnectionFactory jedisConnectionFactory) {
         return redisTemplate(jedisConnectionFactory);
     }
-
 }
