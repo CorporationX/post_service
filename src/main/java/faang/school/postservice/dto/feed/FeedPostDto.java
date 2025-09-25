@@ -14,4 +14,7 @@ public class FeedPostDto {
     private Long projectId;
     private List<FeedCommentDto> lastComments;
     private LocalDateTime publishedAt;
+
+    public class CommentDto {
+    }
 }

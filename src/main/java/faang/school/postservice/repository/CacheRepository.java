@@ -1,16 +1,16 @@
 package faang.school.postservice.repository;
 
 import faang.school.postservice.dto.user.UserDto;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 @Repository
+@RequiredArgsConstructor
 public class CacheRepository {
-    @Autowired
-    JdbcTemplate jdbc;
+    private final JdbcTemplate jdbc;
 
     public List<UserDto> getUsers(List<Long> ids) {
         if (ids.isEmpty()) return List.of();
