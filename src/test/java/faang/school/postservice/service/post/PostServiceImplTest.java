@@ -12,6 +12,7 @@ import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.enums.PostStatus;
+import faang.school.postservice.publisher.PostPublishedEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -67,6 +68,9 @@ public class PostServiceImplTest {
 
     @Spy
     private PostMapper mapper;
+
+    @Mock
+    private PostPublishedEventPublisher publisher;
 
     @Mock
     private UserContext context;
@@ -338,10 +342,10 @@ public class PostServiceImplTest {
         assertThat(result.getContent()).hasSize(expectedPosts.size());
         expectedPosts.forEach(expectedPost -> assertThat(result.getContent())
                 .anyMatch(dto ->
-                        Objects.equals(dto.authorId(), expectedPost.getAuthorId()) &&
-                        Objects.equals(dto.projectId(), expectedPost.getProjectId()) &&
-                        dto.published() == expectedPost.isPublished() &&
-                        dto.deleted() == expectedPost.isDeleted()
+                        Objects.equals(dto.authorId(), expectedPost.getAuthorId())
+                                && Objects.equals(dto.projectId(), expectedPost.getProjectId())
+                                && dto.published() == expectedPost.isPublished()
+                                && dto.deleted() == expectedPost.isDeleted()
                 ));
         verify(postRepository, times(1)).findByFilter(filterDto, pageable);
     }

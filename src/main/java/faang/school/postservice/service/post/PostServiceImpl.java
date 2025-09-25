@@ -4,6 +4,7 @@ import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostCreateDto;
 import faang.school.postservice.dto.post.PostFilterDto;
+import faang.school.postservice.dto.post.PostPublishedEvent;
 import faang.school.postservice.dto.post.PostUpdateDto;
 import faang.school.postservice.dto.post.PostViewDto;
 import faang.school.postservice.dto.project.ProjectDto;
@@ -11,6 +12,7 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.PostPublishedEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +39,7 @@ public class PostServiceImpl implements PostService {
     private final ProjectServiceClient projectClient;
     private final PostMapper mapper;
     private final UserContext context;
+    private final PostPublishedEventPublisher publisher;
 
     @Override
     @Transactional
@@ -68,6 +71,8 @@ public class PostServiceImpl implements PostService {
         post.setPublishedAt(LocalDateTime.now());
         log.info("Пост id={} был опубликован в {}", post.getId(), post.getPublishedAt());
         postRepository.save(post);
+
+        publisher.publishAfterCommit(new PostPublishedEvent(id, post.getAuthorId(), post.getProjectId()));
     }
 
     @Override
@@ -104,6 +109,7 @@ public class PostServiceImpl implements PostService {
     @Override
     public Page<PostViewDto> findByFilter(PostFilterDto filterDto, Pageable pageable) {
         Page<Post> posts = postRepository.findByFilter(filterDto, pageable);
+
         return posts.map(mapper::toViewDto);
     }
 
