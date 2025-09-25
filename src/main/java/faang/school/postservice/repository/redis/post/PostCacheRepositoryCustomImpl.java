@@ -19,6 +19,8 @@ public class PostCacheRepositoryCustomImpl implements PostCacheRepositoryCustom 
     @Qualifier("rawHashRedisTemplate")
     private RedisTemplate<String, String> redisTemplate;
 
+    private static final String KEY_PREFIX = "Post:";
+
     @Autowired
     private PostCacheMapper postCacheMapper;
 
@@ -55,8 +57,7 @@ public class PostCacheRepositoryCustomImpl implements PostCacheRepositoryCustom 
     }
 
     private String getKey(long postId){
-        String keyPrefix = "Post:";
-        return keyPrefix + postId;
+        return KEY_PREFIX + postId;
     }
 
 }
