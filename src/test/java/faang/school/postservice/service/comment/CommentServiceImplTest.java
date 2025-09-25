@@ -82,7 +82,7 @@ class CommentServiceImplTest {
      * Проверяет, что возвращается корректный CommentViewDto и вызываются ожидаемые методы репозиториев.
      */
     @Test
-    void create_PostExists_ReturnsCommentViewDto() {
+    void createPostExistsReturnsCommentViewDto() {
         when(postRepository.findPostOrThrow(POST_ID)).thenReturn(post);
         when(userContext.getUserId()).thenReturn(USER_ID);
         when(commentRepository.save(any(Comment.class))).thenReturn(comment);
@@ -107,7 +107,7 @@ class CommentServiceImplTest {
      * Проверяет, что выбрасывается исключение EntityNotFoundException с корректным сообщением.
      */
     @Test
-    void create_PostNotFound_ThrowsEntityNotFoundException() {
+    void createPostNotFoundThrowsEntityNotFoundException() {
         when(postRepository.findPostOrThrow(POST_ID))
                 .thenThrow(new EntityNotFoundException("Пост с id " + POST_ID + " не найден"));
 
@@ -124,7 +124,7 @@ class CommentServiceImplTest {
      * Проверяет, что метод завершается без исключений и вызываются ожидаемые методы репозитория.
      */
     @Test
-    void delete_CommentExists_DeletesComment() {
+    void deleteCommentExistsDeletesComment() {
         when(commentRepository.findByIdAndPostIdOrThrow(POST_ID, COMMENT_ID)).thenReturn(comment);
         doNothing().when(commentRepository).delete(comment);
 
@@ -139,7 +139,7 @@ class CommentServiceImplTest {
      * Проверяет, что выбрасывается исключение EntityNotFoundException с корректным сообщением.
      */
     @Test
-    void delete_CommentNotFound_ThrowsEntityNotFoundException() {
+    void deleteCommentNotFoundThrowsEntityNotFoundException() {
         when(commentRepository.findByIdAndPostIdOrThrow(POST_ID, COMMENT_ID))
                 .thenThrow(new EntityNotFoundException("Комментарий с id " + COMMENT_ID + " не найден"));
 
@@ -156,7 +156,7 @@ class CommentServiceImplTest {
      * Проверяет, что возвращается обновленный CommentViewDto и вызываются ожидаемые методы репозиториев.
      */
     @Test
-    void update_CommentExistsAndUserIsAuthor_ReturnsUpdatedComment() {
+    void updateCommentExistsAndUserIsAuthorReturnsUpdatedComment() {
         Comment updatedComment = Comment.builder()
                 .id(COMMENT_ID)
                 .content("Updated content")
@@ -197,7 +197,7 @@ class CommentServiceImplTest {
      * Проверяет, что выбрасывается исключение EntityNotFoundException с корректным сообщением.
      */
     @Test
-    void update_CommentNotFound_ThrowsEntityNotFoundException() {
+    void updateCommentNotFoundThrowsEntityNotFoundException() {
         when(userContext.getUserId()).thenReturn(USER_ID);
         when(commentRepository.update(
                 COMMENT_ID, POST_ID, USER_ID,
@@ -222,7 +222,7 @@ class CommentServiceImplTest {
      * Проверяет, что возвращается непустой список CommentViewDto и вызываются ожидаемые методы репозиториев.
      */
     @Test
-    void getAllCommentByPostId_PostExistsWithComments_ReturnsCommentList() {
+    void getAllCommentByPostIdPostExistsWithCommentsReturnsCommentList() {
         List<Comment> comments = List.of(comment);
         List<CommentViewDto> viewDtos = List.of(viewDto);
 
@@ -246,7 +246,7 @@ class CommentServiceImplTest {
      * Проверяет, что возвращается пустой список и вызываются ожидаемые методы репозиториев.
      */
     @Test
-    void getAllCommentByPostId_PostExistsNoComments_ReturnsEmptyList() {
+    void getAllCommentByPostIdPostExistsNoCommentsReturnsEmptyList() {
         when(postRepository.existsById(POST_ID)).thenReturn(true);
         when(commentRepository.findAllByPostId(POST_ID)).thenReturn(List.of());
 
@@ -265,7 +265,7 @@ class CommentServiceImplTest {
      * Проверяет, что выбрасывается исключение EntityNotFoundException с корректным сообщением.
      */
     @Test
-    void getAllCommentByPostId_PostNotFound_ThrowsEntityNotFoundException() {
+    void getAllCommentByPostIdPostNotFoundThrowsEntityNotFoundException() {
         when(postRepository.existsById(POST_ID)).thenReturn(false);
 
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class,
@@ -283,7 +283,7 @@ class CommentServiceImplTest {
      * Проверяет, что метод findById репозитория постов вызывается с правильным идентификатором.
      */
     @Test
-    void findPostById_ThroughCreateMethod_PostExists() {
+    void findPostByIdThroughCreateMethodPostExists() {
         when(postRepository.findPostOrThrow(POST_ID)).thenReturn(post);
         when(userContext.getUserId()).thenReturn(USER_ID);
         when(commentRepository.save(any(Comment.class))).thenReturn(comment);
@@ -299,7 +299,7 @@ class CommentServiceImplTest {
      * Проверяет, что выбрасывается исключение EntityNotFoundException.
      */
     @Test
-    void findPostById_ThroughCreateMethod_PostNotFound() {
+    void findPostByIdThroughCreateMethodPostNotFound() {
         when(postRepository.findPostOrThrow(POST_ID))
                 .thenThrow(new EntityNotFoundException("Пост с id " + POST_ID + " не найден"));
 
@@ -313,7 +313,7 @@ class CommentServiceImplTest {
      * Проверяет, что метод findByIdAndPostId репозитория комментариев вызывается с правильными параметрами.
      */
     @Test
-    void findCommentById_ThroughDeleteMethod_CommentExists() {
+    void findCommentByIdThroughDeleteMethodCommentExists() {
         when(commentRepository.findByIdAndPostIdOrThrow(POST_ID, COMMENT_ID)).thenReturn(comment);
         doNothing().when(commentRepository).delete(comment);
 
@@ -327,7 +327,7 @@ class CommentServiceImplTest {
      * Проверяет, что выбрасывается исключение EntityNotFoundException.
      */
     @Test
-    void findCommentById_ThroughDeleteMethod_CommentNotFound() {
+    void findCommentByIdThroughDeleteMethodCommentNotFound() {
         when(commentRepository.findByIdAndPostIdOrThrow(POST_ID, COMMENT_ID))
                 .thenThrow(new EntityNotFoundException("Комментарий с id " + COMMENT_ID + " не найден"));
 
