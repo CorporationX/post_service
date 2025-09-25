@@ -158,12 +158,7 @@ public class FeedService {
         List<UserDto> users = cacheRepository.getUsers(authorIds.stream().toList());
         for (UserDto userDto : users) {
             UserCache userCache = userCacheFactory.fromUserDto(userDto);
-            boolean cached = userCacheRepository.saveIfAbsent(userCache);
-            if (cached) {
-                log.info("UserCache added for ID: {}", userCache.getId());
-            } else {
-                log.info("UserCache already exists for ID: {}", userCache.getId());
-            }
+            userCacheRepository.save(userCache);
         }
 
     }
