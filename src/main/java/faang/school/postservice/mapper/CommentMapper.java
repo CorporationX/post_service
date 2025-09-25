@@ -1,6 +1,7 @@
 package faang.school.postservice.mapper;
 
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.event.CommentEvent;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import org.mapstruct.Mapper;
@@ -20,6 +21,9 @@ public interface CommentMapper {
     @Mapping(source = "post.id", target = "postId")
     @Mapping(source = "likes", target = "likeCount", qualifiedByName = "countLikes")
     CommentDto toCommentDto(Comment comment);
+
+    @Mapping(source = "commentAuthorId", target = "authorId")
+    CommentDto toCommentDto(CommentEvent event);
 
     @Mapping(target = "content", source = "newContent")
     void update(String newContent, @MappingTarget Comment comment);

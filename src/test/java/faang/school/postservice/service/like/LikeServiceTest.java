@@ -8,6 +8,7 @@ import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.LikeProducer;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -46,6 +47,8 @@ class LikeServiceTest {
     private CommentRepository commentRepository;
     @Mock
     private UserServiceClient userServiceClient;
+    @Mock
+    private LikeProducer producer;
     @Captor
     private ArgumentCaptor<Like> likeCaptor;
 

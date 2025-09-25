@@ -3,8 +3,11 @@ package faang.school.postservice.dto.comment;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.Builder;
+
 import java.time.LocalDateTime;
 
+@Builder
 public record CommentDto(
         Long id,
         @NotBlank
@@ -15,6 +18,6 @@ public record CommentDto(
         long likeCount,
         @NotNull
         Long postId,
-        LocalDateTime createAt,
+        LocalDateTime createdAt,
         LocalDateTime updatedAt) {
 }

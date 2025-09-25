@@ -7,10 +7,12 @@ import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.NotResourceOwnerException;
 import faang.school.postservice.mapper.CommentMapperImpl;
+import faang.school.postservice.mapper.UserMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.redis.UserRedisRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -47,6 +49,10 @@ class CommentServiceTest {
     private PostRepository postRepository;
     @Mock
     private UserServiceClient userServiceClient;
+    @Mock
+    private UserRedisRepository userRedisRepository;
+    @Mock
+    private UserMapper userMapper;
     @Spy
     private CommentMapperImpl mapper;
     @Captor
@@ -58,6 +64,7 @@ class CommentServiceTest {
     private static final long OTHER_USER_ID = 4;
     private static final String CONTENT = "Test a content";
     private static final String NEW_CONTENT = "Test a new content";
+    private static final int COMMENT_LIMIT = 3;
 
     private CommentDto commentDto;
 
@@ -112,6 +119,20 @@ class CommentServiceTest {
         List<CommentDto> actual = commentService.findAllByPostId(POST_ID);
 
         verify(commentRepository, times(1)).findAllByPostIdOrderByCreatedAtDesc(POST_ID);
+        assertNotNull(actual);
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    @DisplayName("Успешное получение новых комментариев по id поста и лимиту")
+    void positive_shouldFindNewByPostId() {
+        List<CommentDto> expected  = List.of(prepareCommentDto(COMMENT_ID, CONTENT));
+        when(commentRepository.findNewByPostId(POST_ID, COMMENT_LIMIT))
+                .thenReturn(List.of(prepareExistsComment().get()));
+
+        List<CommentDto> actual = commentService.findNewByPostId(POST_ID, COMMENT_LIMIT);
+
+        verify(commentRepository, times(1)).findNewByPostId(POST_ID, COMMENT_LIMIT);
         assertNotNull(actual);
         assertEquals(expected, actual);
     }
