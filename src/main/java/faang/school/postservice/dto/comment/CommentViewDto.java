@@ -7,7 +7,8 @@ import static faang.school.postservice.config.constants.CommentConstants.COMMENT
 
 public record CommentViewDto(
         Long id,
-        @Size(max = COMMENT_MAX_SIZE, message = "Содержимое комментария не может быть больше " + COMMENT_MAX_SIZE + " символов")
+        @Size(max = COMMENT_MAX_SIZE,
+                message = "Содержимое комментария не может быть больше " + COMMENT_MAX_SIZE + " символов")
         String content,
         @NotNull
         Long authorId,

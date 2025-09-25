@@ -2,7 +2,6 @@ package faang.school.postservice.repository;
 
 import faang.school.postservice.dto.post.PostFilterDto;
 import faang.school.postservice.exception.EntityNotFoundException;
-import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
