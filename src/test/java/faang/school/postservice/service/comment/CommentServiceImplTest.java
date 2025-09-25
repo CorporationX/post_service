@@ -20,10 +20,24 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 import java.util.Optional;
 
-import static faang.school.postservice.service.comment.CommentServiceImplTestData.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static faang.school.postservice.service.comment.CommentServiceImplTestData.COMMENT_ID;
+import static faang.school.postservice.service.comment.CommentServiceImplTestData.CONTENT;
+import static faang.school.postservice.service.comment.CommentServiceImplTestData.LARGE_IMAGE_KEY;
+import static faang.school.postservice.service.comment.CommentServiceImplTestData.POST_ID;
+import static faang.school.postservice.service.comment.CommentServiceImplTestData.SMALL_IMAGE_KEY;
+import static faang.school.postservice.service.comment.CommentServiceImplTestData.USER_ID;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 /**
  * Тестовый класс для проверки функциональности сервиса комментариев.
