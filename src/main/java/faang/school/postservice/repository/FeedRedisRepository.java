@@ -10,7 +10,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class FeedRedisRepository {
 
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final RedisTemplate<String, FeedRedis> redisTemplate;
 
     @Value("${spring.data.redis.channels.feed-channel}")
     private String topicName;
