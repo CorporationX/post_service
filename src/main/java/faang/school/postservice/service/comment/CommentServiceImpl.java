@@ -153,8 +153,7 @@ public class CommentServiceImpl implements CommentService {
      * @throws EntityNotFoundException если пост с указанным идентификатором не найден
      */
     private Post findPostById(Long postId) {
-        return postRepository.findById(postId)
-                .orElseThrow(() -> new EntityNotFoundException("Пост с id " + postId + " не найден"));
+        return postRepository.findPostOrThrow(postId);
     }
 
     /**
@@ -166,7 +165,6 @@ public class CommentServiceImpl implements CommentService {
      * @throws EntityNotFoundException если комментарий с указанным идентификатором не найден
      */
     private Comment findCommentById(Long postId, Long commentId) {
-        return commentRepository.findByIdAndPostId(postId, commentId)
-                .orElseThrow(() -> new EntityNotFoundException("Комментарий с id " + commentId + " не найден"));
+        return commentRepository.findByIdAndPostIdOrThrow(postId, commentId);
     }
 }

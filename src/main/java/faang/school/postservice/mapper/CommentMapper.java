@@ -6,13 +6,10 @@ import faang.school.postservice.model.Comment;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
 
-import java.util.List;
-
 /**
- * CommentMapper — описание интерфейса.
- * <p>
- * </p>
- * 
+ * CommentMapper — маппер из сущности {@link Comment} в dto и наоборот.
+ *
+ *
  * @author bozya
  * @since 21.08.2025
  */

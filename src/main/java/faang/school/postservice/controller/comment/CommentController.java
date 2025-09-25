@@ -16,13 +16,13 @@ import java.util.List;
 @RequestMapping("/posts/{postId}/comments")
 @RequiredArgsConstructor
 public class CommentController {
-    private final CommentService commentService;
+    private final CommentService service;
 
     @PostMapping
     public ResponseEntity<CommentViewDto> create(
             @PathVariable Long postId,
             @RequestBody @Valid CommentCreateDto createDto) {
-        CommentViewDto createdComment = commentService.create(createDto, postId);
+        CommentViewDto createdComment = service.create(createDto, postId);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdComment);
     }
 
@@ -31,14 +31,14 @@ public class CommentController {
             @PathVariable Long postId,
             @PathVariable Long commentId,
             @RequestBody @Valid CommentUpdateDto updateDto) {
-        CommentViewDto updatedComment = commentService.update(postId, commentId, updateDto);
+        CommentViewDto updatedComment = service.update(postId, commentId, updateDto);
         return ResponseEntity.ok(updatedComment);
     }
 
     @GetMapping
     public ResponseEntity<List<CommentViewDto>> getAllCommentsByPostId(
             @PathVariable Long postId) {
-        List<CommentViewDto> comments = commentService.getAllCommentByPostId(postId);
+        List<CommentViewDto> comments = service.getAllCommentByPostId(postId);
         return ResponseEntity.ok(comments);
     }
 
@@ -46,7 +46,7 @@ public class CommentController {
     public ResponseEntity<Void> delete(
             @PathVariable Long postId,
             @PathVariable Long commentId) {
-        commentService.delete(postId, commentId);
+        service.delete(postId, commentId);
         return ResponseEntity.noContent().build();
     }
 }
