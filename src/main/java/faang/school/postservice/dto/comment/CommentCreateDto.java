@@ -19,4 +19,4 @@ public record CommentCreateDto(
 
         String largeImageFileKey,
         String smallImageFileKey
-) { }
+) {}

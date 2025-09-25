@@ -6,7 +6,8 @@ import jakarta.validation.constraints.Size;
 import static faang.school.postservice.config.constants.CommentConstants.COMMENT_MAX_SIZE;
 
 public record CommentUpdateDto(
-        @Size(max = COMMENT_MAX_SIZE, message = "Содержимое комментария не может быть больше " + COMMENT_MAX_SIZE + " символов")
+        @Size(max = COMMENT_MAX_SIZE,
+                message = "Содержимое комментария не может быть больше " + COMMENT_MAX_SIZE + " символов")
         String content,
         @NotNull
         Long authorId,
@@ -14,5 +15,4 @@ public record CommentUpdateDto(
         Long postId,
         String largeImageFileKey,
         String smallImageFileKey
-) {
-}
+) {}
