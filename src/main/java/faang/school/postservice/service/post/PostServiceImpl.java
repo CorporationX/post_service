@@ -8,11 +8,15 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.kafka.producer.CommentProducer;
+import faang.school.postservice.kafka.producer.PostProducer;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.redis.PostCache;
+import faang.school.postservice.repository.CommentCacheRepository;
 import faang.school.postservice.repository.CommentRepository;
+import faang.school.postservice.repository.PostCacheRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.criteria.PostSearchCriteria;
 import faang.school.postservice.validation.comment.CommentValidator;
@@ -38,13 +42,15 @@ public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
     private final PostValidator postValidator;
     private final PostMapper postMapper;
-    private final CommentRepository commentRepository;
+    private final CommentProducer commentProducer;
+    private final PostProducer postProducer;
+    private final PostCacheRepository postCacheRepository;
+    private final CommentCacheRepository commentCacheRepository;
     private final CommentMapper commentMapper;
     private final CommentValidator commentValidator;
     private final UserFeignService userFeignService;
     private final PostSpellCheckValidator postSpellCheckValidator;
-
-    private final CommentProducer commentProducer;
+    private final CommentRepository commentRepository;
 
     @Override
     @Transactional
@@ -55,9 +61,11 @@ public class PostServiceImpl implements PostService {
         postRepository.save(post);
 
         log.info("Post id: {} created", post.getId());
-        return postMapper.toPostDto(post);
+        PostDto postDto = postMapper.toPostDto(post);
+        postProducer.publishPost(postDto);
+        postCacheRepository.save();
+        return postDto;
     }
-
 
     @Override
     @Transactional
@@ -221,5 +229,9 @@ public class PostServiceImpl implements PostService {
     @Override
     public List<Post> getUnpublishedPosts() {
         return postRepository.findAllByPublishedFalse();
+    }
+
+    private PostCache postCache(Post post){
+        return new PostCache();
     }
 }

@@ -20,8 +20,15 @@ spring:
   kafka:
     bootstrap-servers: localhost:9092
     group-id: post_service
-    topic:
-      comment: post.comment.created
+    topics:
+      post-comment-publish:
+        name: posts.comments.publish
+      post-like-publish:
+        name: posts.likes.publish
+      post-view:
+        name: posts.view
+      post:
+        name: posts
 
   data:
     redis:
@@ -30,6 +37,10 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
+      cache:
+        comments:
+          max: 3
+          ttl: 86400
 
 server:
   port: 8081

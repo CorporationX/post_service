@@ -1,5 +1,6 @@
 package faang.school.postservice.kafka.producer;
 
+import faang.school.postservice.config.kafka.KafkaTopicConfig;
 import faang.school.postservice.config.properties.kafka.KafkaTopicsProperties;
 import faang.school.postservice.dto.comment.CommentEvent;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -7,17 +8,18 @@ import org.springframework.stereotype.Component;
 
 
 @Component
-public class CommentProducer extends AbstractKafkaProducer<CommentEvent> {
+public class CommentProducer extends AbstractKafkaProducer<CommentEvent>{
 
-    private final KafkaTopicsProperties topics;
+    private final KafkaTopicConfig topic;
 
     public CommentProducer(KafkaTemplate<String, Object> kafkaTemplate,
-                           KafkaTopicsProperties topics) {
+                           KafkaTopicConfig topic) {
         super(kafkaTemplate);
-        this.topics = topics;
+        this.topic = topic;
     }
 
+
     public void publishCommentEvent(CommentEvent event) {
-        publishEvent(topics.comment(), String.valueOf(event.postId()), event);
+        publishEvent(topic.postCommentPublishedTopic().name(), String.valueOf(event.postId()), event);
     }
 }
