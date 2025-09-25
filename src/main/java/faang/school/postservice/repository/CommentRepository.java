@@ -1,12 +1,12 @@
 package faang.school.postservice.repository;
 
+import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.model.Comment;
 import feign.Param;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
 import java.util.Optional;
@@ -37,4 +37,9 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
                              @Param("smallImageFileKey") String smallImageFileKey);
 
     Optional<Comment> findByIdAndPostId(Long postId, Long commentId);
+
+    default Comment findByIdAndPostIdOrThrow(Long postId, Long commentId) {
+        return findByIdAndPostId(postId, commentId)
+                .orElseThrow(() -> new EntityNotFoundException("Комментарий с id " + commentId + " не найден"));
+    }
 }

@@ -20,6 +20,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 import java.util.Optional;
 
+import static faang.school.postservice.service.comment.CommentServiceImplTestData.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -52,13 +53,6 @@ class CommentServiceImplTest {
     @InjectMocks
     private CommentServiceImpl commentService;
 
-    private static final Long POST_ID = 1L;
-    private static final Long COMMENT_ID = 1L;
-    private static final Long USER_ID = 1L;
-    private static final String CONTENT = "Test comment content";
-    private static final String LARGE_IMAGE_KEY = "large-image-key";
-    private static final String SMALL_IMAGE_KEY = "small-image-key";
-
     private Post post;
     private Comment comment;
     private CommentCreateDto createDto;
@@ -89,7 +83,7 @@ class CommentServiceImplTest {
      */
     @Test
     void create_PostExists_ReturnsCommentViewDto() {
-        when(postRepository.findById(POST_ID)).thenReturn(Optional.of(post));
+        when(postRepository.findPostOrThrow(POST_ID)).thenReturn(post);
         when(userContext.getUserId()).thenReturn(USER_ID);
         when(commentRepository.save(any(Comment.class))).thenReturn(comment);
         when(commentMapper.toViewDto(comment)).thenReturn(viewDto);
@@ -102,7 +96,7 @@ class CommentServiceImplTest {
         assertEquals(USER_ID, result.authorId());
         assertEquals(POST_ID, result.postId());
 
-        verify(postRepository).findById(POST_ID);
+        verify(postRepository).findPostOrThrow(POST_ID);
         verify(userContext).getUserId();
         verify(commentRepository).save(any(Comment.class));
         verify(commentMapper).toViewDto(comment);
@@ -114,13 +108,14 @@ class CommentServiceImplTest {
      */
     @Test
     void create_PostNotFound_ThrowsEntityNotFoundException() {
-        when(postRepository.findById(POST_ID)).thenReturn(Optional.empty());
+        when(postRepository.findPostOrThrow(POST_ID))
+                .thenThrow(new EntityNotFoundException("Пост с id " + POST_ID + " не найден"));
 
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class,
                 () -> commentService.create(createDto, POST_ID));
 
         assertEquals("Пост с id " + POST_ID + " не найден", exception.getMessage());
-        verify(postRepository).findById(POST_ID);
+        verify(postRepository).findPostOrThrow(POST_ID);
         verifyNoInteractions(commentRepository, commentMapper);
     }
 
@@ -130,12 +125,12 @@ class CommentServiceImplTest {
      */
     @Test
     void delete_CommentExists_DeletesComment() {
-        when(commentRepository.findByIdAndPostId(POST_ID, COMMENT_ID)).thenReturn(Optional.of(comment));
+        when(commentRepository.findByIdAndPostIdOrThrow(POST_ID, COMMENT_ID)).thenReturn(comment);
         doNothing().when(commentRepository).delete(comment);
 
         assertDoesNotThrow(() -> commentService.delete(POST_ID, COMMENT_ID));
 
-        verify(commentRepository).findByIdAndPostId(POST_ID, COMMENT_ID);
+        verify(commentRepository).findByIdAndPostIdOrThrow(POST_ID, COMMENT_ID);
         verify(commentRepository).delete(comment);
     }
 
@@ -145,13 +140,14 @@ class CommentServiceImplTest {
      */
     @Test
     void delete_CommentNotFound_ThrowsEntityNotFoundException() {
-        when(commentRepository.findByIdAndPostId(POST_ID, COMMENT_ID)).thenReturn(Optional.empty());
+        when(commentRepository.findByIdAndPostIdOrThrow(POST_ID, COMMENT_ID))
+                .thenThrow(new EntityNotFoundException("Комментарий с id " + COMMENT_ID + " не найден"));
 
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class,
                 () -> commentService.delete(POST_ID, COMMENT_ID));
 
         assertEquals("Комментарий с id " + COMMENT_ID + " не найден", exception.getMessage());
-        verify(commentRepository).findByIdAndPostId(POST_ID, COMMENT_ID);
+        verify(commentRepository).findByIdAndPostIdOrThrow(POST_ID, COMMENT_ID);
         verify(commentRepository, never()).delete(any());
     }
 
@@ -288,14 +284,14 @@ class CommentServiceImplTest {
      */
     @Test
     void findPostById_ThroughCreateMethod_PostExists() {
-        when(postRepository.findById(POST_ID)).thenReturn(Optional.of(post));
+        when(postRepository.findPostOrThrow(POST_ID)).thenReturn(post);
         when(userContext.getUserId()).thenReturn(USER_ID);
         when(commentRepository.save(any(Comment.class))).thenReturn(comment);
         when(commentMapper.toViewDto(comment)).thenReturn(viewDto);
 
         commentService.create(createDto, POST_ID);
 
-        verify(postRepository).findById(POST_ID);
+        verify(postRepository).findPostOrThrow(POST_ID);
     }
 
     /**
@@ -304,10 +300,12 @@ class CommentServiceImplTest {
      */
     @Test
     void findPostById_ThroughCreateMethod_PostNotFound() {
-        when(postRepository.findById(POST_ID)).thenReturn(Optional.empty());
+        when(postRepository.findPostOrThrow(POST_ID))
+                .thenThrow(new EntityNotFoundException("Пост с id " + POST_ID + " не найден"));
 
         assertThrows(EntityNotFoundException.class, () -> commentService.create(createDto, POST_ID));
-        verify(postRepository).findById(POST_ID);
+
+        verify(postRepository).findPostOrThrow(POST_ID);
     }
 
     /**
@@ -316,12 +314,12 @@ class CommentServiceImplTest {
      */
     @Test
     void findCommentById_ThroughDeleteMethod_CommentExists() {
-        when(commentRepository.findByIdAndPostId(POST_ID, COMMENT_ID)).thenReturn(Optional.of(comment));
+        when(commentRepository.findByIdAndPostIdOrThrow(POST_ID, COMMENT_ID)).thenReturn(comment);
         doNothing().when(commentRepository).delete(comment);
 
         commentService.delete(POST_ID, COMMENT_ID);
 
-        verify(commentRepository).findByIdAndPostId(POST_ID, COMMENT_ID);
+        verify(commentRepository).findByIdAndPostIdOrThrow(POST_ID, COMMENT_ID);
     }
 
     /**
@@ -330,9 +328,10 @@ class CommentServiceImplTest {
      */
     @Test
     void findCommentById_ThroughDeleteMethod_CommentNotFound() {
-        when(commentRepository.findByIdAndPostId(POST_ID, COMMENT_ID)).thenReturn(Optional.empty());
+        when(commentRepository.findByIdAndPostIdOrThrow(POST_ID, COMMENT_ID))
+                .thenThrow(new EntityNotFoundException("Комментарий с id " + COMMENT_ID + " не найден"));
 
         assertThrows(EntityNotFoundException.class, () -> commentService.delete(POST_ID, COMMENT_ID));
-        verify(commentRepository).findByIdAndPostId(POST_ID, COMMENT_ID);
+        verify(commentRepository).findByIdAndPostIdOrThrow(POST_ID, COMMENT_ID);
     }
 }

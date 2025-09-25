@@ -53,4 +53,6 @@ public interface CommentService {
      * @return список DTO комментариев для указанного поста
      */
     List<CommentViewDto> getAllCommentByPostId(Long postId);
+
+
 }

@@ -1,49 +1,42 @@
 package faang.school.postservice.controller.comment;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CommentCreateDto;
 import faang.school.postservice.dto.comment.CommentUpdateDto;
 import faang.school.postservice.dto.comment.CommentViewDto;
 import faang.school.postservice.service.comment.CommentService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.List;
 
+import static faang.school.postservice.controller.comment.CommentControllerTestData.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@ExtendWith(MockitoExtension.class)
+@WebMvcTest(CommentController.class)
 class CommentControllerTest {
 
-    @Mock
+    @MockBean
+    UserContext userContext;
+
+    @MockBean
     private CommentService commentService;
 
-    @InjectMocks
-    private CommentController commentController;
-
+    @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
     private ObjectMapper objectMapper;
-
-    private final Long POST_ID = 1L;
-    private final Long COMMENT_ID = 1L;
-    private final Long AUTHOR_ID = 1L;
-
-    @BeforeEach
-    void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(commentController).build();
-        objectMapper = new ObjectMapper();
-    }
 
     @Test
     void create_ValidRequest_ReturnsCreated() throws Exception {
