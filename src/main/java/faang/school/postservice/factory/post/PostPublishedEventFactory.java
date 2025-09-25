@@ -3,7 +3,6 @@ package faang.school.postservice.factory.post;
 import faang.school.postservice.dto.post.PostPublishedEvent;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
