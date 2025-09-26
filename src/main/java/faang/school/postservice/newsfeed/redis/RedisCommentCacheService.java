@@ -22,8 +22,8 @@ public class RedisCommentCacheService {
     private int maxComments;
 
     public void saveComment(CommentEvent comment) {
-        String zsetKey = "post:" + comment.postId() + ":comments";
-        String hashKey = "comment:" + comment.commentId();
+        String zsetKey = String.format("post:%s:comments", comment.postId());
+        String hashKey = String.format("comment:%s", comment.commentId());
 
         try {
             String json = objectMapper.writeValueAsString(comment);
