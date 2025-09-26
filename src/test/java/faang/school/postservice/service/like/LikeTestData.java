@@ -5,6 +5,7 @@ import faang.school.postservice.model.Like;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @AllArgsConstructor
@@ -17,7 +18,7 @@ public class LikeTestData {
     public static String userEmail = "@123";
 
     private static final Like like = getLike();
-    private static final UserDto userDto = new UserDto(userId, userName, userEmail);
+    private static final UserDto userDto = new UserDto(userId, userName, userEmail, new ArrayList<>());
 
     public static Like getLike() {
         Like like = new Like();

@@ -28,6 +28,9 @@ public class KafkaTopic {
     @Value("${kafka.topics.like-post}")
     private String likeTopicName;
 
+    @Value("${kafka.topics.publish-post}")
+    private String publishTopicName;
+
     @Bean
     public NewTopic createTopic() {
         return TopicBuilder.name(createTopicName).build();
@@ -44,7 +47,7 @@ public class KafkaTopic {
     }
 
     @Bean
-    public NewTopic likeTopic() {
-        return TopicBuilder.name(likeTopicName).build();
+    public NewTopic publishTopic() {
+        return TopicBuilder.name(publishTopicName).build();
     }
 }

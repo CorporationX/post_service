@@ -1,5 +1,6 @@
 package faang.school.postservice.mapper.post;
 
+import faang.school.postservice.config.redis.entity.PostRedis;
 import faang.school.postservice.dto.post.PostCreateDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
 import faang.school.postservice.dto.post.PostViewDto;
@@ -39,6 +40,8 @@ public interface PostMapper {
 
     @Mapping(target = "likeCount", source = "likeCount")
     PostViewDto toViewDto(Post entity);
+
+    PostRedis toRedis(Post entity);
 
     List<PostViewDto> toViewDtoList(List<Post> entities);
 }
