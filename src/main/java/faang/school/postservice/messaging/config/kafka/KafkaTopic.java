@@ -26,6 +26,9 @@ public class KafkaTopic {
     @Value("${kafka.topics.delete-post}")
     private String deleteTopicName;
 
+    @Value("${kafka.topics.publish-post}")
+    private String publishTopicName;
+
     @Bean
     public NewTopic createTopic() {
         return TopicBuilder.name(createTopicName).build();
@@ -39,5 +42,10 @@ public class KafkaTopic {
     @Bean
     public NewTopic deleteTopic() {
         return TopicBuilder.name(deleteTopicName).build();
+    }
+
+    @Bean
+    public NewTopic publishTopic() {
+        return TopicBuilder.name(publishTopicName).build();
     }
 }

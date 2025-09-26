@@ -3,6 +3,7 @@ package faang.school.postservice.config.redis;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import faang.school.postservice.config.redis.entity.FeedRedis;
 import faang.school.postservice.dto.post.PostViewDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -69,6 +70,15 @@ public class RedisConfig {
         template.setConnectionFactory(factory);
         template.setKeySerializer(new StringRedisSerializer());
         template.setValueSerializer(new Jackson2JsonRedisSerializer<>(Object.class));
+        return template;
+    }
+
+    @Bean
+    public RedisTemplate<String, FeedRedis> feedRedisTemplate(RedisConnectionFactory factory) {
+        RedisTemplate<String, FeedRedis> template = new RedisTemplate<>();
+        template.setConnectionFactory(factory);
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setValueSerializer(new Jackson2JsonRedisSerializer<>(FeedRedis.class));
         return template;
     }
 

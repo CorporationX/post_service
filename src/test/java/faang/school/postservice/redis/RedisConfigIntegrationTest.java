@@ -1,6 +1,7 @@
 package faang.school.postservice.redis;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import faang.school.postservice.config.redis.entity.FeedRedis;
 import faang.school.postservice.util.BaseContextTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -28,6 +29,9 @@ public class RedisConfigIntegrationTest extends BaseContextTest {
 
     @Autowired
     private RedisTemplate<String, Object> genericRedisTemplate;
+
+    @Autowired
+    private RedisTemplate<String, FeedRedis> redisTemplate;
 
     @Autowired
     private ChannelTopic commentTopic;

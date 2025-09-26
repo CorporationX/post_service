@@ -3,28 +3,35 @@ package faang.school.postservice.service.post;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.config.redis.entity.PostRedis;
+import faang.school.postservice.config.redis.entity.UserRedis;
 import faang.school.postservice.dto.post.PostCreateDto;
 import faang.school.postservice.dto.post.PostFilterDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
 import faang.school.postservice.dto.post.PostViewDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.mapper.post.PostMapper;
+import faang.school.postservice.messaging.dto.PostPublishEvent;
 import faang.school.postservice.messaging.dto.PostUpdatedEvent;
 import faang.school.postservice.messaging.producer.EventProducer;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.repository.PostRedisRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.UserRedisRepository;
 import faang.school.postservice.service.filter.FilterService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationAdapter;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
@@ -52,9 +59,9 @@ import java.util.concurrent.ExecutorService;
 public class PostServiceImpl implements PostService {
     private static final String USER_HAS_NO_ACCESS_TO_CREATE_POST =
             "Недостаточно прав для создания поста от имени пользователя с id ";
-
     private static final String USER_HAS_NO_ACCESS_TO_POST =
             "Пользователь не имеет право на данный пост";
+
     private final PostRepository postRepository;
     private final UserServiceClient userClient;
     private final ProjectServiceClient projectClient;
@@ -62,11 +69,23 @@ public class PostServiceImpl implements PostService {
     private final PostMapper postMapper;
     private final FilterService<Post, PostFilterDto> filterService;
     @Qualifier("postCreateEventProducer")
+
     private final EventProducer<PostViewDto> postCreateProducer;
     private final EventProducer<PostUpdatedEvent> postUpdatedEventProducer;
     @Qualifier("postDeleteEventProducer")
     private final EventProducer<PostViewDto> postDeleteProducer;
     private final ExecutorService executor;
+
+    private final PostRedisRepository postRedisRepository;
+    private final UserRedisRepository userRedisRepository;
+    @Qualifier("postPublishEventProducer")
+    private final EventProducer<PostPublishEvent> postPublishProducer;
+
+    private final RedisTemplate<String, Object> redisTemplate;
+    @Value("${spring.data.redis.post-ttl}")
+    private long postRedisTtl;
+    @Value("${spring.data.redis.user-ttl}")
+    private long userRedisTtl;
 
     @Override
     public PostViewDto create(PostCreateDto createDto) {
@@ -107,9 +126,27 @@ public class PostServiceImpl implements PostService {
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
         postRepository.save(post);
+
+        savePostInRedisAndKafka(postMapper.toRedis(post));
+
         var newView = postMapper.toViewDto(post);
         var event = new PostUpdatedEvent(oldView, newView);
         sendEventInNewTransaction(postUpdatedEventProducer, event);
+    }
+
+    private void savePostInRedisAndKafka(PostRedis postRedis) {
+        log.info("Кэширование поста и его автора в редис и отправка события в кафку");
+        Long authorId = postRedis.getAuthorId();
+        UserDto author = userClient.getUser(authorId);
+
+        userRedisRepository.save(new UserRedis(author.id(), author.username()));
+        redisTemplate.expire(String.valueOf(author.id()), Duration.ofSeconds(userRedisTtl));
+
+        postRedisRepository.save(postRedis);
+        redisTemplate.expire(String.valueOf(postRedis.getId()), Duration.ofSeconds(postRedisTtl));
+
+        PostPublishEvent postPublishEvent = new PostPublishEvent(postRedis.getAuthorId(), postRedis.getId(), author.followersIds());
+        sendEventInNewTransaction(postPublishProducer, postPublishEvent);
     }
 
     @Override
