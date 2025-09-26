@@ -7,7 +7,7 @@ import faang.school.postservice.dto.post.PostFilterDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
 import faang.school.postservice.dto.post.PostViewDto;
 import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.mapper.post.PostMapper;
+import faang.school.postservice.mapper.post.PostMapperImpl;
 import faang.school.postservice.messaging.dto.PostUpdatedEvent;
 import faang.school.postservice.messaging.producer.EventProducer;
 import faang.school.postservice.model.Post;
@@ -22,25 +22,23 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.data.redis.core.RedisTemplate;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 
 import static faang.school.postservice.service.post.PostServiceTestData.buildCreateDto;
 import static faang.school.postservice.service.post.PostServiceTestData.buildPostEntity;
+import static faang.school.postservice.service.post.PostServiceTestData.createUserDto;
 import static faang.school.postservice.service.post.PostServiceTestData.toEntity;
 import static faang.school.postservice.service.post.PostServiceTestData.toViewDto;
 import static faang.school.postservice.service.post.PostServiceTestData.toViewDtoList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.refEq;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -54,9 +52,13 @@ class PostServiceImplTest {
     @Mock
     private ProjectServiceClient projectClient;
     @Mock
-    private UserContext userContext;
+    private UserRedisRepository userRedisRepository;
     @Mock
-    private PostMapper postMapper;
+    private PostRedisRepository postRedisRepository;
+    @Mock
+    private UserContext userContext;
+    @Spy
+    private PostMapperImpl postMapper;
     @Mock
     private FilterService<Post, PostFilterDto> filterService;
     @Mock
@@ -65,6 +67,8 @@ class PostServiceImplTest {
     private EventProducer<PostUpdatedEvent> postUpdatedEventProducer;
     @Mock
     private ExecutorService executor;
+    @Mock
+    private RedisTemplate<String, Object> redisTemplate;
     @InjectMocks
     private PostServiceImpl service;
 
@@ -88,6 +92,25 @@ class PostServiceImplTest {
         var actual = service.create(createDto);
         verify(userClient).getUser(currentUserId);
         assertEquals(view, actual);
+    }
+
+    @Test
+    @DisplayName("тест успешного публикации поста")
+    void publish_success() {
+        UserDto userDto = createUserDto();
+        when(userClient.getUser(1L)).thenReturn(userDto);
+        when(redisTemplate.expire(any(), any())).thenReturn(true);
+
+        var currentUserId = 1L;
+        var postId = 1L;
+        var now = LocalDateTime.now();
+        var publishedPost = buildPostEntity(postId, currentUserId, null, now);
+        publishedPost.setPublished(true);
+        var post = buildPostEntity(postId, currentUserId, null, now);
+        when(userContext.getUserId()).thenReturn(currentUserId);
+        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+        service.publish(postId);
+        verify(postRepository).save(refEq(publishedPost, "publishedAt"));
     }
 
     @Test

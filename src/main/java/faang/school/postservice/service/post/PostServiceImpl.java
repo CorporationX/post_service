@@ -83,9 +83,9 @@ public class PostServiceImpl implements PostService {
 
     private final RedisTemplate<String, Object> redisTemplate;
     @Value("${spring.data.redis.post-ttl}")
-    private Long postRedisTtl;
+    private long postRedisTtl;
     @Value("${spring.data.redis.user-ttl}")
-    private Long userRedisTtl;
+    private long userRedisTtl;
 
     @Override
     public PostViewDto create(PostCreateDto createDto) {

@@ -2,6 +2,7 @@ package faang.school.postservice.service.post;
 
 import faang.school.postservice.dto.post.PostCreateDto;
 import faang.school.postservice.dto.post.PostViewDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.model.Post;
 
 import java.time.LocalDateTime;
@@ -11,6 +12,13 @@ import java.util.List;
 public class PostServiceTestData {
     public static PostCreateDto buildCreateDto(Long authorId, Long projectId) {
         return new PostCreateDto("some content", authorId, projectId);
+    }
+
+    public static UserDto createUserDto() {
+        return UserDto.builder()
+                .id(1L)
+                .username("someName")
+                .build();
     }
 
     public static Post buildPostEntity(Long postId, Long authorId, Long projectId, LocalDateTime now) {
