@@ -1,6 +1,5 @@
 package faang.school.postservice.messaging.consumer.kafka;
 
-import faang.school.postservice.cache.service.PostCacheService;
 import faang.school.postservice.dto.post.PostViewDto;
 import faang.school.postservice.messaging.consumer.EventConsumer;
 import faang.school.postservice.service.hashtag.HashtagService;
