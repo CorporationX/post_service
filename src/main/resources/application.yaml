@@ -42,6 +42,7 @@ kafka:
     create-post: create_post
     update-post: update_post
     delete-post: delete_post
+    like-post: like_post
 
 server:
   port: 8081
@@ -59,3 +60,16 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+services:
+  s3:
+    endpoint: http://localhost:9000
+    accessKey: user
+    secretKey: password
+    bucketName: corpbucket
+
+minio:
+  endpoint: http://localhost:9000
+  access-key: user
+  secret-key: password
+  bucket-name: corpbucket
