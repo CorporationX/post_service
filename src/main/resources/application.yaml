@@ -25,6 +25,31 @@ spring:
         calculations_channel:
           name: calculations_channel
 
+  kafka:
+    bootstrap-servers: localhost:9092
+    topics:
+      comments: "comments"
+    producer:
+      keySerializer: "org.apache.kafka.common.serialization.StringSerializer"
+      valueSerializer: "io.confluent.kafka.serializers.KafkaAvroSerializer"
+      properties:
+        schema:
+          registry:
+            url: "http://localhost:8087"
+    consumer:
+      enable-auto-commit: true
+      group-id: "post-service-group"
+      keyDeserializer: "org.apache.kafka.common.serialization.StringDeserializer"
+      valueDeserializer: "io.confluent.kafka.serializers.KafkaAvroDeserializer"
+      autoOffsetReset: "earliest"
+      properties:
+        schema:
+          registry:
+            url: "http://localhost:8087"
+        specific:
+          avro:
+            reader: "true"
+
 server:
   port: 8081
 
