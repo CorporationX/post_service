@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
  * @author andreyfomchenko
  * @since 26.09.2025
  */
-public record LikeVIewDto(
+public record LikeViewDto(
         Long likeAuthorId,
         Long postId,
         LocalDateTime createdAt

@@ -1,7 +1,6 @@
 package faang.school.postservice.messaging.producer.kafka;
 
-import faang.school.postservice.dto.like.LikeVIewDto;
-import faang.school.postservice.dto.post.PostViewDto;
+import faang.school.postservice.dto.like.LikeViewDto;
 import faang.school.postservice.messaging.producer.EventProducer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,7 +11,7 @@ import org.springframework.stereotype.Component;
 /**
  * Kafka-Producer для отправки события о лайке
  * <p>
- * Использует {@link KafkaTemplate} для сериализации и публикации {@link LikeVIewDto}
+ * Использует {@link KafkaTemplate} для сериализации и публикации {@link LikeViewDto}
  *  * в топик, заданный в настройках {@code kafka.topics.like-post}.
  * </p>*
  *
@@ -22,14 +21,14 @@ import org.springframework.stereotype.Component;
 @Component
 @Slf4j
 @RequiredArgsConstructor
-public class LikeEventProducer implements EventProducer<LikeVIewDto> {
+public class LikeEventProducer implements EventProducer<LikeViewDto> {
 
     @Value("${kafka.topics.like-post}")
     private String likeTopic;
-    private final KafkaTemplate<String, LikeVIewDto> kafkaTemplate;
+    private final KafkaTemplate<String, LikeViewDto> kafkaTemplate;
 
     @Override
-    public void send(LikeVIewDto event) {
+    public void send(LikeViewDto event) {
         log.info("user {} liked the post: {}",event.likeAuthorId(), event.postId());
         kafkaTemplate.send(likeTopic, event);
     }
