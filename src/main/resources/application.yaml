@@ -9,7 +9,7 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: none
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         format_sql: true
@@ -22,6 +22,10 @@ spring:
     group-id: post_service
     topic:
       comment: post.comment.created
+      post-published: post.published
+      feed_warmer: feed.warmup-tasks
+    feed-warmer-partitions: 5
+    feed-warmer-replicas: 1
 
   data:
     redis:
@@ -36,14 +40,14 @@ server:
 
 logging:
   level:
-    root: info
+    root: INFO
 
 user-service:
   host: localhost
   port: 8080
 project-service:
   host: localhost
-  port: 8082
+  port: 8092
 payment-service:
   host: localhost
   port: 9080
@@ -57,8 +61,24 @@ post:
     core-size: 4
     max-size: 8
     queue-capacity: 100
+  publish:
+    event-subscriber-batch-size: 3
+    db-subscriber-batch-size: 10000
 
 textgears:
   api-key: 1a182906femsh131affb2a9303e2p1b4081jsn3a0dd3484d73
   host: textgears-textgears-v1.p.rapidapi.com
   url: https://textgears-textgears-v1.p.rapidapi.com
+
+cache:
+  post:
+    ttl-seconds: 86400
+  user:
+    ttl-seconds: 86400
+  feed:
+    max-records: 10
+    warm-up-batch-size: 2
+    warm-up-concurrency: 3
+
+feed:
+  page-size: 5

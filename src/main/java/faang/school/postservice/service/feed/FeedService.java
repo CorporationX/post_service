@@ -1,0 +1,165 @@
+package faang.school.postservice.service.feed;
+
+import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.feed.CacheWarmupTask;
+import faang.school.postservice.dto.feed.FeedPostDto;
+import faang.school.postservice.dto.post.PostPublishedEvent;
+import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.exception.EntityNotFoundException;
+import faang.school.postservice.factory.UserCacheFactory;
+import faang.school.postservice.factory.post.FeedPostFactory;
+import faang.school.postservice.factory.post.PostCacheFactory;
+import faang.school.postservice.kafka.producer.feed.CacheWarmupProducer;
+import faang.school.postservice.model.Post;
+import faang.school.postservice.model.redis.PostCache;
+import faang.school.postservice.model.redis.UserCache;
+import faang.school.postservice.repository.CacheRepository;
+import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.SubscriptionRepository;
+import faang.school.postservice.repository.redis.feed.FeedCacheRepository;
+import faang.school.postservice.repository.redis.post.PostCacheRepository;
+import faang.school.postservice.repository.redis.user.UserCacheRepository;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class FeedService {
+
+    private final FeedCacheRepository feedCacheRepository;
+    private final SubscriptionRepository subscriptionRepository;
+    private final PostRepository postRepository;
+    private final PostCacheRepository postCacheRepository;
+    private final PostCacheFactory postCacheFactory;
+    private final FeedPostFactory feedPostFactory;
+    private final CacheWarmupProducer cacheWarmupProducer;
+    private final CacheRepository cacheRepository;
+    private final UserCacheRepository userCacheRepository;
+    private final UserCacheFactory userCacheFactory;
+    private final UserContext userContext;
+
+    @Value("${cache.feed.warm-up-batch-size}")
+    private int warmUpBatchSize;
+
+    @Value("${cache.feed.max-records}")
+    private int feedSize;
+
+    @Value("${feed.page-size}")
+    private int feedPageSize;
+
+    public void updateUserFeeds(PostPublishedEvent postPublishedEvent) {
+        Post post = postRepository.findById(postPublishedEvent.getPostId()).orElseThrow(
+                () -> new EntityNotFoundException("Published unknown post id: "
+                        + postPublishedEvent.getPostId())
+        );
+        for (Long subscriberId : postPublishedEvent.getSubscribers()) {
+            feedCacheRepository.addPostToFeed(subscriberId, post);
+        }
+    }
+
+    public void queueCacheWarmUp() {
+        log.info("Starting feed cache warmup.");
+        List<Long> allSubscriberIds = subscriptionRepository.getAllFollowerIds();
+        for (int i = 0; i < allSubscriberIds.size(); i += warmUpBatchSize) {
+            List<Long> batch = allSubscriberIds.subList(
+                    i,
+                    Math.min(i + warmUpBatchSize, allSubscriberIds.size())
+            );
+            cacheWarmupProducer.publishCacheWarmupTaskEvent(new CacheWarmupTask(batch));
+        }
+    }
+
+    public void warmUp(List<Long> subscriberIds) {
+        for (long userId : subscriberIds) {
+            log.info("Building feed for user ID: {}", userId);
+            List<Post> posts = postRepository.getFeedForUser(userId, feedSize, null);
+            feedCacheRepository.addPostsBatched(userId, posts);
+            updateUserAndPostCaches(posts);
+        }
+    }
+
+    public List<FeedPostDto> getFeed(Long lastPostId) {
+        List<Long> feedPostIds = feedCacheRepository.getFeedAfter(userContext.getUserId(), lastPostId, feedPageSize);
+        List<FeedPostDto> feed = new ArrayList<>();
+
+        List<PostCache> postListWithCached = postCacheRepository.getMany(feedPostIds);
+
+        for (int i = 0; i < feedPostIds.size(); i++) {
+            long postId = feedPostIds.get(i);
+            PostCache maybePostFromCache = postListWithCached.get(i);
+            if (maybePostFromCache == null) {
+                feed.add(getFeedPostDb(postId));
+            } else {
+                feed.add(feedPostFactory.fromPostCache(maybePostFromCache));
+            }
+        }
+
+        return maybeExtendFeed(lastPostId, feed);
+    }
+
+    private FeedPostDto getFeedPostDb(long postId) {
+        log.info("Post ID: {} cache miss.", postId);
+        Post post = postRepository.findById(postId).orElseThrow(
+                () -> new IllegalStateException("Received unknown post ID: " + postId)
+        );
+        postCacheRepository.save(postCacheFactory.fromPost(post));
+
+        return feedPostFactory.fromPost(post);
+    }
+
+    List<FeedPostDto> maybeExtendFeed(Long lastPostId, List<FeedPostDto> feed) {
+        if (feed.size() >= feedPageSize) {
+            return feed;
+        }
+
+        Long anchorId = feed.isEmpty()
+                ? lastPostId
+                : feed.get(feed.size() - 1).getId();
+
+        log.info("End of cached feed for user {}. Checking DB after anchor {}.",
+                userContext.getUserId(), anchorId);
+
+        List<Post> morePosts = postRepository.getFeedForUser(
+                userContext.getUserId(),
+                feedPageSize - feed.size(),
+                anchorId
+        );
+
+        if (!morePosts.isEmpty()) {
+            log.info(
+                    "Found additional {} posts to show for user {}.",
+                    morePosts.size(),
+                    userContext.getUserId()
+            );
+        }
+
+        for (Post post : morePosts) {
+            feed.add(feedPostFactory.fromPost(post));
+            postCacheRepository.save(postCacheFactory.fromPost(post));
+        }
+        return feed;
+    }
+
+    void updateUserAndPostCaches(@NonNull List<Post> posts) {
+        HashSet<Long> authorIds = new HashSet<>();
+        for (Post post : posts) {
+            authorIds.add(post.getAuthorId());
+            postCacheRepository.save(postCacheFactory.fromPost(post));
+        }
+
+        List<UserDto> users = cacheRepository.getUsers(authorIds.stream().toList());
+        for (UserDto userDto : users) {
+            UserCache userCache = userCacheFactory.fromUserDto(userDto);
+            userCacheRepository.save(userCache);
+        }
+
+    }
+}
