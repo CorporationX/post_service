@@ -28,7 +28,7 @@ spring:
   kafka:
     bootstrap-servers: localhost:9092
     consumer:
-      group-id: post-service
+      group-id: comment-service #post-service
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
@@ -42,6 +42,11 @@ kafka:
     create-post: create_post
     update-post: update_post
     delete-post: delete_post
+    comment-event: comments
+
+comment:
+  cache:
+    max-size: 3
 
 server:
   port: 8081
