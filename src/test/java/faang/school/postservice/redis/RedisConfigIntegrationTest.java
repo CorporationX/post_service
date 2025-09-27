@@ -7,6 +7,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -22,6 +23,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("Интеграционные тесты RedisConfig")
 @Tag("redis")
+@SpringBootTest(properties = {
+        "kafka.consumer.group-id=test-comment-service",
+        "kafka.topics.comment-event=comments",
+        "spring.kafka.listener.auto-startup=false"
+})
 public class RedisConfigIntegrationTest extends BaseContextTest {
 
     @Autowired

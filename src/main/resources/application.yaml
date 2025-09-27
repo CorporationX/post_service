@@ -32,7 +32,7 @@ spring:
   kafka:
     bootstrap-servers: localhost:9092
     consumer:
-      group-id: post-service
+      group-id: comment-service
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
@@ -42,11 +42,19 @@ spring:
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 
 kafka:
+  group:
+    publish-event: publish_group
   topics:
     create-post: create_post
     update-post: update_post
     delete-post: delete_post
     like-post: like_post
+    publish-post: publish_post
+    comment-event: comments
+
+comment:
+  cache:
+    max-size: 3
     publish-post: publish_post
   group:
     publish-event: "publish-event-group"
