@@ -43,7 +43,7 @@ public interface PostRepository extends CrudRepository<Post, Long>, JpaSpecifica
 
     default Post findPostOrThrow(Long id) {
         return findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Пост не найден"));
+                .orElseThrow(() -> new EntityNotFoundException("Пост с id " + id + " не найден"));
     }
 
     default Page<Post> findByFilter(PostFilterDto filter, Pageable pageable) {
