@@ -16,10 +16,10 @@ import org.springframework.kafka.annotation.EnableKafka;
 @EnableKafka
 public class KafkaConfig {
 
-    @Value("${kafka.topics.posts}")
+    @Value("${spring.kafka.topics.posts}")
     private String postsTopic;
 
-    @Value("${kafka.topics.feeds}")
+    @Value("${spring.kafka.topics.feeds}")
     private String feedsTopic;
 
     @Bean
