@@ -80,7 +80,6 @@ dependencies {
     implementation("org.apache.avro:avro:1.11.1")
     implementation("io.confluent:kafka-avro-serializer:7.4.0")
     implementation("io.confluent:kafka-schema-registry-client:7.4.0")
-
 }
 
 tasks.test {
@@ -136,5 +135,3 @@ tasks.withType<com.github.davidmc24.gradle.plugin.avro.GenerateAvroJavaTask> {
     setSource(file("src/main/resources/avro"))
     setOutputDir(file("$buildDir/generated-sources/avro"))
 }
-
-

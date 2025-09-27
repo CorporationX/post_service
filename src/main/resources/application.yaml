@@ -32,6 +32,7 @@ spring:
     topics:
       posts: posts
       feeds: feeds
+      comments: "comments"
     producer:
       keySerializer: "org.apache.kafka.common.serialization.StringSerializer"
       valueSerializer: "io.confluent.kafka.serializers.KafkaAvroSerializer"
