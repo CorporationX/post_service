@@ -44,14 +44,6 @@ public class PostController {
     private final UserContext userContext;
     private final PostCacheService postCacheService;
 
-    private Long getCurrentUserId() {
-        Long userId = userContext.getUserId();
-        if (userId == null) {
-            throw new MissingUserContextException();
-        }
-        return userId;
-    }
-
     @PostMapping
     public ResponseEntity<Post> createPost(@Valid @RequestBody CreatePostRequest request) {
         Long currentUserId = getCurrentUserId();
@@ -190,6 +182,14 @@ public class PostController {
     public ResponseEntity<Long> getPostViews(@PathVariable Long postId) {
         long views = postCacheService.getPostViews(postId);
         return ResponseEntity.ok(views);
+    }
+
+    private Long getCurrentUserId() {
+        Long userId = userContext.getUserId();
+        if (userId == null) {
+            throw new MissingUserContextException();
+        }
+        return userId;
     }
 
     private String getClientIpAddress(HttpServletRequest request) {
