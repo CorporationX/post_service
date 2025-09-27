@@ -1,6 +1,7 @@
 package faang.school.postservice.service.post;
 
 import faang.school.postservice.client.ProjectServiceClient;
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.avro.PostPublishedEventAvro;
 import faang.school.postservice.dto.post.PostCountsProjection;
@@ -11,6 +12,7 @@ import faang.school.postservice.dto.post.PostUpdateDto;
 import faang.school.postservice.dto.post.PostViewDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.redis.PostRedisDto;
+import faang.school.postservice.dto.user.UserViewDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.mapper.PostMapper;
@@ -19,6 +21,7 @@ import faang.school.postservice.producer.KafkaPostProducer;
 import faang.school.postservice.publisher.PostPublishedEventProducer;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.redis.PostRedisRepository;
+import faang.school.postservice.repository.redis.UserRedisRepository;
 import faang.school.postservice.util.AfterCommitManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -49,6 +52,9 @@ public class PostServiceImpl implements PostService {
     private final KafkaPostProducer postProducer;
     private final AfterCommitManager commitManager;
     private final PostRedisRepository postRedisRepository;
+    private final UserRedisRepository userRedisRepository;
+    private final UserServiceClient userClient;
+    private final UserContext userContext;
 
     @Override
     @Transactional
@@ -87,7 +93,7 @@ public class PostServiceImpl implements PostService {
 
         publisher.publishAfterCommit(new PostPublishedEvent(id, post.getAuthorId(), post.getProjectId()));
         postProducer.sendMessage(event);
-        commitManager.executeAfterCommit(() -> postRedisRepository.savePost(postRedisDto));
+        processAfterCommit(postRedisDto);
     }
 
     @Override
@@ -152,5 +158,15 @@ public class PostServiceImpl implements PostService {
         }
 
         throw new DataValidationException("Не указан идентификатор автора");
+    }
+
+    private void processAfterCommit(PostRedisDto post) {
+        commitManager.executeAfterCommit(() -> postRedisRepository.savePost(post));
+        commitManager.executeAfterCommit(() -> {
+                userContext.setUserId(post.authorId());
+                UserViewDto user = userClient.getUser(post.authorId());
+                userRedisRepository.saveUser(user);
+            }
+        );
     }
 }
