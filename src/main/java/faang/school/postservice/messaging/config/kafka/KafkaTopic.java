@@ -25,6 +25,8 @@ public class KafkaTopic {
     private String updateTopicName;
     @Value("${kafka.topics.delete-post}")
     private String deleteTopicName;
+    @Value("${kafka.topics.like-post}")
+    private String likeTopicName;
 
     @Value("${kafka.topics.publish-post}")
     private String publishTopicName;

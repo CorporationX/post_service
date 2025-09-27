@@ -76,6 +76,7 @@ public class PostServiceImpl implements PostService {
     private final EventProducer<PostViewDto> postDeleteProducer;
     private final ExecutorService executor;
 
+
     private final PostRedisRepository postRedisRepository;
     private final UserRedisRepository userRedisRepository;
     @Qualifier("postPublishEventProducer")
