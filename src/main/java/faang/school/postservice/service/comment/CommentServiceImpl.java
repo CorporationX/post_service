@@ -58,8 +58,9 @@ public class CommentServiceImpl implements CommentService {
         Comment savedComment = commentRepository.save(comment);
         log.info("Комментарий успешно создан");
 
+
         CommentCreatedEventAvro event = mapper.toAvro(savedComment);
-        producer.sendComment(event);
+        producer.sendCommentWithRetry(event);
 
         return mapper.toViewDto(savedComment);
     }
