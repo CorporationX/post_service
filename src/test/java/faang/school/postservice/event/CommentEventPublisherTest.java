@@ -1,6 +1,8 @@
 package faang.school.postservice.event;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import faang.school.postservice.dto.event.CommentEvent;
+import faang.school.postservice.service.CommentEventPublisherImpl;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

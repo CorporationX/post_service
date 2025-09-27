@@ -1,9 +1,10 @@
-package faang.school.postservice.event;
+package faang.school.postservice.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.events.EventsProperties;
+import faang.school.postservice.dto.event.CommentEvent;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.EventPublishingException;
 import lombok.extern.slf4j.Slf4j;
