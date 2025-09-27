@@ -42,10 +42,13 @@ spring:
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 
 kafka:
+  group:
+    publish-event: publish_group
   topics:
     create-post: create_post
     update-post: update_post
     delete-post: delete_post
+    publish-post: publish_post
     comment-event: comments
 
 comment:

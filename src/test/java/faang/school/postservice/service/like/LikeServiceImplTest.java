@@ -41,8 +41,8 @@ public class LikeServiceImplTest {
     @DisplayName("тест успешного получения списка пользователей поставивших лайк посту")
     public void getPostLikersTest() {
         List<Like> likeList = LikeTestData.getLikesList();
-        long postId = LikeTestData.postId;
-        long userId = LikeTestData.userId;
+        long postId = LikeTestData.POST_ID;
+        long userId = LikeTestData.USER_ID;
         List<UserDto> userDtoList = LikeTestData.getUserDtoList();
         List<Long> userIdList = LikeTestData.getUserIdList();
 
@@ -60,8 +60,8 @@ public class LikeServiceImplTest {
     @DisplayName("тест успешного получения списка пользователей поставивших лайк коментарию")
     public void getCommentLikersTest() {
         List<Like> likeList = LikeTestData.getLikesList();
-        long commentId = LikeTestData.commentId;
-        long userId = LikeTestData.userId;
+        long commentId = LikeTestData.COMMENT_ID;
+        long userId = LikeTestData.USER_ID;
         List<UserDto> userDtoList = LikeTestData.getUserDtoList();
         List<Long> userIdList = LikeTestData.getUserIdList();
 
