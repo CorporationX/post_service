@@ -30,8 +30,7 @@ public interface CommentMapper {
             .setContent(comment.getContent())
                 .setCreatedAt(comment.getCreatedAt()
                         .atZone(ZoneId.of("Europe/Moscow"))
-                        .toInstant()
-                        .toEpochMilli())
+                        .toInstant())
             .build();
     }
 }
