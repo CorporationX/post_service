@@ -6,7 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.retry.support.RetryTemplate;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 /**
  * KafkaCommentProducer — продюсер для ивента создания комментария
@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
  * @since 26.09.2025
  */
 @Slf4j
-@Component
+@Service
 @RequiredArgsConstructor
 public class KafkaCommentProducer {
 

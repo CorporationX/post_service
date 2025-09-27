@@ -7,6 +7,9 @@
     {"name": "postId", "type": "long"},
     {"name": "authorId", "type": "long"},
     {"name": "content", "type": "string"},
-    {"name": "createdAt", "type": "long", "logicalType": "timestamp-millis"}
+    {"name": "createdAt", "type": {
+      "type": "long",
+      "logicalType": "timestamp-millis"
+    }}
   ]
 }

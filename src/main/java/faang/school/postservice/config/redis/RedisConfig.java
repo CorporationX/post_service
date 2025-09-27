@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
@@ -49,5 +50,27 @@ public class RedisConfig {
 
         template.setValueSerializer(serializer);
         return template;
+    }
+
+    @Bean
+    public DefaultRedisScript<Long> atomicAddScript() {
+        DefaultRedisScript<Long> script = new DefaultRedisScript<>();
+        script.setScriptText(
+                """
+                local key = KEYS[1]
+                local commentId = ARGV[1]
+                local timestamp = tonumber(ARGV[2])
+                local maxComments = tonumber(ARGV[3])
+                redis.call('ZADD', key, timestamp, commentId)
+                local total = redis.call('ZCARD', key)
+                if total > maxComments then
+                    redis.call('ZREMRANGEBYRANK', key, 0, total - maxComments - 1)
+                end
+                redis.call('EXPIRE', key, 86400)
+                return redis.call('ZCARD', key)
+                """
+        );
+        script.setResultType(Long.class);
+        return script;
     }
 }

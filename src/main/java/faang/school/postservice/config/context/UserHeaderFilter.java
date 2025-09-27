@@ -7,11 +7,10 @@ import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
-@Component
+//@Component
 @RequiredArgsConstructor
 public class UserHeaderFilter implements Filter {
 

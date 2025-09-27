@@ -25,7 +25,7 @@ import java.util.List;
 public class CommentController {
     private final CommentService service;
 
-    @PostMapping
+    @PostMapping()
     public ResponseEntity<CommentViewDto> create(
             @PathVariable Long postId,
             @RequestBody @Valid CommentCreateDto createDto) {
