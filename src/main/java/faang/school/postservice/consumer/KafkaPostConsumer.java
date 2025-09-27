@@ -11,9 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Recover;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -38,18 +36,16 @@ public class KafkaPostConsumer {
     @Value("${kafka.events.feed.posts.batch-size:10000}")
     private int batchSize;
 
-    @Value("${kafka.topics.feeds}")
+    @Value("${spring.kafka.topics.feeds}")
     private String feedBatchTopic;
 
     private final KafkaTemplate<String, FeedBatchEventAvro> kafkaTemplate;
     private final UserServiceClient userClient;
     private final UserContext userContext;
 
-    @KafkaListener(topics = "${kafka.topics.posts}")
+    @KafkaListener(topics = "${spring.kafka.topics.posts}")
     public void processSendEvent(ConsumerRecord<String, PostPublishedEventAvro> consumerRecord) {
         PostPublishedEventAvro event = consumerRecord.value();
-        log.info("Avro message received value : " + event.toString());
-
         CompletableFuture.runAsync(() -> processBatchesAsync(event));
     }
 
@@ -67,14 +63,7 @@ public class KafkaPostConsumer {
         processAndSendBatches(event, subscriberIds);
     }
 
-    @Retryable(
-            retryFor = {Exception.class},
-            maxAttemptsExpression = "${retry.config.max-attempts}",
-            backoff = @Backoff(
-                    delayExpression = "${retry.config.delay}",
-                    multiplierExpression = "${retry.config.multiplier}"
-            )
-    )
+
     public List<Long> getSubscribersWithRetry(Long authorId) {
         log.info("Попытка получить подписчиков для автора: {}", authorId);
         userContext.setUserId(authorId);

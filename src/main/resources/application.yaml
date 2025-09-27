@@ -29,6 +29,9 @@ spring:
 
   kafka:
     bootstrap-servers: localhost:9092
+    topics:
+      posts: posts
+      feeds: feeds
     producer:
       keySerializer: "org.apache.kafka.common.serialization.StringSerializer"
       valueSerializer: "io.confluent.kafka.serializers.KafkaAvroSerializer"
@@ -49,9 +52,6 @@ spring:
         specific:
           avro:
             reader: "true"
-    topics:
-      posts: posts
-      feeds: feeds
 
 server:
   port: 8081

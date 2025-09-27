@@ -12,7 +12,8 @@ import org.mapstruct.ReportingPolicy;
 import java.time.ZoneOffset;
 
 /**
- * Маппер для преобразования сущности в DTO и наоборот, а также обновления сущности
+ * Маппер для преобразования сущности в DTO и наоборот, для обновления сущности и преобразования
+ * из сущности в ивент {@link PostPublishedEventAvro}
  *
  * @author Linempy
  * @since 26.07.2025
