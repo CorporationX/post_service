@@ -60,11 +60,20 @@ class FeedControllerMockMvcIntTest {
     }
 
     @Test
-    void testGetFeedWithoutLastPostId() throws Exception {
+    void testGetFeedWithoutLastPostIdWithValidUserId() throws Exception {
+        mockMvc.perform(
+                        get("/api/feed")
+                                .header("x-user-id", 9)
+                )
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void testGetFeedWithoutLastPostIdWithInvalidUserId() throws Exception {
         mockMvc.perform(
                         get("/api/feed")
                                 .header("x-user-id", 999)
                 )
-                .andExpect(status().isOk());
+                .andExpect(status().isNotFound());
     }
 }

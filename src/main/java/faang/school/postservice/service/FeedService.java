@@ -42,6 +42,12 @@ public class FeedService {
 
     public List<PostDto> getFeed(Long lastPostId) {
         long subscriberId = userContext.getUserId();
+
+        if (userServiceClient.getUser(subscriberId) == null) {
+            throw new EntityNotFoundException(
+                    String.format("User with id: %d not found!", subscriberId));
+        }
+
         log.info("Getting feed for subscriberId={} beginning with lastPostId={}",
                 subscriberId, lastPostId);
 
@@ -71,13 +77,11 @@ public class FeedService {
 
         log.info("Building post DTOs & returning feed");
         return postIds.stream()
-                .map(this::buildPostDto)
+                .map(this::getPostDto)
                 .toList();
     }
 
-    private PostDto buildPostDto(Long postId) {
-        PostDto postDto;
-        Long authorId;
+    private PostDto getPostDto(Long postId) {
         faang.school.postservice.model.Post dbPost;
 
         log.info("Fetching post with id: {} from cache...", postId);
@@ -85,8 +89,8 @@ public class FeedService {
 
         if (cachePost.isPresent()) {
             log.info("Post with id: {} found in cache!", postId);
-            authorId = cachePost.get().getAuthorId();
-            postDto = postMapper.toPostDto(cachePost.get());
+            return buildPostDto(postMapper.toPostDto(cachePost.get()),
+                    getAuthor(cachePost.get().getAuthorId()));
         } else {
             log.info("Post with id: {} not found in cache! Fetching from DB...", postId);
             dbPost = postRepository.findById(postId).orElseThrow(() -> {
@@ -95,22 +99,25 @@ public class FeedService {
                         String.format("Post with id: %d not found!", postId));
             });
             log.info("Post with id: {} found in DB!", postId);
-            authorId = dbPost.getAuthorId();
-            postDto = postMapper.toPostDto(dbPost);
+            return buildPostDto(postMapper.toPostDto(dbPost),
+                    getAuthor(dbPost.getAuthorId()));
         }
+    }
 
+    private UserDto getAuthor(Long authorId) {
         log.info("Fetching author with id: {} from cache...", authorId);
         Optional<User> author = redisUserRepository.findById(authorId);
-        UserDto userDto;
 
         if (author.isPresent()) {
             log.info("Author with id: {} found in cache!", authorId);
-            userDto = userMapper.toUserDto(author.get());
+            return userMapper.toUserDto(author.get());
         } else {
             log.info("Author with id: {} not found in cache! Fetching from DB...", authorId);
-            userDto = userServiceClient.getUser(authorId);
+            return userServiceClient.getUser(authorId);
         }
+    }
 
+    private PostDto buildPostDto(PostDto postDto, UserDto userDto) {
         log.info("Building post DTO to return...");
         return new PostDto(
                 postDto.id(),
