@@ -17,7 +17,7 @@ import org.springframework.kafka.config.TopicBuilder;
 @Configuration
 public class KafkaConfig {
 
-    @Value("${kafka.topics.comments}")
+    @Value("${spring.kafka.topics.comments}")
     private String commentsTopic;
 
     @Bean

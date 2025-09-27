@@ -20,7 +20,7 @@ public class KafkaCommentProducer {
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    @Value("${kafka.topics.comments}")
+    @Value("${spring.kafka.topics.comments}")
     private String commentTopics;
 
     public void sendComment(CommentCreatedEventAvro comment) {
