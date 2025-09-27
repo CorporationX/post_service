@@ -1,8 +1,8 @@
 package faang.school.postservice.repository.redis;
 
 import faang.school.postservice.dto.avro.FeedBatchEventAvro;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
@@ -20,6 +20,7 @@ import java.util.List;
  */
 @Slf4j
 @Repository
+@RequiredArgsConstructor
 public class FeedRedisRepository {
 
     @Value("${redis.schema.feed.key}")
@@ -44,10 +45,6 @@ public class FeedRedisRepository {
           """, Void.class);
 
     private static final int DAY_IN_SECONDS = 24 * 60 * 60;
-
-    public FeedRedisRepository(@Qualifier("FeedRedis") RedisTemplate<String, Object> redisTemplate) {
-        this.redisTemplate = redisTemplate;
-    }
 
     public void updateFeed(String userId, String postId, Instant publishedAt) {
         String key = String.format(keyFeed, userId);
