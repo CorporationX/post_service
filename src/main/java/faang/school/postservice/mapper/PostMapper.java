@@ -4,6 +4,7 @@ import faang.school.postservice.dto.avro.PostPublishedEventAvro;
 import faang.school.postservice.dto.post.PostCreateDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
 import faang.school.postservice.dto.post.PostViewDto;
+import faang.school.postservice.dto.redis.PostRedisDto;
 import faang.school.postservice.model.Post;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
@@ -31,6 +32,18 @@ public interface PostMapper {
                 String.valueOf(post.getAuthorId()),
                 String.valueOf(post.getProjectId()),
                 post.getPublishedAt().atZone(ZoneOffset.UTC).toInstant()
+        );
+    }
+
+    default PostRedisDto toRedisDto(Post post, Long likeCount, Long commentCount) {
+        return new PostRedisDto(
+                post.getId(),
+                post.getContent(),
+                post.getAuthorId(),
+                post.getProjectId(),
+                likeCount,
+                commentCount,
+                post.getPublishedAt()
         );
     }
 

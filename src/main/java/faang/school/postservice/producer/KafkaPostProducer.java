@@ -39,5 +39,4 @@ public class KafkaPostProducer implements EventProducer<PostPublishedEventAvro> 
             }
         });
     }
-
 }
