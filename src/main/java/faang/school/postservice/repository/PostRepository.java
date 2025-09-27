@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
+import java.util.Set;
 
 public interface PostRepository extends CrudRepository<Post, Long> {
 
@@ -18,7 +19,31 @@ public interface PostRepository extends CrudRepository<Post, Long> {
     @Query("SELECT p FROM Post p LEFT JOIN FETCH p.likes WHERE p.authorId = :authorId")
     List<Post> findByAuthorIdWithLikes(long authorId);
 
-    @Query("SELECT p FROM Post p WHERE p.published = false AND p.deleted = false AND p.scheduledAt <= CURRENT_TIMESTAMP")
+    @Query("""
+            SELECT
+                p
+            FROM
+                Post p
+            WHERE
+                p.published = false
+                AND p.deleted = false
+                AND p.scheduledAt <= CURRENT_TIMESTAMP
+            """)
     List<Post> findReadyToPublish();
 
+    @Query("""
+            SELECT
+                p.id
+            FROM
+                Post p
+            WHERE
+                p.published = true
+                AND p.deleted = false
+                AND p.authorId = :authorId
+                AND p.id < :lastPostId
+            ORDER BY
+                p.publishedAt DESC
+            LIMIT :limit
+            """)
+    Set<Long> findPostIds(Long authorId, Long lastPostId, int limit);
 }
