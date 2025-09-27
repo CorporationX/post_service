@@ -28,6 +28,12 @@ public class KafkaConfig {
     @Value("${app.kafka.topics.post_views.replication-factor}")
     private short postViewsTopicReplicationFactor;
 
+    @Value("${app.kafka.topics.post_views.retention-ms}")
+    private String postViewsRetentionMs;
+
+    @Value("${app.kafka.topics.post_views.segment-ms}")
+    private String postViewsSegmentMs;
+
     @Bean
     public KafkaTemplate<String, Object> kafkaTemplate(ProducerFactory<String, Object> producerFactory) {
         log.info("KafkaTemplate configured successfully");
@@ -43,8 +49,8 @@ public class KafkaConfig {
                 .partitions(postViewsTopicPartitions)
                 .replicas(postViewsTopicReplicationFactor)
                 .config("cleanup.policy", "delete")
-                .config("retention.ms", "259200000")
-                .config("segment.ms", "43200000")
+                .config("retention.ms", postViewsRetentionMs)
+                .config("segment.ms", postViewsSegmentMs)
                 .build();
     }
 }

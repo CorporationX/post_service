@@ -108,6 +108,9 @@ app:
         name: post_views
         partitions: 5
         replication-factor: 1
+        retention-ms: 259200000
+        segment-ms: 43200000
+
   redis:
     post-cache:
       ttl-hours: 24
