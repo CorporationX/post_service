@@ -1,6 +1,7 @@
 package faang.school.postservice.service.comment;
 
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.avro.CommentCreatedEventAvro;
 import faang.school.postservice.dto.comment.CommentCreateDto;
 import faang.school.postservice.dto.comment.CommentUpdateDto;
 import faang.school.postservice.dto.comment.CommentViewDto;
@@ -8,6 +9,7 @@ import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.KafkaCommentProducer;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -67,11 +69,15 @@ class CommentServiceImplTest {
     @InjectMocks
     private CommentServiceImpl commentService;
 
+    @Mock
+    private KafkaCommentProducer kafkaCommentProducer;
+
     private Post post;
     private Comment comment;
     private CommentCreateDto createDto;
     private CommentUpdateDto updateDto;
     private CommentViewDto viewDto;
+    private CommentCreatedEventAvro commentCreatedEventAvro;
 
     @BeforeEach
     void setUp() {
@@ -101,6 +107,7 @@ class CommentServiceImplTest {
         when(userContext.getUserId()).thenReturn(USER_ID);
         when(commentRepository.save(any(Comment.class))).thenReturn(comment);
         when(commentMapper.toViewDto(comment)).thenReturn(viewDto);
+        when(commentMapper.toAvro(comment)).thenReturn(commentCreatedEventAvro);
 
         CommentViewDto result = commentService.create(createDto, POST_ID);
 
@@ -114,6 +121,7 @@ class CommentServiceImplTest {
         verify(userContext).getUserId();
         verify(commentRepository).save(any(Comment.class));
         verify(commentMapper).toViewDto(comment);
+        verify(commentMapper).toAvro(comment);
     }
 
     /**
