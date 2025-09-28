@@ -3,9 +3,12 @@ package faang.school.postservice;
 import org.springframework.boot.Banner;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
+
+@ConfigurationPropertiesScan
 @SpringBootApplication
 @EnableScheduling
 @EnableFeignClients(basePackages = "faang.school.postservice.client")
