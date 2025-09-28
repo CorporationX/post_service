@@ -1,7 +1,6 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.events.CommentEvent;
-import faang.school.postservice.events.CommentEventPublisher;
+import faang.school.postservice.dto.event.CommentEvent;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;

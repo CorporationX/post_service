@@ -26,6 +26,10 @@ dependencies {
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     implementation("org.springframework.retry:spring-retry")
 
+    // Kafka
+    implementation("org.springframework.kafka:spring-kafka:3.0.8")
+    implementation("org.apache.kafka:kafka-clients:3.4.0")
+
     /**
      * Database
      */
@@ -37,6 +41,8 @@ dependencies {
      * Utils & Logging
      */
     implementation("com.fasterxml.jackson.core:jackson-databind:2.14.2")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.slf4j:slf4j-api:2.0.5")
     implementation("ch.qos.logback:logback-classic:1.4.6")
     implementation("org.projectlombok:lombok:1.18.26")
@@ -51,6 +57,7 @@ dependencies {
     testImplementation("org.testcontainers:junit-jupiter")
     testImplementation("org.testcontainers:postgresql")
     testImplementation("com.redis.testcontainers:testcontainers-redis-junit-jupiter:1.4.6")
+    testImplementation("org.testcontainers:kafka")
 
     /**
      * Tests
@@ -58,6 +65,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.9.2")
     testImplementation("org.assertj:assertj-core:3.24.2")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.kafka:spring-kafka-test")
 
     testImplementation("org.mockito:mockito-core:5.1.1")
     testImplementation("org.mockito:mockito-junit-jupiter:5.1.1")

@@ -26,6 +26,7 @@ spring:
       port: 6379
       host: localhost
       timeout: 2000ms
+      database: 0
       jedis:
         pool:
           max-active: 20
@@ -37,6 +38,22 @@ spring:
             name: calculations_channel
           comment_events:
             name: comment.events
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      client-id: post-service-producer
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      retries: 3
+      properties:
+        retry.backoff.ms: 1000
+        delivery.timeout.ms: 120000
+        linger.ms: 5
+        batch.size: 16384
+        compression.type: snappy
+        enable.idempotence: true
 
   jackson:
     serialization:
@@ -60,6 +77,9 @@ logging:
     root: info
     faang.school.postservice.events: debug
     org.springframework.data.redis: info
+    org.apache.kafka: info
+    org.springframework.kafka: debug
+    faang.school.postservice.producer: debug
 
 user-service:
   host: localhost
@@ -76,6 +96,28 @@ ad-remover:
   thread-pool:
     size: 20
   cron: "0 0 2 * * ?"
+
+app:
+  kafka:
+    topics:
+      posts:
+        name: posts
+        partitions: 3
+        replication-factor: 1
+      post-views:
+        name: post_views
+        partitions: 5
+        replication-factor: 1
+        retention-ms: 259200000
+        segment-ms: 43200000
+
+  redis:
+    post-cache:
+      ttl-hours: 24
+      database: 1
+      key-prefix: "post:"
+      user-feed-prefix: "user_feed:"
+      trending-posts-key: "trending_posts"
 
 events:
   redis:
