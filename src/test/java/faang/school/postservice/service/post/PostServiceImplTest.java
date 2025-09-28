@@ -12,8 +12,9 @@ import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.enums.PostStatus;
-import faang.school.postservice.publisher.PostPublishedEventPublisher;
+import faang.school.postservice.publisher.PostPublishedEventProducer;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.util.AfterCommitManager;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -70,7 +71,10 @@ public class PostServiceImplTest {
     private PostMapper mapper;
 
     @Mock
-    private PostPublishedEventPublisher publisher;
+    private PostPublishedEventProducer publisher;
+
+    @Mock
+    private AfterCommitManager commitManager;
 
     @Mock
     private UserContext context;
@@ -176,8 +180,9 @@ public class PostServiceImplTest {
     @Test
     @DisplayName("publication должен успешно поменять статус isPublished на true")
     public void testPublicationSuccessful() {
-        Post post = buildPost(null, POST_ID_1, null, null, false);
+        Post post = buildPost("null", POST_ID_1, USER_ID_1, null, false);
         when(postRepository.findPostOrThrow(POST_ID_1)).thenReturn(post);
+        when(postRepository.save(post)).thenReturn(post);
 
         service.publication(POST_ID_1);
 

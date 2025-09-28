@@ -30,6 +30,8 @@ spring:
   kafka:
     bootstrap-servers: localhost:9092
     topics:
+      posts: posts
+      feeds: feeds
       comments: "comments"
     producer:
       keySerializer: "org.apache.kafka.common.serialization.StringSerializer"
@@ -74,8 +76,25 @@ retry:
     max-attempts: 3
     initial-interval-ms: 1000
     multiplier: 2.0
+    delay: 1000
     max-interval-ms: 10_000
 
 redis:
   topic:
     post-published: "post_published_topic"
+  schema:
+    feed:
+      key: feed:user:%s
+      ttl-day: 3
+      max-size: 2
+
+thread-pool:
+  async:
+    generated-hash:
+      core-pool-size: 5
+      max-pool-size: 10
+      queue-capacity: 10_000
+    feedBatch:
+      core-pool-size: 5
+      max-pool-size: 10
+      queue-capacity: 10_000

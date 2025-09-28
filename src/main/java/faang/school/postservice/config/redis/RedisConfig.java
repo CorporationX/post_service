@@ -7,6 +7,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -34,7 +35,8 @@ public class RedisConfig {
         return new JedisConnectionFactory(config);
     }
 
-    @Bean
+    @Primary
+    @Bean("Default")
     public RedisTemplate<String, Object> redisTemplate(JedisConnectionFactory jedisConnectionFactory) {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(jedisConnectionFactory);
@@ -49,5 +51,10 @@ public class RedisConfig {
 
         template.setValueSerializer(serializer);
         return template;
+    }
+  
+    @Bean("FeedRedis")
+    public RedisTemplate<String, Object> redisTemplateFeed(JedisConnectionFactory jedisConnectionFactory) {
+        return redisTemplate(jedisConnectionFactory);
     }
 }

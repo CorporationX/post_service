@@ -7,8 +7,8 @@ package faang.school.postservice.dto.post;
  * @since 23.08.2025
  */
 public record PostPublishedEvent(
-    Long postId,
-    Long authorId,
-    Long projectId
+        Long postId,
+        Long authorId,
+        Long projectId
 ) {
 }

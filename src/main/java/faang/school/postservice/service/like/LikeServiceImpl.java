@@ -1,7 +1,7 @@
 package faang.school.postservice.service.like;
 
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.dto.user.UserViewDto;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.repository.LikeRepository;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +30,7 @@ public class LikeServiceImpl implements LikeService {
     private final UserServiceClient serviceClient;
 
     @Override
-    public List<UserDto> getUsersWhoLikedPost(Long postId) {
+    public List<UserViewDto> getUsersWhoLikedPost(Long postId) {
         List<Like> likes = likeRepository.findByPostId(postId);
 
         List<Long> userIds = likes.stream()
@@ -42,7 +42,7 @@ public class LikeServiceImpl implements LikeService {
     }
 
     @Override
-    public List<UserDto> getUsersWhoLikedComment(Long commentId) {
+    public List<UserViewDto> getUsersWhoLikedComment(Long commentId) {
         List<Like> likes = likeRepository.findByCommentId(commentId);
 
         List<Long> userIds = likes.stream()

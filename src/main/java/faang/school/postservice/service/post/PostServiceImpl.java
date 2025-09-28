@@ -2,6 +2,7 @@ package faang.school.postservice.service.post;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.avro.PostPublishedEventAvro;
 import faang.school.postservice.dto.post.PostCreateDto;
 import faang.school.postservice.dto.post.PostFilterDto;
 import faang.school.postservice.dto.post.PostPublishedEvent;
@@ -12,8 +13,10 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.publisher.PostPublishedEventPublisher;
+import faang.school.postservice.producer.KafkaPostProducer;
+import faang.school.postservice.publisher.PostPublishedEventProducer;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.util.AfterCommitManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -39,7 +42,9 @@ public class PostServiceImpl implements PostService {
     private final ProjectServiceClient projectClient;
     private final PostMapper mapper;
     private final UserContext context;
-    private final PostPublishedEventPublisher publisher;
+    private final PostPublishedEventProducer publisher;
+    private final KafkaPostProducer postProducer;
+    private final AfterCommitManager commitManager;
 
     @Override
     @Transactional
@@ -70,9 +75,12 @@ public class PostServiceImpl implements PostService {
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
         log.info("Пост id={} был опубликован в {}", post.getId(), post.getPublishedAt());
-        postRepository.save(post);
+        Post savedPost = postRepository.save(post);
+
+        PostPublishedEventAvro event = mapper.toAvro(savedPost);
 
         publisher.publishAfterCommit(new PostPublishedEvent(id, post.getAuthorId(), post.getProjectId()));
+        commitManager.executeAfterCommit(() -> postProducer.sendMessage(event));
     }
 
     @Override

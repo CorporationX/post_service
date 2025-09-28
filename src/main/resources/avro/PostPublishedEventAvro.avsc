@@ -1,0 +1,11 @@
+{
+  "type": "record",
+  "name": "PostPublishedEventAvro",
+  "namespace": "faang.school.postservice.dto.avro",
+  "fields": [
+    {"name": "postId", "type": "string"},
+    {"name": "authorId", "type": "string"},
+    {"name": "projectId", "type": ["null", "string"], "default": null},
+    {"name": "publishedAt", "type": {"type": "long", "logicalType": "timestamp-millis"}}
+  ]
+}
