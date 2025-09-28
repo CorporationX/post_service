@@ -66,7 +66,7 @@ class CommentControllerTest {
                 .andExpectAll(jsonPath("$.id").value(COMMENT_ID),
                               jsonPath("$.authorId").value(USER_ID),
                               jsonPath("$.postId").value(POST_ID),
-                              jsonPath("$.createAt").isNotEmpty(),
+                              jsonPath("$.createdAt").isNotEmpty(),
                               jsonPath("$.content").value(CONTENT));
 
         verify(commentService, times(1)).create(commentDto);
@@ -87,7 +87,7 @@ class CommentControllerTest {
                 .andExpectAll(jsonPath("$.id").value(COMMENT_ID),
                               jsonPath("$.authorId").value(USER_ID),
                               jsonPath("$.postId").value(POST_ID),
-                              jsonPath("$.createAt").isNotEmpty(),
+                              jsonPath("$.createdAt").isNotEmpty(),
                               jsonPath("$.content").value(NEW_CONTENT));
 
         verify(commentService, times(1)).update(COMMENT_ID, commentDto);

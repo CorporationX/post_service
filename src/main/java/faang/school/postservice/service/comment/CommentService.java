@@ -7,13 +7,16 @@ import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.NotResourceOwnerException;
 import faang.school.postservice.mapper.CommentMapper;
+import faang.school.postservice.mapper.UserMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.redis.UserRedisRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Slf4j
@@ -22,9 +25,11 @@ import java.util.List;
 public class CommentService {
     private final UserContext userContext;
     private final CommentMapper mapper;
+    private final UserMapper userMapper;
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
+    private final UserRedisRepository userRedisRepository;
 
     public CommentDto create(CommentDto commentDto) {
         long currentUserId = userContext.getUserId();
@@ -37,8 +42,11 @@ public class CommentService {
 
         comment = commentRepository.save(comment);
 
+        UserDto user = getAuthor(comment);
+        userRedisRepository.save(userMapper.toUserRedis(user));
+
         log.info("Comment {} successfully created for post {} by user {}",
-                 comment.getId(), commentDto.postId(), currentUserId);
+                comment.getId(), commentDto.postId(), currentUserId);
         return mapper.toCommentDto(comment);
     }
 
@@ -53,7 +61,7 @@ public class CommentService {
         comment = commentRepository.save(comment);
 
         log.info("Comment {} successfully updated for post {} by user {}",
-                 comment.getId(), commentDto.postId(), currentUserId);
+                comment.getId(), commentDto.postId(), currentUserId);
         return mapper.toCommentDto(comment);
     }
 
@@ -74,6 +82,14 @@ public class CommentService {
         log.info("Comments for post {} successfully received", postId);
 
         return comments.stream()
+                .map(mapper::toCommentDto)
+                .toList();
+    }
+
+    @Transactional
+    public List<CommentDto> findNewByPostId(long postId, int limit) {
+        log.info("Getting last {} new comments for post {}", limit, postId);
+        return commentRepository.findNewByPostId(postId, limit).stream()
                 .map(mapper::toCommentDto)
                 .toList();
     }
@@ -100,5 +116,9 @@ public class CommentService {
         return commentRepository.findById(id).orElseThrow(
                 () -> new EntityNotFoundException("Comment {} not found", id)
         );
+    }
+
+    private UserDto getAuthor(Comment comment) {
+        return userServiceClient.getUser(comment.getAuthorId());
     }
 }

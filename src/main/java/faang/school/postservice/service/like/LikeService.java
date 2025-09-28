@@ -2,6 +2,7 @@ package faang.school.postservice.service.like;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.event.LikeEvent;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.EntityAlreadyLikedException;
 import faang.school.postservice.exception.EntityDeletedException;
@@ -9,6 +10,7 @@ import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.LikeProducer;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -21,6 +23,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class LikeService {
     private final UserContext context;
+    private final LikeProducer producer;
     private final LikeRepository likeRepository;
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
@@ -39,6 +42,9 @@ public class LikeService {
 
         like = likeRepository.save(like);
         log.info("Post {} successfully liked by user {}. Like id - {}", postId, currentUserId, like.getId());
+
+        LikeEvent event = new LikeEvent(like.getId(), postId, null, currentUserId);
+        producer.sendEvent(event);
     }
 
     public void addToComment(long commentId) {

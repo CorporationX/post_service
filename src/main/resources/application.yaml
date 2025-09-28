@@ -27,11 +27,46 @@ spring:
 
   kafka:
     bootstrap-servers: localhost:9092
+    backoff:
+      init-interval: 1000
+      max-retries: 2
+      max-interval: 5000
+      multiplier: 2
     producer:
       enable-idempotence: true
       acks: all
+    consumer:
+      group-id: post-group
+      auto-offset-reset: earliest
     topic:
       commentNew: comment.new
+      postNew: post.new
+      postView: post.view
+      postLike: post.like
+      feedHeat: feed.heat
+
+post:
+  followersBatch: 1000
+
+thread-pool:
+  fixed:
+    size: 4
+
+feed:
+  key: feed
+  keySet: posts
+  ttl: 86400
+  maxStored: 500
+  comment:
+    limit: 3
+    ttl: 86400
+  post:
+    key: posts
+    keySet: comments
+    ttl: 86400
+  user:
+    ttl: 86400
+    batch: 1000
 
 server:
   port: 8081

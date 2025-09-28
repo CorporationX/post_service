@@ -18,7 +18,35 @@ public interface PostRepository extends CrudRepository<Post, Long> {
     @Query("SELECT p FROM Post p LEFT JOIN FETCH p.likes WHERE p.authorId = :authorId")
     List<Post> findByAuthorIdWithLikes(long authorId);
 
-    @Query("SELECT p FROM Post p WHERE p.published = false AND p.deleted = false AND p.scheduledAt <= CURRENT_TIMESTAMP")
+    @Query("""
+            SELECT p FROM Post p 
+            WHERE p.published = false 
+                AND p.deleted = false 
+                AND p.scheduledAt <= CURRENT_TIMESTAMP
+            """)
     List<Post> findReadyToPublish();
 
+    @Query(nativeQuery = true, value = """
+            WITH author_post AS (
+                SELECT * FROM post
+                WHERE author_id IN (:authorIds)
+                AND published = 'true'
+                ORDER BY published_at DESC
+            )
+            SELECT * FROM author_post
+            WHERE :lastPostId IS NULL
+                OR published_at < (
+                    SELECT published_at FROM author_post
+                    WHERE id = :lastPostId
+                )
+            LIMIT :batch
+            """)
+    List<Post> getPublishedRangeByAuthorsDesc(List<Long> authorIds, Long lastPostId, int batch);
+
+    @Query(nativeQuery = true, value = """
+            SELECT * FROM post
+            ORDER BY published_at DESC
+            LIMIT :batch
+            """)
+    List<Post> findAnyRecentBatch(int batch);
 }
