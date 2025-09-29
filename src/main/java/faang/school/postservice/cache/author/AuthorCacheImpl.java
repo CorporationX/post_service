@@ -1,0 +1,195 @@
+package faang.school.postservice.cache.author;
+
+import faang.school.postservice.config.properties.cache.author.AuthorCacheProperties;
+import faang.school.postservice.dto.cache.AuthorCacheDto;
+import faang.school.postservice.mapper.user.UserMapper;
+import faang.school.postservice.service.post.UserFeignService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Component;
+
+import faang.school.postservice.dto.user.UserDto;
+
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
+@RequiredArgsConstructor
+@Component
+@Slf4j
+public class AuthorCacheImpl implements AuthorCache {
+
+    private static final String LOCK_KEY_PATTERN = "lock:author:%d";
+
+    private final RedisTemplate<String, AuthorCacheDto> redisTemplate;
+    private final AuthorCacheProperties properties;
+    private final UserFeignService userFeignService;
+    private final UserMapper userMapper;
+    private final RedissonClient redissonClient;
+
+    private String buildCacheKey(long authorId) {
+        return properties.keyPrefix() + authorId;
+    }
+
+    private String buildLockKey(long authorId) {
+        return String.format(LOCK_KEY_PATTERN, authorId);
+    }
+
+    @Override
+    public void put(AuthorCacheDto author) {
+        try {
+            String key = buildCacheKey(author.id());
+            redisTemplate.opsForValue().set(key, author, properties.ttl());
+        } catch (Exception e) {
+            log.warn("Redis put(author) failed id={}", author.id(), e);
+        }
+    }
+
+    @Override
+    public AuthorCacheDto get(Long authorId) {
+        String key = buildCacheKey(authorId);
+        try {
+            AuthorCacheDto authorFromCache = redisTemplate.opsForValue().get(key);
+            if (authorFromCache != null) {
+                return authorFromCache;
+            }
+
+            RLock lock = redissonClient.getLock(buildLockKey(authorId));
+            boolean locked = false;
+            try {
+                locked = lock.tryLock(
+                        properties.lockWaitSeconds(),
+                        properties.lockLeaseSeconds(),
+                        TimeUnit.SECONDS);
+
+                if (!locked) {
+                    return redisTemplate.opsForValue().get(key);
+                }
+
+                authorFromCache = redisTemplate.opsForValue().get(key);
+                if (authorFromCache != null) {
+                    return authorFromCache;
+                }
+
+                UserDto user = userFeignService.getUserOrFail(authorId);
+                AuthorCacheDto authorToCache = userMapper.toCacheEntry(user);
+                redisTemplate.opsForValue().set(key, authorToCache, properties.ttl());
+                return authorToCache;
+
+            } finally {
+                if (locked && lock.isHeldByCurrentThread()) {
+                    lock.unlock();
+                }
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            log.warn("Author cache get interrupted authorId={}", authorId, e);
+            return null;
+        } catch (Exception e) {
+            log.warn("Author cache get failed authorId={}", authorId, e);
+            return null;
+        }
+    }
+
+    @Override
+    public void delete(Long authorId) {
+        try {
+            redisTemplate.delete(buildCacheKey(authorId));
+        } catch (Exception e) {
+            log.warn("Author evict failed authorId={}", authorId, e);
+        }
+    }
+
+    @Override
+    public List<AuthorCacheDto> getAll(List<Long> authorIds) {
+        if (authorIds == null || authorIds.isEmpty()) {
+            return List.of();
+        }
+
+        try {
+            List<String> keys = authorIds.stream()
+                    .map(this::buildCacheKey)
+                    .toList();
+
+            List<AuthorCacheDto> values = redisTemplate.opsForValue().multiGet(keys);
+            if (values == null) {
+                return List.of();
+            }
+
+            return values;
+        } catch (Exception e) {
+            log.warn("Redis mget authors failed ids={}", authorIds, e);
+            return List.of();
+        }
+    }
+
+    @Override
+    public void preloadAll(List<Long> authorIds) {
+        List<Long> normalizedAuthorIds = normalizeIds(authorIds);
+        if (normalizedAuthorIds.isEmpty()) {
+            return;
+        }
+
+        List<String> keys = normalizedAuthorIds.stream()
+                .map(this::buildCacheKey)
+                .toList();
+
+        List<AuthorCacheDto> cachedAuthors = redisTemplate.opsForValue().multiGet(keys);
+        if (cachedAuthors == null) {
+            cachedAuthors = Collections.nCopies(keys.size(), null);
+        }
+
+        List<Long> missingAuthorIds = new ArrayList<>();
+        for (int i = 0; i < normalizedAuthorIds.size(); i++) {
+            if (cachedAuthors.get(i) == null) {
+                missingAuthorIds.add(normalizedAuthorIds.get(i));
+            }
+        }
+        if (missingAuthorIds.isEmpty()) {
+            return;
+        }
+
+        List<UserDto> users = userFeignService.getUsersByIds(missingAuthorIds);
+        if (users == null || users.isEmpty()) {
+            return;
+        }
+
+        List<AuthorCacheDto> authorsToCache = userMapper.toCacheEntryList(users);
+
+        Map<String, AuthorCacheDto> cacheEntriesByKey = new HashMap<>(authorsToCache.size());
+        for (AuthorCacheDto author : authorsToCache) {
+            cacheEntriesByKey.put(buildCacheKey(author.id()), author);
+        }
+
+        redisTemplate.opsForValue().multiSet(cacheEntriesByKey);
+
+        Duration ttl = properties.ttl();
+        if (ttl != null && !ttl.isZero() && !ttl.isNegative()) {
+            for (String key : cacheEntriesByKey.keySet()) {
+                redisTemplate.expire(key, ttl);
+            }
+        }
+    }
+
+    private List<Long> normalizeIds(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+        Set<Long> uniqueIds = new HashSet<>();
+        for (Long id : ids) {
+            if (id != null) {
+                uniqueIds.add(id);
+            }
+        }
+        return new ArrayList<>(uniqueIds);
+    }
+}

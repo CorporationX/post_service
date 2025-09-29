@@ -1,5 +1,8 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.cache.author.AuthorCache;
+import faang.school.postservice.cache.post.PostCache;
+import faang.school.postservice.dto.cache.AuthorCacheDto;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CommentEvent;
 import faang.school.postservice.dto.comment.SaveCommentDto;
@@ -7,10 +10,10 @@ import faang.school.postservice.dto.post.CreatePostDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.exception.EntityNotFoundException;
-import faang.school.postservice.exception.ServiceUnavailableException;
 import faang.school.postservice.kafka.producer.comment.CommentProducer;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.mapper.comment.CommentMapper;
+import faang.school.postservice.mapper.user.UserMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
@@ -30,7 +33,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -44,8 +46,11 @@ public class PostServiceImpl implements PostService {
     private final CommentValidator commentValidator;
     private final UserFeignService userFeignService;
     private final PostSpellCheckValidator postSpellCheckValidator;
-
     private final CommentProducer commentProducer;
+    private final PostCache postCache;
+    private final AuthorCache authorCache;
+    private final PostFanoutPublisher postFanoutPublisher;
+    private final UserMapper userMapper;
 
     @Override
     @Transactional
@@ -59,7 +64,6 @@ public class PostServiceImpl implements PostService {
         return postMapper.toPostDto(post);
     }
 
-
     @Override
     @Transactional
     public PostDto publish(@NonNull Long postId) {
@@ -69,6 +73,11 @@ public class PostServiceImpl implements PostService {
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
         postRepository.save(post);
+
+        postCache.put(postMapper.toCacheEntry(post));
+        cachePost(post);
+        warmAuthorCache(post.getAuthorId());
+        fanout(post);
 
         log.info("Post id: {} published", post.getId());
         return postMapper.toPostDto(post);
@@ -222,5 +231,26 @@ public class PostServiceImpl implements PostService {
     @Override
     public List<Post> getUnpublishedPosts() {
         return postRepository.findAllByPublishedFalse();
+    }
+
+    private void cachePost(Post post) {
+        postCache.put(postMapper.toCacheEntry(post));
+    }
+
+    private void warmAuthorCache(Long authorId) {
+        if (authorId == null) {
+            return;
+        }
+        AuthorCacheDto author = userMapper.toCacheEntry(userFeignService.getUserOrFail(authorId));
+        authorCache.put(author);
+    }
+
+    private void fanout(Post post) {
+        postFanoutPublisher.paginateFollowersAndPublishBatches(post);
+    }
+
+    private void publishCommentEvent(Comment comment) {
+        CommentEvent event = commentMapper.toCommentEvent(comment);
+        commentProducer.publishCommentEvent(event);
     }
 }
