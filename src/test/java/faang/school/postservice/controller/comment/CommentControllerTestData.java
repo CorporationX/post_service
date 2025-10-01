@@ -1,10 +1,7 @@
 package faang.school.postservice.controller.comment;
 
 /**
- * CommentControllerTestData — описание класса.
- * <p>
- * TODO: добавить описание назначения и поведения класса.
- * </p>
+ * Тестовые данные для {@link CommentControllerTest}
  *
  * @author bozya
  * @since 25.09.2025

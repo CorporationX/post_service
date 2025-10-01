@@ -89,7 +89,7 @@ public class PostServiceImpl implements PostService {
         PostCountsProjection counts = postRepository.findPostCounts(id);
 
         PostPublishedEventAvro event = mapper.toAvro(savedPost);
-        PostRedisDto postRedisDto = mapper.toRedisDto(savedPost, counts.getLikeCount(), counts.getCommentCount());
+        PostRedisDto postRedisDto = mapper.toRedisDto(savedPost, counts);
 
         publisher.publishAfterCommit(new PostPublishedEvent(id, post.getAuthorId(), post.getProjectId()));
         postProducer.sendMessage(event);
