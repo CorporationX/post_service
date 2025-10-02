@@ -41,17 +41,14 @@ public interface PostMapper {
         );
     }
 
-    default PostRedisDto toRedisDto(Post post, PostCountsProjection countsProjection) {
-        return new PostRedisDto(
-                post.getId(),
-                post.getContent(),
-                post.getAuthorId(),
-                post.getProjectId(),
-                countsProjection.getLikeCount(),
-                countsProjection.getCommentCount(),
-                post.getPublishedAt()
-        );
-    }
+    @Mapping(target = "id", source = "post.id")
+    @Mapping(target = "content", source = "post.content")
+    @Mapping(target = "authorId", source = "post.authorId")
+    @Mapping(target = "projectId", source = "post.projectId")
+    @Mapping(target = "likeCount", source = "likeCount")
+    @Mapping(target = "commentCount", source = "commentCount")
+    @Mapping(target = "publishedAt", source = "post.publishedAt")
+    PostRedisDto toRedisDto(Post post, Long likeCount, Long commentCount);
 
     @Mapping(target = "authorUser", ignore = true)
     @Mapping(target = "comments", ignore = true)

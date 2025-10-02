@@ -114,7 +114,7 @@ public class PostRedisRepository {
     public PostRedisDto processGetRedisDtoFromDb(Long id) {
         Post postFromDb = postRepository.findPostOrThrow(id);
         PostCountsProjection counts = postRepository.findPostCounts(id);
-        return mapper.toRedisDto(postFromDb, counts);
+        return mapper.toRedisDto(postFromDb, counts.getLikeCount(), counts.getCommentCount());
     }
 
     private String getKeyForPost(Long id) {
