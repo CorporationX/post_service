@@ -6,6 +6,7 @@ import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
@@ -19,6 +20,7 @@ import java.util.Optional;
  * @author Linempy
  * @since 26.09.2025
  */
+@Slf4j
 @Repository
 @RequiredArgsConstructor
 public class PostRedisRepository {
@@ -35,6 +37,7 @@ public class PostRedisRepository {
     public void savePost(PostRedisDto post) {
         String key = getFormattedKey(post.id());
         redisTemplate.opsForValue().set(key, post, Duration.ofDays(ttlDay));
+        log.debug("Пост id={} был сохранен в Redis", post.id());
     }
 
     public PostRedisDto getPost(Long id) {

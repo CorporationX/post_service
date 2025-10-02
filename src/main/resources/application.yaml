@@ -88,6 +88,8 @@ redis:
       max-size: 500
     post:
       ttl-day: 2
+    user:
+      ttl-day: 1
 
 thread-pool:
   async:
