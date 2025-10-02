@@ -13,16 +13,29 @@ import org.springframework.kafka.config.TopicBuilder;
  * @author bozya
  * @since 26.09.2025
  */
-@EnableKafka
 @Configuration
+@EnableKafka
 public class KafkaConfig {
 
-    @Value("${spring.kafka.topics.comments}")
-    private String commentsTopic;
+    @Bean
+    public NewTopic postsTopic(@Value("${spring.kafka.topics.posts}") String topic) {
+        return TopicBuilder.name(topic)
+                .partitions(1)
+                .replicas(1)
+                .build();
+    }
 
     @Bean
-    public NewTopic commentsTopic() {
-        return TopicBuilder.name(commentsTopic)
+    public NewTopic feedsTopic(@Value("${spring.kafka.topics.feeds}") String topic) {
+        return TopicBuilder.name(topic)
+                .partitions(1)
+                .replicas(1)
+                .build();
+    }
+
+    @Bean
+    public NewTopic commentsTopic(@Value("${spring.kafka.topics.comments}") String topic) {
+        return TopicBuilder.name(topic)
                 .partitions(1)
                 .replicas(1)
                 .build();

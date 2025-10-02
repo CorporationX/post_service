@@ -1,6 +1,6 @@
 package faang.school.postservice.controller.like;
 
-import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.dto.user.UserViewDto;
 import faang.school.postservice.service.like.LikeService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -32,8 +32,8 @@ public class LikeController {
      * @throws faang.school.postservice.exception.EntityNotFoundException если пост с указанным ID не найден
      */
     @GetMapping("/post/{postId}")
-    public ResponseEntity<List<UserDto>> getAllLikesFromUsersToPost(@PathVariable Long postId) {
-        List<UserDto> users = likeService.getUsersWhoLikedPost(postId);
+    public ResponseEntity<List<UserViewDto>> getAllLikesFromUsersToPost(@PathVariable Long postId) {
+        List<UserViewDto> users = likeService.getUsersWhoLikedPost(postId);
 
         return ResponseEntity.ok(users);
     }
@@ -49,8 +49,8 @@ public class LikeController {
      * @return ResponseEntity со списком UserDto и статусом 200 OK
      */
     @GetMapping("/comment/{commentId}")
-    public ResponseEntity<List<UserDto>> getAllLikesFromUsersToComment(@PathVariable Long commentId) {
-        List<UserDto> users = likeService.getUsersWhoLikedComment(commentId);
+    public ResponseEntity<List<UserViewDto>> getAllLikesFromUsersToComment(@PathVariable Long commentId) {
+        List<UserViewDto> users = likeService.getUsersWhoLikedComment(commentId);
 
         return ResponseEntity.ok(users);
     }

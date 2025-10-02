@@ -19,13 +19,13 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 
 @Slf4j
 @RequiredArgsConstructor
-public abstract class AbstractEventPublisher<E> implements EventPublisher<E> {
+public abstract class AbstractEventProducer<E> implements EventProducer<E> {
 
     protected final RetryTemplate retryTemplate;
     protected final RedisTemplate<String, Object> redisTemplate;
 
     @Override
-    public void publish(E event) {
+    public void sendMessage(E event) {
         String topic = getTopic();
 
         try {
@@ -52,7 +52,7 @@ public abstract class AbstractEventPublisher<E> implements EventPublisher<E> {
                     public void afterCommit() {
                         try {
                             retryTemplate.execute(context -> {
-                                publish(event);
+                                sendMessage(event);
                                 return null;
                             });
                         } catch (EventPublishingException e) {

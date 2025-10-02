@@ -4,6 +4,7 @@ import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostCreateDto;
 import faang.school.postservice.dto.post.PostFilterDto;
+import faang.school.postservice.dto.post.PostStatisticProjection;
 import faang.school.postservice.dto.post.PostUpdateDto;
 import faang.school.postservice.dto.post.PostViewDto;
 import faang.school.postservice.exception.DataValidationException;
@@ -12,8 +13,11 @@ import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.enums.PostStatus;
-import faang.school.postservice.publisher.PostPublishedEventPublisher;
+import faang.school.postservice.producer.KafkaPostProducer;
+import faang.school.postservice.publisher.PostPublishedEventProducer;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.redis.PostRedisRepository;
+import faang.school.postservice.util.AfterCommitManager;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -46,6 +50,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -64,13 +69,22 @@ public class PostServiceImplTest {
     private PostRepository postRepository;
 
     @Mock
+    private PostRedisRepository postRedisRepository;
+
+    @Mock
+    private KafkaPostProducer postProducer;
+
+    @Mock
     private ProjectServiceClient projectClient;
 
     @Spy
     private PostMapper mapper;
 
     @Mock
-    private PostPublishedEventPublisher publisher;
+    private PostPublishedEventProducer publisher;
+
+    @Mock
+    private AfterCommitManager commitManager;
 
     @Mock
     private UserContext context;
@@ -176,8 +190,11 @@ public class PostServiceImplTest {
     @Test
     @DisplayName("publication должен успешно поменять статус isPublished на true")
     public void testPublicationSuccessful() {
-        Post post = buildPost(null, POST_ID_1, null, null, false);
+        Post post = buildPost("null", POST_ID_1, USER_ID_1, null, false);
+        PostStatisticProjection projection = mock(PostStatisticProjection.class);
         when(postRepository.findPostOrThrow(POST_ID_1)).thenReturn(post);
+        when(postRepository.save(post)).thenReturn(post);
+        when(postRepository.findPostCounts(post.getId())).thenReturn(projection);
 
         service.publication(POST_ID_1);
 

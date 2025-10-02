@@ -1,6 +1,6 @@
 package faang.school.postservice.service.like;
 
-import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.dto.user.UserViewDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
 
@@ -25,7 +25,7 @@ public interface LikeService {
      * @return список пользователей или пустой список, если лайков нет
      * @throws DataValidationException если postId равен null
      */
-    List<UserDto> getUsersWhoLikedPost(Long postId);
+    List<UserViewDto> getUsersWhoLikedPost(Long postId);
 
     /**
      * Возвращает список пользователей, лайкнувших комментарий.
@@ -35,5 +35,5 @@ public interface LikeService {
      * @throws DataValidationException если commentId равен null
      * @throws EntityNotFoundException если комментарий не найден
      */
-    List<UserDto> getUsersWhoLikedComment(Long commentId);
+    List<UserViewDto> getUsersWhoLikedComment(Long commentId);
 }

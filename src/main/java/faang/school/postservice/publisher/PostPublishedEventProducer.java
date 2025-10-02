@@ -15,13 +15,13 @@ import org.springframework.stereotype.Component;
  */
 @Slf4j
 @Component
-public class PostPublishedEventPublisher extends AbstractEventPublisher<PostPublishedEvent> {
+public class PostPublishedEventProducer extends AbstractEventProducer<PostPublishedEvent> {
 
     @Value("${redis.topic.post-published}")
     private String topic;
 
-    public PostPublishedEventPublisher(RetryTemplate retryTemplate,
-                                       RedisTemplate<String, Object> redisTemplate) {
+    public PostPublishedEventProducer(RetryTemplate retryTemplate,
+                                      RedisTemplate<String, Object> redisTemplate) {
         super(retryTemplate, redisTemplate);
     }
 

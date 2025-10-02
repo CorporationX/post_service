@@ -1,6 +1,7 @@
 package faang.school.postservice.repository;
 
 import faang.school.postservice.dto.post.PostFilterDto;
+import faang.school.postservice.dto.post.PostStatisticProjection;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.model.Post;
 import org.springframework.data.domain.Page;
@@ -9,6 +10,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -40,6 +42,19 @@ public interface PostRepository extends CrudRepository<Post, Long>, JpaSpecifica
             """
     )
     List<Post> findReadyToPublish();
+
+    @Query("""
+            SELECT COUNT(l) FROM Like l
+            WHERE l.post.id = :postId
+            """)
+    Long countLikesByPostId(@Param("postId") Long postId);
+
+    @Query("""
+            SELECT
+                (SELECT COUNT(l) FROM Like l WHERE l.post.id = :postId) as likeCount,
+                (SELECT COUNT(c) FROM Comment c WHERE c.post.id = :postId) as commentCount
+            """)
+    PostStatisticProjection findPostCounts(@Param("postId") Long postId);
 
     default Post findPostOrThrow(Long id) {
         return findById(id)
