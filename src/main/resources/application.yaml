@@ -80,6 +80,8 @@ retry:
     max-interval-ms: 10_000
 
 redis:
+  max-comments: 3
+  comments-ttl: 1
   topic:
     post-published: "post_published_topic"
   schema:
