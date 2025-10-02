@@ -7,6 +7,7 @@ import faang.school.postservice.dto.post.PostViewDto;
 import faang.school.postservice.dto.redis.PostRedisDto;
 import faang.school.postservice.model.Post;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.ReportingPolicy;
 
@@ -35,17 +36,14 @@ public interface PostMapper {
         );
     }
 
-    default PostRedisDto toRedisDto(Post post, Long likeCount, Long commentCount) {
-        return new PostRedisDto(
-                post.getId(),
-                post.getContent(),
-                post.getAuthorId(),
-                post.getProjectId(),
-                likeCount,
-                commentCount,
-                post.getPublishedAt()
-        );
-    }
+    @Mapping(target = "id", source = "post.id")
+    @Mapping(target = "content", source = "post.content")
+    @Mapping(target = "authorId", source = "post.authorId")
+    @Mapping(target = "projectId", source = "post.projectId")
+    @Mapping(target = "likeCount", source = "likeCount")
+    @Mapping(target = "commentCount", source = "commentCount")
+    @Mapping(target = "publishedAt", source = "post.publishedAt")
+    PostRedisDto toRedisDto(Post post, Long likeCount, Long commentCount);
 
     void update(@MappingTarget Post post, PostUpdateDto updateDto);
 }

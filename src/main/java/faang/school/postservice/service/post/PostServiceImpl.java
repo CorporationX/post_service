@@ -3,10 +3,10 @@ package faang.school.postservice.service.post;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.avro.PostPublishedEventAvro;
-import faang.school.postservice.dto.post.PostCountsProjection;
 import faang.school.postservice.dto.post.PostCreateDto;
 import faang.school.postservice.dto.post.PostFilterDto;
 import faang.school.postservice.dto.post.PostPublishedEvent;
+import faang.school.postservice.dto.post.PostStatisticProjection;
 import faang.school.postservice.dto.post.PostUpdateDto;
 import faang.school.postservice.dto.post.PostViewDto;
 import faang.school.postservice.dto.project.ProjectDto;
@@ -80,14 +80,13 @@ public class PostServiceImpl implements PostService {
         post.setPublishedAt(LocalDateTime.now());
         log.info("Пост id={} был опубликован в {}", post.getId(), post.getPublishedAt());
         Post savedPost = postRepository.save(post);
-        PostCountsProjection counts = postRepository.findPostCounts(id);
+        PostStatisticProjection counts = postRepository.findPostCounts(id);
 
         PostPublishedEventAvro event = mapper.toAvro(savedPost);
         PostRedisDto postRedisDto = mapper.toRedisDto(savedPost, counts.getLikeCount(), counts.getCommentCount());
 
         publisher.publishAfterCommit(new PostPublishedEvent(id, post.getAuthorId(), post.getProjectId()));
-        postProducer.sendMessage(event);
-        commitManager.executeAfterCommit(() -> postRedisRepository.savePost(postRedisDto));
+        processAfterCommit(event, postRedisDto);
     }
 
     @Override
@@ -152,5 +151,10 @@ public class PostServiceImpl implements PostService {
         }
 
         throw new DataValidationException("Не указан идентификатор автора");
+    }
+
+    private void processAfterCommit(PostPublishedEventAvro event, PostRedisDto postRedisDto) {
+        commitManager.executeAfterCommit(() -> postProducer.sendMessage(event));
+        commitManager.executeAfterCommit(() -> postRedisRepository.savePost(postRedisDto));
     }
 }

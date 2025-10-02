@@ -1,7 +1,7 @@
 package faang.school.postservice.repository;
 
-import faang.school.postservice.dto.post.PostCountsProjection;
 import faang.school.postservice.dto.post.PostFilterDto;
+import faang.school.postservice.dto.post.PostStatisticProjection;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.model.Post;
 import org.springframework.data.domain.Page;
@@ -54,7 +54,7 @@ public interface PostRepository extends CrudRepository<Post, Long>, JpaSpecifica
                 (SELECT COUNT(l) FROM Like l WHERE l.post.id = :postId) as likeCount,
                 (SELECT COUNT(c) FROM Comment c WHERE c.post.id = :postId) as commentCount
             """)
-    PostCountsProjection findPostCounts(@Param("postId") Long postId);
+    PostStatisticProjection findPostCounts(@Param("postId") Long postId);
 
     default Post findPostOrThrow(Long id) {
         return findById(id)
