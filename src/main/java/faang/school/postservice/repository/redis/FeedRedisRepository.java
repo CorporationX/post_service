@@ -1,8 +1,8 @@
 package faang.school.postservice.repository.redis;
 
 import faang.school.postservice.dto.avro.FeedBatchEventAvro;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
@@ -22,10 +22,11 @@ import java.util.Set;
  */
 @Slf4j
 @Repository
+@RequiredArgsConstructor
 public class FeedRedisRepository {
 
-    @Value("${redis.schema.feed.key}")
-    private String keyFeed;
+    private static final String FEED_TEMPLATE = "feed:user:%s";
+
     @Value("${redis.schema.feed.ttl-day}")
     private Long ttlDays;
     @Value("${redis.schema.feed.max-size}")
@@ -33,26 +34,22 @@ public class FeedRedisRepository {
 
     private final RedisTemplate<String, Object> redisTemplate;
 
-    public FeedRedisRepository(@Qualifier("redisDataTemplate") RedisTemplate<String, Object> redisTemplate) {
-        this.redisTemplate = redisTemplate;
-    }
-
     private static final DefaultRedisScript<Void> ADD_AND_TRIM = new DefaultRedisScript<>("""
-            redis.call('ZADD', KEYS[1], ARGV[1], ARGV[2])
-            redis.call('EXPIRE', KEYS[1], ARGV[3])
-            local max_size = tonumber(ARGV[4])
-            if max_size > 0 then
-                local current_size = redis.call('ZCARD', KEYS[1])
-                if current_size > max_size then
-                    redis.call('ZREMRANGEBYRANK', KEYS[1], 0, current_size - max_size - 1)
-                end
-            end
-            """, Void.class);
+          redis.call('ZADD', KEYS[1], ARGV[1], ARGV[2])
+          redis.call('EXPIRE', KEYS[1], ARGV[3])
+          local max_size = tonumber(ARGV[4])
+          if max_size > 0 then
+              local current_size = redis.call('ZCARD', KEYS[1])
+              if current_size > max_size then
+                  redis.call('ZREMRANGEBYRANK', KEYS[1], 0, current_size - max_size - 1)
+              end
+          end
+          """, Void.class);
 
     private static final int DAY_IN_SECONDS = 24 * 60 * 60;
 
     public void updateFeed(String userId, String postId, Instant publishedAt) {
-        String key = getKeyFeed(userId);
+        String key = getFormattedKey(userId);
         long timeUnit = publishedAt.atZone(ZoneOffset.UTC).toEpochSecond();
         long ttlSeconds = ttlDays * DAY_IN_SECONDS;
 
@@ -76,7 +73,7 @@ public class FeedRedisRepository {
             return Collections.emptyList();
         }
 
-        String key = getKeyFeed(String.valueOf(userId));
+        String key = getFormattedKey(String.valueOf(userId));
 
         if (lastPostId == null || lastPostId == 0) {
             long start = 0;
@@ -115,7 +112,7 @@ public class FeedRedisRepository {
         return userId == null || size <= 0;
     }
 
-    private String getKeyFeed(String userId) {
-        return String.format(keyFeed, userId);
+    private String getFormattedKey(String id) {
+        return String.format(FEED_TEMPLATE, id);
     }
 }

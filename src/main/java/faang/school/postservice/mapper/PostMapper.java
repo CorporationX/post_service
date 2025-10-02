@@ -2,7 +2,6 @@ package faang.school.postservice.mapper;
 
 import faang.school.postservice.dto.avro.PostPublishedEventAvro;
 import faang.school.postservice.dto.feed.PostFeedDto;
-import faang.school.postservice.dto.post.PostCountsProjection;
 import faang.school.postservice.dto.post.PostCreateDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
 import faang.school.postservice.dto.post.PostViewDto;
@@ -40,6 +39,7 @@ public interface PostMapper {
                 post.getPublishedAt().atZone(ZoneOffset.UTC).toInstant()
         );
     }
+
 
     @Mapping(target = "id", source = "post.id")
     @Mapping(target = "content", source = "post.content")

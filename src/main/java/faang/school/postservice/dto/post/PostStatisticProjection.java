@@ -6,7 +6,8 @@ package faang.school.postservice.dto.post;
  * @author Linempy
  * @since 27.09.2025
  */
-public interface PostCountsProjection {
+
+public interface PostStatisticProjection {
     Long getLikeCount();
 
     Long getCommentCount();

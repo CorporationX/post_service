@@ -28,6 +28,5 @@ public class FeedController {
     public ResponseEntity<List<PostFeedDto>> getFeed(@RequestParam(value = "id", required = false) Long lastPostId) {
         List<PostFeedDto> feed = service.getFeed(lastPostId);
         return ResponseEntity.ok(feed);
-
     }
 }

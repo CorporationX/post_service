@@ -84,14 +84,11 @@ redis:
     post-published: "post_published_topic"
   schema:
     feed:
-      key: feed:user:%s
       ttl-day: 3
       max-size: 500
     post:
-      key: post:%s
       ttl-day: 2
     user:
-      key: user:%s
       ttl-day: 1
 
 thread-pool:
