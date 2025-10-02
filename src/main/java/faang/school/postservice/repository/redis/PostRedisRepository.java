@@ -37,7 +37,7 @@ public class PostRedisRepository {
     public void savePost(PostRedisDto post) {
         String key = getFormattedKey(post.id());
         redisTemplate.opsForValue().set(key, post, Duration.ofDays(ttlDay));
-        log.info("Пост id={} был сохранен в Redis", post.id());
+        log.debug("Пост id={} был сохранен в Redis", post.id());
     }
 
     public PostRedisDto getPost(Long id) {

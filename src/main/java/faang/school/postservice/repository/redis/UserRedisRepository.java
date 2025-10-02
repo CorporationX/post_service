@@ -24,8 +24,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UserRedisRepository {
 
-    @Value("${redis.schema.user.key}")
-    private String keyUser;
+    private static final String USER_TEMPLATE = "user:%s";
 
     @Value("${redis.schema.user.ttl-day}")
     private int ttlDay;
@@ -34,18 +33,18 @@ public class UserRedisRepository {
     private final UserMapper mapper;
 
     public void saveUser(UserViewDto user) {
-        String key = getKey(user.id());
+        String key = getFormattedKey(user.id());
         UserRedisDto userRedisDto = mapper.toRedisDto(user);
         redisTemplate.opsForValue().set(key, userRedisDto, Duration.ofDays(ttlDay));
         log.info("Пользователь был сохранен в Redis");
     }
 
     public Optional<UserRedisDto> getUser(Long id) {
-        String key = getKey(id);
+        String key = getFormattedKey(id);
         return Optional.ofNullable((UserRedisDto) redisTemplate.opsForValue().get(key));
     }
 
-    private String getKey(Long id) {
-        return String.format(keyUser, id);
+    private String getFormattedKey(Long id) {
+        return String.format(USER_TEMPLATE, id);
     }
 }

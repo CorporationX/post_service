@@ -89,7 +89,6 @@ redis:
     post:
       ttl-day: 2
     user:
-      key: user:%s
       ttl-day: 1
 
 thread-pool:
