@@ -1,8 +1,8 @@
 package faang.school.postservice.repository.redis;
 
 import faang.school.postservice.dto.avro.FeedBatchEventAvro;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
@@ -20,10 +20,11 @@ import java.util.List;
  */
 @Slf4j
 @Repository
+@RequiredArgsConstructor
 public class FeedRedisRepository {
 
-    @Value("${redis.schema.feed.key}")
-    private String keyFeed;
+    private static final String FEED_TEMPLATE = "feed:user:%s";
+
     @Value("${redis.schema.feed.ttl-day}")
     private Long ttlDays;
     @Value("${redis.schema.feed.max-size}")
@@ -45,12 +46,8 @@ public class FeedRedisRepository {
 
     private static final int DAY_IN_SECONDS = 24 * 60 * 60;
 
-    public FeedRedisRepository(@Qualifier("FeedRedis") RedisTemplate<String, Object> redisTemplate) {
-        this.redisTemplate = redisTemplate;
-    }
-
     public void updateFeed(String userId, String postId, Instant publishedAt) {
-        String key = String.format(keyFeed, userId);
+        String key = getFormattedKey(userId);
         long timeUnit = publishedAt.atZone(ZoneOffset.UTC).toEpochSecond();
         long ttlSeconds = ttlDays * DAY_IN_SECONDS;
 
@@ -67,6 +64,9 @@ public class FeedRedisRepository {
                     updateFeed(id, event.getPostId(), event.getPublishedAt());
                 });
         log.info("Сохранение постов в feed в Redis прошло успешно!");
+    }
 
+    private String getFormattedKey(String id) {
+        return String.format(FEED_TEMPLATE, id);
     }
 }

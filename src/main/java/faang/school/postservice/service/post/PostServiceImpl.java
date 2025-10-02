@@ -6,9 +6,11 @@ import faang.school.postservice.dto.avro.PostPublishedEventAvro;
 import faang.school.postservice.dto.post.PostCreateDto;
 import faang.school.postservice.dto.post.PostFilterDto;
 import faang.school.postservice.dto.post.PostPublishedEvent;
+import faang.school.postservice.dto.post.PostStatisticProjection;
 import faang.school.postservice.dto.post.PostUpdateDto;
 import faang.school.postservice.dto.post.PostViewDto;
 import faang.school.postservice.dto.project.ProjectDto;
+import faang.school.postservice.dto.redis.PostRedisDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.mapper.PostMapper;
@@ -16,6 +18,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.producer.KafkaPostProducer;
 import faang.school.postservice.publisher.PostPublishedEventProducer;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.redis.PostRedisRepository;
 import faang.school.postservice.util.AfterCommitManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -45,6 +48,7 @@ public class PostServiceImpl implements PostService {
     private final PostPublishedEventProducer publisher;
     private final KafkaPostProducer postProducer;
     private final AfterCommitManager commitManager;
+    private final PostRedisRepository postRedisRepository;
 
     @Override
     @Transactional
@@ -76,11 +80,13 @@ public class PostServiceImpl implements PostService {
         post.setPublishedAt(LocalDateTime.now());
         log.info("Пост id={} был опубликован в {}", post.getId(), post.getPublishedAt());
         Post savedPost = postRepository.save(post);
+        PostStatisticProjection counts = postRepository.findPostCounts(id);
 
         PostPublishedEventAvro event = mapper.toAvro(savedPost);
+        PostRedisDto postRedisDto = mapper.toRedisDto(savedPost, counts.getLikeCount(), counts.getCommentCount());
 
         publisher.publishAfterCommit(new PostPublishedEvent(id, post.getAuthorId(), post.getProjectId()));
-        commitManager.executeAfterCommit(() -> postProducer.sendMessage(event));
+        processAfterCommit(event, postRedisDto);
     }
 
     @Override
@@ -145,5 +151,10 @@ public class PostServiceImpl implements PostService {
         }
 
         throw new DataValidationException("Не указан идентификатор автора");
+    }
+
+    private void processAfterCommit(PostPublishedEventAvro event, PostRedisDto postRedisDto) {
+        commitManager.executeAfterCommit(() -> postProducer.sendMessage(event));
+        commitManager.executeAfterCommit(() -> postRedisRepository.savePost(postRedisDto));
     }
 }
