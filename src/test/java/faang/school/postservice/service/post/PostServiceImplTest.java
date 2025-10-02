@@ -2,9 +2,9 @@ package faang.school.postservice.service.post;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.dto.post.PostCountsProjection;
 import faang.school.postservice.dto.post.PostCreateDto;
 import faang.school.postservice.dto.post.PostFilterDto;
+import faang.school.postservice.dto.post.PostStatisticProjection;
 import faang.school.postservice.dto.post.PostUpdateDto;
 import faang.school.postservice.dto.post.PostViewDto;
 import faang.school.postservice.exception.DataValidationException;
@@ -191,7 +191,7 @@ public class PostServiceImplTest {
     @DisplayName("publication должен успешно поменять статус isPublished на true")
     public void testPublicationSuccessful() {
         Post post = buildPost("null", POST_ID_1, USER_ID_1, null, false);
-        PostCountsProjection projection = mock(PostCountsProjection.class);
+        PostStatisticProjection projection = mock(PostStatisticProjection.class);
         when(postRepository.findPostOrThrow(POST_ID_1)).thenReturn(post);
         when(postRepository.save(post)).thenReturn(post);
         when(postRepository.findPostCounts(post.getId())).thenReturn(projection);

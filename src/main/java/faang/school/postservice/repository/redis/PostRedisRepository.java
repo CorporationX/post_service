@@ -1,6 +1,6 @@
 package faang.school.postservice.repository.redis;
 
-import faang.school.postservice.dto.post.PostCountsProjection;
+import faang.school.postservice.dto.post.PostStatisticProjection;
 import faang.school.postservice.dto.redis.PostRedisDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
@@ -25,8 +25,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class PostRedisRepository {
 
-    @Value("${redis.schema.post.key}")
-    private String keyPost;
+    private static final String POST_TEMPLATE = "post:%d";
 
     @Value("${redis.schema.post.ttl-day}")
     private int ttlDay;
@@ -36,27 +35,31 @@ public class PostRedisRepository {
     private final PostMapper mapper;
 
     public void savePost(PostRedisDto post) {
-        String key = getKeyForPost(post.id());
+        String key = getFormattedKey(post.id());
         redisTemplate.opsForValue().set(key, post, Duration.ofDays(ttlDay));
         log.info("Пост id={} был сохранен в Redis", post.id());
     }
 
     public PostRedisDto getPost(Long id) {
-        String key = getKeyForPost(id);
+        String key = getFormattedKey(id);
 
         return Optional.ofNullable((PostRedisDto) redisTemplate.opsForValue().get(key))
             .orElseGet(() -> {
-                    Post postFromDb = postRepository.findPostOrThrow(id);
-                    PostCountsProjection counts = postRepository.findPostCounts(id);
-                    PostRedisDto post = mapper.toRedisDto(postFromDb, counts.getLikeCount(), counts.getCommentCount());
+                    PostRedisDto post = processGetRedisDtoFromDb(id);
                     savePost(post);
                     return post;
                 }
             );
     }
 
-    private String getKeyForPost(Long id) {
-        return String.format(keyPost, id);
+    public PostRedisDto processGetRedisDtoFromDb(Long id) {
+        Post postFromDb = postRepository.findPostOrThrow(id);
+        PostStatisticProjection counts = postRepository.findPostCounts(id);
+        return mapper.toRedisDto(postFromDb, counts.getLikeCount(), counts.getCommentCount());
+    }
+
+    private String getFormattedKey(Long id) {
+        return String.format(POST_TEMPLATE, id);
     }
 
 
