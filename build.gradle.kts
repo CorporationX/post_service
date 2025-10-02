@@ -51,6 +51,10 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok:1.18.26")
     implementation("org.mapstruct:mapstruct:1.5.3.Final")
     annotationProcessor("org.mapstruct:mapstruct-processor:1.5.3.Final")
+    testImplementation("org.slf4j:slf4j-api:2.0.5")
+    testImplementation("ch.qos.logback:logback-classic:1.4.6")
+    testCompileOnly("org.projectlombok:lombok:1.18.26")
+    testAnnotationProcessor("org.projectlombok:lombok:1.18.26")
 
     /**
      * Test containers
@@ -80,6 +84,8 @@ dependencies {
     implementation("org.apache.avro:avro:1.11.1")
     implementation("io.confluent:kafka-avro-serializer:7.4.0")
     implementation("io.confluent:kafka-schema-registry-client:7.4.0")
+    testImplementation("org.testcontainers:kafka:1.19.3")
+    testImplementation("org.testcontainers:junit-jupiter:1.19.3")
 }
 
 tasks.test {

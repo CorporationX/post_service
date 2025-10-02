@@ -2,7 +2,6 @@ package faang.school.postservice.dto.feed;
 
 import faang.school.postservice.dto.comment.CommentViewDto;
 import faang.school.postservice.dto.redis.UserRedisDto;
-import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDateTime;
 import java.util.List;

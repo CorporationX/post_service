@@ -1,4 +1,6 @@
-package faang.school.postservice.controller.comment;
+package faang.school.postservice.comment;
+
+import faang.school.postservice.data.CommentControllerTest;
 
 /**
  * Тестовые данные для {@link CommentControllerTest}

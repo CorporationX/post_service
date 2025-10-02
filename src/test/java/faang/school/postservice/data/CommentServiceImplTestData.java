@@ -1,4 +1,6 @@
-package faang.school.postservice.service.comment;
+package faang.school.postservice.data;
+
+import faang.school.postservice.comment.CommentServiceImplTest;
 
 /**
  * Тестовые данные для {@link CommentServiceImplTest}

@@ -2,6 +2,7 @@ package faang.school.postservice.service.post;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.data.PostServiceImplTestData;
 import faang.school.postservice.dto.post.PostCreateDto;
 import faang.school.postservice.dto.post.PostFilterDto;
 import faang.school.postservice.dto.post.PostStatisticProjection;
@@ -36,13 +37,13 @@ import org.springframework.data.domain.Pageable;
 import java.util.List;
 import java.util.Objects;
 
-import static faang.school.postservice.service.post.PostServiceImplTestData.POST_ID_1;
-import static faang.school.postservice.service.post.PostServiceImplTestData.PROJECT_ID_1;
-import static faang.school.postservice.service.post.PostServiceImplTestData.USER_ID_1;
-import static faang.school.postservice.service.post.PostServiceImplTestData.buildExpectedPost;
-import static faang.school.postservice.service.post.PostServiceImplTestData.buildPost;
-import static faang.school.postservice.service.post.PostServiceImplTestData.mockProjectClients;
-import static faang.school.postservice.service.post.PostServiceImplTestData.mockUserContext;
+import static faang.school.postservice.data.PostServiceImplTestData.POST_ID_1;
+import static faang.school.postservice.data.PostServiceImplTestData.PROJECT_ID_1;
+import static faang.school.postservice.data.PostServiceImplTestData.USER_ID_1;
+import static faang.school.postservice.data.PostServiceImplTestData.buildExpectedPost;
+import static faang.school.postservice.data.PostServiceImplTestData.buildPost;
+import static faang.school.postservice.data.PostServiceImplTestData.mockProjectClients;
+import static faang.school.postservice.data.PostServiceImplTestData.mockUserContext;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -133,7 +134,7 @@ public class PostServiceImplTest {
     }
 
     @ParameterizedTest
-    @MethodSource("faang.school.postservice.service.post.PostServiceImplTestData#provideCreateTestCases")
+    @MethodSource("faang.school.postservice.data.PostServiceImplTestData#provideCreateTestCases")
     @DisplayName("При успешном создании поста должен вернуть корректный PostViewDto")
     public void testCreatePostSuccess(
             Long userId, Long projectId, Long currentUserId, String content) {
@@ -277,7 +278,7 @@ public class PostServiceImplTest {
     }
 
     @ParameterizedTest
-    @MethodSource("faang.school.postservice.service.post.PostServiceImplTestData#provideAuthorFilterCases")
+    @MethodSource("faang.school.postservice.data.PostServiceImplTestData#provideAuthorFilterCases")
     @DisplayName("Фильтрация по автору")
     public void testFilterAuthor(Long userId,
                                  Long projectId,
@@ -301,7 +302,7 @@ public class PostServiceImplTest {
     }
 
     @ParameterizedTest
-    @MethodSource("faang.school.postservice.service.post.PostServiceImplTestData#provideStatusFilterCases")
+    @MethodSource("faang.school.postservice.data.PostServiceImplTestData#provideStatusFilterCases")
     @DisplayName("Фильтрация по статусу")
     public void testFilterStatus(PostStatus status) {
         PostFilterDto filterDto = new PostFilterDto(USER_ID_1, null, status, null);
@@ -328,7 +329,7 @@ public class PostServiceImplTest {
     }
 
     @ParameterizedTest
-    @MethodSource("faang.school.postservice.service.post.PostServiceImplTestData#provideMixedFilterCases")
+    @MethodSource("faang.school.postservice.data.PostServiceImplTestData#provideMixedFilterCases")
     @DisplayName("Комбинированная фильтрация: корректно обрабатывает сочетание author + status + includeDeleted")
     void testMixedFilters(
             Long userId,
