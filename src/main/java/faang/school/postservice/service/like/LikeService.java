@@ -1,7 +1,10 @@
 package faang.school.postservice.service.like;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.KafkaLikeDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.EntityAlreadyLikedException;
 import faang.school.postservice.exception.EntityDeletedException;
@@ -14,6 +17,9 @@ import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -25,8 +31,11 @@ public class LikeService {
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final UserServiceClient userServiceClient;
+    private final KafkaTemplate<String, String> kafkaTemplate;
+    @Value("${spring.kafka.topic.like}")
+    private String likeTopic;
 
-    public void addToPost(long postId) {
+    public void addToPost(long postId) throws JsonProcessingException {
         long currentUserId = context.getUserId();
         log.info("Start adding like to post {} by user {}", postId, currentUserId);
 
@@ -39,6 +48,9 @@ public class LikeService {
 
         like = likeRepository.save(like);
         log.info("Post {} successfully liked by user {}. Like id - {}", postId, currentUserId, like.getId());
+
+        ProducerRecord<String, String> producerRecord = new ProducerRecord<>(likeTopic, createRecordData(postId, currentUserId));
+        kafkaTemplate.send(producerRecord);
     }
 
     public void addToComment(long commentId) {
@@ -54,6 +66,9 @@ public class LikeService {
 
         like = likeRepository.save(like);
         log.info("Comment {} successfully liked by user {}. Like id - {}", commentId, currentUserId, like.getId());
+
+        ProducerRecord<String, String> producerRecord = new ProducerRecord<>(likeTopic, createRecordData(commentId, currentUserId));
+        kafkaTemplate.send(producerRecord);
     }
 
     public void deleteFromPost(long postId) {
@@ -120,5 +135,19 @@ public class LikeService {
                 .post(post)
                 .comment(comment)
                 .build();
+    }
+
+    private String createRecordData(long objectId, long currentUserId) {
+        KafkaLikeDto kafkaLikeDto = new KafkaLikeDto();
+        kafkaLikeDto.setObjectId(objectId);
+        kafkaLikeDto.setUserId(currentUserId);
+        ObjectMapper objectMapper = new ObjectMapper();
+        String likeDtoAsString = null;
+        try {
+            likeDtoAsString = objectMapper.writeValueAsString(kafkaLikeDto);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        return likeDtoAsString;
     }
 }
