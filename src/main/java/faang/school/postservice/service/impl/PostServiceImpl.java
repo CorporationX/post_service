@@ -15,9 +15,11 @@ import faang.school.postservice.service.PostService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -34,6 +36,7 @@ public class PostServiceImpl implements PostService {
     private final ProjectServiceClient projectServiceClient;
     private final UserServiceClient userServiceClient;
     private final AnalyticsEventProducer analyticsEventProducer;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     @Override
     public PostDto findById(long id) {
@@ -71,7 +74,7 @@ public class PostServiceImpl implements PostService {
             if (postDraftDto == null) {
                 throw new NotSupportedDataException("Если postId = null, то postDraftDto != null");
             }
-            checkAuthorExists(postDraftDto);
+//            checkAuthorExists(postDraftDto);
             post = postMapper.postDraftDtoToPost(postDraftDto);
             post.setPublished(true);
             post.setPublishedAt(LocalDateTime.now());
@@ -85,6 +88,13 @@ public class PostServiceImpl implements PostService {
             post.setPublishedAt(LocalDateTime.now());
         }
         postRepository.save(post);
+        try {
+            String key = "authors:" + post.getAuthorId() + ":list";
+            redisTemplate.opsForList().rightPush(key, post);
+        } catch(Exception e) {
+            log.error(e.getMessage());
+            throw new RuntimeException("Ошибка сохранения в кеш");
+        }
         analyticsEventProducer.sendAnalyticsEvent(new AnalyticsEvent()
                 .setEventType(POST_PUBLISHED)
                 .setReceivedAt(LocalDateTime.now())

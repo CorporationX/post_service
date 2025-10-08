@@ -53,3 +53,7 @@ integration:
   payment-service:
     host: localhost
     port: 9080
+
+redis:
+  host: localhost
+  port: 6379
