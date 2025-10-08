@@ -35,7 +35,7 @@ public class LikeService {
     @Value("${spring.kafka.topic.like}")
     private String likeTopic;
 
-    public void addToPost(long postId) throws JsonProcessingException {
+    public void addToPost(long postId) {
         long currentUserId = context.getUserId();
         log.info("Start adding like to post {} by user {}", postId, currentUserId);
 
