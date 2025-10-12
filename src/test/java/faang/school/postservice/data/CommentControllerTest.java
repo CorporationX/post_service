@@ -1,7 +1,8 @@
-package faang.school.postservice.controller.comment;
+package faang.school.postservice.data;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.controller.comment.CommentController;
 import faang.school.postservice.dto.comment.CommentCreateDto;
 import faang.school.postservice.dto.comment.CommentUpdateDto;
 import faang.school.postservice.dto.comment.CommentViewDto;
@@ -15,9 +16,9 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
-import static faang.school.postservice.controller.comment.CommentControllerTestData.AUTHOR_ID;
-import static faang.school.postservice.controller.comment.CommentControllerTestData.COMMENT_ID;
-import static faang.school.postservice.controller.comment.CommentControllerTestData.POST_ID;
+import static faang.school.postservice.comment.CommentControllerTestData.AUTHOR_ID;
+import static faang.school.postservice.comment.CommentControllerTestData.COMMENT_ID;
+import static faang.school.postservice.comment.CommentControllerTestData.POST_ID;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -31,7 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(CommentController.class)
-class CommentControllerTest {
+public class CommentControllerTest {
 
     @MockBean
     UserContext userContext;

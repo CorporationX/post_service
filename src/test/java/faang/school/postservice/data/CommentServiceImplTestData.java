@@ -1,10 +1,9 @@
-package faang.school.postservice.service.comment;
+package faang.school.postservice.data;
+
+import faang.school.postservice.comment.CommentServiceImplTest;
 
 /**
- * CommentServiceImplTestData — описание класса.
- * <p>
- * TODO: добавить описание назначения и поведения класса.
- * </p>
+ * Тестовые данные для {@link CommentServiceImplTest}
  *
  * @author bozya
  * @since 25.09.2025

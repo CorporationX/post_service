@@ -101,3 +101,6 @@ thread-pool:
       core-pool-size: 5
       max-pool-size: 10
       queue-capacity: 10_000
+
+feed:
+  feed-size: 20

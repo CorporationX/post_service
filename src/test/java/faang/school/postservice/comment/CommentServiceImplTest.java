@@ -1,4 +1,4 @@
-package faang.school.postservice.service.comment;
+package faang.school.postservice.comment;
 
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.avro.CommentCreatedEventAvro;
@@ -12,6 +12,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.producer.KafkaCommentProducer;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.comment.CommentServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,12 +23,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 import java.util.Optional;
 
-import static faang.school.postservice.service.comment.CommentServiceImplTestData.COMMENT_ID;
-import static faang.school.postservice.service.comment.CommentServiceImplTestData.CONTENT;
-import static faang.school.postservice.service.comment.CommentServiceImplTestData.LARGE_IMAGE_KEY;
-import static faang.school.postservice.service.comment.CommentServiceImplTestData.POST_ID;
-import static faang.school.postservice.service.comment.CommentServiceImplTestData.SMALL_IMAGE_KEY;
-import static faang.school.postservice.service.comment.CommentServiceImplTestData.USER_ID;
+import static faang.school.postservice.data.CommentServiceImplTestData.COMMENT_ID;
+import static faang.school.postservice.data.CommentServiceImplTestData.CONTENT;
+import static faang.school.postservice.data.CommentServiceImplTestData.LARGE_IMAGE_KEY;
+import static faang.school.postservice.data.CommentServiceImplTestData.POST_ID;
+import static faang.school.postservice.data.CommentServiceImplTestData.SMALL_IMAGE_KEY;
+import static faang.school.postservice.data.CommentServiceImplTestData.USER_ID;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -52,7 +53,7 @@ import static org.mockito.Mockito.when;
  * @since 21.08.2025
  */
 @ExtendWith(MockitoExtension.class)
-class CommentServiceImplTest {
+public class CommentServiceImplTest {
 
     @Mock
     private PostRepository postRepository;

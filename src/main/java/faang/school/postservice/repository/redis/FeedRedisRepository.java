@@ -10,7 +10,9 @@ import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
 import java.time.ZoneOffset;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Репозиторий для коллекции feed в Redis
@@ -64,6 +66,50 @@ public class FeedRedisRepository {
                     updateFeed(id, event.getPostId(), event.getPublishedAt());
                 });
         log.info("Сохранение постов в feed в Redis прошло успешно!");
+    }
+
+    public List<Long> getFeed(Long lastPostId, Long userId, int size) {
+        if (areInvalidParams(userId, size)) {
+            return Collections.emptyList();
+        }
+
+        String key = getFormattedKey(String.valueOf(userId));
+
+        if (lastPostId == null || lastPostId == 0) {
+            long start = 0;
+            long end = size - 1;
+
+            return processReturnGetFeed(key, start, end);
+        }
+
+        Long rank = redisTemplate.opsForZSet().reverseRank(key, lastPostId);
+        if (rank == null) {
+            return getFeed(null, userId, size);
+        }
+
+        long start = rank + 1;
+        long end = rank + size - 1;
+        return processReturnGetFeed(key, start, end);
+    }
+
+    private List<Long> processReturnGetFeed(String key, long start, long end) {
+        Set<Object> rawPosts = redisTemplate.opsForZSet().reverseRange(key, start, end);
+
+        if (rawPosts == null || rawPosts.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return convertToLongList(rawPosts);
+    }
+
+    private List<Long> convertToLongList(Set<Object> rawPosts) {
+        return rawPosts.stream()
+                .map(obj -> Long.valueOf(obj.toString()))
+                .toList();
+    }
+
+    private boolean areInvalidParams(Long userId, int size) {
+        return userId == null || size <= 0;
     }
 
     private String getFormattedKey(String id) {

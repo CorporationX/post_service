@@ -56,6 +56,32 @@ public interface PostRepository extends CrudRepository<Post, Long>, JpaSpecifica
             """)
     PostStatisticProjection findPostCounts(@Param("postId") Long postId);
 
+    @Query(nativeQuery = true, value = """
+                SELECT p.id FROM post p
+                JOIN subscription s ON s.followee_id = p.author_id
+                WHERE s.follower_id = :userId
+                  AND p.deleted = false
+                  AND p.published = true
+                ORDER BY p.published_at DESC
+                LIMIT :limit
+            """)
+    List<Long> getFirstFeedOfUser(@Param("userId") Long userId,
+                                  @Param("limit") int limit);
+
+    @Query(nativeQuery = true, value = """
+                SELECT p.id FROM post p
+                JOIN subscription s ON s.followee_id = p.author_id
+                WHERE s.follower_id = :userId
+                  AND p.deleted = false
+                  AND p.published = true
+                  AND p.published_at < (SELECT published_at FROM post WHERE id = :lastPostId)
+                ORDER BY p.published_at DESC
+                LIMIT :limit
+            """)
+    List<Long> getFeedAfterPost(@Param("lastPostId") Long lastPostId,
+                                @Param("userId") Long userId,
+                                @Param("limit") int limit);
+
     default Post findPostOrThrow(Long id) {
         return findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Пост с id " + id + " не найден"));

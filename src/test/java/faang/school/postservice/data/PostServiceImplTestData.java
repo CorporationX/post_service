@@ -1,4 +1,4 @@
-package faang.school.postservice.service.post;
+package faang.school.postservice.data;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.config.context.UserContext;
@@ -6,6 +6,7 @@ import faang.school.postservice.dto.post.PostCreateDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.enums.PostStatus;
+import faang.school.postservice.service.post.PostServiceImpl;
 import org.junit.jupiter.params.provider.Arguments;
 
 import java.util.List;
