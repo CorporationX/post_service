@@ -1,12 +1,12 @@
-# Service Template
-
-Стандартный шаблон проекта на SpringBoot
+# Post Service
 
 # Использованные технологии
 
-* [Spring Boot](https://spring.io/projects/spring-boot) – как основной фрэймворк
+* [Spring Boot](https://spring.io/projects/spring-boot) – как основной фреймворк
 * [PostgreSQL](https://www.postgresql.org/) – как основная реляционная база данных
 * [Redis](https://redis.io/) – как кэш и очередь сообщений через pub/sub
+* [Kafka](https://kafka.apache.org/) - как брокер сообщений
+* [Avro](https://avro.apache.org/) - для сериализации и десериализации ивентов для Kafka
 * [testcontainers](https://testcontainers.com/) – для изолированного тестирования с базой данных
 * [Liquibase](https://www.liquibase.org/) – для ведения миграций схемы БД
 * [Gradle](https://gradle.org/) – как система сборки приложения
@@ -14,40 +14,20 @@
 # База данных
 
 * База поднимается в отдельном сервисе [infra](../infra)
-* Redis поднимается в единственном инстансе тоже в [infra](../infra)
-* Liquibase сам накатывает нужные миграции на голый PostgreSql при старте приложения
+* Redis, Kafka и Avro также поднимаются в [infra](../infra)
+* Liquibase сам накатывает нужные миграции на PostgreSQL при старте приложения
 * В тестах используется [testcontainers](https://testcontainers.com/), в котором тоже запускается отдельный инстанс
   postgres
-* В коде продемонстрирована работа как с JdbcTemplate, так и с JPA (Hibernate)
+* В коде продемонстрирована работа с JPA (Hibernate)
 
-# Как начать разработку начиная с шаблона?
+# Как начать работу с микросервисом?
 
-1. Сначала нужно склонировать этот репозиторий
-
+1. Сначала нужно склонировать родительский репозиторий
 ```shell
-git clone https://github.com/FAANG-School/ServiceTemplate
+git clone https://github.com/CorporationX/CorporationX.git
 ```
 
-2. Далее удаляем служебную директорию для git
-
-```shell
-# Переходим в корневую директорию проекта
-cd ServiceTemplate
-rm -rf .git
-```
-
-3. Далее нужно создать совершенно пустой репозиторий в github/gitlab
-
-4. Создаём новый репозиторий локально и коммитим изменения
-
-```shell
-git init
-git remote add origin <link_to_repo>
-git add .
-git commit -m "<msg>"
-```
-
-Готово, можно начинать работу!
+2. Перейти в нужный микросервис
 
 # Как запустить локально?
 
@@ -60,39 +40,24 @@ git commit -m "<msg>"
 gradle build
 ```
 
-Запустить jar'ник
+Запустить JAR-файл
 
 ```shell
 java -jar build/libs/ServiceTemplate-1.0.jar
 ```
 
-Но легче всё это делать через IDE
+Но рекомендуется все это делать сделать через IDE
 
 # Код
+Реализована логика системы постов, лайков, комментариев
 
-RESTful приложения калькулятор с единственным endpoint'ом, который принимает 2 числа и выдает результаты их сложения,
-вычитаяни, умножения и деления
+## Лента новостей
+В этом микросервисе также реализована лента новостей. Ниже представлена архитектура фичи:
 
-* Обычная трёхслойная
-  архитектура – [Controller](src/main/java/faang/school/postservice/controller), [Service](src/main/java/faang/school/postservice/service), [Repository](src/main/java/faang/school/postservice/repository)
-* Слой Repository реализован и на jdbcTemplate, и на JPA (Hibernate)
-* Написан [GlobalExceptionHandler](src/main/java/faang/school/postservice/controller/GlobalExceptionHandler.java)
-  который умеет возвращать ошибки в формате `{"code":"CODE", "message": "message"}`
-* Используется TTL кэширование вычислений
-  в [CalculationTtlCacheService](src/main/java/faang/school/postservice/service/cache/CalculationTtlCacheService.java)
-* Реализован простой Messaging через [Redis pub/sub](https://redis.io/docs/manual/pubsub/)
-  * [Конфигурация](src/main/java/faang/school/postservice/config/RedisConfig.java) –
-    сетапится [RedisTemplate](https://docs.spring.io/spring-data/redis/docs/current/api/org/springframework/data/redis/core/RedisTemplate.html) –
-    класс, для удобной работы с Redis силами Spring
-  * [Отправитель](src/main/java/faang/school/postservice/service/messaging/RedisCalculationPublisher.java) – генерит
-    рандомные запросы и отправляет в очередь
-  * [Получатель](src/main/java/faang/school/postservice/service/messaging/RedisCalculationSubscriber.java) –
-    получает запросы и отправляет задачи асинхронно выполняться
-    в [воркер](src/main/java/faang/school/postservice/service/worker/CalculationWorker.java)
+![img.png](docs/images/NewsFeed.png)
 
 # Тесты
-
-Написаны только для единственного REST endpoint'а
+Используемые инструменты тестирования:
 * SpringBootTest
 * MockMvc
 * Testcontainers
@@ -100,8 +65,3 @@ RESTful приложения калькулятор с единственным 
 * JUnit5
 * Parameterized tests
 
-# TODO
-
-* Dockerfile, который подключается к сети запущенной postgres в docker-compose
-* Redis connectivity
-* ...
