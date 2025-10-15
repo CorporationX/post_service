@@ -1,5 +1,6 @@
 package faang.school.postservice.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.dto.post.PostDraftDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.NotExistsException;
@@ -10,6 +11,7 @@ import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.producer.AnalyticsEventProducer;
 import faang.school.postservice.producer.AnalyticsEventProducer.AnalyticsEvent;
+import faang.school.postservice.producer.PostEventProducer;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.PostService;
 import jakarta.persistence.EntityNotFoundException;
@@ -37,8 +39,10 @@ public class PostServiceImpl implements PostService {
     private final UserServiceClient userServiceClient;
     private final AnalyticsEventProducer analyticsEventProducer;
     private final RedisTemplate<String, Object> redisTemplate;
+    private final ObjectMapper objectMapper;
     @Value("${spring.redis.post-expire}")
     private String postExpire;
+    private final PostEventProducer postEventProducer;
 
 
     @Override
@@ -99,6 +103,9 @@ public class PostServiceImpl implements PostService {
             log.error(e.getMessage());
             throw new RuntimeException("Ошибка сохранения в кеш");
         }
+
+        postEventProducer.sendPostEvent(postMapper.postToPostEvent(post));
+
         analyticsEventProducer.sendAnalyticsEvent(new AnalyticsEvent()
                 .setEventType(POST_PUBLISHED)
                 .setReceivedAt(LocalDateTime.now())

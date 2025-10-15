@@ -1,5 +1,6 @@
 package faang.school.postservice.mapper;
 
+import faang.school.postservice.dto.event.PostEvent;
 import faang.school.postservice.dto.post.PostDraftDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.model.Post;
@@ -11,4 +12,5 @@ public interface PostMapper {
     PostDraftDto postToPostDraftDto(Post post);
     Post postDtoToPost(PostDto postDto);
     PostDto postToPostDto(Post post);
+    PostEvent postToPostEvent(Post post);
 }
