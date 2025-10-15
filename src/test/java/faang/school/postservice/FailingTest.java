@@ -8,6 +8,6 @@ public class FailingTest {
 
     @Test
     void thisTestShouldFail() {
-        fail("Fail test to trigger CI pipeline.");
+        fail("Fail test to trigger CI pipeline");
     }
 }
