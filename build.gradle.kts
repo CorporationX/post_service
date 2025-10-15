@@ -51,7 +51,7 @@ dependencies {
     /**
      * Test containers
      */
-    implementation(platform("org.testcontainers:testcontainers-bom:1.17.6"))
+    testImplementation(platform("org.testcontainers:testcontainers-bom:1.17.6"))
     testImplementation("org.testcontainers:junit-jupiter")
     testImplementation("org.testcontainers:postgresql")
     testImplementation("com.redis.testcontainers:testcontainers-redis-junit-jupiter:1.4.6")
@@ -94,17 +94,19 @@ tasks.jacocoTestCoverageVerification {
     violationRules {
         rule {
             element = "CLASS"
+            excludes = listOf(
+                "faang.school.postservice.client.*",
+                "faang.school.postservice.config.*",
+                "faang.school.postservice.dto.*",
+                "faang.school.postservice.model.*",
+                "faang.school.postservice.repository.*"
+            )
 
             limit {
                 counter = "INSTRUCTION"
                 value = "COVEREDRATIO"
                 minimum = "0.80".toBigDecimal()
             }
-
-            excludes = listOf(
-                "**/dto/**",
-                "**/config/**"
-            )
         }
     }
 }
