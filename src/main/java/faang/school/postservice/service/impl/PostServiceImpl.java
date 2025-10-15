@@ -15,16 +15,16 @@ import faang.school.postservice.service.PostService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 
-import static faang.school.postservice.producer.AnalyticsEventProducer.EventType.*;
+import static faang.school.postservice.producer.AnalyticsEventProducer.EventType.POST_PUBLISHED;
 
 @Service
 @RequiredArgsConstructor
@@ -37,6 +37,9 @@ public class PostServiceImpl implements PostService {
     private final UserServiceClient userServiceClient;
     private final AnalyticsEventProducer analyticsEventProducer;
     private final RedisTemplate<String, Object> redisTemplate;
+    @Value("${spring.redis.post-expire}")
+    private String postExpire;
+
 
     @Override
     public PostDto findById(long id) {
@@ -91,6 +94,7 @@ public class PostServiceImpl implements PostService {
         try {
             String key = "authors:" + post.getAuthorId() + ":list";
             redisTemplate.opsForList().rightPush(key, post);
+            redisTemplate.expire(key, Duration.ofMillis(Long.parseLong(postExpire)));
         } catch(Exception e) {
             log.error(e.getMessage());
             throw new RuntimeException("Ошибка сохранения в кеш");
