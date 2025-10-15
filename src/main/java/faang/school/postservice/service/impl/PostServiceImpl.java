@@ -25,6 +25,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 import static faang.school.postservice.producer.AnalyticsEventProducer.EventType.POST_PUBLISHED;
 
@@ -186,5 +187,12 @@ public class PostServiceImpl implements PostService {
     private Post findPostEntityById(long postId) {
         return postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("Пост с id " + postId + " не найден"));
+    }
+
+    public void makePostViewed(long postId) {
+        postRepository.findById(postId).ifPresent(p -> {
+            p.setIsViewed(true);
+            postRepository.save(p);
+        });
     }
 }

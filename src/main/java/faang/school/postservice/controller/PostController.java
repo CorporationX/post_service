@@ -5,6 +5,7 @@ import faang.school.postservice.dto.post.PostDraftDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.PostService;
+import faang.school.postservice.service.impl.PostServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -32,6 +33,7 @@ import java.util.List;
 public class PostController {
 
     private final PostService postService;
+    private final PostServiceImpl postServiceImpl;
 
     @PostMapping("/draft")
     @Operation(method = "POST",
@@ -259,5 +261,11 @@ public class PostController {
     ) Long projectId) {
         List<PostDto> allPublishedPostsByProjectId = postService.getAllPublishedPostsByProjectId(projectId);
         return ResponseEntity.ok(allPublishedPostsByProjectId);
+    }
+
+    @PutMapping("/viewed/{postId}")
+    public ResponseEntity<Void> makePostViewed(@PathVariable @NotNull() Long postId) {
+        postService.makePostViewed(postId);
+        return ResponseEntity.ok().build();
     }
 }

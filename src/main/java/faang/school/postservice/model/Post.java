@@ -82,4 +82,7 @@ public class Post {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(name = "isViewed")
+    private Boolean isViewed;
 }

@@ -16,4 +16,5 @@ public interface PostService {
     List<PostDto> getAllPostsByProjectId (long projectId);
     List<PostDto> getAllPublishedPostsByAuthorId (long userId);
     List<PostDto> getAllPublishedPostsByProjectId (long projectId);
+    void makePostViewed(long postId);
 }
