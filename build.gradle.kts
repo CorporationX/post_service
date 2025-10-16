@@ -73,3 +73,52 @@ val test by tasks.getting(Test::class) { testLogging.showStandardStreams = true 
 tasks.bootJar {
     archiveFileName.set("service.jar")
 }
+
+jacoco {
+    toolVersion = "0.8.13"
+}
+
+
+tasks.test {
+    finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+    reports {
+        xml.required.set(false)
+        csv.required.set(false)
+        html.required.set(true)
+        html.outputLocation.set(layout.buildDirectory.dir("jacocoHtml"))
+    }
+}
+
+tasks.jacocoTestCoverageVerification {
+    dependsOn(tasks.jacocoTestReport)
+
+    violationRules {
+        rule {
+            enabled = true
+            element = "CLASS"
+            includes = listOf(
+                "**Service**",
+                "**ServiceImpl**",
+            )
+
+            excludes = listOf(
+                "**PostServiceApp**"
+            )
+
+            limit {
+                counter = "INSTRUCTION"
+                value = "COVEREDRATIO"
+                minimum = "0.7".toBigDecimal()
+
+            }
+        }
+    }
+}
+
+tasks.check {
+    dependsOn(tasks.jacocoTestCoverageVerification)
+}
