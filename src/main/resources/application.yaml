@@ -1,4 +1,25 @@
 spring:
+  profiles:
+    active: dev
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: post-service-group
+    topics:
+      like:
+        post-liked-topic:
+          name: post-liked-event
+        comment-liked-topic:
+          name: comment-liked-event
+      comment:
+        comment-topic:
+          name: comment-event
+
+  servlet:
+    multipart:
+      max-file-size: 5MB
+
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://localhost:5432/postgres
@@ -9,7 +30,7 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: none
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         format_sql: true
@@ -41,3 +62,39 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+minio:
+  endpoint: http://localhost:9000
+  access-key: user
+  secret-key: password
+  bucket: corpbucket
+  region: us-east-1
+  path-style-access: true
+  max-file-size-mb: 5
+
+
+moderation:
+  comments:
+    cron: "*/15 * * * * *"
+    batch_size: 1000
+  executor:
+    thread_pool_max_size: 1000
+    thread_pool_core_size: 500
+
+app:
+  correction:
+    url: "https://api.languagetool.org/v2/check"
+    language: "auto"
+    cron: "0 */30 * * * *" # каждые 30 минут
+    batch-size: 500
+  executor:
+    thread_pool_core_size: 25
+    thread_pool_max_size: 100
+
+scheduled-post-publisher:
+  comments:
+    cron: "0 * * * * *"
+    batch_size: 1000
+  executor:
+    thread_pool_core_size: 8
+    thread_pool_max_size: 16

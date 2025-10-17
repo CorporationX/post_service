@@ -24,6 +24,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.cloud:spring-cloud-starter-openfeign:4.0.2")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+    implementation("org.springframework.retry:spring-retry:2.0.12")
+    implementation("org.springframework.kafka:spring-kafka")
 
     /**
      * Database
@@ -42,6 +44,7 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok:1.18.26")
     implementation("org.mapstruct:mapstruct:1.5.3.Final")
     annotationProcessor("org.mapstruct:mapstruct-processor:1.5.3.Final")
+    implementation("commons-io:commons-io:2.19.0")
 
     /**
      * Test containers
@@ -57,6 +60,17 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.9.2")
     testImplementation("org.assertj:assertj-core:3.24.2")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+
+    /**
+     * Swagger
+     */
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0")
+
+    /**
+     * Amazon S3
+     */
+    implementation("software.amazon.awssdk:s3:2.31.54")
+    implementation("net.coobird:thumbnailator:0.4.20")
 }
 
 tasks.test {
@@ -71,4 +85,61 @@ val test by tasks.getting(Test::class) { testLogging.showStandardStreams = true 
 
 tasks.bootJar {
     archiveFileName.set("service.jar")
+}
+
+jacoco {
+    reportsDirectory.set(layout.buildDirectory.dir("reports/jacoco"))
+}
+
+tasks.jacocoTestReport {
+
+    reports {
+        xml.required.set(false)
+        csv.required.set(false)
+        html.outputLocation.set(layout.buildDirectory.dir("jacocoHtml"))
+    }
+
+    classDirectories.setFrom(
+        files(classDirectories.files.map {
+            fileTree(it) {
+                exclude(
+                    "**/config/**",
+                    "**/controller/**",
+                    "**/dto/**",
+                    "**/entity/**",
+                    "**/repository/**",
+                    "**/exception/**",
+                    "**/client/**",
+                    "**/model/**",
+                    "**/mapper/**",
+                )
+            }
+        })
+    )
+}
+
+tasks.jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            element = "PACKAGE" // можно: BUNDLE, PACKAGE, CLASS
+
+            limit {
+                counter = "INSTRUCTION"
+                value = "COVEREDRATIO"
+                minimum = "0.70".toBigDecimal()
+            }
+
+            excludes = listOf(
+                "faang.school.postservice.client*",
+                "faang.school.postservice.config*",
+                "faang.school.postservice.controller*",
+                "faang.school.postservice.dto*",
+                "faang.school.postservice.entity*",
+                "faang.school.postservice.repository*",
+                "faang.school.postservice.exception*",
+                "faang.school.postservice.model*",
+                "faang.school.postservice.mapper*",
+            )
+        }
+    }
 }

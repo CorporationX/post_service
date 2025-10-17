@@ -40,6 +40,9 @@ public class Post {
     @Column(name = "content", nullable = false, length = 4096)
     private String content;
 
+    @Column(name = "corrected_content", length = 4096)
+    private String correctedContent;
+
     @Column(name = "author_id", nullable = false)
     private Long authorId;
 
