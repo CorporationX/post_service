@@ -72,8 +72,19 @@ tasks.jacocoTestReport {
 
 tasks.jacocoTestCoverageVerification {
     violationRules {
+
         rule {
-            isEnabled = false
+            excludes = listOf(
+                "faang.school.postservice.client.*",
+                "faang.school.postservice.config.context.*",
+                "faang.school.postservice.controller.*",
+                "faang.school.postservice.dto.*",
+                "faang.school.postservice.exception.*",
+                "faang.school.postservice.mapper.post.*",
+                "faang.school.postservice.model.*",
+                "faang.school.postservice.repository.*"
+            )
+            isEnabled = true
             limit {
                 minimum = "0.7".toBigDecimal()
             }
