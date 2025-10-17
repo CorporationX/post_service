@@ -34,6 +34,17 @@ spring:
       commentNew: comment.new
       like: likes
 
+audit-kafka:
+  enabled: true
+  backoff:
+    init-interval: 1000
+    max-retries: 2
+    max-interval: 5000
+    multiplier: 2
+  consumer:
+    group-id: post
+  topic: posts
+
 server:
   port: 8081
 
