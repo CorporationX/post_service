@@ -3,6 +3,7 @@ package faang.school.postservice.service.post;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
@@ -10,8 +11,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 
+import static faang.school.postservice.model.PostStatus.DELETED;
 import static faang.school.postservice.model.PostStatus.DRAFT;
 import static faang.school.postservice.model.PostStatus.PUBLISHED;
 
@@ -44,11 +48,7 @@ public class PostService {
     }
 
     public Post publishedPost(Long postId) {
-        Long userId = userContext.getUserId();
-        PostValidator.validateUserIsPostAuthor(userId, postId);
-
-        Optional<Post> optionalPost = postRepository.findById(postId);
-        Post post = PostValidator.validatePostExists(optionalPost, postId);
+        Post post = checkUserContextAndGetPostById(postId);
 
         PostValidator.validatePostIsNotPublished(post);
 
@@ -59,6 +59,89 @@ public class PostService {
         postRepository.save(post);
         log.info("The post {} has been published", post.getId());
         return post;
+    }
+
+    public Post updatePost(Long postId, UpdatePostDto updatePostDto) {
+        Post post = checkUserContextAndGetPostById(postId);
+
+        post.setContent(updatePostDto.content());
+        postRepository.save(post);
+        log.info("post {} has been updated", postId);
+        return post;
+    }
+
+    public void deleteById(Long postId) {
+
+        Post post = checkUserContextAndGetPostById(postId);
+
+        post.setPostStatus(DELETED);
+        post.setDeleted(true);
+        log.info("The post {} was soft deleted.", postId);
+    }
+
+    public Post getById(Long postId) {
+        Optional<Post> optionalPost = postRepository.findById(postId);
+        Post post = PostValidator.validatePostExists(optionalPost, postId);
+        log.info("Was found post by id {}", postId);
+        return post;
+    }
+
+    public List<Post> getDraftPostByAuthorId(Long authorId) {
+        List<Post> posts = postRepository.findByAuthorId(authorId);
+        if (posts.isEmpty()) {
+            return posts;
+        }
+
+        return posts.stream()
+                .filter(post -> !post.isDeleted() && !post.isPublished())
+                .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
+                .toList();
+    }
+
+    public List<Post> getDraftPostByProjectId(Long projectId) {
+        List<Post> posts = postRepository.findByProjectId(projectId);
+        if (posts.isEmpty()) {
+            return posts;
+        }
+
+        return posts.stream()
+                .filter(post -> !post.isDeleted() && !post.isPublished())
+                .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
+                .toList();
+    }
+
+
+    public List<Post> getPublishedPostByAuthorId(Long authorId) {
+        List<Post> posts = postRepository.findByAuthorId(authorId);
+        if (posts.isEmpty()) {
+            return posts;
+        }
+
+        return posts.stream()
+                .filter(post -> !post.isDeleted() && post.isPublished())
+                .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
+                .toList();
+    }
+
+    public List<Post> getPublishedPostByProjectId(Long projectId) {
+        List<Post> posts = postRepository.findByProjectId(projectId);
+        if (posts.isEmpty()) {
+            return posts;
+        }
+
+        return posts.stream()
+                .filter(post -> !post.isDeleted() && post.isPublished())
+                .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
+                .toList();
+    }
+
+    private Post checkUserContextAndGetPostById(Long postId) {
+        Long userId = userContext.getUserId();
+        PostValidator.validateUserIsPostAuthor(userId, postId);
+
+        Optional<Post> optionalPost = postRepository.findById(postId);
+
+        return PostValidator.validatePostExists(optionalPost, postId);
     }
 
     private void existsUserById(Long userId) {
