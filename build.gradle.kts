@@ -111,7 +111,6 @@ tasks.jacocoTestCoverageVerification {
     }
 }
 
-// Hook coverage tasks into check lifecycle
 tasks.check {
     dependsOn(tasks.jacocoTestReport)
     dependsOn(tasks.jacocoTestCoverageVerification)
