@@ -3,6 +3,7 @@ plugins {
     id("org.springframework.boot") version "3.0.6"
     id("io.spring.dependency-management") version "1.1.0"
     id("jacoco")
+    jacoco
 }
 
 group = "faang.school"
@@ -36,6 +37,7 @@ dependencies {
      * Utils & Logging
      */
     implementation("com.fasterxml.jackson.core:jackson-databind:2.14.2")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.14.2")
     implementation("org.slf4j:slf4j-api:2.0.5")
     implementation("ch.qos.logback:logback-classic:1.4.6")
     implementation("org.projectlombok:lombok:1.18.26")
@@ -61,6 +63,33 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+    finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+}
+
+tasks.jacocoTestCoverageVerification {
+    violationRules {
+
+        rule {
+            excludes = listOf(
+                "faang.school.postservice.client.*",
+                "faang.school.postservice.config.context.*",
+                "faang.school.postservice.controller.*",
+                "faang.school.postservice.dto.*",
+                "faang.school.postservice.exception.*",
+                "faang.school.postservice.mapper.post.*",
+                "faang.school.postservice.model.*",
+                "faang.school.postservice.repository.*"
+            )
+            isEnabled = true
+            limit {
+                minimum = "0.7".toBigDecimal()
+            }
+        }
+    }
 }
 
 tasks.withType<Test> {
