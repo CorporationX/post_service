@@ -10,6 +10,7 @@ import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.service.comment.CommentService;
 import faang.school.postservice.service.post.PostService;
 import feign.FeignException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,7 +25,7 @@ public class LikeServiceImpl implements LikeService {
     private final PostService postService;
     private final CommentService commentService;
 
-    @Override
+    @Transactional
     public LikeDto likePost(long postId, long userId) {
         log.info("like post requested: postId={}, userId={}", postId, userId);
         ensureUserExists(userId);
@@ -42,7 +43,7 @@ public class LikeServiceImpl implements LikeService {
         return likeMapper.toDto(saved);
     }
 
-    @Override
+    @Transactional
     public void unlikePost(long postId, long userId) {
         log.info("unlike post requested: postId={}, userId={}", postId, userId);
         ensureUserExists(userId);
@@ -53,7 +54,7 @@ public class LikeServiceImpl implements LikeService {
                         () -> log.debug("No like to remove for postId={} userId={}", postId, userId));
     }
 
-    @Override
+    @Transactional
     public LikeDto likeComment(long commentId, long userId) {
         log.info("like comment requested: commentId={}, userId={}", commentId, userId);
         ensureUserExists(userId);
@@ -78,7 +79,7 @@ public class LikeServiceImpl implements LikeService {
         return likeMapper.toDto(saved);
     }
 
-    @Override
+    @Transactional
     public void unlikeComment(long commentId, long userId) {
         log.info("unlike comment requested: commentId={}, userId={}", commentId, userId);
         ensureUserExists(userId);
