@@ -13,8 +13,8 @@
                 </not>
             </and>
         </preConditions>
-        <addColumn tableName="">
-            <column name="is_viewed"/>
+        <addColumn tableName="post">
+            <column name="is_viewed" type="boolean"/>
         </addColumn>
     </changeSet>
 </databaseChangeLog>

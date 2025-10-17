@@ -1,6 +1,7 @@
 package faang.school.postservice.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import faang.school.postservice.dto.event.PostViewedEvent;
 import faang.school.postservice.dto.post.PostDraftDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.NotExistsException;
@@ -12,6 +13,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.producer.AnalyticsEventProducer;
 import faang.school.postservice.producer.AnalyticsEventProducer.AnalyticsEvent;
 import faang.school.postservice.producer.PostEventProducer;
+import faang.school.postservice.producer.PostViewedProducer;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.PostService;
 import jakarta.persistence.EntityNotFoundException;
@@ -25,7 +27,6 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 
 import static faang.school.postservice.producer.AnalyticsEventProducer.EventType.POST_PUBLISHED;
 
@@ -41,9 +42,10 @@ public class PostServiceImpl implements PostService {
     private final AnalyticsEventProducer analyticsEventProducer;
     private final RedisTemplate<String, Object> redisTemplate;
     private final ObjectMapper objectMapper;
-    @Value("${spring.redis.post-expire}")
+    @Value("${redis.post-expire}")
     private String postExpire;
     private final PostEventProducer postEventProducer;
+    private final PostViewedProducer postViewedProducer;
 
 
     @Override
@@ -193,6 +195,9 @@ public class PostServiceImpl implements PostService {
         postRepository.findById(postId).ifPresent(p -> {
             p.setIsViewed(true);
             postRepository.save(p);
+            postViewedProducer.sendPostViewedEvent(new PostViewedEvent(postId));
         });
     }
+
+
 }

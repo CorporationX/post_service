@@ -57,7 +57,8 @@ public class PostServiceTest {
 
     @BeforeEach
     public void setUp() {
-        postService = new PostServiceImpl(postMapper, postRepository, projectClient, userClient, null);
+        postService = new PostServiceImpl(postMapper, postRepository, projectClient, userClient,
+                null, null, null, null, null);
     }
 
     @Test
@@ -102,7 +103,7 @@ public class PostServiceTest {
     private Post createPost() {
         return new Post(1L, "abc", 1L, null, List.of(), List.of(), List.of(),
                 null, List.of(), true, LocalDateTime.now(), LocalDateTime.now(), false,
-                LocalDateTime.now(), LocalDateTime.now());
+                LocalDateTime.now(), LocalDateTime.now(), false);
     }
 
     private PostDraftDto createPostDraftDto() {
@@ -113,10 +114,10 @@ public class PostServiceTest {
         List<Post> posts = new ArrayList<>(List.of(
                 new Post(5L, "frt", 1L, null, List.of(), List.of(), List.of(),
                         null, List.of(), false, LocalDateTime.now(), LocalDateTime.now(), false,
-                        LocalDateTime.now().minusDays(3), LocalDateTime.now()),
+                        LocalDateTime.now().minusDays(3), LocalDateTime.now(), false),
                 new Post(4L, "frt", 1L, null, List.of(), List.of(), List.of(),
                         null, List.of(), false, LocalDateTime.now(), LocalDateTime.now(), false,
-                        LocalDateTime.now(), LocalDateTime.now())
+                        LocalDateTime.now(), LocalDateTime.now(), false)
         ));
         return posts;
     }

@@ -3,6 +3,7 @@ package faang.school.postservice.controller;
 import faang.school.postservice.controller.common.ApiExceptionDto;
 import faang.school.postservice.dto.post.PostDraftDto;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.producer.PostViewedProducer;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.PostService;
 import faang.school.postservice.service.impl.PostServiceImpl;
@@ -34,6 +35,7 @@ public class PostController {
 
     private final PostService postService;
     private final PostServiceImpl postServiceImpl;
+    private final PostViewedProducer postViewedProducer;
 
     @PostMapping("/draft")
     @Operation(method = "POST",
