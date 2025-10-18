@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static faang.school.postservice.model.PostStatus.DELETED;
@@ -71,11 +72,13 @@ public class PostService {
     }
 
     public void deleteById(Long postId) {
-
         Post post = checkUserContextAndGetPostById(postId);
+
+        PostValidator.validatePostIsDeleted(post);
 
         post.setPostStatus(DELETED);
         post.setDeleted(true);
+        postRepository.save(post);
         log.info("The post {} was soft deleted.", postId);
     }
 
@@ -136,12 +139,13 @@ public class PostService {
     }
 
     private Post checkUserContextAndGetPostById(Long postId) {
-        Long userId = userContext.getUserId();
-        PostValidator.validateUserIsPostAuthor(userId, postId);
-
         Optional<Post> optionalPost = postRepository.findById(postId);
+        Post post = PostValidator.validatePostExists(optionalPost, postId);
 
-        return PostValidator.validatePostExists(optionalPost, postId);
+        Long userId = userContext.getUserId();
+        PostValidator.validateUserIsPostAuthor(userId, post.getAuthorId());
+
+        return post;
     }
 
     private void existsUserById(Long userId) {

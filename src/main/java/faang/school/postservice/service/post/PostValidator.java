@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import java.util.Objects;
 import java.util.Optional;
 
+import static faang.school.postservice.model.PostStatus.DELETED;
 import static faang.school.postservice.model.PostStatus.DRAFT;
 
 @Slf4j
@@ -36,5 +37,12 @@ public class PostValidator {
         if (post.isPublished() && !Objects.equals(post.getPostStatus(), DRAFT)) {
             throw new ForbiddenException(String.format("The post %d has already been published.", post.getId()));
         }
+    }
+
+    public static void validatePostIsDeleted(Post post) {
+        if (post.isDeleted() && Objects.equals(post.getPostStatus(), DELETED)) {
+            throw new ForbiddenException(String.format("the post {} has already been deleted", post.getId()));
+        }
+
     }
 }
