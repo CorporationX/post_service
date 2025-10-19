@@ -9,6 +9,7 @@ import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.PostServiceImpl;
+import feign.FeignException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -52,11 +53,11 @@ class PostServiceImplTest {
     @InjectMocks
     PostServiceImpl service;
 
-    private Post entity;
+    private Post postDbEntity;
 
     @BeforeEach
     void setUp() {
-        entity = buildPost(POST_ID, AUTHOR_ID, null, CONTENT, false, false,
+        postDbEntity = buildPost(POST_ID, AUTHOR_ID, null, CONTENT, false, false,
                 LocalDateTime.now().minusHours(1), null);
     }
 
@@ -79,6 +80,25 @@ class PostServiceImplTest {
         post.setCreatedAt(createdAt);
         post.setPublishedAt(publishedAt);
         return post;
+    }
+
+    @Test
+    @DisplayName("update: does nothing if content unchanged")
+    void update_same_content_no_changes() {
+        when(postRepository.findById(POST_ID)).thenReturn(Optional.of(postDbEntity));
+        when(postRepository.save(any(Post.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        // same content as existing entity
+        UpdatePostRequestDto dto = new UpdatePostRequestDto(CONTENT);
+
+        PostResponseDto out = service.update(POST_ID, dto);
+
+        verify(postMapper, times(1)).toDto(any(Post.class));
+        assertEquals(CONTENT, out.content());
+        assertEquals(postDbEntity.getCreatedAt(), out.createdAt());
+        assertFalse(out.published());
+        assertNull(out.publishedAt());
+        assertNotNull(out.updatedAt());
     }
 
     @Test
@@ -142,7 +162,7 @@ class PostServiceImplTest {
     @DisplayName("createDraft: user not found in external service -> error")
     void createDraft_user_not_found_error() {
         CreatePostRequestDto input = new CreatePostRequestDto(CONTENT_CREATE, AUTHOR_ID, null);
-        when(userServiceClient.getUser(AUTHOR_ID)).thenThrow(mock(feign.FeignException.class));
+        when(userServiceClient.getUser(AUTHOR_ID)).thenThrow(mock(FeignException.NotFound.class));
 
         assertThrows(IllegalArgumentException.class, () -> service.createDraft(input));
 
@@ -156,7 +176,7 @@ class PostServiceImplTest {
     @DisplayName("createDraft: project not found in external service -> error")
     void createDraft_project_not_found_error() {
         CreatePostRequestDto input = new CreatePostRequestDto(CONTENT_CREATE, null, PROJECT_ID);
-        when(projectServiceClient.getProject(PROJECT_ID)).thenThrow(mock(feign.FeignException.class));
+        when(projectServiceClient.getProject(PROJECT_ID)).thenThrow(mock(FeignException.NotFound.class));
 
         assertThrows(IllegalArgumentException.class, () -> service.createDraft(input));
 
@@ -169,7 +189,7 @@ class PostServiceImplTest {
     @Test
     @DisplayName("publish: ok")
     void publish_ok() {
-        when(postRepository.findById(POST_ID)).thenReturn(Optional.of(entity));
+        when(postRepository.findById(POST_ID)).thenReturn(Optional.of(postDbEntity));
         when(postRepository.save(any(Post.class))).thenAnswer(inv -> inv.getArgument(0));
 
         PostResponseDto out = service.publish(POST_ID);
@@ -182,8 +202,8 @@ class PostServiceImplTest {
     @Test
     @DisplayName("publish: already published -> error")
     void publish_already_error() {
-        entity.setPublished(true);
-        when(postRepository.findById(POST_ID)).thenReturn(Optional.of(entity));
+        postDbEntity.setPublished(true);
+        when(postRepository.findById(POST_ID)).thenReturn(Optional.of(postDbEntity));
         assertThrows(IllegalStateException.class, () -> service.publish(POST_ID));
         verify(postMapper, never()).toDto(any());
     }
@@ -191,8 +211,8 @@ class PostServiceImplTest {
     @Test
     @DisplayName("publish: deleted post -> error")
     void publish_deleted_error() {
-        entity.setDeleted(true);
-        when(postRepository.findById(POST_ID)).thenReturn(Optional.of(entity));
+        postDbEntity.setDeleted(true);
+        when(postRepository.findById(POST_ID)).thenReturn(Optional.of(postDbEntity));
 
         assertThrows(IllegalStateException.class, () -> service.publish(POST_ID));
         verify(postMapper, never()).toDto(any());
@@ -201,7 +221,7 @@ class PostServiceImplTest {
     @Test
     @DisplayName("update: change content only + updates timestamp")
     void update_change_content() {
-        when(postRepository.findById(POST_ID)).thenReturn(Optional.of(entity));
+        when(postRepository.findById(POST_ID)).thenReturn(Optional.of(postDbEntity));
         when(postRepository.save(any(Post.class))).thenAnswer(inv -> {
             Post p = inv.getArgument(0);
             p.setUpdatedAt(LocalDateTime.now());
@@ -220,26 +240,26 @@ class PostServiceImplTest {
     @Test
     @DisplayName("softDelete: idempotent + unpublish: second call should not throw or change flags")
     void softDelete_ok() {
-        when(postRepository.findById(POST_ID)).thenReturn(Optional.of(entity));
+        when(postRepository.findById(POST_ID)).thenReturn(Optional.of(postDbEntity));
         when(postRepository.save(any(Post.class))).thenAnswer(inv -> inv.getArgument(0));
 
         service.softDelete(POST_ID);
-        assertTrue(entity.isDeleted());
-        assertFalse(entity.isPublished());
+        assertTrue(postDbEntity.isDeleted());
+        assertFalse(postDbEntity.isPublished());
 
         service.softDelete(POST_ID);
-        assertTrue(entity.isDeleted());
-        assertFalse(entity.isPublished());
-
+        assertTrue(postDbEntity.isDeleted());
+        assertFalse(postDbEntity.isPublished());
+        assertNotNull(postDbEntity.getUpdatedAt());
         verify(postMapper, never()).toDto(any());
     }
 
     @Test
     @DisplayName("getById: ok")
     void getById_ok() {
-        when(postRepository.findById(POST_ID)).thenReturn(Optional.of(entity));
+        when(postRepository.findById(POST_ID)).thenReturn(Optional.of(postDbEntity));
         PostResponseDto out = service.getById(POST_ID);
-        verify(postMapper, times(1)).toDto(entity);
+        verify(postMapper, times(1)).toDto(postDbEntity);
         assertEquals(POST_ID, out.id());
     }
 
@@ -328,10 +348,10 @@ class PostServiceImplTest {
     @Test
     @DisplayName("publish: sets publishedAt only on publish; keeps createdAt; toggles published=true")
     void publish_sets_publishedAt_only() {
-        when(postRepository.findById(POST_ID)).thenReturn(Optional.of(entity));
+        when(postRepository.findById(POST_ID)).thenReturn(Optional.of(postDbEntity));
         when(postRepository.save(any(Post.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        java.time.LocalDateTime createdBefore = entity.getCreatedAt();
+        java.time.LocalDateTime createdBefore = postDbEntity.getCreatedAt();
 
         PostResponseDto out = service.publish(POST_ID);
 
@@ -345,14 +365,14 @@ class PostServiceImplTest {
     @Test
     @DisplayName("update: changes content; does not change createdAt; updates updatedAt")
     void update_bumps_updatedAt_only() {
-        when(postRepository.findById(POST_ID)).thenReturn(Optional.of(entity));
+        when(postRepository.findById(POST_ID)).thenReturn(Optional.of(postDbEntity));
         when(postRepository.save(any(Post.class))).thenAnswer(inv -> {
             Post p = inv.getArgument(0);
             p.setUpdatedAt(java.time.LocalDateTime.now());
             return p;
         });
 
-        java.time.LocalDateTime createdBefore = entity.getCreatedAt();
+        java.time.LocalDateTime createdBefore = postDbEntity.getCreatedAt();
 
         PostResponseDto out = service.update(POST_ID, new UpdatePostRequestDto(CONTENT_NEW));
 
@@ -368,11 +388,12 @@ class PostServiceImplTest {
     @Test
     @DisplayName("softDelete: sets deleted=true and forces published=false; timestamps still valid")
     void softDelete_unpublishes() {
-        when(postRepository.findById(POST_ID)).thenReturn(Optional.of(entity));
+        when(postRepository.findById(POST_ID)).thenReturn(Optional.of(postDbEntity));
         when(postRepository.save(any(Post.class))).thenAnswer(inv -> inv.getArgument(0));
 
         service.softDelete(POST_ID);
-        assertTrue(entity.isDeleted());
-        assertFalse(entity.isPublished());
+        assertTrue(postDbEntity.isDeleted());
+        assertFalse(postDbEntity.isPublished());
+        assertNotNull(postDbEntity.getUpdatedAt());
     }
 }

@@ -3,12 +3,12 @@ package faang.school.postservice.service;
 import faang.school.postservice.dto.post.CreatePostRequestDto;
 import faang.school.postservice.dto.post.PostResponseDto;
 import faang.school.postservice.dto.post.UpdatePostRequestDto;
+import faang.school.postservice.model.Post;
 
 import java.util.List;
 
 /**
  * Сервис управления постами (пользователь/проект).
- *
  * Функциональность:
  * • Создание черновика — создаёт пост со статусом draft (published=false, deleted=false).
  * • Публикация — публикует существующий пост, запрещено повторно публиковать; сохраняет дату публикации.
@@ -18,7 +18,6 @@ import java.util.List;
  * • Списки — черновики/опубликованные для пользователя/проекта (только не удалённые):
  * - черновики сортируются по createdAt (DESC),
  * - опубликованные сортируются по publishedAt (DESC).
- *
  * Валидация бизнес‑правил (ровно один автор: либо authorId, либо projectId; оба — нельзя; пустой контент — нельзя)
  * выполняется в реализации сервиса.
  */
@@ -54,7 +53,9 @@ public interface PostService {
     /** Возвращает не удалённые опубликованные посты пользователя, отсортированные по publishedAt DESC. */
     List<PostResponseDto> getPublishedByUser(long userId);
 
-
     /** Возвращает не удалённые опубликованные посты проекта, отсортированные по publishedAt DESC. */
     List<PostResponseDto> getPublishedByProject(long projectId);
+
+    /** Возвращает сущность Post по id для внутреннего использования */
+    Post getPostEntityById(long id);
 }

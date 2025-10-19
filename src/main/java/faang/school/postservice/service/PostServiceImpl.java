@@ -14,7 +14,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
@@ -33,15 +32,15 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public PostResponseDto createDraft(CreatePostRequestDto dto) {
-        log.info("Создание черновика: authorId={}, projectId={}", dto.authorId(), dto.projectId());
+        log.info("Creating draft: authorId={}, projectId={}", dto.authorId(), dto.projectId());
 
         if (!dto.isExactlyOneAuthor()) {
-            log.warn("Ошибка создания: должен быть указан ровно один автор (authorId XOR projectId)");
-            throw new IllegalArgumentException("Должен быть указан ровно один автор: authorId или projectId");
+            log.warn("Draft creation error: exactly one author must be specified (authorId XOR projectId)");
+            throw new IllegalArgumentException("Exactly one author must be specified: authorId or projectId");
         }
         if (dto.content() == null || dto.content().isBlank()) {
-            log.warn("Ошибка создания: content пустой");
-            throw new IllegalArgumentException("content не должен быть пустым");
+            log.warn("Draft creation error: content is empty");
+            throw new IllegalArgumentException("content must not be empty");
         }
 
         try {
@@ -50,32 +49,29 @@ public class PostServiceImpl implements PostService {
             } else {
                 projectServiceClient.getProject(dto.projectId());
             }
-        } catch (FeignException ex) {
-            log.warn("Автор не найден во внешнем сервисе: {}", ex.getMessage());
-            throw new IllegalArgumentException("Автор не найден во внешнем сервисе");
+        } catch (FeignException.NotFound ex) {
+            log.warn("Author not found in external service: {}", ex.getMessage());
+            throw new IllegalArgumentException("Author not found in external service");
         }
 
-        Post entity = postMapper.toEntity(dto);
-        entity.setDeleted(false);
-        entity.setPublished(false);
-        entity.setPublishedAt(null);
-
-        Post saved = postRepository.save(entity);
-        log.info("Черновик создан id={}", saved.getId());
+        Post draft = postMapper.toEntity(dto);
+        Post saved = postRepository.save(draft);
+        log.info("Draft created id={}", saved.getId());
         return postMapper.toDto(saved);
     }
+
     @Override
     public PostResponseDto publish(long id) {
-        log.info("Публикация поста id={}", id);
-        Post post = getExisting(id);
+        log.info("Publishing post id={}", id);
+        Post post = getPostEntityById(id);
 
         if (post.isDeleted()) {
-            log.warn("Попытка публикации удалённого поста id={}", id);
-            throw new IllegalStateException("Нельзя публиковать удалённый пост");
+            log.warn("Attempt to publish a deleted post id={}", id);
+            throw new IllegalStateException("Cannot publish a deleted post");
         }
         if (post.isPublished()) {
-            log.warn("Попытка повторной публикации поста id={}", id);
-            throw new IllegalStateException("Пост уже опубликован");
+            log.warn("Attempt to republish an already published post id={}", id);
+            throw new IllegalStateException("Post is already published");
         }
 
         post.setPublished(true);
@@ -83,59 +79,61 @@ public class PostServiceImpl implements PostService {
         post.setUpdatedAt(LocalDateTime.now());
         Post saved = postRepository.save(post);
 
-        log.info("Пост опубликован id={} в {}", id, saved.getPublishedAt());
+        log.info("Post published id={} at {}", id, saved.getPublishedAt());
         return postMapper.toDto(saved);
     }
 
     @Override
     public PostResponseDto update(long id, UpdatePostRequestDto dto) {
-        log.info("Обновление поста id={}", id);
-        Post post = getExisting(id);
+        log.info("Updating post id={}", id);
+        Post post = getPostEntityById(id);
 
         if (post.isDeleted()) {
-            log.warn("Попытка обновления удалённого поста id={}", id);
-            throw new IllegalStateException("Нельзя обновлять удалённый пост");
+            log.warn("Attempt to update a deleted post id={}", id);
+            throw new IllegalStateException("Cannot update a deleted post");
         }
 
         if (dto.content() != null) {
             if (dto.content().isBlank()) {
-                log.warn("Ошибка обновления поста id={}: пустой content", id);
-                throw new IllegalArgumentException("content не должен быть пустым");
+                log.warn("Post update error id={}: content is empty", id);
+                throw new IllegalArgumentException("content must not be empty");
             }
-            post.setContent(dto.content());
+            postMapper.updateEntityFromDto(dto, post);
+            post.setUpdatedAt(LocalDateTime.now());
         }
 
         Post saved = postRepository.save(post);
-        log.info("Пост id={} обновлён", id);
+        log.info("Post id={} updated", id);
         return postMapper.toDto(saved);
     }
 
     @Override
     public void softDelete(long id) {
-        log.info("Мягкое удаление поста id={}", id);
-        Post post = getExisting(id);
+        log.info("Soft deleting post id={}", id);
+        Post post = getPostEntityById(id);
 
         if (!post.isDeleted()) {
             post.setDeleted(true);
             post.setPublished(false);
+            post.setUpdatedAt(LocalDateTime.now());
             postRepository.save(post);
-            log.info("Пост id={} помечен как удалённый (published=false)", id);
+            log.info("Post id={} marked as deleted (published=false)", id);
         } else {
-            log.debug("Пост id={} уже был удалён ранее", id);
+            log.debug("Post id={} was already deleted earlier", id);
         }
     }
 
     @Override
     @Transactional(readOnly = true)
     public PostResponseDto getById(long id) {
-        log.debug("Получение поста по id={}", id);
-        return postMapper.toDto(getExisting(id));
+        log.debug("Fetching post by id={}", id);
+        return postMapper.toDto(getPostEntityById(id));
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<PostResponseDto> getDraftsByUser(long userId) {
-        log.debug("Черновики пользователя userId={}", userId);
+        log.debug("Fetching drafts for userId={}", userId);
         return postRepository.findByAuthorId(userId).stream()
                 .filter(p -> !p.isDeleted() && !p.isPublished())
                 .sorted(Comparator.comparing(Post::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder())).reversed())
@@ -146,7 +144,7 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional(readOnly = true)
     public List<PostResponseDto> getDraftsByProject(long projectId) {
-        log.debug("Черновики проекта projectId={}", projectId);
+        log.debug("Fetching drafts for projectId={}", projectId);
         return postRepository.findByProjectId(projectId).stream()
                 .filter(p -> !p.isDeleted() && !p.isPublished())
                 .sorted(Comparator.comparing(Post::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder())).reversed())
@@ -157,7 +155,7 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional(readOnly = true)
     public List<PostResponseDto> getPublishedByUser(long userId) {
-        log.debug("Опубликованные посты пользователя userId={}", userId);
+        log.debug("Fetching published posts for userId={}", userId);
         return postRepository.findByAuthorId(userId).stream()
                 .filter(p -> !p.isDeleted() && p.isPublished())
                 .sorted(Comparator.comparing(Post::getPublishedAt, Comparator.nullsLast(Comparator.naturalOrder())).reversed())
@@ -168,7 +166,7 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional(readOnly = true)
     public List<PostResponseDto> getPublishedByProject(long projectId) {
-        log.debug("Опубликованные посты проекта projectId={}", projectId);
+        log.debug("Fetching published posts for projectId={}", projectId);
         return postRepository.findByProjectId(projectId).stream()
                 .filter(p -> !p.isDeleted() && p.isPublished())
                 .sorted(Comparator.comparing(Post::getPublishedAt, Comparator.nullsLast(Comparator.naturalOrder())).reversed())
@@ -176,11 +174,13 @@ public class PostServiceImpl implements PostService {
                 .collect(Collectors.toList());
     }
 
-    private Post getExisting(long id) {
+    @Override
+    @Transactional(readOnly = true)
+    public Post getPostEntityById(long id) {
         return postRepository.findById(id)
                 .orElseThrow(() -> {
-                    log.error("Пост не найден id={}", id);
-                    return new IllegalArgumentException("Пост не найден: " + id);
+                    log.error("Post not found with id={}", id);
+                    return new IllegalArgumentException("Post not found with id: " + id);
                 });
     }
 }

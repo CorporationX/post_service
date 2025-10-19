@@ -11,11 +11,11 @@ import lombok.Builder;
  */
 @Builder
 public record CreatePostRequestDto(
-        @NotBlank(message = "content не должен быть пустым") String content,
-        @Positive(message = "authorId должен быть > 0") Long authorId,
-        @Positive(message = "projectId должен быть > 0") Long projectId
+        @NotBlank(message = "content must not be empty") String content,
+        @Positive(message = "authorId should be > 0") Long authorId,
+        @Positive(message = "projectId should be > 0") Long projectId
 ) {
-    @AssertTrue(message = "Должен быть указан ровно один автор: authorId или projectId")
+    @AssertTrue(message = "Must be sent only one field: authorId or projectId")
     public boolean isExactlyOneAuthor() {
         return (authorId != null) ^ (projectId != null);
     }

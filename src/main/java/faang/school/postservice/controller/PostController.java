@@ -34,7 +34,7 @@ public class PostController {
     /**
      * Создание черновика
      */
-    @PostMapping("/posts")
+    @PostMapping
     public PostResponseDto create(@Valid @RequestBody CreatePostRequestDto dto) {
         return postService.createDraft(dto);
     }
@@ -43,7 +43,7 @@ public class PostController {
     /**
      * Публикация поста
      */
-    @PutMapping("/posts/{id}/publish")
+    @PutMapping("/{id}/publish")
     public PostResponseDto publish(@PathVariable @Positive long id) {
         return postService.publish(id);
     }
@@ -52,7 +52,7 @@ public class PostController {
     /**
      * Обновление контента поста
      */
-    @PutMapping("/posts/{id}")
+    @PutMapping("/{id}")
     public PostResponseDto update(@PathVariable @Positive long id,
                                   @Valid @RequestBody UpdatePostRequestDto dto) {
         return postService.update(id, dto);
@@ -62,7 +62,7 @@ public class PostController {
     /**
      * Мягкое удаление поста
      */
-    @DeleteMapping("/posts/{id}")
+    @DeleteMapping("/{id}")
     public void softDelete(@PathVariable @Positive long id) {
         postService.softDelete(id);
     }
@@ -71,7 +71,7 @@ public class PostController {
     /**
      * Получение поста по id
      */
-    @GetMapping("/posts/{id}")
+    @GetMapping("/{id}")
     public PostResponseDto getById(@PathVariable @Positive long id) {
         return postService.getById(id);
     }
@@ -80,7 +80,7 @@ public class PostController {
     /**
      * Все черновики пользователя
      */
-    @GetMapping("/users/{userId}/posts/drafts")
+    @GetMapping("/users/{userId}/drafts")
     public List<PostResponseDto> draftsByUser(@PathVariable @Positive long userId) {
         return postService.getDraftsByUser(userId);
     }
@@ -89,7 +89,7 @@ public class PostController {
     /**
      * Все черновики проекта
      */
-    @GetMapping("/projects/{projectId}/posts/drafts")
+    @GetMapping("/projects/{projectId}/drafts")
     public List<PostResponseDto> draftsByProject(@PathVariable @Positive long projectId) {
         return postService.getDraftsByProject(projectId);
     }
@@ -98,7 +98,7 @@ public class PostController {
     /**
      * Все опубликованные посты пользователя
      */
-    @GetMapping("/users/{userId}/posts/published")
+    @GetMapping("/users/{userId}/published")
     public List<PostResponseDto> publishedByUser(@PathVariable @Positive long userId) {
         return postService.getPublishedByUser(userId);
     }
@@ -107,7 +107,7 @@ public class PostController {
     /**
      * Все опубликованные посты проекта
      */
-    @GetMapping("/projects/{projectId}/posts/published")
+    @GetMapping("/projects/{projectId}/published")
     public List<PostResponseDto> publishedByProject(@PathVariable @Positive long projectId) {
         return postService.getPublishedByProject(projectId);
     }

@@ -8,6 +8,6 @@ import lombok.Builder;
  */
 @Builder
 public record UpdatePostRequestDto(
-        @NotBlank(message = "content не должен быть пустым") String content
+        @NotBlank(message = "content should not be empty") String content
 ) {
 }
