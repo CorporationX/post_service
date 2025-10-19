@@ -13,10 +13,10 @@ import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.params.shadow.com.univocity.parsers.common.DataValidationException;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -33,7 +33,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public CommentDto addComment(Long postId, CreateCommentDto commentDto) {
         log.info("Adding comment to post {}", postId);
-        validateString(commentDto.content(), "Comment text");
+        validateCommentLength(commentDto.content());
         validateNotNull(commentDto.createdAt(), "Creation time/date");
         UserDto userDto = userServiceClient.getUser(userContext.getUserId());
         Post post = validatePostExists(postId);
@@ -49,11 +49,14 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public CommentDto updateComment(Long userId, Long commentId, UpdateCommentDto commentDto) {
         log.info("Updating comment {}", commentId);
-        validateString(commentDto.content(), "Comment text");
+        validateCommentLength(commentDto.content());
         validateNotNull(commentDto.updatedAt(), "Update time/date");
         Comment comment = validateCommentExists(commentId);
         if (!userId.equals(comment.getAuthorId())) {
             throw new DataValidationException("Comment update is not allowed for current user");
+        }
+        if (!comment.getPost().getId().equals(commentDto.postId())) {
+            throw new DataValidationException("Post IDs of original and updated comments do not match");
         }
         commentMapper.update(commentDto, comment);
         Post post = validatePostExists(comment.getPost().getId());
@@ -70,23 +73,19 @@ public class CommentServiceImpl implements CommentService {
         if (commentRepository.findAllByPostId(postId).isEmpty()) {
             throw new NullPointerException("There are no comment under post with specified ID");
         }
-        return commentRepository.findAllByPostId(postId).stream().map(commentMapper::toCommentDto).toList();
+        return commentRepository.findAllByPostId(postId).stream()
+                .sorted(Comparator.comparing(Comment::getCreatedAt).reversed())
+                .map(commentMapper::toCommentDto).toList();
     }
 
     @Override
     public void deleteComment(Long commentId) {
         log.info("Attempting to remove comment {}", commentId);
-        if(commentRepository.findById(commentId).isEmpty()) {
+        if (commentRepository.findById(commentId).isEmpty()) {
             throw new NullPointerException("Comment with this ID does not exist");
         }
         commentRepository.deleteById(commentId);
         log.info("Comment {} has been deleted", commentId);
-    }
-
-    private void validateString(String value, String paramName) {
-        if (StringUtils.isBlank(value)) {
-            throw new DataValidationException(paramName + " should be present!");
-        }
     }
 
     private Post validatePostExists(long postId) {
@@ -106,6 +105,12 @@ public class CommentServiceImpl implements CommentService {
     private void validateNotNull(Object value, String paramName) {
         if (value == null) {
             throw new DataValidationException(paramName + " should be present!");
+        }
+    }
+
+    private void validateCommentLength(String content) {
+        if (content.length() > 4096 || content.isBlank()) {
+            throw new DataValidationException("Comment length should be less than 4096 characters and cannot be empty");
         }
     }
 }
