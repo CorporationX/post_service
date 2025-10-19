@@ -32,8 +32,9 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public CommentDto addComment(Long postId, CreateCommentDto commentDto) {
-        log.info("Adding comment to post {}.", postId);
+        log.info("Adding comment to post {}", postId);
         validateString(commentDto.content(), "Comment text");
+        validateNotNull(commentDto.createdAt(), "Creation time/date");
         UserDto userDto = userServiceClient.getUser(userContext.getUserId());
         Post post = validatePostExists(postId);
 
@@ -41,36 +42,43 @@ public class CommentServiceImpl implements CommentService {
         comment.setPost(post);
         comment.setAuthorId(userDto.id());
         commentRepository.save(comment);
-        log.info("Comment {} saved.", comment.getId());
+        log.info("Comment {} saved", comment.getId());
         return commentMapper.toCommentDto(comment);
     }
 
     @Override
     public CommentDto updateComment(Long userId, Long commentId, UpdateCommentDto commentDto) {
-        log.info("Updating comment {}.", commentId);
+        log.info("Updating comment {}", commentId);
         validateString(commentDto.content(), "Comment text");
+        validateNotNull(commentDto.updatedAt(), "Update time/date");
         Comment comment = validateCommentExists(commentId);
         if (!userId.equals(comment.getAuthorId())) {
-            throw new DataValidationException("Comment update is not allowed for current user.");
+            throw new DataValidationException("Comment update is not allowed for current user");
         }
         commentMapper.update(commentDto, comment);
         Post post = validatePostExists(comment.getPost().getId());
         comment.setPost(post);
         comment.setUpdatedAt(commentDto.updatedAt());
         commentRepository.save(comment);
-        log.info("Comment {} has been updated.", comment.getId());
+        log.info("Comment {} has been updated", comment.getId());
         return commentMapper.toCommentDto(comment);
     }
 
     @Override
     public List<CommentDto> getCommentsByPostId(Long postId) {
         log.info("Searching for comments under post with ID {}", postId);
+        if (commentRepository.findAllByPostId(postId).isEmpty()) {
+            throw new NullPointerException("There are no comment under post with specified ID");
+        }
         return commentRepository.findAllByPostId(postId).stream().map(commentMapper::toCommentDto).toList();
     }
 
     @Override
     public void deleteComment(Long commentId) {
-        log.info("Attempting to remove comment {}.", commentId);
+        log.info("Attempting to remove comment {}", commentId);
+        if(commentRepository.findById(commentId).isEmpty()) {
+            throw new NullPointerException("Comment with this ID does not exist");
+        }
         commentRepository.deleteById(commentId);
         log.info("Comment {} has been deleted", commentId);
     }
@@ -83,15 +91,21 @@ public class CommentServiceImpl implements CommentService {
 
     private Post validatePostExists(long postId) {
         if (postRepository.findById(postId).isEmpty()) {
-            throw new NullPointerException("Post with this ID does not exist.");
+            throw new NullPointerException("Post with this ID does not exist");
         }
         return postRepository.findById(postId).get();
     }
 
     private Comment validateCommentExists(Long commentId) {
         if (commentRepository.findById(commentId).isEmpty()) {
-            throw new NullPointerException("Comment with this ID does not exist.");
+            throw new NullPointerException("Comment with this ID does not exist");
         }
         return commentRepository.findById(commentId).get();
+    }
+
+    private void validateNotNull(Object value, String paramName) {
+        if (value == null) {
+            throw new DataValidationException(paramName + " should be present!");
+        }
     }
 }
