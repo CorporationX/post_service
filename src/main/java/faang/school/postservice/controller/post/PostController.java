@@ -1,9 +1,10 @@
 package faang.school.postservice.controller.post;
 
 import faang.school.postservice.controller.facade.post.PostFacade;
-import faang.school.postservice.dto.post.CreateDraftPostDto;
+import faang.school.postservice.dto.post.PostCreateDraftDto;
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.dto.post.UpdatePostDto;
+import faang.school.postservice.dto.post.PostUpdateDto;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,8 +25,8 @@ public class PostController {
     private final PostFacade postFacade;
 
     @PostMapping
-    public PostDto createDraftPost(@RequestBody CreateDraftPostDto createDraftPostDto) {
-        return postFacade.createDraftPost(createDraftPostDto);
+    public PostDto createDraftPost(@Valid @RequestBody PostCreateDraftDto postCreateDraftDto) {
+        return postFacade.createDraftPost(postCreateDraftDto);
     }
 
     @PatchMapping("/publication/{postId}")
@@ -34,8 +35,8 @@ public class PostController {
     }
 
     @PatchMapping("/{postId}")
-    public PostDto updatePost(@PathVariable Long postId, @RequestBody UpdatePostDto updatePostDto) {
-        return postFacade.updatePost(postId, updatePostDto);
+    public PostDto updatePost(@Valid @PathVariable Long postId, @RequestBody PostUpdateDto postUpdateDto) {
+        return postFacade.updatePost(postId, postUpdateDto);
     }
 
     @DeleteMapping("/{postId}")
@@ -48,22 +49,22 @@ public class PostController {
         return postFacade.getById(postId);
     }
 
-    @GetMapping("/draft_by_author/{authorId}")
+    @GetMapping("/draft-by-author/{authorId}")
     public List<PostDto> getDraftPostByAuthorId(@PathVariable Long authorId) {
         return postFacade.getDraftPostByAuthorId(authorId);
     }
 
-    @GetMapping("/draft_by_project/{projectId}")
+    @GetMapping("/draft-by-project/{projectId}")
     public List<PostDto> getDraftPostByProjectId(@PathVariable Long projectId) {
         return postFacade.getDraftPostByProjectId(projectId);
     }
 
-    @GetMapping("/published_by_author/{authorId}")
+    @GetMapping("/published-by-author/{authorId}")
     public List<PostDto> getPublishedPostByAuthorId(@PathVariable Long authorId) {
         return postFacade.getPublishedPostByAuthorId(authorId);
     }
 
-    @GetMapping("/published_by_project/{projectId}")
+    @GetMapping("/published-by-project/{projectId}")
     public List<PostDto> getPublishedPostByProjectId(@PathVariable Long projectId) {
         return postFacade.getPublishedPostByProjectId(projectId);
     }

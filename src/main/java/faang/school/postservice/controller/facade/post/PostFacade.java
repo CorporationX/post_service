@@ -1,8 +1,8 @@
 package faang.school.postservice.controller.facade.post;
 
-import faang.school.postservice.dto.post.CreateDraftPostDto;
+import faang.school.postservice.dto.post.PostCreateDraftDto;
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.dto.post.UpdatePostDto;
+import faang.school.postservice.dto.post.PostUpdateDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.service.post.PostService;
@@ -20,8 +20,8 @@ public class PostFacade {
     private final PostMapper postMapping;
     private final PostService postService;
 
-    public PostDto createDraftPost(CreateDraftPostDto createDraftPostDto) {
-        Post post = postMapping.toPost(createDraftPostDto);
+    public PostDto createDraftPost(PostCreateDraftDto postCreateDraftDto) {
+        Post post = postMapping.toPost(postCreateDraftDto);
         Post result = postService.createDraftPost(post);
         return postMapping.toPostDto(result);
     }
@@ -31,8 +31,8 @@ public class PostFacade {
         return postMapping.toPostDto(result);
     }
 
-    public PostDto updatePost(Long postId, UpdatePostDto updatePostDto) {
-        Post result = postService.updatePost(postId, updatePostDto);
+    public PostDto updatePost(Long postId, PostUpdateDto postUpdateDto) {
+        Post result = postService.updatePost(postId, postUpdateDto);
         return postMapping.toPostDto(result);
     }
 

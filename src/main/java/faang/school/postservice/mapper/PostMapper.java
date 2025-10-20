@@ -1,6 +1,6 @@
 package faang.school.postservice.mapper;
 
-import faang.school.postservice.dto.post.CreateDraftPostDto;
+import faang.school.postservice.dto.post.PostCreateDraftDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.model.Post;
 import org.mapstruct.Mapper;
@@ -12,7 +12,7 @@ import static org.mapstruct.ReportingPolicy.IGNORE;
       nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface PostMapper {
 
-    Post toPost(CreateDraftPostDto createDraftPostDto);
+    Post toPost(PostCreateDraftDto postCreateDraftDto);
 
     PostDto toPostDto(Post post);
 }

@@ -3,7 +3,7 @@ package faang.school.postservice.service.post;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.dto.post.UpdatePostDto;
+import faang.school.postservice.dto.post.PostUpdateDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.model.Post;
@@ -163,12 +163,12 @@ class PostServiceTest {
         when(postRepository.save(any(Post.class))).thenReturn(post);
         when(userContext.getUserId()).thenReturn(userId);
         when(postRepository.findById(postId)).thenReturn(Optional.of(post));
-        UpdatePostDto updatePostDto = new UpdatePostDto("update content. Super message. innovation info");
+        PostUpdateDto postUpdateDto = new PostUpdateDto("update content. Super message. innovation info");
 
-        Post result = postService.updatePost(postId, updatePostDto);
+        Post result = postService.updatePost(postId, postUpdateDto);
 
         assertNotNull(result);
-        assertEquals(result.getContent(), updatePostDto.content());
+        assertEquals(result.getContent(), postUpdateDto.content());
 
         verify(postRepository, times(1)).save(post);
     }
@@ -374,7 +374,7 @@ class PostServiceTest {
                 .createdAt(LocalDateTime.now().plusMinutes(123))
                 .build();
 
-        List<Post> posts = List.of(post10,post9,post8);
+        List<Post> posts = List.of(post10, post9, post8);
         Long projectId = 2L;
         when(postRepository.findByProjectId(projectId)).thenReturn(posts);
 

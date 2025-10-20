@@ -2,10 +2,8 @@ package faang.school.postservice.dto.post;
 
 import jakarta.validation.constraints.NotBlank;
 
-public record CreateDraftPostDto(
+public record PostUpdateDto(
         @NotBlank
-        String content,
-        Long projectId
+        String content
 ) {
-
 }

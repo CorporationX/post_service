@@ -3,9 +3,6 @@ package faang.school.postservice.service.post;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.model.Post;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -13,9 +10,6 @@ import java.util.Optional;
 import static faang.school.postservice.model.PostStatus.DELETED;
 import static faang.school.postservice.model.PostStatus.DRAFT;
 
-@Slf4j
-@RequiredArgsConstructor
-@Component
 public class PostValidator {
 
     public static void validateUserIsPostAuthor(Long userId, Long postAuthorId) {

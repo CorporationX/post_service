@@ -3,7 +3,7 @@ package faang.school.postservice.service.post;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.dto.post.UpdatePostDto;
+import faang.school.postservice.dto.post.PostUpdateDto;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 import static faang.school.postservice.model.PostStatus.DELETED;
@@ -62,10 +61,10 @@ public class PostService {
         return post;
     }
 
-    public Post updatePost(Long postId, UpdatePostDto updatePostDto) {
+    public Post updatePost(Long postId, PostUpdateDto postUpdateDto) {
         Post post = checkUserContextAndGetPostById(postId);
 
-        post.setContent(updatePostDto.content());
+        post.setContent(postUpdateDto.content());
         postRepository.save(post);
         log.info("post {} has been updated", postId);
         return post;
