@@ -46,7 +46,7 @@ public class PostControllerTest {
         PostDto postDto = createFirstPostDtoForTest();
         when(postService.getPostById(postId)).thenReturn(postDto);
 
-        mockMvc.perform(get("/api/posts?id=1"))
+        mockMvc.perform(get("/api/v1/posts?id=1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(1)));
     }
@@ -57,7 +57,7 @@ public class PostControllerTest {
         when(postService.getAllUnpublishedPostsByAuthor(userContext.getUserId()))
                 .thenReturn(List.of(createFirstPostDtoForTest(), createFirstPostDtoForTest()));
 
-        mockMvc.perform(get("/api/posts/unpublished/byauthor"))
+        mockMvc.perform(get("/api/v1/posts/unpublished/byauthor"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id", is(1)));
     }
@@ -68,7 +68,7 @@ public class PostControllerTest {
         when(postService.getAllUnpublishedPostsByProject(projectId))
                 .thenReturn(List.of(createFirstPostDtoForTest(), createFirstPostDtoForTest()));
 
-        mockMvc.perform(get("/api/posts/unpublished/byproject?project=1"))
+        mockMvc.perform(get("/api/v1/posts/unpublished/byproject?project=1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id", is(1)));
     }
@@ -79,7 +79,7 @@ public class PostControllerTest {
         when(postService.getAllPublishedPostsByAuthor(authorId))
                 .thenReturn(List.of(createFirstPostDtoForTest(), createFirstPostDtoForTest()));
 
-        mockMvc.perform(get("/api/posts/published/byauthor?id=1"))
+        mockMvc.perform(get("/api/v1/posts/published/byauthor?id=1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id", is(1)));
 
@@ -91,7 +91,7 @@ public class PostControllerTest {
         when(postService.getAllPublishedPostsByProject(projectId))
                 .thenReturn(List.of(createFirstPostDtoForTest(), createFirstPostDtoForTest()));
 
-        mockMvc.perform(get("/api/posts/published/byproject?project=1"))
+        mockMvc.perform(get("/api/v1/posts/published/byproject?project=1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id", is(1)));
     }

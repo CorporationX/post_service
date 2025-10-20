@@ -10,6 +10,7 @@ import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -29,13 +30,14 @@ public class PostServiceImpl implements PostService{
     private final ProjectServiceClient projectServiceClient;
 
     @Override
-    public PostDto createPost(long authorId, CreatePostDto createPostDto) throws ValidationException {
+    @Transactional
+    public PostDto createPost(long authorId, CreatePostDto createPostDto) {
         Post newPost = postMapper.toPost(createPostDto);
         newPost.setAuthorId(authorId);
         try {
             projectServiceClient.getProject(createPostDto.projectId());
         } catch (Exception e) {
-            log.error("Проект с id: {} не существует, он не может быть автором поста.",
+            log.warn("Проект с id: {} не существует, он не может быть автором поста.",
                     createPostDto.projectId());
             throw new DataValidationException("");
         }
@@ -45,10 +47,11 @@ public class PostServiceImpl implements PostService{
     }
 
     @Override
+    @Transactional
     public boolean publishPost(long requesterId, long postId) {
         Optional<Post> optionalPostToPublish = postRepository.findById(postId);
         if (optionalPostToPublish.isEmpty()) {
-            log.error("Проект с id: {} невозможно опубликовать, он не существует.", postId);
+            log.warn("Проект с id: {} невозможно опубликовать, он не существует.", postId);
             throw new EntityNotFoundException("");
         }
         Post postToPublish = optionalPostToPublish.get();
@@ -68,10 +71,11 @@ public class PostServiceImpl implements PostService{
     }
 
     @Override
+    @Transactional
     public PostDto updatePost(long postId, long requesterId, UpdatePostDto updatePostDto) {
         Optional<Post> optionalPostToUpdate = postRepository.findById(postId);
         if (optionalPostToUpdate.isEmpty()) {
-            log.error("Пост с id: {} не может быть изменен, его не существует.", postId);
+            log.warn("Пост с id: {} не может быть изменен, его не существует.", postId);
             throw new EntityNotFoundException("");
         }
         Post postToUpdate = optionalPostToUpdate.get();
@@ -88,10 +92,11 @@ public class PostServiceImpl implements PostService{
     }
 
     @Override
+    @Transactional
     public boolean deletePost(long requesterId, long postId) {
         Optional<Post> optionalPostToDelete = postRepository.findById(postId);
         if (optionalPostToDelete.isEmpty() || optionalPostToDelete.get().isDeleted()) {
-            log.error("Проект с id: {} невозможно удалить, он не существует.", postId);
+            log.warn("Проект с id: {} невозможно удалить, он не существует.", postId);
             throw new EntityNotFoundException("");
         }
         Post postToDelete = optionalPostToDelete.get();
@@ -109,7 +114,7 @@ public class PostServiceImpl implements PostService{
     public PostDto getPostById(long postId) {
         Optional<Post> optionalPost = postRepository.findById(postId);
         if (optionalPost.isEmpty()) {
-            log.error("Пост с id: {} невозможно посмотреть, он не существует.", postId);
+            log.warn("Пост с id: {} невозможно посмотреть, он не существует.", postId);
             throw new EntityNotFoundException("");
         }
         return postMapper.toPostDto(optionalPost.get());
@@ -119,8 +124,7 @@ public class PostServiceImpl implements PostService{
     public List<PostDto> getAllUnpublishedPostsByAuthor(long authorId) {
         List<Post> posts = postRepository.findByAuthorId(authorId)
                 .stream()
-                .filter((post) -> !post.isPublished())
-                .filter(post -> !post.isDeleted())
+                .filter((post) -> !post.isPublished() && !post.isDeleted())
                 .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
                 .toList();
         return postMapper.toListPostDto(posts);
@@ -130,8 +134,7 @@ public class PostServiceImpl implements PostService{
     public List<PostDto> getAllUnpublishedPostsByProject(long projectId) {
         List<Post> posts = postRepository.findByProjectId(projectId)
                 .stream()
-                .filter((post) -> !post.isPublished())
-                .filter(post -> !post.isDeleted())
+                .filter((post) -> !post.isPublished() && !post.isDeleted())
                 .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
                 .toList();
         return postMapper.toListPostDto(posts);
@@ -141,8 +144,7 @@ public class PostServiceImpl implements PostService{
     public List<PostDto> getAllPublishedPostsByAuthor(long authorId) {
         List<Post> posts = postRepository.findByAuthorId(authorId)
                 .stream()
-                .filter(Post::isPublished)
-                .filter(post -> !post.isDeleted())
+                .filter(post -> post.isPublished() && !post.isDeleted())
                 .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
                 .toList();
         return postMapper.toListPostDto(posts);
@@ -152,8 +154,7 @@ public class PostServiceImpl implements PostService{
     public List<PostDto> getAllPublishedPostsByProject(long projectId) {
         List<Post> posts = postRepository.findByProjectId(projectId)
                 .stream()
-                .filter(Post::isPublished)
-                .filter(post -> !post.isDeleted())
+                .filter(post -> post.isPublished() && !post.isDeleted())
                 .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
                 .toList();
         return postMapper.toListPostDto(posts);
