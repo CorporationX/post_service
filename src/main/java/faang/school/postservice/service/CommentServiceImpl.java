@@ -30,6 +30,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional(readOnly = true)
     public List<ResponseCommentDto> getAllComments(long postId) {
+        // добавить postService.getPostEntityById(postId);
         List<Comment> comments = commentRepository.findAllByPostId(postId);
         comments.sort((c1, c2) -> c2.getCreatedAt().compareTo(c1.getCreatedAt()));
 
@@ -44,7 +45,7 @@ public class CommentServiceImpl implements CommentService {
     public ResponseCommentDto createComment(long postId, CreateCommentDto createCommentDto) {
         validateCommentContent(createCommentDto.content());
 
-        Post post = postRepository.findById(postId) //заменить на postService
+        Post post = postRepository.findById(postId) //заменить на = postService.getPostEntityById(postId);
                 .orElseThrow(() -> new IllegalArgumentException("Post not found with id: " + postId));
 
         try {
@@ -71,7 +72,7 @@ public class CommentServiceImpl implements CommentService {
         Comment newComment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new IllegalArgumentException("Comment not found with id: " + commentId));
 
-        if (newComment.getPost().getId() != postId) {
+        if (!newComment.getPost().getId().equals(postId)) {
             log.warn("Comment {} does not belong to post {}", commentId, postId);
             throw new IllegalArgumentException("Comment does not belong to post with id: " + postId);
         }
@@ -89,7 +90,7 @@ public class CommentServiceImpl implements CommentService {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new IllegalArgumentException("Comment not found with id: " + commentId));
 
-        if (comment.getPost().getId() != postId) {
+        if (!comment.getPost().getId().equals(postId)) {
             log.warn("Comment {} does not belong to post {}", commentId, postId);
             throw new IllegalArgumentException("Comment does not belong to post with id: " + postId);
         }

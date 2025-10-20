@@ -27,6 +27,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -96,12 +97,18 @@ public class CommentServiceImplTest {
         CreateCommentDto createDto = new CreateCommentDto(AUTHOR_ID, CONTENT);
 
         when(postRepository.findById(POST_ID)).thenReturn(Optional.of(testPost));
-        when(userServiceClient.getUser(AUTHOR_ID)).thenReturn(new UserDto(AUTHOR_ID, "Test User", "test@example.com"));
+        when(userServiceClient.getUser(AUTHOR_ID)).thenReturn(new UserDto(AUTHOR_ID,
+                "Test User", "test@example.com"));
+
         when(commentRepository.save(any(Comment.class))).thenReturn(testComment);
 
         ResponseCommentDto result = commentService.createComment(POST_ID, createDto);
 
         assertNotNull(result);
+        assertNotNull(result.createdAt());
+        assertNotNull(result.updatedAt());
+        assertEquals(result.createdAt(), result.updatedAt());
+
         verify(postRepository).findById(POST_ID);
         verify(userServiceClient).getUser(AUTHOR_ID);
         verify(commentMapper).toEntity(createDto);
@@ -153,6 +160,67 @@ public class CommentServiceImplTest {
     }
 
     @Test
+    void createComment_ShouldSetBothTimes() {
+        CreateCommentDto createDto = new CreateCommentDto(AUTHOR_ID, CONTENT);
+
+        when(postRepository.findById(POST_ID)).thenReturn(Optional.of(testPost));
+        when(userServiceClient.getUser(AUTHOR_ID)).thenReturn(new UserDto(AUTHOR_ID, "Test User", "test@example.com"));
+
+        Comment savedComment = Comment.builder()
+                .id(COMMENT_ID)
+                .content(CONTENT)
+                .authorId(AUTHOR_ID)
+                .post(testPost)
+                .createdAt(LocalDateTime.of(2024, 1, 15, 10, 30))
+                .updatedAt(LocalDateTime.of(2024, 1, 15, 10, 30))
+                .build();
+
+        when(commentRepository.save(any(Comment.class))).thenReturn(savedComment);
+
+        ResponseCommentDto result = commentService.createComment(POST_ID, createDto);
+
+        assertNotNull(result.createdAt());
+        assertNotNull(result.updatedAt());
+        assertEquals(result.createdAt(), result.updatedAt());
+    }
+
+    @Test
+    void updateComment_ShouldUpdateOnlyUpdatedAt() {
+        UpdateCommentDto updateDto = new UpdateCommentDto(UPDATED_CONTENT);
+
+        LocalDateTime oldCreatedAt = LocalDateTime.now().minusHours(2);
+        LocalDateTime oldUpdatedAt = LocalDateTime.now().minusHours(1);
+
+        Comment existingComment = Comment.builder()
+                .id(COMMENT_ID)
+                .content(CONTENT)
+                .authorId(AUTHOR_ID)
+                .post(testPost)
+                .createdAt(oldCreatedAt)
+                .updatedAt(oldUpdatedAt)
+                .build();
+
+        Comment updatedComment = Comment.builder()
+                .id(COMMENT_ID)
+                .content(UPDATED_CONTENT)
+                .authorId(AUTHOR_ID)
+                .post(testPost)
+                .createdAt(oldCreatedAt)
+                .updatedAt(LocalDateTime.now())
+                .build();
+
+        when(commentRepository.findById(COMMENT_ID)).thenReturn(Optional.of(existingComment));
+        when(commentRepository.save(any(Comment.class))).thenReturn(updatedComment);
+
+        ResponseCommentDto result = commentService.updateComment(POST_ID, COMMENT_ID, updateDto);
+
+        assertNotNull(result.createdAt());
+        assertNotNull(result.updatedAt());
+        assertEquals(oldCreatedAt, result.createdAt());
+        assertTrue(result.updatedAt().isAfter(oldUpdatedAt));
+    }
+
+    @Test
     void updateComment_WithValidDataShouldUpdateComment() {
         UpdateCommentDto updateDto = new UpdateCommentDto(UPDATED_CONTENT);
 
@@ -175,7 +243,8 @@ public class CommentServiceImplTest {
         when(commentRepository.findById(NON_EXISTENT_COMMENT_ID)).thenReturn(Optional.empty());
 
         assertThrows(IllegalArgumentException.class,
-                () -> commentService.updateComment(POST_ID, NON_EXISTENT_COMMENT_ID, updateDto));
+                () -> commentService.updateComment(POST_ID, NON_EXISTENT_COMMENT_ID,
+                        updateDto));
 
         verify(commentRepository).findById(NON_EXISTENT_COMMENT_ID);
         verifyNoMoreInteractions(commentRepository, commentMapper);
@@ -233,7 +302,7 @@ public class CommentServiceImplTest {
         return Comment.builder()
                 .id(id)
                 .content("Comment " + id)
-                .authorId(AUTHOR_ID + id)
+                .authorId(AUTHOR_ID)
                 .post(testPost)
                 .createdAt(createdAt)
                 .build();
