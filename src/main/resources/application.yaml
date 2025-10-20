@@ -68,4 +68,4 @@ integration:
 redis:
   host: localhost
   port: 6379
-  post-expire: 24*60*60*1000
+  post-expire: 86400000

@@ -97,7 +97,7 @@ public class PostServiceImpl implements PostService {
             post.setPublished(true);
             post.setPublishedAt(LocalDateTime.now());
         }
-        postRepository.save(post);
+        Post savedPost = postRepository.save(post);
         try {
             String key = "authors:" + post.getAuthorId() + ":list";
             redisTemplate.opsForList().rightPush(key, post);
@@ -112,7 +112,7 @@ public class PostServiceImpl implements PostService {
         analyticsEventProducer.sendAnalyticsEvent(new AnalyticsEvent()
                 .setEventType(POST_PUBLISHED)
                 .setReceivedAt(LocalDateTime.now())
-                .setActorId(postDraftDto.getAuthorId() != null ? postDraftDto.getAuthorId() : postDraftDto.getProjectId())
+                .setActorId(savedPost.getAuthorId() != null ? savedPost.getAuthorId() : savedPost.getProjectId())
                 .setReceiverId(0)
         );
     }
