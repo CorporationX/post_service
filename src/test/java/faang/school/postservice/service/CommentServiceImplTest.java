@@ -100,7 +100,7 @@ public class CommentServiceImplTest {
                 TEST_POST_ID, INVALID_TEST_COMMENT_CONTENT, TEST_COMMENT_CREATED_AT);
         assertThrows(IllegalArgumentException.class, () -> commentService
                 .addComment(TEST_POST_ID, contentTooLongDto),
-                "Comment length should be less than 4096 characters and cannot be empty");
+                "Comment length should be less than 4096 characters and cannot be empty!");
     }
 
     @Test
@@ -109,7 +109,7 @@ public class CommentServiceImplTest {
                 TEST_POST_ID, "", TEST_COMMENT_CREATED_AT);
         assertThrows(IllegalArgumentException.class, () -> commentService
                 .addComment(TEST_POST_ID, contentIsEmptyDto),
-                "Comment length should be less than 4096 characters and cannot be empty");
+                "Comment length should be less than 4096 characters and cannot be empty!");
     }
 
     @Test
@@ -144,7 +144,7 @@ public class CommentServiceImplTest {
                 TEST_AUTHOR_ID, TEST_POST_ID, INVALID_TEST_COMMENT_CONTENT, TEST_COMMENT_CREATED_AT);
         assertThrows(IllegalArgumentException.class, () -> commentService
                 .updateComment(TEST_POST_ID, contentTooLongDto),
-                "Comment length should be less than 4096 characters and cannot be empty");
+                "Comment length should be less than 4096 characters and cannot be empty!");
     }
 
     @Test
@@ -153,7 +153,7 @@ public class CommentServiceImplTest {
                 TEST_AUTHOR_ID, TEST_POST_ID, "", TEST_COMMENT_CREATED_AT);
         assertThrows(IllegalArgumentException.class, () -> commentService
                 .updateComment(TEST_POST_ID, contentIsEmptyDto),
-                "Comment length should be less than 4096 characters and cannot be empty");
+                "Comment length should be less than 4096 characters and cannot be empty!");
     }
 
     @Test
@@ -211,7 +211,7 @@ public class CommentServiceImplTest {
     void testGetCommentsByPostIdNoCommentsExist() {
         Mockito.when(commentRepository.findAllByPostId(TEST_POST_ID)).thenReturn(Collections.emptyList());
         assertThrows(NullPointerException.class, () -> commentService.getCommentsByPostId(TEST_POST_ID),
-                "There are no comment under post with specified ID");
+                "There are no comment under post with specified ID!");
     }
 
     @Test
@@ -227,6 +227,6 @@ public class CommentServiceImplTest {
     void testDeleteCommentIdDoesNotExist() {
         Mockito.when(commentRepository.findById(TEST_COMMENT_ID)).thenReturn(Optional.empty());
         assertThrows(NullPointerException.class, () -> commentService.deleteComment(TEST_COMMENT_ID),
-                "Comment with this ID does not exist");
+                "Comment with this ID does not exist!");
     }
 }

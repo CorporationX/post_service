@@ -69,7 +69,7 @@ public class CommentServiceImpl implements CommentService {
     public List<CommentDto> getCommentsByPostId(Long postId) {
         log.info("Searching for comments under post with ID {}", postId);
         if (commentRepository.findAllByPostId(postId).isEmpty()) {
-            throw new NullPointerException("There are no comment under post with specified ID");
+            throw new NullPointerException("There are no comment under post with specified ID!");
         }
         return commentRepository.findAllByPostId(postId).stream()
                 .sorted(Comparator.comparing(Comment::getCreatedAt).reversed())
@@ -80,7 +80,7 @@ public class CommentServiceImpl implements CommentService {
     public void deleteComment(Long commentId) {
         log.info("Attempting to remove comment {}", commentId);
         if (commentRepository.findById(commentId).isEmpty()) {
-            throw new NullPointerException("Comment with this ID does not exist");
+            throw new NullPointerException("Comment with this ID does not exist!");
         }
         commentRepository.deleteById(commentId);
         log.info("Comment {} has been deleted", commentId);
@@ -88,12 +88,12 @@ public class CommentServiceImpl implements CommentService {
 
     private Post validatePostExists(Long postId) {
         return postRepository.findById(postId)
-                .orElseThrow(() -> new NullPointerException("Post with this ID does not exist"));
+                .orElseThrow(() -> new NullPointerException("Post with this ID does not exist!"));
     }
 
     private Comment validateCommentExists(Long commentId) {
         return commentRepository.findById(commentId)
-                .orElseThrow(() -> new NullPointerException("Comment with this ID does not exist"));
+                .orElseThrow(() -> new NullPointerException("Comment with this ID does not exist!"));
     }
 
     private void validateNotNull(Object value, String paramName) {
@@ -104,7 +104,7 @@ public class CommentServiceImpl implements CommentService {
 
     private void validateCommentLength(String content) {
         if (content.length() > 4096 || content.isBlank()) {
-            throw new IllegalArgumentException("Comment length should be less than 4096 characters and cannot be empty");
+            throw new IllegalArgumentException("Comment length should be less than 4096 characters and cannot be empty!");
         }
     }
 }
