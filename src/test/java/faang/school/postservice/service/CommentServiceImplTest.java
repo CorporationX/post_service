@@ -211,7 +211,7 @@ public class CommentServiceImplTest {
     void testGetCommentsByPostIdNoCommentsExist() {
         Mockito.when(commentRepository.findAllByPostId(TEST_POST_ID)).thenReturn(Collections.emptyList());
         assertThrows(NullPointerException.class, () -> commentService.getCommentsByPostId(TEST_POST_ID),
-                "There are no comment under post with specified ID!");
+                "There are no comment under post with this ID!");
     }
 
     @Test
