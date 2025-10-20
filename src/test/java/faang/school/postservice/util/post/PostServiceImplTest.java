@@ -61,27 +61,6 @@ class PostServiceImplTest {
                 LocalDateTime.now().minusHours(1), null);
     }
 
-    private Post buildPost(Long id, Long authorId, String content,
-                           boolean published, boolean deleted,
-                           LocalDateTime createdAt, LocalDateTime publishedAt) {
-        return buildPost(id, authorId, null, content, published, deleted, createdAt, publishedAt);
-    }
-
-    private Post buildPost(Long id, Long authorId, Long projectId, String content,
-                           boolean published, boolean deleted,
-                           LocalDateTime createdAt, LocalDateTime publishedAt) {
-        Post post = new Post();
-        post.setId(id);
-        post.setAuthorId(authorId);
-        post.setProjectId(projectId);
-        post.setContent(content);
-        post.setPublished(published);
-        post.setDeleted(deleted);
-        post.setCreatedAt(createdAt);
-        post.setPublishedAt(publishedAt);
-        return post;
-    }
-
     @Test
     @DisplayName("update: does nothing if content unchanged")
     void update_same_content_no_changes() {
@@ -395,5 +374,26 @@ class PostServiceImplTest {
         assertTrue(postDbEntity.isDeleted());
         assertFalse(postDbEntity.isPublished());
         assertNotNull(postDbEntity.getUpdatedAt());
+    }
+
+    private Post buildPost(Long id, Long authorId, String content,
+                           boolean published, boolean deleted,
+                           LocalDateTime createdAt, LocalDateTime publishedAt) {
+        return buildPost(id, authorId, null, content, published, deleted, createdAt, publishedAt);
+    }
+
+    private Post buildPost(Long id, Long authorId, Long projectId, String content,
+                           boolean published, boolean deleted,
+                           LocalDateTime createdAt, LocalDateTime publishedAt) {
+        return Post.builder()
+                .id(id)
+                .authorId(authorId)
+                .projectId(projectId)
+                .content(content)
+                .published(published)
+                .deleted(deleted)
+                .createdAt(createdAt)
+                .publishedAt(publishedAt)
+                .build();
     }
 }
