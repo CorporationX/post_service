@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface PostRepository extends CrudRepository<Post, Long> {
 
-    List<Post> findByAuthorId(long authorId);
+    List<Post> findAllByAuthorId(Long authorId);
 
     List<Post> findByProjectId(long projectId);
 
