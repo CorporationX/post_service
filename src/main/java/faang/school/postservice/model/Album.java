@@ -46,7 +46,8 @@ public class Album {
 
     @ManyToMany
     @JoinTable(name = "post_album",
-            joinColumns = @JoinColumn(name = "album_id"), inverseJoinColumns = @JoinColumn(name = "post_id"))
+            joinColumns = @JoinColumn(name = "album_id"),
+            inverseJoinColumns = @JoinColumn(name = "post_id"))
     private List<Post> posts;
 
     @CreationTimestamp
