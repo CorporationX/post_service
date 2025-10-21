@@ -1,21 +1,22 @@
 package faang.school.postservice.util.commentService;
 
 
-import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.Request.RequestCommentDto;
 import faang.school.postservice.dto.comment.Response.ResponseCommentDto;
 import faang.school.postservice.exception.ResourceNotFoundException;
-import faang.school.postservice.mapper.comment.CommentMapperImpl;
+import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.comment.CommentService;
 import faang.school.postservice.service.comment.CommentServiceImpl;
+import faang.school.postservice.validator.CommentValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mapstruct.factory.Mappers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -39,8 +40,11 @@ class CommentServiceImplTest {
     @Mock
     private PostRepository postRepository;
 
+    @Mock
+    private CommentValidator commentValidator;
+
     @Spy
-    private CommentMapperImpl commentMapper;
+    private final CommentMapper commentMapper = Mappers.getMapper(CommentMapper.class);
 
     private CommentService commentService;
 
@@ -48,7 +52,6 @@ class CommentServiceImplTest {
     private Comment testComment;
     private RequestCommentDto requestCommentDto;
     private ResponseCommentDto responseCommentDto;
-
 
     @BeforeEach
     void setUp() {
@@ -61,7 +64,8 @@ class CommentServiceImplTest {
                 public long getUserId() {
                     return 1L;
                 }
-            }
+            },
+            commentValidator
         );
 
         testPost = Post.builder()
