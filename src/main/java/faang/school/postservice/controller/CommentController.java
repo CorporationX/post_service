@@ -6,7 +6,6 @@ import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CreateCommentDto;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,38 +26,31 @@ public class CommentController {
     private final CommentService commentService;
 
     @PostMapping
-    public ResponseEntity<CommentDto> addComment(
+    public CommentDto addComment(
             @PathVariable Long postId,
             @RequestBody CreateCommentDto commentDto
     ) {
-        CommentDto createdComment = commentService.addComment(postId, commentDto);
-        return ResponseEntity.ok(createdComment);
+        return commentService.addComment(postId, commentDto);
     }
 
     @PutMapping
-    public ResponseEntity<CommentDto> updateComment(
-            @PathVariable Long postId,
+    public CommentDto updateComment(
             @RequestBody UpdateCommentDto updateDto
     ) {
-        Long userId = userContext.getUserId();
-        CommentDto updated = commentService.updateComment(userId, updateDto);
-        return ResponseEntity.ok(updated);
+        return commentService.updateComment(userContext.getUserId(), updateDto);
     }
 
     @GetMapping
-    public ResponseEntity<List<CommentDto>> getCommentsByPostId(
+    public List<CommentDto> getCommentsByPostId(
             @PathVariable Long postId
     ) {
-        List<CommentDto> comments = commentService.getCommentsByPostId(postId);
-        return ResponseEntity.ok(comments);
+        return commentService.getCommentsByPostId(postId);
     }
 
     @DeleteMapping("/{commentId}")
-    public ResponseEntity<Void> deleteComment(
-            @PathVariable Long postId,
+    public void deleteComment(
             @PathVariable Long commentId
     ) {
         commentService.deleteComment(commentId);
-        return ResponseEntity.noContent().build();
     }
 }
