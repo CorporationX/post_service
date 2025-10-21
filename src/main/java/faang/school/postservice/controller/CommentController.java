@@ -31,7 +31,7 @@ public class CommentController {
         return commentService.addComment(postId, commentDto);
     }
 
-    @PutMapping("/comments/{id}")
+    @PutMapping("/comments/")
     public CommentDto updateComment(
             @RequestBody UpdateCommentDto updateDto
     ) {
@@ -47,8 +47,8 @@ public class CommentController {
 
     @DeleteMapping("/comments/delete/{id}")
     public void deleteComment(
-            @PathVariable Long id
+            @PathVariable Long commentId
     ) {
-        commentService.deleteComment(id);
+        commentService.deleteComment(commentId);
     }
 }
