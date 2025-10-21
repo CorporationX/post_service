@@ -21,8 +21,6 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import javax.xml.bind.ValidationException;
-import java.time.LocalDateTime;
-import java.time.Month;
 import java.util.List;
 import java.util.Optional;
 
@@ -266,8 +264,7 @@ public class PostServiceImplTest {
                 2L,
                 List.of(3L, 2L),
                 2L,
-                List.of("3", "2"),
-                LocalDateTime.now());
+                List.of("3", "2"));
     }
 
     private UpdatePostDto createUpdatePostDtoForTest() {
@@ -276,7 +273,6 @@ public class PostServiceImplTest {
                 2L,
                 List.of(3L, 2L),
                 2L,
-                List.of("3", "2"),
-                LocalDateTime.of(2026, Month.JANUARY, 3, 21,0));
+                List.of("3", "2"));
     }
 }

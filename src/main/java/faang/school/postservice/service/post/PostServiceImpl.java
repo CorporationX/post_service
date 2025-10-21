@@ -10,6 +10,7 @@ import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -29,6 +30,7 @@ public class PostServiceImpl implements PostService{
     private final ProjectServiceClient projectServiceClient;
 
     @Override
+    @Transactional
     public PostDto createPost(long authorId, CreatePostDto createPostDto) throws ValidationException {
         Post newPost = postMapper.toPost(createPostDto);
         newPost.setAuthorId(authorId);
@@ -45,6 +47,7 @@ public class PostServiceImpl implements PostService{
     }
 
     @Override
+    @Transactional
     public boolean publishPost(long requesterId, long postId) {
         Optional<Post> optionalPostToPublish = postRepository.findById(postId);
         if (optionalPostToPublish.isEmpty()) {
@@ -68,6 +71,7 @@ public class PostServiceImpl implements PostService{
     }
 
     @Override
+    @Transactional
     public PostDto updatePost(long postId, long requesterId, UpdatePostDto updatePostDto) {
         Optional<Post> optionalPostToUpdate = postRepository.findById(postId);
         if (optionalPostToUpdate.isEmpty()) {
@@ -88,6 +92,7 @@ public class PostServiceImpl implements PostService{
     }
 
     @Override
+    @Transactional
     public boolean deletePost(long requesterId, long postId) {
         Optional<Post> optionalPostToDelete = postRepository.findById(postId);
         if (optionalPostToDelete.isEmpty() || optionalPostToDelete.get().isDeleted()) {
