@@ -51,21 +51,9 @@ public class PostFacade {
         return mapToPostDtos(result);
     }
 
-    public List<PostDto> getDraftPostByProjectId(Long projectId) {
-        List<Post> result = postService.getDraftPostByProjectId(projectId);
-        log.info("A list of draft posts by project ID {} was found and sorted from new to old.", projectId);
-        return mapToPostDtos(result);
-    }
-
     public List<PostDto> getPublishedPostByAuthorId(Long authorId) {
         List<Post> result = postService.getPublishedPostByAuthorId(authorId);
         log.info("A list of published posts by author ID {} was found and sorted from new to old.", authorId);
-        return mapToPostDtos(result);
-    }
-
-    public List<PostDto> getPublishedPostByProjectId(Long projectId) {
-        List<Post> result = postService.getPublishedPostByProjectId(projectId);
-        log.info("A list of published posts by project ID {} was found and sorted from new to old.", projectId);
         return mapToPostDtos(result);
     }
 

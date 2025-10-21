@@ -33,11 +33,6 @@ public class PostService {
 
         Long userId = userContext.getUserId();
         existsUserById(userId);
-
-        if (post.getProjectId() != null) {
-            existsProjectById(post.getProjectId());
-        }
-
         post.setAuthorId(userId);
         post.setPostStatus(DRAFT);
         post.setDeleted(false);
@@ -100,33 +95,8 @@ public class PostService {
                 .toList();
     }
 
-    public List<Post> getDraftPostByProjectId(Long projectId) {
-        List<Post> posts = postRepository.findByProjectId(projectId);
-        if (posts.isEmpty()) {
-            return posts;
-        }
-
-        return posts.stream()
-                .filter(post -> !post.isDeleted() && !post.isPublished())
-                .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
-                .toList();
-    }
-
-
     public List<Post> getPublishedPostByAuthorId(Long authorId) {
         List<Post> posts = postRepository.findByAuthorId(authorId);
-        if (posts.isEmpty()) {
-            return posts;
-        }
-
-        return posts.stream()
-                .filter(post -> !post.isDeleted() && post.isPublished())
-                .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
-                .toList();
-    }
-
-    public List<Post> getPublishedPostByProjectId(Long projectId) {
-        List<Post> posts = postRepository.findByProjectId(projectId);
         if (posts.isEmpty()) {
             return posts;
         }
@@ -151,7 +121,4 @@ public class PostService {
         userServiceClient.getUser(userId);
     }
 
-    private void existsProjectById(Long projectId) {
-        projectServiceClient.getProject(projectId);
-    }
 }

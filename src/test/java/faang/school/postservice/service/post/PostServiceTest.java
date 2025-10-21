@@ -85,24 +85,6 @@ class PostServiceTest {
     }
 
     @Test
-    public void createDraftPost_shouldCreateNotNullProjectId_successfully() {
-        post.setProjectId(projectId);
-
-        when(userContext.getUserId()).thenReturn(userId);
-        when(postRepository.save(any(Post.class))).thenReturn(post);
-
-        Post resultPost = postService.createDraftPost(post);
-
-        assertNotNull(resultPost);
-        assertFalse(resultPost.isDeleted());
-        assertFalse(resultPost.isPublished());
-        assertEquals(DRAFT, resultPost.getPostStatus());
-        assertEquals(userId, resultPost.getAuthorId());
-
-        verify(projectServiceClient, times(1)).getProject(projectId);
-    }
-
-    @Test
     public void publishedPost_testPublishPost_successfully() {
         post.setPublished(false);
         post.setDeleted(false);
@@ -255,53 +237,6 @@ class PostServiceTest {
     }
 
     @Test
-    public void getDraftPostByProjectId_successfully() {
-        Post post4 = Post.builder()
-                .authorId(2L)
-                .projectId(2L)
-                .id(4L)
-                .deleted(false)
-                .published(false)
-                .postStatus(DRAFT)
-                .createdAt(LocalDateTime.now().plusDays(6))
-                .build();
-        Post post5 = Post.builder()
-                .authorId(2L)
-                .projectId(2L)
-                .id(5L)
-                .deleted(false)
-                .published(false)
-                .postStatus(DRAFT)
-                .createdAt(LocalDateTime.now().plusDays(1))
-                .build();
-
-        List<Post> posts = List.of(post5, post4);
-        Long projectId = 2L;
-        when(postRepository.findByProjectId(projectId)).thenReturn(posts);
-
-        List<Post> resultPosts = postService.getDraftPostByProjectId(projectId);
-
-        assertEquals(2, resultPosts.size());
-        assertEquals(4L, resultPosts.get(0).getId());
-        assertEquals(5L, resultPosts.get(1).getId());
-    }
-
-    @Test
-    public void getDraftPostByProjectId_returnEmpty() {
-
-
-        List<Post> posts = new ArrayList<>();
-        Long projectId = 3L;
-
-        when(postRepository.findByProjectId(projectId)).thenReturn(posts);
-
-        List<Post> resultPosts = postService.getDraftPostByProjectId(projectId);
-
-        assertEquals(0, resultPosts.size());
-    }
-
-
-    @Test
     public void getPublishedPostByAuthorId_successfully() {
         Post post6 = Post.builder()
                 .authorId(2L)
@@ -344,57 +279,4 @@ class PostServiceTest {
         assertEquals(0, resultPosts.size());
     }
 
-    @Test
-    public void getPublishedPostByProjectId_successfully() {
-        Post post8 = Post.builder()
-                .authorId(2L)
-                .projectId(2L)
-                .id(8L)
-                .deleted(false)
-                .published(true)
-                .postStatus(PUBLISHED)
-                .createdAt(LocalDateTime.now().plusMinutes(7))
-                .build();
-        Post post9 = Post.builder()
-                .authorId(2L)
-                .projectId(2L)
-                .id(9L)
-                .deleted(false)
-                .published(true)
-                .postStatus(PUBLISHED)
-                .createdAt(LocalDateTime.now().plusMinutes(150))
-                .build();
-        Post post10 = Post.builder()
-                .authorId(2L)
-                .projectId(2L)
-                .id(10L)
-                .deleted(false)
-                .published(true)
-                .postStatus(PUBLISHED)
-                .createdAt(LocalDateTime.now().plusMinutes(123))
-                .build();
-
-        List<Post> posts = List.of(post10, post9, post8);
-        Long projectId = 2L;
-        when(postRepository.findByProjectId(projectId)).thenReturn(posts);
-
-        List<Post> resultPosts = postService.getPublishedPostByProjectId(projectId);
-
-        assertEquals(3, resultPosts.size());
-        assertEquals(9L, resultPosts.get(0).getId());
-        assertEquals(10L, resultPosts.get(1).getId());
-        assertEquals(8L, resultPosts.get(2).getId());
-    }
-
-    @Test
-    public void getPublishedPostByProjectId_returnEmpty() {
-        List<Post> posts = new ArrayList<>();
-        Long projectId = 3L;
-
-        when(postRepository.findByProjectId(projectId)).thenReturn(posts);
-
-        List<Post> resultPosts = postService.getPublishedPostByProjectId(projectId);
-
-        assertEquals(0, resultPosts.size());
-    }
 }
