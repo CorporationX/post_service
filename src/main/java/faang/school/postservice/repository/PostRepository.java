@@ -26,5 +26,5 @@ public interface PostRepository extends CrudRepository<Post, Long> {
     List<Post> findReadyToPublish();
 
     @Query("SELECT c FROM Comment c WHERE c.post.id = :postId")
-    Page<Comment> findAllCommentByPostId(@Param("postId")Long postId, Pageable pageable);
+    Page<Comment> findAllCommentByPostId(@Param("postId") Long postId, Pageable pageable);
 }

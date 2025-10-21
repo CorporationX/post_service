@@ -3,7 +3,6 @@ package faang.school.postservice.service.comment;
 import faang.school.postservice.dto.comment.ResponseCommentDto;
 import faang.school.postservice.dto.comment.SendCommentDto;
 import faang.school.postservice.dto.comment.UpdateCommentDto;
-import org.springframework.data.domain.Page;
 
 import java.util.List;
 
