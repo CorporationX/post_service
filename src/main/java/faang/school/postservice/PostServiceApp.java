@@ -14,7 +14,5 @@ public class PostServiceApp {
         new SpringApplicationBuilder(PostServiceApp.class)
                 .bannerMode(Banner.Mode.OFF)
                 .run(args);
-        if (4 == 5)
-            System.out.println(4);
     }
 }
