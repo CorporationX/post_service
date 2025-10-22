@@ -46,3 +46,16 @@ payment-service:
   host: localhost
   port: 9080
   context-path: /api/v1
+
+services:
+  s3:
+    endpoint: http://192.168.1.65:9001
+    accessKey: user
+    secretKey: password
+    bucketName: corpbucket
+
+minio:
+  endpoint: http://localhost:9000
+  access-key: user
+  secret-key: password
+  bucket-name: corpbucket
