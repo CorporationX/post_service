@@ -1,0 +1,86 @@
+package faang.school.postservice.controller;
+
+import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.album.AlbumDto;
+import faang.school.postservice.dto.album.FavoriteAlbumsDto;
+import faang.school.postservice.filters.AlbumFilterDto;
+import faang.school.postservice.service.AlbumService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/albums")
+@RequiredArgsConstructor
+public class AlbumController {
+
+    private final AlbumService albumService;
+    private final UserContext userContext;
+
+    @PostMapping
+    public ResponseEntity<AlbumDto> createAlbum(@RequestBody AlbumDto albumDto) {
+        Long userId = userContext.getUserId();
+
+        return ResponseEntity.ok(albumService.createAlbum(albumDto, userId));
+    }
+
+    @PutMapping("/{albumId}")
+    public ResponseEntity<AlbumDto> updateAlbum(@PathVariable Long albumId,
+                                                @RequestBody AlbumDto albumDto) {
+        return ResponseEntity.ok(albumService.updateAlbum(albumId, albumDto));
+
+    }
+
+    @DeleteMapping("/{albumId}")
+    public ResponseEntity deleteAlbum(@PathVariable Long albumId) {
+        albumService.deleteAlbum(albumId);
+
+        return ResponseEntity.ok().build();
+
+    }
+
+    @GetMapping("/{albumId}")
+    public ResponseEntity<AlbumDto> getAlbum(@PathVariable Long albumId) {
+
+        return ResponseEntity.ok(albumService.getById(albumId));
+    }
+
+    @GetMapping
+    public ResponseEntity<List<AlbumDto>> getAlbums(AlbumFilterDto albumFilterDto) {
+        List<AlbumDto> albums = albumService.getAlbums(albumFilterDto);
+
+        return albums.isEmpty() ?
+                ResponseEntity.noContent().build() : ResponseEntity.ok(albums);
+    }
+
+    @GetMapping("my-albums")
+    public ResponseEntity<List<AlbumDto>> getAuthorAlbums(AlbumFilterDto albumFilterDto) {
+        Long userId = userContext.getUserId();
+
+        return ResponseEntity.ok(albumService.getAuthorsAlbums(userId, albumFilterDto));
+    }
+
+    @PutMapping("/add-post")
+    public ResponseEntity<AlbumDto> addPostToAlbum(@RequestParam("post_id") Long pageId,
+                                                   @RequestParam("album_id") Long albumId) {
+
+        return ResponseEntity.ok(albumService.addPost(pageId, albumId));
+    }
+
+    @PutMapping("/to-favorite/{album_id}")
+    public ResponseEntity<FavoriteAlbumsDto> addAlbumToFavorite(@PathVariable("album_id") Long albumId) {
+
+        return ResponseEntity.ok(albumService.addToFavoriteAlbums(albumId, userContext.getUserId()));
+    }
+
+}
