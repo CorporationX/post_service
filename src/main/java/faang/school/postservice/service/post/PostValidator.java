@@ -1,14 +1,9 @@
 package faang.school.postservice.service.post;
 
-import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.model.Post;
 
 import java.util.Objects;
-import java.util.Optional;
-
-import static faang.school.postservice.model.PostStatus.DELETED;
-import static faang.school.postservice.model.PostStatus.DRAFT;
 
 public class PostValidator {
 
@@ -19,24 +14,15 @@ public class PostValidator {
         }
     }
 
-    public static Post validatePostExists(Optional<Post> optionalPost, Long postId) {
-        if (optionalPost.isEmpty()) {
-            throw new DataValidationException(String.format("This post %d does not exist.", postId));
-        } else {
-            return optionalPost.get();
-        }
-    }
-
     public static void validatePostIsNotPublished(Post post) {
-        if (post.isPublished() && !Objects.equals(post.getPostStatus(), DRAFT)) {
+        if (post.isPublished()) {
             throw new ForbiddenException(String.format("The post %d has already been published.", post.getId()));
         }
     }
 
-    public static void validatePostIsDeleted(Post post) {
-        if (post.isDeleted() && Objects.equals(post.getPostStatus(), DELETED)) {
-            throw new ForbiddenException(String.format("the post {} has already been deleted", post.getId()));
+    public static void ensurePostIsNotDeleted(Post post) {
+        if (post.isDeleted()) {
+            throw new ForbiddenException(String.format("The post %d has already been deleted", post.getId()));
         }
-
     }
 }

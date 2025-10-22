@@ -2,93 +2,57 @@ package faang.school.postservice.controller;
 
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
-import faang.school.postservice.exception.ErrorResponse;
 import faang.school.postservice.exception.ForbiddenException;
 import org.springframework.http.HttpStatus;
-import org.springframework.validation.FieldError;
-import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.ServletWebRequest;
+import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 @RestControllerAdvice
-public class GlobalExceptionHandler {
-
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map<String, Object> handlerDataValidationException(MethodArgumentNotValidException e) {
-        Map<String, Object> errors = new HashMap<>();
-        Map<String, String> fieldErrors = new HashMap<>();
-
-        e.getBindingResult().getAllErrors().forEach((error) -> {
-            String fieldName = ((FieldError) error).getField();
-            String errorMessage = error.getDefaultMessage();
-            fieldErrors.put(fieldName, errorMessage);
-        });
-
-        errors.put("timestamp", System.currentTimeMillis());
-        errors.put("status", HttpStatus.BAD_REQUEST.value());
-        errors.put("error", "Validation Failed");
-        errors.put("fieldErrors", fieldErrors);
-
-        return errors;
-    }
+public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(DataValidationException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleDataValidationException(DataValidationException e) {
-        return new ErrorResponse(
-                System.currentTimeMillis(),
-                HttpStatus.BAD_REQUEST.value(),
-                "Bad Request",
-                e.getMessage()
-        );
+    public ResponseEntity<Object> handleDataValidationException(DataValidationException ex, WebRequest request) {
+        return createResponseEntity(ex, HttpStatus.BAD_REQUEST, request, "Bad Request");
     }
 
     @ExceptionHandler(EntityNotFoundException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleEntityNotFoundException(EntityNotFoundException e) {
-        return new ErrorResponse(
-                System.currentTimeMillis(),
-                HttpStatus.NOT_FOUND.value(),
-                "Not found",
-                e.getMessage()
-        );
+    public ResponseEntity<Object> handleEntityNotFoundException(EntityNotFoundException ex, WebRequest request) {
+        return createResponseEntity(ex, HttpStatus.NOT_FOUND, request, "Not Found");
     }
 
     @ExceptionHandler(ForbiddenException.class)
-    @ResponseStatus(HttpStatus.FORBIDDEN)
-    public ErrorResponse handleForbiddenException(ForbiddenException e) {
-        return new ErrorResponse(
-                System.currentTimeMillis(),
-                HttpStatus.FORBIDDEN.value(),
-                "FORBIDDEN",
-                e.getMessage()
-        );
+    public ResponseEntity<Object> handleForbiddenException(ForbiddenException ex, WebRequest request) {
+        return createResponseEntity(ex, HttpStatus.FORBIDDEN, request, "Forbidden");
     }
 
     @ExceptionHandler(RuntimeException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleRuntimeException(RuntimeException e) {
-        return new ErrorResponse(
-                System.currentTimeMillis(),
-                HttpStatus.BAD_REQUEST.value(),
-                "BAD_REQUEST",
-                e.getMessage()
-        );
+    public ResponseEntity<Object> handleRuntimeException(RuntimeException ex, WebRequest request) {
+        return createResponseEntity(ex, HttpStatus.BAD_REQUEST, request, "Bad Request");
     }
 
     @ExceptionHandler(Exception.class)
-    @ResponseStatus(HttpStatus.EXPECTATION_FAILED)
-    public ErrorResponse handleException(Exception e) {
-        return new ErrorResponse(
-                System.currentTimeMillis(),
-                HttpStatus.EXPECTATION_FAILED.value(),
-                "EXPECTATION_FAILED",
-                e.getMessage()
-        );
+    public ResponseEntity<Object> handleAllExceptions(Exception ex, WebRequest request) {
+        return createResponseEntity(ex, HttpStatus.EXPECTATION_FAILED, request, "Expectation Failed");
+    }
+
+    private ResponseEntity<Object> createResponseEntity(Exception ex,
+                                                        HttpStatus status,
+                                                        WebRequest request,
+                                                        String error) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", System.currentTimeMillis());
+        body.put("status", status.value());
+        body.put("error", error);
+        body.put("message", ex.getMessage());
+        body.put("path", ((ServletWebRequest) request).getRequest().getRequestURI());
+
+        return new ResponseEntity<>(body, status);
     }
 }

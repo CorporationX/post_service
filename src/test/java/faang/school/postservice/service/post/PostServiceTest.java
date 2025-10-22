@@ -21,9 +21,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static faang.school.postservice.model.PostStatus.DELETED;
-import static faang.school.postservice.model.PostStatus.DRAFT;
-import static faang.school.postservice.model.PostStatus.PUBLISHED;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -78,7 +75,6 @@ class PostServiceTest {
         assertNotNull(resultPost);
         assertFalse(resultPost.isDeleted());
         assertFalse(resultPost.isPublished());
-        assertEquals(DRAFT, resultPost.getPostStatus());
         assertEquals(userId, resultPost.getAuthorId());
 
         verify(projectServiceClient, times(0)).getProject(projectId);
@@ -88,7 +84,6 @@ class PostServiceTest {
     public void publishedPost_testPublishPost_successfully() {
         post.setPublished(false);
         post.setDeleted(false);
-        post.setPostStatus(DRAFT);
 
         when(userContext.getUserId()).thenReturn(userId);
         when(postRepository.findById(postId)).thenReturn(Optional.of(post));
@@ -99,14 +94,12 @@ class PostServiceTest {
         assertNotNull(result);
         assertFalse(result.isDeleted());
         assertTrue(result.isPublished());
-        assertEquals(PUBLISHED, result.getPostStatus());
     }
 
     @Test
     public void publishedPost_testPublishPostAlreadyPublished_throws() {
         post.setPublished(true);
         post.setDeleted(false);
-        post.setPostStatus(PUBLISHED);
 
         when(userContext.getUserId()).thenReturn(userId);
         when(postRepository.findById(postId)).thenReturn(Optional.of(post));
@@ -159,7 +152,6 @@ class PostServiceTest {
     public void deleteById_postIsNotDeleted_successfully() {
         post.setPublished(true);
         post.setDeleted(false);
-        post.setPostStatus(PUBLISHED);
 
         when(userContext.getUserId()).thenReturn(userId);
         when(postRepository.findById(postId)).thenReturn(Optional.of(post));
@@ -172,7 +164,6 @@ class PostServiceTest {
 
         Post result = postCaptor.getValue();
 
-        assertEquals(DELETED, result.getPostStatus());
         assertTrue(result.isDeleted());
 
         verify(postRepository, times(1)).save(post);
@@ -182,8 +173,6 @@ class PostServiceTest {
     public void deleteById_postAlreadyDeleted_throws() {
         post.setPublished(true);
         post.setDeleted(true);
-        post.setPostStatus(DELETED);
-
         when(userContext.getUserId()).thenReturn(userId);
         when(postRepository.findById(postId)).thenReturn(Optional.of(post));
 
@@ -201,7 +190,6 @@ class PostServiceTest {
                 .id(2L)
                 .deleted(false)
                 .published(false)
-                .postStatus(DRAFT)
                 .createdAt(LocalDateTime.now().minusHours(3))
                 .build();
         Post post3 = Post.builder()
@@ -210,13 +198,12 @@ class PostServiceTest {
                 .id(3L)
                 .deleted(false)
                 .published(false)
-                .postStatus(DRAFT)
                 .createdAt(LocalDateTime.now().plusDays(3))
                 .build();
 
         List<Post> posts = List.of(post2, post3);
         Long authorId = 2L;
-        when(postRepository.findByAuthorId(authorId)).thenReturn(posts);
+        when(postRepository.findPostToDraftByAuthorId(authorId)).thenReturn(posts);
 
         List<Post> resultPosts = postService.getDraftPostByAuthorId(authorId);
 
@@ -229,7 +216,7 @@ class PostServiceTest {
     public void getDraftPostByAuthorId_returnEmpty() {
         List<Post> posts = new ArrayList<>();
         Long authorId = 3L;
-        when(postRepository.findByAuthorId(authorId)).thenReturn(posts);
+        when(postRepository.findPostToDraftByAuthorId(authorId)).thenReturn(posts);
 
         List<Post> resultPosts = postService.getDraftPostByAuthorId(authorId);
 
@@ -244,7 +231,6 @@ class PostServiceTest {
                 .id(6L)
                 .deleted(false)
                 .published(true)
-                .postStatus(PUBLISHED)
                 .createdAt(LocalDateTime.now().plusDays(7))
                 .build();
         Post post7 = Post.builder()
@@ -253,13 +239,12 @@ class PostServiceTest {
                 .id(7L)
                 .deleted(false)
                 .published(true)
-                .postStatus(PUBLISHED)
                 .createdAt(LocalDateTime.now().plusDays(11))
                 .build();
 
         List<Post> posts = List.of(post7, post6);
         Long authorId = 2L;
-        when(postRepository.findByAuthorId(authorId)).thenReturn(posts);
+        when(postRepository.findPostToPublishedByAuthorId(authorId)).thenReturn(posts);
 
         List<Post> resultPosts = postService.getPublishedPostByAuthorId(authorId);
 
@@ -272,7 +257,7 @@ class PostServiceTest {
     public void getPublishedPostByAuthorId_returnEmpty() {
         List<Post> posts = new ArrayList<>();
         Long authorId = 3L;
-        when(postRepository.findByAuthorId(authorId)).thenReturn(posts);
+        when(postRepository.findPostToPublishedByAuthorId(authorId)).thenReturn(posts);
 
         List<Post> resultPosts = postService.getPublishedPostByAuthorId(authorId);
 
