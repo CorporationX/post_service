@@ -5,12 +5,18 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.CreatePostRequestDto;
 import faang.school.postservice.dto.post.UpdatePostRequestDto;
 import faang.school.postservice.dto.post.PostResponseDto;
+import faang.school.postservice.dto.project.ProjectDto;
+import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.exception.ProjectNotFoundException;
+import faang.school.postservice.exception.UserNotFoundException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,9 +51,15 @@ public class PostServiceImpl implements PostService {
 
         try {
             if (dto.authorId() != null) {
-                userServiceClient.getUser(dto.authorId());
+                ResponseEntity<UserDto> resp = userServiceClient.getUser(dto.authorId());
+                if (resp.getStatusCode() == HttpStatus.NOT_FOUND) {
+                    throw new UserNotFoundException(dto.authorId());
+                }
             } else {
-                projectServiceClient.getProject(dto.projectId());
+                ResponseEntity<ProjectDto> resp = projectServiceClient.getProject(dto.projectId());
+                if (resp.getStatusCode() == HttpStatus.NOT_FOUND) {
+                    throw new ProjectNotFoundException(dto.projectId());
+                }
             }
         } catch (FeignException.NotFound ex) {
             log.warn("Author not found in external service: {}", ex.getMessage());

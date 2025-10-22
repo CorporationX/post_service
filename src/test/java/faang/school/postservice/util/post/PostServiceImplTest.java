@@ -5,6 +5,8 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.CreatePostRequestDto;
 import faang.school.postservice.dto.post.UpdatePostRequestDto;
 import faang.school.postservice.dto.post.PostResponseDto;
+import faang.school.postservice.dto.project.ProjectDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
@@ -19,6 +21,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -84,7 +87,9 @@ class PostServiceImplTest {
     @DisplayName("createDraft: ok (author user) + timestamps")
     void createDraft_user_ok() {
         CreatePostRequestDto input = new CreatePostRequestDto(CONTENT_CREATE, AUTHOR_ID, null);
-        when(userServiceClient.getUser(AUTHOR_ID)).thenReturn(null);
+        when(userServiceClient.getUser(AUTHOR_ID))
+                .thenReturn(ResponseEntity.ok(new UserDto(AUTHOR_ID, "name","spb@ru")));
+
         when(postRepository.save(any(Post.class))).thenAnswer(inv -> {
             Post p = inv.getArgument(0);
             p.setId(SAVED_ID);
@@ -109,7 +114,9 @@ class PostServiceImplTest {
     @DisplayName("createDraft: ok (project author)")
     void createDraft_project_ok() {
         CreatePostRequestDto input = new CreatePostRequestDto(CONTENT_CREATE, null, PROJECT_ID);
-        when(projectServiceClient.getProject(PROJECT_ID)).thenReturn(null);
+        when(projectServiceClient.getProject(PROJECT_ID))
+                .thenReturn(ResponseEntity.ok(new ProjectDto(PROJECT_ID, "name")));
+
         when(postRepository.save(any(Post.class))).thenAnswer(inv -> {
             Post p = inv.getArgument(0);
             p.setId(SAVED_ID);
@@ -295,14 +302,16 @@ class PostServiceImplTest {
     }
 
     @Test
-    @DisplayName("create: sets createdAt & updatedAt (via JPA timestamps), published=false, publishedAt=null")
-    void create_sets_timestamps() {
-
+    @DisplayName("createDraft: sets createdAt & updatedAt (JPA timestamps), published=false, publishedAt=null")
+    void createDraft_setsTimestamps_andDraftFlags() {
         CreatePostRequestDto input = new CreatePostRequestDto(
                 CONTENT_CREATE,
                 AUTHOR_ID,
                 null
         );
+
+        when(userServiceClient.getUser(AUTHOR_ID))
+                .thenReturn(ResponseEntity.ok(new UserDto(AUTHOR_ID, "name","spb@ru")));
 
         when(postRepository.save(any(Post.class))).thenAnswer(inv -> {
             Post p = inv.getArgument(0);
