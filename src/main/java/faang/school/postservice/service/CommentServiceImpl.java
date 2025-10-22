@@ -27,7 +27,7 @@ public class CommentServiceImpl implements CommentService {
     private final CommentMapper commentMapper;
     private final UserServiceClient userServiceClient;
     private final CommentRepository commentRepository;
-    private final int MAX_ALLOWED_COMMENT_TEXT_SIZE = 4096;
+    private static final int MAX_ALLOWED_COMMENT_TEXT_SIZE = 4096;
 
     @Override
     public CommentDto addComment(Long postId, CreateCommentDto commentDto) {
