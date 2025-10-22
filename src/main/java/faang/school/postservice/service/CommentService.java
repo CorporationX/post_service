@@ -30,7 +30,7 @@ public interface CommentService {
      * @throws IllegalArgumentException если пост не существует
      * @throws IllegalArgumentException если автор не существует
      */
-    ResponseCommentDto createComment(long postId, CreateCommentDto createCommentDto);
+    ResponseCommentDto createComment(long postId, CreateCommentDto createCommentDto, long userId);
 
     /**
      * Обновить комментарий

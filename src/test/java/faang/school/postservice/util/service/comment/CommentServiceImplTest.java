@@ -11,6 +11,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.CommentServiceImpl;
+import faang.school.postservice.service.PostService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mapstruct.factory.Mappers;
@@ -18,6 +19,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -40,7 +42,7 @@ public class CommentServiceImplTest {
 
     private static final Long POST_ID = 1L;
     private static final Long COMMENT_ID = 20L;
-    private static final Long AUTHOR_ID = 123L;
+    private static final Long USER_ID = 123L;
     private static final Long ANOTHER_POST_ID = 2L;
     private static final Long NON_EXISTENT_POST_ID = 999L;
     private static final Long NON_EXISTENT_COMMENT_ID = 777L;
@@ -55,7 +57,7 @@ public class CommentServiceImplTest {
     private final Comment testComment = Comment.builder()
             .id(COMMENT_ID)
             .content(CONTENT)
-            .authorId(AUTHOR_ID)
+            .authorId(USER_ID)
             .post(testPost)
             .createdAt(LocalDateTime.now().minusHours(1))
             .updatedAt(LocalDateTime.now().minusHours(1))
@@ -66,6 +68,9 @@ public class CommentServiceImplTest {
 
     @Mock
     private PostRepository postRepository;
+
+    @Mock
+    private PostService postService;
 
     @Mock
     private UserServiceClient userServiceClient;
@@ -82,6 +87,7 @@ public class CommentServiceImplTest {
         Comment newerComment = createComment(3L, LocalDateTime.now().minusMinutes(30));
         List<Comment> comments = new ArrayList<>(List.of(testComment, olderComment, newerComment));
 
+        when(postService.getPostEntityById(POST_ID)).thenReturn(testPost);
         when(commentRepository.findAllByPostId(POST_ID)).thenReturn(comments);
 
         List<ResponseCommentDto> result = commentService.getAllComments(POST_ID);
@@ -94,23 +100,23 @@ public class CommentServiceImplTest {
 
     @Test
     void createComment_WithValidDataShouldCreateComment() {
-        CreateCommentDto createDto = new CreateCommentDto(AUTHOR_ID, CONTENT);
+        CreateCommentDto createDto = new CreateCommentDto(CONTENT);
 
-        when(postRepository.findById(POST_ID)).thenReturn(Optional.of(testPost));
-        when(userServiceClient.getUser(AUTHOR_ID)).thenReturn(new UserDto(AUTHOR_ID,
-                "Test User", "test@example.com"));
+        when(postService.getPostEntityById(POST_ID)).thenReturn(testPost);
+        when(userServiceClient.getUser(USER_ID)).thenReturn(ResponseEntity.ok(new UserDto(USER_ID,
+                "Test User", "test@example.com")));
 
         when(commentRepository.save(any(Comment.class))).thenReturn(testComment);
 
-        ResponseCommentDto result = commentService.createComment(POST_ID, createDto);
+        ResponseCommentDto result = commentService.createComment(POST_ID, createDto, USER_ID);
 
         assertNotNull(result);
         assertNotNull(result.createdAt());
         assertNotNull(result.updatedAt());
         assertEquals(result.createdAt(), result.updatedAt());
 
-        verify(postRepository).findById(POST_ID);
-        verify(userServiceClient).getUser(AUTHOR_ID);
+        verify(postService).getPostEntityById(POST_ID);
+        verify(userServiceClient).getUser(USER_ID);
         verify(commentMapper).toEntity(createDto);
         verify(commentRepository).save(any(Comment.class));
         verify(commentMapper).toResponseDto(testComment);
@@ -118,58 +124,59 @@ public class CommentServiceImplTest {
 
     @Test
     void createComment_WithNonExistentPostShouldThrowException() {
-        CreateCommentDto createDto = new CreateCommentDto(AUTHOR_ID, CONTENT);
+        CreateCommentDto createDto = new CreateCommentDto(CONTENT);
 
-        when(postRepository.findById(NON_EXISTENT_POST_ID)).thenReturn(Optional.empty());
+        when(postService.getPostEntityById(NON_EXISTENT_POST_ID)).thenThrow(new IllegalArgumentException("Post not found"));
 
         assertThrows(IllegalArgumentException.class,
-                () -> commentService.createComment(NON_EXISTENT_POST_ID, createDto));
+                () -> commentService.createComment(NON_EXISTENT_POST_ID, createDto, USER_ID));
 
-        verify(postRepository).findById(NON_EXISTENT_POST_ID);
+        verify(postService).getPostEntityById(NON_EXISTENT_POST_ID);
         verifyNoInteractions(userServiceClient, commentMapper, commentRepository);
     }
 
     @Test
     void createComment_WithEmptyContentShouldThrowException() {
-        CreateCommentDto createDto = new CreateCommentDto(AUTHOR_ID, EMPTY_CONTENT);
+        CreateCommentDto createDto = new CreateCommentDto(EMPTY_CONTENT);
 
         assertThrows(IllegalArgumentException.class,
-                () -> commentService.createComment(POST_ID, createDto));
+                () -> commentService.createComment(POST_ID,createDto, USER_ID));
 
         verifyNoInteractions(postRepository, userServiceClient, commentMapper, commentRepository);
     }
 
     @Test
     void createComment_WithBlankContentShouldThrowException() {
-        CreateCommentDto createDto = new CreateCommentDto(AUTHOR_ID, BLANK_CONTENT);
+        CreateCommentDto createDto = new CreateCommentDto(BLANK_CONTENT);
 
         assertThrows(IllegalArgumentException.class,
-                () -> commentService.createComment(POST_ID, createDto));
+                () -> commentService.createComment(POST_ID, createDto, USER_ID));
 
         verifyNoInteractions(postRepository, userServiceClient, commentMapper, commentRepository);
     }
 
     @Test
     void createComment_WithTooLongContentShouldThrowException() {
-        CreateCommentDto createDto = new CreateCommentDto(AUTHOR_ID, LONG_CONTENT);
+        CreateCommentDto createDto = new CreateCommentDto(LONG_CONTENT);
 
         assertThrows(IllegalArgumentException.class,
-                () -> commentService.createComment(POST_ID, createDto));
+                () -> commentService.createComment(POST_ID, createDto, USER_ID));
 
         verifyNoInteractions(postRepository, userServiceClient, commentMapper, commentRepository);
     }
 
     @Test
     void createComment_ShouldSetBothTimes() {
-        CreateCommentDto createDto = new CreateCommentDto(AUTHOR_ID, CONTENT);
+        CreateCommentDto createDto = new CreateCommentDto(CONTENT);
 
-        when(postRepository.findById(POST_ID)).thenReturn(Optional.of(testPost));
-        when(userServiceClient.getUser(AUTHOR_ID)).thenReturn(new UserDto(AUTHOR_ID, "Test User", "test@example.com"));
+        when(postService.getPostEntityById(POST_ID)).thenReturn(testPost);
+        when(userServiceClient.getUser(USER_ID)).thenReturn(ResponseEntity.ok(new UserDto(USER_ID,
+                "Test User", "test@example.com")));
 
         Comment savedComment = Comment.builder()
                 .id(COMMENT_ID)
                 .content(CONTENT)
-                .authorId(AUTHOR_ID)
+                .authorId(USER_ID)
                 .post(testPost)
                 .createdAt(LocalDateTime.of(2024, 1, 15, 10, 30))
                 .updatedAt(LocalDateTime.of(2024, 1, 15, 10, 30))
@@ -177,7 +184,7 @@ public class CommentServiceImplTest {
 
         when(commentRepository.save(any(Comment.class))).thenReturn(savedComment);
 
-        ResponseCommentDto result = commentService.createComment(POST_ID, createDto);
+        ResponseCommentDto result = commentService.createComment(POST_ID, createDto, USER_ID);
 
         assertNotNull(result.createdAt());
         assertNotNull(result.updatedAt());
@@ -194,7 +201,7 @@ public class CommentServiceImplTest {
         Comment existingComment = Comment.builder()
                 .id(COMMENT_ID)
                 .content(CONTENT)
-                .authorId(AUTHOR_ID)
+                .authorId(USER_ID)
                 .post(testPost)
                 .createdAt(oldCreatedAt)
                 .updatedAt(oldUpdatedAt)
@@ -203,7 +210,7 @@ public class CommentServiceImplTest {
         Comment updatedComment = Comment.builder()
                 .id(COMMENT_ID)
                 .content(UPDATED_CONTENT)
-                .authorId(AUTHOR_ID)
+                .authorId(USER_ID)
                 .post(testPost)
                 .createdAt(oldCreatedAt)
                 .updatedAt(LocalDateTime.now())
@@ -302,7 +309,7 @@ public class CommentServiceImplTest {
         return Comment.builder()
                 .id(id)
                 .content("Comment " + id)
-                .authorId(AUTHOR_ID)
+                .authorId(USER_ID)
                 .post(testPost)
                 .createdAt(createdAt)
                 .build();
@@ -313,7 +320,7 @@ public class CommentServiceImplTest {
         return Comment.builder()
                 .id(COMMENT_ID)
                 .content(CONTENT)
-                .authorId(AUTHOR_ID)
+                .authorId(USER_ID)
                 .post(differentPost)
                 .build();
     }

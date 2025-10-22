@@ -1,5 +1,6 @@
 package faang.school.postservice.controller;
 
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CreateCommentDto;
 import faang.school.postservice.dto.comment.ResponseCommentDto;
 import faang.school.postservice.dto.comment.UpdateCommentDto;
@@ -23,25 +24,27 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/posts/{postId}/comments")
+@RequestMapping("/comments")
 public class CommentController {
 
     private final CommentService commentService;
+    private final UserContext userContext;
 
-    @GetMapping
+    @GetMapping("/post/{postId}")
     public List<ResponseCommentDto> getAllComments(@PathVariable long postId) {
         log.info("Getting all comments for post with id: {}", postId);
         return commentService.getAllComments(postId);
     }
 
-    @PostMapping
+    @PostMapping("/post/{postId}")
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseCommentDto createComment(
             @PathVariable long postId,
             @Valid @RequestBody CreateCommentDto createCommentDto
     ) {
-        log.info("Creating comment for post {} by author {}", postId, createCommentDto.authorId());
-        return commentService.createComment(postId, createCommentDto);
+        long userId = userContext.getUserId();
+        log.info("Creating comment for post {} by author {}", postId, userId);
+        return commentService.createComment(postId, createCommentDto, userId);
     }
 
     @PutMapping("/{commentId}")

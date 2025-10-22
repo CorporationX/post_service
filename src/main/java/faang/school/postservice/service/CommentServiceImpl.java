@@ -4,6 +4,7 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CreateCommentDto;
 import faang.school.postservice.dto.comment.ResponseCommentDto;
 import faang.school.postservice.dto.comment.UpdateCommentDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
@@ -12,6 +13,7 @@ import faang.school.postservice.repository.PostRepository;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,15 +24,18 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CommentServiceImpl implements CommentService {
 
+    private static final int MAX_COMMENT_LENGTH = 4096;
+
     private final CommentRepository commentRepository;
-    private final PostRepository postRepository; // заменить на PostService postService;
+    private final PostService postService;
     private final CommentMapper commentMapper;
     private final UserServiceClient userServiceClient;
 
     @Override
     @Transactional(readOnly = true)
     public List<ResponseCommentDto> getAllComments(long postId) {
-        // добавить postService.getPostEntityById(postId);
+        postService.getPostEntityById(postId);
+
         List<Comment> comments = commentRepository.findAllByPostId(postId);
         comments.sort((c1, c2) -> c2.getCreatedAt().compareTo(c1.getCreatedAt()));
 
@@ -42,24 +47,28 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     @Transactional
-    public ResponseCommentDto createComment(long postId, CreateCommentDto createCommentDto) {
+    public ResponseCommentDto createComment(long postId, CreateCommentDto createCommentDto, long userId) {
         validateCommentContent(createCommentDto.content());
 
-        Post post = postRepository.findById(postId) //заменить на = postService.getPostEntityById(postId);
-                .orElseThrow(() -> new IllegalArgumentException("Post not found with id: " + postId));
+        Post post = postService.getPostEntityById(postId);
 
         try {
-            userServiceClient.getUser(createCommentDto.authorId());
+            ResponseEntity<UserDto> response = userServiceClient.getUser(userId);
+            UserDto user = response.getBody();
+        } catch (FeignException.NotFound e) {
+            log.warn("User with id {} not found in user_service", userId);
+            throw new IllegalArgumentException("Author not found with id: " + userId);
         } catch (FeignException e) {
-            log.warn("User with id {} not found in user_service", createCommentDto.authorId());
-            throw new IllegalArgumentException("Author not found with id: " + createCommentDto.authorId());
+            log.error("FeignException for user Id {}: {}", userId, e.getMessage());
+            throw new RuntimeException("User service is unavailable");
         }
 
         Comment comment = commentMapper.toEntity(createCommentDto);
         comment.setPost(post);
+        comment.setAuthorId(userId);
 
         Comment savedComment = commentRepository.save(comment);
-        log.info("Created comment with id: {} for post with id: {}", savedComment.getId(), postId);
+        log.info("Created comment with id: {} for post with id: {} by user {}", savedComment.getId(), postId, userId);
 
         return commentMapper.toResponseDto(savedComment);
     }
@@ -105,7 +114,7 @@ public class CommentServiceImpl implements CommentService {
             throw new IllegalArgumentException("Comment content cannot be blank");
         }
 
-        if (content.length() > 4096) {
+        if (content.length() > MAX_COMMENT_LENGTH) {
             log.warn("Comment content exceeds maximum length of 4096 characters");
             throw new IllegalArgumentException("Comment content must not exceed 4096 characters");
         }
