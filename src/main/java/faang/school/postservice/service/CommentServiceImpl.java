@@ -27,6 +27,7 @@ public class CommentServiceImpl implements CommentService {
     private final CommentMapper commentMapper;
     private final UserServiceClient userServiceClient;
     private final CommentRepository commentRepository;
+    private final int MAX_ALLOWED_COMMENT_TEXT_SIZE = 4096;
 
     @Override
     public CommentDto addComment(Long postId, CreateCommentDto commentDto) {
@@ -51,9 +52,11 @@ public class CommentServiceImpl implements CommentService {
         validateNotNull(commentDto.updatedAt(), "Update time/date");
         Comment comment = validateCommentExists(commentDto.id());
         if (!userId.equals(comment.getAuthorId())) {
+            log.error("User/author ID mismatch");
             throw new IllegalArgumentException("Comment update is not allowed for current user!");
         }
         if (!comment.getPost().getId().equals(commentDto.postId())) {
+            log.error("Post ID mismatch");
             throw new IllegalArgumentException("Post IDs of original and updated comments do not match!");
         }
         commentMapper.update(commentDto, comment);
@@ -68,10 +71,11 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public List<CommentDto> getCommentsByPostId(Long postId) {
         log.info("Searching for comments under post with ID {}", postId);
-        if (commentRepository.findAllByPostId(postId).isEmpty()) {
+        List<Comment> commentsByPostId = commentRepository.findAllByPostId(postId);
+        if (commentsByPostId.isEmpty()) {
             throw new NullPointerException("There are no comment under post with specified ID!");
         }
-        return commentRepository.findAllByPostId(postId).stream()
+        return commentsByPostId.stream()
                 .sorted(Comparator.comparing(Comment::getCreatedAt).reversed())
                 .map(commentMapper::toCommentDto).toList();
     }
@@ -103,7 +107,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
     private void validateCommentLength(String content) {
-        if (content.length() > 4096 || content.isBlank()) {
+        if (content.length() > MAX_ALLOWED_COMMENT_TEXT_SIZE || content.isBlank()) {
             throw new IllegalArgumentException("Comment length should be less than 4096 characters and cannot be empty!");
         }
     }
