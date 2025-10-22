@@ -8,6 +8,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -44,7 +45,6 @@ public class PostService {
 
     public Post publishedPost(Long postId) {
         Post post = checkUserContextAndGetPostById(postId);
-
         PostValidator.validatePostIsNotPublished(post);
 
         post.setPublished(true);
