@@ -34,7 +34,7 @@ public class CommentService {
         return comments.stream()
                 .sorted(Comparator.comparing(Comment::getCreatedAt).reversed())
                 .map(commentMapper::toDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public CommentDto findById(long id) {
