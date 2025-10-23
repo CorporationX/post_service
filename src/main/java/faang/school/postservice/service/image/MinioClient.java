@@ -11,25 +11,25 @@ import software.amazon.awssdk.services.s3.S3Client;
 import java.net.URI;
 
 @Configuration
-public class MinioClient { // создает настроенный клиент для подключения к MinIO серверу
+public class MinioClient {
 
-    @Value("${services.s3.endpoint}") //берет значение из application.properties и и присваивает его полю endpoint
+    @Value("${services.s3.endpoint}")
     private String endpoint;
 
-    @Value("${services.s3.accessKey}") //  // Берет access key из конфигурации ("user")
+    @Value("${services.s3.accessKey}")
     private String accessKey;
 
-    @Value("${services.s3.secretKey}") // Берет secret key из конфигурации ("password")
+    @Value("${services.s3.secretKey}")
     private String secretKey;
 
     @Bean
     public S3Client s3Client() {
-        AwsBasicCredentials credentials = AwsBasicCredentials.create(accessKey, secretKey); //  // Создает объект учетных данных AWS из accessKey и secretKey
+        AwsBasicCredentials credentials = AwsBasicCredentials.create(accessKey, secretKey);
 
-        return S3Client.builder() // Создает строитель (builder) для S3Client
-                .endpointOverride(URI.create(endpoint)) // Переопределяет стандартный endpoint AWS на наш MinIO Вместо s3.amazonaws.com использует http://192.168.1.65
-                .credentialsProvider(StaticCredentialsProvider.create(credentials)) //Указывает провайдер учетных данных, StaticCredentialsProvider - фиксированные логин/пароль
-                .region(Region.US_EAST_1) //   Устанавливает регион (для MinIO можно любой), AWS требует регион, MinIO игнорирует его
-                .build(); // /Завершает строительство и возвращает готовый S3Client
+        return S3Client.builder()
+                .endpointOverride(URI.create(endpoint))
+                .credentialsProvider(StaticCredentialsProvider.create(credentials))
+                .region(Region.US_EAST_1)
+                .build();
     }
 }

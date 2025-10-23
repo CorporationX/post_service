@@ -82,7 +82,6 @@ public class ResourceServiceImpl implements ResourceService {
         Resource managed = entityManager.contains(resource) ? resource : entityManager.merge(resource);
         entityManager.remove(managed);
 
-        // файл удаляем после удаления записи
         s3Service.deleteFile(resource.getKey());
 
         postRepository.save(post);
@@ -121,7 +120,7 @@ public class ResourceServiceImpl implements ResourceService {
                     String.format("Maximum %d images allowed per upload", MAX_IMAGES_POST)
             );
         }
-// для каждого элемента в списке files
+
         files.forEach(this::validateImageFile);
     }
 
@@ -158,10 +157,8 @@ public class ResourceServiceImpl implements ResourceService {
 
     private Resource processAndUploadImage(Post post, MultipartFile file) {
         try {
-            // Генерируем ключ файла
             String fileKey = generateFileKey(file.getOriginalFilename());
 
-            // Загружаем файл в S3 используя существующий метод
             s3Service.uploadFile(fileKey, file.getBytes(), file.getContentType());
             Resource resource = Resource.builder()
                     .key(fileKey)
@@ -219,7 +216,7 @@ public class ResourceServiceImpl implements ResourceService {
                 .size(original.getSize())
                 .type(original.getType())
                 .createdAt(original.getCreatedAt())
-                .post(null) // ← ЯВНО УСТАНОВИТЬ NULL ДЛЯ POST// НЕ копируем Post - это разрывает циклическую ссылку!
+                .post(null)
                 .build();
     }
 
