@@ -6,6 +6,7 @@ import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CreateCommentDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,18 +21,19 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/comments")
 @RequiredArgsConstructor
+@Validated
 public class CommentController {
 
     private final UserContext userContext;
     private final CommentService commentService;
 
     @PostMapping("/{id}")
-    public CommentDto addComment(@PathVariable Long postId, @RequestBody CreateCommentDto commentDto) {
+    public CommentDto addComment(@PathVariable Long postId, @RequestBody @Validated CreateCommentDto commentDto) {
         return commentService.addComment(postId, commentDto);
     }
 
     @PutMapping
-    public CommentDto updateComment(@RequestBody UpdateCommentDto updateDto) {
+    public CommentDto updateComment(@RequestBody @Validated UpdateCommentDto updateDto) {
         return commentService.updateComment(userContext.getUserId(), updateDto);
     }
 
