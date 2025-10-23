@@ -210,7 +210,7 @@ public class CommentServiceImplTest {
     @Test
     void testGetCommentsByPostIdNoCommentsExist() {
         Mockito.when(commentRepository.findAllByPostId(TEST_POST_ID)).thenReturn(Collections.emptyList());
-        assertThrows(NullPointerException.class, () -> commentService.getCommentsByPostId(TEST_POST_ID),
+        assertThrows(IllegalArgumentException.class, () -> commentService.getCommentsByPostId(TEST_POST_ID),
                 "There are no comment under post with this ID!");
     }
 
@@ -226,7 +226,7 @@ public class CommentServiceImplTest {
     @Test
     void testDeleteCommentIdDoesNotExist() {
         Mockito.when(commentRepository.findById(TEST_COMMENT_ID)).thenReturn(Optional.empty());
-        assertThrows(NullPointerException.class, () -> commentService.deleteComment(TEST_COMMENT_ID),
+        assertThrows(IllegalArgumentException.class, () -> commentService.deleteComment(TEST_COMMENT_ID),
                 "Comment with this ID does not exist!");
     }
 }

@@ -73,7 +73,7 @@ public class CommentServiceImpl implements CommentService {
         log.info("Searching for comments under post with ID {}", postId);
         List<Comment> commentsByPostId = commentRepository.findAllByPostId(postId);
         if (commentsByPostId.isEmpty()) {
-            throw new NullPointerException("There are no comment under post with ID: " + postId);
+            throw new IllegalArgumentException("There are no comment under post with ID: " + postId);
         }
         return commentsByPostId.stream()
                 .sorted(Comparator.comparing(Comment::getCreatedAt).reversed())
@@ -84,7 +84,7 @@ public class CommentServiceImpl implements CommentService {
     public void deleteComment(Long commentId) {
         log.info("Attempting to remove comment {}", commentId);
         if (commentRepository.findById(commentId).isEmpty()) {
-            throw new NullPointerException("Comment with this ID does not exist: " + commentId);
+            throw new IllegalArgumentException("Comment with this ID does not exist: " + commentId);
         }
         commentRepository.deleteById(commentId);
         log.info("Comment {} has been deleted", commentId);
@@ -92,12 +92,12 @@ public class CommentServiceImpl implements CommentService {
 
     private Post validatePostExists(Long postId) {
         return postRepository.findById(postId)
-                .orElseThrow(() -> new NullPointerException("Post with this ID does not exist: " + postId));
+                .orElseThrow(() -> new IllegalArgumentException("Post with this ID does not exist: " + postId));
     }
 
     private Comment validateCommentExists(Long commentId) {
         return commentRepository.findById(commentId)
-                .orElseThrow(() -> new NullPointerException("Comment with this ID does not exist: " + commentId));
+                .orElseThrow(() -> new IllegalArgumentException("Comment with this ID does not exist: " + commentId));
     }
 
     private void validateNotNull(Object value, String paramName) {
