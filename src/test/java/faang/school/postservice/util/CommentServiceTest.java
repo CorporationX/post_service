@@ -33,23 +33,33 @@ public class CommentServiceTest {
     private CommentService commentService;
 
     @Test
-    void saveComment() {
+    void saveCommentTest() {
+        long commentId = 1L;
         CommentDto commentDto = new CommentDto();
-        commentService.save(commentDto);
+        commentDto.setId(1L);
+
+        Comment savedComment = new Comment();
+        savedComment.setId(commentId);
+
+        CommentDto result = commentService.save(commentDto);
+        when(commentRepository.findById(commentId)).thenReturn(Optional.of(savedComment));
         verify(commentRepository).save(any(Comment.class));
+
+        assertNotNull(result);
+        assertEquals(savedComment.getId(), result.getId());
+
     }
 
     @Test
-    void getComments() {
+    void getCommentsTest() {
         long postId = 1L;
-
         List<CommentDto> comments =  commentService.findAllByPostId(postId);
         verify(commentRepository).findAllByPostId(postId);
         assertNotNull(comments);
     }
 
     @Test
-    void findById() {
+    void findByIdTest() {
         long commentId = 1L;
         Comment comment = new Comment();
         comment.setId(commentId);
@@ -67,7 +77,7 @@ public class CommentServiceTest {
     }
 
     @Test
-    void deleteComment() {
+    void deleteCommentTest() {
         long commentId = 1L;
         commentService.deleteById(commentId);
         verify(commentRepository).deleteById(commentId);
