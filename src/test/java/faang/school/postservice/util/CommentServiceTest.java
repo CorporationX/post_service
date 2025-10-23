@@ -2,23 +2,26 @@ package faang.school.postservice.util;
 
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.ResponseCommentDto;
-import faang.school.postservice.dto.comment.SendCommentDto;
+import faang.school.postservice.dto.comment.CreateCommentDto;
 import faang.school.postservice.dto.comment.UpdateCommentDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.mapper.CommentMapper;
+import faang.school.postservice.mapper.CommentMapperImpl;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.comment.CommentServiceImpl;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -27,9 +30,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -58,159 +63,158 @@ public class CommentServiceTest {
     @Captor
     private ArgumentCaptor<Pageable> pageableCaptor;
 
-    @Test
-    public void sendComment_forbiddenException_shouldTrowForbiddenException() {
-        SendCommentDto dto = SendCommentDto.builder()
-                .authorId(1L)
-                .postId(2L)
-                .content(" ")
-                .build();
-        assertThrows(ForbiddenException.class,
-                () -> service.sendComment(dto));
-    }
 
     @Test
-    public void sendComment_entityException_shouldThrowEntityNotFoundException() {
-        SendCommentDto dto = SendCommentDto.builder()
-                .authorId(1L)
+    public void sendComment_forbiddenException_shouldTrowEntityNotFoundException() {
+        CreateCommentDto dto = CreateCommentDto.builder()
                 .postId(2L)
                 .content(" ")
                 .build();
-        when(userContext.getUserId()).thenReturn(1L);
         when(postRepository.findById(2L)).thenReturn(Optional.empty());
         assertThrows(EntityNotFoundException.class,
-                () -> service.sendComment(dto));
+                () -> service.createComment(dto));
     }
 
     @Test
-    public void sendComment_sendComment_shouldCreateAndSaveComment() {
-        SendCommentDto dto = SendCommentDto.builder()
-                .authorId(1L)
+    public void sendComment_responseDto_shouldResponseCommentDto() {
+        CreateCommentDto dto = CreateCommentDto.builder()
                 .postId(2L)
-                .content("test")
+                .content("Test")
                 .build();
-        Post post = new Post();
-        Comment comment = new Comment();
-        when(userContext.getUserId()).thenReturn(1L);
-        when(postRepository.findById(2L)).thenReturn(Optional.of(post));
-        when(commentMapper.toEntity(dto)).thenReturn(comment);
-
-        service.sendComment(dto);
-
-        verify(commentRepository, times(1)).save(captor.capture());
-        Comment commentCapture = captor.getValue();
-        Assertions.assertEquals(post, commentCapture.getPost());
-        Assertions.assertNotNull(commentCapture.getCreatedAt());
-    }
-
-    @Test
-    public void updateComment_forbiddenException_shouldTrowForbiddenException() {
-        UpdateCommentDto dto = UpdateCommentDto.builder()
-                .authorId(1L)
-                .commentId(10L)
-                .content("test")
-                .build();
-        assertThrows(ForbiddenException.class,
-                () -> service.updateComment(dto, 1L));
-    }
-
-    @Test
-    public void updateComment_entityException_shouldTrowEntityNotFoundException() {
-        UpdateCommentDto dto = UpdateCommentDto.builder()
-                .authorId(1L)
-                .commentId(10L)
-                .content("test")
-                .build();
-        when(userContext.getUserId()).thenReturn(1L);
-        when(commentRepository.findById(10L)).thenReturn(Optional.empty());
-        assertThrows(EntityNotFoundException.class,
-                () -> service.updateComment(dto, 1L));
-    }
-
-    @Test
-    public void updateComment_forbiddenException_shouldThrowForbiddenException() {
-        UpdateCommentDto dto = UpdateCommentDto.builder()
-                .authorId(1L)
-                .commentId(10L)
-                .content("test")
-                .build();
-        Comment comment = new Comment();
         Post post = Post.builder()
                 .id(2L)
                 .build();
-        comment.setPost(post);
-        when(userContext.getUserId()).thenReturn(1L);
-        when(commentRepository.findById(10L)).thenReturn(Optional.of(comment));
-        assertThrows(ForbiddenException.class,
-                () -> service.updateComment(dto, 1L));
-    }
-
-    @Test
-    public void updateComment_updateComment_shouldSetContentAndUpdateAt() {
-        UpdateCommentDto dto = UpdateCommentDto.builder()
-                .authorId(1L)
-                .commentId(10L)
-                .content("test")
+        Comment comment = Comment.builder()
+                .post(post)
+                .authorId(2L)
                 .build();
-        long postId = 2L;
-        Comment comment = spy(new Comment());
-        Post post = Post.builder().id(postId).build();
-        comment.setPost(post);
+        ResponseCommentDto responseDto = ResponseCommentDto.builder()
+                .authorId(2L)
+                .postId(2L)
+                .build();
+        when(commentMapper.toDto(comment)).thenReturn(responseDto);
+        when(commentMapper.toEntity(dto)).thenReturn(comment);
+        when(userContext.getUserId()).thenReturn(2L);
+        when(postRepository.findById(2L)).thenReturn(Optional.of(post));
+        when(commentRepository.save(comment)).thenReturn(comment);
 
-        when(userContext.getUserId()).thenReturn(1L);
-        when(commentRepository.findById(10L)).thenReturn(Optional.of(comment));
+        ResponseCommentDto responseCommentDto = service.createComment(dto);
 
-        service.updateComment(dto, postId);
-        verify(comment).setContent("test");
-        verify(comment).setUpdatedAt(any(LocalDateTime.class));
-
-        Assertions.assertEquals("test", comment.getContent());
-        Assertions.assertNotNull(comment.getUpdatedAt());
+        verify(commentRepository).save(comment);
+        Assertions.assertEquals(2L, responseCommentDto.postId());
     }
 
     @Test
-    public void getComments_nonExist_shouldThrowEntityNotFoundException() {
+    public void updateComment_trowEntity_shouldThrowEntityNotFoundException() {
+        UpdateCommentDto dto = UpdateCommentDto.builder()
+                .commentId(1L)
+                .content("Test")
+                .build();
+        when(commentRepository.findById(1L)).thenReturn(Optional.empty());
+
+        Assertions.assertThrows(EntityNotFoundException.class,
+                () -> service.updateComment(dto));
+    }
+
+    @Test
+    public void updateComment_trowForbidden_shouldThrowForbiddenException() {
+        UpdateCommentDto dto = UpdateCommentDto.builder()
+                .commentId(1L)
+                .content("Test")
+                .build();
+        Comment comment = Comment.builder()
+                .authorId(2L)
+                .build();
+        when(commentRepository.findById(1L)).thenReturn(Optional.of(comment));
+
+        Assertions.assertThrows(ForbiddenException.class,
+                () -> service.updateComment(dto));
+    }
+
+    @Test
+    public void updateComment_updateComment_shouldThrowForbiddenException() {
+        UpdateCommentDto dto = UpdateCommentDto.builder()
+                .commentId(1L)
+                .content("Test")
+                .build();
+        Comment comment = Comment.builder()
+                .authorId(2L)
+                .build();
+        ResponseCommentDto responseDto = ResponseCommentDto.builder()
+                .authorId(2L)
+                .commentId(1L)
+                .build();
+        when(commentRepository.findById(1L)).thenReturn(Optional.of(comment));
+        when(userContext.getUserId()).thenReturn(2L);
+        when(commentMapper.toDto(comment)).thenReturn(responseDto);
+
+        ResponseCommentDto responseCommentDto = service.updateComment(dto);
+
+        Assertions.assertEquals(1L, responseCommentDto.commentId());
+    }
+
+    @Test
+    public void getComments_trowEntity_shouldThrowEntityNotFoundException() {
         when(postRepository.existsById(1L)).thenReturn(false);
+
         assertThrows(EntityNotFoundException.class,
-                () -> service.getComments(1L, 1, 10));
+                () -> service.getComments(1L, 2, 10));
     }
 
     @Test
-    public void getComments_responseListDto_shouldResponseList() {
-        long postId = 1L;
-        int page = 0;
-        int pageSize = 10;
-        List<Comment> comments = List.of(
-                Comment.builder().id(1L).content("Comment 1").createdAt(LocalDateTime.now().minusDays(1)).build(),
-                Comment.builder().id(2L).content("Comment 2").createdAt(LocalDateTime.now().minusDays(2)).build()
+    public void getComments_returnListDto_shouldListResponseCommentDto() {
+        when(postRepository.existsById(1L)).thenReturn(true);
+        Comment comment = Comment.builder()
+                .authorId(2L)
+                .build();
+        Pageable pageable = PageRequest.of(2, 10, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<Comment> commentsPage = new PageImpl<>(
+                new ArrayList<>(List.of(comment)),
+                PageRequest.of(2, 10),
+                1
         );
-        Page<Comment> pageable = new PageImpl<>(
-                comments,
-                PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "createdAt")),
-                comments.size()
-        );
+        ResponseCommentDto responseDto = ResponseCommentDto.builder()
+                .authorId(2L)
+                .commentId(1L)
+                .build();
+        when(postRepository.findAllCommentByPostId(1L, pageable)).thenReturn(commentsPage);
+        when(commentMapper.toDto(comment)).thenReturn(responseDto);
 
-        when(postRepository.existsById(postId)).thenReturn(true);
-        when(postRepository.findAllCommentByPostId(eq(postId), any(Pageable.class))).thenReturn(pageable);
-        when(commentMapper.toDto(any(Comment.class))).thenAnswer(invocation -> {
-            Comment comment = invocation.getArgument(0);
-            return ResponseCommentDto.builder()
-                    .commentId(comment.getId())
-                    .content(comment.getContent())
-                    .build();
-        });
+        List<ResponseCommentDto> listResponse = service.getComments(1L, 2, 10);
 
-        List<ResponseCommentDto> result = service.getComments(postId, page, pageSize);
+        assertEquals(2L, listResponse.get(0).authorId());
+        assertEquals(1, listResponse.size());
+    }
 
-        Assertions.assertNotNull(result);
-        Assertions.assertEquals(2, result.size());
-        Assertions.assertEquals("Comment 1", result.get(0).content());
-        Assertions.assertEquals("Comment 2", result.get(1).content());
+    @Test
+    public void deleteComment_throwEntity_shouldEntityNotFoundException() {
+        when(commentRepository.findById(1L)).thenReturn(Optional.empty());
 
-        verify(postRepository).findAllCommentByPostId(eq(postId), pageableCaptor.capture());
+        assertThrows(EntityNotFoundException.class,
+                ()-> service.deleteComment(1L));
+    }
 
-        Pageable capturedPageable = pageableCaptor.getValue();
-        Assertions.assertEquals(page, capturedPageable.getPageNumber());
-        Assertions.assertEquals(pageSize, capturedPageable.getPageSize());
+    @Test
+    public void deleteComment_throwForbidden_shouldForbiddenException() {
+        Comment comment = Comment.builder()
+                .authorId(1L)
+                .build();
+        when(commentRepository.findById(1L)).thenReturn(Optional.of(comment));
+        when(userContext.getUserId()).thenReturn(2L);
+        assertThrows(ForbiddenException.class,
+                ()-> service.deleteComment(1L));
+    }
+
+    @Test
+    public void deleteComment_deleteComment_shouldDeleteComment() {
+        Comment comment = Comment.builder()
+                .authorId(1L)
+                .build();
+        when(commentRepository.findById(1L)).thenReturn(Optional.of(comment));
+        when(userContext.getUserId()).thenReturn(1L);
+
+        service.deleteComment(1L);
+
+        verify(commentRepository).delete(comment);
     }
 }

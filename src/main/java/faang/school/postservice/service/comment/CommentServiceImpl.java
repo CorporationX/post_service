@@ -1,8 +1,8 @@
 package faang.school.postservice.service.comment;
 
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.comment.CreateCommentDto;
 import faang.school.postservice.dto.comment.ResponseCommentDto;
-import faang.school.postservice.dto.comment.SendCommentDto;
 import faang.school.postservice.dto.comment.UpdateCommentDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.ForbiddenException;
@@ -20,7 +20,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
@@ -36,34 +35,28 @@ public class CommentServiceImpl implements CommentService {
 
     @Transactional
     @Override
-    public void sendComment(SendCommentDto sendCommentDto) {
-        validateAuthorComment(sendCommentDto.authorId());
-        Post post = postRepository.findById(sendCommentDto.postId())
-                .orElseThrow(() -> {
-                    log.error("The requested post by {} id was not found", sendCommentDto.postId());
-                    return new EntityNotFoundException("No entity found for the specified %d id!"
-                            .formatted(sendCommentDto.postId()));
-                });
-        Comment newComment = commentMapper.toEntity(sendCommentDto);
-        newComment.setCreatedAt(LocalDateTime.now());
+    public ResponseCommentDto createComment(CreateCommentDto createCommentDto) {
+        Post post = postRepository.findById(createCommentDto.postId())
+                .orElseThrow(() -> new EntityNotFoundException("No entity found for the specified %d id!"
+                        .formatted(createCommentDto.postId())));
+        Comment newComment = commentMapper.toEntity(createCommentDto);
         newComment.setPost(post);
-        commentRepository.save(newComment);
+        newComment.setAuthorId(userContext.getUserId());
+        return commentMapper.toDto(commentRepository.save(newComment));
     }
 
     @Transactional
     @Override
-    public void updateComment(UpdateCommentDto updateCommentDto, long postId) {
-        validateAuthorComment(updateCommentDto.authorId());
+    public ResponseCommentDto updateComment(UpdateCommentDto updateCommentDto) {
         Comment comment = getCommentByIdOrThrow(updateCommentDto.commentId());
-        validateSameCommentOnPost(comment, postId);
+        validateAuthorComment(comment);
         comment.setContent(updateCommentDto.content());
-        comment.setUpdatedAt(LocalDateTime.now());
+        return commentMapper.toDto(comment);
     }
 
     @Override
     public List<ResponseCommentDto> getComments(long postId, int page, int pageSize) {
         if (!postRepository.existsById(postId)) {
-            log.error("Calling a non-existent post {} -id, {} - user id", postId, userContext.getUserId());
             throw new EntityNotFoundException("This post for %d - id does not exist!".formatted(postId));
         }
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "createdAt"));
@@ -73,37 +66,22 @@ public class CommentServiceImpl implements CommentService {
 
     @Transactional
     @Override
-    public void deleteComment(long commentId, long postId) {
+    public void deleteComment(long commentId) {
         Comment comment = getCommentByIdOrThrow(commentId);
-        validateSameCommentOnPost(comment, postId);
+        validateAuthorComment(comment);
         commentRepository.delete(comment);
     }
 
 
     private Comment getCommentByIdOrThrow(long commentId) {
         return commentRepository.findById(commentId)
-                .orElseThrow(() -> {
-                    log.error("The requested comment by {} id was not found", commentId);
-                    return new EntityNotFoundException("No entity found for the specified %d id!"
-                            .formatted(commentId));
-                });
+                .orElseThrow(() -> new EntityNotFoundException("No entity found for the specified %d id!"
+                        .formatted(commentId)));
     }
 
-    private void validateSameCommentOnPost(Comment comment, long postId) {
-        if (!Objects.equals(comment.getPost().getId(), postId)) {
-            log.error("User {} - id is trying to update a comment from another {} - post id. {} - Passed comment id",
-                    userContext.getUserId(), postId, comment.getId());
-            throw new ForbiddenException("You cannot edit comments on another post %d - Id of the post with your comment"
-                    .formatted(postId));
-        }
-    }
-
-    private void validateAuthorComment(long authorId) {
-        long contextId = userContext.getUserId();
-        if (!Objects.equals(contextId, authorId)) {
-            log.warn("The user is trying to change someone else's data, {} - the user, {} - the Original user",
-                    contextId, authorId);
-            throw new ForbiddenException("You cannot change other people's data!");
+    private void validateAuthorComment(Comment comment) {
+        if (!Objects.equals(comment.getAuthorId(), userContext.getUserId())) {
+            throw new ForbiddenException("You cannot edit someone else's comment!");
         }
     }
 }
