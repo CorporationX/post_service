@@ -32,7 +32,9 @@ public class ResourceController {
     public List<Resource> uploadImages(@PathVariable Long postId,
                                        @RequestParam("files") List<MultipartFile> files) {
         log.info("upload images");
-        return resourceService.uploadImages(postId, files);
+        List<Resource> resources = resourceService.uploadImages(postId, files);
+        log.info("Successfully uploaded");
+        return resources;
     }
 
     @GetMapping
@@ -42,10 +44,11 @@ public class ResourceController {
     }
 
     @DeleteMapping("/{resourceId}")
-    public List<Resource> deleteResource(@PathVariable @Positive long postId,
+    public ResponseEntity<Void> deleteResource(@PathVariable @Positive long postId,
                                          @PathVariable @Positive long resourceId) {
         log.info("delete resource");
-        return resourceService.deleteResource(postId, resourceId);
+        resourceService.deleteResource(postId, resourceId);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{resourceId}/download")

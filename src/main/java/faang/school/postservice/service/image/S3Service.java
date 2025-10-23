@@ -1,27 +1,54 @@
 package faang.school.postservice.service.image;
 
-import lombok.RequiredArgsConstructor;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.sync.RequestBody;
-import software.amazon.awssdk.core.sync.ResponseTransformer;
+import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.S3Configuration;
 import software.amazon.awssdk.services.s3.model.ObjectIdentifier;
 
+import java.net.URI;
 import java.util.List;
 
 @Slf4j
-@RequiredArgsConstructor
 @Service
 public class S3Service {
-    private final S3Client s3Client;
+
+    @Value("${services.s3.endpoint}")
+    private String endpoint;
+
+    @Value("${services.s3.accessKey}")
+    private String accessKey;
+
+    @Value("${services.s3.secretKey}")
+    private String secretKey;
 
     @Value("${services.s3.bucketName}")
     private String bucketName;
 
-    // Загрузка файла (у вас уже есть)
+    private S3Client s3Client;
+
+    @PostConstruct
+    public void init() {
+        this.s3Client = S3Client.builder()
+                .endpointOverride(URI.create(endpoint))
+                .credentialsProvider(StaticCredentialsProvider.create(
+                        AwsBasicCredentials.create(accessKey, secretKey)))
+                .region(Region.US_EAST_1)
+                .serviceConfiguration(S3Configuration.builder()
+                        .pathStyleAccessEnabled(true)
+                        .build())
+                .build();
+        log.info("S3Client initialized for: {}", endpoint);
+    }
+
     public void uploadFile(String objectKey, byte[] fileBytes, String contentType) {
+        log.info("Uploading to MinIO: {}", objectKey);
         s3Client.putObject(request ->
                         request
                                 .bucket(bucketName)
@@ -29,29 +56,30 @@ public class S3Service {
                                 .contentType(contentType),
                 RequestBody.fromBytes(fileBytes)
         );
+        log.info("Successfully uploaded to MinIO: {}", objectKey);
     }
 
-    // Скачивание файла
     public byte[] downloadFile(String objectKey) {
-        return s3Client.getObject(request ->
+        log.info("Downloading from MinIO: {}", objectKey);
+        return s3Client.getObjectAsBytes(request ->
                         request
                                 .bucket(bucketName)
-                                .key(objectKey),
-                ResponseTransformer.toBytes());
+                                .key(objectKey))
+                .asByteArray();
     }
 
-    // Удаление файла
     public void deleteFile(String objectKey) {
-        s3Client.deleteObject(request -> // Вызов метода удаления
-                request //  Lambda создает DeleteObjectRequest
-                        .bucket(bucketName) // Указываем бакет ("corpbucket")
-                        .key(objectKey));  // Указываем ключ файла для удаления
+        log.info("Deleting from MinIO: {}", objectKey);
+        s3Client.deleteObject(request ->
+                request
+                        .bucket(bucketName)
+                        .key(objectKey));
+        log.info("Successfully deleted from MinIO: {}", objectKey);
     }
 
-    // Массовое удаление (для удаления всех картинок поста)
     public void deleteFiles(List<String> objectKeys) {
         if (objectKeys == null || objectKeys.isEmpty()) {
-            return; // Нечего удалять
+            return;
         }
 
         List<ObjectIdentifier> objectsToDelete = objectKeys.stream()
@@ -63,5 +91,6 @@ public class S3Service {
                         .delete(deleteRequest ->
                                 deleteRequest
                                         .objects(objectsToDelete)));
+        log.info("Successfully deleted {} files from MinIO", objectKeys.size());
     }
 }
