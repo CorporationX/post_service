@@ -1,7 +1,7 @@
 package faang.school.postservice.util;
 
 import faang.school.postservice.dto.comment.CommentDto;
-import faang.school.postservice.mapper.CommentMapper;
+import faang.school.postservice.mapper.CommentMapperImpl;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.service.CommentService;
@@ -11,6 +11,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import static org.junit.Assert.assertEquals;
@@ -27,27 +30,38 @@ public class CommentServiceTest {
     private CommentRepository commentRepository;
 
     @Spy
-    private CommentMapper commentMapper;
+    private CommentMapperImpl commentMapper;
 
     @InjectMocks
     private CommentService commentService;
 
     @Test
     void saveCommentTest() {
+        CommentDto commentDto = new CommentDto(
+                1L,
+                "Текст комментария",
+                2L,
+                10L,
+                0,
+                LocalDateTime.now(),
+                LocalDateTime.now(),
+                "large-key",
+                "small-key"
+        );
+
+
         long commentId = 1L;
-        CommentDto commentDto = new CommentDto();
-        commentDto.setId(1L);
 
         Comment savedComment = new Comment();
         savedComment.setId(commentId);
 
+        when(commentRepository.save(any(Comment.class))).thenReturn(savedComment);
         CommentDto result = commentService.save(commentDto);
-        when(commentRepository.findById(commentId)).thenReturn(Optional.of(savedComment));
+
         verify(commentRepository).save(any(Comment.class));
 
         assertNotNull(result);
         assertEquals(savedComment.getId(), result.getId());
-
     }
 
     @Test
@@ -64,8 +78,9 @@ public class CommentServiceTest {
         Comment comment = new Comment();
         comment.setId(commentId);
 
-        commentService.findById(commentId);
         when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
+        commentService.findById(commentId);
+
 
         CommentDto result = commentMapper.toDto(comment);
 
@@ -82,6 +97,4 @@ public class CommentServiceTest {
         commentService.deleteById(commentId);
         verify(commentRepository).deleteById(commentId);
     }
-
-
 }
