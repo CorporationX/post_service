@@ -79,13 +79,10 @@ public class CommentServiceTest {
         comment.setId(commentId);
 
         when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
-        commentService.findById(commentId);
 
-
-        CommentDto result = commentMapper.toDto(comment);
+        CommentDto result = commentService.findById(commentId);
 
         verify(commentRepository).findById(commentId);
-        verify(commentMapper).toDto(comment);
 
         assertNotNull(result);
         assertEquals(result.getId(), comment.getId());
