@@ -34,16 +34,19 @@ spring:
       commentNew: comment.new
       like: likes
 
-audit-kafka:
+post-kafka:
   enabled: true
+  consumer:
+    topic: posts
+    group-id: post
+
+audit-kafka:
+  enabled: false
   backoff:
     init-interval: 1000
     max-retries: 2
     max-interval: 5000
     multiplier: 2
-  consumer:
-    group-id: post
-  topic: posts
 
 server:
   port: 8081
@@ -69,3 +72,6 @@ redis:
   host: localhost
   port: 6379
   post-expire: 86400000
+
+feed:
+  max-size: 500

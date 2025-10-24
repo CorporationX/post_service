@@ -3,8 +3,10 @@ package faang.school.postservice.controller;
 import faang.school.postservice.controller.common.ApiExceptionDto;
 import faang.school.postservice.dto.post.PostDraftDto;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.model.PostRedisEvent;
 import faang.school.postservice.producer.PostViewedProducer;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.RedisRepository;
 import faang.school.postservice.service.PostService;
 import faang.school.postservice.service.impl.PostServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
@@ -36,6 +38,7 @@ public class PostController {
     private final PostService postService;
     private final PostServiceImpl postServiceImpl;
     private final PostViewedProducer postViewedProducer;
+    private final RedisRepository redisRepository;
 
     @PostMapping("/draft")
     @Operation(method = "POST",
@@ -269,5 +272,10 @@ public class PostController {
     public ResponseEntity<Void> makePostViewed(@PathVariable @NotNull() Long postId) {
         postService.makePostViewed(postId);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/getalltest")
+    public void getAlltest() {
+        System.out.println("Все посты: " + redisRepository.findAll());
     }
 }
