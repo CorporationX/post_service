@@ -1,19 +1,18 @@
 package faang.school.postservice.service.comment;
 
-import faang.school.postservice.dto.comment.Request.RequestCommentDto;
-import faang.school.postservice.dto.comment.Response.ResponseCommentDto;
-import faang.school.postservice.exception.ResourceNotFoundException;
-import faang.school.postservice.model.Post;
+import faang.school.postservice.dto.comment.Request.RequestCreateComment;
+import faang.school.postservice.dto.comment.Request.RequestUpdateComment;
+import faang.school.postservice.dto.comment.Response.ResponseComment;
 
 import java.util.List;
 
 public interface CommentService {
 
-    ResponseCommentDto createComment(RequestCommentDto commentDto, Long postId) throws ResourceNotFoundException;
+    ResponseComment createComment(RequestCreateComment commentDto, Long postId);
 
-    ResponseCommentDto updateComment(Long postId, Long idComment, RequestCommentDto commentDto) throws ResourceNotFoundException;
+    ResponseComment updateComment(Long postId, Long idComment, RequestUpdateComment commentDto);
 
-    void deleteComment(Long postId, Long id) throws ResourceNotFoundException;
+    void deleteComment(Long postId, Long id);
 
-    List<ResponseCommentDto> getAllCommentsByPostId(Long postId) throws ResourceNotFoundException;
+    List<ResponseComment> getAllCommentsByPostId(Long postId);
 }

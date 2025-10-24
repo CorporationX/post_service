@@ -2,8 +2,9 @@ package faang.school.postservice.util.commentService;
 
 
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.dto.comment.Request.RequestCommentDto;
-import faang.school.postservice.dto.comment.Response.ResponseCommentDto;
+import faang.school.postservice.dto.comment.Request.RequestCreateComment;
+import faang.school.postservice.dto.comment.Request.RequestUpdateComment;
+import faang.school.postservice.dto.comment.Response.ResponseComment;
 import faang.school.postservice.exception.ResourceNotFoundException;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
@@ -50,8 +51,9 @@ class CommentServiceImplTest {
 
     private Post testPost;
     private Comment testComment;
-    private RequestCommentDto requestCommentDto;
-    private ResponseCommentDto responseCommentDto;
+    private RequestCreateComment requestCreateComment;
+    private RequestUpdateComment requestUpdateComment;
+    private ResponseComment responseComment;
 
     @BeforeEach
     void setUp() {
@@ -83,12 +85,15 @@ class CommentServiceImplTest {
                 .updatedAt(LocalDateTime.now())
                 .build();
 
-        requestCommentDto = RequestCommentDto.builder()
+        requestCreateComment = RequestCreateComment.builder()
                 .content("Test Comment")
-                .authorId(1L)
                 .build();
 
-        responseCommentDto = ResponseCommentDto.builder()
+        requestUpdateComment = RequestUpdateComment.builder()
+                .content("Test Comment")
+                .build();
+
+        responseComment = ResponseComment.builder()
                 .id(1L)
                 .content("Test Comment")
                 .authorId(1L)
@@ -101,19 +106,19 @@ class CommentServiceImplTest {
     @Test
     void createComment_ShouldReturnResponseCommentDto_WhenValidRequest() throws ResourceNotFoundException {
         when(postRepository.findById(eq(1L))).thenReturn(Optional.of(testPost));
-        when(commentMapper.toEntity(requestCommentDto)).thenReturn(testComment);
+        when(commentMapper.toEntity(requestCreateComment)).thenReturn(testComment);
         when(commentRepository.save(any(Comment.class))).thenReturn(testComment);
-        when(commentMapper.toDto(testComment)).thenReturn(responseCommentDto);
+        when(commentMapper.toDto(testComment)).thenReturn(responseComment);
 
-        ResponseCommentDto result = commentService.createComment(requestCommentDto, 1L);
+        ResponseComment result = commentService.createComment(requestCreateComment, 1L);
 
         assertNotNull(result);
-        assertEquals(responseCommentDto.getId(), result.getId());
-        assertEquals(responseCommentDto.getContent(), result.getContent());
-        assertEquals(responseCommentDto.getAuthorId(), result.getAuthorId());
-        assertEquals(responseCommentDto.getPostId(), result.getPostId());
-        assertEquals(responseCommentDto.getCreatedAt(), result.getCreatedAt());
-        assertEquals(responseCommentDto.getUpdatedAt(), result.getUpdatedAt());
+        assertEquals(responseComment.id(), result.id());
+        assertEquals(responseComment.content(), result.content());
+        assertEquals(responseComment.authorId(), result.authorId());
+        assertEquals(responseComment.postId(), result.postId());
+        assertEquals(responseComment.createdAt(), result.createdAt());
+        assertEquals(responseComment.updatedAt(), result.updatedAt());
 
         ArgumentCaptor<Comment> commentArgumentCaptor = ArgumentCaptor.forClass(Comment.class);
         verify(commentRepository, times(1)).save(commentArgumentCaptor.capture());
@@ -126,7 +131,7 @@ class CommentServiceImplTest {
         assertEquals(testPost, capturedComment.getPost());
 
         verify(postRepository, times(1)).findById(1L);
-        verify(commentMapper, times(1)).toEntity(requestCommentDto);
+        verify(commentMapper, times(1)).toEntity(requestCreateComment);
         verify(commentMapper, times(1)).toDto(testComment);
     }
 
@@ -135,12 +140,12 @@ class CommentServiceImplTest {
         when(commentRepository.findById(any())).thenReturn(Optional.of(testComment));
         when(postRepository.findById(any())).thenReturn(Optional.of(testPost));
         when(commentRepository.save(any())).thenReturn(testComment);
-        when(commentMapper.toDto(testComment)).thenReturn(responseCommentDto);
+        when(commentMapper.toDto(testComment)).thenReturn(responseComment);
 
-        ResponseCommentDto result = commentService.updateComment(1L, 1L, requestCommentDto);
+        ResponseComment result = commentService.updateComment(1L, 1L, requestUpdateComment);
 
         assertNotNull(result);
-        assertEquals(responseCommentDto.getId(), result.getId());
+        assertEquals(responseComment.id(), result.id());
         verify(commentRepository, times(1)).save(any());
         verify(commentMapper, times(1)).toDto(testComment);
     }
@@ -164,18 +169,18 @@ class CommentServiceImplTest {
 
         when(postRepository.findById(eq(1L))).thenReturn(Optional.of(testPost));
         when(commentRepository.findAllByPostId(eq(1L))).thenReturn(comments);
-        when(commentMapper.toDto(testComment)).thenReturn(responseCommentDto);
+        when(commentMapper.toDto(testComment)).thenReturn(responseComment);
 
-        List<ResponseCommentDto> result = commentService.getAllCommentsByPostId(1L);
+        List<ResponseComment> result = commentService.getAllCommentsByPostId(1L);
 
         assertNotNull(result);
         assertEquals(1, result.size());
-        assertEquals(responseCommentDto.getId(), result.get(0).getId());
-        assertEquals(responseCommentDto.getContent(), result.get(0).getContent());
-        assertEquals(responseCommentDto.getAuthorId(), result.get(0).getAuthorId());
-        assertEquals(responseCommentDto.getPostId(), result.get(0).getPostId());
-        assertEquals(responseCommentDto.getCreatedAt(), result.get(0).getCreatedAt());
-        assertEquals(responseCommentDto.getUpdatedAt(), result.get(0).getUpdatedAt());
+        assertEquals(responseComment.id(), result.get(0).id());
+        assertEquals(responseComment.content(), result.get(0).content());
+        assertEquals(responseComment.authorId(), result.get(0).authorId());
+        assertEquals(responseComment.postId(), result.get(0).postId());
+        assertEquals(responseComment.createdAt(), result.get(0).createdAt());
+        assertEquals(responseComment.updatedAt(), result.get(0).updatedAt());
 
         verify(postRepository, times(1)).findById(1L);
         verify(commentRepository, times(1)).findAllByPostId(1L);

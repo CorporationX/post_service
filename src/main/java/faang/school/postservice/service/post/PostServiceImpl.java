@@ -3,7 +3,6 @@ package faang.school.postservice.service.post;
 import faang.school.postservice.exception.ResourceNotFoundException;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.post.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

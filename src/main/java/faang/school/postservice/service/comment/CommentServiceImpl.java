@@ -1,8 +1,9 @@
 package faang.school.postservice.service.comment;
 
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.dto.comment.Request.RequestCommentDto;
-import faang.school.postservice.dto.comment.Response.ResponseCommentDto;
+import faang.school.postservice.dto.comment.Request.RequestCreateComment;
+import faang.school.postservice.dto.comment.Request.RequestUpdateComment;
+import faang.school.postservice.dto.comment.Response.ResponseComment;
 import faang.school.postservice.exception.ResourceNotFoundException;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
@@ -33,35 +34,37 @@ public class CommentServiceImpl implements CommentService {
     private final CommentValidator commentValidator;
 
     @Override
-    public ResponseCommentDto createComment(RequestCommentDto commentDto,
-                                            Long postId) throws ResourceNotFoundException {
-        commentValidator.validateAuthorComment(commentDto, userContext.getUserId());
+    public ResponseComment createComment(RequestCreateComment requestCreateComment,
+                                         Long postId) {
+        Long authorId = userContext.getUserId();
         Post post = getPostById(postId);
-        Comment comment = commentMapper.toEntity(commentDto);
+        Comment comment = commentMapper.toEntity(requestCreateComment);
+        comment.setAuthorId(authorId);
         comment.setPost(post);
         return commentMapper.toDto(commentRepository.save(comment));
     }
 
     @Override
-    public ResponseCommentDto updateComment(Long postId,
-                                            Long idComment,
-                                            RequestCommentDto commentDto) throws ResourceNotFoundException {
+    public ResponseComment updateComment(Long postId,
+                                         Long idComment,
+                                         RequestUpdateComment requestCreateComment) {
         Comment existingComment = getCommentById(idComment);
-        commentValidator.validateAuthorComment(commentDto, userContext.getUserId());
+        Long authorId = userContext.getUserId();
         commentValidator.validateCommentToPost(existingComment, getPostById(postId));
-        existingComment.setContent(commentDto.getContent());
+        existingComment.setContent(requestCreateComment.content());
+        existingComment.setAuthorId(authorId);
         return commentMapper.toDto(commentRepository.save(existingComment));
     }
 
     @Override
-    public void deleteComment(Long postId, Long idComment) throws ResourceNotFoundException {
+    public void deleteComment(Long postId, Long idComment) {
         Comment existingComment = getCommentById(idComment);
         commentValidator.validateCommentToPost(existingComment, getPostById(postId));
         commentRepository.deleteById(existingComment.getId());
     }
 
     @Override
-    public List<ResponseCommentDto> getAllCommentsByPostId(Long postId) throws ResourceNotFoundException {
+    public List<ResponseComment> getAllCommentsByPostId(Long postId) {
         Post post = getPostById(postId);
         return commentRepository.findAllByPostId(post.getId()).stream()
             .sorted((c1, c2) -> c2.getCreatedAt().compareTo(c1.getCreatedAt()))

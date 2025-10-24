@@ -1,7 +1,8 @@
 package faang.school.postservice.controller;
 
-import faang.school.postservice.dto.comment.Request.RequestCommentDto;
-import faang.school.postservice.dto.comment.Response.ResponseCommentDto;
+import faang.school.postservice.dto.comment.Request.RequestCreateComment;
+import faang.school.postservice.dto.comment.Request.RequestUpdateComment;
+import faang.school.postservice.dto.comment.Response.ResponseComment;
 import faang.school.postservice.service.comment.CommentService;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -18,48 +19,48 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/posts/{postId}/comments")
+@RequestMapping("/comments")
 @Tag(name = "User Subscription Controller", description = "API endpoints for managing user subscriptions")
 public class CommentController {
 
     private final CommentService commentService;
 
-    @PostMapping
+    @PostMapping("/post/{postId}")
     @Operation(summary = "Create a new comment",
             description = "Creates a new comment for the post with the specified postId")
     @ApiResponse(responseCode = "201", description = "New comment successfully created",
-            content = @Content(schema = @Schema(implementation = ResponseCommentDto.class)))
-    public ResponseEntity<ResponseCommentDto> createComment(
+            content = @Content(schema = @Schema(implementation = ResponseComment.class)))
+    public ResponseEntity<ResponseComment> createComment(
             @Parameter(description = "Post ID", required = true) @PathVariable Long postId,
-            @Parameter(description = "Comment DTO", required = true) @Valid @RequestBody RequestCommentDto commentDto) {
-        ResponseCommentDto createdComment = commentService.createComment(commentDto, postId);
+            @Parameter(description = "Comment DTO", required = true) @Valid @RequestBody RequestCreateComment comment) {
+        ResponseComment createdComment = commentService.createComment(comment, postId);
         return ResponseEntity.ok(createdComment);
     }
 
-    @GetMapping
+    @GetMapping("/post/{postId}")
     @Operation(summary = "Get all comments for a post",
             description = "Returns a list of all comments for the post with the specified postId")
     @ApiResponse(responseCode = "200", description = "List of comments successfully retrieved",
             content = @Content(schema = @Schema(implementation = List.class)))
-    public ResponseEntity<List<ResponseCommentDto>> getAllCommentsByPostId(
+    public ResponseEntity<List<ResponseComment>> getAllCommentsByPostId(
             @Parameter(description = "Post ID", required = true) @PathVariable Long postId) {
-        List<ResponseCommentDto> comments = commentService.getAllCommentsByPostId(postId);
+        List<ResponseComment> comments = commentService.getAllCommentsByPostId(postId);
         return ResponseEntity.ok(comments);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/post/{postId}/{id}")
     @Operation(summary = "Update a comment", description = "Updates an existing comment with the specified id")
     @ApiResponse(responseCode = "200", description = "Comment successfully updated",
-            content = @Content(schema = @Schema(implementation = ResponseCommentDto.class)))
-    public ResponseEntity<ResponseCommentDto> updateComment(
+            content = @Content(schema = @Schema(implementation = ResponseComment.class)))
+    public ResponseEntity<ResponseComment> updateComment(
             @Parameter(description = "Post ID", required = true) @PathVariable Long postId,
             @Parameter(description = "Comment ID", required = true) @PathVariable Long id,
-            @Parameter(description = "Comment DTO", required = true) @Valid @RequestBody RequestCommentDto commentDto) {
-        ResponseCommentDto updatedComment = commentService.updateComment(postId, id, commentDto);
+            @Parameter(description = "Comment DTO", required = true) @Valid @RequestBody RequestUpdateComment comment) {
+        ResponseComment updatedComment = commentService.updateComment(postId, id, comment);
         return ResponseEntity.ok(updatedComment);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/post/{postId}/{id}")
     @Operation(summary = "Delete a comment", description = "Deletes a comment with the specified id")
     @ApiResponse(responseCode = "204", description = "Comment successfully deleted")
     public ResponseEntity<Void> deleteComment(
