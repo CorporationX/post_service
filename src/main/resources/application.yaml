@@ -1,14 +1,7 @@
 spring:
-  servlet:
-    multipart:
-      enabled: true
-      max-file-size: 5MB
-      max-request-size: 50MB
-      file-size-threshold: 2KB
-
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/postgres
+    url: jdbc:postgresql://78.36.7.9:5432/postgres
     username: user
     password: password
 
@@ -48,10 +41,12 @@ server:
 logging:
   level:
     root: info
+
 user-service:
   host: localhost
   port: 8080
   context-path: /api/v1
+
 project-service:
   host: localhost
   port: 8082
@@ -61,6 +56,13 @@ payment-service:
   host: localhost
   port: 9080
   context-path: /api/v1
+
+like:
+  chunk:
+    size: 100
+
+springdoc:
+  override-with-generic-response: false
 
 services:
   s3:
