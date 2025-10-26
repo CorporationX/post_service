@@ -15,7 +15,7 @@ public interface PostApi {
 
     @Operation(
             summary = "Создать черновик поста",
-            description = "Создает новый пост в статусе черновика. Пост можно будет отредактировать и опубликовать позже."
+            description = "Создает новый пост в статусе черновика. Пост можно будет отредактировать позже."
     )
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Черновик поста успешно создан"),
