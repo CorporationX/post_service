@@ -19,9 +19,17 @@ public interface PostRepository extends CrudRepository<Post, Long> {
     List<Post> findByAuthorIdWithLikes(long authorId);
 
     @Query(value = """
-            SELECT p FROM Post p 
-            WHERE p.published = false AND p.deleted = false AND p.scheduledAt <= CURRENT_TIMESTAMP
-            """)
+            SELECT p FROM Post p
+            WHERE p.published = false AND p.deleted = false AND p.scheduledAt <= CURRENT_TIMESTAMP""")
     List<Post> findReadyToPublish();
 
+    @Query(value = """
+            SELECT p FROM Post p
+            WHERE p.published = true AND p.deleted = false AND p.authorId = :authorId""")
+    List<Post> findPostToPublishedByAuthorId(Long authorId);
+
+    @Query(value = """
+            SELECT p FROM Post p
+            WHERE p.published = false AND p.deleted = false AND p.authorId = :authorId""")
+    List<Post> findPostToDraftByAuthorId(Long authorId);
 }
