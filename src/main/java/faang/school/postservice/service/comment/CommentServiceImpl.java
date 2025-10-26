@@ -47,8 +47,8 @@ public class CommentServiceImpl implements CommentService {
 
     @Transactional
     @Override
-    public ResponseCommentDto updateComment(UpdateCommentDto updateCommentDto) {
-        Comment comment = getCommentByIdOrThrow(updateCommentDto.commentId());
+    public ResponseCommentDto updateComment(long commentId, UpdateCommentDto updateCommentDto) {
+        Comment comment = getCommentByIdOrThrow(commentId);
         validateAuthorComment(comment);
         comment.setContent(updateCommentDto.content());
         return commentMapper.toDto(comment);

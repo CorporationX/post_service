@@ -8,9 +8,6 @@ import lombok.Builder;
 
 @Builder
 public record UpdateCommentDto(
-        @NotNull(message = "Be sure to include the comment id")
-        @Positive(message = "post must be greater than zero")
-        Long commentId,
         @NotNull @NotBlank(message = "Please enter a comment")
         @Size(max = 255, message = "Line size increased!")
         String content

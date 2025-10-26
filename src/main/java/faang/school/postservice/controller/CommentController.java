@@ -6,8 +6,10 @@ import faang.school.postservice.dto.comment.CreateCommentDto;
 import faang.school.postservice.dto.comment.UpdateCommentDto;
 import faang.school.postservice.service.comment.CommentServiceImpl;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
@@ -26,20 +28,27 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("api/v1/comment")
+@RequestMapping("api/v1")
 @Validated
 public class CommentController {
     private final CommentServiceImpl commentService;
 
     @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping
+    @PostMapping("/comments")
     public void createComment(@Valid @RequestBody CreateCommentDto createCommentDto) {
         commentService.createComment(createCommentDto);
     }
 
-    @PutMapping
-    public void updateComment(@Valid @RequestBody UpdateCommentDto updateCommentDto) {
-        commentService.updateComment(updateCommentDto);
+    @PutMapping("/comments/{commentId}")
+    public void updateComment(@NotNull(message = "Be sure to include the comment id")
+                              @Positive(message = "post must be greater than zero")
+                              @PathVariable
+                              Long commentId,
+                              @Valid
+                              @RequestBody
+                              UpdateCommentDto updateCommentDto
+    ) {
+        commentService.updateComment(commentId, updateCommentDto);
     }
 
     @GetMapping("/posts/{postId}/comments")

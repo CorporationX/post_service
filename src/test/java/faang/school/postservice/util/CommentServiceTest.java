@@ -1,27 +1,24 @@
 package faang.school.postservice.util;
 
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.dto.comment.ResponseCommentDto;
 import faang.school.postservice.dto.comment.CreateCommentDto;
+import faang.school.postservice.dto.comment.ResponseCommentDto;
 import faang.school.postservice.dto.comment.UpdateCommentDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.mapper.CommentMapper;
-import faang.school.postservice.mapper.CommentMapperImpl;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.comment.CommentServiceImpl;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -29,17 +26,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -107,19 +98,17 @@ public class CommentServiceTest {
     @Test
     public void updateComment_trowEntity_shouldThrowEntityNotFoundException() {
         UpdateCommentDto dto = UpdateCommentDto.builder()
-                .commentId(1L)
                 .content("Test")
                 .build();
         when(commentRepository.findById(1L)).thenReturn(Optional.empty());
 
         Assertions.assertThrows(EntityNotFoundException.class,
-                () -> service.updateComment(dto));
+                () -> service.updateComment(1L, dto));
     }
 
     @Test
     public void updateComment_trowForbidden_shouldThrowForbiddenException() {
         UpdateCommentDto dto = UpdateCommentDto.builder()
-                .commentId(1L)
                 .content("Test")
                 .build();
         Comment comment = Comment.builder()
@@ -128,13 +117,12 @@ public class CommentServiceTest {
         when(commentRepository.findById(1L)).thenReturn(Optional.of(comment));
 
         Assertions.assertThrows(ForbiddenException.class,
-                () -> service.updateComment(dto));
+                () -> service.updateComment(1L, dto));
     }
 
     @Test
     public void updateComment_updateComment_shouldThrowForbiddenException() {
         UpdateCommentDto dto = UpdateCommentDto.builder()
-                .commentId(1L)
                 .content("Test")
                 .build();
         Comment comment = Comment.builder()
@@ -148,7 +136,7 @@ public class CommentServiceTest {
         when(userContext.getUserId()).thenReturn(2L);
         when(commentMapper.toDto(comment)).thenReturn(responseDto);
 
-        ResponseCommentDto responseCommentDto = service.updateComment(dto);
+        ResponseCommentDto responseCommentDto = service.updateComment(1L, dto);
 
         Assertions.assertEquals(1L, responseCommentDto.commentId());
     }
@@ -182,8 +170,8 @@ public class CommentServiceTest {
 
         List<ResponseCommentDto> listResponse = service.getComments(1L, 2, 10);
 
-        assertEquals(2L, listResponse.get(0).authorId());
-        assertEquals(1, listResponse.size());
+        Assertions.assertEquals(2L, listResponse.get(0).authorId());
+        Assertions.assertEquals(1, listResponse.size());
     }
 
     @Test
@@ -191,7 +179,7 @@ public class CommentServiceTest {
         when(commentRepository.findById(1L)).thenReturn(Optional.empty());
 
         assertThrows(EntityNotFoundException.class,
-                ()-> service.deleteComment(1L));
+                () -> service.deleteComment(1L));
     }
 
     @Test
@@ -202,7 +190,7 @@ public class CommentServiceTest {
         when(commentRepository.findById(1L)).thenReturn(Optional.of(comment));
         when(userContext.getUserId()).thenReturn(2L);
         assertThrows(ForbiddenException.class,
-                ()-> service.deleteComment(1L));
+                () -> service.deleteComment(1L));
     }
 
     @Test

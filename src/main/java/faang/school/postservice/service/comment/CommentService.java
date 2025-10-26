@@ -10,7 +10,7 @@ public interface CommentService {
 
     ResponseCommentDto createComment(CreateCommentDto createCommentDto);
 
-    ResponseCommentDto updateComment(UpdateCommentDto updateCommentDto);
+    ResponseCommentDto updateComment(long commentId, UpdateCommentDto updateCommentDto);
 
     List<ResponseCommentDto> getComments(long postId, int page, int pageSize);
 
