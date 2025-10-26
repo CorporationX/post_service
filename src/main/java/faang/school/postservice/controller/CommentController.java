@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/comments")
+@RequestMapping("/api/v1/posts/{postId}/comments")
 @RequiredArgsConstructor
 public class CommentController {
 
@@ -30,12 +30,12 @@ public class CommentController {
         return commentService.addComment(postId, commentDto);
     }
 
-    @PutMapping
+    @PutMapping("/{id}")
     public CommentDto updateComment(@RequestBody UpdateCommentDto updateDto) {
         return commentService.updateComment(userContext.getUserId(), updateDto);
     }
 
-    @GetMapping("/{postId}")
+    @GetMapping
     public List<CommentDto> getCommentsByPostId(@PathVariable Long postId) {
         return commentService.getCommentsByPostId(postId);
     }

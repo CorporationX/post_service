@@ -41,7 +41,6 @@ public class CommentServiceImpl implements CommentService {
         comment.setPost(post);
         comment.setAuthorId(userId);
         commentRepository.save(comment);
-        log.info("Comment {} saved", comment.getId());
         return commentMapper.toCommentDto(comment);
     }
 
