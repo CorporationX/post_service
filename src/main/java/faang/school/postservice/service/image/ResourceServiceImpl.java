@@ -1,8 +1,12 @@
 package faang.school.postservice.service.image;
 
+import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.exception.ResourceNotFoundException;
+import faang.school.postservice.exception.ResourceNotOwnedByPostException;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.PostService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +22,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -30,6 +33,7 @@ public class ResourceServiceImpl implements ResourceService {
     private static final int MAX_IMAGES_POST = 10;
     private static final String IMAGE_TYPE = "IMAGE";
 
+    private final PostService postService;
     private final PostRepository postRepository;
     private final S3Service s3Service;
 
@@ -40,33 +44,33 @@ public class ResourceServiceImpl implements ResourceService {
     @Transactional
     public List<Resource> uploadImages(Long postId, List<MultipartFile> files) {
         validateImageFiles(files);
-        Post post = getPost(postId);
+        Post post = postService.getPostEntityById(postId);
         validateImageCount(post, files.size());
 
         List<Resource> uploadedResources = files.stream()
                 .map(file -> processAndUploadImage(post, file))
-                .collect(Collectors.toList());
+                .toList();
 
         postRepository.save(post);
         log.info("Successfully uploaded {} images for post {}", files.size(), postId);
 
         return uploadedResources.stream()
                 .map(this::safeCopy)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<Resource> getResourcesByPostId(long postId) {
-        Post post = getPost(postId);
+        Post post = postService.getPostEntityById(postId);
         List<Resource> images = post.getResources().stream()
                 .filter(resource -> IMAGE_TYPE.equals(resource.getType()))
-                .collect(Collectors.toList());
+                .toList();
 
         log.info("Retrieved {} images for post {}", images.size(), postId);
         return images.stream()
                 .map(this::safeCopy)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
@@ -74,7 +78,7 @@ public class ResourceServiceImpl implements ResourceService {
     public List<Resource> deleteResource(long postId, long resourceId) {
         log.info("Deleting resource {} from post {}", resourceId, postId);
 
-        Post post = getPost(postId);
+        Post post = postService.getPostEntityById(postId);
         Resource resource = getResourceFromPost(post, resourceId);
         validateResourceOwnership(postId, resource);
 
@@ -89,13 +93,13 @@ public class ResourceServiceImpl implements ResourceService {
 
         return post.getResources().stream()
                 .map(this::safeCopy)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
     @Transactional(readOnly = true)
     public ResponseEntity<byte[]> downloadResource(Long postId, Long resourceId) {
-        Post post = getPost(postId);
+        Post post = postService.getPostEntityById(postId);
         Resource resource = getResourceFromPost(post, resourceId);
         validateResourceOwnership(postId, resource);
 
@@ -112,11 +116,11 @@ public class ResourceServiceImpl implements ResourceService {
 
     private void validateImageFiles(List<MultipartFile> files) {
         if (files == null || files.isEmpty()) {
-            throw new IllegalArgumentException("Files list cannot be empty");
+            throw new DataValidationException("Files list cannot be empty");
         }
 
         if (files.size() > MAX_IMAGES_POST) {
-            throw new IllegalArgumentException(
+            throw new DataValidationException(
                     String.format("Maximum %d images allowed per upload", MAX_IMAGES_POST)
             );
         }
@@ -126,11 +130,11 @@ public class ResourceServiceImpl implements ResourceService {
 
     private void validateImageFile(MultipartFile file) {
         if (file.isEmpty()) {
-            throw new IllegalArgumentException("File cannot be empty");
+            throw new DataValidationException("File cannot be empty");
         }
 
         if (file.getSize() > MAX_FILE_SIZE_BYTES) {
-            throw new IllegalArgumentException(
+            throw new DataValidationException(
                     String.format("File %s exceeds maximum size of %d MB",
                             file.getOriginalFilename(), MAX_FILE_SIZE_MB)
             );
@@ -138,7 +142,7 @@ public class ResourceServiceImpl implements ResourceService {
 
         String contentType = file.getContentType();
         if (contentType == null || !contentType.startsWith("image/")) {
-            throw new IllegalArgumentException("Only image files are allowed");
+            throw new DataValidationException("Only image files are allowed");
         }
     }
 
@@ -148,7 +152,7 @@ public class ResourceServiceImpl implements ResourceService {
                 .count();
 
         if (currentImageCount + newImagesCount > MAX_IMAGES_POST) {
-            throw new IllegalArgumentException(
+            throw new DataValidationException(
                     String.format("Cannot upload %d images. Post already has %d images. Maximum %d images allowed per post.",
                             newImagesCount, currentImageCount, MAX_IMAGES_POST)
             );
@@ -176,7 +180,7 @@ public class ResourceServiceImpl implements ResourceService {
 
         } catch (IOException e) {
             log.error("Failed to upload image: {}", file.getOriginalFilename(), e);
-            throw new RuntimeException("Failed to upload image: " + file.getOriginalFilename(), e);
+            throw new DataValidationException("Failed to upload image: " + file.getOriginalFilename());
         }
     }
 
@@ -188,21 +192,16 @@ public class ResourceServiceImpl implements ResourceService {
         return "posts/images/" + UUID.randomUUID() + extension;
     }
 
-    private Post getPost(Long postId) {
-        return postRepository.findById(postId)
-                .orElseThrow(() -> new RuntimeException("Post not found with id: " + postId));
-    }
-
     private Resource getResourceFromPost(Post post, Long resourceId) {
         return post.getResources().stream()
                 .filter(resource -> resource.getId().equals(resourceId))
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("Resource not found with id: " + resourceId));
+                .orElseThrow(() -> new ResourceNotFoundException("Resource not found with id: " + resourceId));
     }
 
     private void validateResourceOwnership(Long postId, Resource resource) {
         if (!resource.getPost().getId().equals(postId)) {
-            throw new RuntimeException(
+            throw new ResourceNotOwnedByPostException(
                     String.format("Resource %d not owned by post %d", resource.getId(), postId)
             );
         }

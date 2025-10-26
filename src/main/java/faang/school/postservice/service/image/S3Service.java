@@ -1,50 +1,25 @@
 package faang.school.postservice.service.image;
 
-import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
-import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.sync.RequestBody;
-import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.S3Configuration;
 import software.amazon.awssdk.services.s3.model.ObjectIdentifier;
 
-import java.net.URI;
 import java.util.List;
 
 @Slf4j
 @Service
 public class S3Service {
 
-    @Value("${services.s3.endpoint}")
-    private String endpoint;
-
-    @Value("${services.s3.accessKey}")
-    private String accessKey;
-
-    @Value("${services.s3.secretKey}")
-    private String secretKey;
-
     @Value("${services.s3.bucketName}")
     private String bucketName;
 
-    private S3Client s3Client;
+    private final S3Client s3Client;
 
-    @PostConstruct
-    public void init() {
-        this.s3Client = S3Client.builder()
-                .endpointOverride(URI.create(endpoint))
-                .credentialsProvider(StaticCredentialsProvider.create(
-                        AwsBasicCredentials.create(accessKey, secretKey)))
-                .region(Region.US_EAST_1)
-                .serviceConfiguration(S3Configuration.builder()
-                        .pathStyleAccessEnabled(true)
-                        .build())
-                .build();
-        log.info("S3Client initialized for: {}", endpoint);
+    public S3Service(S3Client s3Client) {
+        this.s3Client = s3Client;
     }
 
     public void uploadFile(String objectKey, byte[] fileBytes, String contentType) {
