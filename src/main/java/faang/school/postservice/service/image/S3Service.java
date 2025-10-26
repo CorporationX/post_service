@@ -16,7 +16,7 @@ public class S3Service {
     @Value("${services.s3.bucketName}")
     private String bucketName;
 
-    private final S3Client s3Client; //для PR
+    private final S3Client s3Client;
 
     public S3Service(S3Client s3Client) {
         this.s3Client = s3Client;
