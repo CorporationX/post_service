@@ -51,3 +51,15 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+services:
+  s3:
+    endpoint: ${MINIO_END_POINT}
+    accessKey: ${MINIO_ACCESS_KEY}
+    secretKey: ${MINIO_SECRET_KEY}
+    bucketName: ${MINIO_BUCKET_NAME}
+
+    posts:
+      image:
+        size:
+          max: 5242880
