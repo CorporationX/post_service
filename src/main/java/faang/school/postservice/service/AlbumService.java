@@ -10,9 +10,9 @@ public interface AlbumService {
 
     AlbumDto createAlbum(AlbumDto albumDto, Long userId);
 
-    AlbumDto updateAlbum(Long albumId, AlbumDto albumDto);
+    AlbumDto updateAlbum(Long albumId, AlbumDto albumDto, Long userId);
 
-    void deleteAlbum(Long albumId);
+    void deleteAlbum(Long albumId, Long userId);
 
     AlbumDto getById(Long albumId);
 
@@ -22,12 +22,11 @@ public interface AlbumService {
 
     List<AlbumDto> getAuthorsAlbums(Long authorId, AlbumFilterDto albumFilterDto);
 
-    AlbumDto addPost(Long postId, Long albumId);
+    AlbumDto addPost(Long postId, Long albumId, Long userId);
+
+    AlbumDto removePost(Long postId, Long albumId, Long userId);
 
     FavoriteAlbumsDto addToFavoriteAlbums(Long albumId, Long userId);
 
     void removeFromFavoriteAlbum(Long albumId, Long userId);
-
-
-
 }

@@ -77,7 +77,6 @@ public class AlbumServiceTest {
                 null);
     }
 
-
     @Test
     public void testCreateUnregisteredUserAlbum() {
         when(userServiceClient.getUser(anyLong())).thenThrow(new RuntimeException());
@@ -113,7 +112,7 @@ public class AlbumServiceTest {
         when(albumRepository.existsById(anyLong())).thenReturn(false);
 
         assertThrows(DataValidationException.class,
-                () -> albumService.updateAlbum(1L, albumDto));
+                () -> albumService.updateAlbum(1L, albumDto, 1L));
     }
 
     @Test
@@ -122,7 +121,7 @@ public class AlbumServiceTest {
         when(albumRepository.save(any())).thenReturn(new Album());
         when(albumRepository.findById(anyLong())).thenReturn(Optional.of(new Album()));
 
-        albumService.updateAlbum(1L, albumDto);
+        albumService.updateAlbum(1L, albumDto, 1L);
 
         verify(albumRepository).save(albumCaptor.capture());
         Album albumCaught = albumCaptor.getValue();
@@ -134,14 +133,14 @@ public class AlbumServiceTest {
         when(albumRepository.existsById(anyLong())).thenReturn(false);
 
         assertThrows(DataValidationException.class,
-                () -> albumService.deleteAlbum(1L));
+                () -> albumService.deleteAlbum(1L, 1L));
     }
 
     @Test
     public void testDeleteAlbum() {
         when(albumRepository.existsById(anyLong())).thenReturn(true);
 
-        albumService.deleteAlbum(1L);
+        albumService.deleteAlbum(1L, 1L);
 
         verify(albumRepository).deleteById(anyLong());
     }
@@ -251,16 +250,15 @@ public class AlbumServiceTest {
     }
 
     private AlbumServiceImpl prepareService() {
-        AlbumServiceImpl service= new AlbumServiceImpl(
+
+        return new AlbumServiceImpl(
                 albumRepository,
                 albumMapper,
-                postRepository,
                 List.of(testAlbumTitleFilter, testAlbumDateFilter),
                 favoriteAlbumsRepository,
-                userServiceClient
+                userServiceClient,
+                postRepository
         );
-
-        return service;
     }
 
     private List<Album> prepareAlbums() {
@@ -283,5 +281,4 @@ public class AlbumServiceTest {
                 null
         );
     }
-
 }
