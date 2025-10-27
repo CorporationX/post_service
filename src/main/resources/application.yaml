@@ -1,4 +1,4 @@
-spring:
+ucketspring:
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://localhost:5432/postgres
@@ -49,13 +49,7 @@ payment-service:
 
 services:
   s3:
-    endpoint: http://192.168.1.65:9000
+    endpoint: http://192.168.1.65:9001
     accessKey: user
     secretKey: password
     bucketName: corpbucket
-
-minio:
-  endpoint: http://localhost:9000
-  access-key: user
-  secret-key: password
-  bucket-name: corpbucket
