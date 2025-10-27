@@ -14,8 +14,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -181,18 +179,19 @@ class HashtagServiceImplTest {
     void findPostsByHashtagName_WithExistingHashtag_ShouldReturnPosts() {
         // Arrange
         String hashtagName = "#java";
-        Pageable pageable = PageRequest.of(0, 20);
+        int page = 0;
+        int size = 20;
 
         List<Long> postIds = List.of(1L, 2L, 3L);
         List<Post> posts = createMockPosts();
         List<PostDto> postDtos = createMockPostDtos();
 
-        when(hashtagRepository.findDistinctPostIdsByName(hashtagName)).thenReturn(postIds);
-        when(postRepository.findAllByIdOrderByCreatedAtDesc(postIds)).thenReturn(posts);
+        when(hashtagRepository.findDistinctPostIdByName(hashtagName)).thenReturn(postIds);
+        when(postRepository.findAllByIdInOrderByCreatedAtDesc(postIds)).thenReturn(posts);
         when(postMapper.toDtoList(posts)).thenReturn(postDtos);
 
         // Act
-        Page<PostDto> result = hashtagService.findPostsByHashtagName(hashtagName, pageable);
+        Page<PostDto> result = hashtagService.findPostsByHashtagName(hashtagName, page, size);
 
         // Assert
         assertThat(result).isNotNull();
@@ -201,8 +200,8 @@ class HashtagServiceImplTest {
         assertThat(result.getTotalPages()).isEqualTo(1);
         assertThat(result.isEmpty()).isFalse();
 
-        verify(hashtagRepository, times(1)).findDistinctPostIdsByName(hashtagName);
-        verify(postRepository, times(1)).findAllByIdOrderByCreatedAtDesc(postIds);
+        verify(hashtagRepository, times(1)).findDistinctPostIdByName(hashtagName);
+        verify(postRepository, times(1)).findAllByIdInOrderByCreatedAtDesc(postIds);
         verify(postMapper, times(1)).toDtoList(posts);
     }
 
@@ -211,20 +210,21 @@ class HashtagServiceImplTest {
     void findPostsByHashtagName_WithNonExistingHashtag_ShouldReturnEmptyPage() {
         // Arrange
         String hashtagName = "#nonexistent";
-        Pageable pageable = PageRequest.of(0, 20);
+        int page = 0;
+        int size = 20;
 
-        when(hashtagRepository.findDistinctPostIdsByName(hashtagName)).thenReturn(Collections.emptyList());
+        when(hashtagRepository.findDistinctPostIdByName(hashtagName)).thenReturn(Collections.emptyList());
 
         // Act
-        Page<PostDto> result = hashtagService.findPostsByHashtagName(hashtagName, pageable);
+        Page<PostDto> result = hashtagService.findPostsByHashtagName(hashtagName, page, size);
 
         // Assert
         assertThat(result).isNotNull();
         assertThat(result.getTotalElements()).isEqualTo(0);
         assertThat(result.isEmpty()).isTrue();
 
-        verify(hashtagRepository, times(1)).findDistinctPostIdsByName(hashtagName);
-        verify(postRepository, never()).findAllByIdOrderByCreatedAtDesc(anyList());
+        verify(hashtagRepository, times(1)).findDistinctPostIdByName(hashtagName);
+        verify(postRepository, never()).findAllByIdInOrderByCreatedAtDesc(anyList());
         verify(postMapper, never()).toDtoList(anyList());
     }
 
@@ -233,19 +233,20 @@ class HashtagServiceImplTest {
     void findPostsByHashtagName_WithPagination_ShouldReturnCorrectPage() {
         // Arrange
         String hashtagName = "#java";
-        Pageable pageable = PageRequest.of(1, 2);
+        int page = 1;
+        int size = 2;
 
         List<Long> allPostIds = List.of(1L, 2L, 3L, 4L, 5L);
         List<Long> paginatedPostIds = List.of(3L, 4L);
         List<Post> posts = createMockPosts().subList(0, 2);
         List<PostDto> postDtos = createMockPostDtos().subList(0, 2);
 
-        when(hashtagRepository.findDistinctPostIdsByName(hashtagName)).thenReturn(allPostIds);
-        when(postRepository.findAllByIdOrderByCreatedAtDesc(paginatedPostIds)).thenReturn(posts);
+        when(hashtagRepository.findDistinctPostIdByName(hashtagName)).thenReturn(allPostIds);
+        when(postRepository.findAllByIdInOrderByCreatedAtDesc(paginatedPostIds)).thenReturn(posts);
         when(postMapper.toDtoList(posts)).thenReturn(postDtos);
 
         // Act
-        Page<PostDto> result = hashtagService.findPostsByHashtagName(hashtagName, pageable);
+        Page<PostDto> result = hashtagService.findPostsByHashtagName(hashtagName, page, size);
 
         // Assert
         assertThat(result).isNotNull();
@@ -254,8 +255,8 @@ class HashtagServiceImplTest {
         assertThat(result.getTotalPages()).isEqualTo(3);
         assertThat(result.getNumber()).isEqualTo(1);
 
-        verify(hashtagRepository, times(1)).findDistinctPostIdsByName(hashtagName);
-        verify(postRepository, times(1)).findAllByIdOrderByCreatedAtDesc(paginatedPostIds);
+        verify(hashtagRepository, times(1)).findDistinctPostIdByName(hashtagName);
+        verify(postRepository, times(1)).findAllByIdInOrderByCreatedAtDesc(paginatedPostIds);
     }
 
     @Test
@@ -263,22 +264,23 @@ class HashtagServiceImplTest {
     void findPostsByHashtagName_WithPageOutOfRange_ShouldReturnEmptyPage() {
         // Arrange
         String hashtagName = "#java";
-        Pageable pageable = PageRequest.of(10, 20);
+        int page = 10;
+        int size = 20;
 
         List<Long> postIds = List.of(1L, 2L, 3L);
 
-        when(hashtagRepository.findDistinctPostIdsByName(hashtagName)).thenReturn(postIds);
+        when(hashtagRepository.findDistinctPostIdByName(hashtagName)).thenReturn(postIds);
 
         // Act
-        Page<PostDto> result = hashtagService.findPostsByHashtagName(hashtagName, pageable);
+        Page<PostDto> result = hashtagService.findPostsByHashtagName(hashtagName, page, size);
 
         // Assert
         assertThat(result).isNotNull();
         assertThat(result.getTotalElements()).isEqualTo(3);
         assertThat(result.isEmpty()).isTrue();
 
-        verify(hashtagRepository, times(1)).findDistinctPostIdsByName(hashtagName);
-        verify(postRepository, never()).findAllByIdOrderByCreatedAtDesc(anyList());
+        verify(hashtagRepository, times(1)).findDistinctPostIdByName(hashtagName);
+        verify(postRepository, never()).findAllByIdInOrderByCreatedAtDesc(anyList());
     }
 
     @Test
@@ -286,18 +288,19 @@ class HashtagServiceImplTest {
     void findPostsByHashtagName_WithSinglePost_ShouldReturnOnePage() {
         // Arrange
         String hashtagName = "#java";
-        Pageable pageable = PageRequest.of(0, 20);
+        int page = 0;
+        int size = 20;
 
         List<Long> postIds = List.of(1L);
         List<Post> posts = List.of(mock(Post.class));
         List<PostDto> postDtos = List.of(new PostDto(1L, "Test", 123L, LocalDateTime.now(), LocalDateTime.now()));
 
-        when(hashtagRepository.findDistinctPostIdsByName(hashtagName)).thenReturn(postIds);
-        when(postRepository.findAllByIdOrderByCreatedAtDesc(postIds)).thenReturn(posts);
+        when(hashtagRepository.findDistinctPostIdByName(hashtagName)).thenReturn(postIds);
+        when(postRepository.findAllByIdInOrderByCreatedAtDesc(postIds)).thenReturn(posts);
         when(postMapper.toDtoList(posts)).thenReturn(postDtos);
 
         // Act
-        Page<PostDto> result = hashtagService.findPostsByHashtagName(hashtagName, pageable);
+        Page<PostDto> result = hashtagService.findPostsByHashtagName(hashtagName, page, size);
 
         // Assert
         assertThat(result).isNotNull();

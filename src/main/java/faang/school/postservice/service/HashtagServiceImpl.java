@@ -10,10 +10,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.MatchResult;
 import java.util.regex.Pattern;
@@ -65,48 +67,39 @@ public class HashtagServiceImpl implements HashtagService {
 
     @Transactional(readOnly = true)
     @Override
-    public Page<PostDto> findPostsByHashtagName(String name, Pageable pageable) {
-        log.info("Finding posts by hashtag: '{}', page: {}, size: {}",
-                name, pageable.getPageNumber(), pageable.getPageSize());
+    public Page<PostDto> findPostsByHashtagName(String name, int page, int size) {
+        log.info("Finding posts by hashtag: '{}', page: {}, size: {}", name, page, size);
 
-        // 1. Найти все ID постов с этим хештегом
-        List<Long> postIds = hashtagRepository.findDistinctPostIdsByName(name);
+        Pageable pageable = PageRequest.of(page, size);
 
+        List<Long> postIds = hashtagRepository.findDistinctPostIdByName(name);
         log.debug("Found {} unique post IDs for hashtag: '{}'", postIds.size(), name);
 
-        // Проверка: если нет постов с таким хештегом
         if (postIds.isEmpty()) {
             log.info("No posts found for hashtag: '{}'", name);
-            return new PageImpl<>(List.of(), pageable, 0);
+            return new PageImpl<>(Collections.emptyList(), pageable, 0);
         }
 
-        // 2. Применить пагинацию к списку ID
         int start = (int) pageable.getOffset();
         int end = Math.min((start + pageable.getPageSize()), postIds.size());
 
-        // Проверка: если страница вне диапазона
         if (start >= postIds.size()) {
             log.warn("Page {} is out of range for hashtag: '{}'. Total posts: {}",
                     pageable.getPageNumber(), name, postIds.size());
-            return new PageImpl<>(List.of(), pageable, postIds.size());
+            return new PageImpl<>(Collections.emptyList(), pageable, postIds.size());
         }
 
         List<Long> paginatedPostIds = postIds.subList(start, end);
         log.debug("Fetching {} posts (IDs: {} to {}) from database",
                 paginatedPostIds.size(), start, end - 1);
 
-        // 3. Загрузить посты из БД по ID с сортировкой
-        List<Post> posts = postRepository.findAllByIdOrderByCreatedAtDesc(paginatedPostIds);
-
+        List<Post> posts = postRepository.findAllByIdInOrderByCreatedAtDesc(paginatedPostIds);
         log.debug("Retrieved {} posts from database", posts.size());
 
-        // 4. Преобразовать в DTO
         List<PostDto> postDtos = postMapper.toDtoList(posts);
-
         log.info("Successfully found {} posts (total: {}) for hashtag: '{}'",
                 postDtos.size(), postIds.size(), name);
 
-        // 5. Создать Page<PostDto>
         return new PageImpl<>(postDtos, pageable, postIds.size());
     }
 }
