@@ -39,7 +39,7 @@ public class AlbumController {
 
     @PutMapping("/{albumId}")
     public ResponseEntity<AlbumDto> updateAlbum(@PathVariable Long albumId,
-                                                @RequestBody AlbumDto albumDto) {
+                                                @Valid @RequestBody AlbumDto albumDto) {
         Long userId = userContext.getUserId();
         return ResponseEntity.ok(albumService.updateAlbum(albumId, albumDto, userId));
 
@@ -68,7 +68,7 @@ public class AlbumController {
                 ResponseEntity.noContent().build() : ResponseEntity.ok(albums);
     }
 
-    @GetMapping("my-albums")
+    @GetMapping("my")
     public ResponseEntity<List<AlbumDto>> getAuthorAlbums(AlbumFilterDto albumFilterDto) {
         Long userId = userContext.getUserId();
 
