@@ -1,4 +1,4 @@
-package faang.school.postservice.dto.user;
+package faang.school.postservice.dto.user_service.user;
 
 public record UserDto(
     Long id,
