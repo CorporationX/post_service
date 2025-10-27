@@ -26,11 +26,13 @@ public class LikeServiceImpl implements LikeService {
     public void createPostLike(Long postId) {
         long userId = userContext.getUserId();
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new EntityNotFoundException("Post " + postId + " not found"));
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Post %d not found".formatted(postId)
+                ));
 
         likeRepository.findByPostIdAndUserId(postId, userId)
                 .ifPresent(like -> {
-                    throw new AlreadyLikedException("User " + userId + " already liked post " + postId);
+                    throw new AlreadyLikedException("User %d already liked post %d".formatted(userId, postId));
                 });
 
         Like like = Like.builder()
@@ -54,11 +56,11 @@ public class LikeServiceImpl implements LikeService {
     public void createCommentLike(Long commentId) {
         long userId = userContext.getUserId();
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new EntityNotFoundException("Comment " + commentId + " not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Comment %d not found".formatted(commentId)));
 
         likeRepository.findByCommentIdAndUserId(commentId, userId)
                 .ifPresent(like -> {
-                    throw new AlreadyLikedException("User " + userId + " already liked comment " + commentId);
+                    throw new AlreadyLikedException("User %d already liked comment %d".formatted(userId, commentId));
                 });
 
         Like like = Like.builder()
