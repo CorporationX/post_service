@@ -1,5 +1,6 @@
 package faang.school.postservice.exception;
 
+import faang.school.postservice.dto.ExceptionDto;
 import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -10,33 +11,44 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
     @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<String> handleResourceNotFound(EntityNotFoundException e) {
-        log.error("Resource not found", e);
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+    public ResponseEntity<ExceptionDto> handleResourceNotFound(EntityNotFoundException e) {
+        String description = "Resource not found";
+        log.error(description, e);
+        return buildExceptionResponse(HttpStatus.NOT_FOUND, description, e.getMessage());
     }
 
+
     @ExceptionHandler(DataValidationException.class)
-    public ResponseEntity<String> handleResourceBadRequest(DataValidationException e) {
-        log.error("Incorrect data has been entered", e);
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+    public ResponseEntity<ExceptionDto> handleResourceBadRequest(DataValidationException e) {
+        String description = "Incorrect data has been entered";
+        log.error(description, e);
+        return buildExceptionResponse(HttpStatus.BAD_REQUEST, description, e.getMessage());
     }
 
     @ExceptionHandler(ForbiddenException.class)
-    public ResponseEntity<String> handleResourceBadRequest(ForbiddenException e) {
-        log.error("Forbidden action", e);
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+    public ResponseEntity<ExceptionDto> handleResourceBadRequest(ForbiddenException e) {
+        String description = "Forbidden action";
+        log.error(description, e);
+        return buildExceptionResponse(HttpStatus.FORBIDDEN, description, e.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Object> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        log.error("Validation failed", ex);
+    public ResponseEntity<ExceptionDto> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        String description = "Validation failed";
+        log.error(description, ex);
         Map<String, String> errors = extractValidationErrors(ex);
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
+
+        String errorMessage = errors.entrySet().stream()
+                .map(entry -> entry.getKey() + ": " + entry.getValue())
+                .collect(Collectors.joining("; "));
+
+        return buildExceptionResponse(HttpStatus.BAD_REQUEST, description, errorMessage);
     }
 
     private Map<String, String> extractValidationErrors(MethodArgumentNotValidException ex) {
@@ -50,23 +62,32 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(FeignException.NotFound.class)
-    public ResponseEntity<String> handleFeignNotFoundException(FeignException.NotFound e) {
-        log.error("Remote resource not found", e);
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body("Remote resource not found: " + e.getMessage());
+    public ResponseEntity<ExceptionDto> handleFeignNotFoundException(FeignException.NotFound e) {
+        String description = "Remote resource not found";
+        log.error(description, e);
+        return buildExceptionResponse(HttpStatus.NOT_FOUND, description, e.getMessage());
     }
 
     @ExceptionHandler(FeignException.class)
-    public ResponseEntity<String> handleFeignException(FeignException e) {
-        log.error("Service unavailable", e);
-        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
-                .body("Service unavailable: " + e.getMessage());
+    public ResponseEntity<ExceptionDto> handleFeignException(FeignException e) {
+        String description = "Service unavailable";
+        log.error(description, e);
+        return buildExceptionResponse((HttpStatus.SERVICE_UNAVAILABLE), description, e.getMessage());
     }
 
     @ExceptionHandler(FeignException.ServiceUnavailable.class)
-    public ResponseEntity<String> handleFeignServiceUnavailable(FeignException.ServiceUnavailable e) {
-        log.error("Service is currently unavailable", e);
-        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
-                .body("Service is currently unavailable. Please try again later.");
+    public ResponseEntity<ExceptionDto> handleFeignServiceUnavailable(FeignException.ServiceUnavailable e) {
+        String description = "Service is currently unavailable. Please try again later.";
+        log.error(description, e);
+        return buildExceptionResponse(HttpStatus.SERVICE_UNAVAILABLE, description, e.getMessage());
+    }
+
+    private ResponseEntity<ExceptionDto> buildExceptionResponse(HttpStatus status, String description, String errorMessage) {
+        return ResponseEntity.status(status).body(
+                new ExceptionDto(
+                        status.value(),
+                        description,
+                        errorMessage
+                ));
     }
 }
