@@ -30,7 +30,7 @@ public class MinioServiceImpl implements MinioService {
     @Value("${MINIO_BUCKET_NAME}")
     private String bucketName;
     @Value("${services.s3.posts.download.times-live-url-minutes}")
-    private int MAX_LIVE_URL_MINUTES = 10;
+    private int MAX_LIVE_URL_MINUTES;
 
 
     @Override
@@ -72,7 +72,7 @@ public class MinioServiceImpl implements MinioService {
     public List<String> downloadImage(String key, String folder) {
         try {
             java.util.Date expiration = new java.util.Date();
-            long expTimeMillis = System.currentTimeMillis()+ TimeUnit.MINUTES.toMillis(MAX_LIVE_URL_MINUTES);
+            long expTimeMillis = System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(MAX_LIVE_URL_MINUTES);
             expiration.setTime(expTimeMillis);
             String normalizedFolder = folder.endsWith("/") ? folder : folder + "/";
 
@@ -120,7 +120,6 @@ public class MinioServiceImpl implements MinioService {
             throw new FileException("Error generating download URL");
         }
     }
-
 
 
 }

@@ -3,7 +3,7 @@ package faang.school.postservice.controller;
 import faang.school.postservice.dto.resource.ResourceDeleteDto;
 import faang.school.postservice.dto.resource.ResourceDto;
 import faang.school.postservice.model.ImageType;
-import faang.school.postservice.service.resource.ResourcePostService;
+import faang.school.postservice.service.resource.ResourcePostServiceImpl;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +23,7 @@ import java.util.List;
 @RequestMapping("api/v1")
 @RequiredArgsConstructor
 public class ResourcePostController {
-    private final ResourcePostService resourcePostService;
+    private final ResourcePostServiceImpl resourcePostServiceImpl;
 
     @PutMapping("/posts/{postId}/resource")
     public List<ResourceDto> addResource(
@@ -37,7 +37,7 @@ public class ResourcePostController {
             @NotNull(message = "File cannot be empty")
             @RequestParam("file")
             MultipartFile[] file) {
-        return resourcePostService.addResources(postId, file, type);
+        return resourcePostServiceImpl.addResources(postId, file, type);
     }
 
     @GetMapping("/posts/{postId}/resources")
@@ -46,7 +46,7 @@ public class ResourcePostController {
             @Positive(message = "Post cannot be negative")
             @PathVariable
             Long postId) {
-        return resourcePostService.getResource(postId);
+        return resourcePostServiceImpl.getResource(postId);
     }
 
     @DeleteMapping("/posts/{postId}/resources")
@@ -56,6 +56,6 @@ public class ResourcePostController {
             @PathVariable
             Long postId,
             @RequestBody ResourceDeleteDto deleteDto) {
-        resourcePostService.deleteResource(postId, deleteDto.resourceIds());
+        resourcePostServiceImpl.deleteResource(postId, deleteDto.resourceIds());
     }
 }
