@@ -60,6 +60,19 @@ services:
     bucketName: ${MINIO_BUCKET_NAME}
 
     posts:
-      image:
+      upload:
+        image:
+          max: 10
+          format:
+            - ".jpeg,.pdf,.webp,.png,.ico,.jpg"
         size:
           max: 5242880
+      download:
+        times-live-url-minutes: 10
+      image:
+        horizontal:
+          max-width: 1080
+          max-height: 566
+        square:
+          max-width: 1080
+          max-height: 1080
