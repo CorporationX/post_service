@@ -30,6 +30,7 @@ dependencies {
     implementation("org.springframework.cloud:spring-cloud-starter-openfeign:4.0.2")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
+
     /**
      * Documentation
      */
@@ -68,6 +69,14 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.9.2")
     testImplementation("org.assertj:assertj-core:3.24.2")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+
+    /**
+     * Media
+     */
+    implementation("com.amazonaws:aws-java-sdk-s3:1.12.464")
+    implementation("org.apache.tika:tika-core:2.9.2")
+    implementation("net.coobird:thumbnailator:0.4.20")
+    implementation("commons-io:commons-io:2.15.1")
 }
 
 tasks.withType<Test> {

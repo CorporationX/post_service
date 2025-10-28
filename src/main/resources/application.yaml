@@ -47,3 +47,12 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+storage:
+  s3:
+    endpoint: http://localhost:9000
+    region: us-east-1
+    access-key: user
+    secret-key: password
+    bucket: posts
+    path-style: true
