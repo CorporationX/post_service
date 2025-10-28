@@ -49,10 +49,8 @@ public class ResourcePostServiceImpl implements ResourcePostService {
             throw new IllegalArgumentException(
                     "Maximum number %d of downloaded images exceeded".formatted(MAX_IMAGE_COUNT));
         }
-
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("Post not found"));
-
         List<ResourceDto> result = new ArrayList<>();
 
         for (MultipartFile file : files) {
@@ -64,7 +62,6 @@ public class ResourcePostServiceImpl implements ResourcePostService {
                 throw new FileException("Error processing file: " + file.getOriginalFilename());
             }
         }
-
         return result;
     }
 
@@ -88,7 +85,6 @@ public class ResourcePostServiceImpl implements ResourcePostService {
                 .build();
 
         Resource savedResource = resourceRepository.save(resourceEntity);
-
         return resourcePostMapper.toDto(savedResource);
     }
 
@@ -107,7 +103,6 @@ public class ResourcePostServiceImpl implements ResourcePostService {
             minioService.deleteImage(resource.getKey());
             post.getResources().remove(resource);
         }
-
         resourceRepository.deleteAll(resourcesToRemove);
     }
 

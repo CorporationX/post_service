@@ -120,6 +120,4 @@ public class MinioServiceImpl implements MinioService {
             throw new FileException("Error generating download URL");
         }
     }
-
-
 }

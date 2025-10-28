@@ -13,7 +13,7 @@ public interface ResourceRepository extends JpaRepository<Resource, Long> {
 
     @Query("""
             SELECT r FROM Resource r
-                        WHERE r.id IN :resourceId
+            WHERE r.id IN :resourceId
             """)
     List<Resource> findAllById(@Param("resourceId") List<Long> resourceId);
 }
