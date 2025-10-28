@@ -44,7 +44,7 @@ class MinioServiceImplTest {
     private MinioServiceImpl minioService;
 
     @BeforeEach
-    void setUp() throws Exception {
+    void setUp() {
         when(minioConfig.s3Client()).thenReturn(s3Client);
 
         setField(minioService, "bucketName", "test-bucket");

@@ -26,7 +26,7 @@ class ImageProcessServiceImplTest {
     private ImageProcessServiceImpl imageProcessService;
 
     @BeforeEach
-    void setUp() throws Exception {
+    void setUp() {
         setField(imageProcessService, "HORIZONTAL_MAX_WIDTH", 1920);
         setField(imageProcessService, "HORIZONTAL_MAX_HEIGHT", 1080);
         setField(imageProcessService, "SQUARE_MAX_WIDTH", 1080);
