@@ -32,11 +32,11 @@ public class ResourcePostServiceImpl implements ResourcePostService {
     private final ResourceRepository resourceRepository;
     private final ResourcePostMapper resourcePostMapper;
     private final ImageProcessServiceImpl imageProcessServiceImpl;
-    @Value("${services.s3.posts.upload.size.max}")
+    @Value("${services.s3.posts.download.size.max}")
     private int MAX_SIZE_IMAGE;
-    @Value("${services.s3.posts.upload.image.max}")
+    @Value("${services.s3.posts.upload.max-image-count}")
     private int MAX_IMAGE_COUNT;
-    @Value("#'{${services.s3.posts.upload.image.format[0]}'.split(',')}")
+    @Value("#'{${services.s3.posts.upload.format}'.split(',')}")
     private List<String> formatImage;
 
 
@@ -112,11 +112,11 @@ public class ResourcePostServiceImpl implements ResourcePostService {
     }
 
     private void validateImageFile(Post post, MultipartFile file) {
-        if (file.getSize() >= MAX_SIZE_IMAGE) {
+        if (file.getSize() > MAX_SIZE_IMAGE) {
             throw new IllegalArgumentException("Size exceeded 5MB image");
         }
         String formatImageString = formatImage.toString();
-        if (post.getResources().size() >= MAX_IMAGE_COUNT) {
+        if (post.getResources().size() > MAX_IMAGE_COUNT) {
             throw new DataValidationException("Maximum number of images exceeded");
         }
         String originalFileName = file.getOriginalFilename();
