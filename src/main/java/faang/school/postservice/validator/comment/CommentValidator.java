@@ -1,16 +1,14 @@
 package faang.school.postservice.validator.comment;
 
-import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exeption.UserInactiveException;
 import faang.school.postservice.exeption.ValidationException;
-import faang.school.postservice.model.Comment;
-import org.springframework.stereotype.Component;
 
-@Component
+import java.util.Objects;
+
 public class CommentValidator {
 
-    public void validateCommentContent(String content) {
+    public static void validateCommentContent(String content) {
         if (content == null || content.isBlank()) {
             throw new ValidationException("Content must not be blank");
         }
@@ -19,9 +17,8 @@ public class CommentValidator {
         }
     }
 
-    public void validateUser(Long userId, UserServiceClient userServiceClient) {
+    public static void validateUser(UserDto user) {
         try {
-            UserDto user = userServiceClient.getUser(userId);
             if (user == null || Boolean.FALSE.equals(user.active())) {
                 throw new UserInactiveException("User is inactive or does not exist");
             }
@@ -30,9 +27,9 @@ public class CommentValidator {
         }
     }
 
-    public void validateCommentOwnership(Comment comment, Long postId) {
-        if (!comment.getPost().getId().equals(postId)) {
-            throw new ValidationException("Comment does not belong to this post");
+    public static void validateCommentOwnership(Long existingAuthorId, Long userId) {
+        if (!Objects.equals(existingAuthorId, userId)) {
+            throw new ValidationException("You can't delete someone else's comment.");
         }
     }
 }

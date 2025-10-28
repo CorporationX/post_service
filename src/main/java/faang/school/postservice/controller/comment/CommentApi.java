@@ -6,8 +6,8 @@ import faang.school.postservice.dto.comment.CommentUpdateDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface CommentApi {
 
@@ -62,5 +62,5 @@ public interface CommentApi {
             @ApiResponse(responseCode = "200", description = "Комментарии успешно получены"),
             @ApiResponse(responseCode = "404", description = "Пост не найден")
     })
-    List<CommentDto> getCommentsByPostId(Long postId);
+    Page<CommentDto> getCommentsByPostId(Long postId, Pageable pageable);
 }

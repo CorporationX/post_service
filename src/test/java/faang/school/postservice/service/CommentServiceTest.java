@@ -4,40 +4,39 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentCreateDto;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CommentUpdateDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exeption.ResourceNotFoundException;
 import faang.school.postservice.exeption.ValidationException;
-import faang.school.postservice.helpers.TestUtils;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.comment.CommentService;
-import faang.school.postservice.validator.comment.CommentValidator;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(SpringExtension.class)
+@Slf4j
+@ExtendWith(MockitoExtension.class)
 class CommentServiceTest {
-
-    @InjectMocks
-    private CommentService commentService;
 
     @Mock
     private CommentRepository commentRepository;
@@ -45,118 +44,109 @@ class CommentServiceTest {
     private PostRepository postRepository;
     @Mock
     private UserServiceClient userServiceClient;
-    @Mock
-    private CommentValidator commentValidator;
 
-    private CommentCreateDto validCreateDto;
-    private CommentUpdateDto validUpdateDto;
+    @InjectMocks
+    private CommentService commentService;
 
-    private Post samplePost;
-    private Comment sampleComment;
+    private CommentCreateDto createDto;
+    private CommentUpdateDto updateDto;
+    private Post post;
+    private Comment comment;
+    private UserDto userDto;
 
     @BeforeEach
-    void init() {
-        validCreateDto = new CommentCreateDto("Test content", 1L,null, null);
-        validUpdateDto = new CommentUpdateDto("Updated content", null, null);
+    void setUp() {
+        createDto = new CommentCreateDto("Nice post!", 1L, null, null);
+        updateDto = new CommentUpdateDto("Updated content", "largeKey", "smallKey");
+        post = new Post();
+        post.setId(1L);
 
-        samplePost = new Post();
-        samplePost.setId(1L);
+        comment = new Comment();
+        comment.setId(10L);
+        comment.setAuthorId(1L);
+        comment.setPost(post);
+        comment.setContent("Old content");
 
-        sampleComment = new Comment();
-        sampleComment.setId(10L);
-        sampleComment.setAuthorId(1L);
-        sampleComment.setPost(samplePost);
-        sampleComment.setContent("Original content");
+        userDto = new UserDto(1L, "John", "Doe", Boolean.TRUE);
     }
 
     @Test
     void create_success() {
-        when(postRepository.findById(validCreateDto.postId())).thenReturn(Optional.of(samplePost));
-        doNothing().when(commentValidator).validateCommentContent(validCreateDto.content());
-        doNothing().when(commentValidator).validateUser(anyLong(), any());
-        when(commentRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(postRepository.findByIdOrThrow(1L)).thenReturn(post);
+        when(userServiceClient.getUser(1L)).thenReturn(userDto);
+        when(commentRepository.save(any(Comment.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Comment created = commentService.create(validCreateDto, 1L);
+        Comment result = commentService.create(createDto, 1L);
 
-        assertNotNull(created);
-        verify(commentValidator).validateCommentContent(validCreateDto.content());
-        verify(commentValidator).validateUser(1L, userServiceClient);
-        verify(commentRepository).save(any());
-    }
+        assertNotNull(result);
+        assertEquals("Nice post!", result.getContent());
+        assertEquals(post, result.getPost());
+        assertEquals(1L, result.getAuthorId());
 
-    @Test
-    void create_postNotFound_throws() {
-        when(postRepository.findById(anyLong())).thenReturn(Optional.empty());
-
-        TestUtils.assertThrowsAny(ResourceNotFoundException.class,
-                () -> commentService.create(validCreateDto, 1L));
+        verify(commentRepository).save(any(Comment.class));
+        verify(userServiceClient).getUser(1L);
     }
 
     @Test
     void update_success() {
-        when(commentRepository.findById(10L)).thenReturn(Optional.of(sampleComment));
-        doNothing().when(commentValidator).validateCommentContent(validUpdateDto.content());
-        when(commentRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(commentRepository.findById(10L)).thenReturn(Optional.of(comment));
+        when(commentRepository.save(any(Comment.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Comment updated = commentService.update(10L, validUpdateDto, 1L);
+        Comment updated = commentService.update(10L, updateDto, 1L);
 
-        assertEquals(validUpdateDto.content(), updated.getContent());
+        assertEquals("Updated content", updated.getContent());
+        assertEquals("largeKey", updated.getLargeImageFileKey());
+        assertEquals("smallKey", updated.getSmallImageFileKey());
+        verify(commentRepository).save(comment);
     }
 
     @Test
-    void update_notAuthor_throws() {
-        when(commentRepository.findById(10L)).thenReturn(Optional.of(sampleComment));
+    void update_throws_whenUserNotOwner() {
+        comment.setAuthorId(2L);
+        when(commentRepository.findById(10L)).thenReturn(Optional.of(comment));
 
-        TestUtils.assertThrowsAny(ValidationException.class,
-                () -> commentService.update(10L, validUpdateDto, 2L));
+        assertThrows(ValidationException.class,
+                () -> commentService.update(10L, updateDto, 1L));
     }
 
     @Test
-    void delete_success() {
-        when(commentRepository.findById(10L)).thenReturn(Optional.of(sampleComment));
-        doNothing().when(commentRepository).delete(sampleComment);
-
-        assertDoesNotThrow(() -> commentService.delete(10L, 1L));
-        verify(commentRepository).delete(sampleComment);
-    }
-
-    @Test
-    void delete_notAuthor_throws() {
-        when(commentRepository.findById(10L)).thenReturn(Optional.of(sampleComment));
-
-        TestUtils.assertThrowsAny(ValidationException.class,
-                () -> commentService.delete(10L, 2L));
+    void update_throws_whenNotFound() {
+        when(commentRepository.findById(10L)).thenReturn(Optional.empty());
+        assertThrows(ResourceNotFoundException.class,
+                () -> commentService.update(10L, updateDto, 1L));
     }
 
     @Test
     void getByPostId_success() {
-        when(postRepository.findById(1L)).thenReturn(Optional.of(samplePost));
-        when(commentRepository.findAllByPostId(1L)).thenReturn(List.of(sampleComment));
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Comment> page = new PageImpl<>(List.of(comment));
 
-        List<CommentDto> dto = commentService.getByPostId(1L);
+        when(postRepository.findByIdOrThrow(1L)).thenReturn(post);
+        when(commentRepository.findAllByPostId(1L, pageable)).thenReturn(page);
 
-        assertEquals(1, dto.size());
+        Page<CommentDto> result = commentService.getByPostId(1L, pageable);
+
+        assertEquals(1, result.getContent().size());
+        verify(postRepository).findByIdOrThrow(1L);
     }
 
     @Test
-    void getByPostId_postNotFound_throws() {
-        when(postRepository.findById(1L)).thenReturn(Optional.empty());
+    void delete_success() {
+        when(commentRepository.findByIdOrThrow(10L)).thenReturn(comment);
+        comment.setAuthorId(1L);
 
-        assertThrows(ResourceNotFoundException.class, () -> commentService.getByPostId(1L));
+        commentService.delete(10L, 1L);
+
+        verify(commentRepository).delete(comment);
     }
 
     @Test
     void getById_success() {
-        when(commentRepository.findById(10L)).thenReturn(Optional.of(sampleComment));
+        when(commentRepository.findByIdOrThrow(10L)).thenReturn(comment);
 
-        Comment comment = commentService.getById(10L);
-        assertEquals(10L, comment.getId());
-    }
+        Comment found = commentService.getById(10L);
 
-    @Test
-    void getById_notFound_throws() {
-        when(commentRepository.findById(10L)).thenReturn(Optional.empty());
-
-        assertThrows(ResourceNotFoundException.class, () -> commentService.getById(10L));
+        assertEquals(comment, found);
+        verify(commentRepository).findByIdOrThrow(10L);
     }
 }

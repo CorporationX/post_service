@@ -13,29 +13,26 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class CommentValidatorTest {
 
-    private CommentValidator validator;
-
     @BeforeEach
     void setup() {
-        validator = new CommentValidator();
     }
 
     @Test
     void validateCommentContent_validContent_doesNotThrow() {
-        assertDoesNotThrow(() -> validator.validateCommentContent("This is a valid comment."));
+        assertDoesNotThrow(() -> CommentValidator.validateCommentContent("This is a valid comment."));
     }
 
     @Test
     void validateCommentContent_nullContent_throws() {
         ValidationException ex = assertThrows(ValidationException.class,
-                () -> validator.validateCommentContent(null));
+                () -> CommentValidator.validateCommentContent(null));
         assertEquals("Content must not be blank", ex.getMessage());
     }
 
     @Test
     void validateCommentContent_blankContent_throws() {
         ValidationException ex = assertThrows(ValidationException.class,
-                () -> validator.validateCommentContent("    "));
+                () -> CommentValidator.validateCommentContent("    "));
         assertEquals("Content must not be blank", ex.getMessage());
     }
 
@@ -43,7 +40,7 @@ public class CommentValidatorTest {
     void validateCommentContent_tooLongContent_throws() {
         String longContent = "a".repeat(5000);
         ValidationException ex = assertThrows(ValidationException.class,
-                () -> validator.validateCommentContent(longContent));
+                () -> CommentValidator.validateCommentContent(longContent));
         assertEquals("Content must be at most 4096 characters", ex.getMessage());
     }
 
@@ -55,7 +52,7 @@ public class CommentValidatorTest {
         Comment comment = new Comment();
         comment.setPost(post);
 
-        assertDoesNotThrow(() -> validator.validateCommentOwnership(comment, 1L));
+        assertDoesNotThrow(() -> CommentValidator.validateCommentOwnership(comment.getPost().getId(), 1L));
     }
 
     @Test
@@ -67,8 +64,8 @@ public class CommentValidatorTest {
         comment.setPost(post);
 
         ValidationException ex = assertThrows(ValidationException.class,
-                () -> validator.validateCommentOwnership(comment, 1L));
-        assertEquals("Comment does not belong to this post", ex.getMessage());
+                () -> CommentValidator.validateCommentOwnership(comment.getPost().getId(), 1L));
+        assertEquals("You can't delete someone else's comment.", ex.getMessage());
     }
 }
 

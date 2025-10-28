@@ -33,7 +33,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleNotFound(ResourceNotFoundException ex) {
-        log.warn("Resource not found: {}", ex.getMessage());
+        log.error("Resource not found: {}", ex.getMessage());
         return buildErrorResponse(HttpStatus.NOT_FOUND, "Resource Not Found", ex.getMessage());
     }
 

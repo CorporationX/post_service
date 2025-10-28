@@ -4,6 +4,7 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentCreateDto;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CommentUpdateDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exeption.ResourceNotFoundException;
 import faang.school.postservice.exeption.ValidationException;
 import faang.school.postservice.mapper.CommentMapper;
@@ -14,11 +15,10 @@ import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.comment.CommentValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Comparator;
-import java.util.List;
 
 @Slf4j
 @Service
@@ -28,71 +28,59 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
-    private final CommentValidator commentValidator;
 
     @Transactional
     public Comment create(CommentCreateDto commentCreateDto, Long userId) {
-        log.info("Creating comment for postId={} by userId={}", commentCreateDto.postId(), userId);
-        commentValidator.validateCommentContent(commentCreateDto.content());
-        commentValidator.validateUser(userId, userServiceClient);
+        CommentValidator.validateCommentContent(commentCreateDto.content());
+        UserDto user = userServiceClient.getUser(userId);
+        CommentValidator.validateUser(user);
 
-        Post post = postRepository.findById(commentCreateDto.postId())
-                .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
+        Post post = postRepository.findByIdOrThrow(commentCreateDto.postId());
 
         Comment comment = CommentMapper.toEntity(commentCreateDto, post, userId);
         commentRepository.save(comment);
+        log.info("Creating comment for postId={} by userId={}", commentCreateDto.postId(), userId);
 
         return comment;
     }
 
     @Transactional
     public Comment update(Long commentId, CommentUpdateDto dto, Long userId) {
-        log.info("Updating comment id={} by userId={}", commentId, userId);
-
         Comment existing = commentRepository.findById(commentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Comment not found"));
 
         if (!existing.getAuthorId().equals(userId)) {
             throw new ValidationException("You can't edit someone else's comment.");
         }
-        commentValidator.validateCommentContent(dto.content());
+        CommentValidator.validateCommentContent(dto.content());
 
         existing.setContent(dto.content());
         existing.setLargeImageFileKey(dto.largeImageFileKey());
         existing.setSmallImageFileKey(dto.smallImageFileKey());
+        log.info("Updating comment id={} by userId={}", commentId, userId);
 
         return commentRepository.save(existing);
     }
 
-    public List<CommentDto> getByPostId(Long postId) {
-        log.info("Fetching comments for postId={}", postId);
+    public Page<CommentDto> getByPostId(Long postId, Pageable pageable) {
+        postRepository.findByIdOrThrow(postId);
 
-        postRepository.findById(postId)
-                .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
+        Page<Comment> page = commentRepository.findAllByPostId(postId, pageable);
 
-        return commentRepository.findAllByPostId(postId).stream()
-                .sorted(Comparator.comparing(Comment::getCreatedAt).reversed())
-                .map(CommentMapper::toDto)
-                .toList();
+        return page.map(CommentMapper::toDto);
     }
 
     public void delete(Long commentId, Long userId) {
-        log.info("Deleting comment id={} by userId={}", commentId, userId);
+        Comment existing = commentRepository.findByIdOrThrow(commentId);
 
-        Comment existing = commentRepository.findById(commentId)
-                .orElseThrow(() -> new ResourceNotFoundException("Comment not found"));
-
-        if (!existing.getAuthorId().equals(userId)) {
-            throw new ValidationException("You can't delete someone else's comment.");
-        }
+        CommentValidator.validateCommentOwnership(existing.getAuthorId(), userId);
 
         commentRepository.delete(existing);
+        log.info("Deleting comment id={} by userId={}", commentId, userId);
     }
 
     public Comment getById(Long commentId) {
         log.info("Fetching comment by id={}", commentId);
-
-        return commentRepository.findById(commentId)
-                .orElseThrow(() -> new ResourceNotFoundException("Comment not found"));
+        return commentRepository.findByIdOrThrow(commentId);
     }
 }

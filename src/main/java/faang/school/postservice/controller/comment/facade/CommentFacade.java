@@ -9,9 +9,9 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.service.comment.CommentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 @Slf4j
 @Component
@@ -23,33 +23,33 @@ public class CommentFacade {
 
     public CommentDto create(CommentCreateDto commentCreateDto) {
         Long userId = getCurrentUserId();
-        log.info("Creating comment for postId={} by userId={}", commentCreateDto.postId(), userId);
         Comment comment = commentService.create(commentCreateDto, userId);
+        log.info("Creating comment for postId={} by userId={}", commentCreateDto.postId(), userId);
         return CommentMapper.toDto(comment);
     }
 
     public CommentDto update(Long commentId, CommentUpdateDto commentUpdateDto) {
         Long userId = getCurrentUserId();
-        log.info("Updating comment id={} by userId={}", commentId, userId);
         Comment comment = commentService.update(commentId, commentUpdateDto, userId);
+        log.info("Updating comment id={} by userId={}", commentId, userId);
         return CommentMapper.toDto(comment);
     }
 
     public void delete(Long commentId) {
         Long userId = getCurrentUserId();
-        log.info("Deleting comment id={} by userId={}", commentId, userId);
         commentService.delete(commentId, userId);
+        log.info("Deleting comment id={} by userId={}", commentId, userId);
     }
 
     public CommentDto getById(Long commentId) {
-        log.info("Getting comment by id={}", commentId);
         Comment comment = commentService.getById(commentId);
+        log.info("Getting comment by id={}", commentId);
         return CommentMapper.toDto(comment);
     }
 
-    public List<CommentDto> getByPostId(Long postId) {
-        log.info("Getting comments for postId={}", postId);
-        return commentService.getByPostId(postId);
+    public Page<CommentDto> getByPostId(Long postId, Pageable pageable) {
+        log.info("Fetching paged comments for postId={} with page={}", postId, pageable.getPageNumber());
+        return commentService.getByPostId(postId, pageable);
     }
 
     private Long getCurrentUserId() {
