@@ -25,6 +25,9 @@ import java.util.Objects;
 @Service
 @RequiredArgsConstructor
 public class PostServiceImpl implements PostService {
+    private final static String DRAFT_LOG_PREFIX = "drafts";
+    private final static String PUBLISHED_LOG_PREFIX = "published posts";
+
     private final PostMapper postMapper;
     private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
@@ -95,25 +98,25 @@ public class PostServiceImpl implements PostService {
     @Override
     public List<PostDto> getDraftsByUser(Long userId) {
         List<Post> posts = postRepository.findByAuthorId(userId);
-        return getFilteredPostDto(userId, posts, false, "drafts");
+        return getFilteredPostDto(userId, posts, false, DRAFT_LOG_PREFIX);
     }
 
     @Override
     public List<PostDto> getDraftsByProject(Long projectId) {
         List<Post> posts = postRepository.findByProjectId(projectId);
-        return getFilteredPostDto(projectId, posts, false, "drafts");
+        return getFilteredPostDto(projectId, posts, false, DRAFT_LOG_PREFIX);
     }
 
     @Override
     public List<PostDto> getPublishedByUser(Long userId) {
         List<Post> posts = postRepository.findByAuthorId(userId);
-        return getFilteredPostDto(userId, posts, true, "published posts");
+        return getFilteredPostDto(userId, posts, true, PUBLISHED_LOG_PREFIX);
     }
 
     @Override
     public List<PostDto> getPublishedByProject(Long projectId) {
         List<Post> posts = postRepository.findByProjectId(projectId);
-        return getFilteredPostDto(projectId, posts, true, "published posts");
+        return getFilteredPostDto(projectId, posts, true, PUBLISHED_LOG_PREFIX);
     }
 
     @NotNull

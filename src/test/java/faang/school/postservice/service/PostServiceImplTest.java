@@ -54,24 +54,30 @@ public class PostServiceImplTest {
     @Spy
     private PostMapper postMapper = Mappers.getMapper(PostMapper.class);
 
-    private static final long POST_ID = 1L;
-    private static final long AUTHOR_ID = 1L;
-    private static final long PROJECT_ID = 1L;
+    private static final long DEFAULT_ID = 1L;
+    private static final long DEFAULT_NEGATIVE_ID = -1L;
+    private final long authorId = DEFAULT_ID;
+    private final long projectId = DEFAULT_ID;
+    private final long postId = DEFAULT_ID;
+    private final long userId = DEFAULT_ID;
+    private final LocalDateTime time1 = LocalDateTime.of(2024, 1, 1, 0, 0);
+    private final LocalDateTime time2 = LocalDateTime.of(2024, 1, 2, 0, 0);
 
-    private final PostDto postDtoAuthorExists = PostDto.builder().id(POST_ID).content("content")
-            .authorId(AUTHOR_ID).projectId(null)
+
+    private final PostDto postDtoAuthorExists = PostDto.builder().id(postId).content("content")
+            .authorId(authorId).projectId(null)
             .published(false).publishedAt(null).deleted(false)
             .createdAt(LocalDateTime.now()).updatedAt(null)
             .build();
 
-    private final PostDto postDtoProjectExists = PostDto.builder().id(POST_ID).content("content")
-            .authorId(null).projectId(PROJECT_ID)
+    private final PostDto postDtoProjectExists = PostDto.builder().id(postId).content("content")
+            .authorId(null).projectId(projectId)
             .published(false).publishedAt(null).deleted(false)
             .createdAt(LocalDateTime.now()).updatedAt(null)
             .build();
 
-    private final UserDto mockUser = new UserDto(1L, "mockUser", "mockUser@example.com");
-    private final ProjectDto mockProject = new ProjectDto(1L, "mockProject");
+    private final UserDto mockUser = new UserDto(DEFAULT_ID, "mockUser", "mockUser@example.com");
+    private final ProjectDto mockProject = new ProjectDto(projectId, "mockProject");
 
     @Test
     public void testCreateDraftWithoutAuthorAndProject() {
@@ -82,28 +88,27 @@ public class PostServiceImplTest {
 
     @Test
     public void testCreateDraftWithBothAuthorAndProject() {
-        CreatePostDto postDto = new CreatePostDto("content", 1L, 1L);
+        CreatePostDto postDto = new CreatePostDto("content", authorId, projectId);
 
         assertThrows(DataValidationException.class, () -> postService.createDraft((postDto)));
     }
 
     @Test
     public void testCreateDraftWithNegativeAuthorId() {
-        CreatePostDto postDto = new CreatePostDto("content", -1L, null);
+        CreatePostDto postDto = new CreatePostDto("content", DEFAULT_NEGATIVE_ID, null);
 
         assertThrows(DataValidationException.class, () -> postService.createDraft((postDto)));
     }
 
     @Test
     public void testCreateDraftWithNegativeProjectId() {
-        CreatePostDto postDto = new CreatePostDto("content", null, -1L);
+        CreatePostDto postDto = new CreatePostDto("content", null, DEFAULT_NEGATIVE_ID);
 
         assertThrows(DataValidationException.class, () -> postService.createDraft((postDto)));
     }
 
     @Test
     void createDraft_whenAuthorNotFound_shouldThrowEntityNotFoundException() {
-        long authorId = AUTHOR_ID;
         CreatePostDto postDto = new CreatePostDto("content", authorId, null);
 
         when(userServiceClient.getUser(authorId)).thenThrow(
@@ -123,7 +128,6 @@ public class PostServiceImplTest {
 
     @Test
     void createDraft_whenAuthorExists_shouldCreateDraft() {
-        long authorId = AUTHOR_ID;
         CreatePostDto postDto = new CreatePostDto("content", authorId, null);
         when(userServiceClient.getUser(authorId)).thenReturn(mockUser);
 
@@ -142,7 +146,6 @@ public class PostServiceImplTest {
 
     @Test
     void createDraft_whenProjectNotFound_shouldThrowEntityNotFoundException() {
-        long projectId = PROJECT_ID;
         CreatePostDto postDto = new CreatePostDto("content", null, projectId);
 
         when(projectServiceClient.getProject(projectId)).thenThrow(
@@ -162,7 +165,6 @@ public class PostServiceImplTest {
 
     @Test
     void createDraft_whenProjectExists_shouldCreateDraft() {
-        long projectId = PROJECT_ID;
         CreatePostDto postDto = new CreatePostDto("content", null, projectId);
         when(projectServiceClient.getProject(projectId)).thenReturn(mockProject);
 
@@ -181,41 +183,41 @@ public class PostServiceImplTest {
 
     @Test
     void publishPost_whenPostDoesNotExist_shouldThrowEntityNotFoundException() {
-        when(postRepository.findById(POST_ID)).thenReturn(Optional.empty());
+        when(postRepository.findById(DEFAULT_ID)).thenReturn(Optional.empty());
 
-        assertThrows(EntityNotFoundException.class, () -> postService.publishPost(POST_ID));
+        assertThrows(EntityNotFoundException.class, () -> postService.publishPost(DEFAULT_ID));
         verify(postRepository, never()).save(any(Post.class));
     }
 
     @Test
     void publishPost_whenPostAlreadyPublished_shouldThrowForbiddenException() {
-        Post post = Post.builder().id(POST_ID).published(true).build();
+        Post post = Post.builder().id(DEFAULT_ID).published(true).build();
 
-        when(postRepository.findById(POST_ID)).thenReturn(Optional.of(post));
+        when(postRepository.findById(DEFAULT_ID)).thenReturn(Optional.of(post));
 
-        assertThrows(ForbiddenException.class, () -> postService.publishPost(POST_ID));
+        assertThrows(ForbiddenException.class, () -> postService.publishPost(DEFAULT_ID));
         verify(postRepository, never()).save(any(Post.class));
     }
 
     @Test
     void publishPost_whenPostIsNotPublished_shouldSetPublishedTrue() {
         Post post = Post.builder()
-                .id(POST_ID)
+                .id(DEFAULT_ID)
                 .published(false)
                 .publishedAt(null)
                 .build();
 
         PostDto publishedPostDto = PostDto.builder()
-                .id(POST_ID).content("content").authorId(AUTHOR_ID).projectId(null)
+                .id(DEFAULT_ID).content("content").authorId(DEFAULT_ID).projectId(null)
                 .published(true).publishedAt(LocalDateTime.now())
                 .deleted(false).createdAt(LocalDateTime.now()).updatedAt(null)
                 .build();
 
-        doReturn(Optional.of(post)).when(postRepository).findById(POST_ID);
+        doReturn(Optional.of(post)).when(postRepository).findById(DEFAULT_ID);
         doReturn(publishedPostDto).when(postMapper).toPostDto(any(Post.class));
         doReturn(post).when(postRepository).save(any(Post.class));
 
-        PostDto result = postService.publishPost(POST_ID);
+        PostDto result = postService.publishPost(DEFAULT_ID);
 
         assertNotNull(result);
         assertTrue(result.published());
@@ -225,14 +227,13 @@ public class PostServiceImplTest {
         verify(postRepository).save(postCaptor.capture());
 
         Post savedPost = postCaptor.getValue();
-        assertEquals(POST_ID, savedPost.getId());
+        assertEquals(DEFAULT_ID, savedPost.getId());
         assertTrue(savedPost.isPublished());
         assertNotNull(savedPost.getPublishedAt());
     }
 
     @Test
     void updatePost_whenProjectIdNegative_shouldThrowDataValidationException() {
-        long postId = 1L;
         CreatePostDto dto = new CreatePostDto("content", null, -1L);
 
         assertThrows(DataValidationException.class, () -> postService.updatePost(postId, dto));
@@ -241,7 +242,6 @@ public class PostServiceImplTest {
 
     @Test
     void updatePost_whenAuthorIdNegative_shouldThrowDataValidationException() {
-        long postId = 1L;
         CreatePostDto dto = new CreatePostDto("content", -1L, null);
 
         assertThrows(DataValidationException.class, () -> postService.updatePost(postId, dto));
@@ -250,7 +250,6 @@ public class PostServiceImplTest {
 
     @Test
     void updatePost_whenPostDoesNotExist_shouldThrowEntityNotFoundException() {
-        long postId = 1L;
         CreatePostDto dto = new CreatePostDto("content", 1L, null);
 
         when(postRepository.findById(postId)).thenReturn(Optional.empty());
@@ -261,7 +260,6 @@ public class PostServiceImplTest {
 
     @Test
     void updatePost_whenProjectIdChanged_shouldThrowDataValidationException() {
-        Long postId = 1L;
         CreatePostDto dto = new CreatePostDto("content", null, 2L); // Changed project ID
         Post existingPost = Post.builder().id(postId).authorId(null).projectId(1L).build();
 
@@ -273,7 +271,6 @@ public class PostServiceImplTest {
 
     @Test
     void updatePost_whenAuthorIdChanged_shouldThrowDataValidationException() {
-        long postId = 1L;
         CreatePostDto dto = new CreatePostDto("content", 2L, null); // Changed author ID
         Post existingPost = Post.builder().id(postId).authorId(1L).projectId(null).build();
 
@@ -285,24 +282,24 @@ public class PostServiceImplTest {
 
     @Test
     void updatePost_whenPostExistsAndDataMatches_shouldUpdatePost() {
-        CreatePostDto dto = new CreatePostDto("new content", AUTHOR_ID, null);
+        CreatePostDto dto = new CreatePostDto("new content", DEFAULT_ID, null);
 
         Post existingPost = Post.builder()
-                .id(POST_ID).authorId(AUTHOR_ID).projectId(null)
+                .id(DEFAULT_ID).authorId(DEFAULT_ID).projectId(null)
                 .content("old content").published(false).deleted(false)
                 .build();
 
         PostDto expectedPostDto = PostDto.builder()
-                .id(POST_ID).content("new content").authorId(AUTHOR_ID)
+                .id(DEFAULT_ID).content("new content").authorId(DEFAULT_ID)
                 .projectId(null).published(false).publishedAt(null)
                 .deleted(false).createdAt(LocalDateTime.now()).updatedAt(LocalDateTime.now())
                 .build();
 
-        doReturn(Optional.of(existingPost)).when(postRepository).findById(POST_ID);
+        doReturn(Optional.of(existingPost)).when(postRepository).findById(DEFAULT_ID);
         doReturn(expectedPostDto).when(postMapper).toPostDto(any(Post.class));
         doReturn(existingPost).when(postRepository).save(any(Post.class));
 
-        PostDto result = postService.updatePost(POST_ID, dto);
+        PostDto result = postService.updatePost(DEFAULT_ID, dto);
 
         assertNotNull(result);
         assertEquals("new content", existingPost.getContent());
@@ -312,19 +309,18 @@ public class PostServiceImplTest {
 
     @Test
     void softDeletePost_whenPostExists_shouldSetDeletedTrue() {
-        long postId = POST_ID;
         Post post = Post.builder()
                 .id(postId)
                 .published(false)
                 .deleted(false)
                 .build();
         PostDto dto = PostDto.builder()
-                .id(POST_ID).content("content").authorId(AUTHOR_ID)
+                .id(DEFAULT_ID).content("content").authorId(DEFAULT_ID)
                 .projectId(null).published(true).publishedAt(LocalDateTime.now())
                 .deleted(true).createdAt(LocalDateTime.now()).updatedAt(null)
                 .build();
 
-        doReturn(Optional.of(post)).when(postRepository).findById(POST_ID);
+        doReturn(Optional.of(post)).when(postRepository).findById(DEFAULT_ID);
         doReturn(dto).when(postMapper).toPostDto(any(Post.class));
         doReturn(post).when(postRepository).save(any(Post.class));
 
@@ -337,13 +333,12 @@ public class PostServiceImplTest {
 
     @Test
     void getPostById_whenPostExists_shouldReturnPostDto() {
-        long postId = POST_ID;
         Post post = Post.builder()
-                .id(postId).content("content").authorId(AUTHOR_ID)
+                .id(postId).content("content").authorId(DEFAULT_ID)
                 .projectId(null).published(false).deleted(false)
                 .build();
         PostDto dto = PostDto.builder()
-                .id(postId).content("content").authorId(AUTHOR_ID)
+                .id(postId).content("content").authorId(DEFAULT_ID)
                 .projectId(null).published(false).deleted(false)
                 .build();
 
@@ -359,8 +354,6 @@ public class PostServiceImplTest {
 
     @Test
     void getPostById_whenPostDoesNotExist_shouldThrowEntityNotFoundException() {
-        long postId = 1L;
-
         when(postRepository.findById(postId)).thenReturn(Optional.empty());
 
         assertThrows(EntityNotFoundException.class, () -> postService.getPostById(postId));
@@ -368,7 +361,6 @@ public class PostServiceImplTest {
 
     @Test
     void getDraftsByUser_whenUserHasDrafts_shouldReturnSortedDrafts() {
-        long userId = AUTHOR_ID;
         Post draft1 = Post.builder()
                 .id(1L).authorId(userId).published(false)
                 .deleted(false).createdAt(LocalDateTime.of(2024, 1, 1, 0, 0))
@@ -395,8 +387,6 @@ public class PostServiceImplTest {
 
     @Test
     void getDraftsByUser_whenNoDraftsExist_shouldReturnEmptyList() {
-        long userId = AUTHOR_ID;
-
         when(postRepository.findByAuthorId(userId)).thenReturn(Collections.emptyList());
 
         List<PostDto> result = postService.getDraftsByUser(userId);
@@ -408,7 +398,6 @@ public class PostServiceImplTest {
 
     @Test
     void getDraftsByProject_whenProjectHasDrafts_shouldReturnSortedDrafts() {
-        Long projectId = PROJECT_ID;
         Post draft1 = Post.builder()
                 .id(1L).projectId(projectId).published(false)
                 .deleted(false).createdAt(LocalDateTime.of(2024, 1, 1, 0, 0))
@@ -435,14 +424,13 @@ public class PostServiceImplTest {
 
     @Test
     void getPublishedByUser_whenUserHasPublishedPosts_shouldReturnSortedPublishedPosts() {
-        long userId = AUTHOR_ID;
         Post published1 = Post.builder()
                 .id(1L).authorId(userId).published(true)
-                .deleted(false).publishedAt(LocalDateTime.of(2024, 1, 1, 0, 0))
+                .deleted(false).publishedAt(time1)
                 .build();
         Post published2 = Post.builder()
                 .id(2L).authorId(userId).published(true)
-                .deleted(false).publishedAt(LocalDateTime.of(2024, 1, 2, 0, 0))
+                .deleted(false).publishedAt(time2)
                 .build();
 
         when(postRepository.findByAuthorId(userId)).thenReturn(List.of(published1, published2));
@@ -462,14 +450,13 @@ public class PostServiceImplTest {
 
     @Test
     void getPublishedByProject_whenProjectHasPublishedPosts_shouldReturnSortedPublishedPosts() {
-        long projectId = PROJECT_ID;
         Post published1 = Post.builder()
                 .id(1L).projectId(projectId).published(true)
-                .deleted(false).publishedAt(LocalDateTime.of(2024, 1, 1, 0, 0))
+                .deleted(false).publishedAt(time1)
                 .build();
         Post published2 = Post.builder()
                 .id(2L).projectId(projectId).published(true)
-                .deleted(false).publishedAt(LocalDateTime.of(2024, 1, 2, 0, 0))
+                .deleted(false).publishedAt(time2)
                 .build();
 
         when(postRepository.findByProjectId(projectId)).thenReturn(List.of(published1, published2));
