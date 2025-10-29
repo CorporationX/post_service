@@ -18,6 +18,7 @@ public record PostResponseDto(
         boolean deleted,
         LocalDateTime createdAt,
         LocalDateTime updatedAt,
-        LocalDateTime publishedAt
+        LocalDateTime publishedAt,
+        LocalDateTime scheduledAt
 ) {
 }

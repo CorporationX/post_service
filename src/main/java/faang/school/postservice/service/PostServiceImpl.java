@@ -12,17 +12,21 @@ import faang.school.postservice.exception.UserNotFoundException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.scheduler.ThreadPoolConfig;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -35,6 +39,7 @@ public class PostServiceImpl implements PostService {
     private final PostMapper postMapper;
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
+    private final ThreadPoolConfig threadPoolConfig;
 
     @Override
     public PostResponseDto createDraft(CreatePostRequestDto dto) {
@@ -194,5 +199,50 @@ public class PostServiceImpl implements PostService {
                     log.error("Post not found with id={}", id);
                     return new IllegalArgumentException("Post not found with id: " + id);
                 });
+    }
+
+    @Value("${scheduler.thread-pool.batchSize:50}")
+    private int batchSize;
+
+    @Override
+    public void publishScheduledPosts() {
+        log.debug("Fetching not published and not deleted posts, but date of publication is bigger or equal to now");
+        List<PostResponseDto> ready = postRepository
+                .findReadyToPublish()
+                .stream()
+                .map(postMapper::toDto)
+                .toList();
+
+        List<List<PostResponseDto>> batches = chunk(ready, batchSize);
+
+        List<CompletableFuture<Void>> tasks = batches.stream()
+                .map(batch -> CompletableFuture.runAsync(() -> processBatch(batch),
+                        threadPoolConfig.executorService()))
+                .toList();
+
+        CompletableFuture.allOf(tasks.toArray(new CompletableFuture[0])).join();
+
+    }
+
+    private void processBatch(List<PostResponseDto> batch) {
+        for (PostResponseDto post : batch) {
+            try {
+                publish(post.id());
+            } catch (Exception e) {
+                log.warn("Failed to publish scheduled post id={}: {}", post.id(), e.getMessage());
+            }
+        }
+    }
+
+    private static <T> List<List<T>> chunk(List<T> ready, int batchSize) {
+        List<List<T>> result = new ArrayList<>();
+        if (ready == null || ready.isEmpty() || batchSize <= 0) {
+            return result;
+        }
+        int size = ready.size();
+        for (int i = 0; i < size; i += batchSize) {
+            result.add(ready.subList(i, Math.min(i + batchSize, size)));
+        }
+        return result;
     }
 }

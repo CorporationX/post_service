@@ -58,4 +58,7 @@ public interface PostService {
 
     /** Возвращает сущность Post по id для внутреннего использования */
     Post getPostEntityById(long id);
+
+    /** Запускает публикацию постов по расписанию, время публикации берется в scheduledAt время */
+    void publishScheduledPosts();
 }

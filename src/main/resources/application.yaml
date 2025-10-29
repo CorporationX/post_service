@@ -25,6 +25,14 @@ spring:
         calculations_channel:
           name: calculations_channel
 
+scheduler:
+  cron:
+    expression: 0 * * * * *
+    zone: GMT
+  thread-pool:
+    size: 10
+    batchSize: 50
+
 server:
   port: 8081
   servlet:
