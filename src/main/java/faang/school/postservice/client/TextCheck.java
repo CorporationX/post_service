@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @FeignClient(name = "languagetool", url = "https://api.languagetool.org")
 public interface TextCheck {
-
+ //for PR
     @GetMapping("/v2/check")
     @Headers("No-Interceptor: true")
     TextResponseDto checkText(@RequestParam("text") String text,

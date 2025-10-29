@@ -437,7 +437,7 @@ class PostServiceImplTest {
         when(postRepository.save(any(Post.class))).thenReturn(unpublishedPost);
 
         service.processTextChecking();
-
+        //for PR
         verify(textCheck).checkText(textWithError, "auto");
         verify(postRepository).save(argThat(savedPost ->
                 savedPost.getContent().equals(expectedCorrected)
