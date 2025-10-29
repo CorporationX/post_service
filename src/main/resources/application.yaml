@@ -52,4 +52,4 @@ post-correcter:
 
 languagetool:
   api-url: "https://api.languagetool.org/v2/check"
-  language: "auto" //
+  language: "auto"

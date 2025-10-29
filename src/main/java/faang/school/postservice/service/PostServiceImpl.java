@@ -266,7 +266,7 @@ public class PostServiceImpl implements PostService {
         }
         throw new RuntimeException("Unexpected error in retry logic");
     }
-    //for PR
+
     private void applyCustomBackoff(int attempt) {
         long delay = switch (attempt) {
             case 1 -> INITIAL_DELAY_MS;
