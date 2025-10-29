@@ -1,11 +1,15 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.client.ProjectServiceClient;
+import faang.school.postservice.client.TextCheck;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.context.LanguageToolConfig;
 import faang.school.postservice.dto.post.CreatePostRequestDto;
 import faang.school.postservice.dto.post.UpdatePostRequestDto;
 import faang.school.postservice.dto.post.PostResponseDto;
 import faang.school.postservice.dto.project.ProjectDto;
+import faang.school.postservice.dto.text.MatchDto;
+import faang.school.postservice.dto.text.TextResponseDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.ProjectNotFoundException;
 import faang.school.postservice.exception.UserNotFoundException;
@@ -19,7 +23,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
@@ -35,6 +42,13 @@ public class PostServiceImpl implements PostService {
     private final PostMapper postMapper;
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
+    private final LanguageToolConfig languageToolConfig;
+    private final TextCheck textCheck;
+    private static final int MAX_RETRY_ATTEMPTS = 4;
+    private static final long INITIAL_DELAY_MS = 1000L;
+    private static final long SECOND_DELAY_MS = 3000L;
+    private static final long THIRD_DELAY_MS = 4000L;
+    private static final long FOURTH_DELAY_MS = 5000L;
 
     @Override
     public PostResponseDto createDraft(CreatePostRequestDto dto) {
@@ -67,6 +81,10 @@ public class PostServiceImpl implements PostService {
         }
 
         Post draft = postMapper.toEntity(dto);
+
+        if (draft.getScheduledAt() == null) {
+            draft.setScheduledAt(LocalDateTime.now());
+        }
         Post saved = postRepository.save(draft);
         log.info("Draft created id={}", saved.getId());
         return postMapper.toDto(saved);
@@ -194,5 +212,104 @@ public class PostServiceImpl implements PostService {
                     log.error("Post not found with id={}", id);
                     return new IllegalArgumentException("Post not found with id: " + id);
                 });
+    }
+
+    @Override
+    @Transactional
+    public void processTextChecking() {
+        List<Post> unpublishedPosts = postRepository.findReadyToPublish(); 
+
+        for (Post post : unpublishedPosts) {
+            try { 
+                TextResponseDto response = checkTextWithRetry(post.getContent());
+
+                if (response == null) {
+                    log.warn("Empty response from LanguageTool for post id={}", post.getId());
+                    continue; 
+                }
+                
+                String correctedText = applyCorrections(post.getContent(), response);
+                
+                if (!correctedText.equals(post.getContent())) {
+                   
+                    UpdatePostRequestDto updateDto = UpdatePostRequestDto.builder()
+                            .content(correctedText)
+                            .build();
+                    update(post.getId(), updateDto);
+                }
+            } catch (Exception e) {
+                log.error("Failed to check text for post with id={}", post.getId(), e);
+            }
+        }
+    }
+
+    public TextResponseDto checkTextWithRetry(String text) {
+        for (int attempt = 1; attempt <= MAX_RETRY_ATTEMPTS; attempt++) {
+            try {
+                log.info("Checking text with LanguageTool, attempt {}", attempt);
+
+                RestTemplate restTemplate = new RestTemplate();
+                String url = "https://api.languagetool.org/v2/check?text=" +
+                        URLEncoder.encode(text, StandardCharsets.UTF_8) +
+                        "&language=" + languageToolConfig.getLanguage();
+
+                return restTemplate.getForObject(url, TextResponseDto.class);
+
+            } catch (Exception e) {
+                if (attempt == MAX_RETRY_ATTEMPTS) {
+                    log.error("All {} attempts failed for text correction", MAX_RETRY_ATTEMPTS);
+                    throw e;
+                }
+
+                applyCustomBackoff(attempt);
+            }
+        }
+        throw new RuntimeException("Unexpected error in retry logic");
+    }
+
+    private void applyCustomBackoff(int attempt) {
+        long delay = switch (attempt) {
+            case 1 -> INITIAL_DELAY_MS;
+            case 2 -> SECOND_DELAY_MS;     
+            case 3 -> THIRD_DELAY_MS;      
+            case 4 -> FOURTH_DELAY_MS;
+            default -> FOURTH_DELAY_MS;
+        };
+
+        try {
+            log.info("Custom backoff: waiting {} ms before attempt {}", delay, attempt + 1);
+            Thread.sleep(delay);
+        } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Backoff interrupted", ie);
+        }
+    }
+
+    String applyCorrections(String originalText, TextResponseDto response) {
+        if (response.matches() == null || response.matches().isEmpty()) {
+            return originalText;
+        }
+
+        int previousEnd = 0;
+        StringBuilder correctedText = new StringBuilder();
+
+        for (MatchDto match : response.matches()) {
+            if (match.replacements() != null && !match.replacements().isEmpty()) {
+                String replacement = match.replacements().get(0).value();
+                int offset = match.offset();
+                int length = match.length();
+
+                if (offset >= 0 && offset <= originalText.length() &&
+                        offset + length <= originalText.length()) {
+                    correctedText.append(originalText, previousEnd, offset);
+                    correctedText.append(replacement);
+                    previousEnd = offset + length;
+                }
+            }
+        }
+        if (previousEnd < originalText.length()) {
+            correctedText.append(originalText.substring(previousEnd));
+        }
+        return correctedText.toString();
     }
 }

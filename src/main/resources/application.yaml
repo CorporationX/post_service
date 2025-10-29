@@ -46,3 +46,10 @@ payment-service:
   host: localhost
   port: 9080
   context-path: /api/v1
+
+post-correcter:
+  cron: "0 0 3 * * *" # every dat at 3:00
+
+languagetool:
+  api-url: "https://api.languagetool.org/v2/check"
+  language: "auto"

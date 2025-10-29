@@ -58,4 +58,7 @@ public interface PostService {
 
     /** Возвращает сущность Post по id для внутреннего использования */
     Post getPostEntityById(long id);
+
+    /** Проверяет и корректирует орфографию и пунктуацию неопубликованных постов через AI-сервис. */
+    public void processTextChecking();
 }

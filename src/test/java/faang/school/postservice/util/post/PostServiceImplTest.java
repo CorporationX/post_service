@@ -1,11 +1,16 @@
 package faang.school.postservice.util.post;
 
 import faang.school.postservice.client.ProjectServiceClient;
+import faang.school.postservice.client.TextCheck;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.context.LanguageToolConfig;
 import faang.school.postservice.dto.post.CreatePostRequestDto;
 import faang.school.postservice.dto.post.UpdatePostRequestDto;
 import faang.school.postservice.dto.post.PostResponseDto;
 import faang.school.postservice.dto.project.ProjectDto;
+import faang.school.postservice.dto.text.MatchDto;
+import faang.school.postservice.dto.text.ReplacementDto;
+import faang.school.postservice.dto.text.TextResponseDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
@@ -49,6 +54,10 @@ class PostServiceImplTest {
     UserServiceClient userServiceClient;
     @Mock
     ProjectServiceClient projectServiceClient;
+    @Mock
+    TextCheck textCheck;
+    @Mock
+    LanguageToolConfig languageToolConfig;
 
     @Spy
     PostMapper postMapper = Mappers.getMapper(PostMapper.class);
@@ -404,5 +413,90 @@ class PostServiceImplTest {
                 .createdAt(createdAt)
                 .publishedAt(publishedAt)
                 .build();
+    }
+
+    @Test
+    @DisplayName("processTextChecking: corrects unpublished posts")
+    void processTextCheckingCorrectsUnpublishedPosts() {
+        String textWithError = "Hello worlld";
+        String expectedCorrected = "Hello world";
+
+        Post unpublishedPost = buildPost(1L, AUTHOR_ID, textWithError, false, false,
+                LocalDateTime.now(), null);
+
+        when(postRepository.findReadyToPublish()).thenReturn(List.of(unpublishedPost));
+
+        TextResponseDto correctionResponse = new TextResponseDto(List.of(
+                new MatchDto(6, 6, List.of(new ReplacementDto("world")))
+        ));
+
+        when(languageToolConfig.getLanguage()).thenReturn("auto");
+        when(textCheck.checkText(textWithError, "auto")).thenReturn(correctionResponse);
+
+        when(postRepository.findById(1L)).thenReturn(Optional.of(unpublishedPost));
+        when(postRepository.save(any(Post.class))).thenReturn(unpublishedPost);
+
+        service.processTextChecking();
+
+        verify(textCheck).checkText(textWithError, "auto");
+        verify(postRepository).save(argThat(savedPost ->
+                savedPost.getContent().equals(expectedCorrected)
+        ));
+    }
+
+    @Test
+    @DisplayName("checkTextWithRetry: retries on failure with backoff")
+    void checkTextWithRetryRetriesOnFailure() {
+        String text = "Test text";
+        TextResponseDto successResponse = new TextResponseDto(List.of());
+
+        when(languageToolConfig.getLanguage()).thenReturn("auto");
+        when(textCheck.checkText(text, "auto"))
+                .thenThrow(new RuntimeException("API error"))
+                .thenThrow(new RuntimeException("API error"))
+                .thenReturn(successResponse);
+
+        TextResponseDto result = service.checkTextWithRetry(text);
+
+        verify(textCheck, times(3)).checkText(text, "auto");
+        assertNotNull(result);
+        assertEquals(successResponse, result);
+    }
+
+    @Test
+    @DisplayName("processTextChecking: no changes when no corrections needed")
+    void processTextCheckingNoChangesWhenNoCorrections() {
+        String correctText = "Hello world";
+        Post unpublishedPost = buildPost(1L, AUTHOR_ID, correctText, false, false,
+                LocalDateTime.now(), null);
+
+        when(postRepository.findReadyToPublish()).thenReturn(List.of(unpublishedPost));
+
+        TextResponseDto emptyResponse = new TextResponseDto(List.of());
+
+        when(languageToolConfig.getLanguage()).thenReturn("auto");
+        when(textCheck.checkText(correctText, "auto")).thenReturn(emptyResponse);
+
+        service.processTextChecking();
+
+        verify(textCheck).checkText(correctText, "auto");
+        verify(postRepository, never()).save(any(Post.class));
+    }
+
+    @Test
+    @DisplayName("processTextChecking: handles null response from LanguageTool")
+    void processTextCheckingHandlesNullResponse() {
+        Post unpublishedPost = buildPost(1L, AUTHOR_ID, "Some text", false, false,
+                LocalDateTime.now(), null);
+
+        when(postRepository.findReadyToPublish()).thenReturn(List.of(unpublishedPost));
+
+        when(languageToolConfig.getLanguage()).thenReturn("auto");
+        when(textCheck.checkText("Some text", "auto")).thenReturn(null);
+
+        service.processTextChecking();
+
+        verify(textCheck).checkText("Some text", "auto");
+        verify(postRepository, never()).save(any(Post.class));
     }
 }
