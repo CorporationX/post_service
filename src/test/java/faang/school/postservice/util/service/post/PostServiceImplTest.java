@@ -1,6 +1,7 @@
 package faang.school.postservice.util.service.post;
 
 import faang.school.postservice.client.ProjectServiceClient;
+import faang.school.postservice.client.TextGearsClient;
 import faang.school.postservice.dto.post.CreatePostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
 import faang.school.postservice.exception.DataValidationException;
@@ -10,6 +11,10 @@ import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.post.PostServiceImpl;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+import javax.xml.bind.ValidationException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mapstruct.factory.Mappers;
@@ -17,12 +22,10 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import javax.xml.bind.ValidationException;
-import java.util.List;
-import java.util.Optional;
+import reactor.core.publisher.Mono;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -47,6 +50,9 @@ public class PostServiceImplTest {
 
     @Captor
     private ArgumentCaptor<Post> postCaptor;
+
+    @Mock
+    private TextGearsClient textGearsClient;
 
     @Test
     public void createPostNonexistentProject() {
@@ -258,21 +264,68 @@ public class PostServiceImplTest {
         verify(postRepository, times(1)).findByProjectId(projectId);
     }
 
+    @Test
+    void checkSpellingWithAISuccess() {
+        Post post = new Post();
+        post.setId(1L);
+        post.setContent("Превет мир");
+        post.setPublished(false);
+
+        List<Post> posts = List.of(post);
+
+        Mockito.when(postRepository.findReadyToPublish()).thenReturn(posts);
+        Mockito.when(textGearsClient.correctText("Превет мир")).thenReturn(Mono.just("Привет мир"));
+        Mockito.when(textGearsClient.correctText("Хэллоу ворлд")).thenReturn(Mono.just("Hello world"));
+
+        postServiceImpl.checkSpellingWithAI();
+
+        assertEquals("Привет мир", post.getContent());
+
+        verify(postRepository).save(post);
+    }
+
+    @Test
+    void checkSpellingWithAI_shouldHandleTextGearsErrorAndNotFail() {
+        Post post = new Post();
+        post.setId(1L);
+        post.setContent("Превет мир");
+        post.setPublished(false);
+
+        List<Post> posts = List.of(post);
+        when(postRepository.findReadyToPublish()).thenReturn(posts);
+
+        when(textGearsClient.correctText("Превет мир")).thenReturn(
+                Mono.error(new RuntimeException("TextGears API error"))
+        );
+
+        postServiceImpl.checkSpellingWithAI();
+
+        assertEquals("Превет мир", post.getContent());
+
+        verify(postRepository).save(post);
+    }
+
+
     private CreatePostDto createCreatePostDtoForTest() {
         return new CreatePostDto(
                 "2",
                 2L,
                 List.of(3L, 2L),
                 2L,
-                List.of("3", "2"));
+                List.of("3", "2"),
+                LocalDateTime.of(2025, 10, 29, 12, 0, 0)
+        );
     }
 
     private UpdatePostDto createUpdatePostDtoForTest() {
-        return new UpdatePostDto(2L,
+        return new UpdatePostDto(
+                2L,
                 "2",
                 2L,
                 List.of(3L, 2L),
                 2L,
-                List.of("3", "2"));
+                List.of("3", "2"),
+                LocalDateTime.now()
+        );
     }
 }
