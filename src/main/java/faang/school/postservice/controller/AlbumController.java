@@ -31,7 +31,7 @@ public class AlbumController {
         return albumService.getAlbum(albumId);
     }
 
-    @GetMapping("/allAlbums")
+    @GetMapping("/all")
     public List<AlbumDto> getAllAlbums() {
         return albumService.getAllAlbums();
     }

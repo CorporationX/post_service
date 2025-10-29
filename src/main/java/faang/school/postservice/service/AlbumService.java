@@ -7,6 +7,7 @@ import faang.school.postservice.mapper.AlbumMapper;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.AlbumVisibility;
 import faang.school.postservice.repository.AlbumRepository;
+import faang.school.postservice.validate.AlbumValidator;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
@@ -21,15 +22,14 @@ import java.util.List;
 public class AlbumService {
     private final AlbumRepository albumRepository;
     private final AlbumMapper albumMapper;
-    private final UserServiceClient userServiceClient;
-
     private final UserContext userContext;
+    private final AlbumValidator albumValidator;
 
     public AlbumDto getAlbum(long albumId) {
         Album album = albumRepository.findById(albumId)
             .orElseThrow(() -> new EntityNotFoundException("Album with id %s not found".formatted(albumId)));
 
-        if (userAlbumPermission(album)) {
+        if (albumValidator.hasPermission(album)) {
             return albumMapper.toDto(album);
         }
 
@@ -39,7 +39,7 @@ public class AlbumService {
 
     public List<AlbumDto> getAllAlbums() {
         return albumRepository.findAll().stream()
-            .filter(this::userAlbumPermission)
+            .filter(albumValidator::hasPermission)
             .map(albumMapper::toDto).toList();
     }
 
@@ -63,20 +63,5 @@ public class AlbumService {
     private Album getAlbumById(Long albumId) {
         return albumRepository.findById(albumId)
             .orElseThrow(() -> new EntityNotFoundException("Album with id %s not found".formatted(albumId)));
-    }
-
-    private boolean userAlbumPermission(Album album) {
-        if (userContext.getUserId() != null && userContext.getUserId().equals(album.getAuthorId())) {
-            return true;
-        }
-        if (album.getVisibility().equals(AlbumVisibility.SELECTED_USERS) && userContext.getUserId() != null) {
-            return album.getFavouriteUserIds().contains(userContext.getUserId());
-        }
-        if (album.getVisibility().equals(AlbumVisibility.SUBSCRIBERS) && userContext.getUserId() != null) {
-            return userServiceClient.getFollowers(album.getAuthorId()).stream()
-                .anyMatch(subscriptionUserDto -> subscriptionUserDto.id().equals(userContext.getUserId()));
-        }
-
-        return album.getVisibility().equals(AlbumVisibility.PUBLIC);
     }
 }

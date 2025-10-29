@@ -10,6 +10,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.model.AlbumVisibility;
 import faang.school.postservice.repository.AlbumRepository;
 import faang.school.postservice.service.AlbumService;
+import faang.school.postservice.validate.AlbumValidator;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,6 +43,8 @@ class AlbumServiceTests {
     private UserContext userContext;
     @Spy
     private final AlbumMapper albumMapper = Mappers.getMapper(AlbumMapper.class);
+    @Mock
+    private AlbumValidator albumValidator;
 
     @InjectMocks
     private AlbumService albumService;
@@ -67,8 +70,8 @@ class AlbumServiceTests {
         albumService = new AlbumService(
             albumRepository,
             albumMapper,
-            userServiceClient,
-            userContext
+            userContext,
+            albumValidator
         );
     }
 
@@ -79,6 +82,7 @@ class AlbumServiceTests {
 
         when(albumRepository.findById(anyLong())).thenReturn(Optional.ofNullable(album));
         when(albumMapper.toDto(any(Album.class))).thenReturn(albumDto);
+        when(albumValidator.hasPermission(any(Album.class))).thenReturn(true);
         AlbumDto result = albumService.getAlbum(1L);
 
         verify(albumRepository, times(1)).findById(anyLong());
@@ -97,6 +101,7 @@ class AlbumServiceTests {
 
         when(albumRepository.findAll()).thenReturn(List.of(album));
         when(albumMapper.toDto(any(Album.class))).thenReturn(albumDto);
+        when(albumValidator.hasPermission(any(Album.class))).thenReturn(true);
         List<AlbumDto> result = albumService.getAllAlbums();
 
         verify(albumRepository, times(1)).findAll();
@@ -112,6 +117,7 @@ class AlbumServiceTests {
         when(albumRepository.save(any(Album.class))).thenReturn(album);
         when(albumMapper.toDto(any(Album.class))).thenReturn(albumDto);
         when(albumRepository.findById(anyLong())).thenReturn(Optional.of(album));
+        when(albumValidator.hasPermission(any(Album.class))).thenReturn(true);
         AlbumDto result = albumService.update(albumDto);
 
         verify(albumRepository, times(1)).save(any(Album.class));
@@ -127,6 +133,7 @@ class AlbumServiceTests {
         when(albumRepository.save(any(Album.class))).thenReturn(album);
         when(albumMapper.toDto(any(Album.class))).thenReturn(albumDto);
         when(albumRepository.findById(anyLong())).thenReturn(Optional.of(album));
+        when(albumValidator.hasPermission(any(Album.class))).thenReturn(true);
         AlbumDto result = albumService.updateVisibility(1L, AlbumVisibility.PUBLIC, null);
 
         verify(albumRepository, times(1)).save(any(Album.class));
@@ -147,6 +154,7 @@ class AlbumServiceTests {
         when(albumRepository.save(any(Album.class))).thenReturn(album);
         when(albumMapper.toDto(any(Album.class))).thenReturn(albumDto);
         when(albumRepository.findById(anyLong())).thenReturn(Optional.of(album));
+        when(albumValidator.hasPermission(any(Album.class))).thenReturn(true);
         AlbumDto result = albumService.updateVisibility(1L, AlbumVisibility.PRIVATE, null);
 
         verify(albumRepository, times(1)).save(any(Album.class));
@@ -169,6 +177,7 @@ class AlbumServiceTests {
         when(albumRepository.save(any(Album.class))).thenReturn(album);
         when(albumMapper.toDto(any(Album.class))).thenReturn(albumDto);
         when(albumRepository.findById(anyLong())).thenReturn(Optional.of(album));
+        when(albumValidator.hasPermission(any(Album.class))).thenReturn(true);
         AlbumDto result = albumService.updateVisibility(1L, AlbumVisibility.SELECTED_USERS, null);
 
         verify(albumRepository, times(1)).save(any(Album.class));
@@ -190,6 +199,7 @@ class AlbumServiceTests {
         when(albumRepository.save(any(Album.class))).thenReturn(album);
         when(albumMapper.toDto(any(Album.class))).thenReturn(albumDto);
         when(albumRepository.findById(anyLong())).thenReturn(Optional.of(album));
+        when(albumValidator.hasPermission(any(Album.class))).thenReturn(true);
         AlbumDto result = albumService.updateVisibility(1L, AlbumVisibility.SUBSCRIBERS, null);
 
         verify(albumRepository, times(1)).save(any(Album.class));
