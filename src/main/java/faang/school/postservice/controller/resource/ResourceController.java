@@ -1,7 +1,7 @@
-package faang.school.postservice.controller.image;
+package faang.school.postservice.controller.resource;
 
-import faang.school.postservice.model.Resource;
-import faang.school.postservice.service.image.ResourceService;
+import faang.school.postservice.dto.resource.ResourceDto;
+import faang.school.postservice.service.resource.ResourceService;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,40 +22,37 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/posts/{postId}/resources")
+@RequestMapping("/resources")
 public class ResourceController {
 
     private final ResourceService resourceService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public List<Resource> uploadImages(@PathVariable Long postId,
-                                       @RequestParam("files") List<MultipartFile> files) {
+    public List<ResourceDto> uploadResources(@RequestParam Long postId,
+                                          @RequestParam("files") List<MultipartFile> files) {
         log.info("upload images");
-        List<Resource> resources = resourceService.uploadImages(postId, files);
+        List<ResourceDto> resources = resourceService.uploadResources(postId, files);
         log.info("Successfully uploaded");
         return resources;
     }
 
     @GetMapping
-    public List<Resource> getResourcesByPostId(@PathVariable long postId) {
+    public List<ResourceDto> getResourcesByPostId(@RequestParam Long postId) {
         log.info("get post resources");
         return resourceService.getResourcesByPostId(postId);
     }
 
     @DeleteMapping("/{resourceId}")
-    public ResponseEntity<Void> deleteResource(@PathVariable @Positive long postId,
-                                         @PathVariable @Positive long resourceId) {
+    public ResponseEntity<Void> deleteResource(@PathVariable @Positive Long resourceId) {
         log.info("delete resource");
-        resourceService.deleteResource(postId, resourceId);
+        resourceService.deleteResource(resourceId);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{resourceId}/download")
-    public ResponseEntity<byte[]> downloadResource(@PathVariable Long postId,
-                                                   @PathVariable Long resourceId
-    ) {
+    public ResponseEntity<byte[]> downloadResource(@PathVariable @Positive Long resourceId) {
         log.info("download resource");
-        return resourceService.downloadResource(postId, resourceId);
+        return resourceService.downloadResource(resourceId);
     }
 }

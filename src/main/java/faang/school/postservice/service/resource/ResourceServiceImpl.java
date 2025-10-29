@@ -1,16 +1,19 @@
-package faang.school.postservice.service.image;
+package faang.school.postservice.service.resource;
 
+import faang.school.postservice.dto.resource.ResourceDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.ResourceNotFoundException;
-import faang.school.postservice.exception.ResourceNotOwnedByPostException;
+import faang.school.postservice.mapper.resource.ResourceMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.PostService;
+import faang.school.postservice.service.S3Service;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -23,26 +26,35 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
+import static faang.school.postservice.service.resource.ResourceType.IMAGE;
+import static org.springframework.http.RequestEntity.post;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class ResourceServiceImpl implements ResourceService {
 
-    private static final int MAX_FILE_SIZE_MB = 5;
-    private static final long MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
-    private static final int MAX_IMAGES_POST = 10;
-    private static final String IMAGE_TYPE = "IMAGE";
+    @Value("${app.resources.image.max-file-size-mb:5}")
+    private int maxFileSizeMb;
+
+    @Value("${app.resources.image.max-per-post:10}")
+    private int maxImagesPerPost;
 
     private final PostService postService;
     private final PostRepository postRepository;
+    private final ResourceMapper resourceMapper;
     private final S3Service s3Service;
+
+    private long getMaxFileSizeBytes() {
+        return (long) maxFileSizeMb * 1024 * 1024;
+    }
 
     @PersistenceContext
     private EntityManager entityManager;
 
     @Override
     @Transactional
-    public List<Resource> uploadImages(Long postId, List<MultipartFile> files) {
+    public List<ResourceDto> uploadResources(Long postId, List<MultipartFile> files) {
         validateImageFiles(files);
         Post post = postService.getPostEntityById(postId);
         validateImageCount(post, files.size());
@@ -54,34 +66,30 @@ public class ResourceServiceImpl implements ResourceService {
         postRepository.save(post);
         log.info("Successfully uploaded {} images for post {}", files.size(), postId);
 
-        return uploadedResources.stream()
-                .map(this::safeCopy)
-                .toList();
+        return resourceMapper.toDtoList(uploadedResources);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<Resource> getResourcesByPostId(long postId) {
+    public List<ResourceDto> getResourcesByPostId( Long postId) {
         Post post = postService.getPostEntityById(postId);
         List<Resource> images = post.getResources().stream()
-                .filter(resource -> IMAGE_TYPE.equals(resource.getType()))
+                .filter(resource -> IMAGE.equals(resource.getType()))
                 .toList();
 
         log.info("Retrieved {} images for post {}", images.size(), postId);
-        return images.stream()
-                .map(this::safeCopy)
-                .toList();
+        return resourceMapper.toDtoList(images);
     }
 
     @Override
     @Transactional
-    public List<Resource> deleteResource(long postId, long resourceId) {
-        log.info("Deleting resource {} from post {}", resourceId, postId);
-
-        Post post = postService.getPostEntityById(postId);
-        Resource resource = getResourceFromPost(post, resourceId);
-        validateResourceOwnership(postId, resource);
-
+    public void deleteResource(Long resourceId) {
+        log.info("Deleting resource {}", resourceId);
+        Resource resource = entityManager.find(Resource.class, resourceId);
+        if (resource == null) {
+            throw new ResourceNotFoundException("Resource not found with id: " + resourceId);
+        }
+        Post post = resource.getPost();
         post.getResources().remove(resource);
         Resource managed = entityManager.contains(resource) ? resource : entityManager.merge(resource);
         entityManager.remove(managed);
@@ -89,19 +97,16 @@ public class ResourceServiceImpl implements ResourceService {
         s3Service.deleteFile(resource.getKey());
 
         postRepository.save(post);
-        log.info("Resource {} deleted successfully from post {}", resourceId, postId);
-
-        return post.getResources().stream()
-                .map(this::safeCopy)
-                .toList();
+        log.info("Resource {} deleted successfully", resourceId);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public ResponseEntity<byte[]> downloadResource(Long postId, Long resourceId) {
-        Post post = postService.getPostEntityById(postId);
-        Resource resource = getResourceFromPost(post, resourceId);
-        validateResourceOwnership(postId, resource);
+    public ResponseEntity<byte[]> downloadResource(Long resourceId) {
+        Resource resource = entityManager.find(Resource.class, resourceId);
+        if (resource == null) {
+            throw new ResourceNotFoundException("Resource not found with id: " + resourceId);
+        }
 
         byte[] fileBytes = s3Service.downloadFile(resource.getKey());
 
@@ -110,22 +115,8 @@ public class ResourceServiceImpl implements ResourceService {
         headers.setContentDispositionFormData("attachment", resource.getName());
         headers.setContentLength(fileBytes.length);
 
-        log.info("Downloaded resource {} from post {}", resourceId, postId);
+        log.info("Downloaded resource {}", resourceId);
         return new ResponseEntity<>(fileBytes, headers, HttpStatus.OK);
-    }
-
-    private void validateImageFiles(List<MultipartFile> files) {
-        if (files == null || files.isEmpty()) {
-            throw new DataValidationException("Files list cannot be empty");
-        }
-
-        if (files.size() > MAX_IMAGES_POST) {
-            throw new DataValidationException(
-                    String.format("Maximum %d images allowed per upload", MAX_IMAGES_POST)
-            );
-        }
-
-        files.forEach(this::validateImageFile);
     }
 
     private void validateImageFile(MultipartFile file) {
@@ -133,10 +124,9 @@ public class ResourceServiceImpl implements ResourceService {
             throw new DataValidationException("File cannot be empty");
         }
 
-        if (file.getSize() > MAX_FILE_SIZE_BYTES) {
+        if (file.getSize() > getMaxFileSizeBytes()) {
             throw new DataValidationException(
-                    String.format("File %s exceeds maximum size of %d MB",
-                            file.getOriginalFilename(), MAX_FILE_SIZE_MB)
+                    String.format("File %s exceeds maximum size of %d MB", file.getOriginalFilename(), maxFileSizeMb)
             );
         }
 
@@ -146,15 +136,29 @@ public class ResourceServiceImpl implements ResourceService {
         }
     }
 
+    private void validateImageFiles(List<MultipartFile> files) {
+        if (files == null || files.isEmpty()) {
+            throw new DataValidationException("Files list cannot be empty");
+        }
+
+        if (files.size() > maxImagesPerPost) {
+            throw new DataValidationException(
+                    String.format("Maximum %d images allowed per upload", maxImagesPerPost)
+            );
+        }
+
+        files.forEach(this::validateImageFile);
+    }
+
     private void validateImageCount(Post post, int newImagesCount) {
         long currentImageCount = post.getResources().stream()
-                .filter(resource -> IMAGE_TYPE.equals(resource.getType()))
+                .filter(resource -> IMAGE.equals(resource.getType()))
                 .count();
 
-        if (currentImageCount + newImagesCount > MAX_IMAGES_POST) {
+        if (currentImageCount + newImagesCount > maxImagesPerPost) {
             throw new DataValidationException(
                     String.format("Cannot upload %d images. Post already has %d images. Maximum %d images allowed per post.",
-                            newImagesCount, currentImageCount, MAX_IMAGES_POST)
+                            newImagesCount, currentImageCount, maxImagesPerPost)
             );
         }
     }
@@ -168,7 +172,7 @@ public class ResourceServiceImpl implements ResourceService {
                     .key(fileKey)
                     .name(file.getOriginalFilename())
                     .size(file.getSize())
-                    .type(IMAGE_TYPE)
+                    .type(String.valueOf(ResourceType.IMAGE))
                     .post(post)
                     .build();
 
@@ -190,33 +194,6 @@ public class ResourceServiceImpl implements ResourceService {
             extension = originalFileName.substring(originalFileName.lastIndexOf("."));
         }
         return "posts/images/" + UUID.randomUUID() + extension;
-    }
-
-    private Resource getResourceFromPost(Post post, Long resourceId) {
-        return post.getResources().stream()
-                .filter(resource -> resource.getId().equals(resourceId))
-                .findFirst()
-                .orElseThrow(() -> new ResourceNotFoundException("Resource not found with id: " + resourceId));
-    }
-
-    private void validateResourceOwnership(Long postId, Resource resource) {
-        if (!resource.getPost().getId().equals(postId)) {
-            throw new ResourceNotOwnedByPostException(
-                    String.format("Resource %d not owned by post %d", resource.getId(), postId)
-            );
-        }
-    }
-
-    private Resource safeCopy(Resource original) {
-        return Resource.builder()
-                .id(original.getId())
-                .key(original.getKey())
-                .name(original.getName())
-                .size(original.getSize())
-                .type(original.getType())
-                .createdAt(original.getCreatedAt())
-                .post(null)
-                .build();
     }
 
     private MediaType detectMediaType(String fileName) {

@@ -1,9 +1,8 @@
-package faang.school.postservice.service.image;
+package faang.school.postservice.service.resource;
 
-import faang.school.postservice.model.Resource;
+import faang.school.postservice.dto.resource.ResourceDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.util.List;
 
 /**..
@@ -20,10 +19,10 @@ public interface ResourceService {
      * @param postId идентификатор поста, к которому прикрепляются изображения
      * @param files список файлов изображений для загрузки
      * @return список созданных сущностей Resource с метаданными загруженных файлов
-     * @throws IllegalArgumentException если количество файлов превышает 10 или размер файла превышает 5 МБ
+     * @throws DataValidationException если количество файлов превышает 10 или размер файла превышает 5 МБ
      * @throws faang.school.postservice.exception.PostNotFoundException если пост с указанным ID не найден
      */
-    List<Resource> uploadImages(Long postId, List<MultipartFile> files);
+    List<ResourceDto> uploadResources(Long postId, List<MultipartFile> files);
 
     /**
      * Получает все ресурсы (изображения), прикрепленные к указанному посту.
@@ -32,31 +31,24 @@ public interface ResourceService {
      * @return список сущностей Resource, связанных с постом
      * @throws faang.school.postservice.exception.PostNotFoundException если пост с указанным ID не найден
      */
-    List<Resource> getResourcesByPostId(long postId);
+    List<ResourceDto> getResourcesByPostId(Long postId);
 
     /**
      * Удаляет конкретный ресурс (изображение) из поста.
      * Удаляет файл из файлового хранилища и сущность Resource из базы данных.
      *
-     * @param postId идентификатор поста
      * @param resourceId идентификатор удаляемого ресурса
-     * @return обновленный список ресурсов поста после удаления
-     * @throws faang.school.postservice.exception.PostNotFoundException если пост с указанным ID не найден
      * @throws faang.school.postservice.exception.ResourceNotFoundException если ресурс с указанным ID не найден
-     * @throws faang.school.postservice.exception.ResourceNotOwnedByPostException если ресурс не принадлежит указанному посту
      */
-    List<Resource> deleteResource(long postId, long resourceId);
+    void deleteResource(Long resourceId);
 
     /**
      * Скачивает конкретный ресурс (изображение) из поста.
      * Возвращает файл в виде массива байтов с соответствующими HTTP-заголовками.
      *
-     * @param postId идентификатор поста
      * @param resourceId идентификатор скачиваемого ресурса
      * @return ResponseEntity с массивом байтов файла и настроенными HTTP-заголовками
-     * @throws faang.school.postservice.exception.PostNotFoundException если пост с указанным ID не найден
      * @throws faang.school.postservice.exception.ResourceNotFoundException если ресурс с указанным ID не найден
-     * @throws faang.school.postservice.exception.ResourceNotOwnedByPostException если ресурс не принадлежит указанному посту
      */
-    ResponseEntity<byte[]> downloadResource(Long postId, Long resourceId);
+    ResponseEntity<byte[]> downloadResource(Long resourceId);
 }

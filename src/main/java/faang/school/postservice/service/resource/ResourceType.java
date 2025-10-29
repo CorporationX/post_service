@@ -1,4 +1,4 @@
-package faang.school.postservice.service.image;
+package faang.school.postservice.service.resource;
 
 public enum ResourceType {
     IMAGE,

@@ -1,4 +1,4 @@
-package faang.school.postservice.service.image;
+package faang.school.postservice.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

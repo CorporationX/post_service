@@ -49,7 +49,14 @@ payment-service:
 
 services:
   s3:
-    endpoint: http://192.168.1.65:9001
+    endpoint: http://localhost:9001
     accessKey: user
     secretKey: password
     bucketName: corpbucket
+
+app:
+  resources:
+    image:
+      max-file-size-mb: 5
+      max-per-post: 10
+      type: "IMAGE"
