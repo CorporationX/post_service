@@ -21,7 +21,7 @@ import java.util.List;
 public class PostController {
     private final PostService postService;
 
-    @PostMapping("/draft")
+    @PostMapping()
     public PostDto createDraft(@Valid @RequestBody CreatePostDto postDto) {
         return postService.createDraft(postDto);
     }

@@ -70,7 +70,6 @@ public class PostServiceImpl implements PostService {
             throw new DataValidationException("Cannot change the author or project of a post.");
         }
         post.setContent(postDto.content());
-        post.setUpdatedAt(LocalDateTime.now());
         post = postRepository.save(post);
 
         log.info("Post with ID {} has been updated", post.getId());

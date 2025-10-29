@@ -363,11 +363,11 @@ public class PostServiceImplTest {
     void getDraftsByUser_whenUserHasDrafts_shouldReturnSortedDrafts() {
         Post draft1 = Post.builder()
                 .id(1L).authorId(userId).published(false)
-                .deleted(false).createdAt(LocalDateTime.of(2024, 1, 1, 0, 0))
+                .deleted(false).createdAt(time1)
                 .build();
         Post draft2 = Post.builder()
                 .id(2L).authorId(userId).published(false)
-                .deleted(false).createdAt(LocalDateTime.of(2024, 1, 2, 0, 0))
+                .deleted(false).createdAt(time2)
                 .build();
 
         when(postRepository.findByAuthorId(userId)).thenReturn(List.of(draft1, draft2));
@@ -400,11 +400,11 @@ public class PostServiceImplTest {
     void getDraftsByProject_whenProjectHasDrafts_shouldReturnSortedDrafts() {
         Post draft1 = Post.builder()
                 .id(1L).projectId(projectId).published(false)
-                .deleted(false).createdAt(LocalDateTime.of(2024, 1, 1, 0, 0))
+                .deleted(false).createdAt(time1)
                 .build();
         Post draft2 = Post.builder()
                 .id(2L).projectId(projectId).published(false)
-                .deleted(false).createdAt(LocalDateTime.of(2024, 1, 2, 0, 0))
+                .deleted(false).createdAt(time2)
                 .build();
 
         when(postRepository.findByProjectId(projectId)).thenReturn(List.of(draft1, draft2));
@@ -473,6 +473,4 @@ public class PostServiceImplTest {
         assertEquals(expected.get(0), result.get(0));
         assertEquals(expected.get(1), result.get(1));
     }
-
-
 }
