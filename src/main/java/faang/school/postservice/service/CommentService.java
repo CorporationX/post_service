@@ -20,13 +20,6 @@ public class CommentService {
         Comment comment = commentMapper.toComment(commentDto);
         comment = commentRepository.save(comment);
         return commentMapper.toDto(comment);
-
-        //1. Комментарии могут оставлять только конкретные пользователи под любыми постами.
-        //2. Комментарий можно создать. Он не может быть пустым и длиннее 4096 символов.
-        // У него обязательно должен быть автор — существующий пользователь.
-        // Комментарий обязательно должен относиться к посту. Также у комментария есть дата создания.
-
-        // Не совсем понял как реализовать
     }
 
     public List<CommentDto> findAllByPostId(long postId) {
