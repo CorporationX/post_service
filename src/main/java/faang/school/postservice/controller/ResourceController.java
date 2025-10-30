@@ -1,4 +1,4 @@
-package faang.school.postservice.controller.resource;
+package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.resource.ResourceDto;
 import faang.school.postservice.service.resource.ResourceService;
@@ -29,7 +29,7 @@ public class ResourceController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public List<ResourceDto> uploadResources(@RequestParam Long postId,
+    public List<ResourceDto> uploadResources(@RequestParam("postId") Long postId,
                                           @RequestParam("files") List<MultipartFile> files) {
         log.info("upload images");
         List<ResourceDto> resources = resourceService.uploadResources(postId, files);
@@ -38,7 +38,7 @@ public class ResourceController {
     }
 
     @GetMapping
-    public List<ResourceDto> getResourcesByPostId(@RequestParam Long postId) {
+    public List<ResourceDto> getResourcesByPostId(@RequestParam("postId") Long postId) {
         log.info("get post resources");
         return resourceService.getResourcesByPostId(postId);
     }

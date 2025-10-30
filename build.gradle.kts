@@ -47,6 +47,12 @@ dependencies {
     implementation("net.coobird:thumbnailator:0.4.19")
 
     /**
+     * Multipart file upload
+     */
+    implementation("commons-fileupload:commons-fileupload:1.4")
+    implementation("commons-io:commons-io:2.11.0")
+
+    /**
      * Utils & Logging
      */
     implementation("com.fasterxml.jackson.core:jackson-databind:2.14.2")
