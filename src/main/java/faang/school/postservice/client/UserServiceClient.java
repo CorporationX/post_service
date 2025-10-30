@@ -13,7 +13,7 @@ import java.util.List;
 public interface UserServiceClient {
 
     @GetMapping("/users/{userId}")
-    UserDto getUser(@PathVariable long userId);
+    UserDto getUserById(@PathVariable long userId);
 
     @PostMapping("/users")
     List<UserDto> getUsersByIds(@RequestBody List<Long> ids);
