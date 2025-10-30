@@ -7,6 +7,7 @@ import faang.school.postservice.dto.post.UpdatePostRequestDto;
 import faang.school.postservice.dto.post.PostResponseDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.ProjectNotFoundException;
 import faang.school.postservice.exception.UserNotFoundException;
 import faang.school.postservice.mapper.post.PostMapper;
@@ -63,7 +64,7 @@ public class PostServiceImpl implements PostService {
             }
         } catch (FeignException.NotFound ex) {
             log.warn("Author not found in external service: {}", ex.getMessage());
-            throw new IllegalArgumentException("Author not found in external service");
+            throw new EntityNotFoundException("Author not found in external service");
         }
 
         Post draft = postMapper.toEntity(dto);
@@ -192,7 +193,7 @@ public class PostServiceImpl implements PostService {
         return postRepository.findById(id)
                 .orElseThrow(() -> {
                     log.error("Post not found with id={}", id);
-                    return new IllegalArgumentException("Post not found with id: " + id);
+                    return new EntityNotFoundException("Post not found with id: " + id);
                 });
     }
 }

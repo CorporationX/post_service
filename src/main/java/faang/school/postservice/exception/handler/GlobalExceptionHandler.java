@@ -16,6 +16,11 @@ import java.util.Map;
 
 /**
  * Глобальный обработчик исключений для всех REST-контроллеров.
+ * 400 DataValidationException, IllegalArgumentException
+ * 404 EntityNotFoundException
+ * 403 ForbiddenException
+ * 409 IllegalStateException
+ * 500 Exception
  */
 @Slf4j
 @RestControllerAdvice
@@ -23,12 +28,8 @@ public class GlobalExceptionHandler {
 
     /**
      * Обработка ошибок валидации входных данных.
-     * Возвращает JSON с полями, которые не прошли валидацию и сообщениями из аннотаций.
-     * Пример ответа:
-     * {
-     *   "description": "should not be blank",
-     *   "email": "must be a valid email address"
-     * }
+     * Возвращает JSON с полями, которые не прошли валидацию, и сообщениями из аннотаций.
+     * Возвращает 400 Bad Request.
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -48,6 +49,7 @@ public class GlobalExceptionHandler {
 
     /**
      * Обработка бизнес-ошибок валидации данных.
+     * Возвращает 400 Bad Request.
      */
     @ExceptionHandler(DataValidationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -57,7 +59,30 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Некорректные аргументы вызывающей стороны (ошибка клиента).
+     * Возвращает 400 Bad Request.
+     */
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleIllegalArgumentException(IllegalArgumentException ex) {
+        log.warn("Illegal argument: {}", ex.getMessage());
+        return new ErrorResponse("bad_request", ex.getMessage());
+    }
+
+    /**
+     * Обработка Runtime исключений как запасной вариант.
+     * Возвращает 400 Bad Request.
+     */
+    @ExceptionHandler(RuntimeException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleRuntimeException(RuntimeException ex) {
+        log.error("Runtime exception: {}", ex.getMessage(), ex);
+        return new ErrorResponse("runtime_error", ex.getMessage());
+    }
+
+    /**
      * Обработка ошибок "сущность не найдена".
+     * Возвращает 404 Not Found.
      */
     @ExceptionHandler(EntityNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
@@ -67,7 +92,8 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Обработка ошибок доступа (403 Forbidden).
+     * Обработка ошибок доступа.
+     * Возвращает 403 Forbidden.
      */
     @ExceptionHandler(ForbiddenException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
@@ -77,33 +103,24 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Обработка некорректных аргументов.
+     * Конфликт состояния (например, уже опубликован или помечен как удалён).
+     * Возвращает 409 Conflict.
      */
-    @ExceptionHandler(IllegalArgumentException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleIllegalArgumentException(IllegalArgumentException ex) {
-        log.warn("Illegal argument: {}", ex.getMessage());
-        return new ErrorResponse("illegal_argument", ex.getMessage());
+    @ExceptionHandler(IllegalStateException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ErrorResponse handleIllegalStateException(IllegalStateException ex) {
+        log.warn("State conflict: {}", ex.getMessage());
+        return new ErrorResponse("state_conflict", ex.getMessage());
     }
 
     /**
-     * Обработка всех непредвиденных исключений.
+     * Запасной вариант для непредвиденных ошибок.
+     * Возвращает 500 Internal Server Error.
      */
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleGenericException(Exception ex) {
         log.error("Unhandled exception: ", ex);
         return new ErrorResponse("internal_server_error", "An unexpected error occurred");
-    }
-
-    /**
-     * Обработка Runtime исключений.
-     * Возвращает 400 Bad Request.
-     */
-    @ExceptionHandler(RuntimeException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleRuntimeException(RuntimeException ex) {
-        log.error("Runtime exception: {}", ex.getMessage(), ex);
-        return new ErrorResponse("runtime_error", ex.getMessage());
     }
 }

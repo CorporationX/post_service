@@ -45,15 +45,18 @@ public class PostController {
      */
     @Operation(
             summary = "Create a draft post",
-            description = "Creates a draft based on the provided request data",
+            description = "Creates a draft based on the provided request data. Validates referenced user/project.",
             responses = {
                     @ApiResponse(responseCode = "201", description = "Draft created",
                             content = @Content(mediaType = "application/json",
                                     schema = @Schema(implementation = PostResponseDto.class))),
-                    @ApiResponse(responseCode = "400", description = "Invalid request data",
+                    @ApiResponse(responseCode = "400", description = "Validation error or illegal argument",
                             content = @Content(mediaType = "application/json",
                                     schema = @Schema(implementation = ErrorResponse.class))),
                     @ApiResponse(responseCode = "404", description = "User or project not found",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "500", description = "Internal server error",
                             content = @Content(mediaType = "application/json",
                                     schema = @Schema(implementation = ErrorResponse.class)))
             }
@@ -63,18 +66,28 @@ public class PostController {
         return postService.createDraft(dto);
     }
 
-
     /**
      * Публикация поста
      */
     @Operation(
             summary = "Publish a post",
-            description = "Moves a post from draft to published state",
+            description = "Moves a post from draft to published state.",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Post published",
                             content = @Content(mediaType = "application/json",
                                     schema = @Schema(implementation = PostResponseDto.class))),
-                    @ApiResponse(responseCode = "404", description = "Post not found", content = @Content)
+                    @ApiResponse(responseCode = "400", description = "Validation error or illegal argument",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "404", description = "Post not found",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "409", description = "State conflict: post deleted or already published",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "500", description = "Internal server error",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ErrorResponse.class)))
             }
     )
     @PutMapping("/{id}/publish")
@@ -90,13 +103,23 @@ public class PostController {
      */
     @Operation(
             summary = "Update a post",
-            description = "Updates post data",
+            description = "Updates post data.",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Post updated",
                             content = @Content(mediaType = "application/json",
                                     schema = @Schema(implementation = PostResponseDto.class))),
-                    @ApiResponse(responseCode = "400", description = "Invalid data", content = @Content),
-                    @ApiResponse(responseCode = "404", description = "Post not found", content = @Content)
+                    @ApiResponse(responseCode = "400", description = "Validation error or illegal argument",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "404", description = "Post not found",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "409", description = "State conflict",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "500", description = "Internal server error",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ErrorResponse.class)))
             }
     )
     @PutMapping("/{id}")
@@ -113,10 +136,21 @@ public class PostController {
      */
     @Operation(
             summary = "Soft delete a post",
-            description = "Marks a post as deleted without physical removal",
+            description = "Marks a post as deleted without physical removal.",
             responses = {
                     @ApiResponse(responseCode = "204", description = "Post marked as deleted", content = @Content),
-                    @ApiResponse(responseCode = "404", description = "Post not found", content = @Content)
+                    @ApiResponse(responseCode = "400", description = "Illegal argument",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "404", description = "Post not found",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "409", description = "State conflict",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "500", description = "Internal server error",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ErrorResponse.class)))
             }
     )
     @DeleteMapping("/{id}")
@@ -132,12 +166,20 @@ public class PostController {
      */
     @Operation(
             summary = "Get post by ID",
-            description = "Returns a post by its identifier",
+            description = "Returns a post by its identifier.",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Post found",
                             content = @Content(mediaType = "application/json",
                                     schema = @Schema(implementation = PostResponseDto.class))),
-                    @ApiResponse(responseCode = "404", description = "Post not found", content = @Content)
+                    @ApiResponse(responseCode = "400", description = "Illegal argument",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "404", description = "Post not found",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "500", description = "Internal server error",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ErrorResponse.class)))
             }
     )
     @GetMapping("/{id}")
@@ -153,11 +195,20 @@ public class PostController {
      */
     @Operation(
             summary = "User's draft posts",
-            description = "Returns all draft posts for a specific user",
+            description = "Returns all draft posts for a specific user.",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Draft list",
                             content = @Content(mediaType = "application/json",
-                                    array = @ArraySchema(schema = @Schema(implementation = PostResponseDto.class))))
+                                    array = @ArraySchema(schema = @Schema(implementation = PostResponseDto.class)))),
+                    @ApiResponse(responseCode = "400", description = "Illegal argument",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "404", description = "User not found",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "500", description = "Internal server error",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ErrorResponse.class)))
             }
     )
     @GetMapping("/users/{userId}/drafts")
@@ -173,11 +224,20 @@ public class PostController {
      */
     @Operation(
             summary = "Project's draft posts",
-            description = "Returns all draft posts for a specific project",
+            description = "Returns all draft posts for a specific project.",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Draft list",
                             content = @Content(mediaType = "application/json",
-                                    array = @ArraySchema(schema = @Schema(implementation = PostResponseDto.class))))
+                                    array = @ArraySchema(schema = @Schema(implementation = PostResponseDto.class)))),
+                    @ApiResponse(responseCode = "400", description = "Illegal argument",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "404", description = "Project not found",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "500", description = "Internal server error",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ErrorResponse.class)))
             }
     )
     @GetMapping("/projects/{projectId}/drafts")
@@ -193,11 +253,20 @@ public class PostController {
      */
     @Operation(
             summary = "User's published posts",
-            description = "Returns all published posts for a specific user",
+            description = "Returns all published posts for a specific user.",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Published posts list",
                             content = @Content(mediaType = "application/json",
-                                    array = @ArraySchema(schema = @Schema(implementation = PostResponseDto.class))))
+                                    array = @ArraySchema(schema = @Schema(implementation = PostResponseDto.class)))),
+                    @ApiResponse(responseCode = "400", description = "Illegal argument",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "404", description = "User not found",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "500", description = "Internal server error",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ErrorResponse.class)))
             }
     )
     @GetMapping("/users/{userId}/published")
@@ -213,11 +282,20 @@ public class PostController {
      */
     @Operation(
             summary = "Project's published posts",
-            description = "Returns all published posts for a specific project",
+            description = "Returns all published posts for a specific project.",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Published posts list",
                             content = @Content(mediaType = "application/json",
-                                    array = @ArraySchema(schema = @Schema(implementation = PostResponseDto.class))))
+                                    array = @ArraySchema(schema = @Schema(implementation = PostResponseDto.class)))),
+                    @ApiResponse(responseCode = "400", description = "Illegal argument",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "404", description = "Project not found",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "500", description = "Internal server error",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ErrorResponse.class)))
             }
     )
     @GetMapping("/projects/{projectId}/published")
