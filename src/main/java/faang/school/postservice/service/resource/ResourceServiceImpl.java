@@ -74,7 +74,7 @@ public class ResourceServiceImpl implements ResourceService {
     public List<ResourceDto> getResourcesByPostId( Long postId) {
         Post post = postService.getPostEntityById(postId);
         List<Resource> images = post.getResources().stream()
-                .filter(resource -> IMAGE.equals(resource.getType()))
+                .filter(resource -> IMAGE.name().equals(resource.getType()))
                 .toList();
 
         log.info("Retrieved {} images for post {}", images.size(), postId);
@@ -152,7 +152,7 @@ public class ResourceServiceImpl implements ResourceService {
 
     private void validateImageCount(Post post, int newImagesCount) {
         long currentImageCount = post.getResources().stream()
-                .filter(resource -> IMAGE.equals(resource.getType()))
+                .filter(resource -> IMAGE.name().equals(resource.getType()))
                 .count();
 
         if (currentImageCount + newImagesCount > maxImagesPerPost) {
@@ -172,7 +172,7 @@ public class ResourceServiceImpl implements ResourceService {
                     .key(fileKey)
                     .name(file.getOriginalFilename())
                     .size(file.getSize())
-                    .type(String.valueOf(ResourceType.IMAGE))
+                    .type(IMAGE.name())
                     .post(post)
                     .build();
 
