@@ -1,5 +1,6 @@
 package faang.school.postservice.dto.post;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
@@ -21,6 +22,7 @@ public record CreatePostRequestDto(
         Long projectId
 ) {
     @AssertTrue(message = "Must be sent only one field: authorId or projectId")
+    @Schema(hidden = true)
     public boolean isExactlyOneAuthor() {
         return (authorId != null) ^ (projectId != null);
     }
