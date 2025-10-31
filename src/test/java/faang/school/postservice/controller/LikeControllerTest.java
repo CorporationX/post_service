@@ -128,7 +128,7 @@ public class LikeControllerTest {
     public void testFailLikeOnCommentSetWhenCommentDoesNotExist() throws Exception {
         when(likeService.setLikeOnComment(notExistCommentId))
                 .thenThrow(new ResourceNotFoundException("Comment doesn't exist"));
-        mockMvc.perform(post("/likes/set/comment/{comemntId}", notExistCommentId))
+        mockMvc.perform(post("/likes/set/comment/{commentId}", notExistCommentId))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Comment doesn't exist"));
     }

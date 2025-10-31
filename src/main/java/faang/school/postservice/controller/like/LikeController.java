@@ -55,21 +55,21 @@ public class LikeController {
                             description = "Bad Request - Incorrect request parameter",
                             content = @Content(mediaType = "application/json",
                                     schema = @Schema(implementation = ErrorResponse.class,
-                                            example = "{\"error\": \"User has already set a like on this post\" }"))
+                                            example = "{\"message\": \"User has already set a like on this post\" }"))
                     ),
                     @ApiResponse(
                             responseCode = "404",
                             description = "Not found - Post doesn't exist",
                             content = @Content(mediaType = "application/json",
                                     schema = @Schema(implementation = ErrorResponse.class,
-                                            example = "{ \"error\": \"Post doesn't exist\" }"))
+                                            example = "{ \"message\": \"Post doesn't exist\" }"))
                     ),
                     @ApiResponse(
                             responseCode = "500",
                             description = "Internal Server Error - unexpected problem",
                             content = @Content(mediaType = "application/json",
                                     schema = @Schema(implementation = ErrorResponse.class,
-                                            example = "{ \"error\": \"Internal server error\"}"))
+                                            example = "{ \"message\": \"Internal server error\"}"))
                     )
             }
     )
@@ -105,21 +105,21 @@ public class LikeController {
                             description = "Bad Request - Incorrect request parameter",
                             content = @Content(mediaType = "application/json",
                                     schema = @Schema(implementation = ErrorResponse.class,
-                                            example = "{ \"error\": \"User hasn't liked the post\" }"))
+                                            example = "{ \"message\": \"User hasn't liked the post\" }"))
                     ),
                     @ApiResponse(
                             responseCode = "404",
                             description = "Not found - Post doesn't exist",
                             content = @Content(mediaType = "application/json",
                                     schema = @Schema(implementation = ErrorResponse.class,
-                                            example = "{ \"error\": \"Post doesn't exist\" }"))
+                                            example = "{ \"message\": \"Post doesn't exist\" }"))
                     ),
                     @ApiResponse(
                             responseCode = "500",
                             description = "Internal Server Error - unexpected problem",
                             content = @Content(mediaType = "application/json",
                                     schema = @Schema(implementation = ErrorResponse.class,
-                                            example = "{ \"error\": \"Internal server error\"}"))
+                                            example = "{ \"message\": \"Internal server error\"}"))
                     )
             }
     )
@@ -156,21 +156,21 @@ public class LikeController {
                             description = "Bad Request - Incorrect request parameter",
                             content = @Content(mediaType = "application/json",
                                     schema = @Schema(implementation = ErrorResponse.class,
-                                            example = "{ \"error\": \"User has already liked a post\" }"))
+                                            example = "{ \"message\": \"User has already liked a post\" }"))
                     ),
                     @ApiResponse(
                             responseCode = "404",
                             description = "Not Found - Comment doesn't exist",
                             content = @Content(mediaType = "application/json",
                                     schema = @Schema(implementation = ErrorResponse.class,
-                                            example = "{ \"error\": \"Comment doesn't exist\" }"))
+                                            example = "{ \"message\": \"Comment doesn't exist\" }"))
                     ),
                     @ApiResponse(
                             responseCode = "500",
                             description = "Internal Server Error - unexpected problem",
                             content = @Content(mediaType = "application/json",
                                     schema = @Schema(implementation = ErrorResponse.class,
-                                            example = "{ \"error\": \"Internal server error\"}"))
+                                            example = "{ \"message\": \"Internal server error\"}"))
                     )
             }
     )
@@ -204,21 +204,21 @@ public class LikeController {
                             description = "Bad Request - Incorrect request parameter",
                             content = @Content(mediaType = "application/json",
                                     schema = @Schema(implementation = ErrorResponse.class,
-                                            example = "{ \"error\": \"User hasn't liked the comment\" }"))
+                                            example = "{ \"message\": \"User hasn't liked the comment\" }"))
                     ),
                     @ApiResponse(
                             responseCode = "404",
                             description = "Not Found - Comment doesn't exist",
                             content = @Content(mediaType = "application/json",
                                     schema = @Schema(implementation = ErrorResponse.class,
-                                            example = "{ \"error\": \"Comment doesn't exist\" }"))
+                                            example = "{ \"message\": \"Comment doesn't exist\" }"))
                     ),
                     @ApiResponse(
                             responseCode = "500",
                             description = "Internal Server Error - unexpected problem",
                             content = @Content(mediaType = "application/json",
                                     schema = @Schema(implementation = ErrorResponse.class,
-                                            example = "{ \"error\": \"Internal server error\"}"))
+                                            example = "{ \"message\": \"Internal server error\"}"))
                     )
             }
     )
@@ -246,14 +246,14 @@ public class LikeController {
                             description = "Not Found - post doesn't exist",
                             content = @Content(mediaType = "application/json",
                                     schema = @Schema(implementation = ErrorResponse.class,
-                                            example = "{ \"error\": \"Post doesn't exist\" }"))
+                                            example = "{ \"message\": \"Post doesn't exist\" }"))
                     ),
                     @ApiResponse(
                             responseCode = "500",
                             description = "Internal Server Error - unexpected problem",
                             content = @Content(mediaType = "application/json",
                                     schema = @Schema(implementation = ErrorResponse.class,
-                                            example = "{ \"error\": \"Internal server error\"}"))
+                                            example = "{ \"message\": \"Internal server error\"}"))
                     )
             }
     )

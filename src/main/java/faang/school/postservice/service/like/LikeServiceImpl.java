@@ -11,11 +11,10 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.like.LikeValidatorImpl;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -68,10 +67,9 @@ public class LikeServiceImpl implements LikeService {
 
     @Override
     public int getPostLikesCount(long postId) {
-        AtomicInteger likeCounts = new AtomicInteger(0);
-        postRepository.findById(postId)
-                .ifPresent(post -> likeCounts.set(post.getLikes().size()));
-        return likeCounts.get();
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Post %d not found", postId)));
+        return post.getLikes().size();
     }
 
     private UserDto getUserByContextUserId(long userId) {
