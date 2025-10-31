@@ -10,4 +10,5 @@ import org.springframework.stereotype.Component;
 public class LanguageToolConfig {
     private String apiUrl;
     private String language;
+    private int maxTextLength = 10000;
 }

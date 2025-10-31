@@ -2,5 +2,5 @@ package faang.school.postservice.dto.text;
 
 import java.util.List;
 
-public record TextResponseDto(List<MatchDto> matches) {
+public record TextCheckResponseDto(List<MatchDto> matches) {
 }

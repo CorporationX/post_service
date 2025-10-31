@@ -1,13 +1,17 @@
 package faang.school.postservice.util.post;
 
+import faang.school.postservice.client.FeignLanguageTool;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.LanguageToolConfig;
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.CreatePostRequestDto;
 import faang.school.postservice.dto.post.UpdatePostRequestDto;
 import faang.school.postservice.dto.post.PostResponseDto;
 import faang.school.postservice.dto.project.ProjectDto;
-import faang.school.postservice.dto.text.TextResponseDto;
+import faang.school.postservice.dto.text.MatchDto;
+import faang.school.postservice.dto.text.ReplacementDto;
+import faang.school.postservice.dto.text.TextCheckResponseDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
@@ -21,6 +25,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mapstruct.factory.Mappers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
@@ -52,7 +57,11 @@ class PostServiceImplTest {
     @Mock
     ProjectServiceClient projectServiceClient;
     @Mock
+    private FeignLanguageTool feignLanguageTool;
+    @Mock
     LanguageToolConfig languageToolConfig;
+    @Mock
+    private UserContext userContext;
 
     @Spy
     PostMapper postMapper = Mappers.getMapper(PostMapper.class);
@@ -66,6 +75,8 @@ class PostServiceImplTest {
     void setUp() {
         postDbEntity = buildPost(POST_ID, AUTHOR_ID, null, CONTENT, false, false,
                 LocalDateTime.now().minusHours(1), null);
+        Mockito.lenient().doNothing().when(userContext).setUserId(1L);
+        Mockito.lenient().doNothing().when(userContext).clear();
     }
 
     @Test
@@ -419,16 +430,22 @@ class PostServiceImplTest {
         Post unpublishedPost = buildPost(1L, AUTHOR_ID, textWithError, false, false,
                 LocalDateTime.now(), null);
 
+        MatchDto match = new MatchDto(6, 6, List.of(new ReplacementDto("world")));
+        TextCheckResponseDto response = new TextCheckResponseDto(List.of(match));
+
         when(postRepository.findReadyToPublish()).thenReturn(List.of(unpublishedPost));
         when(postRepository.findById(1L)).thenReturn(Optional.of(unpublishedPost));
-        when(postRepository.save(any(Post.class))).thenReturn(unpublishedPost);
-
+        when(postRepository.save(any(Post.class))).thenAnswer(invocation -> {
+            Post savedPost = invocation.getArgument(0);
+            unpublishedPost.setContent(savedPost.getContent());
+            return savedPost;
+        });
+        when(feignLanguageTool.checkText(textWithError, "auto")).thenReturn(response);
         when(languageToolConfig.getLanguage()).thenReturn("auto");
 
         service.processTextChecking();
-        verify(postRepository).save(argThat(savedPost ->
-                savedPost.getContent().equals(expectedCorrected)
-        ));
+        assertEquals(expectedCorrected, unpublishedPost.getContent());
+        verify(postRepository, atLeastOnce()).save(any(Post.class));
     }
 
     @Test
@@ -438,7 +455,10 @@ class PostServiceImplTest {
         Post unpublishedPost = buildPost(1L, AUTHOR_ID, correctText, false, false,
                 LocalDateTime.now(), null);
 
+        TextCheckResponseDto response = new TextCheckResponseDto(List.of());
+
         when(postRepository.findReadyToPublish()).thenReturn(List.of(unpublishedPost));
+        when(feignLanguageTool.checkText(correctText, "auto")).thenReturn(response);
         when(languageToolConfig.getLanguage()).thenReturn("auto");
 
         service.processTextChecking();
@@ -453,9 +473,9 @@ class PostServiceImplTest {
                 LocalDateTime.now(), null);
 
         when(postRepository.findReadyToPublish()).thenReturn(List.of(unpublishedPost));
-
+        when(feignLanguageTool.checkText("Some text", "auto")).thenThrow(new RuntimeException("API error"));
         when(languageToolConfig.getLanguage()).thenReturn("auto");
-        service.processTextChecking();
+        assertDoesNotThrow(() -> service.processTextChecking());
         verify(postRepository, never()).save(any(Post.class));
     }
 }

@@ -1,15 +1,16 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.client.ProjectServiceClient;
-import faang.school.postservice.client.TextCheck;
+import faang.school.postservice.client.FeignLanguageTool;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.LanguageToolConfig;
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.CreatePostRequestDto;
 import faang.school.postservice.dto.post.UpdatePostRequestDto;
 import faang.school.postservice.dto.post.PostResponseDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.text.MatchDto;
-import faang.school.postservice.dto.text.TextResponseDto;
+import faang.school.postservice.dto.text.TextCheckResponseDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.ProjectNotFoundException;
 import faang.school.postservice.exception.UserNotFoundException;
@@ -23,10 +24,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
@@ -43,12 +41,13 @@ public class PostServiceImpl implements PostService {
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
     private final LanguageToolConfig languageToolConfig;
-    private final TextCheck textCheck;
     private static final int MAX_RETRY_ATTEMPTS = 4;
     private static final long INITIAL_DELAY_MS = 1000L;
     private static final long SECOND_DELAY_MS = 3000L;
     private static final long THIRD_DELAY_MS = 4000L;
     private static final long FOURTH_DELAY_MS = 5000L;
+    private final FeignLanguageTool feignLanguageTool;
+    private final UserContext userContext;
 
     @Override
     public PostResponseDto createDraft(CreatePostRequestDto dto) {
@@ -217,43 +216,45 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional
     public void processTextChecking() {
-        List<Post> unpublishedPosts = postRepository.findReadyToPublish(); 
+        try {
+            userContext.setUserId(1L); // для теста
+            List<Post> unpublishedPosts = postRepository.findReadyToPublish();
+            log.info("Found {} posts for text correction", unpublishedPosts.size());
 
-        for (Post post : unpublishedPosts) {
-            try { 
-                TextResponseDto response = checkTextWithRetry(post.getContent());
+            for (Post post : unpublishedPosts) {
+                try {
+                    TextCheckResponseDto response = checkTextWithRetry(post.getContent());
 
-                if (response == null) {
-                    log.warn("Empty response from LanguageTool for post id={}", post.getId());
-                    continue; 
+                    if (response == null) {
+                        log.warn("Empty response from LanguageTool for post id={}", post.getId());
+                        continue;
+                    }
+
+                    String correctedText = applyCorrections(post.getContent(), response);
+
+                    if (!correctedText.equals(post.getContent())) {
+
+                        UpdatePostRequestDto updateDto = UpdatePostRequestDto.builder()
+                                .content(correctedText)
+                                .build();
+                        update(post.getId(), updateDto);
+                    }
+                } catch (Exception e) {
+                    log.error("Failed to check text for post with id={}", post.getId(), e);
                 }
-                
-                String correctedText = applyCorrections(post.getContent(), response);
-                
-                if (!correctedText.equals(post.getContent())) {
-                   
-                    UpdatePostRequestDto updateDto = UpdatePostRequestDto.builder()
-                            .content(correctedText)
-                            .build();
-                    update(post.getId(), updateDto);
-                }
-            } catch (Exception e) {
-                log.error("Failed to check text for post with id={}", post.getId(), e);
             }
+        } finally {
+            userContext.clear();
         }
     }
 
-    public TextResponseDto checkTextWithRetry(String text) {
+    public TextCheckResponseDto checkTextWithRetry(String text) {
         for (int attempt = 1; attempt <= MAX_RETRY_ATTEMPTS; attempt++) {
             try {
                 log.info("Checking text with LanguageTool, attempt {}", attempt);
 
-                RestTemplate restTemplate = new RestTemplate();
-                String url = "https://api.languagetool.org/v2/check?text=" +
-                        URLEncoder.encode(text, StandardCharsets.UTF_8) +
-                        "&language=" + languageToolConfig.getLanguage();
-
-                return restTemplate.getForObject(url, TextResponseDto.class);
+                TextCheckResponseDto responseDto = feignLanguageTool.checkText(text, languageToolConfig.getLanguage());
+                return responseDto;
 
             } catch (Exception e) {
                 if (attempt == MAX_RETRY_ATTEMPTS) {
@@ -270,8 +271,8 @@ public class PostServiceImpl implements PostService {
     private void applyCustomBackoff(int attempt) {
         long delay = switch (attempt) {
             case 1 -> INITIAL_DELAY_MS;
-            case 2 -> SECOND_DELAY_MS;     
-            case 3 -> THIRD_DELAY_MS;      
+            case 2 -> SECOND_DELAY_MS;
+            case 3 -> THIRD_DELAY_MS;
             case 4 -> FOURTH_DELAY_MS;
             default -> FOURTH_DELAY_MS;
         };
@@ -285,30 +286,31 @@ public class PostServiceImpl implements PostService {
         }
     }
 
-    String applyCorrections(String originalText, TextResponseDto response) {
+     String applyCorrections(String originalText, TextCheckResponseDto response) {
         if (response.matches() == null || response.matches().isEmpty()) {
             return originalText;
         }
 
-        int previousEnd = 0;
-        StringBuilder correctedText = new StringBuilder();
+        List<MatchDto> sortedMatches = response.matches().stream()
+                .sorted((m1, m2) -> Integer.compare(m2.offset(), m1.offset()))
+                .collect(Collectors.toList());
 
-        for (MatchDto match : response.matches()) {
+        StringBuilder correctedText = new StringBuilder(originalText);
+
+        for (MatchDto match : sortedMatches) {
             if (match.replacements() != null && !match.replacements().isEmpty()) {
                 String replacement = match.replacements().get(0).value();
                 int offset = match.offset();
                 int length = match.length();
 
-                if (offset >= 0 && offset <= originalText.length() &&
-                        offset + length <= originalText.length()) {
-                    correctedText.append(originalText, previousEnd, offset);
-                    correctedText.append(replacement);
-                    previousEnd = offset + length;
+                if (offset >= 0 && offset <= correctedText.length() &&
+                        offset + length <= correctedText.length()) {
+                    correctedText.replace(offset, offset + length, replacement);
+                } else {
+                    log.warn("Invalid match offsets for post correction: offset={}, length={}, text length={}",
+                            offset, length, correctedText.length());
                 }
             }
-        }
-        if (previousEnd < originalText.length()) {
-            correctedText.append(originalText.substring(previousEnd));
         }
         return correctedText.toString();
     }
