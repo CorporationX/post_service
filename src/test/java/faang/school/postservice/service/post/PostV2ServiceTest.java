@@ -1,18 +1,15 @@
 package faang.school.postservice.service.post;
 
-import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.common.PageResponse;
-import faang.school.postservice.dto.post.PostCreateDto;
-import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.dto.post.PostUpdateDto;
-import faang.school.postservice.dto.project.ProjectDto;
+import faang.school.postservice.dto.post.PostV2CreateDto;
+import faang.school.postservice.dto.post.PostV2Dto;
+import faang.school.postservice.dto.post.PostV2UpdateDto;
 import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.exeption.DataValidationException;
 import faang.school.postservice.exeption.ForbiddenException;
 import faang.school.postservice.helpers.TestUtils;
-import faang.school.postservice.mapper.PostMapper;
+import faang.school.postservice.mapper.PostV2Mapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import org.junit.jupiter.api.Test;
@@ -38,25 +35,21 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class PostServiceTest {
+class PostV2ServiceTest {
     @Mock
     private PostRepository postRepository;
     @Mock
     private UserServiceClient userServiceClient;
     @Mock
-    private ProjectServiceClient projectServiceClient;
-    @Mock
     private UserContext userContext;
     @InjectMocks
-    private PostService postService;
+    private PostV2Service postV2Service;
     @Captor
     private ArgumentCaptor<Post> postCaptor;
 
     private final Long userId = 1L;
-    private final Long projectId = 2L;
     private final Long postId = 3L;
     private final UserDto user = new UserDto(userId, "name", "email");
-    private final ProjectDto project = new ProjectDto(projectId, "title", userId);
     private final String content = "Post content";
     private final Post post = Post.builder().id(postId).build();
     private final Pageable pageableDefault = PageRequest.of(0, 5);
@@ -67,9 +60,9 @@ class PostServiceTest {
         when(userServiceClient.getUser(userId)).thenReturn(user);
         when(postRepository.save(postCaptor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
 
-        PostCreateDto postCreateDto = new PostCreateDto(content, null);
+        PostV2CreateDto postV2CreateDto = new PostV2CreateDto(content);
 
-        PostDto createdDraft = postService.createPostAsDraft(postCreateDto);
+        PostV2Dto createdDraft = postV2Service.createPostAsDraft(postV2CreateDto);
 
         Post capturedPost = postCaptor.getValue();
         assertEquals(capturedPost.getAuthorId(), userId);
@@ -78,26 +71,6 @@ class PostServiceTest {
         assertEquals(createdDraft.authorId(), userId);
         assertEquals(content, createdDraft.content());
         assertNull(createdDraft.projectId());
-    }
-
-    @Test
-    void createPostAsDraft_shouldCreatePostByProject() {
-        when(userContext.getUserId()).thenReturn(userId);
-        when(userServiceClient.getUser(userId)).thenReturn(user);
-        when(projectServiceClient.getProject(projectId)).thenReturn(project);
-        when(postRepository.save(postCaptor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
-
-        PostCreateDto postCreateDto = new PostCreateDto(content, projectId);
-
-        PostDto createdDraft = postService.createPostAsDraft(postCreateDto);
-
-        Post capturedPost = postCaptor.getValue();
-        assertNull(capturedPost.getAuthorId());
-        assertEquals(capturedPost.getProjectId(), projectId);
-        assertEquals(capturedPost.getContent(), content);
-        assertNull(createdDraft.authorId());
-        assertEquals(createdDraft.content(), content);
-        assertEquals(createdDraft.projectId(), projectId);
     }
 
     @Test
@@ -111,7 +84,7 @@ class PostServiceTest {
         TestUtils.assertThrowsWithMessage(
                 ForbiddenException.class,
                 "Post id=%s is already published".formatted(postId),
-                () -> postService.publishPost(postId)
+                () -> postV2Service.publishPost(postId)
         );
     }
 
@@ -127,26 +100,7 @@ class PostServiceTest {
         TestUtils.assertThrowsWithMessage(
                 ForbiddenException.class,
                 "User id=%s is not author of post".formatted(userId),
-                () -> postService.publishPost(postId)
-        );
-    }
-
-    @Test
-    void publishPost_shouldThrowException_whenValidationUpdatingPostFailsByProjectId() {
-        post.setPublished(false);
-        post.setProjectId(projectId);
-
-        when(userContext.getUserId()).thenReturn(userId);
-        when(userServiceClient.getUser(userId)).thenReturn(user);
-        when(postRepository.getByIdOrThrow(postId)).thenReturn(post);
-        when(projectServiceClient.getProject(projectId)).thenReturn(
-                new ProjectDto(projectId, "title", userId + 1)
-        );
-
-        TestUtils.assertThrowsWithMessage(
-                ForbiddenException.class,
-                "User id=%s is not owner of project id=%s".formatted(userId, projectId),
-                () -> postService.publishPost(postId)
+                () -> postV2Service.publishPost(postId)
         );
     }
 
@@ -161,7 +115,7 @@ class PostServiceTest {
         when(postRepository.getByIdOrThrow(postId)).thenReturn(post);
         when(postRepository.save(postCaptor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
 
-        PostDto publishedPost = postService.publishPost(postId);
+        PostV2Dto publishedPost = postV2Service.publishPost(postId);
         Post capturedPost = postCaptor.getValue();
 
         assertTrue(capturedPost.isPublished());
@@ -182,26 +136,7 @@ class PostServiceTest {
         TestUtils.assertThrowsWithMessage(
                 ForbiddenException.class,
                 "User id=%s is not author of post".formatted(userId),
-                () -> postService.updatePost(postId, new PostUpdateDto("Updated content"))
-        );
-    }
-
-    @Test
-    void updatePost_shouldThrowException_whenValidationUpdatingPostFailsByProjectId() {
-        post.setProjectId(projectId);
-        post.setContent(content);
-
-        when(userContext.getUserId()).thenReturn(userId);
-        when(userServiceClient.getUser(userId)).thenReturn(user);
-        when(postRepository.getByIdOrThrow(postId)).thenReturn(post);
-        when(projectServiceClient.getProject(projectId)).thenReturn(
-                new ProjectDto(projectId, "title", userId + 1)
-        );
-
-        TestUtils.assertThrowsWithMessage(
-                ForbiddenException.class,
-                "User id=%s is not owner of project id=%s".formatted(userId, projectId),
-                () -> postService.updatePost(postId, new PostUpdateDto("Updated content"))
+                () -> postV2Service.updatePost(postId, new PostV2UpdateDto("Updated content"))
         );
     }
 
@@ -216,7 +151,7 @@ class PostServiceTest {
         when(postRepository.save(postCaptor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
 
         String updatedContent = "Updated content";
-        PostDto updated = postService.updatePost(postId, new PostUpdateDto(updatedContent));
+        PostV2Dto updated = postV2Service.updatePost(postId, new PostV2UpdateDto(updatedContent));
         Post capturedPost = postCaptor.getValue();
 
         assertEquals(updatedContent, capturedPost.getContent());
@@ -236,7 +171,7 @@ class PostServiceTest {
         TestUtils.assertThrowsWithMessage(
                 ForbiddenException.class,
                 "Post id=%s is already deleted".formatted(postId),
-                () -> postService.deletePostSoftly(postId)
+                () -> postV2Service.deletePostSoftly(postId)
         );
     }
 
@@ -251,25 +186,7 @@ class PostServiceTest {
         TestUtils.assertThrowsWithMessage(
                 ForbiddenException.class,
                 "User id=%s is not author of post".formatted(userId),
-                () -> postService.deletePostSoftly(postId)
-        );
-    }
-
-    @Test
-    void deletePostSoftly_shouldThrowException_whenValidationUpdatingPostFailsByProjectId() {
-        post.setProjectId(projectId);
-
-        when(userContext.getUserId()).thenReturn(userId);
-        when(userServiceClient.getUser(userId)).thenReturn(user);
-        when(postRepository.getByIdOrThrow(postId)).thenReturn(post);
-        when(projectServiceClient.getProject(projectId)).thenReturn(
-                new ProjectDto(projectId, "title", userId + 1)
-        );
-
-        TestUtils.assertThrowsWithMessage(
-                ForbiddenException.class,
-                "User id=%s is not owner of project id=%s".formatted(userId, projectId),
-                () -> postService.deletePostSoftly(postId)
+                () -> postV2Service.deletePostSoftly(postId)
         );
     }
 
@@ -283,7 +200,7 @@ class PostServiceTest {
         when(postRepository.getByIdOrThrow(postId)).thenReturn(post);
         when(postRepository.save(postCaptor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
 
-        postService.deletePostSoftly(postId);
+        postV2Service.deletePostSoftly(postId);
         Post capturedPost = postCaptor.getValue();
 
         assertTrue(capturedPost.isDeleted());
@@ -298,7 +215,7 @@ class PostServiceTest {
         when(userServiceClient.getUser(userId)).thenReturn(user);
         when(postRepository.getByIdOrThrow(postId)).thenReturn(post);
 
-        PostDto found = postService.findById(postId);
+        PostV2Dto found = postV2Service.findById(postId);
 
         assertEquals(postId, found.id());
         assertEquals(content, found.content());
@@ -314,64 +231,20 @@ class PostServiceTest {
         Page<Post> page = new PageImpl(posts.subList(0, pageableDefault.getPageSize()), pageableDefault, posts.size());
         when(postRepository.findAll(any(Specification.class), eq(pageableDefault))).thenReturn(page);
 
-        PageResponse<PostDto> pageResponse = postService.findAllDraftsByAuthor(pageableDefault);
+        PageResponse<PostV2Dto> pageResponse = postV2Service.findAllDraftsByAuthor(pageableDefault);
 
         assertEquals(0, pageResponse.pageNumber());
         assertEquals(5, pageResponse.pageSize());
         assertEquals(2, pageResponse.totalPages());
         assertEquals(10, pageResponse.totalElements());
 
-        List<PostDto> content = pageResponse.content();
+        List<PostV2Dto> content = pageResponse.content();
         assertEquals(5, content.size());
-        assertEquals(content.get(0), PostMapper.toDto(posts.get(0)));
-        assertEquals(content.get(1), PostMapper.toDto(posts.get(1)));
-        assertEquals(content.get(2), PostMapper.toDto(posts.get(2)));
-        assertEquals(content.get(3), PostMapper.toDto(posts.get(3)));
-        assertEquals(content.get(4), PostMapper.toDto(posts.get(4)));
-    }
-
-    @Test
-    void findAllDraftsByProject_shouldReturnPage() {
-        when(userContext.getUserId()).thenReturn(userId);
-        when(userServiceClient.getUser(userId)).thenReturn(user);
-        when(projectServiceClient.getProject(projectId)).thenReturn(project);
-
-        List<Post> posts = generateListPosts();
-        Page<Post> page = new PageImpl(posts.subList(0, pageableDefault.getPageSize()), pageableDefault, posts.size());
-        when(postRepository.findAll(any(Specification.class), eq(pageableDefault))).thenReturn(page);
-
-        PageResponse<PostDto> pageResponse = postService.findAllDraftsByProject(projectId, pageableDefault);
-
-        assertEquals(0, pageResponse.pageNumber());
-        assertEquals(5, pageResponse.pageSize());
-        assertEquals(2, pageResponse.totalPages());
-        assertEquals(10, pageResponse.totalElements());
-
-        List<PostDto> content = pageResponse.content();
-        assertEquals(5, content.size());
-        assertEquals(content.get(0), PostMapper.toDto(posts.get(0)));
-        assertEquals(content.get(1), PostMapper.toDto(posts.get(1)));
-        assertEquals(content.get(2), PostMapper.toDto(posts.get(2)));
-        assertEquals(content.get(3), PostMapper.toDto(posts.get(3)));
-        assertEquals(content.get(4), PostMapper.toDto(posts.get(4)));
-    }
-
-    @Test
-    void findAllPublishedByFilter_shouldThrowException_whenBothAuthorIdAndProjectIdProvided() {
-        TestUtils.assertThrowsWithMessage(
-                DataValidationException.class,
-                "Use authorId or projectId, not both",
-                () -> postService.findAllPublishedByFilter(userId, projectId, pageableDefault)
-        );
-    }
-
-    @Test
-    void findAllPublishedByFilter_shouldThrowException_whenNeitherAuthorIdNorProjectIdProvided() {
-        TestUtils.assertThrowsWithMessage(
-                DataValidationException.class,
-                "Use authorId or projectId, not both",
-                () -> postService.findAllPublishedByFilter(null, null, pageableDefault)
-        );
+        assertEquals(content.get(0), PostV2Mapper.toDto(posts.get(0)));
+        assertEquals(content.get(1), PostV2Mapper.toDto(posts.get(1)));
+        assertEquals(content.get(2), PostV2Mapper.toDto(posts.get(2)));
+        assertEquals(content.get(3), PostV2Mapper.toDto(posts.get(3)));
+        assertEquals(content.get(4), PostV2Mapper.toDto(posts.get(4)));
     }
 
     @Test
@@ -380,42 +253,20 @@ class PostServiceTest {
         Page<Post> page = new PageImpl(posts.subList(0, pageableDefault.getPageSize()), pageableDefault, posts.size());
         when(postRepository.findAll(any(Specification.class), eq(pageableDefault))).thenReturn(page);
 
-        PageResponse<PostDto> pageResponse = postService.findAllPublishedByFilter(userId, null, pageableDefault);
+        PageResponse<PostV2Dto> pageResponse = postV2Service.findAllPublishedByFilter(userId, pageableDefault);
 
         assertEquals(0, pageResponse.pageNumber());
         assertEquals(5, pageResponse.pageSize());
         assertEquals(2, pageResponse.totalPages());
         assertEquals(10, pageResponse.totalElements());
 
-        List<PostDto> content = pageResponse.content();
+        List<PostV2Dto> content = pageResponse.content();
         assertEquals(5, content.size());
-        assertEquals(content.get(0), PostMapper.toDto(posts.get(0)));
-        assertEquals(content.get(1), PostMapper.toDto(posts.get(1)));
-        assertEquals(content.get(2), PostMapper.toDto(posts.get(2)));
-        assertEquals(content.get(3), PostMapper.toDto(posts.get(3)));
-        assertEquals(content.get(4), PostMapper.toDto(posts.get(4)));
-    }
-
-    @Test
-    void findAllPublishedByFilter_shouldReturnPage_whenProjectIdProvided() {
-        List<Post> posts = generateListPosts();
-        Page<Post> page = new PageImpl(posts.subList(0, pageableDefault.getPageSize()), pageableDefault, posts.size());
-        when(postRepository.findAll(any(Specification.class), eq(pageableDefault))).thenReturn(page);
-
-        PageResponse<PostDto> pageResponse = postService.findAllPublishedByFilter(null, projectId, pageableDefault);
-
-        assertEquals(0, pageResponse.pageNumber());
-        assertEquals(5, pageResponse.pageSize());
-        assertEquals(2, pageResponse.totalPages());
-        assertEquals(10, pageResponse.totalElements());
-
-        List<PostDto> content = pageResponse.content();
-        assertEquals(5, content.size());
-        assertEquals(content.get(0), PostMapper.toDto(posts.get(0)));
-        assertEquals(content.get(1), PostMapper.toDto(posts.get(1)));
-        assertEquals(content.get(2), PostMapper.toDto(posts.get(2)));
-        assertEquals(content.get(3), PostMapper.toDto(posts.get(3)));
-        assertEquals(content.get(4), PostMapper.toDto(posts.get(4)));
+        assertEquals(content.get(0), PostV2Mapper.toDto(posts.get(0)));
+        assertEquals(content.get(1), PostV2Mapper.toDto(posts.get(1)));
+        assertEquals(content.get(2), PostV2Mapper.toDto(posts.get(2)));
+        assertEquals(content.get(3), PostV2Mapper.toDto(posts.get(3)));
+        assertEquals(content.get(4), PostV2Mapper.toDto(posts.get(4)));
     }
 
     private List<Post> generateListPosts() {
