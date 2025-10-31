@@ -60,5 +60,5 @@ public interface PostService {
     Post getPostEntityById(long id);
 
     /** Проверяет и корректирует орфографию и пунктуацию неопубликованных постов через AI-сервис. */
-    public void processTextChecking();
+    void processTextChecking();
 }

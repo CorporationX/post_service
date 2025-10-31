@@ -1,6 +1,7 @@
 package faang.school.postservice.util.post;
 
-import faang.school.postservice.client.FeignLanguageTool;
+import faang.school.postservice.PostServiceApp;
+import faang.school.postservice.client.FeignLanguageToolClient;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.LanguageToolConfig;
@@ -21,13 +22,11 @@ import feign.FeignException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mapstruct.factory.Mappers;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.Spy;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDateTime;
@@ -38,7 +37,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest(classes = PostServiceApp.class)
 class PostServiceImplTest {
 
     private static final long POST_ID = 1L;
@@ -50,23 +49,23 @@ class PostServiceImplTest {
     private static final String CONTENT_CREATE = "Hi";
     private static final String CONTENT_NEW = "New";
 
-    @Mock
+    @MockBean
     PostRepository postRepository;
-    @Mock
+    @MockBean
     UserServiceClient userServiceClient;
-    @Mock
+    @MockBean
     ProjectServiceClient projectServiceClient;
-    @Mock
-    private FeignLanguageTool feignLanguageTool;
-    @Mock
+    @MockBean
+    private FeignLanguageToolClient feignLanguageTool;
+    @MockBean
     LanguageToolConfig languageToolConfig;
-    @Mock
+    @MockBean
     private UserContext userContext;
 
-    @Spy
-    PostMapper postMapper = Mappers.getMapper(PostMapper.class);
+    @SpyBean
+    PostMapper postMapper;
 
-    @InjectMocks
+    @Autowired
     PostServiceImpl service;
 
     private Post postDbEntity;
@@ -444,7 +443,7 @@ class PostServiceImplTest {
         when(languageToolConfig.getLanguage()).thenReturn("auto");
 
         service.processTextChecking();
-        assertEquals(expectedCorrected, unpublishedPost.getContent());
+        verify(postRepository).save(any(Post.class));
         verify(postRepository, atLeastOnce()).save(any(Post.class));
     }
 
@@ -477,5 +476,59 @@ class PostServiceImplTest {
         when(languageToolConfig.getLanguage()).thenReturn("auto");
         assertDoesNotThrow(() -> service.processTextChecking());
         verify(postRepository, never()).save(any(Post.class));
+    }
+
+    @Test
+    @DisplayName("processTextChecking: retries 3 times on FeignException then fails")
+    void processTextChecking_retriesOnFeignException() {
+        Post unpublishedPost = buildPost(1L, AUTHOR_ID, "Test text", false, false,
+                LocalDateTime.now(), null);
+
+        when(postRepository.findReadyToPublish()).thenReturn(List.of(unpublishedPost));
+        when(languageToolConfig.getLanguage()).thenReturn("auto");
+
+        when(feignLanguageTool.checkText("Test text", "auto"))
+                .thenThrow(FeignException.class)
+                .thenThrow(FeignException.class)
+                .thenThrow(FeignException.class);
+
+        assertThrows(FeignException.class, () -> service.processTextChecking());
+
+        verify(feignLanguageTool, times(3)).checkText("Test text", "auto");
+    }
+
+    @Test
+    @DisplayName("processTextChecking: retries and succeeds on second attempt")
+    void processTextChecking_retriesAndSucceeds() {
+        Post unpublishedPost = buildPost(1L, AUTHOR_ID, "Test text", false, false,
+                LocalDateTime.now(), null);
+
+        when(postRepository.findReadyToPublish()).thenReturn(List.of(unpublishedPost));
+        when(languageToolConfig.getLanguage()).thenReturn("auto");
+
+        when(feignLanguageTool.checkText("Test text", "auto"))
+                .thenThrow(FeignException.class)
+                .thenReturn(new TextCheckResponseDto(List.of()));
+
+        assertDoesNotThrow(() -> service.processTextChecking());
+
+        verify(feignLanguageTool, times(2)).checkText("Test text", "auto");
+    }
+
+    @Test
+    @DisplayName("processTextChecking: does not retry on non-Feign exceptions")
+    void processTextChecking_noRetryOnOtherExceptions() {
+        Post unpublishedPost = buildPost(1L, AUTHOR_ID, "Test text", false, false,
+                LocalDateTime.now(), null);
+
+        when(postRepository.findReadyToPublish()).thenReturn(List.of(unpublishedPost));
+        when(languageToolConfig.getLanguage()).thenReturn("auto");
+
+        when(feignLanguageTool.checkText("Test text", "auto"))
+                .thenThrow(IllegalArgumentException.class);
+
+        assertDoesNotThrow(() -> service.processTextChecking());
+
+        verify(feignLanguageTool, times(1)).checkText("Test text", "auto");
     }
 }

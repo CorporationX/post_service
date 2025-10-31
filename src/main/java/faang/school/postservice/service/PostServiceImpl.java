@@ -1,7 +1,7 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.client.ProjectServiceClient;
-import faang.school.postservice.client.FeignLanguageTool;
+import faang.school.postservice.client.FeignLanguageToolClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.LanguageToolConfig;
 import faang.school.postservice.config.context.UserContext;
@@ -22,6 +22,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,12 +43,10 @@ public class PostServiceImpl implements PostService {
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
     private final LanguageToolConfig languageToolConfig;
-    private static final int MAX_RETRY_ATTEMPTS = 4;
-    private static final long INITIAL_DELAY_MS = 1000L;
     private static final long SECOND_DELAY_MS = 3000L;
     private static final long THIRD_DELAY_MS = 4000L;
     private static final long FOURTH_DELAY_MS = 5000L;
-    private final FeignLanguageTool feignLanguageTool;
+    private final FeignLanguageToolClient feignLanguageTool;
     private final UserContext userContext;
 
     @Override
@@ -214,7 +214,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    @Transactional
+    @Retryable(retryFor = {FeignException.class}, maxAttempts = 3, backoff = @Backoff(delay = 1000, multiplier = 2))
     public void processTextChecking() {
         try {
             userContext.setUserId(1L); // для теста
@@ -223,7 +223,10 @@ public class PostServiceImpl implements PostService {
 
             for (Post post : unpublishedPosts) {
                 try {
-                    TextCheckResponseDto response = checkTextWithRetry(post.getContent());
+                    TextCheckResponseDto response = feignLanguageTool.checkText(
+                            post.getContent(),
+                            languageToolConfig.getLanguage()
+                    );
 
                     if (response == null) {
                         log.warn("Empty response from LanguageTool for post id={}", post.getId());
@@ -238,7 +241,11 @@ public class PostServiceImpl implements PostService {
                                 .content(correctedText)
                                 .build();
                         update(post.getId(), updateDto);
+                        log.info("Post id={} text corrected successfully", post.getId());
                     }
+                } catch (FeignException e) {
+                    log.error("FeignException for post id={} - will retry", post.getId(), e);
+                    throw e;
                 } catch (Exception e) {
                     log.error("Failed to check text for post with id={}", post.getId(), e);
                 }
@@ -248,45 +255,7 @@ public class PostServiceImpl implements PostService {
         }
     }
 
-    public TextCheckResponseDto checkTextWithRetry(String text) {
-        for (int attempt = 1; attempt <= MAX_RETRY_ATTEMPTS; attempt++) {
-            try {
-                log.info("Checking text with LanguageTool, attempt {}", attempt);
-
-                TextCheckResponseDto responseDto = feignLanguageTool.checkText(text, languageToolConfig.getLanguage());
-                return responseDto;
-
-            } catch (Exception e) {
-                if (attempt == MAX_RETRY_ATTEMPTS) {
-                    log.error("All {} attempts failed for text correction", MAX_RETRY_ATTEMPTS);
-                    throw e;
-                }
-
-                applyCustomBackoff(attempt);
-            }
-        }
-        throw new RuntimeException("Unexpected error in retry logic");
-    }
-
-    private void applyCustomBackoff(int attempt) {
-        long delay = switch (attempt) {
-            case 1 -> INITIAL_DELAY_MS;
-            case 2 -> SECOND_DELAY_MS;
-            case 3 -> THIRD_DELAY_MS;
-            case 4 -> FOURTH_DELAY_MS;
-            default -> FOURTH_DELAY_MS;
-        };
-
-        try {
-            log.info("Custom backoff: waiting {} ms before attempt {}", delay, attempt + 1);
-            Thread.sleep(delay);
-        } catch (InterruptedException ie) {
-            Thread.currentThread().interrupt();
-            throw new RuntimeException("Backoff interrupted", ie);
-        }
-    }
-
-     String applyCorrections(String originalText, TextCheckResponseDto response) {
+    private String applyCorrections(String originalText, TextCheckResponseDto response) {
         if (response.matches() == null || response.matches().isEmpty()) {
             return originalText;
         }

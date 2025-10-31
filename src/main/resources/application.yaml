@@ -48,8 +48,8 @@ payment-service:
   context-path: /api/v1
 
 post-correcter:
-  cron: "0 0 3 * * *" # every dat at 3:00
+  cron: "0 * * * * *" # every day at 3:00
 
 languagetool:
-  api-url: "https://api.languagetool.org/v2/check"
+  api-url: "https://api.languagetool.org"
   language: "auto"
