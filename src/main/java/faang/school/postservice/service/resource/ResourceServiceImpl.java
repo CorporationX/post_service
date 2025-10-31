@@ -7,10 +7,8 @@ import faang.school.postservice.mapper.resource.ResourceMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.PostService;
+import faang.school.postservice.repository.ResourceRepository;
 import faang.school.postservice.service.S3Service;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,7 +25,6 @@ import java.util.List;
 import java.util.UUID;
 
 import static faang.school.postservice.service.resource.ResourceType.IMAGE;
-import static org.springframework.http.RequestEntity.post;
 
 @Slf4j
 @Service
@@ -40,8 +37,8 @@ public class ResourceServiceImpl implements ResourceService {
     @Value("${app.resources.image.max-per-post:10}")
     private int maxImagesPerPost;
 
-    private final PostService postService;
     private final PostRepository postRepository;
+    private final ResourceRepository resourceRepository;
     private final ResourceMapper resourceMapper;
     private final S3Service s3Service;
 
@@ -49,20 +46,20 @@ public class ResourceServiceImpl implements ResourceService {
         return (long) maxFileSizeMb * 1024 * 1024;
     }
 
-    @PersistenceContext
-    private EntityManager entityManager;
-
     @Override
     @Transactional
     public List<ResourceDto> uploadResources(Long postId, List<MultipartFile> files) {
         validateImageFiles(files);
-        Post post = postService.getPostEntityById(postId);
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new ResourceNotFoundException("Post not found with id: " + postId));
+
         validateImageCount(post, files.size());
 
         List<Resource> uploadedResources = files.stream()
                 .map(file -> processAndUploadImage(post, file))
                 .toList();
 
+        post.getResources().addAll(uploadedResources);
         postRepository.save(post);
         log.info("Successfully uploaded {} images for post {}", files.size(), postId);
 
@@ -71,11 +68,12 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ResourceDto> getResourcesByPostId( Long postId) {
-        Post post = postService.getPostEntityById(postId);
-        List<Resource> images = post.getResources().stream()
-                .filter(resource -> IMAGE.name().equals(resource.getType()))
-                .toList();
+    public List<ResourceDto> getResourcesByPostId(Long postId) {
+        if (!postRepository.existsById(postId)) {
+            throw new ResourceNotFoundException("Post not found with id: " + postId);
+        }
+
+        List<Resource> images = resourceRepository.findByPostIdAndType(postId, ResourceType.IMAGE.name());
 
         log.info("Retrieved {} images for post {}", images.size(), postId);
         return resourceMapper.toDtoList(images);
@@ -85,14 +83,12 @@ public class ResourceServiceImpl implements ResourceService {
     @Transactional
     public void deleteResource(Long resourceId) {
         log.info("Deleting resource {}", resourceId);
-        Resource resource = entityManager.find(Resource.class, resourceId);
-        if (resource == null) {
-            throw new ResourceNotFoundException("Resource not found with id: " + resourceId);
-        }
+        Resource resource = resourceRepository.findById(resourceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Resource not found with id: " + resourceId));
+
         Post post = resource.getPost();
         post.getResources().remove(resource);
-        Resource managed = entityManager.contains(resource) ? resource : entityManager.merge(resource);
-        entityManager.remove(managed);
+        resourceRepository.delete(resource);
 
         s3Service.deleteFile(resource.getKey());
 
@@ -103,11 +99,8 @@ public class ResourceServiceImpl implements ResourceService {
     @Override
     @Transactional(readOnly = true)
     public ResponseEntity<byte[]> downloadResource(Long resourceId) {
-        Resource resource = entityManager.find(Resource.class, resourceId);
-        if (resource == null) {
-            throw new ResourceNotFoundException("Resource not found with id: " + resourceId);
-        }
-
+        Resource resource = resourceRepository.findById(resourceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Resource not found with id: " + resourceId));
         byte[] fileBytes = s3Service.downloadFile(resource.getKey());
 
         HttpHeaders headers = new HttpHeaders();
@@ -151,9 +144,7 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     private void validateImageCount(Post post, int newImagesCount) {
-        long currentImageCount = post.getResources().stream()
-                .filter(resource -> IMAGE.name().equals(resource.getType()))
-                .count();
+        long currentImageCount = resourceRepository.countByPostIdAndType(post.getId(), ResourceType.IMAGE.name());
 
         if (currentImageCount + newImagesCount > maxImagesPerPost) {
             throw new DataValidationException(
@@ -165,27 +156,31 @@ public class ResourceServiceImpl implements ResourceService {
 
     private Resource processAndUploadImage(Post post, MultipartFile file) {
         try {
+            byte[] processedImage = processImage(file.getBytes(), file.getContentType());
             String fileKey = generateFileKey(file.getOriginalFilename());
 
-            s3Service.uploadFile(fileKey, file.getBytes(), file.getContentType());
+            s3Service.uploadFile(fileKey, processedImage, file.getContentType());
             Resource resource = Resource.builder()
                     .key(fileKey)
                     .name(file.getOriginalFilename())
-                    .size(file.getSize())
+                    .size((long) processedImage.length)
                     .type(IMAGE.name())
                     .post(post)
                     .build();
 
-            entityManager.persist(resource);
-            post.getResources().add(resource);
+            Resource savedResource = resourceRepository.save(resource); // ← ЗДЕСЬ ИЗМЕНИТЬ
 
             log.debug("Uploaded image: {} -> {}", file.getOriginalFilename(), fileKey);
-            return resource;
+            return savedResource;
 
         } catch (IOException e) {
             log.error("Failed to upload image: {}", file.getOriginalFilename(), e);
             throw new DataValidationException("Failed to upload image: " + file.getOriginalFilename());
         }
+    }
+
+    private byte[] processImage(byte[] originalImage, String contentType) throws IOException {
+        return originalImage;
     }
 
     private String generateFileKey(String originalFileName) {

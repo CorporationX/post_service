@@ -7,15 +7,17 @@ import faang.school.postservice.mapper.resource.ResourceMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.PostService;
+import faang.school.postservice.repository.ResourceRepository;
 import faang.school.postservice.service.S3Service;
 import faang.school.postservice.service.resource.ResourceServiceImpl;
-import jakarta.persistence.EntityManager;
+import faang.school.postservice.service.resource.ResourceType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mapstruct.factory.Mappers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -28,18 +30,15 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -59,46 +58,38 @@ public class ResourceServiceTest {
 
     private static final long VALID_FILE_SIZE = 1024L;
     private static final long LARGE_FILE_SIZE = 6L * 1024 * 1024;
-    private static final int MAX_FILES_PER_POST = 10;
     private static final int TOO_MANY_FILES = 11;
 
-    private Post testPost;
-    private Resource testResource;
-
-    @Mock
-    private PostService postService;
+    private final Post testPost = Post.builder().id(POST_ID).resources(new ArrayList<>()).build();
+    private final Resource testResource = Resource.builder()
+            .id(RESOURCE_ID)
+            .key(FILE_KEY)
+            .name(FILE_NAME)
+            .size(VALID_FILE_SIZE)
+            .type(ResourceType.IMAGE.name())
+            .post(testPost)
+            .createdAt(LocalDateTime.now().minusHours(1))
+            .build();
 
     @Mock
     private PostRepository postRepository;
 
     @Mock
-    private ResourceMapper resourceMapper;
+    private ResourceRepository resourceRepository;
 
     @Mock
     private S3Service s3Service;
 
-    @Mock
-    private EntityManager entityManager;
+    @Spy
+    private final ResourceMapper resourceMapper = Mappers.getMapper(ResourceMapper.class);
 
     @InjectMocks
     private ResourceServiceImpl resourceService;
 
     @BeforeEach
     void setUp() {
-        testPost = Post.builder().id(POST_ID).resources(new ArrayList<>()).build();
-        testResource = Resource.builder()
-                .id(RESOURCE_ID)
-                .key(FILE_KEY)
-                .name(FILE_NAME)
-                .size(VALID_FILE_SIZE)
-                .type("IMAGE")
-                .post(testPost)
-                .createdAt(LocalDateTime.now().minusHours(1))
-                .build();
-
         ReflectionTestUtils.setField(resourceService, "maxFileSizeMb", 5);
         ReflectionTestUtils.setField(resourceService, "maxImagesPerPost", 10);
-        ReflectionTestUtils.setField(resourceService, "entityManager", entityManager);
     }
 
     @Test
@@ -108,26 +99,25 @@ public class ResourceServiceTest {
                 createMultipartFile("image2.png", MediaType.IMAGE_PNG_VALUE, CONTENT.getBytes())
         );
 
-        when(postService.getPostEntityById(POST_ID)).thenReturn(testPost);
+        when(postRepository.findById(POST_ID)).thenReturn(Optional.of(testPost));
+        when(resourceRepository.countByPostIdAndType(POST_ID, ResourceType.IMAGE.name())).thenReturn(0L);
+        when(resourceRepository.save(any(Resource.class))).thenAnswer(invocation -> {
+            Resource resource = invocation.getArgument(0);
+            resource.setId(1L);
+            return resource;
+        });
 
-        doNothing().when(entityManager).persist(any(Resource.class));
-
-        List<ResourceDto> expectedDtos = List.of(
-                createResourceDto(1L),
-                createResourceDto(2L)
-        );
-        when(resourceMapper.toDtoList(anyList())).thenReturn(expectedDtos);
-
-        List<ResourceDto> result = assertDoesNotThrow(() ->
-                resourceService.uploadResources(POST_ID, files)
-        );
+        List<ResourceDto> result = resourceService.uploadResources(POST_ID, files);
 
         assertNotNull(result);
         assertEquals(2, result.size());
-        verify(postService).getPostEntityById(POST_ID);
+        assertEquals("image1.jpg", result.get(0).name());
+        assertEquals("image2.png", result.get(1).name());
+
+        verify(postRepository).findById(POST_ID);
         verify(s3Service, times(2)).uploadFile(any(), any(), any());
         verify(postRepository).save(testPost);
-        verify(entityManager, times(2)).persist(any(Resource.class));
+        verify(resourceRepository, times(2)).save(any(Resource.class));
     }
 
     @Test
@@ -137,7 +127,7 @@ public class ResourceServiceTest {
         assertThrows(DataValidationException.class,
                 () -> resourceService.uploadResources(POST_ID, emptyFiles));
 
-        verifyNoInteractions(postService, s3Service, postRepository);
+        verifyNoInteractions(postRepository, s3Service, resourceRepository);
     }
 
     @Test
@@ -151,7 +141,7 @@ public class ResourceServiceTest {
         assertThrows(DataValidationException.class,
                 () -> resourceService.uploadResources(POST_ID, tooManyFiles));
 
-        verifyNoInteractions(postService, s3Service, postRepository);
+        verifyNoInteractions(postRepository, s3Service, resourceRepository);
     }
 
     @Test
@@ -164,19 +154,19 @@ public class ResourceServiceTest {
         assertThrows(DataValidationException.class,
                 () -> resourceService.uploadResources(POST_ID, files));
 
-        verifyNoInteractions(postService, s3Service, postRepository);
+        verifyNoInteractions(postRepository, s3Service, resourceRepository);
     }
 
     @Test
     void uploadResources_WithNonImageFileTypeShouldThrowDataValidationException() {
-        List<MultipartFile> files =List.of(
+        List<MultipartFile> files = List.of(
                 createMultipartFile("document.pdf", MediaType.APPLICATION_PDF_VALUE, CONTENT.getBytes())
         );
 
         assertThrows(DataValidationException.class,
                 () -> resourceService.uploadResources(POST_ID, files));
 
-        verifyNoInteractions(postService, s3Service, postRepository);
+        verifyNoInteractions(postRepository, s3Service, resourceRepository);
     }
 
     @Test
@@ -185,24 +175,16 @@ public class ResourceServiceTest {
                 createMultipartFile("image1.jpg", MediaType.IMAGE_JPEG_VALUE, CONTENT.getBytes())
         );
 
-        for (int i = 0; i < MAX_FILES_PER_POST; i++) {
-            testPost.getResources().add(Resource.builder()
-                    .id((long) i)
-                    .type("IMAGE")
-                    .build());
-        }
-
-        when(postService.getPostEntityById(POST_ID)).thenReturn(testPost);
-
+        when(postRepository.findById(POST_ID)).thenReturn(Optional.of(testPost));
+        when(resourceRepository.countByPostIdAndType(POST_ID, ResourceType.IMAGE.name())).thenReturn(10L);
         DataValidationException exception = assertThrows(DataValidationException.class,
                 () -> resourceService.uploadResources(POST_ID, files));
 
-        assertTrue(exception.getMessage().contains("Cannot upload 1 images. Post already has 10 images. Maximum 10 images allowed per post."));
+        assertTrue(exception.getMessage().contains("Cannot upload 1 images. Post already has 10 images"));
 
-        verify(postService).getPostEntityById(POST_ID);
+        verify(postRepository).findById(POST_ID);
         verifyNoInteractions(s3Service);
-        verifyNoInteractions(entityManager);
-        verify(postRepository, never()).save(any());
+        verify(resourceRepository, never()).save(any());
     }
 
     @Test
@@ -215,14 +197,15 @@ public class ResourceServiceTest {
         when(problematicFile.getBytes()).thenThrow(new IOException("File read error"));
 
         List<MultipartFile> files = List.of(problematicFile);
-        when(postService.getPostEntityById(POST_ID)).thenReturn(testPost);
-
+        when(postRepository.findById(POST_ID)).thenReturn(Optional.of(testPost));
+        when(resourceRepository.countByPostIdAndType(POST_ID, ResourceType.IMAGE.name())).thenReturn(0L);
         assertThrows(DataValidationException.class,
                 () -> resourceService.uploadResources(POST_ID, files));
 
-        verify(postService).getPostEntityById(POST_ID);
+        verify(postRepository).findById(POST_ID);
+        verify(resourceRepository).countByPostIdAndType(POST_ID, ResourceType.IMAGE.name());
         verify(s3Service, never()).uploadFile(any(), any(), any());
-        verify(entityManager, never()).persist(any(Resource.class));
+        verify(resourceRepository, never()).save(any(Resource.class));
     }
 
     @Test
@@ -230,71 +213,58 @@ public class ResourceServiceTest {
         assertThrows(DataValidationException.class,
                 () -> resourceService.uploadResources(POST_ID, null));
 
-        verifyNoInteractions(postService, s3Service, postRepository);
+        verifyNoInteractions(postRepository, s3Service, resourceRepository);
     }
 
     @Test
     void getResourcesByPostId_WithExistingPostShouldReturnImageResources() {
-        testPost.getResources().add(testResource);
-
-        List<Resource> imageResources = List.of(testResource);
-        List<ResourceDto> expectedDtos = List.of(createResourceDto(RESOURCE_ID));
-
-        when(postService.getPostEntityById(POST_ID)).thenReturn(testPost);
-        doReturn(expectedDtos).when(resourceMapper).toDtoList(imageResources);
+        when(postRepository.existsById(POST_ID)).thenReturn(true);
+        when(resourceRepository.findByPostIdAndType(POST_ID, ResourceType.IMAGE.name())).thenReturn(List.of(testResource));
 
         List<ResourceDto> result = resourceService.getResourcesByPostId(POST_ID);
 
         assertNotNull(result);
-        assertEquals(1, result.size());
-        verify(postService).getPostEntityById(POST_ID);
-        verify(resourceMapper).toDtoList(imageResources);
+        assertEquals(FILE_NAME, result.get(0).name());
+        verify(postRepository).existsById(POST_ID);
+        verify(resourceRepository).findByPostIdAndType(POST_ID, ResourceType.IMAGE.name());
     }
 
     @Test
     void getResourcesByPostId_WithMixedResourceTypesShouldReturnOnlyImages() {
         Resource imageResource = Resource.builder().id(1L).type("IMAGE").build();
         Resource videoResource = Resource.builder().id(2L).type("VIDEO").build();
-        testPost.getResources().add(imageResource);
-        testPost.getResources().add(videoResource);
 
-        List<Resource> imageResources = List.of(imageResource);
-        List<ResourceDto> expectedDtos = List.of(createResourceDto(1L));
-
-        when(postService.getPostEntityById(POST_ID)).thenReturn(testPost);
-        doReturn(expectedDtos).when(resourceMapper).toDtoList(imageResources);
-
+        when(postRepository.existsById(POST_ID)).thenReturn(true);
+        when(resourceRepository.findByPostIdAndType(POST_ID, ResourceType.IMAGE.name())).thenReturn(List.of(imageResource));
         List<ResourceDto> result = resourceService.getResourcesByPostId(POST_ID);
 
         assertNotNull(result);
         assertEquals(1, result.size());
-        verify(resourceMapper).toDtoList(imageResources);
+        assertEquals("IMAGE", result.get(0).type());
+        verify(postRepository).existsById(POST_ID);
+        verify(resourceRepository).findByPostIdAndType(POST_ID, ResourceType.IMAGE.name());
     }
 
     @Test
     void getResourcesByPostId_WithNoImages_ShouldReturnEmptyList() {
-        when(postService.getPostEntityById(POST_ID)).thenReturn(testPost);
-        when(resourceMapper.toDtoList(List.of())).thenReturn(List.of());
-
+        when(postRepository.existsById(POST_ID)).thenReturn(true);
+        when(resourceRepository.findByPostIdAndType(POST_ID, ResourceType.IMAGE.name())).thenReturn(List.of());
         List<ResourceDto> result = resourceService.getResourcesByPostId(POST_ID);
 
         assertNotNull(result);
         assertTrue(result.isEmpty());
-        verify(postService).getPostEntityById(POST_ID);
-        verify(resourceMapper).toDtoList(List.of());
+        verify(postRepository).existsById(POST_ID);
+        verify(resourceRepository).findByPostIdAndType(POST_ID, ResourceType.IMAGE.name());
     }
 
     @Test
     void deleteResource_WithExistingResourceShouldDeleteFromStorageAndDatabase() {
-        testPost.getResources().add(testResource);
-        when(entityManager.find(Resource.class, RESOURCE_ID)).thenReturn(testResource);
-
-        when(entityManager.contains(testResource)).thenReturn(true);
-        doNothing().when(entityManager).remove(any(Resource.class));
+        when(resourceRepository.findById(RESOURCE_ID)).thenReturn(Optional.of(testResource));
 
         resourceService.deleteResource(RESOURCE_ID);
 
-        verify(entityManager).find(Resource.class, RESOURCE_ID);
+        verify(resourceRepository).findById(RESOURCE_ID);
+        verify(resourceRepository).delete(testResource);
         verify(s3Service).deleteFile(FILE_KEY);
         verify(postRepository).save(testPost);
         assertFalse(testPost.getResources().contains(testResource));
@@ -302,19 +272,19 @@ public class ResourceServiceTest {
 
     @Test
     void deleteResource_WithNonExistentResourceShouldThrowResourceNotFoundException() {
-        when(entityManager.find(Resource.class, NON_EXISTENT_RESOURCE_ID)).thenReturn(null);
+        when(resourceRepository.findById(NON_EXISTENT_RESOURCE_ID)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class,
                 () -> resourceService.deleteResource(NON_EXISTENT_RESOURCE_ID));
 
-        verify(entityManager).find(Resource.class, NON_EXISTENT_RESOURCE_ID);
+        verify(resourceRepository).findById(NON_EXISTENT_RESOURCE_ID);
         verifyNoInteractions(s3Service, postRepository);
     }
 
     @Test
     void downloadResource_WithExistingResourceShouldReturnFileWithCorrectHeaders() {
         byte[] fileContent = CONTENT.getBytes();
-        when(entityManager.find(Resource.class, RESOURCE_ID)).thenReturn(testResource);
+        when(resourceRepository.findById(RESOURCE_ID)).thenReturn(Optional.of(testResource));
         when(s3Service.downloadFile(FILE_KEY)).thenReturn(fileContent);
 
         ResponseEntity<byte[]> result = resourceService.downloadResource(RESOURCE_ID);
@@ -325,18 +295,18 @@ public class ResourceServiceTest {
         assertEquals(MediaType.IMAGE_JPEG, result.getHeaders().getContentType());
         assertEquals(FILE_NAME, result.getHeaders().getContentDisposition().getFilename());
 
-        verify(entityManager).find(Resource.class, RESOURCE_ID);
+        verify(resourceRepository).findById(RESOURCE_ID);
         verify(s3Service).downloadFile(FILE_KEY);
     }
 
     @Test
     void downloadResource_WithNonExistentResourceShouldThrowResourceNotFoundException() {
-        when(entityManager.find(Resource.class, NON_EXISTENT_RESOURCE_ID)).thenReturn(null);
+        when(resourceRepository.findById(NON_EXISTENT_RESOURCE_ID)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class,
                 () -> resourceService.downloadResource(NON_EXISTENT_RESOURCE_ID));
 
-        verify(entityManager).find(Resource.class, NON_EXISTENT_RESOURCE_ID);
+        verify(resourceRepository).findById(NON_EXISTENT_RESOURCE_ID);
         verifyNoInteractions(s3Service);
     }
 
