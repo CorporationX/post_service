@@ -33,7 +33,6 @@ public class AlbumController {
     @PostMapping
     public ResponseEntity<AlbumDto> createAlbum(@Valid @RequestBody AlbumDto albumDto) {
         Long userId = userContext.getUserId();
-
         return ResponseEntity.ok(albumService.createAlbum(albumDto, userId));
     }
 
@@ -42,7 +41,6 @@ public class AlbumController {
                                                 @Valid @RequestBody AlbumDto albumDto) {
         Long userId = userContext.getUserId();
         return ResponseEntity.ok(albumService.updateAlbum(albumId, albumDto, userId));
-
     }
 
     @DeleteMapping("/{albumId}")
@@ -51,12 +49,10 @@ public class AlbumController {
         albumService.deleteAlbum(albumId, userId);
 
         return ResponseEntity.ok().build();
-
     }
 
     @GetMapping("/{albumId}")
     public ResponseEntity<AlbumDto> getAlbum(@PathVariable Long albumId) {
-
         return ResponseEntity.ok(albumService.getById(albumId));
     }
 
@@ -75,15 +71,15 @@ public class AlbumController {
         return ResponseEntity.ok(albumService.getAuthorsAlbums(userId, albumFilterDto));
     }
 
-    @PutMapping
-    public ResponseEntity<AlbumDto> addPostToAlbum(@RequestParam("post_id") Long pageId,
-                                                   @RequestParam("album_id") Long albumId) {
+    @PutMapping("/{album_id}")
+    public ResponseEntity<AlbumDto> addPostToAlbum(@PathVariable("album_id") Long albumId,
+                                                   @RequestParam("post_id") Long postId) {
 
         Long userId = userContext.getUserId();
-        return ResponseEntity.ok(albumService.addPost(pageId, albumId, userId));
+        return ResponseEntity.ok(albumService.addPost(postId, albumId, userId));
     }
 
-    @PutMapping("/favorite/{album_id}")
+    @PutMapping("/{album_id}/favorite")
     public ResponseEntity<FavoriteAlbumsDto> addAlbumToFavorite(@PathVariable("album_id") Long albumId) {
 
         return ResponseEntity.ok(albumService.addToFavoriteAlbums(albumId, userContext.getUserId()));
