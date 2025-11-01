@@ -35,6 +35,24 @@ dependencies {
     runtimeOnly("org.postgresql:postgresql")
 
     /**
+     * AWS S3
+     */
+    implementation(platform("software.amazon.awssdk:bom:2.21.1"))
+    implementation("software.amazon.awssdk:s3")
+    implementation("software.amazon.awssdk:netty-nio-client")
+
+    /**
+     * Image processing
+     */
+    implementation("net.coobird:thumbnailator:0.4.19")
+
+    /**
+     * Multipart file upload
+     */
+    implementation("commons-fileupload:commons-fileupload:1.4")
+    implementation("commons-io:commons-io:2.11.0")
+
+    /**
      * Utils & Logging
      */
     implementation("com.fasterxml.jackson.core:jackson-databind:2.14.2")
