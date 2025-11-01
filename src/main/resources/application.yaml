@@ -81,6 +81,13 @@ services:
           max-width: 1080
           max-height: 1080
 
+executor:
+  thread-count: 10
+
+post:
+  ad:
+    time-to-remove: "0 0 12 * * *"
+    batch-size: 20
 redis:
   topics:
     user-ban-topic: "user-ban-topic"
