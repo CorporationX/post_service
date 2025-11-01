@@ -74,24 +74,3 @@ val test by tasks.getting(Test::class) { testLogging.showStandardStreams = true 
 tasks.bootJar {
     archiveFileName.set("service.jar")
 }
-
-checkstyle {
-    toolVersion = "10.17.0"
-    configFile = file("${project.rootDir}/config/checkstyle/checkstyle.xml")
-    checkstyle.enableExternalDtdLoad.set(true)
-}
-
-tasks.checkstyleMain {
-    source = fileTree("${project.rootDir}/src/main/java")
-    include("**/*.java")
-    exclude("**/resources/**")
-
-    classpath = files()
-}
-
-tasks.checkstyleTest {
-    source = fileTree("${project.rootDir}/src/test")
-    include("**/*.java")
-
-    classpath = files()
-}
