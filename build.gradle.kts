@@ -29,12 +29,32 @@ dependencies {
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2")
 
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0")
+    implementation("org.springdoc:springdoc-openapi-starter-common:2.5.0")
     /**
      * Database
      */
     implementation("org.liquibase:liquibase-core")
     implementation("redis.clients:jedis:4.3.2")
     runtimeOnly("org.postgresql:postgresql")
+
+    /**
+     * AWS S3
+     */
+    implementation(platform("software.amazon.awssdk:bom:2.21.1"))
+    implementation("software.amazon.awssdk:s3")
+    implementation("software.amazon.awssdk:netty-nio-client")
+
+    /**
+     * Image processing
+     */
+    implementation("net.coobird:thumbnailator:0.4.19")
+
+    /**
+     * Multipart file upload
+     */
+    implementation("commons-fileupload:commons-fileupload:1.4")
+    implementation("commons-io:commons-io:2.11.0")
 
     /**
      * Utils & Logging

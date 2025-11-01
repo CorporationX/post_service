@@ -14,6 +14,7 @@ import faang.school.postservice.dto.text.MatchDto;
 import faang.school.postservice.dto.text.ReplacementDto;
 import faang.school.postservice.dto.text.TextCheckResponseDto;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
@@ -171,7 +172,7 @@ class PostServiceImplTest {
         CreatePostRequestDto input = new CreatePostRequestDto(CONTENT_CREATE, AUTHOR_ID, null);
         when(userServiceClient.getUser(AUTHOR_ID)).thenThrow(mock(FeignException.NotFound.class));
 
-        assertThrows(IllegalArgumentException.class, () -> service.createDraft(input));
+        assertThrows(EntityNotFoundException.class, () -> service.createDraft(input));
 
         verify(userServiceClient, times(1)).getUser(AUTHOR_ID);
         verify(projectServiceClient, never()).getProject(anyLong());
@@ -185,7 +186,7 @@ class PostServiceImplTest {
         CreatePostRequestDto input = new CreatePostRequestDto(CONTENT_CREATE, null, PROJECT_ID);
         when(projectServiceClient.getProject(PROJECT_ID)).thenThrow(mock(FeignException.NotFound.class));
 
-        assertThrows(IllegalArgumentException.class, () -> service.createDraft(input));
+        assertThrows(EntityNotFoundException.class, () -> service.createDraft(input));
 
         verify(projectServiceClient, times(1)).getProject(PROJECT_ID);
         verify(userServiceClient, never()).getUser(anyLong());
@@ -274,7 +275,7 @@ class PostServiceImplTest {
     @DisplayName("getById: not found -> error")
     void getById_not_found() {
         when(postRepository.findById(POST_ID)).thenReturn(Optional.empty());
-        assertThrows(IllegalArgumentException.class, () -> service.getById(POST_ID));
+        assertThrows(EntityNotFoundException.class, () -> service.getById(POST_ID));
         verify(postMapper, never()).toDto(any());
     }
 

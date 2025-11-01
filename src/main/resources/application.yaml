@@ -40,7 +40,6 @@ server:
 logging:
   level:
     root: info
-
 user-service:
   host: localhost
   port: 8080
@@ -49,6 +48,7 @@ project-service:
   host: localhost
   port: 8082
   context-path: /api/v1
+
 payment-service:
   host: localhost
   port: 9080
