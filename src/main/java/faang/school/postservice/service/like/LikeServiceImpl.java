@@ -27,7 +27,7 @@ public class LikeServiceImpl implements LikeService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<UserDto> getUsersLikersByPostId(long postId) {
+    public List<UserDto> getUsersLikesByPostId(long postId) {
         log.info("Fetching post likers: postId={}, chunkSize={}", postId, chunkSize);
         List<Like> likes = Optional.ofNullable(likeRepository.findByPostId(postId))
                 .orElseGet(List::of);
@@ -38,7 +38,7 @@ public class LikeServiceImpl implements LikeService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<UserDto> getUsersLikerByCommentId(long commentId) {
+    public List<UserDto> getUsersLikesByCommentId(long commentId) {
         log.info("Fetching comment likers: commentId={}, chunkSize={}", commentId, chunkSize);
         List<Like> likes = Optional.ofNullable(likeRepository.findByCommentId(commentId))
                 .orElseGet(List::of);

@@ -80,52 +80,52 @@ public class LikeServiceImplTest {
     @Test
     void getUsersLikersByPostId_ChunksMerged() {
         when(likeRepository.findByPostId(eq(POST_ID))).thenReturn(likes);
-        getUsersLikerByCommentIdOrPostId_ChunksMerged(() -> service.getUsersLikersByPostId(POST_ID));
+        getUsersLikerByCommentIdOrPostId_ChunksMerged(() -> service.getUsersLikesByPostId(POST_ID));
     }
 
     @Test
     void getUsersLikersByPostId_NullLikes() {
         when(likeRepository.findByPostId(POST_ID)).thenReturn(null);
-        getUsersLikerByCommentIdOrPostId_NullLikes(() -> service.getUsersLikersByPostId(POST_ID));
+        getUsersLikerByCommentIdOrPostId_NullLikes(() -> service.getUsersLikesByPostId(POST_ID));
     }
 
     @Test
     void getUsersLikersByPostId_Empty() {
         when(likeRepository.findByPostId(POST_ID)).thenReturn(List.of());
-        getUsersLikerByCommentIdOrPostId_Empty(() -> service.getUsersLikersByPostId(POST_ID));
+        getUsersLikerByCommentIdOrPostId_Empty(() -> service.getUsersLikesByPostId(POST_ID));
     }
 
     @Test
     void getUsersLikersByPostId_ExternalServiceConnectException() {
         when(likeRepository.findByPostId(POST_ID)).thenReturn(List.of(like1, like2));
         getUsersLikerByCommentIdOrPostId_ExternalServiceConnectException(
-                () -> service.getUsersLikersByPostId(POST_ID));
+                () -> service.getUsersLikesByPostId(POST_ID));
     }
 
     @Test
     void getUsersLikerByCommentId_ChunksMerged() {
         when(likeRepository.findByCommentId(eq(COMMENT_ID))).thenReturn(likes);
-        getUsersLikerByCommentIdOrPostId_ChunksMerged(() -> service.getUsersLikerByCommentId(COMMENT_ID));
+        getUsersLikerByCommentIdOrPostId_ChunksMerged(() -> service.getUsersLikesByCommentId(COMMENT_ID));
     }
 
 
     @Test
     void getUsersLikerByCommentId_NullLikes() {
         when(likeRepository.findByCommentId(COMMENT_ID)).thenReturn(null);
-        getUsersLikerByCommentIdOrPostId_NullLikes(() -> service.getUsersLikerByCommentId(COMMENT_ID));
+        getUsersLikerByCommentIdOrPostId_NullLikes(() -> service.getUsersLikesByCommentId(COMMENT_ID));
     }
 
     @Test
     void getUsersLikerByCommentId_Empty() {
         when(likeRepository.findByCommentId(COMMENT_ID)).thenReturn(List.of());
-        getUsersLikerByCommentIdOrPostId_Empty(() -> service.getUsersLikerByCommentId(COMMENT_ID));
+        getUsersLikerByCommentIdOrPostId_Empty(() -> service.getUsersLikesByCommentId(COMMENT_ID));
     }
 
     @Test
     void getUsersLikerByCommentId_ExternalServiceConnectException() {
         when(likeRepository.findByCommentId(COMMENT_ID)).thenReturn(List.of(like1, like2));
         getUsersLikerByCommentIdOrPostId_ExternalServiceConnectException(
-                () -> service.getUsersLikerByCommentId(POST_ID));
+                () -> service.getUsersLikesByCommentId(COMMENT_ID));
     }
 
 

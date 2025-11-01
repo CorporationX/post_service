@@ -44,12 +44,12 @@ public class LikeController {
                     )
             }
     )
-    @GetMapping("/posts/{postId}/likes")
+    @GetMapping("/posts/{postId}")
     public List<UserDto> getUsersLikersByPostId(@PathVariable long postId) {
         if (postId < 0) {
             throw new DataValidationException("id must be greater than zero");
         }
-        return likeService.getUsersLikersByPostId(postId);
+        return likeService.getUsersLikesByPostId(postId);
     }
 
     @Operation(
@@ -72,11 +72,11 @@ public class LikeController {
                     )
             }
     )
-    @GetMapping("/comments/{commentId}/likes")
+    @GetMapping("/comments/{commentId}")
     public List<UserDto> getUsersLikerByCommentId(@PathVariable long commentId) {
         if (commentId < 0) {
             throw new DataValidationException("id must be greater than zero");
         }
-        return likeService.getUsersLikerByCommentId(commentId);
+        return likeService.getUsersLikesByCommentId(commentId);
     }
 }
