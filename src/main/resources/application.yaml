@@ -83,6 +83,7 @@ services:
 
 executor:
   thread-count: 10
+  await-time-seconds: 30
 
 post:
   ad:
