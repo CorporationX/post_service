@@ -19,10 +19,10 @@ public class ExecutorsPool {
     private int AWAIT_TIME_SECONDS;
     private ExecutorService executorService;
 
-    @Bean(name = "taskExecutor", destroyMethod = "shutdown")
+    @Bean(name = "taskExecutor")
     public ExecutorService executor() {
-        ExecutorService executor = Executors.newFixedThreadPool(EXECUTOR_COUNT);
-        return executor;
+        executorService = Executors.newFixedThreadPool(EXECUTOR_COUNT);
+        return executorService;
     }
 
     @PreDestroy
@@ -39,6 +39,5 @@ public class ExecutorsPool {
                 executorService.shutdownNow();
             }
         }
-
     }
 }
