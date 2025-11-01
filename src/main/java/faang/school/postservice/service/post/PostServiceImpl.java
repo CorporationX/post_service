@@ -9,11 +9,13 @@ import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.Resource;
 import faang.school.postservice.repository.PostRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.xml.bind.ValidationException;
 import java.time.LocalDateTime;
@@ -24,10 +26,11 @@ import java.util.Optional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class PostServiceImpl implements PostService{
+public class PostServiceImpl implements PostService {
     private final PostMapper postMapper;
     private final PostRepository postRepository;
     private final ProjectServiceClient projectServiceClient;
+    private final PostMediaService postMediaService;
 
     @Override
     @Transactional
@@ -163,4 +166,50 @@ public class PostServiceImpl implements PostService{
                 .toList();
         return postMapper.toListPostDto(posts);
     }
+
+    @Override
+    @Transactional
+    public PostDto createPostWithImages(long authorId, CreatePostDto createPostDto, List<MultipartFile> images) throws ValidationException {
+        PostDto created = createPost(authorId, createPostDto);
+        Post post = postRepository.findById(created.id())
+                .orElseThrow();
+
+        List<Resource> added = postMediaService.uploadImages(post, images);
+        if (post.getResources() != null) {
+            post.getResources().addAll(added);
+        } else {
+            post.setResources(added);
+        }
+
+        return postMapper.toPostDto(post);
+    }
+
+    @Override
+    @Transactional
+    public PostDto updatePostMedia(long postId, long requesterId, List<Long> removeResourceIds, List<MultipartFile> addImages) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow();
+
+        if (post.getAuthorId() != requesterId) {
+            log.warn("Mismatch between author {} and requester {}", post.getAuthorId(), requesterId);
+            throw new ForbiddenException("Mismatch between author {} and requester {}");
+        }
+
+        if (removeResourceIds != null && !removeResourceIds.isEmpty() && post.getResources() != null) {
+            List<Resource> toRemove = post.getResources().stream()
+                    .filter(r -> removeResourceIds.contains(r.getId()))
+                    .toList();
+            postMediaService.deleteResources(toRemove);
+            post.getResources().removeAll(toRemove);
+        }
+
+        if (addImages != null && !addImages.isEmpty()) {
+            var added = postMediaService.uploadImages(post, addImages);
+            if (post.getResources() != null) post.getResources().addAll(added);
+            else post.setResources(added);
+        }
+
+        return postMapper.toPostDto(post);
+    }
+
 }

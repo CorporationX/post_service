@@ -4,7 +4,9 @@ import faang.school.postservice.dto.post.CreatePostDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
 import jakarta.validation.Valid;
+import jakarta.validation.ValidationException;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -27,4 +29,7 @@ public interface PostService {
     List<PostDto> getAllPublishedPostsByAuthor(long authorId);
 
     List<PostDto> getAllPublishedPostsByProject(long projectId);
+
+    PostDto createPostWithImages(long authorId, CreatePostDto dto, List<MultipartFile> images) throws ValidationException, javax.xml.bind.ValidationException;
+    PostDto updatePostMedia(long postId, long requesterId, List<Long> removeResourceIds, List<MultipartFile> addImages);
 }
