@@ -216,8 +216,6 @@ public class PostServiceImpl implements PostService {
     @Override
     @Retryable(retryFor = {FeignException.class}, maxAttempts = 3, backoff = @Backoff(delay = 1000, multiplier = 2))
     public void processTextChecking() {
-        try {
-            userContext.setUserId(1L); // для теста
             List<Post> unpublishedPosts = postRepository.findReadyToPublish();
             log.info("Found {} posts for text correction", unpublishedPosts.size());
 
@@ -236,11 +234,9 @@ public class PostServiceImpl implements PostService {
                     String correctedText = applyCorrections(post.getContent(), response);
 
                     if (!correctedText.equals(post.getContent())) {
-
-                        UpdatePostRequestDto updateDto = UpdatePostRequestDto.builder()
-                                .content(correctedText)
-                                .build();
-                        update(post.getId(), updateDto);
+                        post.setContent(correctedText);
+                        post.setUpdatedAt(LocalDateTime.now());
+                        postRepository.save(post);
                         log.info("Post id={} text corrected successfully", post.getId());
                     }
                 } catch (FeignException e) {
@@ -250,10 +246,7 @@ public class PostServiceImpl implements PostService {
                     log.error("Failed to check text for post with id={}", post.getId(), e);
                 }
             }
-        } finally {
-            userContext.clear();
         }
-    }
 
     private String applyCorrections(String originalText, TextCheckResponseDto response) {
         if (response.matches() == null || response.matches().isEmpty()) {
