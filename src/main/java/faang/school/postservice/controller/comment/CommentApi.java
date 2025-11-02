@@ -3,6 +3,7 @@ package faang.school.postservice.controller.comment;
 import faang.school.postservice.dto.comment.CommentCreateDto;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CommentUpdateDto;
+import faang.school.postservice.dto.common.PageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -62,5 +63,5 @@ public interface CommentApi {
             @ApiResponse(responseCode = "200", description = "Комментарии успешно получены"),
             @ApiResponse(responseCode = "404", description = "Пост не найден")
     })
-    Page<CommentDto> getCommentsByPostId(Long postId, Pageable pageable);
+    PageResponse<CommentDto> getCommentsByPostId(Long postId, Pageable pageable);
 }

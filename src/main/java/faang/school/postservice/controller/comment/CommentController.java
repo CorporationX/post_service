@@ -1,14 +1,14 @@
 package faang.school.postservice.controller.comment;
 
-import faang.school.postservice.controller.comment.facade.CommentFacade;
+import faang.school.postservice.controller.facade.comment.CommentFacade;
 import faang.school.postservice.dto.comment.CommentCreateDto;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CommentUpdateDto;
+import faang.school.postservice.dto.common.PageResponse;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -59,7 +59,7 @@ public class CommentController implements CommentApi {
     }
 
     @GetMapping
-    public Page<CommentDto> getCommentsByPostId(
+    public PageResponse<CommentDto> getCommentsByPostId(
             @RequestParam Long postId,
             Pageable pageable
     ) {

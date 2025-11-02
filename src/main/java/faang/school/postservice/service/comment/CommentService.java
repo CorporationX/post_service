@@ -4,8 +4,8 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentCreateDto;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CommentUpdateDto;
+import faang.school.postservice.dto.common.PageResponse;
 import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.exception.ResourceNotFoundException;
 import faang.school.postservice.exception.ValidationException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
@@ -35,10 +35,10 @@ public class CommentService {
         UserDto user = userServiceClient.getUser(userId);
         CommentValidator.validateUser(user);
 
-        Post post = postRepository.findByIdOrThrow(commentCreateDto.postId());
+        Post post = postRepository.getByIdOrThrow(commentCreateDto.postId());
 
         Comment comment = CommentMapper.toEntity(commentCreateDto, post, userId);
-        commentRepository.save(comment);
+        comment = commentRepository.save(comment);
         log.info("Creating comment for postId={} by userId={}", commentCreateDto.postId(), userId);
 
         return comment;
@@ -46,8 +46,7 @@ public class CommentService {
 
     @Transactional
     public Comment update(Long commentId, CommentUpdateDto dto, Long userId) {
-        Comment existing = commentRepository.findById(commentId)
-                .orElseThrow(() -> new ResourceNotFoundException("Comment not found"));
+        Comment existing = commentRepository.findByIdOrThrow(commentId);
 
         if (!existing.getAuthorId().equals(userId)) {
             throw new ValidationException("You can't edit someone else's comment.");
@@ -62,12 +61,12 @@ public class CommentService {
         return commentRepository.save(existing);
     }
 
-    public Page<CommentDto> getByPostId(Long postId, Pageable pageable) {
-        postRepository.findByIdOrThrow(postId);
+    public PageResponse<CommentDto> findAllByPostId(Long postId, Pageable pageable) {
+        postRepository.getByIdOrThrow(postId);
 
         Page<Comment> page = commentRepository.findAllByPostId(postId, pageable);
 
-        return page.map(CommentMapper::toDto);
+        return PageResponse.from(page, CommentMapper::toDto);
     }
 
     public void delete(Long commentId, Long userId) {

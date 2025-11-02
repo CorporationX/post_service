@@ -1,9 +1,10 @@
-package faang.school.postservice.controller.comment.facade;
+package faang.school.postservice.controller.facade.comment;
 
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CommentCreateDto;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CommentUpdateDto;
+import faang.school.postservice.dto.common.PageResponse;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.service.comment.CommentService;
@@ -47,9 +48,9 @@ public class CommentFacade {
         return CommentMapper.toDto(comment);
     }
 
-    public Page<CommentDto> getByPostId(Long postId, Pageable pageable) {
+    public PageResponse<CommentDto> getByPostId(Long postId, Pageable pageable) {
         log.info("Fetching paged comments for postId={} with page={}", postId, pageable.getPageNumber());
-        return commentService.getByPostId(postId, pageable);
+        return commentService.findAllByPostId(postId, pageable);
     }
 
     private Long getCurrentUserId() {

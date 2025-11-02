@@ -4,6 +4,7 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentCreateDto;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CommentUpdateDto;
+import faang.school.postservice.dto.common.PageResponse;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.ResourceNotFoundException;
 import faang.school.postservice.exception.ValidationException;
@@ -25,7 +26,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -72,7 +72,7 @@ class CommentServiceTest {
 
     @Test
     void create_success() {
-        when(postRepository.findByIdOrThrow(1L)).thenReturn(post);
+        when(postRepository.getByIdOrThrow(1L)).thenReturn(post);
         when(userServiceClient.getUser(1L)).thenReturn(userDto);
         when(commentRepository.save(any(Comment.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -89,8 +89,10 @@ class CommentServiceTest {
 
     @Test
     void update_success() {
-        when(commentRepository.findById(10L)).thenReturn(Optional.of(comment));
-        when(commentRepository.save(any(Comment.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(commentRepository.findByIdOrThrow(10L))
+                .thenReturn(comment);
+        when(commentRepository.save(any(Comment.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
 
         Comment updated = commentService.update(10L, updateDto, 1L);
 
@@ -103,7 +105,7 @@ class CommentServiceTest {
     @Test
     void update_throws_whenUserNotOwner() {
         comment.setAuthorId(2L);
-        when(commentRepository.findById(10L)).thenReturn(Optional.of(comment));
+        when(commentRepository.findByIdOrThrow(10L)).thenReturn(comment);
 
         assertThrows(ValidationException.class,
                 () -> commentService.update(10L, updateDto, 1L));
@@ -111,23 +113,25 @@ class CommentServiceTest {
 
     @Test
     void update_throws_whenNotFound() {
-        when(commentRepository.findById(10L)).thenReturn(Optional.empty());
+        when(commentRepository.findByIdOrThrow(10L))
+                .thenThrow(new ResourceNotFoundException("Comment not found"));
+
         assertThrows(ResourceNotFoundException.class,
                 () -> commentService.update(10L, updateDto, 1L));
     }
 
     @Test
-    void getByPostId_success() {
+    void findAllByPostId_success() {
         Pageable pageable = PageRequest.of(0, 10);
         Page<Comment> page = new PageImpl<>(List.of(comment));
 
-        when(postRepository.findByIdOrThrow(1L)).thenReturn(post);
+        when(postRepository.getByIdOrThrow(1L)).thenReturn(post);
         when(commentRepository.findAllByPostId(1L, pageable)).thenReturn(page);
 
-        Page<CommentDto> result = commentService.getByPostId(1L, pageable);
+        PageResponse<CommentDto> result = commentService.findAllByPostId(1L, pageable);
 
-        assertEquals(1, result.getContent().size());
-        verify(postRepository).findByIdOrThrow(1L);
+        assertEquals(1, result.content().size());
+        verify(postRepository).getByIdOrThrow(1L);
     }
 
     @Test

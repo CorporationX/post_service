@@ -1,4 +1,4 @@
-package faang.school.postservice.exeption;
+package faang.school.postservice.exception;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
