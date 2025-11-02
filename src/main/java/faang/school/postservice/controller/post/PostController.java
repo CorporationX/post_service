@@ -1,8 +1,8 @@
 package faang.school.postservice.controller.post;
 
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.service.post.PostService;
+import faang.school.postservice.util.post.PostValidator;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,19 +19,16 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("api/v1/posts")
 @Slf4j
+@RequestMapping("/api/v1/posts")
 public class PostController {
 
     private final PostService postService;
+    private final PostValidator postValidator;
 
     @PostMapping("/drafts")
     public PostDto createDraft(@Valid @RequestBody PostDto postDto) {
-        validateIds(postDto);
-        if (postDto.published() || postDto.deleted()) {
-            log.error("Draft is published/deleted before creation");
-            throw new DataValidationException("Draft cannot be published or deleted");
-        }
+        postValidator.validateIds(postDto);
         return postService.createDraft(postDto);
     }
 
@@ -42,11 +39,7 @@ public class PostController {
 
     @PutMapping("/{postId}")
     public PostDto updatePost(@PathVariable long postId, @Valid @RequestBody PostDto postDto) {
-        validateIds(postDto);
-        if (!postDto.published() || postDto.deleted()) {
-            log.error("Post #{} is neither published nor deleted", postId);
-            throw new DataValidationException("Unpublished or deleted posts cannot be updated");
-        }
+        postValidator.validateIds(postDto);
         return postService.updatePost(postId, postDto);
     }
 
@@ -78,17 +71,5 @@ public class PostController {
     @GetMapping("/projects/{projectId}")
     public List<PostDto> findPostsByProjectId(@PathVariable long projectId) {
         return postService.findPostsByProjectId(projectId);
-    }
-
-    private void validateIds(PostDto postDto) {
-        if (postDto.authorId() == null && postDto.projectId() == null) {
-            log.error("Nobody is trying to act the Post");
-            throw new DataValidationException("Author or Project must exist");
-        }
-        if (postDto.authorId() != null && postDto.projectId() != null) {
-            log.error("Post is being acted by Author #{} and Project #{} at the same time",
-                    postDto.authorId(), postDto.projectId());
-            throw new DataValidationException("Unable to act Post by Author and Project at the same time");
-        }
     }
 }

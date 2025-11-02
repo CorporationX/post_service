@@ -1,15 +1,11 @@
 package faang.school.postservice.service.post;
 
-import faang.school.postservice.client.ProjectServiceClient;
-import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.dto.project.ProjectDto;
-import faang.school.postservice.exception.DataValidationException;
-import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.util.post.EntityExistChecker;
+import faang.school.postservice.util.post.PostValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -17,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -25,16 +20,17 @@ import java.util.Objects;
 public class PostServiceImpl implements PostService {
 
     private final PostMapper postMapper;
-    private final UserContext userContext;
-    private final UserServiceClient userServiceClient;
-    private final ProjectServiceClient projectServiceClient;
     private final PostRepository postRepository;
+    private final PostValidator postValidator;
+    private final EntityExistChecker entityExistChecker;
 
     @Override
     @Transactional
     public PostDto createDraft(PostDto postDto) {
-        validate(postDto);
+        defineUserOrProject(postDto);
         Post post = postMapper.toPost(postDto);
+        postValidator.validatePostIsPublished(post);
+        postValidator.validatePostIsDeleted(post);
         post = postRepository.save(post);
         log.info("Draft #{} is created", post.getId());
         return postMapper.toPostDto(post);
@@ -43,12 +39,10 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional
     public PostDto publishPost(long postId) {
-        Post post = findPost(postId);
-        validate(postMapper.toPostDto(post));
-        if (post.isPublished()) {
-            log.error("Post #{} has already been published", postId);
-            throw new DataValidationException("This post has already been published");
-        }
+        Post post = entityExistChecker.checkPostExist(postId);
+        defineUserOrProject(postMapper.toPostDto(post));
+        postValidator.validatePostIsPublished(post);
+        postValidator.validatePostIsDeleted(post);
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
         post = postRepository.save(post);
@@ -59,13 +53,10 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional
     public PostDto updatePost(long postId, PostDto postDto) {
-        validate(postDto);
-        Post currentPost = findPost(postId);
-        if (!Objects.equals(currentPost.getAuthorId(), postDto.authorId())
-                || !Objects.equals(currentPost.getProjectId(), postDto.projectId())) {
-            log.error("Attempt to change author of the post");
-            throw new DataValidationException("Unable to change author of the post");
-        }
+        defineUserOrProject(postDto);
+        Post currentPost = entityExistChecker.checkPostExist(postId);
+        postValidator.validatePostIsDeleted(currentPost);
+        postValidator.validateChangeAuthor(currentPost, postDto);
         postMapper.updatePost(currentPost, postDto);
         log.info("Post #{} is updated", postId);
         return postMapper.toPostDto(currentPost);
@@ -74,8 +65,8 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional
     public PostDto deletePost(long postId) {
-        Post post = findPost(postId);
-        validate(postMapper.toPostDto(post));
+        Post post = entityExistChecker.checkPostExist(postId);
+        defineUserOrProject(postMapper.toPostDto(post));
         post.setDeleted(true);
         post = postRepository.save(post);
         log.info("Post #{} is deleted", postId);
@@ -85,12 +76,10 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional
     public PostDto findPostById(long postId) {
-        Post post = findPost(postId);
-        if (!post.isPublished() || post.isDeleted()) {
-            log.error("Post #{} is unpublished or deleted", postId);
-            throw new DataValidationException("This post is either unpublished or deleted");
-        }
-        return postMapper.toPostDto(findPost(postId));
+        Post post = entityExistChecker.checkPostExist(postId);
+        postValidator.validatePostIsUnpublished(post);
+        postValidator.validatePostIsDeleted(post);
+        return postMapper.toPostDto(post);
     }
 
     @Override
@@ -125,34 +114,13 @@ public class PostServiceImpl implements PostService {
                 .toList();
     }
 
-    private void validate(PostDto postDto) {
-        long currentUserId = userContext.getUserId();
-        if (userServiceClient.getUserById(currentUserId) == null) {
-            log.error("Action from unknown user detected");
-            throw new EntityNotFoundException("User doesn't exist");
+    private void defineUserOrProject(PostDto postDto) {
+        long currentUserId = entityExistChecker.checkCurrentUserExist();
+        if (postDto.projectId() == null) {
+            postValidator.validateUser(currentUserId, postDto);
+        } else {
+            long ownerId = entityExistChecker.checkProjectExist(postDto.projectId());
+            postValidator.validateProject(ownerId, currentUserId, postDto.projectId());
         }
-        if (postDto.authorId() != null && postDto.authorId() != currentUserId) {
-            log.error("Request includes two different User's IDs: #{} and #{}", currentUserId, postDto.authorId());
-            throw new DataValidationException("User definition error is occur");
-        }
-        if (postDto.authorId() != null) {
-            return;
-        }
-        ProjectDto currentProject = projectServiceClient.getProjectById(postDto.projectId());
-        if (currentProject == null) {
-            log.error("Project #{} doesn't exist", postDto.projectId());
-            throw new EntityNotFoundException("Project doesn't exist");
-        }
-        if (currentProject.ownerId() != currentUserId) {
-            log.error("User #{} is not Project #{} owner", currentUserId, currentProject.ownerId());
-            throw new DataValidationException("User must be project owner");
-        }
-    }
-
-    private Post findPost(long postId) {
-        return postRepository.findById(postId).orElseThrow(() -> {
-            log.error("Post #{} doesn't exist", postId);
-            return new EntityNotFoundException("Post doesn't exist");
-        });
     }
 }
