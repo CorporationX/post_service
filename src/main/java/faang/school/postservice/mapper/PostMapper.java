@@ -6,6 +6,8 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
+import java.util.List;
+
 @Mapper(componentModel = "spring")
 public interface PostMapper {
 
@@ -22,6 +24,8 @@ public interface PostMapper {
     Post toPost(PostDto postDto);
 
     PostDto toPostDto(Post post);
+
+    List<PostDto> toPostDtos(List<Post> posts);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "authorId", ignore = true)
