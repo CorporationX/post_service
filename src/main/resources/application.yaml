@@ -2,6 +2,12 @@ spring:
   config:
     import: optional:classpath:application.properties
 
+  servlet:
+      multipart:
+        max-file-size: 5MB
+        max-request-size: 50MB
+        enabled: true
+
   jackson:
     default-property-inclusion: non_null
 
@@ -51,3 +57,26 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+services:
+  s3:
+    endpoint: ${MINIO_END_POINT}:${MINIO_PORT}
+    accessKey: ${MINIO_ACCESS_KEY}
+    secretKey: ${MINIO_SECRET_KEY}
+    bucketName: ${MINIO_BUCKET_NAME}
+
+    posts:
+      upload:
+        max-image-count: 10
+        format: ".jpeg,.pdf,.webp,.png,.ico,.jpg"
+      download:
+        times-live-url-minutes: 10
+        size:
+          max: 5242880
+      image:
+        horizontal:
+          max-width: 1080
+          max-height: 566
+        square:
+          max-width: 1080
+          max-height: 1080

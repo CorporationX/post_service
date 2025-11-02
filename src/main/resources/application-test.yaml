@@ -1,0 +1,6 @@
+service:
+  s3:
+    endpoint: localhost:9000
+    accessKey: test
+    secretKey: test
+    bucketName: test-bucket
