@@ -18,8 +18,8 @@ public class CommentController {
         return commentService.save(commentDto);
     }
 
-    @GetMapping("/all/{postId}")
-    public List<CommentDto> findAllByPostId(@PathVariable long postId) {
+    @GetMapping("/all")
+    public List<CommentDto> findAllByPostId(@RequestParam long postId) {
         return commentService.findAllByPostId(postId);
     }
 
