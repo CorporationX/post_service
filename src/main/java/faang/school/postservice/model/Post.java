@@ -18,10 +18,12 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.FieldNameConstants;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -30,6 +32,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @Entity
+@FieldNameConstants
 @Table(name = "post")
 public class Post {
 
@@ -47,19 +50,23 @@ public class Post {
     private Long projectId;
 
     @OneToMany(mappedBy = "post", orphanRemoval = true)
-    private List<Like> likes;
+    @Builder.Default
+    private List<Like> likes = new ArrayList<>();
 
     @OneToMany(mappedBy = "post", orphanRemoval = true)
-    private List<Comment> comments;
+    @Builder.Default
+    private List<Comment> comments = new ArrayList<>();
 
     @ManyToMany(mappedBy = "posts")
-    private List<Album> albums;
+    @Builder.Default
+    private List<Album> albums = new ArrayList<>();
 
     @OneToOne(mappedBy = "post", cascade = CascadeType.ALL)
     private Ad ad;
 
     @OneToMany(mappedBy = "post", orphanRemoval = true)
-    private List<Resource> resources;
+    @Builder.Default
+    private List<Resource> resources = new ArrayList<>();
 
     @Column(name = "published", nullable = false)
     private boolean published;
@@ -78,7 +85,7 @@ public class Post {
 
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "created_at")
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
