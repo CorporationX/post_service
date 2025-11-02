@@ -1,6 +1,6 @@
 package faang.school.postservice.validator;
 
-import faang.school.postservice.exeption.ValidationException;
+import faang.school.postservice.exception.ValidationException;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.validator.comment.CommentValidator;

@@ -1,6 +1,6 @@
 package faang.school.postservice.repository;
 
-import faang.school.postservice.exeption.ResourceNotFoundException;
+import faang.school.postservice.exception.ResourceNotFoundException;
 import faang.school.postservice.model.Post;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;

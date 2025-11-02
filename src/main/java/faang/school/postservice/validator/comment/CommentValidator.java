@@ -1,8 +1,8 @@
 package faang.school.postservice.validator.comment;
 
 import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.exeption.UserInactiveException;
-import faang.school.postservice.exeption.ValidationException;
+import faang.school.postservice.exception.UserInactiveException;
+import faang.school.postservice.exception.ValidationException;
 
 import java.util.Objects;
 
