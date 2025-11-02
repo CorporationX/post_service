@@ -61,4 +61,7 @@ public interface PostService {
 
     /** Проверяет и корректирует орфографию и пунктуацию неопубликованных постов через AI-сервис. */
     void processTextChecking();
+
+    /** Запускает публикацию постов по расписанию, время публикации берется в scheduledAt время */
+    void publishScheduledPosts();
 }
