@@ -13,16 +13,16 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class MinioConfig {
 
-    @Value("${MINIO_END_POINT}")
+    @Value("${services.s3.endpoint}")
     private String endPoint;
 
-    @Value("${MINIO_ACCESS_KEY}")
+    @Value("${services.s3.accessKey}")
     private String accessKey;
 
-    @Value("${MINIO_SECRET_KEY}")
+    @Value("${services.s3.secretKey}")
     private String secretKey;
 
-    @Value("${MINIO_BUCKET_NAME}")
+    @Value("${services.s3.bucketName}")
     private String bucketName;
 
     @Bean

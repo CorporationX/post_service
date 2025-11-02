@@ -60,7 +60,7 @@ payment-service:
 
 services:
   s3:
-    endpoint: ${MINIO_END_POINT}
+    endpoint: ${MINIO_END_POINT}:${MINIO_PORT}
     accessKey: ${MINIO_ACCESS_KEY}
     secretKey: ${MINIO_SECRET_KEY}
     bucketName: ${MINIO_BUCKET_NAME}
