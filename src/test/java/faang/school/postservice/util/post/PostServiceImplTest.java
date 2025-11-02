@@ -11,6 +11,7 @@ import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.scheduler.ThreadPoolConfig;
 import faang.school.postservice.service.PostServiceImpl;
 import feign.FeignException;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,9 +25,12 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
 
+import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -44,16 +48,26 @@ class PostServiceImplTest {
     private static final String CONTENT_CREATE = "Hi";
     private static final String CONTENT_NEW = "New";
 
+    private static final long P1_ID = 1L;
+    private static final long P2_ID = 2L;
+    private static final long P3_ID = 3L;
+
+    private static final int POOL_SIZE = 2;
+    private static final int BATCH_SIZE = 2;
+
     @Mock
     PostRepository postRepository;
     @Mock
     UserServiceClient userServiceClient;
     @Mock
     ProjectServiceClient projectServiceClient;
+    @Mock
+    ThreadPoolConfig threadPoolConfig;
 
     @Spy
     PostMapper postMapper = Mappers.getMapper(PostMapper.class);
 
+    @Spy
     @InjectMocks
     PostServiceImpl service;
 
@@ -89,7 +103,7 @@ class PostServiceImplTest {
     void createDraft_user_ok() {
         CreatePostRequestDto input = new CreatePostRequestDto(CONTENT_CREATE, AUTHOR_ID, null);
         when(userServiceClient.getUser(AUTHOR_ID))
-                .thenReturn(ResponseEntity.ok(new UserDto(AUTHOR_ID, "name","spb@ru")));
+                .thenReturn(ResponseEntity.ok(new UserDto(AUTHOR_ID, "name", "spb@ru")));
 
         when(postRepository.save(any(Post.class))).thenAnswer(inv -> {
             Post p = inv.getArgument(0);
@@ -312,7 +326,7 @@ class PostServiceImplTest {
         );
 
         when(userServiceClient.getUser(AUTHOR_ID))
-                .thenReturn(ResponseEntity.ok(new UserDto(AUTHOR_ID, "name","spb@ru")));
+                .thenReturn(ResponseEntity.ok(new UserDto(AUTHOR_ID, "name", "spb@ru")));
 
         when(postRepository.save(any(Post.class))).thenAnswer(inv -> {
             Post p = inv.getArgument(0);
@@ -384,6 +398,134 @@ class PostServiceImplTest {
         assertTrue(postDbEntity.isDeleted());
         assertFalse(postDbEntity.isPublished());
         assertNotNull(postDbEntity.getUpdatedAt());
+    }
+
+    @Test
+    @DisplayName("publishScheduledPosts: publishes all ready posts in batches using executor")
+    void publishScheduledPosts_publishesAllReady() {
+
+        forceBatchSize(service, BATCH_SIZE);
+
+        LocalDateTime now = LocalDateTime.now();
+
+        PostResponseDto p1 = PostResponseDto.builder()
+                .id(P1_ID).authorId(10L).content("a")
+                .published(false).deleted(false)
+                .createdAt(now.minusHours(2)).updatedAt(now.minusHours(2))
+                .publishedAt(null).scheduledAt(null)
+                .build();
+
+        PostResponseDto p2 = PostResponseDto.builder()
+                .id(P2_ID).authorId(10L).content("b")
+                .published(false).deleted(false)
+                .createdAt(now.minusHours(1)).updatedAt(now.minusHours(1))
+                .publishedAt(null).scheduledAt(null)
+                .build();
+
+        PostResponseDto p3 = PostResponseDto.builder()
+                .id(P3_ID).projectId(7L).content("c")
+                .published(false).deleted(false)
+                .createdAt(now.minusMinutes(30)).updatedAt(now.minusMinutes(30))
+                .publishedAt(null).scheduledAt(null)
+                .build();
+
+        Post e1 = Post.builder().id(P1_ID).build();
+        Post e2 = Post.builder().id(P2_ID).build();
+        Post e3 = Post.builder().id(P3_ID).build();
+
+        when(postRepository.findReadyToPublish()).thenReturn(List.of(e1, e2, e3));
+
+        ExecutorService executor = Executors.newFixedThreadPool(POOL_SIZE);
+
+        try {
+            when(threadPoolConfig.executorService()).thenReturn(executor);
+
+            doReturn(p1).when(service).publish(P1_ID);
+            doReturn(p2).when(service).publish(P2_ID);
+            doReturn(p3).when(service).publish(P3_ID);
+
+            service.publishScheduledPosts();
+
+            verify(postRepository).findReadyToPublish();
+            verify(postMapper, times(3)).toDto(any(Post.class));
+            verify(threadPoolConfig, times(2)).executorService();
+            verify(service).publish(P1_ID);
+            verify(service).publish(P2_ID);
+            verify(service).publish(P3_ID);
+            verify(service, times(3)).publish(anyLong());
+
+        } finally {
+            executor.shutdownNow();
+        }
+    }
+
+    @Test
+    @DisplayName("publishScheduledPosts: continues publishing when one publish fails (logs and skips)")
+    void publishScheduledPosts_continuesOnFailures() {
+
+        forceBatchSize(service, BATCH_SIZE);
+
+        LocalDateTime now = LocalDateTime.now();
+
+        PostResponseDto p1 = PostResponseDto.builder()
+                .id(P1_ID).authorId(10L).content("a")
+                .published(false).deleted(false)
+                .createdAt(now.minusHours(2)).updatedAt(now.minusHours(2))
+                .publishedAt(null).scheduledAt(null)
+                .build();
+
+        PostResponseDto p2 = PostResponseDto.builder()
+                .id(P2_ID).authorId(10L).content("b")
+                .published(false).deleted(false)
+                .createdAt(now.minusHours(1)).updatedAt(now.minusHours(1))
+                .publishedAt(null).scheduledAt(null)
+                .build();
+
+        PostResponseDto p3 = PostResponseDto.builder()
+                .id(P3_ID).projectId(7L).content("c")
+                .published(false).deleted(false)
+                .createdAt(now.minusMinutes(30)).updatedAt(now.minusMinutes(30))
+                .publishedAt(null).scheduledAt(null)
+                .build();
+
+        Post e1 = Post.builder().id(P1_ID).build();
+        Post e2 = Post.builder().id(P2_ID).build();
+        Post e3 = Post.builder().id(P3_ID).build();
+
+        when(postRepository.findReadyToPublish()).thenReturn(List.of(e1, e2, e3));
+
+        ExecutorService executor = Executors.newFixedThreadPool(POOL_SIZE);
+
+        try {
+            when(threadPoolConfig.executorService()).thenReturn(executor);
+
+            doReturn(p1).when(service).publish(P1_ID);
+            doThrow(new RuntimeException("boom")).when(service).publish(P2_ID);
+            doReturn(p3).when(service).publish(P3_ID);
+
+            assertDoesNotThrow(service::publishScheduledPosts);
+
+            verify(postRepository).findReadyToPublish();
+            verify(postMapper, times(3)).toDto(any(Post.class));
+            verify(threadPoolConfig, times(2)).executorService();
+            verify(service).publish(P1_ID);
+            verify(service).publish(P2_ID);
+            verify(service).publish(P3_ID);
+            verify(service, times(3)).publish(anyLong());
+
+        } finally {
+            executor.shutdownNow();
+        }
+    }
+
+    private void forceBatchSize(PostServiceImpl service, int size) {
+        try {
+            Field f = PostServiceImpl.class.getDeclaredField("batchSize");
+            f.setAccessible(true);
+            f.set(service, size);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private Post buildPost(Long id, Long authorId, String content,
