@@ -41,6 +41,9 @@ public class PostServiceImpl implements PostService {
     private final ProjectServiceClient projectServiceClient;
     private final ThreadPoolConfig threadPoolConfig;
 
+    @Value("${scheduler.thread-pool.batchSize:50}")
+    private int batchSize;
+
     @Override
     public PostResponseDto createDraft(CreatePostRequestDto dto) {
         log.info("Creating draft: authorId={}, projectId={}", dto.authorId(), dto.projectId());
@@ -201,9 +204,6 @@ public class PostServiceImpl implements PostService {
                 });
     }
 
-    @Value("${scheduler.thread-pool.batchSize:50}")
-    private int batchSize;
-
     @Override
     public void publishScheduledPosts() {
         log.debug("Fetching not published and not deleted posts, but date of publication is bigger or equal to now");
@@ -221,7 +221,6 @@ public class PostServiceImpl implements PostService {
                 .toList();
 
         CompletableFuture.allOf(tasks.toArray(new CompletableFuture[0])).join();
-
     }
 
     private void processBatch(List<PostResponseDto> batch) {
