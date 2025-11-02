@@ -7,8 +7,8 @@ public record TextGearsErrorDto(
         String id,
         int offset,
         int length,
-        String bad,
-        List<String> better,
+        String badVersion,
+        List<String> betterVersion,
         String type,
         Map<String, String> description
 ) {
