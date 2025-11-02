@@ -82,13 +82,13 @@ class PostServiceImplTest {
     LanguageToolConfig languageToolConfig;
     @Mock
     private UserContext userContext;
-  
+    @Mock
     ThreadPoolConfig threadPoolConfig;
 
     @Spy
     private PostMapper postMapper = Mappers.getMapper(PostMapper.class);
 
-    @Spy
+    @Spy  //проверить
     @InjectMocks
     PostServiceImpl service;
 

@@ -225,37 +225,37 @@ public class PostServiceImpl implements PostService {
     @Override
     @Retryable(retryFor = {FeignException.class}, maxAttempts = 3, backoff = @Backoff(delay = 1000, multiplier = 2))
     public void processTextChecking() {
-            List<Post> unpublishedPosts = postRepository.findReadyToPublish();
-            log.info("Found {} posts for text correction", unpublishedPosts.size());
+        List<Post> unpublishedPosts = postRepository.findReadyToPublish();
+        log.info("Found {} posts for text correction", unpublishedPosts.size());
 
-            for (Post post : unpublishedPosts) {
-                try {
-                    TextCheckResponseDto response = feignLanguageTool.checkText(
-                            post.getContent(),
-                            languageToolConfig.getLanguage()
-                    );
+        for (Post post : unpublishedPosts) {
+            try {
+                TextCheckResponseDto response = feignLanguageTool.checkText(
+                        post.getContent(),
+                        languageToolConfig.getLanguage()
+                );
 
-                    if (response == null) {
-                        log.warn("Empty response from LanguageTool for post id={}", post.getId());
-                        continue;
-                    }
-
-                    String correctedText = applyCorrections(post.getContent(), response);
-
-                    if (!correctedText.equals(post.getContent())) {
-                        post.setContent(correctedText);
-                        post.setUpdatedAt(LocalDateTime.now());
-                        postRepository.save(post);
-                        log.info("Post id={} text corrected successfully", post.getId());
-                    }
-                } catch (FeignException e) {
-                    log.error("FeignException for post id={} - will retry", post.getId(), e);
-                    throw e;
-                } catch (Exception e) {
-                    log.error("Failed to check text for post with id={}", post.getId(), e);
+                if (response == null) {
+                    log.warn("Empty response from LanguageTool for post id={}", post.getId());
+                    continue;
                 }
+
+                String correctedText = applyCorrections(post.getContent(), response);
+
+                if (!correctedText.equals(post.getContent())) {
+                    post.setContent(correctedText);
+                    post.setUpdatedAt(LocalDateTime.now());
+                    postRepository.save(post);
+                    log.info("Post id={} text corrected successfully", post.getId());
+                }
+            } catch (FeignException e) {
+                log.error("FeignException for post id={} - will retry", post.getId(), e);
+                throw e;
+            } catch (Exception e) {
+                log.error("Failed to check text for post with id={}", post.getId(), e);
             }
         }
+    }
 
     private String applyCorrections(String originalText, TextCheckResponseDto response) {
         if (response.matches() == null || response.matches().isEmpty()) {
@@ -284,7 +284,8 @@ public class PostServiceImpl implements PostService {
             }
         }
         return correctedText.toString();
-     }
+    }
+
     public void publishScheduledPosts() {
         log.debug("Fetching not published and not deleted posts, but date of publication is bigger or equal to now");
         List<PostResponseDto> ready = postRepository
