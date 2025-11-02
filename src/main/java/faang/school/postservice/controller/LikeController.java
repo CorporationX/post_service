@@ -1,7 +1,6 @@
 package faang.school.postservice.controller;
 
 import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.handler.ErrorResponse;
 import faang.school.postservice.service.like.LikeService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -44,11 +43,8 @@ public class LikeController {
                     )
             }
     )
-    @GetMapping("/posts/{postId}")
+    @GetMapping("/post/{postId}")
     public List<UserDto> getUsersLikersByPostId(@PathVariable long postId) {
-        if (postId < 0) {
-            throw new DataValidationException("id must be greater than zero");
-        }
         return likeService.getUsersLikesByPostId(postId);
     }
 
@@ -72,11 +68,8 @@ public class LikeController {
                     )
             }
     )
-    @GetMapping("/comments/{commentId}")
+    @GetMapping("/comment/{commentId}")
     public List<UserDto> getUsersLikerByCommentId(@PathVariable long commentId) {
-        if (commentId < 0) {
-            throw new DataValidationException("id must be greater than zero");
-        }
         return likeService.getUsersLikesByCommentId(commentId);
     }
 }

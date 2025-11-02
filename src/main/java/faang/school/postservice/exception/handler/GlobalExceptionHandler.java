@@ -1,5 +1,6 @@
 package faang.school.postservice.exception.handler;
 
+import faang.school.postservice.exception.externalservice.ExternalServiceConnectException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.FieldError;
@@ -67,6 +68,14 @@ public class GlobalExceptionHandler {
     public ErrorResponse handleIllegalArgumentException(IllegalArgumentException ex) {
         log.warn("Illegal argument: {}", ex.getMessage());
         return new ErrorResponse("bad_request", ex.getMessage());
+    }
+
+    @ExceptionHandler(ExternalServiceConnectException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleExternalServiceConnectException(ExternalServiceConnectException ex) {
+        String description = "no access to the service: " + ex.getServiceName();
+        log.warn(description, ex);
+        return new ErrorResponse(description, ex.getMessage());
     }
 
     /**

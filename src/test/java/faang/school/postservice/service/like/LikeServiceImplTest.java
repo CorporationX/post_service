@@ -6,7 +6,6 @@ import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.externalservice.ExternalServiceConnectException;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.repository.LikeRepository;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -32,45 +31,31 @@ import static org.mockito.Mockito.when;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class LikeServiceImplTest {
     private static final int CHUNK_SIZE = 2;
-    private static final long USER_ID_1 = 1;
-    private static final long USER_ID_2 = 2;
-    private static final long USER_ID_3 = 3;
-    private static final long USER_ID_4 = 4;
     private static final long POST_ID = 1L;
     private static final long COMMENT_ID = 1L;
+    private static final long LIKE_ID_1 = 1L;
+    private static final long LIKE_ID_2 = 2L;
+    private static final long LIKE_ID_3 = 3L;
+    private static final long LIKE_ID_4 = 4L;
+    private static final long USER_ID_1 = 101L;
+    private static final long USER_ID_2 = 102L;
+    private static final long USER_ID_3 = 103L;
+    private static final long USER_ID_4 = 104L;
+    private final UserDto user1 = new UserDto(USER_ID_1, "JohnDoe", "johndoe@example.com");
+    private final UserDto user2 = new UserDto(USER_ID_2, "JaneSmith", "johndoe@example.com");
+    private final UserDto user3 = new UserDto(USER_ID_3, "MichaelJohnson", "johndoe@example.com");
+    private final UserDto user4 = new UserDto(USER_ID_4, "EmilyDavis", "johndoe@example.com");
+    private final Like like1 = Like.builder().id(LIKE_ID_1).userId(USER_ID_1).build();
+    private final Like like2 = Like.builder().id(LIKE_ID_2).userId(USER_ID_2).build();
+    private final Like like3 = Like.builder().id(LIKE_ID_3).userId(USER_ID_3).build();
+    private final Like like4 = Like.builder().id(LIKE_ID_4).userId(USER_ID_4).build();
+    private final List<UserDto> users = List.of(user1, user2, user3, user4);
+    private final List<Like> likes = List.of(like1, like2, like3, like4);
+    private LikeService service;
     @Mock
     LikeRepository likeRepository;
     @Mock
     UserServiceClient userServiceClient;
-    private LikeService service;
-    private Like like1;
-    private Like like2;
-    private Like like3;
-    private Like like4;
-    private UserDto user1;
-    private UserDto user2;
-    private UserDto user3;
-    private UserDto user4;
-    private List<UserDto> users;
-    private List<Like> likes;
-
-    @BeforeAll
-    void globalSettings() {
-        long likeId1 = 1L;
-        long likeId2 = 2L;
-        long likeId3 = 3L;
-        long likeId4 = 4L;
-        like1 = Like.builder().id(likeId1).userId(USER_ID_1).build();
-        like2 = Like.builder().id(likeId2).userId(USER_ID_2).build();
-        like3 = Like.builder().id(likeId3).userId(USER_ID_3).build();
-        like4 = Like.builder().id(likeId4).userId(USER_ID_4).build();
-        user1 = new UserDto(USER_ID_1, "JohnDoe", "johndoe@example.com");
-        user2 = new UserDto(USER_ID_2, "JaneSmith", "johndoe@example.com");
-        user3 = new UserDto(USER_ID_3, "MichaelJohnson", "johndoe@example.com");
-        user4 = new UserDto(USER_ID_4, "EmilyDavis", "johndoe@example.com");
-        users = List.of(user1, user2, user3, user4);
-        likes = List.of(like1, like2, like3, like4);
-    }
 
     @BeforeEach
     void setUp() {
