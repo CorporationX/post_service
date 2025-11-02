@@ -7,7 +7,7 @@ import faang.school.postservice.dto.post.PostV2CreateDto;
 import faang.school.postservice.dto.post.PostV2Dto;
 import faang.school.postservice.dto.post.PostV2UpdateDto;
 import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.exeption.ForbiddenException;
+import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.helpers.TestUtils;
 import faang.school.postservice.mapper.PostV2Mapper;
 import faang.school.postservice.model.Post;
@@ -49,7 +49,7 @@ class PostV2ServiceTest {
 
     private final Long userId = 1L;
     private final Long postId = 3L;
-    private final UserDto user = new UserDto(userId, "name", "email");
+    private final UserDto user = new UserDto(userId, "name", "email",  Boolean.TRUE);
     private final String content = "Post content";
     private final Post post = Post.builder().id(postId).build();
     private final Pageable pageableDefault = PageRequest.of(0, 5);

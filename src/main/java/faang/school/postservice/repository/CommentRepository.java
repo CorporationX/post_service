@@ -1,5 +1,6 @@
 package faang.school.postservice.repository;
 
+import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.ResourceNotFoundException;
 import faang.school.postservice.model.Comment;
 import org.springframework.data.domain.Page;
@@ -15,6 +16,6 @@ public interface CommentRepository extends CrudRepository<Comment, Long> {
 
     default Comment findByIdOrThrow(Long id) {
         return findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Comment not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Comment not found %d".formatted(id)));
     }
 }

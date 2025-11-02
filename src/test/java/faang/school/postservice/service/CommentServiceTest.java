@@ -4,6 +4,7 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentCreateDto;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CommentUpdateDto;
+import faang.school.postservice.dto.common.PageResponse;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.ResourceNotFoundException;
 import faang.school.postservice.exception.ValidationException;
@@ -72,7 +73,7 @@ class CommentServiceTest {
 
     @Test
     void create_success() {
-        when(postRepository.findByIdOrThrow(1L)).thenReturn(post);
+        when(postRepository.getByIdOrThrow(1L)).thenReturn(post);
         when(userServiceClient.getUser(1L)).thenReturn(userDto);
         when(commentRepository.save(any(Comment.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -117,17 +118,17 @@ class CommentServiceTest {
     }
 
     @Test
-    void getByPostId_success() {
+    void findAllByPostId_success() {
         Pageable pageable = PageRequest.of(0, 10);
         Page<Comment> page = new PageImpl<>(List.of(comment));
 
-        when(postRepository.findByIdOrThrow(1L)).thenReturn(post);
+        when(postRepository.getByIdOrThrow(1L)).thenReturn(post);
         when(commentRepository.findAllByPostId(1L, pageable)).thenReturn(page);
 
-        Page<CommentDto> result = commentService.getByPostId(1L, pageable);
+        PageResponse<CommentDto> result = commentService.findAllByPostId(1L, pageable);
 
-        assertEquals(1, result.getContent().size());
-        verify(postRepository).findByIdOrThrow(1L);
+        assertEquals(1, result.content().size());
+        verify(postRepository).getByIdOrThrow(1L);
     }
 
     @Test
