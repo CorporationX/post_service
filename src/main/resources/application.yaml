@@ -58,6 +58,15 @@ payment-service:
   host: localhost
   port: 9080
 
+comment:
+  ban-user-invoke: "0 0 23 * * *"
+  batch-size: 5000
+
+redis:
+  topics:
+    subscriber:
+      user-ban-topic: "user-ban-topic"
+
 services:
   s3:
     endpoint: ${MINIO_END_POINT}:${MINIO_PORT}
