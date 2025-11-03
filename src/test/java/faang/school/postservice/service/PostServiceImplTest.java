@@ -12,6 +12,7 @@ import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.post.PostServiceImpl;
 import feign.FeignException;
 import feign.Request;
 import org.junit.jupiter.api.Test;
@@ -22,6 +23,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.ResponseEntity;
 
 import java.nio.charset.Charset;
 import java.time.LocalDateTime;
@@ -129,7 +131,7 @@ public class PostServiceImplTest {
     @Test
     void createDraft_whenAuthorExists_shouldCreateDraft() {
         CreatePostDto postDto = new CreatePostDto("content", authorId, null);
-        when(userServiceClient.getUser(authorId)).thenReturn(mockUser);
+        when(userServiceClient.getUser(authorId)).thenReturn(ResponseEntity.of(Optional.of(mockUser)));
 
         Post post = new Post();
         post.setId(1L);
@@ -166,7 +168,7 @@ public class PostServiceImplTest {
     @Test
     void createDraft_whenProjectExists_shouldCreateDraft() {
         CreatePostDto postDto = new CreatePostDto("content", null, projectId);
-        when(projectServiceClient.getProject(projectId)).thenReturn(mockProject);
+        when(projectServiceClient.getProject(projectId)).thenReturn(ResponseEntity.of(Optional.of(mockProject)));
 
         Post post = new Post();
         post.setId(1L);
