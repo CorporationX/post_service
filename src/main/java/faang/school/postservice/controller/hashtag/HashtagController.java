@@ -1,7 +1,7 @@
-package faang.school.postservice.controller;
+package faang.school.postservice.controller.hashtag;
 
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.service.HashtagService;
+import faang.school.postservice.service.hashtag.HashtagService;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;

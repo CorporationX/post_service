@@ -1,4 +1,4 @@
-package faang.school.postservice.service;
+package faang.school.postservice.service.hashtag;
 
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostMapper;
@@ -188,7 +188,7 @@ class HashtagServiceImplTest {
 
         when(hashtagRepository.findDistinctPostIdByName(hashtagName)).thenReturn(postIds);
         when(postRepository.findAllByIdInOrderByCreatedAtDesc(postIds)).thenReturn(posts);
-        when(postMapper.toDtoList(posts)).thenReturn(postDtos);
+        when(postMapper.toPostDtos(posts)).thenReturn(postDtos);
 
         // Act
         Page<PostDto> result = hashtagService.findPostsByHashtagName(hashtagName, page, size);
@@ -202,7 +202,7 @@ class HashtagServiceImplTest {
 
         verify(hashtagRepository, times(1)).findDistinctPostIdByName(hashtagName);
         verify(postRepository, times(1)).findAllByIdInOrderByCreatedAtDesc(postIds);
-        verify(postMapper, times(1)).toDtoList(posts);
+        verify(postMapper, times(1)).toPostDtos(posts);
     }
 
     @Test
@@ -225,7 +225,7 @@ class HashtagServiceImplTest {
 
         verify(hashtagRepository, times(1)).findDistinctPostIdByName(hashtagName);
         verify(postRepository, never()).findAllByIdInOrderByCreatedAtDesc(anyList());
-        verify(postMapper, never()).toDtoList(anyList());
+        verify(postMapper, never()).toPostDtos(anyList());
     }
 
     @Test
@@ -243,7 +243,7 @@ class HashtagServiceImplTest {
 
         when(hashtagRepository.findDistinctPostIdByName(hashtagName)).thenReturn(allPostIds);
         when(postRepository.findAllByIdInOrderByCreatedAtDesc(paginatedPostIds)).thenReturn(posts);
-        when(postMapper.toDtoList(posts)).thenReturn(postDtos);
+        when(postMapper.toPostDtos(posts)).thenReturn(postDtos);
 
         // Act
         Page<PostDto> result = hashtagService.findPostsByHashtagName(hashtagName, page, size);
@@ -293,11 +293,19 @@ class HashtagServiceImplTest {
 
         List<Long> postIds = List.of(1L);
         List<Post> posts = List.of(mock(Post.class));
-        List<PostDto> postDtos = List.of(new PostDto(1L, "Test", 123L, LocalDateTime.now(), LocalDateTime.now()));
+        List<PostDto> postDtos = List.of(new PostDto(
+                1L,
+                "Test",
+                123L,
+                null,
+                true,
+                LocalDateTime.now(),
+                false
+        ));
 
         when(hashtagRepository.findDistinctPostIdByName(hashtagName)).thenReturn(postIds);
         when(postRepository.findAllByIdInOrderByCreatedAtDesc(postIds)).thenReturn(posts);
-        when(postMapper.toDtoList(posts)).thenReturn(postDtos);
+        when(postMapper.toPostDtos(posts)).thenReturn(postDtos);
 
         // Act
         Page<PostDto> result = hashtagService.findPostsByHashtagName(hashtagName, page, size);
@@ -324,9 +332,30 @@ class HashtagServiceImplTest {
     private List<PostDto> createMockPostDtos() {
         LocalDateTime now = LocalDateTime.now();
         return List.of(
-                new PostDto(1L, "Post 1", 123L, now, now),
-                new PostDto(2L, "Post 2", 456L, now, now),
-                new PostDto(3L, "Post 3", 789L, now, now)
+                new PostDto(
+                        1L,
+                        "Post 1",
+                        123L,
+                        null,
+                        true,
+                        now,
+                        false),
+                new PostDto(
+                        2L,
+                        "Post 2",
+                        456L,
+                        null,
+                        true,
+                        now,
+                        false),
+                new PostDto(
+                        3L,
+                        "Post 3",
+                        789L,
+                        null,
+                        true,
+                        now,
+                        false)
         );
     }
 }
