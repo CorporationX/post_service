@@ -27,4 +27,6 @@ public interface PostService {
     List<PostDto> getAllPublishedPostsByAuthor(long authorId);
 
     List<PostDto> getAllPublishedPostsByProject(long projectId);
+
+    List<Long> selectUsersForBan();
 }

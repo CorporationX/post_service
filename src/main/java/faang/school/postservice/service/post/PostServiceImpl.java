@@ -8,7 +8,9 @@ import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.mapper.post.PostMapper;
+import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +21,10 @@ import javax.xml.bind.ValidationException;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @Slf4j
 @Service
@@ -28,6 +33,7 @@ public class PostServiceImpl implements PostService{
     private final PostMapper postMapper;
     private final PostRepository postRepository;
     private final ProjectServiceClient projectServiceClient;
+    private final CommentRepository commentRepository;
 
     @Override
     @Transactional
@@ -162,5 +168,19 @@ public class PostServiceImpl implements PostService{
                 .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
                 .toList();
         return postMapper.toListPostDto(posts);
+    }
+
+    @Override
+    public List<Long> selectUsersForBan() {
+        int minViolationsForBan = 5;
+        return StreamSupport
+                .stream(commentRepository.findAll().spliterator(), false)
+                .filter(comment -> comment.getVerified() == false)
+                .collect(Collectors.groupingBy(Comment::getAuthorId, Collectors.counting()))
+                .entrySet()
+                .stream()
+                .filter(violator -> violator.getValue() > minViolationsForBan)
+                .map(Map.Entry::getKey)
+                .toList();
     }
 }

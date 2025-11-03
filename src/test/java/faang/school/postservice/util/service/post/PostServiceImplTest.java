@@ -8,6 +8,7 @@ import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.post.PostServiceImpl;
 import org.junit.jupiter.api.Test;
@@ -44,6 +45,9 @@ public class PostServiceImplTest {
 
     @Mock
     private ProjectServiceClient projectServiceClient;
+
+    @Mock
+    private CommentRepository commentRepository;
 
     @Captor
     private ArgumentCaptor<Post> postCaptor;
@@ -256,6 +260,13 @@ public class PostServiceImplTest {
         postServiceImpl.getAllPublishedPostsByProject(projectId);
 
         verify(postRepository, times(1)).findByProjectId(projectId);
+    }
+
+    @Test
+    public void selectUsersForBanSuccessfullySelectes() {
+        postServiceImpl.selectUsersForBan();
+
+        verify(commentRepository, times(1)).findAll();
     }
 
     private CreatePostDto createCreatePostDtoForTest() {
