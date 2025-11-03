@@ -13,6 +13,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -32,14 +33,15 @@ public class UserBanPublisherImpl implements UserBanPublisher {
     @Override
     public void banUserComment() {
         int page = 0;
-        Page<Long> commentPage;
-        Map<Long, Long> verifiedUsers;
+        Page<Long> authorsIdCommentPage;
+        Map<Long, Long> verifiedUsers = new HashMap<>();
         do {
-            commentPage = commentRepository.findAllBanUser(PageRequest.of(page, BATCH_SIZE));
-            verifiedUsers = commentPage.getContent().stream()
-                    .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+            authorsIdCommentPage = commentRepository.findAllBanUser(PageRequest.of(page, BATCH_SIZE));
+            authorsIdCommentPage.getContent().stream()
+                    .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
+                    .forEach((userId, count) -> verifiedUsers.merge(userId, count, Long::sum));
             page++;
-        } while (commentPage.hasNext());
+        } while (authorsIdCommentPage.hasNext());
         List<Long> usersBan = verifiedUsers.entrySet().stream()
                 .filter(entry -> entry.getValue() >= 5)
                 .map(Map.Entry::getKey)
