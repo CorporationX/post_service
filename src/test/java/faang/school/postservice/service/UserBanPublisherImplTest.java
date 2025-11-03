@@ -1,6 +1,7 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.repository.CommentRepository;
+import faang.school.postservice.service.comment.UserBanPublisherImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
