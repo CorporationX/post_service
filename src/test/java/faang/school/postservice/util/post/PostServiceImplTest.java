@@ -1,6 +1,5 @@
 package faang.school.postservice.util.post;
 
-import faang.school.postservice.PostServiceApp;
 import faang.school.postservice.client.FeignLanguageToolClient;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
@@ -28,16 +27,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mapstruct.factory.Mappers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Primary;
 import org.springframework.http.ResponseEntity;
 
 import java.lang.reflect.Field;
@@ -88,7 +79,7 @@ class PostServiceImplTest {
     @Spy
     private PostMapper postMapper = Mappers.getMapper(PostMapper.class);
 
-    @Spy  //проверить
+    @Spy
     @InjectMocks
     PostServiceImpl service;
 
