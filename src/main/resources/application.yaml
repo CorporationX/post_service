@@ -47,3 +47,7 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+cleanup:
+  cron: "0 0 0 * * *"
+  chunk-size: 1000
