@@ -87,8 +87,8 @@ executor:
 
 post:
   ad:
-    time-to-remove: "0 0 12 * * *"
-    batch-size: 20
+    time-to-remove: "0 0 23 * * *"
+
 redis:
   topics:
     user-ban-topic: "user-ban-topic"

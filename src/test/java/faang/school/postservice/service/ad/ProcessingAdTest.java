@@ -23,19 +23,8 @@ class ProcessingAdTest {
 
     @Test
     public void processingAd_deleteAd_shouldDeleteAd() {
-        List<Ad> ads = List.of(preparingAd(1L, 0L), preparingAd(2L, 5L));
+        processingAd.processingAd(List.of(1L, 2L));
 
-        processingAd.processingAd(ads);
-
-        verify(adRepository).deleteByIdsNative(new ArrayList<>(List.of(1L, 2L)));
-    }
-
-    public Ad preparingAd(long id, long countViews) {
-        return Ad.builder()
-                .id(id)
-                .appearancesLeft(0)
-                .appearancesLeft(countViews)
-                .endDate(LocalDateTime.now().minusMonths(2))
-                .build();
+        verify(adRepository).deleteAllByIdInBatch(new ArrayList<>(List.of(1L, 2L)));
     }
 }
