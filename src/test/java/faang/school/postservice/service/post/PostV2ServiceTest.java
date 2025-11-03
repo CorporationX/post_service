@@ -7,7 +7,7 @@ import faang.school.postservice.dto.post.PostV2CreateDto;
 import faang.school.postservice.dto.post.PostV2Dto;
 import faang.school.postservice.dto.post.PostV2UpdateDto;
 import faang.school.postservice.dto.user.UserDto;
-import faang.school.postservice.exeption.ForbiddenException;
+import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.helpers.TestUtils;
 import faang.school.postservice.mapper.PostV2Mapper;
 import faang.school.postservice.model.Post;

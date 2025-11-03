@@ -53,6 +53,7 @@ public class PostV2Mapper {
                 .scheduledAt(post.getScheduledAt())
                 .createdAt(post.getCreatedAt())
                 .updatedAt(post.getUpdatedAt())
+                .likesCount(post.getLikes().size())
                 .build();
 
     }

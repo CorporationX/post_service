@@ -1,7 +1,8 @@
-package faang.school.postservice.exeption;
+package faang.school.postservice.exception;
 
 import feign.FeignException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.FieldError;
@@ -22,7 +23,11 @@ public class GlobalExceptionHandler {
             EntityNotFoundException.class, HttpStatus.NOT_FOUND,
             ForbiddenException.class, HttpStatus.FORBIDDEN,
             MethodArgumentNotValidException.class, HttpStatus.BAD_REQUEST,
-            FeignException.class, HttpStatus.INTERNAL_SERVER_ERROR
+            FeignException.class, HttpStatus.INTERNAL_SERVER_ERROR,
+            DuplicateLikeException.class, HttpStatus.CONFLICT,
+            RuntimeException.class, HttpStatus.INTERNAL_SERVER_ERROR,
+            IllegalArgumentException.class, HttpStatus.BAD_REQUEST,
+            ConstraintViolationException.class, HttpStatus.BAD_REQUEST
     );
 
     @ExceptionHandler(Exception.class)
@@ -54,7 +59,6 @@ public class GlobalExceptionHandler {
             }
             return e.getMessage();
         }
-
         return "Internal server error";
     }
 
