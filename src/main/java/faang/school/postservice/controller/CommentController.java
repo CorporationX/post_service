@@ -1,15 +1,13 @@
 package faang.school.postservice.controller;
 
 
-import faang.school.postservice.dto.comment.ResponseCommentDto;
 import faang.school.postservice.dto.comment.CreateCommentDto;
+import faang.school.postservice.dto.comment.ResponseCommentDto;
 import faang.school.postservice.dto.comment.UpdateCommentDto;
 import faang.school.postservice.service.comment.CommentServiceImpl;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
