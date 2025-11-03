@@ -55,6 +55,5 @@ public class PostV2Mapper {
                 .updatedAt(post.getUpdatedAt())
                 .likesCount(post.getLikes().size())
                 .build();
-
     }
 }

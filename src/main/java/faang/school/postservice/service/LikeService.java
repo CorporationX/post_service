@@ -45,7 +45,6 @@ public class LikeService {
         validateUserExist(userId);
         Like like = likeRepository.findByPostIdAndUserIdOrThrow(postId, userId);
         validateAuthorLike(like, userId);
-
         likeRepository.deleteByPostIdAndUserId(postId, userId);
         log.info("Like removed from post {} by user {}", postId, userId);
     }

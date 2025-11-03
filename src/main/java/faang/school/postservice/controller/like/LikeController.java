@@ -2,6 +2,7 @@ package faang.school.postservice.controller.like;
 
 import faang.school.postservice.service.LikeService;
 import faang.school.postservice.validator.PositiveId;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +22,7 @@ public class LikeController {
     private final LikeService likeService;
 
     @PostMapping("/post/{postId}/user/{userId}")
-    public ResponseEntity<Void> addLikeToPost(@PathVariable @PositiveId long postId, @PathVariable @PositiveId long userId) {
+    public ResponseEntity<Void> addLikeToPost(@PathVariable @PositiveId long postId, @PathVariable @Positive long userId) {
         likeService.addLikeToPost(postId, userId);
         return ResponseEntity.ok().build();
     }
