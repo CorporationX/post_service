@@ -103,6 +103,9 @@ public class LikeService {
         try {
             userServiceClient.getUser(userId);
         } catch (feign.FeignException.NotFound e) {
+            log.error("Not found User with id {}", userId);
+            throw new EntityNotFoundException(String.format("User with id %d not found", userId));
+        } catch (EntityNotFoundException e) {
             log.error("User with id {} not found", userId);
             throw new EntityNotFoundException(String.format("User with id %d not found", userId));
         } catch (Exception e) {

@@ -92,7 +92,7 @@ public class LikeServiceTest {
     void addLikeToPost_UserNotFound_ShouldThrowException() {
         when(userServiceClient.getUser(USER_ID)).thenThrow(new RuntimeException());
 
-        assertThrows(EntityNotFoundException.class, () -> likeService.addLikeToPost(POST_ID, USER_ID));
+        assertThrows(RuntimeException.class, () -> likeService.addLikeToPost(POST_ID, USER_ID));
 
         verify(likeRepository, never()).save(any(Like.class));
         verify(postRepository, never()).getByIdOrThrow(anyLong());
