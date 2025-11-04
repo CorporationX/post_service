@@ -3,10 +3,10 @@ spring:
     import: optional:classpath:application.properties
 
   servlet:
-      multipart:
-        max-file-size: 5MB
-        max-request-size: 50MB
-        enabled: true
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 50MB
+      enabled: true
 
   jackson:
     default-property-inclusion: non_null
@@ -92,10 +92,13 @@ redis:
     user-ban-topic: "user-ban-topic"
 
 scheduler:
-    ad:
-      time-to-remove: "0 0 23 * * *"
-    comment:
-        ban-user-invoke: "0 0 23 * * *"
-        count-ban-size: 5
-
+  ad:
+    time-to-remove: "0 0 23 * * *"
+  comment:
+      ban-user-invoke: "0 0 23 * * *"
+      count-ban-size: 5
+  posts:
+    cron: "0 0 1 * * *"
+    ban-threshold: 5
+    batch-size: 1000
 

@@ -27,4 +27,13 @@ public interface PostRepository extends CrudRepository<Post, Long> {
 
     @Query("SELECT c FROM Comment c WHERE c.post.id = :postId")
     Page<Comment> findAllCommentByPostId(@Param("postId") Long postId, Pageable pageable);
+
+    @Query("""
+        SELECT p.authorId 
+        FROM Post p 
+        WHERE p.verified = false 
+        GROUP BY p.authorId 
+        HAVING COUNT(p) > :threshold
+       """)
+    List<Long> findUsersToBanForPosts(@Param("threshold") int threshold, Pageable pageable);
 }

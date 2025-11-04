@@ -1,6 +1,5 @@
 package faang.school.postservice.service.minio;
 
-
 import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
