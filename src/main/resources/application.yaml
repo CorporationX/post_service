@@ -76,3 +76,9 @@ app:
       max-per-post: 10
       type: "IMAGE"
 
+post-correcter:
+  cron: "0 0 3 * * *" # every day at 3:00
+
+languagetool:
+  api-url: "https://api.languagetool.org"
+  language: "auto"

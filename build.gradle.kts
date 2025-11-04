@@ -17,13 +17,17 @@ dependencies {
     /**
      * Spring boot starters
      */
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.cloud:spring-cloud-starter-openfeign:4.0.2")
+    implementation("org.springframework.retry:spring-retry:2.0.2")
+    implementation("org.springframework:spring-aspects")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2")
 
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0")
     implementation("org.springdoc:springdoc-openapi-starter-common:2.5.0")

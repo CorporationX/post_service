@@ -1,11 +1,16 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.client.ProjectServiceClient;
+import faang.school.postservice.client.FeignLanguageToolClient;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.context.LanguageToolConfig;
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.CreatePostRequestDto;
 import faang.school.postservice.dto.post.UpdatePostRequestDto;
 import faang.school.postservice.dto.post.PostResponseDto;
 import faang.school.postservice.dto.project.ProjectDto;
+import faang.school.postservice.dto.text.MatchDto;
+import faang.school.postservice.dto.text.TextCheckResponseDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.ProjectNotFoundException;
@@ -20,6 +25,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,6 +47,12 @@ public class PostServiceImpl implements PostService {
     private final PostMapper postMapper;
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
+    private final LanguageToolConfig languageToolConfig;
+    private static final long SECOND_DELAY_MS = 3000L;
+    private static final long THIRD_DELAY_MS = 4000L;
+    private static final long FOURTH_DELAY_MS = 5000L;
+    private final FeignLanguageToolClient feignLanguageTool;
+    private final UserContext userContext;
     private final ThreadPoolConfig threadPoolConfig;
 
     @Value("${scheduler.thread-pool.batchSize:50}")
@@ -76,6 +89,10 @@ public class PostServiceImpl implements PostService {
         }
 
         Post draft = postMapper.toEntity(dto);
+
+        if (draft.getScheduledAt() == null) {
+            draft.setScheduledAt(LocalDateTime.now());
+        }
         Post saved = postRepository.save(draft);
         log.info("Draft created id={}", saved.getId());
         return postMapper.toDto(saved);
@@ -206,6 +223,69 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    @Retryable(retryFor = {FeignException.class}, maxAttempts = 3, backoff = @Backoff(delay = 1000, multiplier = 2))
+    public void processTextChecking() {
+        List<Post> unpublishedPosts = postRepository.findReadyToPublish();
+        log.info("Found {} posts for text correction", unpublishedPosts.size());
+
+        for (Post post : unpublishedPosts) {
+            try {
+                TextCheckResponseDto response = feignLanguageTool.checkText(
+                        post.getContent(),
+                        languageToolConfig.getLanguage()
+                );
+
+                if (response == null) {
+                    log.warn("Empty response from LanguageTool for post id={}", post.getId());
+                    continue;
+                }
+
+                String correctedText = applyCorrections(post.getContent(), response);
+
+                if (!correctedText.equals(post.getContent())) {
+                    post.setContent(correctedText);
+                    post.setUpdatedAt(LocalDateTime.now());
+                    postRepository.save(post);
+                    log.info("Post id={} text corrected successfully", post.getId());
+                }
+            } catch (FeignException e) {
+                log.error("FeignException for post id={} - will retry", post.getId(), e);
+                throw e;
+            } catch (Exception e) {
+                log.error("Failed to check text for post with id={}", post.getId(), e);
+            }
+        }
+    }
+
+    private String applyCorrections(String originalText, TextCheckResponseDto response) {
+        if (response.matches() == null || response.matches().isEmpty()) {
+            return originalText;
+        }
+
+        List<MatchDto> sortedMatches = response.matches().stream()
+                .sorted((m1, m2) -> Integer.compare(m2.offset(), m1.offset()))
+                .collect(Collectors.toList());
+
+        StringBuilder correctedText = new StringBuilder(originalText);
+
+        for (MatchDto match : sortedMatches) {
+            if (match.replacements() != null && !match.replacements().isEmpty()) {
+                String replacement = match.replacements().get(0).value();
+                int offset = match.offset();
+                int length = match.length();
+
+                if (offset >= 0 && offset <= correctedText.length() &&
+                        offset + length <= correctedText.length()) {
+                    correctedText.replace(offset, offset + length, replacement);
+                } else {
+                    log.warn("Invalid match offsets for post correction: offset={}, length={}, text length={}",
+                            offset, length, correctedText.length());
+                }
+            }
+        }
+        return correctedText.toString();
+    }
+
     public void publishScheduledPosts() {
         log.debug("Fetching not published and not deleted posts, but date of publication is bigger or equal to now");
         List<PostResponseDto> ready = postRepository
