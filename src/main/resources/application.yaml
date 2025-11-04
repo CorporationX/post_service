@@ -60,7 +60,7 @@ payment-service:
 
 comment:
   ban-user-invoke: "0 0 23 * * *"
-  batch-size: 5000
+  count-ban-size: 5
 
 redis:
   topics:

@@ -1,4 +1,4 @@
-package faang.school.postservice.service.comment;
+package faang.school.postservice.messages.redis.publishers;
 
 public interface UserBanPublisher {
 

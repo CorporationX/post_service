@@ -1,4 +1,4 @@
-package faang.school.postservice.service.comment;
+package faang.school.postservice.messages.redis.publishers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -7,17 +7,11 @@ import faang.school.postservice.repository.CommentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -27,30 +21,17 @@ public class UserBanPublisherImpl implements UserBanPublisher {
     private final CommentRepository commentRepository;
     private final RedisTemplate<String, Object> template;
     private final ChannelTopic userBanTopic;
-    @Value("${comment.batch-size}")
-    private int BATCH_SIZE;
+    @Value("${comment.count-ban-size}")
+    private int banSize;
 
     @Override
     public void banUserComment() {
-        int page = 0;
-        Page<Long> authorsIdCommentPage;
-        Map<Long, Long> verifiedUsers = new HashMap<>();
-        do {
-            authorsIdCommentPage = commentRepository.findAllBanUser(PageRequest.of(page, BATCH_SIZE));
-            authorsIdCommentPage.getContent().stream()
-                    .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
-                    .forEach((userId, count) -> verifiedUsers.merge(userId, count, Long::sum));
-            page++;
-        } while (authorsIdCommentPage.hasNext());
-        List<Long> usersBan = verifiedUsers.entrySet().stream()
-                .filter(entry -> entry.getValue() >= 5)
-                .map(Map.Entry::getKey)
-                .toList();
-        if (!usersBan.isEmpty()) {
+        List<Long> verifiedUsers = commentRepository.findAllBanUser(banSize);
+        if (!verifiedUsers.isEmpty()) {
             ObjectMapper objectMapper = new ObjectMapper();
             String json;
             try {
-                json = objectMapper.writeValueAsString(usersBan);
+                json = objectMapper.writeValueAsString(verifiedUsers);
             } catch (JsonProcessingException e) {
                 throw new JsonSerializeException("Error to serialize");
             }
