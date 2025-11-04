@@ -8,7 +8,6 @@ import faang.school.postservice.model.Like;
 import faang.school.postservice.repository.LikeRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -28,7 +27,6 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class LikeServiceImplTest {
     private static final int CHUNK_SIZE = 2;
     private static final long POST_ID = 1L;
@@ -51,11 +49,11 @@ public class LikeServiceImplTest {
     private final Like like4 = Like.builder().id(LIKE_ID_4).userId(USER_ID_4).build();
     private final List<UserDto> users = List.of(user1, user2, user3, user4);
     private final List<Like> likes = List.of(like1, like2, like3, like4);
-    private LikeService service;
     @Mock
     LikeRepository likeRepository;
     @Mock
     UserServiceClient userServiceClient;
+    private LikeService service;
 
     @BeforeEach
     void setUp() {
