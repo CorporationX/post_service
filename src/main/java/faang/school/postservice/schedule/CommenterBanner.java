@@ -1,6 +1,6 @@
 package faang.school.postservice.schedule;
 
-import faang.school.postservice.messages.redis.publishers.UserBanPublisherImpl;
+import faang.school.postservice.service.comment.UserBanServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -9,9 +9,9 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 @Component
 public class CommenterBanner {
-    private final UserBanPublisherImpl commenterService;
+    private final UserBanServiceImpl commenterService;
 
-    @Scheduled(cron = "${comment.ban-user-invoke}")
+    @Scheduled(cron = "${scheduler.comment.ban-user-invoke}")
     public void banUser() {
         commenterService.banUserComment();
     }
