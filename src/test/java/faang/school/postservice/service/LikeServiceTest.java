@@ -12,7 +12,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.like.LikeServiceImpl;
-import faang.school.postservice.validator.like.LikeValidatorImpl;
+import faang.school.postservice.validator.like.LikeValidator;
 import feign.FeignException;
 import feign.Request;
 import feign.RequestTemplate;
@@ -65,7 +65,7 @@ public class LikeServiceTest {
     @Mock
     private LikeRepository likeRepository;
     @Mock
-    private LikeValidatorImpl likeValidator;
+    private LikeValidator likeValidator;
     @Spy
     private LikeMapper likeMapper = Mappers.getMapper(LikeMapper.class);
     @Captor

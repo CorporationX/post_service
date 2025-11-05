@@ -15,21 +15,15 @@ import java.time.LocalDateTime;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-    @ExceptionHandler(DataValidationException.class)
+    @ExceptionHandler({DataValidationException.class, ConstraintViolationException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleDataValidationException(DataValidationException exception) {
+    public ErrorResponse handleBadRequestException(DataValidationException exception) {
         return new ErrorResponse(LocalDateTime.now(), exception.getMessage());
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleResourceNotFoundException(ResourceNotFoundException exception) {
-        return new ErrorResponse(LocalDateTime.now(), exception.getMessage());
-    }
-
-    @ExceptionHandler(ConstraintViolationException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleContraintViolationException(ConstraintViolationException exception) {
         return new ErrorResponse(LocalDateTime.now(), exception.getMessage());
     }
 

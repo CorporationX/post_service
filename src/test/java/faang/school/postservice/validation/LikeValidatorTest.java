@@ -8,7 +8,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.validator.like.LikeValidatorImpl;
+import faang.school.postservice.validator.like.LikeValidator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -35,7 +35,7 @@ public class LikeValidatorTest {
 
 
     @InjectMocks
-    private LikeValidatorImpl likeValidator;
+    private LikeValidator likeValidator;
     @Mock
     private LikeRepository likeRepository;
     @Mock

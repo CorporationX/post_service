@@ -73,7 +73,7 @@ public class LikeController {
                     )
             }
     )
-    @PostMapping("/set/post/{postId}")
+    @PostMapping("/post/{postId}")
     public LikeDto setLikeOnPost(@PathVariable
                                  @Parameter(description = "Post Id to set a like",
                                          example = "1")
@@ -123,7 +123,7 @@ public class LikeController {
                     )
             }
     )
-    @DeleteMapping("/unset/post/{postId}")
+    @DeleteMapping("/post/{postId}")
     public void unsetLikeOnPost(@PathVariable
                                 @Parameter(description = "Post Id to unset a like",
                                         example = "1")
@@ -174,7 +174,7 @@ public class LikeController {
                     )
             }
     )
-    @PostMapping("/set/comment/{commentId}")
+    @PostMapping("/comment/{commentId}")
     public LikeDto setLikeOnComment(@PathVariable
                                     @Parameter(description = "Comment Id to set a like",
                                             example = "1")
@@ -222,7 +222,7 @@ public class LikeController {
                     )
             }
     )
-    @DeleteMapping("/unset/comment/{commentId}")
+    @DeleteMapping("/comment/{commentId}")
     public void unsetLikeOnComment(@PathVariable
                                    @Parameter(description = "Comment Id to unset a like",
                                            example = "1")
@@ -257,7 +257,7 @@ public class LikeController {
                     )
             }
     )
-    @GetMapping("/count/{postId}")
+    @GetMapping("/count/post/{postId}")
     public int getPostLikesCount(@PathVariable
                                  @Parameter(description = "Post Id to count it's likes")
                                  @Positive(message = "Post Id can't be negative")
