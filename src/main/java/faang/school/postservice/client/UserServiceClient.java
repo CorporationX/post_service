@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import java.util.List;
 
 @FeignClient(name = "user-service",
-        url = "${user-service.host}:${user-service.port}${user-service.path}")
+        url = "${user-service.host}:${user-service.port}${user-service.servlet.context-path}")
 public interface UserServiceClient {
 
     @GetMapping("/users/{userId}")
