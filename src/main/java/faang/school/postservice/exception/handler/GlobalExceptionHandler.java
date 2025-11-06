@@ -1,6 +1,7 @@
 package faang.school.postservice.exception.handler;
 
 import faang.school.postservice.exception.externalservice.ExternalServiceConnectException;
+import faang.school.postservice.exception.externalservice.ExternalServiceException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.FieldError;
@@ -78,6 +79,7 @@ public class GlobalExceptionHandler {
         return new ErrorResponse(description, ex.getMessage());
     }
 
+
     /**
      * Обработка Runtime исключений как запасной вариант.
      * Возвращает 400 Bad Request.
@@ -131,5 +133,13 @@ public class GlobalExceptionHandler {
     public ErrorResponse handleGenericException(Exception ex) {
         log.error("Unhandled exception: ", ex);
         return new ErrorResponse("internal_server_error", "An unexpected error occurred");
+    }
+
+    @ExceptionHandler(ExternalServiceException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleExternalServiceException(ExternalServiceException ex) {
+        String description = "no access to the service: " + ex.getServiceName();
+        log.warn(description, ex);
+        return new ErrorResponse(description, ex.getMessage());
     }
 }
