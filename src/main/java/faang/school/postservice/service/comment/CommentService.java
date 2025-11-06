@@ -13,7 +13,11 @@ import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+
+import java.time.Duration;
 import java.util.List;
 
 @Slf4j
@@ -25,6 +29,9 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
+    private final RedisTemplate<String, Comment> redisTemplate;
+    @Value("${redis.post-expire}")
+    private String commentExpire;
 
     public CommentDto create(CommentDto commentDto) {
         long currentUserId = userContext.getUserId();
@@ -36,6 +43,15 @@ public class CommentService {
         comment.setPost(post);
 
         comment = commentRepository.save(comment);
+
+        try {
+            String key = "authors:" + comment.getAuthorId() + ":list";
+            redisTemplate.opsForList().rightPush(key, comment);
+            redisTemplate.expire(key, Duration.ofMillis(Long.parseLong(commentExpire)));
+        } catch(Exception e) {
+            log.error(e.getMessage());
+            throw new RuntimeException("Ошибка сохранения в кеш");
+        }
 
         log.info("Comment {} successfully created for post {} by user {}",
                  comment.getId(), commentDto.postId(), currentUserId);

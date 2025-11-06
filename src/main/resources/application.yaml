@@ -72,6 +72,7 @@ redis:
   host: localhost
   port: 6379
   post-expire: 86400000
+  comment-expire: 86400000
 
 feed:
   max-size: 500
