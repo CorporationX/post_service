@@ -1,7 +1,6 @@
 package faang.school.postservice.service.resource;
 
 import faang.school.postservice.dto.resource.ResourceDto;
-import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.FileException;
 import faang.school.postservice.mapper.ResourcePostMapper;
