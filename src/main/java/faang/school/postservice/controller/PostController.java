@@ -3,9 +3,11 @@ package faang.school.postservice.controller;
 import faang.school.postservice.controller.common.ApiExceptionDto;
 import faang.school.postservice.dto.post.PostDraftDto;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.model.Post;
 import faang.school.postservice.model.PostRedisEvent;
 import faang.school.postservice.producer.PostViewedProducer;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.RedisPostRepository;
 import faang.school.postservice.repository.RedisRepository;
 import faang.school.postservice.service.PostService;
 import faang.school.postservice.service.impl.PostServiceImpl;
@@ -29,6 +31,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/post")
@@ -39,6 +42,7 @@ public class PostController {
     private final PostServiceImpl postServiceImpl;
     private final PostViewedProducer postViewedProducer;
     private final RedisRepository redisRepository;
+    private final RedisPostRepository redisPostRepository;
 
     @PostMapping("/draft")
     @Operation(method = "POST",
@@ -163,6 +167,19 @@ public class PostController {
                                                Long postId) {
         PostDto post = postService.findById(postId);
         return ResponseEntity.ok(post);
+    }
+
+    @GetMapping("/getPostFromRedis/{postId}")
+    public Post getPostFromRedis(Long postId) {
+        Post postInRedis = redisPostRepository.findById(postId).orElseThrow(() -> new RuntimeException("Такого поста нет"));
+        System.out.println("postInRedis = " + postInRedis);
+        return postInRedis;
+    }
+
+    @GetMapping("/getAllPostsFromRedis")
+    public void getAllPostsFromRedis() {
+        Iterable<Post> allPosts = redisPostRepository.findAll();
+        System.out.println("allPosts = " + allPosts);
     }
 
     @GetMapping("/byAuthor/{userId}")

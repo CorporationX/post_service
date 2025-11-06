@@ -29,7 +29,7 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
-    private final RedisTemplate<String, Comment> redisTemplate;
+    private final RedisTemplate redisTemplate;
     @Value("${redis.post-expire}")
     private String commentExpire;
 

@@ -17,7 +17,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -36,9 +35,9 @@ public class KafkaPostConsumer {
 
 
     @KafkaListener(
-            topics = "${audit-kafka.topic}",
+            topics = "${post-kafka.consumer.topic}",
             containerFactory = "kafkaListenerContainerFactory",
-            groupId = "${audit-kafka.consumer.group-id}"
+            groupId = "${post-kafka.consumer.group-id}"
     )
     public void consume(@Payload String postEvent,
                         Acknowledgment acknowledgment) {

@@ -15,6 +15,7 @@ import faang.school.postservice.producer.AnalyticsEventProducer.AnalyticsEvent;
 import faang.school.postservice.producer.PostEventProducer;
 import faang.school.postservice.producer.PostViewedProducer;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.RedisPostRepository;
 import faang.school.postservice.service.PostService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +43,7 @@ public class PostServiceImpl implements PostService {
     private final AnalyticsEventProducer analyticsEventProducer;
     private final RedisTemplate<String, Object> redisTemplate;
     private final ObjectMapper objectMapper;
+    private final RedisPostRepository redisPostRepository;
     @Value("${redis.post-expire}")
     private String postExpire;
     private final PostEventProducer postEventProducer;
@@ -102,6 +104,16 @@ public class PostServiceImpl implements PostService {
             String key = "authors:" + post.getAuthorId() + ":list";
             redisTemplate.opsForList().rightPush(key, post);
             redisTemplate.expire(key, Duration.ofMillis(Long.parseLong(postExpire)));
+        } catch(Exception e) {
+            log.error(e.getMessage());
+            throw new RuntimeException("Ошибка сохранения в кеш");
+        }
+
+        try {
+            String key = "id:" + post.getId() + ":list";
+            redisTemplate.opsForList().rightPush(key, post);
+            redisTemplate.expire(key, Duration.ofMillis(Long.parseLong(postExpire)));
+            redisPostRepository.save();
         } catch(Exception e) {
             log.error(e.getMessage());
             throw new RuntimeException("Ошибка сохранения в кеш");
