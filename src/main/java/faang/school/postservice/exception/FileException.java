@@ -1,4 +1,4 @@
-package faang.school.postservice.exceptions;
+package faang.school.postservice.exception;
 
 public class FileException extends RuntimeException {
     public FileException(String message) {

@@ -8,7 +8,7 @@ import com.amazonaws.services.s3.model.ListObjectsV2Result;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import faang.school.postservice.config.s3.MinioConfig;
-import faang.school.postservice.exceptions.FileException;
+import faang.school.postservice.exception.FileException;
 import faang.school.postservice.model.Resource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
