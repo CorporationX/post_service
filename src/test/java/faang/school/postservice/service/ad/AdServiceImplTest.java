@@ -9,6 +9,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -21,6 +22,7 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -35,12 +37,11 @@ public class AdServiceImplTest {
     private AdRepository adRepository;
 
 
-
     @InjectMocks
     private AdServiceImpl adService;
 
     @Captor
-    ArgumentCaptor<List<Ad>> adListArgumentCaptor;
+    ArgumentCaptor<List<Long>> adListArgumentCaptor;
 
     @BeforeEach
     void setUp() {
@@ -78,13 +79,12 @@ public class AdServiceImplTest {
         List<Long> expiredAddsIds = Stream.of(adTwo, adThree, adFour).map(Ad::getId).toList();
 
         when(adRepository.findAll()).thenReturn(ads);
+        doNothing().when(adRepository).deleteAllById(Mockito.anyList());
         adService.deleteExpiredAds();
 
-        verify(adRepository, times(2)).deleteAll(adListArgumentCaptor.capture());
+        verify(adRepository, times(2)).deleteAllById(adListArgumentCaptor.capture());
 
-        List<Long> capturedAdsIds = adListArgumentCaptor.getAllValues().stream()
-                .flatMap(Collection::stream)
-                .map(Ad::getId).toList();
+        List<Long> capturedAdsIds = adListArgumentCaptor.getAllValues().stream().flatMap(Collection::stream).toList();
 
         assertEquals(3, capturedAdsIds.size());
         assertTrue(capturedAdsIds.containsAll(expiredAddsIds));
