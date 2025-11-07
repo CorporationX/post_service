@@ -3,6 +3,7 @@ package faang.school.postservice.config.moderator;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
@@ -13,6 +14,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
+@Getter
 @Component
 public class ModerationDictionary {
 
@@ -38,11 +40,7 @@ public class ModerationDictionary {
         }
     }
 
-    public List<String> getBanWords() {
-        return banWords;
-    }
-
-    public List<String> doToLowerCase(List<String> list) {
+    private List<String> doToLowerCase(List<String> list) {
         return list.stream()
                 .map(String::toLowerCase)
                 .collect(Collectors.toList());
