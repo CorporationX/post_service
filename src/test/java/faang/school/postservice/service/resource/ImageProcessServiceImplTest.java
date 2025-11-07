@@ -1,6 +1,6 @@
 package faang.school.postservice.service.resource;
 
-import faang.school.postservice.exceptions.FileException;
+import faang.school.postservice.exception.FileException;
 import faang.school.postservice.model.ImageType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

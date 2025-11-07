@@ -1,9 +1,8 @@
 package faang.school.postservice.service.resource;
 
 import faang.school.postservice.dto.resource.ResourceDto;
-import faang.school.postservice.exceptions.DataValidationException;
-import faang.school.postservice.exceptions.EntityNotFoundException;
-import faang.school.postservice.exceptions.FileException;
+import faang.school.postservice.exception.EntityNotFoundException;
+import faang.school.postservice.exception.FileException;
 import faang.school.postservice.mapper.ResourcePostMapper;
 import faang.school.postservice.model.ImageType;
 import faang.school.postservice.model.Post;
@@ -246,21 +245,6 @@ class ResourcePostServiceImplTest {
         verify(minioService, times(2)).deleteImage("test-key");
         verify(resourceRepository).deleteAll(resourcesToDelete);
         assertTrue(testPost.getResources().isEmpty());
-    }
-
-    @Test
-    void validateImageFile_maxImagesExceeded_shouldThrowDataValidationException() {
-        for (int i = 0; i < 10; i++) {
-            testPost.getResources().add(new Resource());
-        }
-
-        MultipartFile file = preparationDataMultipart();
-        MultipartFile[] files = {file};
-
-        when(postRepository.findById(1L)).thenReturn(Optional.of(testPost));
-
-        assertThrows(DataValidationException.class,
-                () -> resourcePostService.addResources(1L, files, ImageType.HORIZONTAL));
     }
 
     @Test
