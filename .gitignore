@@ -21,6 +21,7 @@ gradle-app.setting
 .classpath
 
 build/
+/checkstyle/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
@@ -44,6 +45,7 @@ out/
 !**/src/main/**/out/
 !**/src/test/**/out/
 
+
 ### NetBeans ###
 /nbproject/private/
 /nbbuild/
@@ -53,3 +55,4 @@ out/
 
 ### VS Code ###
 .vscode/
+/config/checkstyle/
