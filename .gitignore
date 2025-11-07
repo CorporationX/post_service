@@ -54,3 +54,7 @@ out/
 ### VS Code ###
 .vscode/
 /src/main/resources/application.properties
+
+### hz kakie-to papki, potom udalyu eti stroki ###
+.metadata/
+kls_database.db
