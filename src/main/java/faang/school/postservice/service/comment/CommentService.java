@@ -1,8 +1,12 @@
 package faang.school.postservice.service.comment;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.KafkaLikeDto;
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.comment.KafkaCommentDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.NotResourceOwnerException;
@@ -13,8 +17,10 @@ import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -32,17 +38,22 @@ public class CommentService {
     private final RedisTemplate redisTemplate;
     @Value("${redis.post-expire}")
     private String commentExpire;
+    private final KafkaTemplate<String, String> kafkaTemplate;
+    private String commentTopic = "comments";
 
     public CommentDto create(CommentDto commentDto) {
         long currentUserId = userContext.getUserId();
         log.info("Start create comment for post {} by user {}", commentDto.postId(), currentUserId);
         validateAuthor(currentUserId, commentDto.authorId());
         Post post = findPostById(commentDto.postId());
-        checkUserExists(currentUserId);
+//        checkUserExists(currentUserId);
         Comment comment = mapper.toComment(commentDto);
         comment.setPost(post);
 
         comment = commentRepository.save(comment);
+
+        ProducerRecord<String, String> producerRecord = new ProducerRecord<>(commentTopic, createRecordData(comment.getId(), currentUserId));
+        kafkaTemplate.send(producerRecord);
 
         try {
             String key = "authors:" + comment.getAuthorId() + ":list";
@@ -116,5 +127,17 @@ public class CommentService {
         return commentRepository.findById(id).orElseThrow(
                 () -> new EntityNotFoundException("Comment {} not found", id)
         );
+    }
+
+    private String createRecordData(long objectId, long currentUserId) {
+        KafkaCommentDto kafkaCommentDto = new KafkaCommentDto(objectId, currentUserId);
+        ObjectMapper objectMapper = new ObjectMapper();
+        String commentDtoAsString = null;
+        try {
+            commentDtoAsString = objectMapper.writeValueAsString(kafkaCommentDto);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        return commentDtoAsString;
     }
 }
