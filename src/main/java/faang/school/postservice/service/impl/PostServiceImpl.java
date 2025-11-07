@@ -4,12 +4,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.dto.event.PostViewedEvent;
 import faang.school.postservice.dto.post.PostDraftDto;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.post.PostRedisDto;
 import faang.school.postservice.exception.NotExistsException;
 import faang.school.postservice.exception.NotSupportedDataException;
 import faang.school.postservice.integration.project.service.ProjectServiceClient;
 import faang.school.postservice.integration.user.service.UserServiceClient;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.PostRedis;
 import faang.school.postservice.producer.AnalyticsEventProducer;
 import faang.school.postservice.producer.AnalyticsEventProducer.AnalyticsEvent;
 import faang.school.postservice.producer.PostEventProducer;
@@ -26,6 +28,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -110,10 +113,11 @@ public class PostServiceImpl implements PostService {
         }
 
         try {
-            String key = "id:" + post.getId() + ":list";
-            redisTemplate.opsForList().rightPush(key, post);
-            redisTemplate.expire(key, Duration.ofMillis(Long.parseLong(postExpire)));
-            redisPostRepository.save();
+//            String key = "id:" + post.getId() + ":list";
+//            redisTemplate.opsForList().rightPush(key, post);
+//            redisTemplate.expire(key, Duration.ofMillis(Long.parseLong(postExpire)));
+            PostRedis postRedis = postToPostRedis(post);
+            redisPostRepository.save(postRedis);
         } catch(Exception e) {
             log.error(e.getMessage());
             throw new RuntimeException("Ошибка сохранения в кеш");
@@ -211,5 +215,21 @@ public class PostServiceImpl implements PostService {
         });
     }
 
+    private PostRedis postToPostRedis(Post post) {
+        PostRedis postRedis = new PostRedis();
+        postRedis.setPostId(post.getId());
+        PostRedisDto postRedisDto = new PostRedisDto();
+        postRedisDto.setId(post.getId());
+        postRedisDto.setContent(post.getContent());
+        postRedisDto.setAuthorId(post.getAuthorId());
+        postRedisDto.setProjectId(post.getProjectId());
+        postRedisDto.setPublished(post.isPublished());
+        postRedisDto.setPublishedAt(post.getPublishedAt());
+        postRedisDto.setDeleted(post.isDeleted());
+        List<PostRedisDto> postRedisDtos = new ArrayList<>();
+        postRedisDtos.add(postRedisDto);
+        postRedis.setPost(postRedisDtos);
+        return postRedis;
+    }
 
 }

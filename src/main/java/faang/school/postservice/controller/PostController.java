@@ -4,6 +4,7 @@ import faang.school.postservice.controller.common.ApiExceptionDto;
 import faang.school.postservice.dto.post.PostDraftDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.PostRedis;
 import faang.school.postservice.model.PostRedisEvent;
 import faang.school.postservice.producer.PostViewedProducer;
 import faang.school.postservice.repository.PostRepository;
@@ -170,16 +171,16 @@ public class PostController {
     }
 
     @GetMapping("/getPostFromRedis/{postId}")
-    public Post getPostFromRedis(Long postId) {
-        Post postInRedis = redisPostRepository.findById(postId).orElseThrow(() -> new RuntimeException("Такого поста нет"));
+    public PostRedis getPostFromRedis(@PathVariable Long postId) {
+        PostRedis postInRedis = redisPostRepository.findById(postId).orElseThrow(() -> new RuntimeException("Такого поста нет"));
         System.out.println("postInRedis = " + postInRedis);
         return postInRedis;
     }
 
     @GetMapping("/getAllPostsFromRedis")
     public void getAllPostsFromRedis() {
-        Iterable<Post> allPosts = redisPostRepository.findAll();
-        System.out.println("allPosts = " + allPosts);
+        Iterable<PostRedis> allRedisPosts = redisPostRepository.findAll();
+        System.out.println("allPosts = " + allRedisPosts);
     }
 
     @GetMapping("/byAuthor/{userId}")
