@@ -25,28 +25,13 @@ import static org.mockito.Mockito.when;
 class AdServiceImplTest {
     @Mock
     private AdRepository adRepository;
-    @Mock
-    private ProcessingAd processingAd;
     @InjectMocks
     private AdServiceImpl adService;
 
-    @BeforeEach
-    public void setUp() {
-        ReflectionTestUtils.setField(adService, "SIZE", 100);
-    }
-
     @Test
-    public void removeAd_invokeProcessingAd_shouldCreatePageAndInvoke() {
-        Pageable pageable = PageRequest.of(0, 100);
-        List<Long> expectedIds = List.of(1L, 2L);
-        Page<Long> page = new PageImpl<>(expectedIds, pageable, 2);
+    public void removeAds_shouldCreatePageAndInvoke() {
+        adService.removeAds();
 
-        when(adRepository.findAllByEndDate(eq(pageable), any(LocalDateTime.class)))
-                .thenReturn(page);
-
-        adService.removeAd();
-
-        verify(adRepository).findAllByEndDate(eq(pageable), any(LocalDateTime.class));
-        verify(processingAd).processingAd(expectedIds);
+        verify(adRepository).deleteAllByEndDate(any(LocalDateTime.class));
     }
 }

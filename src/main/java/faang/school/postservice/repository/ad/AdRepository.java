@@ -4,6 +4,7 @@ import faang.school.postservice.model.ad.Ad;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -18,9 +19,10 @@ public interface AdRepository extends JpaRepository<Ad, Long> {
 
     List<Ad> findAllByBuyerId(long buyerId);
 
-    @Query("""
-            SELECT a.id FROM Ad a WHERE a.endDate < :now
+    @Modifying
+    @Query(value = """
+            DELETE a FROM Ad a WHERE a.endDate < :now
             OR a.appearancesLeft = 0
-            """)
-    Page<Long> findAllByEndDate(Pageable page, @Param("now") LocalDateTime now);
+            """, nativeQuery = true)
+    void deleteAllByEndDate(@Param("now") LocalDateTime now);
 }

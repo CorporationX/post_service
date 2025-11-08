@@ -2,33 +2,25 @@ package faang.school.postservice.service.ad;
 
 import faang.school.postservice.repository.ad.AdRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class AdServiceImpl implements AdService {
     private final AdRepository adRepository;
-    private final ProcessingAd processingAd;
 
-    @Value("${post.ad.batch-size}")
-    private int SIZE;
-
+    @Transactional
     @Override
-    public void removeAd() {
-        int page = 0;
+    public void removeAds() {
+        log.debug("Start processing remove ad");
         LocalDateTime now = LocalDateTime.now();
-        Page<Long> adPage;
-        do {
-            adPage = adRepository.findAllByEndDate(PageRequest.of(page, SIZE), now);
-            if (!adPage.isEmpty()) {
-                processingAd.processingAd(adPage.getContent());
-            }
-            page++;
-        } while (adPage.hasNext());
+        adRepository.deleteAllByEndDate(now);
+        log.debug("Successful delete Ads");
     }
 }

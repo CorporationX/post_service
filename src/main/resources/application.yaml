@@ -83,6 +83,7 @@ services:
 
 executor:
   thread-count: 10
+  max-thread-pool: 30
   await-time-seconds: 30
 
 post:
