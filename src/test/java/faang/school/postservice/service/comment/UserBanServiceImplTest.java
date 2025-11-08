@@ -24,7 +24,7 @@ class UserBanServiceImplTest {
     private CommentRepository commentRepository;
 
     @Mock
-    private Publisher publisher;
+    private Publisher publisherBanUsers;
 
     @Mock
     private ChannelTopic userBanTopic;
@@ -40,20 +40,20 @@ class UserBanServiceImplTest {
     @Test
     void banUserComment_withNonEmptyList_shouldPublishMessage() {
         List<Long> fakeList = List.of(1L, 2L, 3L);
-        when(commentRepository.findAllBanUser(anyInt())).thenReturn(fakeList);
+        when(commentRepository.findAllUsersForBan(anyInt())).thenReturn(fakeList);
         when(userBanTopic.getTopic()).thenReturn("userBanTopic");
 
         userBanService.banUserComment();
 
-        verify(publisher, times(1)).publish(eq(userBanTopic), eq(fakeList));
+        verify(publisherBanUsers, times(1)).publish(eq(userBanTopic), eq(fakeList));
     }
 
     @Test
     void banUserComment_withEmptyList_shouldNotPublish() {
-        when(commentRepository.findAllBanUser(anyInt())).thenReturn(List.of());
+        when(commentRepository.findAllUsersForBan(anyInt())).thenReturn(List.of());
 
         userBanService.banUserComment();
 
-        verifyNoInteractions(publisher);
+        verifyNoInteractions(publisherBanUsers);
     }
 }

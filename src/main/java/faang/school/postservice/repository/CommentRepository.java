@@ -12,6 +12,15 @@ public interface CommentRepository extends CrudRepository<Comment, Long> {
     @Query("SELECT c FROM Comment c WHERE c.post.id = :postId")
     List<Comment> findAllByPostId(long postId);
 
-    @Query("SELECT c.authorId FROM Comment c WHERE c.verified = false GROUP BY c.authorId HAVING COUNT(*) >= :banSize")
-    List<Long> findAllBanUser(@Param("banSize") int banSize);
+    @Query(""" 
+            SELECT DISTINCT c.authorId
+            FROM Comment c
+            WHERE c.verified = false
+            AND (
+                SELECT COUNT(*)
+                FROM Comment c2
+                WHERE c2.authorId = c.authorId AND c2.verified = false
+              ) >= :banSize
+            """)
+    List<Long> findAllUsersForBan(@Param("banSize") int banSize);
 }

@@ -22,9 +22,9 @@ public class UserBanServiceImpl implements UserBanService {
 
     @Override
     public void banUserComment() {
-        List<Long> verifiedUsers = commentRepository.findAllBanUser(banSize);
-        if (!verifiedUsers.isEmpty()) {
-            publisher.publish(userBanTopic, verifiedUsers);
+        List<Long> banUsersId = commentRepository.findAllUsersForBan(banSize);
+        if (!banUsersId.isEmpty()) {
+            publisher.publish(userBanTopic, banUsersId);
         }
     }
 }
