@@ -47,3 +47,12 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+threads:
+  delete-ads-pool-size: 3
+
+cron:
+  delete-expired-ads-cron: 0 0 0 * * *
+
+ads:
+  max-delete-per-thread: 100
