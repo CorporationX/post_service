@@ -1,0 +1,2 @@
+ALTER TABLE comment
+DROP COLUMN IF EXISTS verfied_date;

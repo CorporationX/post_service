@@ -40,6 +40,16 @@ public class ModerationDictionary {
         }
     }
 
+    public boolean containsBanWord(String text) {
+        if (text == null) {
+            return false;
+        }
+
+        String lowerText = text.toLowerCase();
+        return banWords.stream()
+                .anyMatch(lowerText::contains);
+    }
+
     private List<String> doToLowerCase(List<String> list) {
         return list.stream()
                 .map(String::toLowerCase)

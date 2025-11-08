@@ -1,6 +1,7 @@
 package faang.school.postservice.service.comment;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.moderator.ModerationDictionary;
 import faang.school.postservice.dto.comment.CommentCreateDto;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CommentUpdateDto;
@@ -20,6 +21,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -28,6 +32,7 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
+    private final ModerationDictionary moderationDictionary;
 
     @Transactional
     public Comment create(CommentCreateDto commentCreateDto, Long userId) {
@@ -54,6 +59,7 @@ public class CommentService {
         CommentValidator.validateCommentContent(dto.content());
 
         existing.setContent(dto.content());
+        existing.setVerifiedDate(null);
         existing.setLargeImageFileKey(dto.largeImageFileKey());
         existing.setSmallImageFileKey(dto.smallImageFileKey());
         log.info("Updating comment id={} by userId={}", commentId, userId);
@@ -81,5 +87,18 @@ public class CommentService {
     public Comment getById(Long commentId) {
         log.info("Fetching comment by id={}", commentId);
         return commentRepository.findByIdOrThrow(commentId);
+    }
+
+    @Transactional
+    public void moderateNewComments() {
+        List<Comment> comments = commentRepository.findCommentByVerfiedDateNull();
+        List<Comment> checkedContent = new ArrayList<>();
+        comments.forEach(comment -> {
+            Boolean verified = moderationDictionary.containsBanWord(comment.getContent());
+            comment.setVerifiedDate(verified);
+            checkedContent.add(comment);
+        });
+        commentRepository.saveAll(checkedContent);
+        log.info("comments have been checked");
     }
 }
