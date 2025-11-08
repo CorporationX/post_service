@@ -92,8 +92,8 @@ public class CommentService {
         List<Comment> comments = commentRepository.findCommentByVerfiedDateNull();
         List<Comment> checkedContent = new ArrayList<>();
         comments.forEach(comment -> {
-            Boolean verified = moderationDictionary.containsBanWord(comment.getContent());
-            comment.setVerifiedDate(verified);
+            Boolean isVerified = moderationDictionary.containsBanWord(comment.getContent());
+            comment.setVerifiedDate(isVerified);
             checkedContent.add(comment);
         });
         commentRepository.saveAll(checkedContent);

@@ -44,4 +44,11 @@ payment-service:
 
 app:
   moderation:
-    cron: "0 0 3 * * ?"  # каждый день в 3:00 ночи
+    cron: "0 0 3 * * ?" # каждый день в 3:00 ночи
+
+ban:
+  words:
+    default:
+             - "блять"
+             - "пизда"
+             - "хуй"
