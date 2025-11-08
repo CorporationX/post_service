@@ -44,4 +44,4 @@ payment-service:
 
 app:
   moderation:
-    cron: "0 52 12 * * ?"  # каждый день в 3:00 ночи
+    cron: "0 0 3 * * ?"  # каждый день в 3:00 ночи
