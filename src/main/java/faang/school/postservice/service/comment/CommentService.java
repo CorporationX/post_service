@@ -60,8 +60,6 @@ public class CommentService {
 
         existing.setContent(dto.content());
         existing.setVerifiedDate(null);
-        existing.setLargeImageFileKey(dto.largeImageFileKey());
-        existing.setSmallImageFileKey(dto.smallImageFileKey());
         log.info("Updating comment id={} by userId={}", commentId, userId);
 
         return commentRepository.save(existing);
