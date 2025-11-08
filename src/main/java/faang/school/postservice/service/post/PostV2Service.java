@@ -10,6 +10,7 @@ import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.mapper.PostV2Mapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.spec.PostSpecification;
 import lombok.RequiredArgsConstructor;
@@ -17,8 +18,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 @RequiredArgsConstructor
 @Service
@@ -26,7 +31,9 @@ public class PostV2Service {
     private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
     private final UserContext userContext;
+    private final LikeRepository likeRepository;
 
+    @Transactional
     public PostV2Dto createPostAsDraft(PostV2CreateDto postV2CreateDto) {
         long userId = userContext.getUserId();
         UserDto user = userServiceClient.getUser(userId);
@@ -35,9 +42,10 @@ public class PostV2Service {
         post.setAuthorId(userId);
 
         Post savedPost = postRepository.save(post);
-        return PostV2Mapper.toDto(savedPost);
+        return PostV2Mapper.toDto(savedPost, 0L, Collections.emptyList());
     }
 
+    @Transactional
     public PostV2Dto publishPost(Long postId) {
         long userId = userContext.getUserId();
         UserDto user = userServiceClient.getUser(userId);
@@ -53,9 +61,10 @@ public class PostV2Service {
         post.setPublishedAt(LocalDateTime.now());
 
         Post saved = postRepository.save(post);
-        return PostV2Mapper.toDto(saved);
+        return PostV2Mapper.toDto(saved, 0L, Collections.emptyList());
     }
 
+    @Transactional
     public PostV2Dto updatePost(Long postId, PostV2UpdateDto postV2UpdateDto) {
         long userId = userContext.getUserId();
         UserDto user = userServiceClient.getUser(userId);
@@ -65,9 +74,12 @@ public class PostV2Service {
         PostV2Mapper.update(post, postV2UpdateDto);
 
         Post saved = postRepository.save(post);
-        return PostV2Mapper.toDto(saved);
+        Long likesCount = likeRepository.countLikeByPostId(postId);
+        List<Long> likesIds = likeRepository.findLikeIdsByPostId(postId);
+        return PostV2Mapper.toDto(saved, likesCount, likesIds);
     }
 
+    @Transactional
     public void deletePostSoftly(Long postId) {
         long userId = userContext.getUserId();
         UserDto user = userServiceClient.getUser(userId);
@@ -83,6 +95,7 @@ public class PostV2Service {
         postRepository.save(post);
     }
 
+    @Transactional(readOnly = true)
     public PageResponse<PostV2Dto> findAllPublishedByFilter(
             Long authorId,
             Pageable pageable
@@ -90,9 +103,21 @@ public class PostV2Service {
         Specification<Post> spec = PostSpecification.filter(authorId, true);
         Page<Post> page = postRepository.findAll(spec, pageable);
 
-        return PageResponse.from(page, PostV2Mapper::toDto);
+        List<Long> postIds = page.getContent().stream()
+                .map(Post::getId)
+                .toList();
+
+        Map<Long, Long> likesCountByPostId = likeRepository.getLikeCountsByPostIds(postIds);
+        Map<Long, List<Long>> likesIdsByPostId = likeRepository.getLikeIdsByPostIds(postIds);
+
+        return PageResponse.from(page, post -> PostV2Mapper.toDto(post,
+                likesCountByPostId.getOrDefault(post.getId(), 0L),
+                likesIdsByPostId.getOrDefault(post.getId(), Collections.emptyList())
+                )
+        );
     }
 
+    @Transactional(readOnly = true)
     public PageResponse<PostV2Dto> findAllDraftsByAuthor(Pageable pageable) {
         long userId = userContext.getUserId();
         UserDto user = userServiceClient.getUser(userId);
@@ -100,14 +125,28 @@ public class PostV2Service {
         Specification<Post> spec = PostSpecification.filter(userId, false);
         Page<Post> page = postRepository.findAll(spec, pageable);
 
-        return PageResponse.from(page, PostV2Mapper::toDto);
+        List<Long> postIds = page.getContent().stream()
+                .map(Post::getId)
+                .toList();
+
+        Map<Long, Long> likesCountByPostId = likeRepository.getLikeCountsByPostIds(postIds);
+        Map<Long, List<Long>> likesIdsByPostId = likeRepository.getLikeIdsByPostIds(postIds);
+
+        return PageResponse.from(page, post -> PostV2Mapper.toDto(post,
+                        likesCountByPostId.getOrDefault(post.getId(), 0L),
+                        likesIdsByPostId.getOrDefault(post.getId(), Collections.emptyList())
+                )
+        );
     }
 
+    @Transactional(readOnly = true)
     public PostV2Dto findById(Long postId) {
         long userId = userContext.getUserId();
         UserDto user = userServiceClient.getUser(userId);
         Post post = postRepository.getByIdOrThrow(postId);
-        return PostV2Mapper.toDto(post);
+        Long likesCount = likeRepository.countLikeByPostId(post.getId());
+        List<Long> likesIds = likeRepository.findLikeIdsByPostId(post.getId());
+        return PostV2Mapper.toDto(post, likesCount, likesIds);
     }
 
     private void validatePostOwner(Post post, long userId) {
@@ -117,5 +156,4 @@ public class PostV2Service {
             }
         }
     }
-
 }

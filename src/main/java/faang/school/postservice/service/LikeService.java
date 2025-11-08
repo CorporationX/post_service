@@ -1,9 +1,13 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.like.LikeDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DuplicateLikeException;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.ForbiddenException;
+import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
@@ -25,9 +29,11 @@ public class LikeService {
     private final CommentRepository commentRepository;
     private final UserServiceClient userServiceClient;
     private final LikeRepository likeRepository;
+    private final UserContext userContext;
 
     @Transactional
-    public void addLikeToPost(Long postId, Long userId) {
+    public LikeDto addLikeToPost(Long postId) {
+        Long userId = userContext.getUserId();
         validateUserExist(userId);
         Post post = postRepository.getByIdOrThrow(postId);
         validateAlreadyLikedPost(postId, userId);
@@ -38,19 +44,23 @@ public class LikeService {
                 .build();
         likeRepository.save(like);
         log.info("Like added to post {} by user {}", postId, userId);
+        return LikeMapper.toDtoWithPost(like);
     }
 
     @Transactional
-    public void removeLikeFromPost(Long postId, Long userId) {
+    public LikeDto removeLikeFromPost(Long postId) {
+        Long userId = userContext.getUserId();
         validateUserExist(userId);
         Like like = likeRepository.findByPostIdAndUserIdOrThrow(postId, userId);
         validateAuthorLike(like, userId);
         likeRepository.deleteByPostIdAndUserId(postId, userId);
         log.info("Like removed from post {} by user {}", postId, userId);
+        return LikeMapper.toDtoWithPost(like);
     }
 
     @Transactional
-    public void addLikeToComment(Long commentId, Long userId) {
+    public LikeDto addLikeToComment(Long commentId) {
+        Long userId = userContext.getUserId();
         validateUserExist(userId);
         Comment comment = commentRepository.getByIdOrThrow(commentId);
         validateAlreadyLikedComment(commentId, userId);
@@ -61,61 +71,32 @@ public class LikeService {
                 .build();
         likeRepository.save(like);
         log.info("Like added to comment {} by user {}", commentId, userId);
+        return LikeMapper.toDtoWithComment(like);
     }
 
     @Transactional
-    public void removeLikeFromComment(Long commentId, Long userId) {
+    public LikeDto removeLikeFromComment(Long commentId) {
+        Long userId = userContext.getUserId();
         validateUserExist(userId);
         Like like = likeRepository.findByCommentIdAndUserIdOrThrow(commentId, userId);
         validateAuthorLike(like, userId);
 
         likeRepository.deleteByCommentIdAndUserId(commentId, userId);
         log.info("Like removed from comment {} by user {}", commentId, userId);
+        return LikeMapper.toDtoWithComment(like);
     }
-
-    @Transactional(readOnly = true)
-    public Integer getCountLikeForPost(Long postId) {
-        postRepository.getByIdOrThrow(postId);
-        return likeRepository.countLikeByPost(postId);
-    }
-
-    @Transactional(readOnly = true)
-    public Integer getCountLikeForComment(Long commentId) {
-        commentRepository.getByIdOrThrow(commentId);
-        return likeRepository.countLikeByComment(commentId);
-    }
-
-    @Transactional(readOnly = true)
-    public Integer getCountLikeUserForPosts(Long userId) {
-        validateUserExist(userId);
-        return likeRepository.countLikeUserForPosts(userId);
-    }
-
-    @Transactional(readOnly = true)
-    public Integer getCountLikeUserForComments(Long userId) {
-        validateUserExist(userId);
-        return likeRepository.countLikeUserForComments(userId);
-    }
-
 
     private void validateUserExist(Long userId) {
-        try {
-            userServiceClient.getUser(userId);
-        } catch (feign.FeignException.NotFound e) {
-            log.error("Not found User with id {}", userId);
+        UserDto userDto = userServiceClient.getUser(userId);
+        if (userDto == null || !Objects.equals(userId, userDto.id())) {
+            log.error("User validation failed for id {}", userId);
             throw new EntityNotFoundException(String.format("User with id %d not found", userId));
-        } catch (EntityNotFoundException e) {
-            log.error("User with id {} not found", userId);
-            throw new EntityNotFoundException(String.format("User with id %d not found", userId));
-        } catch (Exception e) {
-            log.error("Error while validating user with id {}", userId, e);
-            throw new RuntimeException("Service unavailable. Please try again later.");
         }
     }
 
 
     private void validateAlreadyLikedPost(Long postId, Long userId) {
-        if (likeRepository.findByPostIdAndUserId(postId, userId).isPresent()){
+        if (likeRepository.findByPostIdAndUserId(postId, userId).isPresent()) {
             throw new DuplicateLikeException(String.format("User %d already liked post %d ", userId, postId));
         }
     }
@@ -127,7 +108,7 @@ public class LikeService {
     }
 
     private void validateAlreadyLikedComment(Long commentId, Long userId) {
-        if (likeRepository.findByCommentIdAndUserId(commentId, userId).isPresent()){
+        if (likeRepository.findByCommentIdAndUserId(commentId, userId).isPresent()) {
             throw new DuplicateLikeException(String.format("User %d already liked comment %d ", userId, commentId));
         }
     }

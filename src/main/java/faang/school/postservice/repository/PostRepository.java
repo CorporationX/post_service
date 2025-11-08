@@ -6,8 +6,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface PostRepository extends JpaRepository<Post, Long>, JpaSpecificationExecutor<Post> {
 
@@ -40,4 +42,10 @@ public interface PostRepository extends JpaRepository<Post, Long>, JpaSpecificat
             SELECT p FROM Post p
             WHERE p.published = false AND p.deleted = false AND p.authorId = :authorId""")
     List<Post> findPostToDraftByAuthorId(Long authorId);
+
+    @Query("SELECT p FROM Post p LEFT JOIN FETCH p.likes WHERE p.id = :id")
+    Optional<Post> findByIdWithLikes(@Param("id") long id);
+
+    @Query("SELECT p FROM Post p LEFT JOIN FETCH p.likes WHERE p.id IN :ids")
+    List<Post> findAllByIdWithLikes(@Param("ids") List<Long> ids);
 }

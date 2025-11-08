@@ -6,8 +6,11 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public interface LikeRepository extends CrudRepository<Like, Long> {
     @Transactional
@@ -66,19 +69,63 @@ public interface LikeRepository extends CrudRepository<Like, Long> {
             WHERE l.userId = :userId AND
             l.comment.id IS NOT NULL
             """)
-    Integer countLikeUserForComments(Long userId);
+    Long countLikeUserForComments(Long userId);
 
     @Query("""
             SELECT COUNT(l) FROM Like l
             WHERE l.post.id = :postId
             """)
-    Integer countLikeByPost(Long postId);
+    Long countLikeByPostId(Long postId);
+
+    @Query("""
+            SELECT l.post.id, COUNT(l) FROM Like l
+            WHERE l.post.id IN :postIds GROUP BY l.post.id
+            """)
+    List<Object[]> countByPostIds(List<Long> postIds);
+
+    default Map<Long, Long> getLikeCountsByPostIds(List<Long> postIds) {
+        if (postIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        return countByPostIds(postIds).stream()
+                .collect(Collectors.toMap(
+                        obj -> (Long) obj[0],
+                        obj -> (Long) obj[1]
+                ));
+    }
+
+    @Query("""
+            SELECT l.id FROM Like l
+            WHERE l.post.id = :postId
+            """)
+    List<Long> findLikeIdsByPostId(Long postId);
+
+    @Query("""
+            SELECT l.post.id, l.id FROM Like l
+            "WHERE l.post.id IN :postIds
+            """)
+    List<Object[]> findLikeIdsByPostIds(List<Long> postIds);
+
+    default Map<Long, List<Long>> getLikeIdsByPostIds(List<Long> postIds) {
+        if (postIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        return findLikeIdsByPostIds(postIds).stream()
+                .collect(Collectors.groupingBy(
+                        obj -> (Long) obj[0],
+                        Collectors.mapping(
+                                obj -> (Long) obj[1],
+                                Collectors.toList()
+                        )
+                ));
+    }
 
     @Query("""
             SELECT COUNT(l) FROM Like l
             WHERE l.comment.id = :commentId
             """)
-    Integer countLikeByComment(Long commentId);
+    Long countLikeByComment(Long commentId);
 
 
 }

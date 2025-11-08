@@ -1,6 +1,9 @@
 package faang.school.postservice.service.like;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.like.LikeDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DuplicateLikeException;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.ForbiddenException;
@@ -21,6 +24,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -31,11 +35,12 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 public class LikeServiceTest {
 
-    private static final Long POST_ID = 1L;
-    private static final Long COMMENT_ID = 2L;
-    private static final Long USER_ID = 100L;
-    private static final Long OTHER_USER_ID = 200L;
-    private static final Long LIKE_ID = 50L;
+    private static final Long VALID_USER_ID = 100L;
+    private static final Long VALID_POST_ID = 1L;
+    private static final Long VALID_COMMENT_ID = 1L;
+    private static final Long VALID_LIKE_ID = 1L;
+    private static final Long INVALID_USER_ID = 999L;
+    private static final Long DIFFERENT_USER_ID = 200L;
 
     @Mock
     private PostRepository postRepository;
@@ -49,216 +54,220 @@ public class LikeServiceTest {
     @Mock
     private LikeRepository likeRepository;
 
+    @Mock
+    private UserContext userContext;
+
     @InjectMocks
     private LikeService likeService;
 
     private Post post;
     private Comment comment;
     private Like like;
+    private Like commentLike;
+    private UserDto userDto;
 
     @BeforeEach
     void setUp() {
         post = Post.builder()
-                .id(POST_ID)
+                .id(VALID_POST_ID)
                 .build();
 
         comment = Comment.builder()
-                .id(COMMENT_ID)
+                .id(VALID_COMMENT_ID)
                 .build();
 
         like = Like.builder()
-                .id(LIKE_ID)
-                .userId(USER_ID)
+                .id(VALID_LIKE_ID)
+                .userId(VALID_USER_ID)
                 .post(post)
-                .comment(null)
                 .build();
+
+        commentLike = Like.builder()
+                .id(VALID_LIKE_ID)
+                .userId(VALID_USER_ID)
+                .comment(comment)
+                .build();
+
+        userDto = new UserDto(VALID_USER_ID, "testuser", "test@example.com");
     }
 
     @Test
     void addLikeToPost_ValidData_ShouldAddLike() {
-        when(userServiceClient.getUser(USER_ID)).thenReturn(null);
-        when(postRepository.getByIdOrThrow(POST_ID)).thenReturn(post);
-        when(likeRepository.findByPostIdAndUserId(POST_ID, USER_ID)).thenReturn(Optional.empty());
-        when(likeRepository.save(any(Like.class))).thenReturn(like);
+        when(userContext.getUserId()).thenReturn(VALID_USER_ID);
+        when(userServiceClient.getUser(VALID_USER_ID)).thenReturn(userDto);
+        when(postRepository.getByIdOrThrow(VALID_POST_ID)).thenReturn(post);
+        when(likeRepository.findByPostIdAndUserId(VALID_POST_ID, VALID_USER_ID)).thenReturn(Optional.empty());
+        when(likeRepository.save(any(Like.class))).thenAnswer(invocation -> {
+            Like savedLike = invocation.getArgument(0);
+            return Like.builder()
+                    .id(VALID_LIKE_ID)
+                    .userId(savedLike.getUserId())
+                    .post(savedLike.getPost())
+                    .build();
+        });
 
-        likeService.addLikeToPost(POST_ID, USER_ID);
+        LikeDto result = likeService.addLikeToPost(VALID_POST_ID);
 
+        assertNotNull(result);
+        assertEquals(VALID_USER_ID, result.userId());
         verify(likeRepository).save(any(Like.class));
-        verify(userServiceClient).getUser(USER_ID);
-        verify(postRepository).getByIdOrThrow(POST_ID);
     }
 
     @Test
     void addLikeToPost_UserNotFound_ShouldThrowException() {
-        when(userServiceClient.getUser(USER_ID)).thenThrow(new RuntimeException());
+        when(userContext.getUserId()).thenReturn(INVALID_USER_ID);
+        when(userServiceClient.getUser(INVALID_USER_ID)).thenReturn(null);
 
-        assertThrows(RuntimeException.class, () -> likeService.addLikeToPost(POST_ID, USER_ID));
-
+        assertThrows(EntityNotFoundException.class, () -> likeService.addLikeToPost(VALID_POST_ID));
         verify(likeRepository, never()).save(any(Like.class));
-        verify(postRepository, never()).getByIdOrThrow(anyLong());
     }
 
     @Test
-    void addLikeToPost_PostNotFound_ShouldThrowException() {
-        when(userServiceClient.getUser(USER_ID)).thenReturn(null);
-        when(postRepository.getByIdOrThrow(POST_ID)).thenThrow(new EntityNotFoundException("Post not found"));
+    void addLikeToPost_UserIdMismatch_ShouldThrowException() {
+        UserDto mismatchedUserDto = new UserDto(DIFFERENT_USER_ID, "otheruser", "other@example.com");
 
-        assertThrows(EntityNotFoundException.class, () -> likeService.addLikeToPost(POST_ID, USER_ID));
+        when(userContext.getUserId()).thenReturn(VALID_USER_ID);
+        when(userServiceClient.getUser(VALID_USER_ID)).thenReturn(mismatchedUserDto);
 
+        assertThrows(EntityNotFoundException.class, () -> likeService.addLikeToPost(VALID_POST_ID));
         verify(likeRepository, never()).save(any(Like.class));
+    }
+
+    @Test
+    void addLikeToPost_UserServiceThrowsNotFound_ShouldThrowEntityNotFoundException() {
+        when(userContext.getUserId()).thenReturn(INVALID_USER_ID);
+        when(userServiceClient.getUser(INVALID_USER_ID)).thenThrow(new EntityNotFoundException("User not found"));
+
+        assertThrows(EntityNotFoundException.class, () -> likeService.addLikeToPost(VALID_POST_ID));
+    }
+
+    @Test
+    void addLikeToPost_UserServiceThrowsOtherException_ShouldThrowRuntimeException() {
+        when(userContext.getUserId()).thenReturn(VALID_USER_ID);
+        when(userServiceClient.getUser(VALID_USER_ID)).thenThrow(new RuntimeException("Service unavailable"));
+
+        assertThrows(RuntimeException.class, () -> likeService.addLikeToPost(VALID_POST_ID));
     }
 
     @Test
     void addLikeToPost_AlreadyLiked_ShouldThrowDuplicateLikeException() {
-        when(userServiceClient.getUser(USER_ID)).thenReturn(null);
-        when(postRepository.getByIdOrThrow(POST_ID)).thenReturn(post);
-        when(likeRepository.findByPostIdAndUserId(POST_ID, USER_ID)).thenReturn(Optional.of(like));
+        when(userContext.getUserId()).thenReturn(VALID_USER_ID);
+        when(userServiceClient.getUser(VALID_USER_ID)).thenReturn(userDto);
+        when(postRepository.getByIdOrThrow(VALID_POST_ID)).thenReturn(post);
+        when(likeRepository.findByPostIdAndUserId(VALID_POST_ID, VALID_USER_ID)).thenReturn(Optional.of(like));
 
-        assertThrows(DuplicateLikeException.class, () -> likeService.addLikeToPost(POST_ID, USER_ID));
-
+        assertThrows(DuplicateLikeException.class, () -> likeService.addLikeToPost(VALID_POST_ID));
         verify(likeRepository, never()).save(any(Like.class));
     }
 
     @Test
     void removeLikeFromPost_ValidData_ShouldRemoveLike() {
-        when(userServiceClient.getUser(USER_ID)).thenReturn(null);
-        when(likeRepository.findByPostIdAndUserIdOrThrow(POST_ID, USER_ID)).thenReturn(like);
+        when(userContext.getUserId()).thenReturn(VALID_USER_ID);
+        when(userServiceClient.getUser(VALID_USER_ID)).thenReturn(userDto);
+        when(likeRepository.findByPostIdAndUserIdOrThrow(VALID_POST_ID, VALID_USER_ID)).thenReturn(like);
 
-        likeService.removeLikeFromPost(POST_ID, USER_ID);
+        LikeDto result = likeService.removeLikeFromPost(VALID_POST_ID);
 
-        verify(likeRepository).deleteByPostIdAndUserId(POST_ID, USER_ID);
-        verify(userServiceClient).getUser(USER_ID);
+        assertNotNull(result);
+        assertEquals(VALID_USER_ID, result.userId());
+        verify(likeRepository).deleteByPostIdAndUserId(VALID_POST_ID, VALID_USER_ID);
     }
 
     @Test
-    void removeLikeFromPost_NotAuthor_ShouldThrowForbiddenException() {
-        Like otherUserLike = Like.builder()
-                .id(LIKE_ID)
-                .userId(OTHER_USER_ID)
+    void removeLikeFromPost_DifferentUser_ShouldThrowForbiddenException() {
+        Like differentUserLike = Like.builder()
+                .id(VALID_LIKE_ID)
+                .userId(DIFFERENT_USER_ID)
                 .post(post)
                 .build();
 
-        when(userServiceClient.getUser(USER_ID)).thenReturn(null);
-        when(likeRepository.findByPostIdAndUserIdOrThrow(POST_ID, USER_ID)).thenReturn(otherUserLike);
+        when(userContext.getUserId()).thenReturn(VALID_USER_ID);
+        when(userServiceClient.getUser(VALID_USER_ID)).thenReturn(userDto);
+        when(likeRepository.findByPostIdAndUserIdOrThrow(VALID_POST_ID, VALID_USER_ID)).thenReturn(differentUserLike);
 
-        assertThrows(ForbiddenException.class, () -> likeService.removeLikeFromPost(POST_ID, USER_ID));
-
+        assertThrows(ForbiddenException.class, () -> likeService.removeLikeFromPost(VALID_POST_ID));
         verify(likeRepository, never()).deleteByPostIdAndUserId(anyLong(), anyLong());
     }
 
     @Test
     void addLikeToComment_ValidData_ShouldAddLike() {
-        when(userServiceClient.getUser(USER_ID)).thenReturn(null);
-        when(commentRepository.getByIdOrThrow(COMMENT_ID)).thenReturn(comment);
-        when(likeRepository.findByCommentIdAndUserId(COMMENT_ID, USER_ID)).thenReturn(Optional.empty());
-        when(likeRepository.save(any(Like.class))).thenReturn(like);
+        when(userContext.getUserId()).thenReturn(VALID_USER_ID);
+        when(userServiceClient.getUser(VALID_USER_ID)).thenReturn(userDto);
+        when(commentRepository.getByIdOrThrow(VALID_COMMENT_ID)).thenReturn(comment);
+        when(likeRepository.findByCommentIdAndUserId(VALID_COMMENT_ID, VALID_USER_ID)).thenReturn(Optional.empty());
+        when(likeRepository.save(any(Like.class))).thenAnswer(invocation -> {
+            Like savedLike = invocation.getArgument(0);
+            return Like.builder()
+                    .id(VALID_LIKE_ID)
+                    .userId(savedLike.getUserId())
+                    .comment(savedLike.getComment())
+                    .build();
+        });
 
-        likeService.addLikeToComment(COMMENT_ID, USER_ID);
+        LikeDto result = likeService.addLikeToComment(VALID_COMMENT_ID);
 
+        assertNotNull(result);
+        assertEquals(VALID_USER_ID, result.userId());
         verify(likeRepository).save(any(Like.class));
-        verify(userServiceClient).getUser(USER_ID);
-        verify(commentRepository).getByIdOrThrow(COMMENT_ID);
+    }
+
+    @Test
+    void addLikeToComment_UserNotFound_ShouldThrowException() {
+        when(userContext.getUserId()).thenReturn(INVALID_USER_ID);
+        when(userServiceClient.getUser(INVALID_USER_ID)).thenReturn(null);
+
+        assertThrows(EntityNotFoundException.class, () -> likeService.addLikeToComment(VALID_COMMENT_ID));
+        verify(likeRepository, never()).save(any(Like.class));
+    }
+
+    @Test
+    void addLikeToComment_UserIdMismatch_ShouldThrowException() {
+        UserDto mismatchedUserDto = new UserDto(DIFFERENT_USER_ID, "otheruser", "other@example.com");
+
+        when(userContext.getUserId()).thenReturn(VALID_USER_ID);
+        when(userServiceClient.getUser(VALID_USER_ID)).thenReturn(mismatchedUserDto);
+
+        assertThrows(EntityNotFoundException.class, () -> likeService.addLikeToComment(VALID_COMMENT_ID));
+        verify(likeRepository, never()).save(any(Like.class));
     }
 
     @Test
     void addLikeToComment_AlreadyLiked_ShouldThrowDuplicateLikeException() {
-        when(userServiceClient.getUser(USER_ID)).thenReturn(null);
-        when(commentRepository.getByIdOrThrow(COMMENT_ID)).thenReturn(comment);
-        when(likeRepository.findByCommentIdAndUserId(COMMENT_ID, USER_ID)).thenReturn(Optional.of(like));
+        when(userContext.getUserId()).thenReturn(VALID_USER_ID);
+        when(userServiceClient.getUser(VALID_USER_ID)).thenReturn(userDto);
+        when(commentRepository.getByIdOrThrow(VALID_COMMENT_ID)).thenReturn(comment);
+        when(likeRepository.findByCommentIdAndUserId(VALID_COMMENT_ID, VALID_USER_ID)).thenReturn(Optional.of(commentLike));
 
-        assertThrows(DuplicateLikeException.class, () -> likeService.addLikeToComment(COMMENT_ID, USER_ID));
-
+        assertThrows(DuplicateLikeException.class, () -> likeService.addLikeToComment(VALID_COMMENT_ID));
         verify(likeRepository, never()).save(any(Like.class));
     }
 
     @Test
     void removeLikeFromComment_ValidData_ShouldRemoveLike() {
-        Like commentLike = Like.builder()
-                .id(LIKE_ID)
-                .userId(USER_ID)
+        when(userContext.getUserId()).thenReturn(VALID_USER_ID);
+        when(userServiceClient.getUser(VALID_USER_ID)).thenReturn(userDto);
+        when(likeRepository.findByCommentIdAndUserIdOrThrow(VALID_COMMENT_ID, VALID_USER_ID)).thenReturn(commentLike);
+
+        LikeDto result = likeService.removeLikeFromComment(VALID_COMMENT_ID);
+
+        assertNotNull(result);
+        assertEquals(VALID_USER_ID, result.userId());
+        verify(likeRepository).deleteByCommentIdAndUserId(VALID_COMMENT_ID, VALID_USER_ID);
+    }
+
+    @Test
+    void removeLikeFromComment_DifferentUser_ShouldThrowForbiddenException() {
+        Like differentUserLike = Like.builder()
+                .id(VALID_LIKE_ID)
+                .userId(DIFFERENT_USER_ID)
                 .comment(comment)
                 .build();
 
-        when(userServiceClient.getUser(USER_ID)).thenReturn(null);
-        when(likeRepository.findByCommentIdAndUserIdOrThrow(COMMENT_ID, USER_ID)).thenReturn(commentLike);
+        when(userContext.getUserId()).thenReturn(VALID_USER_ID);
+        when(userServiceClient.getUser(VALID_USER_ID)).thenReturn(userDto);
+        when(likeRepository.findByCommentIdAndUserIdOrThrow(VALID_COMMENT_ID, VALID_USER_ID)).thenReturn(differentUserLike);
 
-        likeService.removeLikeFromComment(COMMENT_ID, USER_ID);
-
-        verify(likeRepository).deleteByCommentIdAndUserId(COMMENT_ID, USER_ID);
-        verify(userServiceClient).getUser(USER_ID);
-    }
-
-    @Test
-    void getCountLikeForPost_ValidData_ShouldReturnCount() {
-        Integer expectedCount = 5;
-
-        when(postRepository.getByIdOrThrow(POST_ID)).thenReturn(post);
-        when(likeRepository.countLikeByPost(POST_ID)).thenReturn(expectedCount);
-
-        Integer result = likeService.getCountLikeForPost(POST_ID);
-
-        assertEquals(expectedCount, result);
-        verify(postRepository).getByIdOrThrow(POST_ID);
-        verify(likeRepository).countLikeByPost(POST_ID);
-    }
-
-    @Test
-    void getCountLikeForComment_ValidData_ShouldReturnCount() {
-        Integer expectedCount = 3;
-
-        when(commentRepository.getByIdOrThrow(COMMENT_ID)).thenReturn(comment);
-        when(likeRepository.countLikeByComment(COMMENT_ID)).thenReturn(expectedCount);
-
-        Integer result = likeService.getCountLikeForComment(COMMENT_ID);
-
-        assertEquals(expectedCount, result);
-        verify(commentRepository).getByIdOrThrow(COMMENT_ID);
-        verify(likeRepository).countLikeByComment(COMMENT_ID);
-    }
-
-    @Test
-    void getCountLikeUserForPosts_ValidData_ShouldReturnCount() {
-        Integer expectedCount = 10;
-
-        when(userServiceClient.getUser(USER_ID)).thenReturn(null);
-        when(likeRepository.countLikeUserForPosts(USER_ID)).thenReturn(expectedCount);
-
-        Integer result = likeService.getCountLikeUserForPosts(USER_ID);
-
-        assertEquals(expectedCount, result);
-        verify(userServiceClient).getUser(USER_ID);
-        verify(likeRepository).countLikeUserForPosts(USER_ID);
-    }
-
-    @Test
-    void getCountLikeUserForComments_ValidData_ShouldReturnCount() {
-        Integer expectedCount = 7;
-
-        when(userServiceClient.getUser(USER_ID)).thenReturn(null);
-        when(likeRepository.countLikeUserForComments(USER_ID)).thenReturn(expectedCount);
-
-        Integer result = likeService.getCountLikeUserForComments(USER_ID);
-
-        assertEquals(expectedCount, result);
-        verify(userServiceClient).getUser(USER_ID);
-        verify(likeRepository).countLikeUserForComments(USER_ID);
-    }
-
-    @Test
-    void getCountLikeForPost_PostNotFound_ShouldThrowException() {
-        when(postRepository.getByIdOrThrow(POST_ID)).thenThrow(new EntityNotFoundException("Post not found"));
-
-        assertThrows(EntityNotFoundException.class, () -> likeService.getCountLikeForPost(POST_ID));
-
-        verify(likeRepository, never()).countLikeByPost(anyLong());
-    }
-
-    @Test
-    void getCountLikeForComment_CommentNotFound_ShouldThrowException() {
-        when(commentRepository.getByIdOrThrow(COMMENT_ID)).thenThrow(new EntityNotFoundException("Comment not found"));
-
-        assertThrows(EntityNotFoundException.class, () -> likeService.getCountLikeForComment(COMMENT_ID));
-
-        verify(likeRepository, never()).countLikeByComment(anyLong());
+        assertThrows(ForbiddenException.class, () -> likeService.removeLikeFromComment(VALID_COMMENT_ID));
+        verify(likeRepository, never()).deleteByCommentIdAndUserId(anyLong(), anyLong());
     }
 }
