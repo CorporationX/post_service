@@ -14,13 +14,13 @@ import java.time.LocalDateTime;
 public class EventsPublisher {
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
-    private static final String ANALYTICS_TOPIC = "analytics";
+    private static final String COMMENT_TOPIC = "comment-events";
 
     public void publishComment(long postId, long actorId, long commentId, long postAuthorId, LocalDateTime createdAt) {
         CommentEventDto event = new CommentEventDto(postId, actorId, commentId, postAuthorId, createdAt);
         log.info("Publishing comment event: postId={}, actorId={}, commentId={}, postAuthorId={}",  postId, actorId, commentId, postAuthorId);
         try {
-            kafkaTemplate.send(ANALYTICS_TOPIC, event);
+            kafkaTemplate.send(COMMENT_TOPIC, event);
             log.debug("Successfully published comment event: {}", event);
         } catch (Exception e) {
             log.error("Failed to publish comment event: {}", event, e);
