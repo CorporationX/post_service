@@ -18,6 +18,16 @@ public class UserFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
+        String uri = request.getRequestURI();
+
+        if (uri.startsWith("/swagger-ui")
+                || uri.startsWith("/v3/api-docs")
+                || uri.startsWith("/swagger-resources")
+                || uri.startsWith("/webjars")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String userIdHeader = request.getHeader("X-User-Id");
 
         if (userIdHeader == null) {
@@ -34,6 +44,7 @@ public class UserFilter extends OncePerRequestFilter {
             response.getWriter().write("Invalid userId");
             return;
         }
+
         filterChain.doFilter(request, response);
     }
 }
