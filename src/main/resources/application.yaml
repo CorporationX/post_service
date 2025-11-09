@@ -25,10 +25,13 @@ spring:
         calculations_channel:
           name: calculations_channel
 
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 50MB
+
 server:
   port: 8081
-  servlet:
-    context-path: /api
 
 logging:
   level:
@@ -37,22 +40,26 @@ logging:
 user-service:
   host: localhost
   port: 8080
-  servlet:
-    context-path: /api
 project-service:
   host: localhost
   port: 8082
-  servlet:
-    context-path: /api
 payment-service:
   host: localhost
   port: 9080
-
-threads:
-  delete-ads-pool-size: 3
-
-cron:
-  delete-expired-ads-cron: 0 0 0 * * *
-
-ads:
-  max-delete-per-thread: 100
+s3:
+  endpoint: http://localhost:9000
+  accessKey: user
+  secretKey: password
+  bucketName: corpbucket
+app:
+  resources:
+    max-file-size: 5242880
+    max-files-per-post: 10
+    image-max-width: 1080
+    image-max-height: 1080
+    allowed-content-types:
+      - "image/jpeg"
+      - "image/png"
+      - "image/gif"
+      - "video/mp4"
+      - "audio/mpeg"
