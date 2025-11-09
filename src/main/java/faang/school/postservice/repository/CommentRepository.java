@@ -17,7 +17,7 @@ public interface CommentRepository extends CrudRepository<Comment, Long> {
 
     @Query(value = """
             SELECT * FROM comment 
-            WHERE verified_date IS NULL 
+            WHERE is_verified IS NULL 
             FOR UPDATE SKIP LOCKED
             """, nativeQuery = true)
     List<Comment> findCommentByVerfiedDateNull();

@@ -64,6 +64,6 @@ public class Comment {
     @Column(name = "small_image_file_key")
     private String smallImageFileKey;
 
-    @Column(name = "verified_date")
-    private Boolean verifiedDate;
+    @Column(name = "is_verified")
+    private Boolean isVerified;
 }

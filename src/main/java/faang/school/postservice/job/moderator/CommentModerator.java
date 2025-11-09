@@ -1,4 +1,4 @@
-package faang.school.postservice.config.moderator;
+package faang.school.postservice.job.moderator;
 
 import faang.school.postservice.service.comment.CommentService;
 import lombok.RequiredArgsConstructor;
@@ -11,7 +11,7 @@ public class CommentModerator {
 
     private final CommentService commentService;
 
-    @Scheduled(cron = "${app.moderation.cron}")
+    @Scheduled(fixedDelayString = "${app.moderation.time:}")
     public void moderateComments() {
         commentService.moderateNewComments();
     }

@@ -1,7 +1,7 @@
 package faang.school.postservice.service.comment;
 
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.config.moderator.ModerationDictionary;
+import faang.school.postservice.job.moderator.ModerationDictionary;
 import faang.school.postservice.dto.comment.CommentCreateDto;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CommentUpdateDto;
@@ -21,7 +21,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -59,7 +58,7 @@ public class CommentService {
         CommentValidator.validateCommentContent(dto.content());
 
         existing.setContent(dto.content());
-        existing.setVerifiedDate(null);
+        existing.setIsVerified(null);
         log.info("Updating comment id={} by userId={}", commentId, userId);
 
         return commentRepository.save(existing);
@@ -90,13 +89,10 @@ public class CommentService {
     @Transactional
     public void moderateNewComments() {
         List<Comment> comments = commentRepository.findCommentByVerfiedDateNull();
-        List<Comment> checkedContent = new ArrayList<>();
         comments.forEach(comment -> {
-            Boolean isVerified = moderationDictionary.containsBanWord(comment.getContent());
-            comment.setVerifiedDate(isVerified);
-            checkedContent.add(comment);
+            moderationDictionary.containsBanWord(comment);
         });
-        commentRepository.saveAll(checkedContent);
+        commentRepository.saveAll(comments);
         log.info("comments have been checked");
     }
 }
