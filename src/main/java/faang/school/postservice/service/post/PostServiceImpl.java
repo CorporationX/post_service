@@ -33,8 +33,12 @@ public class PostServiceImpl implements PostService {
     @Transactional
     public PostDto create(CreatePostDto dto) {
         if (dto.authorId() != null && dto.projectId() != null) {
-            log.warn("Attempting to create a post with both authorId=%d and postId=%d".formatted(dto.authorId(), dto.projectId()));
+            log.warn("Attempting to create a post with both authorId=%d and projectId=%d".formatted(dto.authorId(), dto.projectId()));
             throw new DataValidationException("The author of a post can be either a project or a user, but not both");
+        }
+        if (dto.authorId() != null && dto.projectId() != null) {
+            log.warn("Attempting to create a post without authorId and projectId");
+            throw new DataValidationException("You must specify either the author ID or the project ID.");
         }
         Post newPost = mapper.toModel(dto);
         postRepository.save(newPost);

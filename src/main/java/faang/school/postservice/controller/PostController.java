@@ -38,7 +38,7 @@ public class PostController {
     }
 
     @PutMapping("/{postId}")
-    public PostDto update(@PathVariable long postId, @RequestBody UpdatePostDto dto) {
+    public PostDto update(@PathVariable long postId, @Valid @RequestBody UpdatePostDto dto) {
         return postService.update(postId, dto);
     }
 
