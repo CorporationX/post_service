@@ -79,6 +79,14 @@ public class PostServiceTest {
     }
 
     @Test
+    @DisplayName("create(): should throw an exception if the DTO doesnt contain either an authorId or a projectId")
+    public void create_shouldThrowException_WhenAuthorIdAndProjectIdNotPresent() {
+        CreatePostDto dto = CreatePostDto.builder().content(CONTENT).build();
+        assertThrows(DataValidationException.class,
+                () -> service.create(dto));
+    }
+
+    @Test
     @DisplayName("publish(): should publish the post successfully")
     public void publish_shouldPublishSuccessfully() {
         Post post = Post.builder().id(POST_ID).published(false).deleted(false).build();
