@@ -6,17 +6,20 @@ spring:
     password: password
 
 kafka:
-  bootstrap-servers: kafka:29092
+  bootstrap-servers: localhost:9092
+
   consumer:
-    group-id: my-group
+    group-id: notification-service
     auto-offset-reset: earliest
     value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
     value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
   producer:
     value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
     value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
   topic:
-    comment-events: notifications.events
+    notifications: notifications.events
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
