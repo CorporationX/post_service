@@ -11,7 +11,7 @@ import org.springframework.kafka.config.TopicBuilder;
 @EnableKafka
 public class KafkaConfig {
 
-    private static final String COMMENT_EVENTS_TOPIC = "comment-events";
+    private static final String COMMENT_EVENTS_TOPIC = "notifications.events";
 
     @Bean
     public NewTopic commentEventsTopic() {

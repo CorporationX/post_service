@@ -4,18 +4,19 @@ spring:
     url: jdbc:postgresql://localhost:5432/postgres
     username: user
     password: password
-  kafka:
-    bootstrap-servers: localhost:9092
-    consumer:
-      group-id: my-group
-      auto-offset-reset: earliest
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-    producer:
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-    topic:
-      comment-events: comment-events
+
+kafka:
+  bootstrap-servers: kafka:29092
+  consumer:
+    group-id: my-group
+    auto-offset-reset: earliest
+    value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+    value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+  producer:
+    value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+    value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+  topic:
+    comment-events: notifications.events
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
