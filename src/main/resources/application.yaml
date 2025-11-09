@@ -41,3 +41,9 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+ai:
+  spellcheck-url: https://api.example.com/spellcheck
+
+post-correcter:
+  cron: "0 0 3 * * *"

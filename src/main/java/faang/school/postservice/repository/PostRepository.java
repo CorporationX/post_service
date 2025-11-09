@@ -15,6 +15,8 @@ public interface PostRepository extends JpaRepository<Post, Long>, JpaSpecificat
 
     List<Post> findByProjectId(long projectId);
 
+    List<Post> findAllByPublishedFalseAndDeletedFalse();
+
     @Query("SELECT p FROM Post p LEFT JOIN FETCH p.likes WHERE p.projectId = :projectId")
     List<Post> findByProjectIdWithLikes(long projectId);
 

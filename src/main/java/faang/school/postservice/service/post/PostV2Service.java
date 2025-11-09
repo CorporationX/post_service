@@ -1,5 +1,6 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.client.AIClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.common.PageResponse;
@@ -13,19 +14,25 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.spec.PostSpecification;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class PostV2Service {
     private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
     private final UserContext userContext;
+    private final AIClient aiClient;
 
     public PostV2Dto createPostAsDraft(PostV2CreateDto postV2CreateDto) {
         long userId = userContext.getUserId();
@@ -118,4 +125,26 @@ public class PostV2Service {
         }
     }
 
+    @Transactional
+    public void correctDraftPosts() {
+        postRepository.findAllByPublishedFalseAndDeletedFalse()
+                .forEach(post -> {
+                    try {
+                        String correctedText = correctTextWithRetry(post.getContent());
+                        post.setContent(correctedText);
+                        postRepository.save(post);
+                    } catch (Exception e) {
+                        log.error("Error editing post id={} - {}", post.getId(), e.getMessage());
+                    }
+                });
+    }
+
+    @Retryable(
+            retryFor = { RuntimeException.class },
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 2000)
+    )
+    public String correctTextWithRetry(String text) {
+        return aiClient.correctText(text);
+    }
 }
