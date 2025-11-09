@@ -40,6 +40,7 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
+      user-ban-topic: "user-ban-topic"
 
 server:
   port: 8081
@@ -100,5 +101,4 @@ scheduler:
   posts:
     cron: "0 0 1 * * *"
     ban-threshold: 5
-    batch-size: 1000
 
