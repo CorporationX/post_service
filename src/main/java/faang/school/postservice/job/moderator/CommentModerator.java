@@ -1,6 +1,6 @@
 package faang.school.postservice.job.moderator;
 
-import faang.school.postservice.service.comment.CommentService;
+import faang.school.postservice.service.moderate.ModerateComments;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -9,10 +9,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class CommentModerator {
 
-    private final CommentService commentService;
+    private final ModerateComments moderateComments;
 
     @Scheduled(fixedDelayString = "${app.moderation.time:}")
     public void moderateComments() {
-        commentService.moderateNewComments();
+        moderateComments.moderateNewComments();
     }
 }

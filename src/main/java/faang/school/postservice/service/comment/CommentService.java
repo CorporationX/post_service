@@ -1,13 +1,13 @@
 package faang.school.postservice.service.comment;
 
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.job.moderator.ModerationDictionary;
 import faang.school.postservice.dto.comment.CommentCreateDto;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CommentUpdateDto;
 import faang.school.postservice.dto.common.PageResponse;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.ValidationException;
+import faang.school.postservice.job.moderator.ModerationDictionary;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
@@ -21,8 +21,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -31,7 +29,6 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
-    private final ModerationDictionary moderationDictionary;
 
     @Transactional
     public Comment create(CommentCreateDto commentCreateDto, Long userId) {
@@ -84,15 +81,5 @@ public class CommentService {
     public Comment getById(Long commentId) {
         log.info("Fetching comment by id={}", commentId);
         return commentRepository.findByIdOrThrow(commentId);
-    }
-
-    @Transactional
-    public void moderateNewComments() {
-        List<Comment> comments = commentRepository.findCommentByVerfiedDateNull();
-        comments.forEach(comment -> {
-            moderationDictionary.verifyAndEditComment(comment);
-        });
-        commentRepository.saveAll(comments);
-        log.info("comments have been checked");
     }
 }

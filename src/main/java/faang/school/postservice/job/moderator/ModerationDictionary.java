@@ -62,6 +62,13 @@ public class ModerationDictionary {
             text = text.replace(banWord, "*".repeat(banWord.length()));
             comment.setContent(text);
         }
+
+        String[] listWord = text.split(" ");
+        for (int i = 0; i < listWord.length; i++) {
+            if (banWords.contains(listWord[i])) {
+
+            }
+        }
     }
 
     private List<String> doToLowerCase(List<String> list) {
