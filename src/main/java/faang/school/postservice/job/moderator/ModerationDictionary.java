@@ -47,7 +47,7 @@ public class ModerationDictionary {
         }
     }
 
-    public void verifyAndCensorComment(Comment comment) {
+    public void verifyAndEditComment(Comment comment) {
         String text = comment.getContent();
         if (text == null) {
             comment.setIsVerified(true);
