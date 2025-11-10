@@ -1,6 +1,5 @@
 package faang.school.postservice.service;
 
-import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.AlbumDto;;
 import faang.school.postservice.mapper.AlbumMapper;
@@ -19,7 +18,7 @@ import java.util.List;
 @Service
 @AllArgsConstructor
 @Slf4j
-public class AlbumService {
+public class AlbumServiceImpl implements AlbumServiceInterface {
     private final AlbumRepository albumRepository;
     private final AlbumMapper albumMapper;
     private final UserContext userContext;
@@ -29,12 +28,11 @@ public class AlbumService {
         Album album = albumRepository.findById(albumId)
             .orElseThrow(() -> new EntityNotFoundException("Album with id %s not found".formatted(albumId)));
 
-        if (albumValidator.hasPermission(album)) {
-            return albumMapper.toDto(album);
+        if (!albumValidator.hasPermission(album)) {
+            throw new IllegalArgumentException("User with id %s dont have permission to album id %s"
+                .formatted(userContext.getUserId(), albumId));
         }
-
-        throw new IllegalArgumentException("User with id %s dont have permission to album id %s"
-            .formatted(userContext.getUserId(), albumId));
+        return albumMapper.toDto(album);
     }
 
     public List<AlbumDto> getAllAlbums() {

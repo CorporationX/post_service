@@ -35,6 +35,7 @@ logging:
 user-service:
   host: localhost
   port: 8080
+  base-path: /api
 project-service:
   host: localhost
   port: 8082
