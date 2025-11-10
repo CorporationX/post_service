@@ -56,12 +56,13 @@ public class CommentService {
         kafkaTemplate.send(producerRecord);
 
         try {
-            String key = "authors:" + comment.getAuthorId() + ":list";
-            redisTemplate.opsForList().rightPush(key, comment);
+            String key = "authors_" + comment.getAuthorId();
+            commentDto.
+            redisTemplate.opsForList().rightPushAll(key, List.of(commentDto));
             redisTemplate.expire(key, Duration.ofMillis(Long.parseLong(commentExpire)));
         } catch(Exception e) {
             log.error(e.getMessage());
-            throw new RuntimeException("Ошибка сохранения в кеш");
+            throw e;
         }
 
         log.info("Comment {} successfully created for post {} by user {}",
