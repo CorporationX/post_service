@@ -90,7 +90,7 @@ public class CommentService {
     public void moderateNewComments() {
         List<Comment> comments = commentRepository.findCommentByVerfiedDateNull();
         comments.forEach(comment -> {
-            moderationDictionary.containsBanWord(comment);
+            moderationDictionary.verifyAndCensorComment(comment);
         });
         commentRepository.saveAll(comments);
         log.info("comments have been checked");

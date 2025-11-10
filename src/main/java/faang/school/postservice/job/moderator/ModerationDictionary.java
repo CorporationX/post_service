@@ -47,7 +47,7 @@ public class ModerationDictionary {
         }
     }
 
-    public void containsBanWord(Comment comment) {
+    public void verifyAndCensorComment(Comment comment) {
         String text = comment.getContent();
         if (text == null) {
             comment.setIsVerified(true);
