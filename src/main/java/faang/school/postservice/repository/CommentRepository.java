@@ -20,7 +20,7 @@ public interface CommentRepository extends CrudRepository<Comment, Long> {
             WHERE is_verified IS NULL 
             FOR UPDATE SKIP LOCKED
             """, nativeQuery = true)
-    List<Comment> findCommentByVerfiedDateNull();
+    List<Comment> findCommentsByVerifiedIsNull();
 
     default Comment findByIdOrThrow(Long id) {
         return findById(id)

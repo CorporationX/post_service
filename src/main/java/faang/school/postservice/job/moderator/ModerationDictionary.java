@@ -13,7 +13,11 @@ import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -53,22 +57,22 @@ public class ModerationDictionary {
             comment.setIsVerified(true);
             return;
         }
+
+
+        String originalText = text;
         String lowerText = text.toLowerCase();
-        Boolean isVerified = banWords.stream()
-                .noneMatch(lowerText::contains);
-
-        comment.setIsVerified(isVerified);
+        boolean isVerified = true;
+        System.out.println(banWords);
         for (String banWord : banWords) {
-            text = text.replace(banWord, "*".repeat(banWord.length()));
-            comment.setContent(text);
-        }
-
-        String[] listWord = text.split(" ");
-        for (int i = 0; i < listWord.length; i++) {
-            if (banWords.contains(listWord[i])) {
-
+            if (lowerText.contains(banWord)) {
+                originalText = originalText.replaceAll("(?iu)" + Pattern.quote(banWord),
+                        "*".repeat(banWord.length()));
+                isVerified = false;
             }
         }
+
+        comment.setContent(originalText);
+        comment.setIsVerified(isVerified);
     }
 
     private List<String> doToLowerCase(List<String> list) {

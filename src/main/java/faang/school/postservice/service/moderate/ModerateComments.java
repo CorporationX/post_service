@@ -21,7 +21,7 @@ public class ModerateComments {
 
     @Transactional
     public void moderateNewComments() {
-        List<Comment> comments = commentRepository.findCommentByVerfiedDateNull();
+        List<Comment> comments = commentRepository.findCommentsByVerifiedIsNull();
         comments.forEach(moderationDictionary::verifyAndEditComment);
         commentRepository.saveAll(comments);
         log.info("comments have been checked. Size - {}", comments.size());
