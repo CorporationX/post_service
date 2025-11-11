@@ -1,5 +1,6 @@
 package faang.school.postservice.client;
 
+import faang.school.postservice.dto.user.GetUsersDto;
 import faang.school.postservice.dto.user.UserDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +19,7 @@ public interface UserServiceClient {
     ResponseEntity<UserDto> getUser(@PathVariable long userId);
 
     @PostMapping("/users")
-    List<UserDto> getUsersByIds(@RequestBody List<Long> ids);
+    List<UserDto> getUsersByIds(@RequestBody GetUsersDto getUsersDto);
 
     @PostMapping("/subscriptions/{followeeId}")
     List<UserDto> getFollowers(@PathVariable("followeeId") Long followeeId);

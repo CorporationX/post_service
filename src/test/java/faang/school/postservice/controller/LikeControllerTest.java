@@ -3,6 +3,7 @@ package faang.school.postservice.controller;
 import faang.school.postservice.controller.like.LikeController;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.exception.DataValidationException;
+import faang.school.postservice.exception.GlobalExceptionHandler;
 import faang.school.postservice.exception.ResourceNotFoundException;
 import faang.school.postservice.service.like.LikeServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,14 +16,14 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
 @ExtendWith(MockitoExtension.class)
 public class LikeControllerTest {
@@ -66,7 +67,7 @@ public class LikeControllerTest {
     @Test
     public void testSuccessfullyLikeOnPostSet() throws Exception {
         when(likeService.setLikeOnPost(postId)).thenReturn(likeOnPostDto);
-        mockMvc.perform(post("/likes/set/post/{postId}",postId))
+        mockMvc.perform(post("/likes/set/post/{postId}", postId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.postId").value(postId))
                 .andExpect(jsonPath("$.userId").value(userId));
@@ -83,7 +84,7 @@ public class LikeControllerTest {
     @Test
     public void testSuccessfullyLikeOnCommentSet() throws Exception {
         when(likeService.setLikeOnComment(commentId)).thenReturn(likeOnCommentDto);
-        mockMvc.perform(post("/likes/set/comment/{commentId}",commentId))
+        mockMvc.perform(post("/likes/set/comment/{commentId}", commentId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.commentId").value(commentId))
                 .andExpect(jsonPath("$.userId").value(userId));
@@ -142,7 +143,8 @@ public class LikeControllerTest {
                 .andExpect(jsonPath("$.message").value("User has already set a like for the comment"));
     }
 
-    @Test void testLikesCountGetWhenPostNotFound() throws Exception {
+    @Test
+    void testLikesCountGetWhenPostNotFound() throws Exception {
         when(likeService.getPostLikesCount(postId)).thenReturn(zeroLikeCount);
         mockMvc.perform(get("/likes/count/{postId}", postId))
                 .andExpect(status().isOk())
