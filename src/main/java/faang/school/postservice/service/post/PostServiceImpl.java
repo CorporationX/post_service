@@ -1,10 +1,13 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.util.post.EntityExistChecker;
+import faang.school.postservice.util.client.ProjectServiceClientAdapter;
+import faang.school.postservice.util.client.UserServiceClientAdapter;
+import faang.school.postservice.util.post.PostRepositoryAdapter;
 import faang.school.postservice.util.post.PostValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +25,10 @@ public class PostServiceImpl implements PostService {
     private final PostMapper postMapper;
     private final PostRepository postRepository;
     private final PostValidator postValidator;
-    private final EntityExistChecker entityExistChecker;
+    private final PostRepositoryAdapter postRepositoryAdapter;
+    private final UserServiceClientAdapter userServiceClientAdapter;
+    private final ProjectServiceClientAdapter projectServiceClientAdapter;
+    private final UserContext userContext;
 
     @Override
     @Transactional
@@ -39,7 +45,7 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional
     public PostDto publishPost(long postId) {
-        Post post = entityExistChecker.checkPostExist(postId);
+        Post post = postRepositoryAdapter.getPostById(postId);
         defineUserOrProject(postMapper.toPostDto(post));
         postValidator.validatePostIsPublished(post);
         postValidator.validatePostIsDeleted(post);
@@ -54,7 +60,7 @@ public class PostServiceImpl implements PostService {
     @Transactional
     public PostDto updatePost(long postId, PostDto postDto) {
         defineUserOrProject(postDto);
-        Post currentPost = entityExistChecker.checkPostExist(postId);
+        Post currentPost = postRepositoryAdapter.getPostById(postId);
         postValidator.validatePostIsDeleted(currentPost);
         postValidator.validateChangeAuthor(currentPost, postDto);
         postMapper.updatePost(currentPost, postDto);
@@ -65,7 +71,7 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional
     public PostDto deletePost(long postId) {
-        Post post = entityExistChecker.checkPostExist(postId);
+        Post post = postRepositoryAdapter.getPostById(postId);
         defineUserOrProject(postMapper.toPostDto(post));
         post.setDeleted(true);
         post = postRepository.save(post);
@@ -76,7 +82,7 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional
     public PostDto findPostById(long postId) {
-        Post post = entityExistChecker.checkPostExist(postId);
+        Post post = postRepositoryAdapter.getPostById(postId);
         postValidator.validatePostIsUnpublished(post);
         postValidator.validatePostIsDeleted(post);
         return postMapper.toPostDto(post);
@@ -115,11 +121,12 @@ public class PostServiceImpl implements PostService {
     }
 
     private void defineUserOrProject(PostDto postDto) {
-        long currentUserId = entityExistChecker.checkCurrentUserExist();
+        long currentUserId = userContext.getUserId();
+        userServiceClientAdapter.getUserById(currentUserId);
         if (postDto.projectId() == null) {
             postValidator.validateUser(currentUserId, postDto);
         } else {
-            long ownerId = entityExistChecker.checkProjectExist(postDto.projectId());
+            long ownerId = projectServiceClientAdapter.getProjectById(postDto.projectId()).ownerId();
             postValidator.validateProject(ownerId, currentUserId, postDto.projectId());
         }
     }

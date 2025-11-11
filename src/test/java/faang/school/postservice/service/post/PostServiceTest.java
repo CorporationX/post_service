@@ -1,10 +1,14 @@
 package faang.school.postservice.service.post;
 
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.util.post.EntityExistChecker;
+import faang.school.postservice.util.client.ProjectServiceClientAdapter;
+import faang.school.postservice.util.client.UserServiceClientAdapter;
+import faang.school.postservice.util.post.PostRepositoryAdapter;
 import faang.school.postservice.util.post.PostValidator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,7 +43,13 @@ class PostServiceTest {
     @Mock
     private PostValidator postValidator;
     @Mock
-    private EntityExistChecker entityExistChecker;
+    private UserContext userContext;
+    @Mock
+    private PostRepositoryAdapter postRepositoryAdapter;
+    @Mock
+    private UserServiceClientAdapter userServiceClientAdapter;
+    @Mock
+    private ProjectServiceClientAdapter projectServiceClientAdapter;
     @Captor
     private ArgumentCaptor<Post> postArgumentCaptor;
     @InjectMocks
@@ -58,7 +68,8 @@ class PostServiceTest {
                 false
         );
 
-        when(entityExistChecker.checkCurrentUserExist()).thenReturn(currentUserId);
+        when(userContext.getUserId()).thenReturn(currentUserId);
+        doNothing().when(userServiceClientAdapter).getUserById(currentUserId);
         doNothing().when(postValidator).validateUser(eq(currentUserId), any(PostDto.class));
         doNothing().when(postValidator).validatePostIsPublished(any(Post.class));
         doNothing().when(postValidator).validatePostIsDeleted(any(Post.class));
@@ -76,9 +87,10 @@ class PostServiceTest {
         assertEquals("content", actualPostDto.content());
         assertEquals(1L, actualPostDto.authorId());
 
-        verify(entityExistChecker, times(1)).checkCurrentUserExist();
+        verify(userContext, times(1)). getUserId();
+        verify(userServiceClientAdapter, times(1)).getUserById(currentUserId);
         verify(postValidator, times(1)).validateUser(eq(currentUserId), any(PostDto.class));
-        verify(entityExistChecker, never()).checkProjectExist(anyLong());
+        verify(projectServiceClientAdapter, never()).getProjectById(anyLong());
         verify(postValidator, never()).validateProject(anyLong(), anyLong(), anyLong());
         verify(postValidator, times(1)).validatePostIsPublished(any(Post.class));
         verify(postValidator, times(1)).validatePostIsDeleted(any(Post.class));
@@ -99,9 +111,11 @@ class PostServiceTest {
                 false
         );
         final long ownerId = currentUserId;
+        final ProjectDto projectDto = new ProjectDto(projectId, null, ownerId);
 
-        when(entityExistChecker.checkCurrentUserExist()).thenReturn(currentUserId);
-        when(entityExistChecker.checkProjectExist(projectId)).thenReturn(ownerId);
+        when(userContext.getUserId()).thenReturn(currentUserId);
+        doNothing().when(userServiceClientAdapter).getUserById(currentUserId);
+        when(projectServiceClientAdapter.getProjectById(projectId)).thenReturn(projectDto);
         doNothing().when(postValidator).validateProject(ownerId, currentUserId, projectId);
         doNothing().when(postValidator).validatePostIsPublished(any(Post.class));
         doNothing().when(postValidator).validatePostIsDeleted(any(Post.class));
@@ -119,9 +133,10 @@ class PostServiceTest {
         assertEquals("content", actualPostDto.content());
         assertEquals(2L, actualPostDto.projectId());
 
-        verify(entityExistChecker, times(1)).checkCurrentUserExist();
+        verify(userContext, times(1)). getUserId();
+        verify(userServiceClientAdapter, times(1)).getUserById(currentUserId);
         verify(postValidator, never()).validateUser(anyLong(), any(PostDto.class));
-        verify(entityExistChecker, times(1)).checkProjectExist(projectId);
+        verify(projectServiceClientAdapter, times(1)).getProjectById(projectId);
         verify(postValidator, times(1)).validateProject(ownerId, currentUserId, projectId);
         verify(postValidator, times(1)).validatePostIsPublished(any(Post.class));
         verify(postValidator, times(1)).validatePostIsDeleted(any(Post.class));
@@ -137,8 +152,9 @@ class PostServiceTest {
         post.setContent("content");
         post.setAuthorId(currentUserId);
 
-        when(entityExistChecker.checkPostExist(postId)).thenReturn(post);
-        when(entityExistChecker.checkCurrentUserExist()).thenReturn(currentUserId);
+        when(postRepositoryAdapter.getPostById(postId)).thenReturn(post);
+        when(userContext.getUserId()).thenReturn(currentUserId);
+        doNothing().when(userServiceClientAdapter).getUserById(currentUserId);
         doNothing().when(postValidator).validateUser(eq(currentUserId), any(PostDto.class));
         doNothing().when(postValidator).validatePostIsPublished(post);
         doNothing().when(postValidator).validatePostIsDeleted(post);
@@ -154,10 +170,11 @@ class PostServiceTest {
         assertTrue(actualPostDto.published());
         assertNotNull(actualPostDto.publishedAt());
 
-        verify(entityExistChecker, times(1)).checkPostExist(postId);
-        verify(entityExistChecker, times(1)).checkCurrentUserExist();
+        verify(postRepositoryAdapter, times(1)).getPostById(postId);
+        verify(userContext, times(1)).getUserId();
+        verify(userServiceClientAdapter, times(1)).getUserById(currentUserId);
         verify(postValidator, times(1)).validateUser(eq(currentUserId), any(PostDto.class));
-        verify(entityExistChecker, never()).checkProjectExist(anyLong());
+        verify(projectServiceClientAdapter, never()).getProjectById(anyLong());
         verify(postValidator, never()).validateProject(anyLong(), anyLong(), anyLong());
         verify(postValidator, times(1)).validatePostIsPublished(post);
         verify(postValidator, times(1)).validatePostIsDeleted(post);
@@ -170,14 +187,16 @@ class PostServiceTest {
         final long currentUserId = 1L;
         final long projectId = 2L;
         final long ownerId = currentUserId;
+        final ProjectDto projectDto = new ProjectDto(projectId, null, ownerId);
         final Post post = new Post();
         post.setId(postId);
         post.setContent("content");
         post.setProjectId(projectId);
 
-        when(entityExistChecker.checkPostExist(postId)).thenReturn(post);
-        when(entityExistChecker.checkCurrentUserExist()).thenReturn(currentUserId);
-        when(entityExistChecker.checkProjectExist(projectId)).thenReturn(ownerId);
+        when(postRepositoryAdapter.getPostById(postId)).thenReturn(post);
+        when(userContext.getUserId()).thenReturn(currentUserId);
+        doNothing().when(userServiceClientAdapter).getUserById(currentUserId);
+        when(projectServiceClientAdapter.getProjectById(projectId)).thenReturn(projectDto);
         doNothing().when(postValidator).validateProject(ownerId, currentUserId, projectId);
         doNothing().when(postValidator).validatePostIsPublished(post);
         doNothing().when(postValidator).validatePostIsDeleted(post);
@@ -193,10 +212,11 @@ class PostServiceTest {
         assertTrue(actualPostDto.published());
         assertNotNull(actualPostDto.publishedAt());
 
-        verify(entityExistChecker, times(1)).checkPostExist(postId);
-        verify(entityExistChecker, times(1)).checkCurrentUserExist();
+        verify(postRepositoryAdapter, times(1)).getPostById(postId);
+        verify(userContext, times(1)).getUserId();
+        verify(userServiceClientAdapter, times(1)).getUserById(currentUserId);
         verify(postValidator, never()).validateUser(anyLong(), any(PostDto.class));
-        verify(entityExistChecker, times(1)).checkProjectExist(projectId);
+        verify(projectServiceClientAdapter, times(1)).getProjectById(projectId);
         verify(postValidator, times(1)).validateProject(ownerId, currentUserId, projectId);
         verify(postValidator, times(1)).validatePostIsPublished(post);
         verify(postValidator, times(1)).validatePostIsDeleted(post);
@@ -221,9 +241,10 @@ class PostServiceTest {
         post.setContent("old content");
         post.setAuthorId(currentUserId);
 
-        when(entityExistChecker.checkCurrentUserExist()).thenReturn(currentUserId);
+        when(userContext.getUserId()).thenReturn(currentUserId);
+        doNothing().when(userServiceClientAdapter).getUserById(currentUserId);
         doNothing().when(postValidator).validateUser(currentUserId, postDto);
-        when(entityExistChecker.checkPostExist(postId)).thenReturn(post);
+        when(postRepositoryAdapter.getPostById(postId)).thenReturn(post);
         doNothing().when(postValidator).validatePostIsDeleted(post);
         doNothing().when(postValidator).validateChangeAuthor(post, postDto);
 
@@ -234,11 +255,12 @@ class PostServiceTest {
         assertEquals(postDto.content(), actualPostDto.content());
         assertEquals(postDto.authorId(), actualPostDto.authorId());
 
-        verify(entityExistChecker, times(1)).checkCurrentUserExist();
+        verify(userContext, times(1)).getUserId();
+        verify(userServiceClientAdapter, times(1)).getUserById(currentUserId);
         verify(postValidator, times(1)).validateUser(currentUserId, postDto);
-        verify(entityExistChecker, never()).checkProjectExist(anyLong());
+        verify(projectServiceClientAdapter, never()).getProjectById(anyLong());
         verify(postValidator, never()).validateProject(anyLong(), anyLong(), anyLong());
-        verify(entityExistChecker, times(1)).checkPostExist(postId);
+        verify(postRepositoryAdapter, times(1)).getPostById(postId);
         verify(postValidator, times(1)).validatePostIsDeleted(post);
         verify(postValidator, times(1)).validateChangeAuthor(post, postDto);
         verify(postMapper, times(1)).updatePost(post, postDto);
@@ -259,15 +281,17 @@ class PostServiceTest {
                 null,
                 false
         );
+        final ProjectDto projectDto = new ProjectDto(projectId, null, ownerId);
         final Post post = new Post();
         post.setId(postId);
         post.setContent("old content");
         post.setProjectId(projectId);
 
-        when(entityExistChecker.checkCurrentUserExist()).thenReturn(currentUserId);
-        when(entityExistChecker.checkProjectExist(projectId)).thenReturn(ownerId);
+        when(userContext.getUserId()).thenReturn(currentUserId);
+        doNothing().when(userServiceClientAdapter).getUserById(currentUserId);
+        when(projectServiceClientAdapter.getProjectById(projectId)).thenReturn(projectDto);
         doNothing().when(postValidator).validateProject(ownerId, currentUserId, projectId);
-        when(entityExistChecker.checkPostExist(postId)).thenReturn(post);
+        when(postRepositoryAdapter.getPostById(postId)).thenReturn(post);
         doNothing().when(postValidator).validatePostIsDeleted(post);
         doNothing().when(postValidator).validateChangeAuthor(post, postDto);
 
@@ -278,11 +302,12 @@ class PostServiceTest {
         assertEquals(postDto.content(), actualPostDto.content());
         assertEquals(postDto.projectId(), actualPostDto.projectId());
 
-        verify(entityExistChecker, times(1)).checkCurrentUserExist();
+        verify(userContext, times(1)).getUserId();
+        verify(userServiceClientAdapter, times(1)).getUserById(currentUserId);
         verify(postValidator, never()).validateUser(anyLong(), any(PostDto.class));
-        verify(entityExistChecker, times(1)).checkProjectExist(projectId);
+        verify(projectServiceClientAdapter, times(1)).getProjectById(projectId);
         verify(postValidator, times(1)).validateProject(ownerId, currentUserId, projectId);
-        verify(entityExistChecker, times(1)).checkPostExist(postId);
+        verify(postRepositoryAdapter, times(1)).getPostById(postId);
         verify(postValidator, times(1)).validatePostIsDeleted(post);
         verify(postValidator, times(1)).validateChangeAuthor(post, postDto);
         verify(postMapper, times(1)).updatePost(post, postDto);
@@ -297,8 +322,9 @@ class PostServiceTest {
         post.setContent("content");
         post.setAuthorId(currentUserId);
 
-        when(entityExistChecker.checkPostExist(postId)).thenReturn(post);
-        when(entityExistChecker.checkCurrentUserExist()).thenReturn(currentUserId);
+        when(postRepositoryAdapter.getPostById(postId)).thenReturn(post);
+        when(userContext.getUserId()).thenReturn(currentUserId);
+        doNothing().when(userServiceClientAdapter).getUserById(currentUserId);
         doNothing().when(postValidator).validateUser(eq(currentUserId), any(PostDto.class));
         when(postRepository.save(postArgumentCaptor.capture()))
                 .thenAnswer(invocation -> postArgumentCaptor.getValue());
@@ -311,10 +337,11 @@ class PostServiceTest {
         assertEquals(currentUserId, actualPostDto.authorId());
         assertTrue(actualPostDto.deleted());
 
-        verify(entityExistChecker, times(1)).checkPostExist(postId);
-        verify(entityExistChecker, times(1)).checkCurrentUserExist();
+        verify(postRepositoryAdapter, times(1)).getPostById(postId);
+        verify(userContext, times(1)).getUserId();
+        verify(userServiceClientAdapter, times(1)).getUserById(currentUserId);
         verify(postValidator, times(1)).validateUser(eq(currentUserId), any(PostDto.class));
-        verify(entityExistChecker, never()).checkProjectExist(anyLong());
+        verify(projectServiceClientAdapter, never()).getProjectById(anyLong());
         verify(postValidator, never()).validateProject(anyLong(), anyLong(), anyLong());
         verify(postRepository, times(1)).save(postArgumentCaptor.capture());
     }
@@ -325,14 +352,16 @@ class PostServiceTest {
         final long currentUserId = 1L;
         final long projectId = 2L;
         final long ownerId = currentUserId;
+        final ProjectDto projectDto = new ProjectDto(projectId, null, ownerId);
         final Post post = new Post();
         post.setId(postId);
         post.setContent("content");
         post.setProjectId(projectId);
 
-        when(entityExistChecker.checkPostExist(postId)).thenReturn(post);
-        when(entityExistChecker.checkCurrentUserExist()).thenReturn(currentUserId);
-        when(entityExistChecker.checkProjectExist(projectId)).thenReturn(ownerId);
+        when(postRepositoryAdapter.getPostById(postId)).thenReturn(post);
+        when(userContext.getUserId()).thenReturn(currentUserId);
+        doNothing().when(userServiceClientAdapter).getUserById(currentUserId);
+        when(projectServiceClientAdapter.getProjectById(projectId)).thenReturn(projectDto);
         doNothing().when(postValidator).validateProject(ownerId, currentUserId, projectId);
         when(postRepository.save(postArgumentCaptor.capture()))
                 .thenAnswer(invocation -> postArgumentCaptor.getValue());
@@ -345,10 +374,11 @@ class PostServiceTest {
         assertEquals(projectId, actualPostDto.projectId());
         assertTrue(actualPostDto.deleted());
 
-        verify(entityExistChecker, times(1)).checkPostExist(postId);
-        verify(entityExistChecker, times(1)).checkCurrentUserExist();
+        verify(postRepositoryAdapter, times(1)).getPostById(postId);
+        verify(userContext, times(1)).getUserId();
+        verify(userServiceClientAdapter, times(1)).getUserById(currentUserId);
         verify(postValidator, never()).validateUser(anyLong(), any(PostDto.class));
-        verify(entityExistChecker, times(1)).checkProjectExist(projectId);
+        verify(projectServiceClientAdapter, times(1)).getProjectById(projectId);
         verify(postValidator, times(1)).validateProject(ownerId, currentUserId, projectId);
         verify(postRepository, times(1)).save(postArgumentCaptor.capture());
     }
@@ -361,7 +391,7 @@ class PostServiceTest {
         post.setContent("content");
         post.setAuthorId(1L);
 
-        when(entityExistChecker.checkPostExist(postId)).thenReturn(post);
+        when(postRepositoryAdapter.getPostById(postId)).thenReturn(post);
         doNothing().when(postValidator).validatePostIsUnpublished(post);
         doNothing().when(postValidator).validatePostIsDeleted(post);
 
@@ -372,7 +402,7 @@ class PostServiceTest {
         assertEquals("content", postDto.content());
         assertEquals(1L, postDto.authorId());
 
-        verify(entityExistChecker, times(1)).checkPostExist(postId);
+        verify(postRepositoryAdapter, times(1)).getPostById(postId);
         verify(postValidator, times(1)).validatePostIsUnpublished(post);
         verify(postValidator, times(1)).validatePostIsDeleted(post);
     }
