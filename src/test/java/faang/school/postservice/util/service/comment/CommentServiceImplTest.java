@@ -125,7 +125,7 @@ public class CommentServiceImplTest {
         verify(commentMapper).toEntity(createDto);
         verify(commentRepository).save(any(Comment.class));
         verify(commentMapper).toResponseDto(testComment);
-        verify(eventsPublisher).publishComment(eq(POST_ID), eq(USER_ID),
+        verify(eventsPublisher).publishCommentCreate(eq(POST_ID), eq(USER_ID),
                 eq(testComment.getId()), eq(testPost.getAuthorId()), any(LocalDateTime.class));
     }
 
