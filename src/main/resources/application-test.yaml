@@ -4,3 +4,10 @@ service:
     accessKey: test
     secretKey: test
     bucketName: test-bucket
+
+spring:
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: test
