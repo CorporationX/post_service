@@ -22,7 +22,8 @@ public class GlobalExceptionHandler {
             EntityNotFoundException.class, HttpStatus.NOT_FOUND,
             ForbiddenException.class, HttpStatus.FORBIDDEN,
             MethodArgumentNotValidException.class, HttpStatus.BAD_REQUEST,
-            FeignException.class, HttpStatus.INTERNAL_SERVER_ERROR
+            FeignException.class, HttpStatus.INTERNAL_SERVER_ERROR,
+            AiServiceException.class, HttpStatus.SERVICE_UNAVAILABLE
     );
 
     @ExceptionHandler(Exception.class)

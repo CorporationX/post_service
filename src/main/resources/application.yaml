@@ -43,7 +43,7 @@ payment-service:
   port: 9080
 
 ai:
-  spellcheck-url: https://api.example.com/spellcheck
+  spellcheck-url: https://speller.yandex.net/services/spellservice.json/checkText
 
 post-correcter:
-  cron: "0 0 3 * * *"
+  cron: "*/30 * * * * *"
