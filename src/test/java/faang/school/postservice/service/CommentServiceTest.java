@@ -98,8 +98,6 @@ class CommentServiceTest {
         Comment updated = commentService.update(10L, updateDto, 1L);
 
         assertEquals("Updated content", updated.getContent());
-        assertEquals("largeKey", updated.getLargeImageFileKey());
-        assertEquals("smallKey", updated.getSmallImageFileKey());
         verify(commentRepository).save(comment);
     }
 

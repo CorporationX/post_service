@@ -60,3 +60,7 @@ payment-service:
 
 post-correcter:
   cron: "0 0 2 * * ?"
+
+app:
+  moderation:
+    time: 30000
