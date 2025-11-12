@@ -102,7 +102,7 @@ tasks.jacocoTestCoverageVerification {
             enabled = true
             element = "CLASS"
             includes = listOf(
-                "faang.school.postservice.service**"
+                "faang.school.postservice.service.**"
             )
 
             excludes = listOf(
