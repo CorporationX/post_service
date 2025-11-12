@@ -2,8 +2,6 @@ package faang.school.postservice.controller;
 
 
 import faang.school.postservice.dto.resource.ResourceDto;
-import faang.school.postservice.mapper.resource.ResourceMapper;
-import faang.school.postservice.model.resource.Resource;
 import faang.school.postservice.service.resource.ResourceServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,27 +22,23 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/posts/{postId}/resources")
+@RequestMapping("/resources")
 public class ResourceController {
     private final ResourceServiceImpl resourceService;
-    private final ResourceMapper resourceMapper;
 
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/post/{postId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<List<ResourceDto>> uploadResources(
             @PathVariable Long postId,
             @RequestParam("files") List<MultipartFile> files) {
         log.info("Uploading {} files for post ID: {}", files.size(), postId);
 
-        List<Resource> resources = resourceService.uploadResourcesForPost(files, postId);
-        List<ResourceDto> dtos = resources.stream()
-                .map(resourceMapper::toResourceDto)
-                .toList();
+        List<ResourceDto> dtos = resourceService.uploadResourcesForPost(files, postId);
 
         log.info("Successfully uploaded {} files for post ID: {}", dtos.size(), postId);
         return ResponseEntity.ok(dtos);
     }
 
-    @PutMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(value = "/post/{postId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Void> updateResources(
             @PathVariable Long postId,
             @RequestParam(value = "newFiles", required = false) List<MultipartFile> newFiles,
@@ -59,20 +53,17 @@ public class ResourceController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping
+    @GetMapping("/post/{postId}")
     public ResponseEntity<List<ResourceDto>> getResources(@PathVariable Long postId) {
         log.info("Getting resources for post ID: {}", postId);
 
-        List<Resource> resources = resourceService.getResourcesByPostId(postId);
-        List<ResourceDto> dtos = resources.stream()
-                .map(resourceMapper::toResourceDto)
-                .toList();
+        List<ResourceDto> dtos = resourceService.getResourcesByPostId(postId);
 
         log.info("Found {} resources for post ID: {}", dtos.size(), postId);
         return ResponseEntity.ok(dtos);
     }
 
-    @DeleteMapping
+    @DeleteMapping("/post/{postId}")
     public ResponseEntity<Void> deleteResources(@PathVariable Long postId) {
         log.info("Deleting resources for post ID: {}", postId);
 

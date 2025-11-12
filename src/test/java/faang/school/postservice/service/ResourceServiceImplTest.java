@@ -1,5 +1,7 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.dto.resource.ResourceDto;
+import faang.school.postservice.mapper.resource.ResourceMapper;
 import faang.school.postservice.model.resource.Resource;
 import faang.school.postservice.model.resource.ResourceType;
 import faang.school.postservice.repository.ResourceRepository;
@@ -7,8 +9,10 @@ import faang.school.postservice.service.image.ImageProcessor;
 import faang.school.postservice.service.resource.ResourceServiceImpl;
 import faang.school.postservice.service.s3.S3Service;
 import faang.school.postservice.validator.ResourceValidator;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mapstruct.factory.Mappers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -40,6 +44,8 @@ public class ResourceServiceImplTest {
 
     @Mock
     private S3Service s3Service;
+
+    private final ResourceMapper resourceMapper = Mappers.getMapper(ResourceMapper.class);
 
     @Mock
     private ImageProcessor imageProcessor;
@@ -73,6 +79,15 @@ public class ResourceServiceImplTest {
                 .build();
     }
 
+    private ResourceDto createResourceDto(Long id, String key, String name) {
+        return new ResourceDto(id, key, name, FILE_SIZE, ResourceType.IMAGE, null, POST_ID);
+    }
+
+    @BeforeEach
+    void setUp() {
+        resourceService = new ResourceServiceImpl(resourceRepository, s3Service, imageProcessor, resourceValidator, resourceMapper);
+    }
+
     @Test
     void uploadResourcesForPost_Success() {
         MultipartFile file1 = createMockFile("image1.jpg", "image/jpeg");
@@ -88,7 +103,7 @@ public class ResourceServiceImplTest {
         when(s3Service.uploadFile(any(MultipartFile.class))).thenReturn(FILE_KEY);
         when(resourceRepository.save(any(Resource.class))).thenReturn(resource1, resource2);
 
-        List<Resource> result = resourceService.uploadResourcesForPost(files, POST_ID);
+        List<ResourceDto> result = resourceService.uploadResourcesForPost(files, POST_ID);
 
         assertNotNull(result);
         assertEquals(2, result.size());
@@ -121,7 +136,7 @@ public class ResourceServiceImplTest {
         when(s3Service.uploadFile(compressedFile)).thenReturn(FILE_KEY);
         when(resourceRepository.save(any(Resource.class))).thenReturn(resource);
 
-        List<Resource> result = resourceService.uploadResourcesForPost(files, POST_ID);
+        List<ResourceDto> result = resourceService.uploadResourcesForPost(files, POST_ID);
 
         assertNotNull(result);
         assertEquals(1, result.size());
@@ -168,7 +183,7 @@ public class ResourceServiceImplTest {
 
         setupCommonValidatorMocks(emptyFiles);
 
-        List<Resource> result = resourceService.uploadResourcesForPost(emptyFiles, POST_ID);
+        List<ResourceDto> result = resourceService.uploadResourcesForPost(emptyFiles, POST_ID);
 
         assertNotNull(result);
         assertTrue(result.isEmpty());
@@ -243,18 +258,22 @@ public class ResourceServiceImplTest {
 
     @Test
     void getResourcesByPostId_Success() {
-        List<Resource> expectedResources = Arrays.asList(
+        List<Resource> resources = Arrays.asList(
                 createResource(1L, "key1", "img1.jpg"),
                 createResource(2L, "key2", "img2.jpg")
         );
+        List<ResourceDto> expectedDtos = Arrays.asList(
+                createResourceDto(1L, "key1", "img1.jpg"),
+                createResourceDto(2L, "key2", "img2.jpg")
+        );
 
-        when(resourceRepository.findByPostId(POST_ID)).thenReturn(expectedResources);
+        when(resourceRepository.findByPostId(POST_ID)).thenReturn(resources);
 
-        List<Resource> result = resourceService.getResourcesByPostId(POST_ID);
+        List<ResourceDto> result = resourceService.getResourcesByPostId(POST_ID);
 
         assertNotNull(result);
         assertEquals(2, result.size());
-        assertEquals(expectedResources, result);
+        assertEquals(expectedDtos, result);
         verify(resourceRepository, times(1)).findByPostId(POST_ID);
     }
 
