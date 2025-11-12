@@ -8,5 +8,7 @@ public record CommentEventDto(
         Long postId,
         Long commentAuthorId,
         Long postAuthorId,
-        String commentText
+        String commentText,
+        String commentAuthorName,
+        String postContent
 ) {}
