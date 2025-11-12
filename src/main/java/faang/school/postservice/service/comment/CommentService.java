@@ -6,6 +6,7 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.KafkaLikeDto;
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.comment.CommentRedisDto;
 import faang.school.postservice.dto.comment.KafkaCommentDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.EntityNotFoundException;
@@ -20,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
@@ -36,10 +38,13 @@ public class CommentService {
     private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
     private final RedisTemplate redisTemplate;
+    private final RedisTemplate<String, CommentRedisDto> redisCommentTemplate;
     @Value("${redis.post-expire}")
     private String commentExpire;
     private final KafkaTemplate<String, String> kafkaTemplate;
     private String commentTopic = "comments";
+    private final ObjectMapper objectMapper;
+    private final StringRedisTemplate stringRedisTemplate;
 
     public CommentDto create(CommentDto commentDto) {
         long currentUserId = userContext.getUserId();
@@ -57,12 +62,17 @@ public class CommentService {
 
         try {
             String key = "authors_" + comment.getAuthorId();
-            commentDto.
-            redisTemplate.opsForList().rightPushAll(key, List.of(commentDto));
-            redisTemplate.expire(key, Duration.ofMillis(Long.parseLong(commentExpire)));
+            CommentRedisDto redisDto = createRedisDto(comment);
+            String string = objectMapper.writeValueAsString(redisDto);
+            stringRedisTemplate.opsForList().rightPushAll(key, List.of(string));
+            stringRedisTemplate.expire(key, Duration.ofMillis(Long.parseLong(commentExpire)));
         } catch(Exception e) {
             log.error(e.getMessage());
-            throw e;
+            try {
+                throw e;
+            } catch (JsonProcessingException ex) {
+                throw new RuntimeException(ex);
+            }
         }
 
         log.info("Comment {} successfully created for post {} by user {}",
@@ -140,5 +150,15 @@ public class CommentService {
             throw new RuntimeException(e);
         }
         return commentDtoAsString;
+    }
+
+    private CommentRedisDto createRedisDto(Comment comment) {
+        CommentRedisDto commentRedisDto = new CommentRedisDto();
+        commentRedisDto.setId(comment.getId());
+        commentRedisDto.setContent(comment.getContent());
+        commentRedisDto.setAuthorId(comment.getAuthorId());
+        commentRedisDto.setLikeCount(comment.getLikes() != null ? comment.getLikes().size() : 0);
+        commentRedisDto.setPostId(comment.getPost().getId());
+        return commentRedisDto;
     }
 }
