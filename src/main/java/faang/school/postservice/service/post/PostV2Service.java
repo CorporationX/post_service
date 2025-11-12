@@ -130,15 +130,12 @@ public class PostV2Service {
         postRepository.findAllByPublishedFalseAndDeletedFalse()
                 .forEach(post -> {
                     try {
-                        log.info("Отправляем пост id={} на проверку орфографии", post.getId());
                         String correctedText = correctTextWithRetry(post.getContent());
                         post.setContent(correctedText);
                         postRepository.save(post);
-                        log.info("Пост id={} успешно скорректирован и сохранён", post.getId());
                     } catch (Exception e) {
                         log.error("Error editing post id={} - {}", post.getId(), e.getMessage());
                     }
-                    log.info("Корректировка завершена");
                 });
     }
 
