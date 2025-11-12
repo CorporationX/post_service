@@ -1,4 +1,4 @@
-package faang.school.postservice.config.ad;
+package faang.school.postservice.schedule;
 
 import faang.school.postservice.service.ad.AdService;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 public class ExpiredAdRemoverScheduler {
     private final AdService adService;
 
-    @Scheduled(cron = "${post.ad.time-to-remove}")
+    @Scheduled(cron = "${scheduler.ad.time-to-remove}")
     public void removeAd() {
         log.debug("Start scheduled remove Ads");
         adService.removeAds();

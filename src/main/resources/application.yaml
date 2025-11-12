@@ -86,15 +86,14 @@ executor:
   max-thread-pool: 30
   await-time-seconds: 30
 
-post:
-  ad:
-    time-to-remove: "0 0 23 * * *"
 
 redis:
   topics:
     user-ban-topic: "user-ban-topic"
 
 scheduler:
+    ad:
+      time-to-remove: "0 0 23 * * *"
     comment:
         ban-user-invoke: "0 0 23 * * *"
         count-ban-size: 5
