@@ -1,5 +1,7 @@
 package faang.school.postservice.service.resource;
 
+import faang.school.postservice.dto.resource.ResourceDto;
+import faang.school.postservice.mapper.resource.ResourceMapper;
 import faang.school.postservice.model.resource.Resource;
 import faang.school.postservice.model.resource.ResourceType;
 import faang.school.postservice.repository.ResourceRepository;
@@ -23,15 +25,17 @@ public class ResourceServiceImpl implements ResourceService {
     private final S3Service s3Service;
     private final ImageProcessor imageProcessor;
     private final ResourceValidator resourceValidator;
+    private final ResourceMapper resourceMapper;
 
     @Override
     @Transactional
-    public List<Resource> uploadResourcesForPost(List<MultipartFile> files, Long postId) {
+    public List<ResourceDto> uploadResourcesForPost(List<MultipartFile> files, Long postId) {
         resourceValidator.validatePostExists(postId);
         resourceValidator.validateFiles(files);
         resourceValidator.validateFileLimit(postId, files.size());
 
         List<Resource> resources = new ArrayList<>();
+        List<String> keysForRollback = new ArrayList<>();
 
         for (MultipartFile file : files) {
             try {
@@ -40,17 +44,17 @@ public class ResourceServiceImpl implements ResourceService {
                 resource.setPostId(postId);
                 Resource savedResource = resourceRepository.save(resource);
                 resources.add(savedResource);
+                keysForRollback.add(savedResource.getKey());
             } catch (Exception e) {
                 log.error("Failed to upload file: {}", file.getOriginalFilename(), e);
-                try {
-                    deleteUploadedFiles(resources);
-                } catch (Exception cleanupEx) {
-                    log.warn("Failed to cleanup files during rollback", cleanupEx);
-                }
+                deleteUploadedFiles(keysForRollback);
                 throw new RuntimeException("Failed to upload file: " + file.getOriginalFilename(), e);
             }
         }
-        return resources;
+
+        return resources.stream()
+                .map(resourceMapper::toResourceDto)
+                .toList();
     }
 
     @Override
@@ -58,7 +62,7 @@ public class ResourceServiceImpl implements ResourceService {
     public void updatePostResources(Long postId, List<MultipartFile> newFiles, List<Long> filesToDelete) {
         resourceValidator.validatePostExists(postId);
 
-        List<Resource> newResources = new ArrayList<>();
+        List<ResourceDto> newResources = new ArrayList<>();
         if (newFiles != null && !newFiles.isEmpty()) {
             int filesToDeleteCount = filesToDelete != null ? filesToDelete.size() : 0;
             resourceValidator.validateFileLimitOnUpdate(postId, newFiles.size(), filesToDeleteCount);
@@ -69,16 +73,23 @@ public class ResourceServiceImpl implements ResourceService {
             try {
                 deleteResources(postId, filesToDelete);
             } catch (Exception e) {
-                deleteUploadedFiles(newResources);
+                List<String> keysToDelete = newResources.stream()
+                        .map(ResourceDto::key)
+                        .toList();
+                deleteUploadedFiles(keysToDelete);
                 throw new RuntimeException("Failed to delete old files after successful upload", e);
             }
         }
     }
 
     @Override
-    @Transactional
-    public List<Resource> getResourcesByPostId(Long postId) {
-        return resourceRepository.findByPostId(postId);
+    @Transactional(readOnly = true)
+    public List<ResourceDto> getResourcesByPostId(Long postId) {
+        List<Resource> resources = resourceRepository.findByPostId(postId);
+
+        return resources.stream()
+                .map(resourceMapper::toResourceDto)
+                .toList();
     }
 
     @Override
@@ -95,16 +106,13 @@ public class ResourceServiceImpl implements ResourceService {
 
         log.info("Deleting {} resources for post ID: {}", resources.size(), postId);
 
-        resources.forEach(resource -> {
-            try {
-                s3Service.deleteFile(resource.getKey());
-                log.debug("Successfully deleted file from S3: {}", resource.getKey());
-            } catch (Exception e) {
-                log.error("Failed to delete file from S3: {}", resource.getKey(), e);
-            }
-        });
+        List<String> keysToDelete = resources.stream()
+                .map(Resource::getKey)
+                .toList();
 
+        deleteUploadedFiles(keysToDelete);
         resourceRepository.deleteByPostId(postId);
+
         log.info("Successfully deleted all resources for post ID: {}", postId);
     }
 
@@ -128,7 +136,7 @@ public class ResourceServiceImpl implements ResourceService {
                 .map(Resource::getKey)
                 .toList();
 
-        keysToDelete.forEach(s3Service::deleteFile);
+        deleteUploadedFiles(keysToDelete);
         resourceRepository.deleteAllById(resourceIds);
     }
 
@@ -160,12 +168,12 @@ public class ResourceServiceImpl implements ResourceService {
                 .build();
     }
 
-    private void deleteUploadedFiles(List<Resource> resources) {
-        for (Resource resource : resources) {
+    private void deleteUploadedFiles(List<String> keys) {
+        for (String key : keys) {
             try {
-                s3Service.deleteFile(resource.getKey());
+                s3Service.deleteFile(key);
             } catch (Exception e) {
-                log.error("Failed to cleanup file during rollback: {}", resource.getKey(), e);
+                log.error("Failed to cleanup file during rollback: {}", key, e);
             }
         }
     }
