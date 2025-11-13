@@ -66,7 +66,7 @@ public class LikeControllerTest {
     @Test
     public void testSuccessfullyLikeOnPostSet() throws Exception {
         when(likeService.setLikeOnPost(postId)).thenReturn(likeOnPostDto);
-        mockMvc.perform(post("/likes/set/post/{postId}",postId))
+        mockMvc.perform(post("/likes/post/{postId}",postId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.postId").value(postId))
                 .andExpect(jsonPath("$.userId").value(userId));
@@ -75,7 +75,7 @@ public class LikeControllerTest {
 
     @Test
     public void testSuccessfullyLikeOnPostUnset() throws Exception {
-        mockMvc.perform(delete("/likes/unset/post/{postId}", postId))
+        mockMvc.perform(delete("/likes/post/{postId}", postId))
                 .andExpect(status().isOk());
         verify(likeService, times(1)).unsetLikeOnPost(postId);
     }
@@ -83,7 +83,7 @@ public class LikeControllerTest {
     @Test
     public void testSuccessfullyLikeOnCommentSet() throws Exception {
         when(likeService.setLikeOnComment(commentId)).thenReturn(likeOnCommentDto);
-        mockMvc.perform(post("/likes/set/comment/{commentId}",commentId))
+        mockMvc.perform(post("/likes/comment/{commentId}",commentId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.commentId").value(commentId))
                 .andExpect(jsonPath("$.userId").value(userId));
@@ -92,7 +92,7 @@ public class LikeControllerTest {
 
     @Test
     public void testSuccessfullyLikeOnCommentUnset() throws Exception {
-        mockMvc.perform(delete("/likes/unset/comment/{commentId}", commentId))
+        mockMvc.perform(delete("/likes/comment/{commentId}", commentId))
                 .andExpect(status().isOk());
         verify(likeService, times(1)).unsetLikeOnComment(commentId);
     }
@@ -100,7 +100,7 @@ public class LikeControllerTest {
     @Test
     public void testPostLikesCountGet() throws Exception {
         when(likeService.getPostLikesCount(postId)).thenReturn(likesCount);
-        mockMvc.perform(get("/likes/count/{postId}", postId))
+        mockMvc.perform(get("/likes/count/post/{postId}", postId))
                 .andExpect(status().isOk())
                 .andExpect(content().string(String.valueOf(likesCount)));
         verify(likeService, times(1)).getPostLikesCount(postId);
@@ -110,7 +110,7 @@ public class LikeControllerTest {
     public void testFailLikeOnPostSetWhenPostDoesNotExist() throws Exception {
         when(likeService.setLikeOnPost(notExistPostId))
                 .thenThrow(new ResourceNotFoundException("Post doesn't exist"));
-        mockMvc.perform(post("/likes/set/post/{postId}", notExistPostId))
+        mockMvc.perform(post("/likes/post/{postId}", notExistPostId))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Post doesn't exist"));
     }
@@ -119,7 +119,7 @@ public class LikeControllerTest {
     public void testFailLikeOnPostSetWhenLikeAlreadySet() throws Exception {
         when(likeService.setLikeOnPost(postId))
                 .thenThrow(new DataValidationException("User has already set a like for this post"));
-        mockMvc.perform(post("/likes/set/post/{postId}", postId))
+        mockMvc.perform(post("/likes/post/{postId}", postId))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("User has already set a like for this post"));
     }
@@ -128,7 +128,7 @@ public class LikeControllerTest {
     public void testFailLikeOnCommentSetWhenCommentDoesNotExist() throws Exception {
         when(likeService.setLikeOnComment(notExistCommentId))
                 .thenThrow(new ResourceNotFoundException("Comment doesn't exist"));
-        mockMvc.perform(post("/likes/set/comment/{commentId}", notExistCommentId))
+        mockMvc.perform(post("/likes/comment/{commentId}", notExistCommentId))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Comment doesn't exist"));
     }
@@ -137,14 +137,14 @@ public class LikeControllerTest {
     public void testFailLikeOnCommentSetWhenLikeAlreadySet() throws Exception {
         when(likeService.setLikeOnComment(commentId))
                 .thenThrow(new DataValidationException("User has already set a like for the comment"));
-        mockMvc.perform(post("/likes/set/comment/{commentId}", commentId))
+        mockMvc.perform(post("/likes/comment/{commentId}", commentId))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("User has already set a like for the comment"));
     }
 
     @Test void testLikesCountGetWhenPostNotFound() throws Exception {
         when(likeService.getPostLikesCount(postId)).thenReturn(zeroLikeCount);
-        mockMvc.perform(get("/likes/count/{postId}", postId))
+        mockMvc.perform(get("/likes/count/post/{postId}", postId))
                 .andExpect(status().isOk())
                 .andExpect(content().string(String.valueOf(zeroLikeCount)));
     }
