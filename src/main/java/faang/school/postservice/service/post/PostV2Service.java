@@ -6,6 +6,7 @@ import faang.school.postservice.dto.common.PageResponse;
 import faang.school.postservice.dto.post.PostV2CreateDto;
 import faang.school.postservice.dto.post.PostV2Dto;
 import faang.school.postservice.dto.post.PostV2UpdateDto;
+import faang.school.postservice.dto.post.PublishPostEvent;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.mapper.PostV2Mapper;
@@ -83,6 +84,7 @@ public class PostV2Service {
         postRepository.save(post);
     }
 
+    @PublishPostEvent(mode = PublishPostEvent.Mode.COLLECTION, async = true)
     public PageResponse<PostV2Dto> findAllPublishedByFilter(
             Long authorId,
             Pageable pageable
@@ -103,6 +105,7 @@ public class PostV2Service {
         return PageResponse.from(page, PostV2Mapper::toDto);
     }
 
+    @PublishPostEvent(mode = PublishPostEvent.Mode.SINGLE, async = true)
     public PostV2Dto findById(Long postId) {
         long userId = userContext.getUserId();
         UserDto user = userServiceClient.getUser(userId);
