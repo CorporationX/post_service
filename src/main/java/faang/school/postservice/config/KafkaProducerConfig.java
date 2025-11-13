@@ -29,13 +29,13 @@ public class KafkaProducerConfig {
         return props;
     }
 
-    @Bean
+    @Bean("postViewProducerFactory")
     public ProducerFactory<String, PostViewEvent> producerFactory() {
         return new DefaultKafkaProducerFactory<>(producerConfigs());
     }
 
-    @Bean
-    public KafkaTemplate<String, PostViewEvent> kafkaTemplate() {
-        return new KafkaTemplate<>(producerFactory());
+    @Bean("postViewKafkaTemplate")
+    public KafkaTemplate<String, PostViewEvent> kafkaTemplate(ProducerFactory<String, PostViewEvent> factory) {
+        return new KafkaTemplate<>(factory);
     }
 }
