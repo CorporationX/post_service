@@ -1,15 +1,19 @@
 package faang.school.postservice.controller.facade.post;
 
+import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostCreateDraftDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
+import faang.school.postservice.dto.post.PostViewEvent;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.service.post.PostService;
+import faang.school.postservice.service.post.PostViewEventPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -19,6 +23,8 @@ public class PostFacade {
 
     private final PostMapper postMapping;
     private final PostService postService;
+    private final UserContext userContext;
+    private final PostViewEventPublisher eventPublisher;
 
     public PostDto createDraftPost(PostCreateDraftDto postCreateDraftDto) {
         Post post = postMapping.toPost(postCreateDraftDto);
@@ -42,6 +48,15 @@ public class PostFacade {
 
     public PostDto getById(Long postId) {
         Post result = postService.getById(postId);
+
+        PostViewEvent event = new PostViewEvent(
+                postId,
+                result.getAuthorId(),
+                userContext.getUserId(),
+                LocalDateTime.now()
+        );
+        eventPublisher.publish(event);
+
         return postMapping.toPostDto(result);
     }
 
