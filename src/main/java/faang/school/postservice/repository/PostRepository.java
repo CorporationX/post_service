@@ -3,6 +3,7 @@ package faang.school.postservice.repository;
 import faang.school.postservice.model.Post;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -11,6 +12,9 @@ public interface PostRepository extends CrudRepository<Post, Long> {
     List<Post> findByAuthorId(long authorId);
 
     List<Post> findByProjectId(long projectId);
+
+    @Query("SELECT COUNT(p) > 0 FROM Post p WHERE p.id = :postId AND p.deleted = false")
+    boolean existsByIdAndDeletedFalse(@Param("postId") Long postId);
 
     @Query("SELECT p FROM Post p LEFT JOIN FETCH p.likes WHERE p.projectId = :projectId")
     List<Post> findByProjectIdWithLikes(long projectId);

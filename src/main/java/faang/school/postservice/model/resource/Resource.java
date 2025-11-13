@@ -1,12 +1,12 @@
-package faang.school.postservice.model;
+package faang.school.postservice.model.resource;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
@@ -32,7 +32,7 @@ public class Resource {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "key", nullable = false, length = 50)
+    @Column(name = "key", nullable = false, length = 255)
     private String key;
 
     @Column(name = "size")
@@ -46,10 +46,10 @@ public class Resource {
     @Column(name = "name", length = 150)
     private String name;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "type", length = 50)
-    private String type;
+    private ResourceType type;
 
-    @ManyToOne
-    @JoinColumn(name = "post_id", nullable = false)
-    private Post post;
+    @Column(name = "post_id", nullable = false)
+    private Long postId;
 }
