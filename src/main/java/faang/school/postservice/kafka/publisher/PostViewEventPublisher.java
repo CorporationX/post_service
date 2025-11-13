@@ -1,15 +1,18 @@
-package faang.school.postservice.service.post;
+package faang.school.postservice.kafka.publisher;
 
 import faang.school.postservice.dto.post.PostViewEvent;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
+
+import java.time.LocalDateTime;
 
 @Component
 @Slf4j
 public class PostViewEventPublisher {
-
-    private static final String TOPIC_NAME = "post-view-events";
+    @Value("${kafka.topics.post-view-events}")
+    private String TOPIC_NAME;
 
     private final KafkaTemplate<String, PostViewEvent> kafkaTemplate;
 
@@ -18,7 +21,7 @@ public class PostViewEventPublisher {
     }
 
     public void publish(PostViewEvent event) {
-        String key = event.getAuthorId().toString();
+        String key = event.postId().toString() + event.currentTime().toString(); //id post + viewer id + post view time
 
         kafkaTemplate.send(TOPIC_NAME, key, event);
 
