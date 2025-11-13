@@ -8,24 +8,30 @@ import faang.school.postservice.dto.post.PostV2Dto;
 import faang.school.postservice.dto.post.PostV2UpdateDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.ForbiddenException;
+import faang.school.postservice.job.moderator.ModerationDictionary;
 import faang.school.postservice.mapper.PostV2Mapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.spec.PostSpecification;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class PostV2Service {
     private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
     private final UserContext userContext;
+    private final ModerationDictionary moderationDictionary;
 
     public PostV2Dto createPostAsDraft(PostV2CreateDto postV2CreateDto) {
         long userId = userContext.getUserId();
@@ -63,6 +69,7 @@ public class PostV2Service {
 
         validatePostOwner(post, userId);
         PostV2Mapper.update(post, postV2UpdateDto);
+        post.setIsVerified(null);
 
         Post saved = postRepository.save(post);
         return PostV2Mapper.toDto(saved);
@@ -118,4 +125,13 @@ public class PostV2Service {
         }
     }
 
+    @Transactional
+    public void moderatePosts() {
+        List<Post> unverifiedPosts = postRepository.findByIsVerified();
+        List<Post> posts = unverifiedPosts.parallelStream()
+                .peek(post -> post.setIsVerified(moderationDictionary.isGoodString(post.getContent())))
+                .toList();
+        postRepository.saveAll(posts);
+        log.info("The posts have been moderated: {}", posts.stream().map(Post::getId).toList());
+    }
 }

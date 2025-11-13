@@ -13,10 +13,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -79,5 +76,19 @@ public class ModerationDictionary {
         return list.stream()
                 .map(String::toLowerCase)
                 .collect(Collectors.toList());
+    }
+
+    public boolean isGoodString(String content) {
+        if (content == null || content.isBlank()) {
+            return true;
+        }
+
+        String contentLowerCase = content.toLowerCase();
+        for (String banWord : banWords) {
+            if (contentLowerCase.contains(banWord)) {
+                return false;
+            }
+        }
+        return true;
     }
 }

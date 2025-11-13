@@ -5,7 +5,6 @@ import faang.school.postservice.model.Post;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
 
@@ -40,4 +39,12 @@ public interface PostRepository extends JpaRepository<Post, Long>, JpaSpecificat
             SELECT p FROM Post p
             WHERE p.published = false AND p.deleted = false AND p.authorId = :authorId""")
     List<Post> findPostToDraftByAuthorId(Long authorId);
+
+    @Query(value = """
+            SELECT * FROM post p
+            WHERE p.is_verified is null
+            FOR UPDATE SKIP LOCKED
+            """,
+            nativeQuery = true)
+    List<Post> findByIsVerified();
 }
