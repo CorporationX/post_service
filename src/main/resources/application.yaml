@@ -27,6 +27,8 @@ spring:
 
   kafka:
     bootstrap-servers: localhost:9092
+    topics:
+      post-view-events: post-view-events
 
 server:
   port: 8081
