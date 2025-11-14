@@ -1,4 +1,4 @@
-package faang.school.postservice.service;
+package faang.school.postservice.service.hashtag;
 
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostMapper;
@@ -96,7 +96,7 @@ public class HashtagServiceImpl implements HashtagService {
         List<Post> posts = postRepository.findAllByIdInOrderByCreatedAtDesc(paginatedPostIds);
         log.debug("Retrieved {} posts from database", posts.size());
 
-        List<PostDto> postDtos = postMapper.toDtoList(posts);
+        List<PostDto> postDtos = postMapper.toPostDtos(posts);
         log.info("Successfully found {} posts (total: {}) for hashtag: '{}'",
                 postDtos.size(), postIds.size(), name);
 

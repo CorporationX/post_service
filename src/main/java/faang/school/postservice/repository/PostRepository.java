@@ -22,4 +22,12 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findReadyToPublish();
 
     List<Post> findAllByIdInOrderByCreatedAtDesc(List<Long> ids);
+
+    List<Post> findByPublishedFalseAndAuthorIdAndDeletedFalseOrderByCreatedAtDesc(long authorId);
+
+    List<Post> findByPublishedFalseAndProjectIdAndDeletedFalseOrderByCreatedAtDesc(long projectId);
+
+    List<Post> findByPublishedTrueAndAuthorIdAndDeletedFalseOrderByPublishedAtDesc(long authorId);
+
+    List<Post> findByPublishedTrueAndProjectIdAndDeletedFalseOrderByPublishedAtDesc(long projectId);
 }

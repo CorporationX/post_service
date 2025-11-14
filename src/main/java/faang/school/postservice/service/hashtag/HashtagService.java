@@ -1,8 +1,7 @@
-package faang.school.postservice.service;
+package faang.school.postservice.service.hashtag;
 
 import faang.school.postservice.dto.post.PostDto;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
