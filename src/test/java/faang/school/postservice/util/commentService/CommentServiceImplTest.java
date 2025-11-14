@@ -9,6 +9,7 @@ import faang.school.postservice.exception.ResourceNotFoundException;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.comment.CommentService;
@@ -47,6 +48,9 @@ class CommentServiceImplTest {
     @Spy
     private final CommentMapper commentMapper = Mappers.getMapper(CommentMapper.class);
 
+    @Mock
+    private CommentEventPublisher commentEventPublisher;
+
     private CommentService commentService;
 
     private Post testPost;
@@ -58,16 +62,17 @@ class CommentServiceImplTest {
     @BeforeEach
     void setUp() {
         commentService = new CommentServiceImpl(
-            commentRepository,
-            postRepository,
-            commentMapper,
-            new UserContext() {
-                @Override
-                public long getUserId() {
-                    return 1L;
-                }
-            },
-            commentValidator
+                commentRepository,
+                postRepository,
+                commentMapper,
+                new UserContext() {
+                    @Override
+                    public long getUserId() {
+                        return 1L;
+                    }
+                },
+                commentValidator,
+                commentEventPublisher
         );
 
         testPost = Post.builder()
@@ -133,6 +138,11 @@ class CommentServiceImplTest {
         verify(postRepository, times(1)).findById(1L);
         verify(commentMapper, times(1)).toEntity(requestCreateComment);
         verify(commentMapper, times(1)).toDto(testComment);
+
+        verify(commentEventPublisher, times(1)).publish(eq(result.postId()),
+                eq(result.authorId()),
+                eq(result.id()),
+                any(LocalDateTime.class));
     }
 
     @Test

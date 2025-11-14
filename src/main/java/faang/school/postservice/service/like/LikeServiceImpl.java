@@ -4,6 +4,7 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.like.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
@@ -11,9 +12,9 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.like.LikeValidator;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -29,11 +30,12 @@ public class LikeServiceImpl implements LikeService {
 
     @Override
     public LikeDto setLikeOnPost(long postId) {
-        UserDto userDto = getUserByContextUserId(userContext.getUserId());
-        Post post = likeValidator.validateLikeOnPost(postId, userDto.id(), true);
+        ResponseEntity<UserDto> userDto = getUserByContextUserId(userContext.getUserId());
+        assert userDto.getBody() != null;
+        Post post = likeValidator.validateLikeOnPost(postId, userDto.getBody().id(), true);
         Like like = Like.builder()
                 .post(post)
-                .userId(userDto.id())
+                .userId(userDto.getBody().id())
                 .build();
         likeRepository.save(like);
         return likeMapper.toLikeDto(like);
@@ -41,18 +43,20 @@ public class LikeServiceImpl implements LikeService {
 
     @Override
     public void unsetLikeOnPost(long postId) {
-        UserDto userDto = getUserByContextUserId(userContext.getUserId());
-        likeValidator.validateLikeOnPost(postId, userDto.id(), false);
-        likeRepository.deleteByPostIdAndUserId(postId, userDto.id());
+        ResponseEntity<UserDto> userDto = getUserByContextUserId(userContext.getUserId());
+        assert userDto.getBody() != null;
+        likeValidator.validateLikeOnPost(postId, userDto.getBody().id(), false);
+        likeRepository.deleteByPostIdAndUserId(postId, userDto.getBody().id());
     }
 
     @Override
     public LikeDto setLikeOnComment(long commentId) {
-        UserDto userDto = getUserByContextUserId(userContext.getUserId());
-        Comment comment = likeValidator.validateLikeOnComment(commentId, userDto.id(), true);
+        ResponseEntity<UserDto> userDto = getUserByContextUserId(userContext.getUserId());
+        assert userDto.getBody() != null;
+        Comment comment = likeValidator.validateLikeOnComment(commentId, userDto.getBody().id(), true);
         Like like = Like.builder()
                 .comment(comment)
-                .userId(userDto.id())
+                .userId(userDto.getBody().id())
                 .build();
         likeRepository.save(like);
         return likeMapper.toLikeDto(like);
@@ -60,9 +64,10 @@ public class LikeServiceImpl implements LikeService {
 
     @Override
     public void unsetLikeOnComment(long commentId) {
-        UserDto userDto = getUserByContextUserId(userContext.getUserId());
-        likeValidator.validateLikeOnComment(commentId, userDto.id(), false);
-        likeRepository.deleteByCommentIdAndUserId(commentId, userDto.id());
+        ResponseEntity<UserDto> userDto = getUserByContextUserId(userContext.getUserId());
+        assert userDto.getBody() != null;
+        likeValidator.validateLikeOnComment(commentId, userDto.getBody().id(), false);
+        likeRepository.deleteByCommentIdAndUserId(commentId, userDto.getBody().id());
     }
 
     @Override
@@ -72,7 +77,7 @@ public class LikeServiceImpl implements LikeService {
         return post.getLikes().size();
     }
 
-    private UserDto getUserByContextUserId(long userId) {
+    private ResponseEntity<UserDto> getUserByContextUserId(long userId) {
         return userServiceClient.getUser(userId);
     }
 

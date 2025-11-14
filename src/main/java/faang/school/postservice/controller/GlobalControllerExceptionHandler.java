@@ -12,9 +12,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.LocalDateTime;
 
-
 @RestControllerAdvice
-public class GlobalExceptionHandler {
+public class GlobalControllerExceptionHandler {
     @ExceptionHandler({DataValidationException.class, ConstraintViolationException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleBadRequestException(DataValidationException exception) {
