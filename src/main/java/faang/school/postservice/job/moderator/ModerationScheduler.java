@@ -22,8 +22,8 @@ public class ModerationScheduler {
 
     @Scheduled(cron = "${app.moderation.posts.cron}", zone = "Europe/Moscow")
     public void moderatePosts() {
-        log.info("Starting daily moderation posts job");
+        log.info("Starting moderation posts job");
         postService.moderatePosts();
-        log.info("Finished daily moderation posts job");
+        log.info("Finished moderation posts job");
     }
 }

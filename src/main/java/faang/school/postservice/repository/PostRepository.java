@@ -46,5 +46,5 @@ public interface PostRepository extends JpaRepository<Post, Long>, JpaSpecificat
             FOR UPDATE SKIP LOCKED
             """,
             nativeQuery = true)
-    List<Post> findByIsVerified();
+    List<Post> findUnverifiedPosts();
 }

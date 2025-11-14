@@ -127,11 +127,15 @@ public class PostV2Service {
 
     @Transactional
     public void moderatePosts() {
-        List<Post> unverifiedPosts = postRepository.findByIsVerified();
-        List<Post> posts = unverifiedPosts.parallelStream()
-                .peek(post -> post.setIsVerified(moderationDictionary.isGoodString(post.getContent())))
+        List<Post> unverifiedPosts = postRepository.findUnverifiedPosts();
+        unverifiedPosts.parallelStream()
+                .peek(post -> {
+                    String originalContent = post.getContent();
+                    post.setContent(moderationDictionary.maskBadWords(originalContent));
+                    post.setIsVerified(originalContent.equals(post.getContent()));
+                })
                 .toList();
-        postRepository.saveAll(posts);
-        log.info("The posts have been moderated: {}", posts.stream().map(Post::getId).toList());
+        postRepository.saveAll(unverifiedPosts);
+        log.info("The posts have been moderated: {}", unverifiedPosts.stream().map(Post::getId).toList());
     }
 }

@@ -22,7 +22,13 @@ public class ModerateComments {
     @Transactional
     public void moderateNewComments() {
         List<Comment> comments = commentRepository.findCommentsByVerifiedIsNull();
-        comments.forEach(moderationDictionary::verifyAndEditComment);
+        comments.parallelStream()
+                .peek(comment -> {
+                    String originalContent = comment.getContent();
+                    comment.setContent(moderationDictionary.maskBadWords(originalContent));
+                    comment.setIsVerified(originalContent.equals(comment.getContent()));
+                })
+                .toList();
         commentRepository.saveAll(comments);
         log.info("comments have been checked. Size - {}", comments.size());
     }

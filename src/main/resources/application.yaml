@@ -47,4 +47,4 @@ app:
     comments:
       time: 30000
     posts:
-      cron: "0 0 3 * * *"
+      cron: "0/30 * * * * *"
