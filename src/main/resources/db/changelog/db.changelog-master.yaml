@@ -11,4 +11,5 @@ databaseChangeLog:
       file: db/changelog/changeset/post_V008_alter_comments.sql
   - include:
       file: db/changelog/changeset/post_V009_alter_comments.sql
-
+  - include:
+      file: db/changelog/changeset/post_V010_alter_post.sql

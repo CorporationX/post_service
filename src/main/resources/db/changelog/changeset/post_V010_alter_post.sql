@@ -1,0 +1,2 @@
+ALTER TABLE post
+ADD COLUMN is_verified BOOLEAN

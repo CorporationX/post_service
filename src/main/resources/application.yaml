@@ -44,4 +44,7 @@ payment-service:
 
 app:
   moderation:
-    time: 30000
+    comments:
+      time: 30000
+    posts:
+      cron: "0/30 * * * * *"
