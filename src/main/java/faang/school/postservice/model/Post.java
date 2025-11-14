@@ -64,6 +64,9 @@ public class Post {
     @Column(name = "published", nullable = false)
     private boolean published;
 
+    @Column(name = "verified", nullable = false)
+    private boolean verified;
+
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "published_at")
     private LocalDateTime publishedAt;
