@@ -4,8 +4,6 @@ import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.CreatePostDto;
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.dto.user.GetUsersDto;
-import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.event.UserBanEvent;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
@@ -141,7 +139,9 @@ public class PostServiceImpl implements PostService {
         ));
 
         List<Long> authorsToBan = postsByAuthors.entrySet().stream()
-                .filter(entry -> entry.getValue() > maxUnverifiedPosts).map(Map.Entry::getKey).toList();
+                .filter(entry -> entry.getValue() > maxUnverifiedPosts)
+                .map(Map.Entry::getKey)
+                .toList();
 
 
         if (!authorsToBan.isEmpty()) {
@@ -228,12 +228,10 @@ public class PostServiceImpl implements PostService {
     }
 
     @Retryable(retryFor = {FeignException.InternalServerError.class, FeignException.ServiceUnavailable.class},
-            maxAttempts = 3,
-            backoff = @Backoff(delay = 1000, multiplier = 2))
-    private List<Long> getNotBannedUsers(List<Long> users) {
-        return userServiceClient.getUsersByIds(GetUsersDto.builder().ids(users).build()).stream()
-                .filter(userDto -> !userDto.banned())
-                .map(UserDto::id)
-                .toList();
+            maxAttemptsExpression = "${user-service.retryable.maxAttempts}",
+            backoff = @Backoff(delayExpression = "${user-service.retryable.delay}",
+                    multiplierExpression = "${user-service.retryable.multiplier}"))
+    private List<Long> getNotBannedUsers(List<Long> usersIds) {
+        return userServiceClient.getNotBannedUsersIds(usersIds);
     }
 }

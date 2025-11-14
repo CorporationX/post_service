@@ -46,6 +46,10 @@ user-service:
   port: 8080
   servlet:
     context-path: /api
+  retryable:
+    maxAttempts: 3
+    delay: 1000
+    multiplier: 2
 project-service:
   host: localhost
   port: 8082
