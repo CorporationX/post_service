@@ -16,9 +16,9 @@ import java.util.List;
 public class PostBanService {
     private final PostRepository postRepository;
     private final Publisher publisher;
+    private final ChannelTopic userBanTopic;
     @Value("${scheduler.posts.ban-threshold}")
     private int banThreshold;
-    private final ChannelTopic userBanTopic;
 
     public void publishBanCandidates() {
         List<Long> userIds = postRepository.findUsersToBanForPosts(banThreshold);
