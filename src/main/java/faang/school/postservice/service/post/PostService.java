@@ -23,4 +23,6 @@ public interface PostService {
     List<PostDto> getPublishedByUser(Long userId);
 
     List<PostDto> getPublishedByProject(Long projectId);
+
+    void publishScheduledPosts();
 }

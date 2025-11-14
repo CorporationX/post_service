@@ -15,6 +15,7 @@ import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.post.PostServiceImpl;
 import feign.FeignException;
 import feign.Request;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mapstruct.factory.Mappers;
@@ -24,22 +25,30 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.util.ReflectionTestUtils;
 
+import java.lang.reflect.Field;
 import java.nio.charset.Charset;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -53,6 +62,8 @@ public class PostServiceImplTest {
     private UserServiceClient userServiceClient;
     @Mock
     private ProjectServiceClient projectServiceClient;
+    @Mock
+    private ExecutorService scheduledPostExecutor;
     @Spy
     private PostMapper postMapper = Mappers.getMapper(PostMapper.class);
 
@@ -65,6 +76,12 @@ public class PostServiceImplTest {
     private final LocalDateTime time1 = LocalDateTime.of(2024, 1, 1, 0, 0);
     private final LocalDateTime time2 = LocalDateTime.of(2024, 1, 2, 0, 0);
 
+    @BeforeEach
+    void setUp() throws Exception {
+        Field batchSizeField = PostServiceImpl.class.getDeclaredField("batchSize");
+        batchSizeField.setAccessible(true);
+        batchSizeField.set(postService, 2);
+    }
 
     private final PostDto postDtoAuthorExists = PostDto.builder().id(postId).content("content")
             .authorId(authorId).projectId(null)
@@ -474,5 +491,112 @@ public class PostServiceImplTest {
         assertEquals(2, result.size());
         assertEquals(expected.get(0), result.get(0));
         assertEquals(expected.get(1), result.get(1));
+    }
+
+    @Test
+    void publishScheduledPosts_DoesNothingWhenNoPosts() {
+        when(postRepository.findReadyToPublish()).thenReturn(Collections.emptyList());
+
+        postService.publishScheduledPosts();
+
+        verify(postRepository, never()).saveAll(anyList());
+        verify(scheduledPostExecutor, never()).execute(any(Runnable.class));
+    }
+
+    @Test
+    void publishScheduledPosts_CallsSaveAllWithPosts() {
+        Post post1 = createTestPost(1L, "Content 1");
+        Post post2 = createTestPost(2L, "Content 2");
+        List<Post> posts = List.of(post1, post2);
+
+        when(postRepository.findReadyToPublish()).thenReturn(posts);
+
+        doAnswer(invocation -> {
+            Runnable runnable = invocation.getArgument(0);
+            runnable.run();
+            return null;
+        }).when(scheduledPostExecutor).execute(any(Runnable.class));
+
+        postService.publishScheduledPosts();
+
+        verify(postRepository, atLeastOnce()).saveAll(anyList());
+        assertTrue(post1.isPublished());
+        assertNotNull(post1.getPublishedAt());
+        assertTrue(post2.isPublished());
+        assertNotNull(post2.getPublishedAt());
+    }
+
+    @Test
+    void publishScheduledPosts_WithMultipleBatches_PublishesAllBatches() throws Exception {
+        // Arrange - устанавливаем batchSize = 1 для теста множественных батчей
+        Field batchSizeField = PostServiceImpl.class.getDeclaredField("batchSize");
+        batchSizeField.setAccessible(true);
+        batchSizeField.set(postService, 1);
+
+        Post post1 = createTestPost(1L, "Content 1");
+        Post post2 = createTestPost(2L, "Content 2");
+        Post post3 = createTestPost(3L, "Content 3");
+        List<Post> posts = List.of(post1, post2, post3);
+
+        when(postRepository.findReadyToPublish()).thenReturn(posts);
+
+        doAnswer(invocation -> {
+            Runnable runnable = invocation.getArgument(0);
+            runnable.run();
+            return null;
+        }).when(scheduledPostExecutor).execute(any(Runnable.class));
+
+        postService.publishScheduledPosts();
+
+        verify(postRepository, times(3)).saveAll(anyList());
+    }
+
+    @Test
+    void partitionList_WithEmptyList_ReturnsEmptyList() {
+        List<List<Post>> result = postService.partitionList(Collections.emptyList(), 2);
+
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void partitionList_WithZeroBatchSize_ThrowsException() {
+        assertThrows(IllegalArgumentException.class,
+                () -> postService.partitionList(List.of("test"), 0));
+    }
+
+    @Test
+    void publishScheduledPosts_WhenBatchFails_LogsErrorButContinues() {
+        Post post1 = createTestPost(1L, "Content 1");
+        Post post2 = createTestPost(2L, "Content 2");
+        List<Post> posts = List.of(post1, post2);
+
+        when(postRepository.findReadyToPublish()).thenReturn(posts);
+
+        ReflectionTestUtils.setField(postService, "batchSize", 1);
+
+        when(postRepository.saveAll(anyList()))
+                .thenThrow(new RuntimeException("DB error"))
+                .thenReturn(List.of(post2));
+
+        doAnswer(invocation -> {
+            Runnable runnable = invocation.getArgument(0);
+            runnable.run();
+            return null;
+        }).when(scheduledPostExecutor).execute(any(Runnable.class));
+
+        assertDoesNotThrow(() -> postService.publishScheduledPosts());
+
+        verify(postRepository, times(2)).saveAll(anyList());
+    }
+
+    private Post createTestPost(Long id, String content) {
+        return Post.builder()
+                .id(id)
+                .content(content)
+                .authorId(1L)
+                .published(false)
+                .deleted(false)
+                .scheduledAt(LocalDateTime.now().minusHours(1))
+                .build();
     }
 }

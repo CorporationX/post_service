@@ -56,3 +56,9 @@ cron:
 
 ads:
   max-delete-per-thread: 100
+
+app:
+  scheduled-posts:
+    thread-pool-size: 10
+    batch-size: 1000
+    cron: "0 * * * * *"
