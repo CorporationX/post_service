@@ -1,6 +1,6 @@
 package faang.school.postservice.config.redis;
 
-import org.springframework.beans.factory.annotation.Value;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -13,41 +13,40 @@ import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSeriali
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
+@RequiredArgsConstructor
 public class RedisConfig {
-    @Value("${spring.data.redis.host}")
-    private String redisHost;
-    @Value("${spring.data.redis.port}")
-    private int redisPort;
-    @Value("${spring.data.redis.password}")
-    private String redisPassword;
+    private final RedisProperties redisProperties;
 
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
-        config.setHostName(redisHost);
-        config.setPort(redisPort);
-        if (redisPassword != null && !redisPassword.isEmpty()) {
-            config.setPassword(RedisPassword.of(redisPassword));
-        }
+        config.setHostName(redisProperties.getHost());
+        config.setPort(redisProperties.getPort());
+        config.setPassword(RedisPassword.of(redisProperties.getPassword()));
+
         return new LettuceConnectionFactory(config);
     }
 
     @Bean
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
-        RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
-        redisTemplate.setConnectionFactory(connectionFactory);
-        redisTemplate.setKeySerializer(new StringRedisSerializer());
-        redisTemplate.setValueSerializer(new GenericJackson2JsonRedisSerializer());
-        redisTemplate.setHashKeySerializer(new StringRedisSerializer());
-        redisTemplate.setHashValueSerializer(new GenericJackson2JsonRedisSerializer());
-        redisTemplate.setDefaultSerializer(new GenericJackson2JsonRedisSerializer());
+        RedisTemplate<String, Object> template = new RedisTemplate<>();
+        template.setConnectionFactory(connectionFactory);
 
-        redisTemplate.afterPropertiesSet();
-        return redisTemplate;
+        StringRedisSerializer keySerializer = new StringRedisSerializer();
+        GenericJackson2JsonRedisSerializer valueSerializer = new GenericJackson2JsonRedisSerializer();
+
+        template.setKeySerializer(keySerializer);
+        template.setValueSerializer(valueSerializer);
+        template.setHashKeySerializer(keySerializer);
+        template.setHashValueSerializer(valueSerializer);
+        template.setDefaultSerializer(valueSerializer);
+
+        template.afterPropertiesSet();
+        return template;
     }
 
     @Bean
-    public ChannelTopic userBanTopic(@Value("${redis.topics.user-ban-topic}") String topicName) {
-        return new ChannelTopic(topicName);
+    public ChannelTopic userBanTopic() {
+        return new ChannelTopic(redisProperties.getUserBanTopic());
     }
 }

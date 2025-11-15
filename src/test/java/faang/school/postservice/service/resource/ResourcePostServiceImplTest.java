@@ -279,7 +279,6 @@ class ResourcePostServiceImplTest {
                 () -> resourcePostService.addResources(1L, files, ImageType.HORIZONTAL));
     }
 
-
     private MultipartFile preparationDataMultipart() {
         return new MockMultipartFile(
                 "file",

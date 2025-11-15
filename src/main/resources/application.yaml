@@ -3,10 +3,10 @@ spring:
     import: optional:classpath:application.properties
 
   servlet:
-      multipart:
-        max-file-size: 5MB
-        max-request-size: 50MB
-        enabled: true
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 50MB
+      enabled: true
 
   jackson:
     default-property-inclusion: non_null
@@ -40,6 +40,7 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
+      user-ban-topic: "user-ban-topic"
 
 server:
   port: 8081
@@ -81,13 +82,23 @@ services:
           max-width: 1080
           max-height: 1080
 
+executor:
+  thread-count: 10
+  max-thread-pool: 30
+  await-time-seconds: 30
+
+
 redis:
   topics:
     user-ban-topic: "user-ban-topic"
 
 scheduler:
-    comment:
-        ban-user-invoke: "0 0 23 * * *"
-        count-ban-size: 5
-
+  ad:
+    time-to-remove: "0 0 23 * * *"
+  comment:
+      ban-user-invoke: "0 0 23 * * *"
+      count-ban-size: 5
+  posts:
+    cron: "0 0 1 * * *"
+    ban-threshold: 5
 
