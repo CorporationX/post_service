@@ -9,8 +9,13 @@ import lombok.RequiredArgsConstructor;
 public class FeignUserInterceptor implements RequestInterceptor {
 
     private final UserContext userContext;
+
     @Override
     public void apply(RequestTemplate template) {
-        template.header("x-user-id", String.valueOf(userContext.getUserId()));
+        Long userId = userContext.getUserId();
+
+        if (userId != null) {
+            template.header("x-user-id", String.valueOf(userId));
+        }
     }
 }

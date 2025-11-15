@@ -12,21 +12,22 @@ import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.UserBanEventPublisher;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.user.UserService;
 import feign.FeignException;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.Retryable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -37,12 +38,15 @@ public class PostServiceImpl implements PostService {
 
     @Value("${posts.max-unverified-posts}")
     private int maxUnverifiedPosts;
+    @Value("${posts.find-unverified-posts-page-size}")
+    private int findUnverifiedPostsPageSize;
 
     private final PostMapper postMapper;
     private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
     private final UserBanEventPublisher userBanEventPublisher;
+    private final UserService userService;
 
     @Override
     public PostDto createDraft(CreatePostDto postDto) {
@@ -132,20 +136,30 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public void findAuthorsForBan() {
-        List<Post> unverifiedPosts = postRepository.findUnverified();
-        Map<Long, Long> postsByAuthors = unverifiedPosts.stream().collect(Collectors.groupingBy(
-                Post::getAuthorId,
-                Collectors.counting()
-        ));
+        int page = 0;
+        Map<Long, Long> postsByAuthors = new HashMap<>();
+
+        while (true) {
+            Page<Post> chunk = postRepository.findUnverified(PageRequest.of(page, findUnverifiedPostsPageSize));
+
+            if (chunk.isEmpty()) {
+                break;
+            }
+
+            for (Post post : chunk.getContent()) {
+                postsByAuthors.merge(post.getAuthorId(), 1L, Long::sum);
+            }
+
+            page++;
+        }
 
         List<Long> authorsToBan = postsByAuthors.entrySet().stream()
                 .filter(entry -> entry.getValue() > maxUnverifiedPosts)
                 .map(Map.Entry::getKey)
                 .toList();
 
-
         if (!authorsToBan.isEmpty()) {
-            authorsToBan = getNotBannedUsers(authorsToBan);
+            authorsToBan = userService.getNotBannedUsersIds(authorsToBan);
         }
 
         if (!authorsToBan.isEmpty()) {
@@ -225,13 +239,5 @@ public class PostServiceImpl implements PostService {
         if (id != null && id < 0) {
             throw new DataValidationException(entityName + " ID cannot be negative");
         }
-    }
-
-    @Retryable(retryFor = {FeignException.InternalServerError.class, FeignException.ServiceUnavailable.class},
-            maxAttemptsExpression = "${user-service.retryable.maxAttempts}",
-            backoff = @Backoff(delayExpression = "${user-service.retryable.delay}",
-                    multiplierExpression = "${user-service.retryable.multiplier}"))
-    private List<Long> getNotBannedUsers(List<Long> usersIds) {
-        return userServiceClient.getNotBannedUsersIds(usersIds);
     }
 }

@@ -16,6 +16,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.UserBanEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.post.PostServiceImpl;
+import faang.school.postservice.service.user.UserServiceImpl;
 import feign.FeignException;
 import feign.Request;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,6 +29,9 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -62,6 +66,8 @@ public class PostServiceImplTest {
     private ProjectServiceClient projectServiceClient;
     @Mock
     private UserBanEventPublisher userBanEventPublisher;
+    @Mock
+    private UserServiceImpl userService;
     @Spy
     private PostMapper postMapper = Mappers.getMapper(PostMapper.class);
 
@@ -74,6 +80,7 @@ public class PostServiceImplTest {
     private final LocalDateTime time1 = LocalDateTime.of(2024, 1, 1, 0, 0);
     private final LocalDateTime time2 = LocalDateTime.of(2024, 1, 2, 0, 0);
     private final int maxUnverifiedPosts = 5;
+    private final int findUnverifiedPostsPageSize = maxUnverifiedPosts + 1;
 
     private final PostDto postDtoAuthorExists = PostDto.builder().id(postId).content("content")
             .authorId(authorId).projectId(null)
@@ -97,6 +104,7 @@ public class PostServiceImplTest {
     @BeforeEach
     void setUp() {
         ReflectionTestUtils.setField(postService, "maxUnverifiedPosts", maxUnverifiedPosts);
+        ReflectionTestUtils.setField(postService, "findUnverifiedPostsPageSize", findUnverifiedPostsPageSize);
     }
 
     @Test
@@ -502,7 +510,11 @@ public class PostServiceImplTest {
             posts.add(Post.builder().authorId(1L).build());
         }
 
-        when(postRepository.findUnverified()).thenReturn(posts);
+        Page<Post> firstPage = new PageImpl<>(posts);
+        Page<Post> emptyPage = Page.empty();
+        when(postRepository.findUnverified(any(Pageable.class)))
+                .thenReturn(firstPage)
+                .thenReturn(emptyPage);
 
         postService.findAuthorsForBan();
 
@@ -518,34 +530,29 @@ public class PostServiceImplTest {
             posts.add(Post.builder().authorId(userId).build());
         }
 
-        UserDto userDtoForBan = UserDto.builder()
-                .id(2L)
-                .banned(false)
-                .build();
+        List<Long> usersIds = List.of(userId);
+        Page<Post> firstPage = new PageImpl<>(posts);
+        Page<Post> emptyPage = Page.empty();
 
-        UserDto userDtoBanned = UserDto.builder()
-                .id(3L)
-                .banned(true)
-                .build();
-
-        when(postRepository.findUnverified()).thenReturn(posts);
-        when(userServiceClient.getUsersByIds(Mockito.any(GetUsersDto.class)))
-                .thenReturn(List.of(userDtoForBan, userDtoBanned));
+        when(postRepository.findUnverified(any(Pageable.class)))
+                .thenReturn(firstPage)
+                .thenReturn(emptyPage);
+        when(userService.getNotBannedUsersIds(Mockito.anyList())).thenReturn(usersIds);
 
         postService.findAuthorsForBan();
 
-        ArgumentCaptor<GetUsersDto> getUsersDtoArgumentCaptor = ArgumentCaptor.forClass(GetUsersDto.class);
+        ArgumentCaptor<List<Long>> longListArgumentCaptor = ArgumentCaptor.forClass(List.class);
         ArgumentCaptor<UserBanEvent> userBanEventArgumentCaptor = ArgumentCaptor.forClass(UserBanEvent.class);
 
-        verify(userServiceClient).getUsersByIds(getUsersDtoArgumentCaptor.capture());
+        verify(userService).getNotBannedUsersIds(longListArgumentCaptor.capture());
         verify(userBanEventPublisher).publish(userBanEventArgumentCaptor.capture());
 
-        List<Long> allAuthorsIds = getUsersDtoArgumentCaptor.getValue().ids();
+        List<Long> allAuthorsIds = longListArgumentCaptor.getValue();
         List<Long> usersForBan = userBanEventArgumentCaptor.getValue().userIds();
 
         assertEquals(1, allAuthorsIds.size());
         assertEquals(1, usersForBan.size());
         assertEquals(userId, allAuthorsIds.get(0));
-        assertEquals(userDtoForBan.id(), usersForBan.get(0));
+        assertEquals(userId, usersForBan.get(0));
     }
 }
