@@ -3,7 +3,7 @@ package faang.school.postservice.controller;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.AlbumDto;
 import faang.school.postservice.model.AlbumVisibility;
-import faang.school.postservice.service.AlbumServiceImpl;
+import faang.school.postservice.service.AlbumService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
@@ -23,22 +23,22 @@ import java.util.List;
 @RequestMapping("/v1/album")
 @Validated
 public class AlbumController {
-    private final AlbumServiceImpl albumServiceImpl;
+    private final AlbumService albumService;
     private final UserContext userContext;
 
     @GetMapping("/{albumId}")
     public AlbumDto getAlbum(@PathVariable Long albumId) {
-        return albumServiceImpl.getAlbum(albumId);
+        return albumService.getAlbum(albumId);
     }
 
     @GetMapping("/all")
     public List<AlbumDto> getAllAlbums() {
-        return albumServiceImpl.getAllAlbums();
+        return albumService.getAllAlbums();
     }
 
     @PostMapping("/update")
     public AlbumDto update(@RequestBody @Valid AlbumDto albumDto) {
-        return albumServiceImpl.update(albumDto);
+        return albumService.update(albumDto);
     }
 
     @PutMapping("{albumId}/visibility")
@@ -46,6 +46,6 @@ public class AlbumController {
             @PathVariable("albumId") Long albumId,
             @RequestParam("visibility") AlbumVisibility visibility,
             @RequestBody(required = false) List<Long> userIds) {
-        return albumServiceImpl.updateVisibility(albumId, visibility, userIds);
+        return albumService.updateVisibility(albumId, visibility, userIds);
     }
 }

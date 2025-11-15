@@ -5,7 +5,7 @@ import faang.school.postservice.model.AlbumVisibility;
 
 import java.util.List;
 
-public interface AlbumServiceInterface {
+public interface AlbumService {
     AlbumDto getAlbum(long albumId);
     List<AlbumDto> getAllAlbums();
     AlbumDto update(AlbumDto albumDto);

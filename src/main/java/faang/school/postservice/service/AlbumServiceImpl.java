@@ -18,7 +18,7 @@ import java.util.List;
 @Service
 @AllArgsConstructor
 @Slf4j
-public class AlbumServiceImpl implements AlbumServiceInterface {
+public class AlbumServiceImpl implements AlbumService {
     private final AlbumRepository albumRepository;
     private final AlbumMapper albumMapper;
     private final UserContext userContext;
