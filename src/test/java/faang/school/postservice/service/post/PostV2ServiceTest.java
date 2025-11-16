@@ -53,7 +53,7 @@ class PostV2ServiceTest {
 
     private final Long userId = 1L;
     private final Long postId = 3L;
-    private final UserDto user = new UserDto(userId, "name", "email");
+    private final UserDto user = new UserDto(userId, "name", "email",  Boolean.TRUE);
     private final String content = "Post content";
     private final Post post = Post.builder().id(postId).build();
     private final Pageable pageableDefault = PageRequest.of(0, 5);

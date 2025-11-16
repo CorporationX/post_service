@@ -193,7 +193,7 @@ public class LikeServiceTest {
     void addLikeToComment_ValidData_ShouldAddLike() {
         when(userContext.getUserId()).thenReturn(VALID_USER_ID);
         when(userServiceClient.getUser(VALID_USER_ID)).thenReturn(userDto);
-        when(commentRepository.getByIdOrThrow(VALID_COMMENT_ID)).thenReturn(comment);
+        when(commentRepository.findByIdOrThrow(VALID_COMMENT_ID)).thenReturn(comment);
         when(likeRepository.findByCommentIdAndUserId(VALID_COMMENT_ID, VALID_USER_ID)).thenReturn(Optional.empty());
         when(likeRepository.save(any(Like.class))).thenAnswer(invocation -> {
             Like savedLike = invocation.getArgument(0);
@@ -235,7 +235,7 @@ public class LikeServiceTest {
     void addLikeToComment_AlreadyLiked_ShouldThrowDuplicateLikeException() {
         when(userContext.getUserId()).thenReturn(VALID_USER_ID);
         when(userServiceClient.getUser(VALID_USER_ID)).thenReturn(userDto);
-        when(commentRepository.getByIdOrThrow(VALID_COMMENT_ID)).thenReturn(comment);
+        when(commentRepository.findByIdOrThrow(VALID_COMMENT_ID)).thenReturn(comment);
         when(likeRepository.findByCommentIdAndUserId(VALID_COMMENT_ID, VALID_USER_ID)).thenReturn(Optional.of(commentLike));
 
         assertThrows(DuplicateLikeException.class, () -> likeService.addLikeToComment(VALID_COMMENT_ID));

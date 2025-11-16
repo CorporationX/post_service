@@ -50,7 +50,7 @@ public class Comment {
 
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "created_at")
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
@@ -63,4 +63,7 @@ public class Comment {
 
     @Column(name = "small_image_file_key")
     private String smallImageFileKey;
+
+    @Column(name = "is_verified")
+    private Boolean isVerified;
 }

@@ -62,7 +62,7 @@ public class LikeService {
     public LikeDto addLikeToComment(Long commentId) {
         Long userId = userContext.getUserId();
         validateUserExist(userId);
-        Comment comment = commentRepository.getByIdOrThrow(commentId);
+        Comment comment = commentRepository.findByIdOrThrow(commentId);
         validateAlreadyLikedComment(commentId, userId);
 
         Like like = Like.builder()
