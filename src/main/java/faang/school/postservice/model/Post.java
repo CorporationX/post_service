@@ -75,6 +75,9 @@ public class Post {
     @Column(name = "deleted", nullable = false)
     private boolean deleted;
 
+    @Column(name = "verified")
+    private Boolean verified;
+
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_at")
