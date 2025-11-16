@@ -6,9 +6,10 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
-import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,7 +30,7 @@ public class PostService {
 
     @Transactional
     public void createPost(PostDto postDto) {
-        validationAuthorPresence(postDto);
+        validateAuthorPresence(postDto);
 
         Post post = postMapper.toPost(postDto);
         post.setPublished(false);
@@ -43,7 +44,7 @@ public class PostService {
     public void publishPost(long postId) {
         Post post = findPostById(postId);
 
-        if(post.getPublishedAt() != null) {
+        if (post.isPublished()) {
             throw new IllegalArgumentException("The post has already been published");
         }
 
@@ -71,7 +72,7 @@ public class PostService {
     }
 
     @Transactional
-    public void deletePost(long postId){
+    public void deletePost(long postId) {
         Post post = findPostById(postId);
         postRepository.updateIsDeleted(post.getId(), true);
         log.info("The post has been deleting successfully");
@@ -95,7 +96,7 @@ public class PostService {
 
     @Transactional
     public List<PostDto> getPostDraftsByProjectId(long projectId) {
-        return postRepository.findByAuthorId(projectId).stream()
+        return postRepository.findByProjectId(projectId).stream()
                 .filter(post -> !post.isPublished() && !post.isDeleted())
                 .sorted(Comparator.comparing(Post::getCreatedAt))
                 .map(postMapper::toPostDto)
@@ -113,31 +114,33 @@ public class PostService {
 
     @Transactional
     public List<PostDto> getPostPublishedByProjectId(long projectId) {
-        return postRepository.findByAuthorId(projectId).stream()
+        return postRepository.findByProjectId(projectId).stream()
                 .filter(post -> post.isPublished() && !post.isDeleted())
                 .sorted(Comparator.comparing(Post::getCreatedAt))
                 .map(postMapper::toPostDto)
                 .toList();
     }
 
-    private void validationAuthorPresence(PostDto postDto) {
+    @Retryable(retryFor = {RuntimeException.class}, maxAttempts = 4, backoff = @Backoff(delay = 1000, multiplier = 2))
+    private void validateAuthorPresence(PostDto postDto) {
         log.debug("Checking for the presence of the author in the database");
         try {
             if (postDto.getAuthorId() != null) {
                 userServiceClient.getUser(postDto.getAuthorId());
-            } else {
+            }
+            if (postDto.getProjectId() != null) {
                 projectServiceClient.getProject(postDto.getProjectId());
             }
-        } catch (FeignException.NotFound e) {
+        } catch (NullPointerException e) {
             log.error("Element not found exception:", e);
-            throw new NoSuchElementException("Author with this id will not be found");
-        } catch (FeignException e) {
+            throw new NullPointerException("Author with this id will not be found");
+        } catch (RuntimeException e) {
             log.error("Feign client error:", e);
             throw new RuntimeException("Unexpected Feign client error", e);
         }
     }
 
-    private Post findPostById(long postId){
+    private Post findPostById(long postId) {
         return postRepository.findById(postId)
                 .orElseThrow(() -> new NoSuchElementException("Post will not be found"));
     }

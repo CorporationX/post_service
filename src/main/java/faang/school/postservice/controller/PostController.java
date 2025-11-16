@@ -26,7 +26,7 @@ public class PostController {
 
     @PostMapping("/creating")
     public void createPost(@RequestBody @Valid PostDto postDto) {
-        validationCreatorId(postDto);
+        validateCreatorId(postDto);
         postService.createPost(postDto);
     }
 
@@ -52,29 +52,29 @@ public class PostController {
 
     @GetMapping("/drafts/author")
     public List<PostDto> getPostDraftsByAuthorId() {
-        validationAuthorId();
+        validateAuthorId();
         return postService.getPostDraftsByAuthorId(userContext.getUserId());
     }
 
     @GetMapping("/drafts/project")
     public List<PostDto> getPostDraftsByProjectId() {
-        validationProjectId();
+        validateProjectId();
         return postService.getPostDraftsByProjectId(userContext.getProjectId());
     }
 
     @GetMapping("/published/author")
     public List<PostDto> getPostPublishedByAuthorId() {
-        validationAuthorId();
+        validateAuthorId();
         return postService.getPostPublishedByAuthorId(userContext.getUserId());
     }
 
     @GetMapping("/published/project")
     public List<PostDto> getPostPublishedByProjectId() {
-        validationProjectId();
+        validateProjectId();
         return postService.getPostPublishedByProjectId(userContext.getProjectId());
     }
 
-    private void validationCreatorId(PostDto post) {
+    private void validateCreatorId(PostDto post) {
         Long xUserId = userContext.getUserId();
         Long xProjectId = userContext.getProjectId();
 
@@ -92,7 +92,7 @@ public class PostController {
         }
     }
 
-    private void validationAuthorId() {
+    private void validateAuthorId() {
         Long xUserId = userContext.getUserId();
         Long xProjectId = userContext.getProjectId();
 
@@ -107,7 +107,7 @@ public class PostController {
         }
     }
 
-    private void validationProjectId() {
+    private void validateProjectId() {
         Long xUserId = userContext.getUserId();
         Long xProjectId = userContext.getProjectId();
 
