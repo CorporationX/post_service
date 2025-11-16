@@ -13,19 +13,20 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class CommentDto {
 
-    @NotNull
+    @NotNull(message = "id should not be null")
     private Long id;
 
-    @NotBlank
+    @NotBlank(message = "content should not be blank")
     private String content;
 
-    @NotNull
+    @NotNull(message = "authorId should not be null")
     private Long authorId;
 
-    @NotNull
+    @NotNull(message = "postId should not be null")
     private Long postId;
 
-    @Min(0)
+    @Min(value = 0, message = "likesCount should be grated than 0")
+    @NotNull(message = "authorId should not be null")
     private int likesCount;
 
     private LocalDateTime createdAt;
