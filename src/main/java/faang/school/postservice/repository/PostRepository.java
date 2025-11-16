@@ -73,8 +73,8 @@ public interface PostRepository extends JpaRepository<Post, Long>, JpaSpecificat
 
     @Query("""
             SELECT p FROM Post p 
-            LEFT JOIN FETCH p.likes 
-            WHERE p.id = :postId
+            LEFT JOIN Like l ON p.id = l.post.id 
+            WHERE p.id IN :postIds
             """)
     List<Post> getPostsWithLikes(@Param("postIds") List<Long> postIds, Pageable pageable);
 }
