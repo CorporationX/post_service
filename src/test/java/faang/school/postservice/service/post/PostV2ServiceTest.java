@@ -135,7 +135,7 @@ class PostV2ServiceTest {
 
         when(userContext.getUserId()).thenReturn(userId);
         when(userServiceClient.getUser(userId)).thenReturn(user);
-        when(postRepository.getByIdOrThrow(postId)).thenReturn(post);
+        when(postRepository.findPostWithLikesOrThrow(postId)).thenReturn(post);
 
         TestUtils.assertThrowsWithMessage(
                 ForbiddenException.class,
@@ -151,7 +151,7 @@ class PostV2ServiceTest {
 
         when(userContext.getUserId()).thenReturn(userId);
         when(userServiceClient.getUser(userId)).thenReturn(user);
-        when(postRepository.getByIdOrThrow(postId)).thenReturn(post);
+        when(postRepository.findPostWithLikesOrThrow(postId)).thenReturn(post);
         when(postRepository.save(postCaptor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
 
         String updatedContent = "Updated content";
@@ -210,21 +210,21 @@ class PostV2ServiceTest {
         assertTrue(capturedPost.isDeleted());
     }
 
-    @Test
-    void findById_shouldReturnPostDto_whenPostExists() {
-        post.setAuthorId(userId);
-        post.setContent(content);
+     @Test
+             void findById_shouldReturnPostDto_whenPostExists() {
+             post.setAuthorId(userId);
+             post.setContent(content);
 
-        when(userContext.getUserId()).thenReturn(userId);
-        when(userServiceClient.getUser(userId)).thenReturn(user);
-        when(postRepository.getByIdOrThrow(postId)).thenReturn(post);
+             when(userContext.getUserId()).thenReturn(userId);
+             when(userServiceClient.getUser(userId)).thenReturn(user);
+             when(postRepository.findPostWithLikesOrThrow(postId)).thenReturn(post);
 
-        PostV2Dto found = postV2Service.findById(postId);
+             PostV2Dto found = postV2Service.findById(postId);
 
-        assertEquals(postId, found.id());
-        assertEquals(content, found.content());
-        assertEquals(userId, found.authorId());
-    }
+             assertEquals(postId, found.id());
+             assertEquals(content, found.content());
+             assertEquals(userId, found.authorId());
+         }
 
     @Test
     void findAllDraftsByAuthor_shouldReturnPage() {

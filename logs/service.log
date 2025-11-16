@@ -1015,3 +1015,652 @@ WHERE p.id = :postId
 21:19:00.315 [pool-2-thread-1] INFO  f.school.postservice.client.AIClient - No spelling errors found
 21:19:00.321 [pool-2-thread-3] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
 21:19:07.447 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:19:30.061 [pool-2-thread-4] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:19:30.063 [pool-2-thread-6] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:19:30.074 [pool-2-thread-5] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:19:31.865 [SpringApplicationShutdownHook] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+21:19:31.866 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+21:19:31.868 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+21:19:33.771 [background-preinit] INFO  o.h.validator.internal.util.Version - HV000001: Hibernate Validator 8.0.0.Final
+21:19:33.800 [main] INFO  f.school.postservice.PostServiceApp - Starting PostServiceApp using Java 19.0.2 with PID 29672 (C:\Users\EdelweissPC\Desktop\learning\CorporationX\post_service\build\classes\java\main started by EdelweissPC in C:\Users\EdelweissPC\Desktop\learning\CorporationX\post_service)
+21:19:33.801 [main] INFO  f.school.postservice.PostServiceApp - No active profile set, falling back to 1 default profile: "default"
+21:19:34.518 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
+21:19:34.519 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JDBC repositories in DEFAULT mode.
+21:19:34.548 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.ad.AdRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table.
+21:19:34.548 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.AlbumRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table.
+21:19:34.549 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.CommentRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table.
+21:19:34.550 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.LikeRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table.
+21:19:34.551 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data JDBC - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.PostRepository; If you want this repository to be a JDBC repository, consider annotating your entities with one of these annotations: org.springframework.data.relational.core.mapping.Table.
+21:19:34.551 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 29 ms. Found 0 JDBC repository interfaces.
+21:19:34.558 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
+21:19:34.558 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+21:19:34.651 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 90 ms. Found 5 JPA repository interfaces.
+21:19:34.662 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
+21:19:34.663 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+21:19:34.671 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.ad.AdRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+21:19:34.672 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.AlbumRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+21:19:34.672 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.CommentRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+21:19:34.672 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.LikeRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+21:19:34.672 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface faang.school.postservice.repository.PostRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+21:19:34.672 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 4 ms. Found 0 Redis repository interfaces.
+21:19:34.818 [main] INFO  o.s.cloud.context.scope.GenericScope - BeanFactory id=3cd1649c-2373-342e-9617-ab831763d803
+21:19:34.876 [main] INFO  o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker - Bean 'faang.school.postservice.client.PaymentServiceClient' of type [org.springframework.cloud.openfeign.FeignClientFactoryBean] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+21:19:34.877 [main] INFO  o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker - Bean 'faang.school.postservice.client.ProjectServiceClient' of type [org.springframework.cloud.openfeign.FeignClientFactoryBean] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+21:19:34.878 [main] INFO  o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker - Bean 'faang.school.postservice.client.UserServiceClient' of type [org.springframework.cloud.openfeign.FeignClientFactoryBean] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+21:19:35.309 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port(s): 8081 (http)
+21:19:35.321 [main] INFO  o.a.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8081"]
+21:19:35.322 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+21:19:35.322 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.8]
+21:19:35.451 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+21:19:35.453 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 1597 ms
+21:19:35.684 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+21:19:35.767 [main] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@5c9e8a67
+21:19:35.768 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+21:19:35.878 [main] INFO  liquibase.database - Set default schema name to public
+21:19:35.954 [main] INFO  liquibase.lockservice - Successfully acquired change log lock
+21:19:36.020 [main] INFO  liquibase.changelog - Reading from public.databasechangelog
+21:19:36.065 [main] INFO  liquibase.lockservice - Successfully released change log lock
+21:19:36.122 [main] INFO  o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
+21:19:36.151 [main] INFO  org.hibernate.Version - HHH000412: Hibernate ORM core version 6.1.7.Final
+21:19:36.339 [main] INFO  SQL dialect - HHH000400: Using dialect: org.hibernate.dialect.PostgreSQLDialect
+21:19:36.772 [main] INFO  o.h.m.i.EntityInstantiatorPojoStandard - HHH000182: No default (no-argument) constructor for class: faang.school.postservice.model.ad.Ad (class must be instantiated by Interceptor)
+21:19:36.886 [main] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000490: Using JtaPlatform implementation: [org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform]
+21:19:36.891 [main] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+21:19:36.916 [main] INFO  f.school.postservice.client.AIClient - AIClient initialized with spellcheck URL: https://speller.yandex.net/services/spellservice.json/checkText
+21:19:37.636 [main] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+21:19:38.892 [main] INFO  o.a.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8081"]
+21:19:38.912 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port(s): 8081 (http) with context path ''
+21:19:38.954 [main] INFO  f.school.postservice.PostServiceApp - Started PostServiceApp in 5.509 seconds (process running for 5.899)
+21:19:39.001 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:20:00.362 [pool-2-thread-1] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:20:00.362 [pool-2-thread-2] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:20:00.366 [pool-2-thread-3] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:20:09.008 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:20:30.045 [pool-2-thread-5] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:20:30.053 [pool-2-thread-6] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:20:30.115 [pool-2-thread-4] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:20:39.017 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:21:00.053 [pool-2-thread-7] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:21:00.054 [pool-2-thread-8] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:21:00.057 [pool-2-thread-9] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:21:09.030 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:21:30.055 [pool-2-thread-1] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:21:30.060 [pool-2-thread-2] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:21:30.123 [pool-2-thread-10] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:21:39.033 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:22:00.041 [pool-2-thread-3] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:22:00.063 [pool-2-thread-5] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:22:00.063 [pool-2-thread-6] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:22:09.043 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:22:30.049 [pool-2-thread-7] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:22:30.050 [pool-2-thread-4] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:22:30.055 [pool-2-thread-8] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:22:39.056 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:23:00.051 [pool-2-thread-2] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:23:00.061 [pool-2-thread-9] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:23:00.201 [pool-2-thread-1] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:23:09.072 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:23:30.049 [pool-2-thread-3] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:23:30.052 [pool-2-thread-5] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:23:30.062 [pool-2-thread-10] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:23:39.086 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:24:00.062 [pool-2-thread-7] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:24:00.062 [pool-2-thread-6] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:24:00.065 [pool-2-thread-4] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:24:09.105 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:24:30.060 [pool-2-thread-9] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:24:30.062 [pool-2-thread-2] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:24:30.140 [pool-2-thread-8] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:24:39.112 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:25:00.058 [pool-2-thread-1] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:25:00.066 [pool-2-thread-5] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:25:00.123 [pool-2-thread-3] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:25:09.124 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:25:30.061 [pool-2-thread-10] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:25:30.063 [pool-2-thread-7] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:25:30.076 [pool-2-thread-6] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:25:39.137 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:26:00.049 [pool-2-thread-9] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:26:00.052 [pool-2-thread-4] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:26:00.055 [pool-2-thread-2] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:26:09.141 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:26:30.046 [pool-2-thread-8] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:26:30.049 [pool-2-thread-5] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:26:30.052 [pool-2-thread-1] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:26:39.146 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:27:00.060 [pool-2-thread-7] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:27:00.065 [pool-2-thread-3] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:27:00.139 [pool-2-thread-10] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:27:09.158 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:27:30.063 [pool-2-thread-6] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:27:30.065 [pool-2-thread-4] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:27:30.136 [pool-2-thread-9] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:27:39.176 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:28:00.050 [pool-2-thread-8] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:28:00.067 [pool-2-thread-2] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:28:00.135 [pool-2-thread-5] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:28:09.195 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:28:30.076 [pool-2-thread-3] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:28:30.128 [pool-2-thread-7] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:28:30.131 [pool-2-thread-1] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:28:39.200 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:29:00.059 [pool-2-thread-6] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:29:00.063 [pool-2-thread-10] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:29:00.068 [pool-2-thread-4] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:29:09.206 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:29:30.047 [pool-2-thread-8] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:29:30.053 [pool-2-thread-9] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:29:30.070 [pool-2-thread-2] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:29:39.211 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:30:00.058 [pool-2-thread-7] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:30:00.060 [pool-2-thread-3] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:30:00.124 [pool-2-thread-5] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:30:09.226 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:30:30.050 [pool-2-thread-1] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:30:30.062 [pool-2-thread-10] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:30:30.087 [pool-2-thread-6] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:30:39.237 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:31:00.044 [pool-2-thread-4] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:31:00.068 [pool-2-thread-9] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:31:00.198 [pool-2-thread-8] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:31:09.249 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:31:30.051 [pool-2-thread-7] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:31:30.053 [pool-2-thread-2] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:31:30.099 [pool-2-thread-3] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:31:39.267 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:32:00.052 [pool-2-thread-5] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:32:00.065 [pool-2-thread-10] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:32:00.072 [pool-2-thread-1] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:32:09.272 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:32:30.043 [pool-2-thread-4] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:32:30.054 [pool-2-thread-9] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:32:30.055 [pool-2-thread-6] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:32:39.285 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:33:00.043 [pool-2-thread-7] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:33:00.046 [pool-2-thread-8] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:33:00.054 [pool-2-thread-2] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:33:09.301 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:33:30.048 [pool-2-thread-5] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:33:30.049 [pool-2-thread-3] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:33:30.049 [pool-2-thread-10] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:33:39.309 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:34:00.053 [pool-2-thread-4] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:34:00.060 [pool-2-thread-1] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:34:00.131 [pool-2-thread-9] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:34:09.326 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:34:30.047 [pool-2-thread-7] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:34:30.057 [pool-2-thread-6] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:34:30.114 [pool-2-thread-8] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:34:39.344 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:35:00.057 [pool-2-thread-2] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:35:00.063 [pool-2-thread-5] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:35:00.071 [pool-2-thread-10] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:35:09.350 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:35:30.058 [pool-2-thread-3] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:35:30.059 [pool-2-thread-1] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:35:30.066 [pool-2-thread-4] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:35:39.366 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:36:00.060 [pool-2-thread-7] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:36:00.064 [pool-2-thread-9] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:36:00.211 [pool-2-thread-6] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:36:09.384 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:36:30.050 [pool-2-thread-8] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:36:30.051 [pool-2-thread-5] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:36:30.122 [pool-2-thread-2] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:36:39.398 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:37:00.039 [pool-2-thread-3] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:37:00.048 [pool-2-thread-10] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:37:00.053 [pool-2-thread-1] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:37:09.408 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:37:30.051 [pool-2-thread-4] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:37:30.062 [pool-2-thread-7] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:37:30.063 [pool-2-thread-9] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:37:39.413 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:38:00.060 [pool-2-thread-5] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:38:00.061 [pool-2-thread-8] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:38:00.129 [pool-2-thread-6] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:38:09.429 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:38:30.047 [pool-2-thread-3] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:38:30.050 [pool-2-thread-2] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:38:30.057 [pool-2-thread-10] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:38:39.443 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:39:00.059 [pool-2-thread-4] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:39:00.066 [pool-2-thread-7] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:39:00.094 [pool-2-thread-1] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:39:09.456 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:39:30.041 [pool-2-thread-5] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:39:30.051 [pool-2-thread-9] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:39:30.057 [pool-2-thread-8] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:39:39.472 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:40:00.051 [pool-2-thread-3] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:40:00.051 [pool-2-thread-6] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:40:00.055 [pool-2-thread-2] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:40:09.482 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:40:30.046 [pool-2-thread-10] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:40:30.118 [pool-2-thread-7] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:40:30.129 [pool-2-thread-4] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:40:39.500 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:41:00.049 [pool-2-thread-1] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:41:00.055 [pool-2-thread-5] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:41:00.069 [pool-2-thread-9] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:41:09.510 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:41:30.050 [pool-2-thread-8] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:41:30.055 [pool-2-thread-3] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:41:30.116 [pool-2-thread-6] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:41:39.514 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:42:00.040 [pool-2-thread-10] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:42:00.042 [pool-2-thread-2] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:42:00.043 [pool-2-thread-7] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:42:09.528 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:42:30.052 [pool-2-thread-1] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:42:30.065 [pool-2-thread-4] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:42:30.067 [pool-2-thread-5] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:42:39.546 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:43:00.055 [pool-2-thread-9] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:43:00.059 [pool-2-thread-3] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:43:00.129 [pool-2-thread-8] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:43:09.562 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:43:30.052 [pool-2-thread-6] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:43:30.057 [pool-2-thread-2] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:43:30.066 [pool-2-thread-10] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:43:39.568 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:44:00.048 [pool-2-thread-1] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:44:00.052 [pool-2-thread-7] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:44:00.063 [pool-2-thread-4] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:44:09.577 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:44:30.038 [pool-2-thread-5] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:44:30.042 [pool-2-thread-9] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:44:30.051 [pool-2-thread-3] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:44:39.583 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:45:00.051 [pool-2-thread-6] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:45:00.052 [pool-2-thread-8] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:45:00.057 [pool-2-thread-2] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:45:09.594 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:45:30.058 [pool-2-thread-1] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:45:30.058 [pool-2-thread-10] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:45:30.069 [pool-2-thread-7] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:45:39.600 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:46:00.047 [pool-2-thread-4] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:46:00.050 [pool-2-thread-9] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:46:00.058 [pool-2-thread-5] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:46:09.604 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:46:30.043 [pool-2-thread-8] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:46:30.048 [pool-2-thread-3] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:46:30.058 [pool-2-thread-6] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:46:39.615 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:47:00.053 [pool-2-thread-1] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:47:00.056 [pool-2-thread-10] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:47:00.059 [pool-2-thread-2] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:47:09.634 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:47:30.054 [pool-2-thread-9] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:47:30.055 [pool-2-thread-4] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:47:30.055 [pool-2-thread-7] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:47:39.638 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:48:00.049 [pool-2-thread-8] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:48:00.051 [pool-2-thread-3] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:48:00.115 [pool-2-thread-5] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:48:09.648 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:48:30.049 [pool-2-thread-1] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:48:30.053 [pool-2-thread-10] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:48:30.054 [pool-2-thread-6] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:48:39.667 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:49:00.057 [pool-2-thread-4] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:49:00.057 [pool-2-thread-2] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:49:00.057 [pool-2-thread-9] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:49:09.682 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:49:30.068 [pool-2-thread-7] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:49:30.074 [pool-2-thread-8] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:49:30.095 [pool-2-thread-3] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:49:39.699 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:50:00.044 [pool-2-thread-10] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:50:00.048 [pool-2-thread-5] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:50:00.058 [pool-2-thread-1] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:50:09.705 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:50:30.050 [pool-2-thread-6] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:50:30.055 [pool-2-thread-4] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:50:30.057 [pool-2-thread-2] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:50:39.723 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:51:00.060 [pool-2-thread-7] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:51:00.064 [pool-2-thread-9] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:51:00.074 [pool-2-thread-8] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:51:09.732 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:51:30.042 [pool-2-thread-3] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:51:30.044 [pool-2-thread-10] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:51:30.046 [pool-2-thread-5] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:51:39.742 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:52:00.042 [pool-2-thread-6] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:52:00.053 [pool-2-thread-4] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:52:00.059 [pool-2-thread-1] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:52:09.752 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:52:30.058 [pool-2-thread-2] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:52:30.061 [pool-2-thread-7] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:52:30.062 [pool-2-thread-9] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:52:39.757 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:53:00.050 [pool-2-thread-3] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:53:00.056 [pool-2-thread-8] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:53:00.058 [pool-2-thread-10] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:53:09.772 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:53:30.050 [pool-2-thread-6] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:53:30.057 [pool-2-thread-4] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:53:30.058 [pool-2-thread-5] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:53:39.782 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:54:00.052 [pool-2-thread-1] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:54:00.055 [pool-2-thread-7] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:54:00.117 [pool-2-thread-2] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:54:09.792 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:54:30.052 [pool-2-thread-9] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:54:30.052 [pool-2-thread-3] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:54:30.127 [pool-2-thread-8] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:54:39.807 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:55:00.049 [pool-2-thread-6] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:55:00.051 [pool-2-thread-10] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:55:00.129 [pool-2-thread-4] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:55:09.812 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:55:30.058 [pool-2-thread-5] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:55:30.069 [pool-2-thread-1] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:55:30.069 [pool-2-thread-7] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:55:39.825 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:56:00.053 [pool-2-thread-3] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:56:00.056 [pool-2-thread-2] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:56:00.060 [pool-2-thread-9] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:56:09.832 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:56:30.047 [pool-2-thread-8] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:56:30.061 [pool-2-thread-6] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:56:30.072 [pool-2-thread-10] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:56:39.835 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:57:00.061 [pool-2-thread-7] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:57:00.061 [pool-2-thread-5] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:57:00.138 [pool-2-thread-4] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:57:09.850 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:57:30.035 [pool-2-thread-3] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:57:30.051 [pool-2-thread-2] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:57:30.130 [pool-2-thread-1] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:57:39.855 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:58:00.059 [pool-2-thread-8] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:58:00.059 [pool-2-thread-9] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:58:00.133 [pool-2-thread-6] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:58:09.859 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:58:30.058 [pool-2-thread-10] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:58:30.131 [pool-2-thread-5] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:58:30.140 [pool-2-thread-7] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:58:39.864 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:59:00.053 [pool-2-thread-3] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:59:00.127 [pool-2-thread-4] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:59:00.197 [pool-2-thread-2] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:59:09.878 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+21:59:30.054 [pool-2-thread-1] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:59:30.063 [pool-2-thread-8] INFO  f.school.postservice.client.AIClient - No spelling errors found
+21:59:30.064 [pool-2-thread-9] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+21:59:39.881 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:00:00.041 [pool-2-thread-10] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:00:00.045 [pool-2-thread-6] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:00:00.060 [pool-2-thread-5] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:00:09.887 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:00:30.051 [pool-2-thread-7] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:00:30.068 [pool-2-thread-4] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:00:30.120 [pool-2-thread-3] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:00:39.901 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:01:00.044 [pool-2-thread-1] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:01:00.068 [pool-2-thread-8] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:01:00.120 [pool-2-thread-2] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:01:09.908 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:01:30.045 [pool-2-thread-10] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:01:30.054 [pool-2-thread-6] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:01:30.060 [pool-2-thread-9] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:01:39.921 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:02:00.045 [pool-2-thread-5] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:02:00.049 [pool-2-thread-7] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:02:00.050 [pool-2-thread-4] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:02:09.930 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:02:30.059 [pool-2-thread-8] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:02:30.064 [pool-2-thread-3] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:02:30.126 [pool-2-thread-1] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:02:39.946 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:03:00.068 [pool-2-thread-10] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:03:00.128 [pool-2-thread-2] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:03:00.142 [pool-2-thread-6] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:03:09.962 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:03:30.055 [pool-2-thread-5] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:03:30.056 [pool-2-thread-7] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:03:30.124 [pool-2-thread-9] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:03:39.980 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:04:00.058 [pool-2-thread-4] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:04:00.064 [pool-2-thread-3] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:04:00.121 [pool-2-thread-8] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:04:09.992 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:04:30.063 [pool-2-thread-10] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:04:30.069 [pool-2-thread-2] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:04:30.137 [pool-2-thread-1] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:04:40.005 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:05:00.047 [pool-2-thread-7] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:05:00.052 [pool-2-thread-6] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:05:00.052 [pool-2-thread-5] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:05:10.023 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:05:30.067 [pool-2-thread-3] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:05:30.132 [pool-2-thread-4] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:05:30.142 [pool-2-thread-9] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:05:40.038 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:06:00.038 [pool-2-thread-10] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:06:00.051 [pool-2-thread-8] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:06:00.052 [pool-2-thread-2] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:06:10.054 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:06:30.165 [pool-2-thread-6] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:06:30.166 [pool-2-thread-7] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:06:30.228 [pool-2-thread-1] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:06:40.060 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:07:00.055 [pool-2-thread-5] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:07:00.058 [pool-2-thread-3] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:07:00.134 [pool-2-thread-4] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:07:10.077 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:07:30.067 [pool-2-thread-10] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:07:30.070 [pool-2-thread-9] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:07:30.130 [pool-2-thread-8] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:07:40.084 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:08:00.042 [pool-2-thread-7] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:08:00.045 [pool-2-thread-2] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:08:00.113 [pool-2-thread-6] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:08:10.101 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:08:30.050 [pool-2-thread-1] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:08:30.053 [pool-2-thread-3] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:08:30.123 [pool-2-thread-5] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:08:40.105 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:09:00.051 [pool-2-thread-4] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:09:00.069 [pool-2-thread-9] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:09:00.117 [pool-2-thread-10] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:09:10.118 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:09:30.062 [pool-2-thread-7] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:09:30.062 [pool-2-thread-8] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:09:30.065 [pool-2-thread-2] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:09:40.127 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:10:00.043 [pool-2-thread-6] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:10:00.049 [pool-2-thread-1] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:10:00.049 [pool-2-thread-3] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:10:10.132 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:10:30.048 [pool-2-thread-4] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:10:30.050 [pool-2-thread-5] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:10:30.125 [pool-2-thread-9] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:10:40.137 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:11:00.047 [pool-2-thread-8] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:11:00.049 [pool-2-thread-10] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:11:00.116 [pool-2-thread-7] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:11:10.144 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:11:30.058 [pool-2-thread-6] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:11:30.070 [pool-2-thread-2] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:11:30.080 [pool-2-thread-1] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:11:40.154 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:12:00.049 [pool-2-thread-4] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:12:00.049 [pool-2-thread-5] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:12:00.125 [pool-2-thread-3] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:12:10.166 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:12:30.048 [pool-2-thread-8] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:12:30.052 [pool-2-thread-10] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:12:30.056 [pool-2-thread-9] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:12:40.172 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:13:00.044 [pool-2-thread-6] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:13:00.053 [pool-2-thread-7] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:13:00.054 [pool-2-thread-2] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:13:10.184 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:13:30.049 [pool-2-thread-4] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:13:30.055 [pool-2-thread-1] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:13:30.127 [pool-2-thread-5] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:13:40.192 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:14:00.039 [pool-2-thread-8] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:14:00.041 [pool-2-thread-3] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:14:00.050 [pool-2-thread-10] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:14:10.198 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:14:30.050 [pool-2-thread-6] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:14:30.064 [pool-2-thread-9] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:14:30.064 [pool-2-thread-2] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:14:40.215 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:15:00.042 [pool-2-thread-7] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:15:00.053 [pool-2-thread-4] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:15:00.059 [pool-2-thread-1] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:15:10.223 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:15:30.055 [pool-2-thread-5] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:15:30.056 [pool-2-thread-3] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:15:30.064 [pool-2-thread-8] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:15:40.228 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:16:00.048 [pool-2-thread-2] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:16:00.049 [pool-2-thread-10] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:16:00.117 [pool-2-thread-6] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:16:10.237 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:16:30.055 [pool-2-thread-9] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:16:30.055 [pool-2-thread-4] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:16:30.056 [pool-2-thread-7] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:16:40.242 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:17:00.054 [pool-2-thread-3] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:17:00.057 [pool-2-thread-1] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:17:00.065 [pool-2-thread-5] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:17:10.247 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:17:30.047 [pool-2-thread-8] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:17:30.047 [pool-2-thread-10] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:17:30.192 [pool-2-thread-2] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:17:40.260 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:18:00.066 [pool-2-thread-6] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:18:00.138 [pool-2-thread-9] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:18:00.138 [pool-2-thread-4] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:18:10.268 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:18:30.046 [pool-2-thread-3] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:18:30.050 [pool-2-thread-1] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:18:30.053 [pool-2-thread-7] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:18:40.277 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:19:00.048 [pool-2-thread-5] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:19:00.062 [pool-2-thread-10] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:19:00.130 [pool-2-thread-8] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:19:10.293 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:19:30.065 [pool-2-thread-4] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:19:30.130 [pool-2-thread-2] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:19:30.132 [pool-2-thread-6] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:19:40.298 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:20:00.061 [pool-2-thread-9] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:20:00.062 [pool-2-thread-1] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:20:00.131 [pool-2-thread-3] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:20:10.306 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:20:30.063 [pool-2-thread-7] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:20:30.064 [pool-2-thread-5] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:20:30.067 [pool-2-thread-10] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:20:40.316 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:21:00.058 [pool-2-thread-8] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:21:00.063 [pool-2-thread-2] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:21:00.069 [pool-2-thread-4] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:21:10.324 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:21:30.056 [pool-2-thread-6] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:21:30.060 [pool-2-thread-9] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:21:30.080 [pool-2-thread-1] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:21:40.335 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:22:00.059 [pool-2-thread-7] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:22:00.059 [pool-2-thread-3] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:22:00.144 [pool-2-thread-5] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:22:10.350 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:22:30.045 [pool-2-thread-8] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:22:30.053 [pool-2-thread-2] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:22:30.063 [pool-2-thread-10] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:22:40.360 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:23:00.049 [pool-2-thread-6] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:23:00.056 [pool-2-thread-9] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:23:00.124 [pool-2-thread-4] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:23:10.368 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:23:22.076 [Test worker] INFO  f.s.p.service.comment.CommentService - Deleting comment id=10 by userId=1
+22:23:22.150 [Test worker] INFO  f.s.p.service.comment.CommentService - Updating comment id=10 by userId=1
+22:23:22.158 [Test worker] INFO  f.s.p.service.comment.CommentService - Creating comment for postId=1 by userId=1
+22:23:22.163 [Test worker] INFO  f.s.p.service.comment.CommentService - Fetching comment by id=10
+22:23:22.253 [Test worker] INFO  f.s.postservice.service.LikeService - Like added to comment 1 by user 100
+22:23:22.260 [Test worker] INFO  f.s.postservice.service.LikeService - Like removed from post 1 by user 100
+22:23:22.270 [Test worker] ERROR f.s.postservice.service.LikeService - User validation failed for id 100
+22:23:22.274 [Test worker] INFO  f.s.postservice.service.LikeService - Like added to post 1 by user 100
+22:23:22.279 [Test worker] INFO  f.s.postservice.service.LikeService - Like removed from comment 1 by user 100
+22:23:22.285 [Test worker] ERROR f.s.postservice.service.LikeService - User validation failed for id 999
+22:23:22.293 [Test worker] ERROR f.s.postservice.service.LikeService - User validation failed for id 100
+22:23:22.307 [Test worker] ERROR f.s.postservice.service.LikeService - User validation failed for id 999
+22:23:22.341 [Test worker] INFO  f.s.p.service.post.PostService - the post was published 1
+22:23:22.357 [Test worker] INFO  f.s.p.service.post.PostService - The post 1 has been published
+22:23:22.362 [Test worker] INFO  f.s.p.service.post.PostService - The post 1 was soft deleted.
+22:23:22.369 [Test worker] INFO  f.s.p.service.post.PostService - post 1 has been updated
+22:23:30.135 [pool-2-thread-7] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:23:30.139 [pool-2-thread-1] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:23:30.140 [pool-2-thread-3] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:23:40.373 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:24:00.050 [pool-2-thread-5] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:24:00.052 [pool-2-thread-8] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:24:00.066 [pool-2-thread-2] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:24:10.383 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:24:30.046 [pool-2-thread-10] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:24:30.046 [pool-2-thread-6] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:24:30.051 [pool-2-thread-9] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:24:40.394 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:25:00.051 [pool-2-thread-7] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:25:00.065 [pool-2-thread-3] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:25:00.138 [pool-2-thread-4] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:25:10.401 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:25:30.038 [pool-2-thread-8] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:25:30.049 [pool-2-thread-5] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:25:30.053 [pool-2-thread-1] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:25:40.410 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:26:00.044 [pool-2-thread-10] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:26:00.048 [pool-2-thread-6] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:26:00.054 [pool-2-thread-2] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:26:10.415 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:26:30.046 [pool-2-thread-9] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:26:30.052 [pool-2-thread-7] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:26:30.065 [pool-2-thread-3] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:26:40.424 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:27:00.052 [pool-2-thread-5] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:27:00.052 [pool-2-thread-4] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:27:00.122 [pool-2-thread-8] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:27:10.436 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:27:30.052 [pool-2-thread-1] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:27:30.057 [pool-2-thread-10] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:27:30.063 [pool-2-thread-6] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:27:40.444 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:28:00.068 [pool-2-thread-9] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:28:00.068 [pool-2-thread-2] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:28:00.068 [pool-2-thread-7] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:28:10.455 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:28:30.054 [pool-2-thread-5] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:28:30.068 [pool-2-thread-3] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:28:30.131 [pool-2-thread-4] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:28:40.462 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:28:59.949 [Test worker] INFO  f.s.p.service.comment.CommentService - Deleting comment id=10 by userId=1
+22:29:00.017 [Test worker] INFO  f.s.p.service.comment.CommentService - Updating comment id=10 by userId=1
+22:29:00.022 [Test worker] INFO  f.s.p.service.comment.CommentService - Creating comment for postId=1 by userId=1
+22:29:00.026 [Test worker] INFO  f.s.p.service.comment.CommentService - Fetching comment by id=10
+22:29:00.037 [pool-2-thread-1] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:29:00.041 [pool-2-thread-8] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:29:00.041 [pool-2-thread-10] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:29:00.081 [Test worker] INFO  f.s.postservice.service.LikeService - Like added to comment 1 by user 100
+22:29:00.087 [Test worker] INFO  f.s.postservice.service.LikeService - Like removed from post 1 by user 100
+22:29:00.093 [Test worker] ERROR f.s.postservice.service.LikeService - User validation failed for id 100
+22:29:00.100 [Test worker] INFO  f.s.postservice.service.LikeService - Like added to post 1 by user 100
+22:29:00.105 [Test worker] INFO  f.s.postservice.service.LikeService - Like removed from comment 1 by user 100
+22:29:00.109 [Test worker] ERROR f.s.postservice.service.LikeService - User validation failed for id 999
+22:29:00.118 [Test worker] ERROR f.s.postservice.service.LikeService - User validation failed for id 100
+22:29:00.127 [Test worker] ERROR f.s.postservice.service.LikeService - User validation failed for id 999
+22:29:00.157 [Test worker] INFO  f.s.p.service.post.PostService - the post was published 1
+22:29:00.176 [Test worker] INFO  f.s.p.service.post.PostService - The post 1 has been published
+22:29:00.183 [Test worker] INFO  f.s.p.service.post.PostService - The post 1 was soft deleted.
+22:29:00.188 [Test worker] INFO  f.s.p.service.post.PostService - post 1 has been updated
+22:29:10.477 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
+22:29:30.043 [pool-2-thread-6] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:29:30.053 [pool-2-thread-2] INFO  f.school.postservice.client.AIClient - No spelling errors found
+22:29:30.061 [pool-2-thread-7] INFO  f.school.postservice.client.AIClient - Corrected text: hillo world
+22:29:40.492 [scheduling-1] INFO  f.s.p.s.moderate.ModerateComments - comments have been checked. Size - 0
