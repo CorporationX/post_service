@@ -9,6 +9,7 @@ import faang.school.postservice.dto.post.PostV2UpdateDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.mapper.PostV2Mapper;
+import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -23,7 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 @RequiredArgsConstructor
 @Service
@@ -68,14 +68,16 @@ public class PostV2Service {
     public PostV2Dto updatePost(Long postId, PostV2UpdateDto postV2UpdateDto) {
         long userId = userContext.getUserId();
         UserDto user = userServiceClient.getUser(userId);
-        Post post = postRepository.getByIdOrThrow(postId);
+        Post post = postRepository.findPostWithLikesOrThrow(postId);
 
         validatePostOwner(post, userId);
         PostV2Mapper.update(post, postV2UpdateDto);
 
         Post saved = postRepository.save(post);
-        Long likesCount = likeRepository.countLikeByPostId(postId);
-        List<Long> likesIds = likeRepository.findLikeIdsByPostId(postId);
+        List<Long> likesIds = saved.getLikes().stream()
+                .map(Like::getId)
+                .toList();
+        Long likesCount = (long) likesIds.size();
         return PostV2Mapper.toDto(saved, likesCount, likesIds);
     }
 
@@ -98,21 +100,15 @@ public class PostV2Service {
     @Transactional(readOnly = true)
     public PageResponse<PostV2Dto> findAllPublishedByFilter(
             Long authorId,
-            Pageable pageable
-    ) {
+            Pageable pageable) {
         Specification<Post> spec = PostSpecification.filter(authorId, true);
         Page<Post> page = postRepository.findAll(spec, pageable);
 
-        List<Long> postIds = page.getContent().stream()
-                .map(Post::getId)
-                .toList();
-
-        Map<Long, Long> likesCountByPostId = likeRepository.getLikeCountsByPostIds(postIds);
-        Map<Long, List<Long>> likesIdsByPostId = likeRepository.getLikeIdsByPostIds(postIds);
-
         return PageResponse.from(page, post -> PostV2Mapper.toDto(post,
-                likesCountByPostId.getOrDefault(post.getId(), 0L),
-                likesIdsByPostId.getOrDefault(post.getId(), Collections.emptyList())
+                (long) post.getLikes().size(),
+                post.getLikes().stream()
+                        .map(Like::getId)
+                        .toList()
                 )
         );
     }
@@ -125,16 +121,11 @@ public class PostV2Service {
         Specification<Post> spec = PostSpecification.filter(userId, false);
         Page<Post> page = postRepository.findAll(spec, pageable);
 
-        List<Long> postIds = page.getContent().stream()
-                .map(Post::getId)
-                .toList();
-
-        Map<Long, Long> likesCountByPostId = likeRepository.getLikeCountsByPostIds(postIds);
-        Map<Long, List<Long>> likesIdsByPostId = likeRepository.getLikeIdsByPostIds(postIds);
-
         return PageResponse.from(page, post -> PostV2Mapper.toDto(post,
-                        likesCountByPostId.getOrDefault(post.getId(), 0L),
-                        likesIdsByPostId.getOrDefault(post.getId(), Collections.emptyList())
+                        (long) post.getLikes().size(),
+                        post.getLikes().stream()
+                                .map(Like::getId)
+                                .toList()
                 )
         );
     }
@@ -143,9 +134,11 @@ public class PostV2Service {
     public PostV2Dto findById(Long postId) {
         long userId = userContext.getUserId();
         UserDto user = userServiceClient.getUser(userId);
-        Post post = postRepository.getByIdOrThrow(postId);
-        Long likesCount = likeRepository.countLikeByPostId(post.getId());
-        List<Long> likesIds = likeRepository.findLikeIdsByPostId(post.getId());
+        Post post = postRepository.findPostWithLikesOrThrow(postId);
+        List<Long> likesIds = post.getLikes().stream()
+                .map(Like::getId)
+                .toList();
+        Long likesCount = (long) likesIds.size();
         return PostV2Mapper.toDto(post, likesCount, likesIds);
     }
 

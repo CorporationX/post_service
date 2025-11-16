@@ -21,23 +21,31 @@ public class LikeController {
 
     private final LikeService likeService;
 
-    @PostMapping("/post")
+    @PostMapping("/on-post")
     public ResponseEntity<LikeDto> addLikeToPost(@RequestParam @Positive long postId) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(likeService.addLikeToPost(postId));
+        LikeDto likeDto = likeService.addLikeToPost(postId);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(likeDto);
     }
 
-    @DeleteMapping("/post")
+    @DeleteMapping("/on-post")
     public ResponseEntity<LikeDto> removeLikeFromPost(@RequestParam @Positive long postId) {
-        return ResponseEntity.ok(likeService.removeLikeFromPost(postId));
+        LikeDto likeDto = likeService.removeLikeFromPost(postId);
+        return ResponseEntity.ok(likeDto);
     }
 
-    @PostMapping("/comment")
+    @PostMapping("/on-comment")
     public ResponseEntity<LikeDto> addLikeToComment(@RequestParam @Positive long commentId) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(likeService.addLikeToComment(commentId));
+        LikeDto likeDto = likeService.addLikeToComment(commentId);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(likeDto);
     }
 
-    @DeleteMapping("/comment")
+    @DeleteMapping("/on-comment")
     public ResponseEntity<LikeDto> removeLikeFromComment(@RequestParam @Positive long commentId) {
-        return ResponseEntity.ok(likeService.removeLikeFromComment(commentId));
+        LikeDto likeDto = likeService.removeLikeFromComment(commentId);
+        return ResponseEntity.ok(likeDto);
     }
 }
