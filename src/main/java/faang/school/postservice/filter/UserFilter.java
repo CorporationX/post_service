@@ -29,6 +29,15 @@ public class UserFilter extends OncePerRequestFilter {
         }
 
         String userIdHeader = request.getHeader("X-User-Id");
+        String uri = request.getRequestURI();
+
+        if (uri.startsWith("/swagger-ui")
+                || uri.startsWith("/v3/api-docs")
+                || uri.startsWith("/swagger-resources")
+                || uri.startsWith("/webjars")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         if (userIdHeader == null) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);

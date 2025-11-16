@@ -47,3 +47,7 @@ ai:
 
 post-correcter:
   cron: "*/30 * * * * *"
+
+app:
+  moderation:
+    time: 30000

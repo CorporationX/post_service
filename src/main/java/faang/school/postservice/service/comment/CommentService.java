@@ -7,6 +7,7 @@ import faang.school.postservice.dto.comment.CommentUpdateDto;
 import faang.school.postservice.dto.common.PageResponse;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.ValidationException;
+import faang.school.postservice.job.moderator.ModerationDictionary;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
@@ -54,8 +55,7 @@ public class CommentService {
         CommentValidator.validateCommentContent(dto.content());
 
         existing.setContent(dto.content());
-        existing.setLargeImageFileKey(dto.largeImageFileKey());
-        existing.setSmallImageFileKey(dto.smallImageFileKey());
+        existing.setIsVerified(null);
         log.info("Updating comment id={} by userId={}", commentId, userId);
 
         return commentRepository.save(existing);
