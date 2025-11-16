@@ -2,8 +2,10 @@ package faang.school.postservice.repository;
 
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.model.Post;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
@@ -17,7 +19,11 @@ public interface PostRepository extends JpaRepository<Post, Long>, JpaSpecificat
 
     List<Post> findAllByPublishedFalseAndDeletedFalse();
 
-    @Query("SELECT p FROM Post p LEFT JOIN FETCH p.likes WHERE p.projectId = :projectId")
+    @Query(value = """
+            SELECT p FROM Post p
+            LEFT JOIN FETCH p.likes
+            WHERE p.projectId = :projectId
+            """)
     List<Post> findByProjectIdWithLikes(long projectId);
 
     @Query("SELECT p FROM Post p LEFT JOIN FETCH p.likes WHERE p.authorId = :authorId")
@@ -42,4 +48,12 @@ public interface PostRepository extends JpaRepository<Post, Long>, JpaSpecificat
             SELECT p FROM Post p
             WHERE p.published = false AND p.deleted = false AND p.authorId = :authorId""")
     List<Post> findPostToDraftByAuthorId(Long authorId);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+            SELECT p FROM Post p
+            WHERE p.published = false 
+            AND p.deleted = false
+            """)
+    List<Post> findAllForAiEditingWithLock();
 }

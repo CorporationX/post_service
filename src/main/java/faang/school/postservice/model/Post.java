@@ -71,7 +71,6 @@ public class Post {
     @Column(name = "published", nullable = false)
     private boolean published;
 
-
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "published_at")
     private LocalDateTime publishedAt;
@@ -92,4 +91,7 @@ public class Post {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Builder.Default
+    private boolean aiEdited = false;
 }

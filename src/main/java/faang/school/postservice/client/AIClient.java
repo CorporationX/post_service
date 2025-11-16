@@ -1,7 +1,10 @@
 package faang.school.postservice.client;
 
 
+import faang.school.postservice.dto.ai.CorrectionDto;
 import faang.school.postservice.exception.AiServiceException;
+import faang.school.postservice.exception.MissingAiConfigException;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,6 +19,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -27,28 +31,37 @@ public class AIClient {
 
     private final RestTemplate restTemplate;
 
-    @Value("${ai.spellcheck-url:https://speller.yandex.net/services/spellservice.json/checkText}")
+    @Value("${ai.spellcheck-url}")
     private String spellcheckUrl;
+
+    @PostConstruct
+    public void validateConfig() {
+        if (spellcheckUrl == null || spellcheckUrl.isBlank()) {
+            throw new MissingAiConfigException(
+                    "Required configuration property 'ai.spellcheck-url' is missing or empty"
+            );
+        }
+
+        log.info("AIClient initialized with spellcheck URL: {}", spellcheckUrl);
+    }
+
 
     public String correctText(String text) {
         try {
-            log.info("Submitting text for spell checking ({} characters)", text.length());
-
             String body = "text=" + URLEncoder.encode(text, StandardCharsets.UTF_8);
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
             HttpEntity<String> request = new HttpEntity<>(body, headers);
 
-            ResponseEntity<List<Map<String, Object>>> response = restTemplate.exchange(
+            CorrectionDto[] correctionsArray = restTemplate.postForObject(
                     spellcheckUrl,
-                    HttpMethod.POST,
                     request,
-                    new ParameterizedTypeReference<>() {
-                    }
+                    CorrectionDto[].class
             );
 
-            List<Map<String, Object>> corrections = response.getBody();
-            if (corrections == null || corrections.isEmpty()) {
+            List<CorrectionDto> corrections = correctionsArray == null ? List.of() : Arrays.asList(correctionsArray);
+
+            if (corrections.isEmpty()) {
                 log.info("No spelling errors found");
                 return text;
             }
@@ -63,30 +76,54 @@ public class AIClient {
         }
     }
 
-    private String applyCorrections(String text, List<Map<String, Object>> corrections) {
-        corrections.sort((a, b) -> ((Integer) b.get("pos")) - ((Integer) a.get("pos")));
+    private HttpEntity<String> buildFormRequest(String text) {
+        String body = "text=" + URLEncoder.encode(text, StandardCharsets.UTF_8);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        return new HttpEntity<>(body, headers);
+    }
+
+    /**
+     * Применяет список исправлений к исходному тексту.
+     *
+     * @param text        Исходный текст, который нужно исправить
+     * @param corrections Список исправлений. Каждое исправление должно быть картой с ключами:
+     *                    "pos" - позиция в тексте (int),
+     *                    "len" - длина исправляемого фрагмента (int),
+     *                    "s"   - список вариантов исправления (List<String>)
+     * @return Исправленный текст
+     */
+    public static String applyCorrections(String text, List<CorrectionDto> corrections) {
+
+        corrections.sort((a, b) -> b.pos() - a.pos());
+
         StringBuilder sb = new StringBuilder(text);
 
-        for (Map<String, Object> correction : corrections) {
-            Object suggestionsObj = correction.get("s");
-            List<String> suggestions;
+        for (CorrectionDto correction : corrections) {
+            List<String> suggestions = correction.suggestions();
+            if (suggestions == null || suggestions.isEmpty()) continue;
 
-            if (suggestionsObj instanceof List<?>) {
-                suggestions = ((List<?>) suggestionsObj).stream()
-                        .filter(item -> item instanceof String)
-                        .map(item -> (String) item)
-                        .toList();
-            } else {
-                suggestions = List.of();
-            }
+            int pos = correction.pos();
+            int len = correction.len();
 
-            if (suggestions.isEmpty()) continue;
-
-            int pos = (int) correction.get("pos");
-            int len = (int) correction.get("len");
             sb.replace(pos, pos + len, suggestions.get(0));
         }
 
         return sb.toString();
+    }
+
+    private List<String> extractSuggestions(Map<String, Object> correction) {
+        Object s = correction.get("s");
+
+        if (s instanceof List<?> list) {
+            return list.stream()
+                    .filter(String.class::isInstance)
+                    .map(String.class::cast)
+                    .toList();
+        }
+
+        return List.of();
     }
 }

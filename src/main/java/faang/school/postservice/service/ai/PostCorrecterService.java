@@ -1,5 +1,4 @@
-package faang.school.postservice.scheduled;
-
+package faang.school.postservice.service.ai;
 
 import faang.school.postservice.service.post.PostV2Service;
 import lombok.RequiredArgsConstructor;
@@ -8,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class PostCorrecter {
+public class PostCorrecterService {
 
     private final PostV2Service postV2Service;
 

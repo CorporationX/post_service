@@ -23,7 +23,8 @@ public class GlobalExceptionHandler {
             ForbiddenException.class, HttpStatus.FORBIDDEN,
             MethodArgumentNotValidException.class, HttpStatus.BAD_REQUEST,
             FeignException.class, HttpStatus.INTERNAL_SERVER_ERROR,
-            AiServiceException.class, HttpStatus.SERVICE_UNAVAILABLE
+            AiServiceException.class, HttpStatus.SERVICE_UNAVAILABLE,
+            MissingAiConfigException.class, HttpStatus.NOT_FOUND
     );
 
     @ExceptionHandler(Exception.class)

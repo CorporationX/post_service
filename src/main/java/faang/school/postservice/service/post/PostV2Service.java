@@ -1,6 +1,5 @@
 package faang.school.postservice.service.post;
 
-import faang.school.postservice.client.AIClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.common.PageResponse;
@@ -13,17 +12,20 @@ import faang.school.postservice.mapper.PostV2Mapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.spec.PostSpecification;
+import faang.school.postservice.service.ai.AiTextCorrectionService;
+import faang.school.postservice.service.ai.PostTransactionalService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -32,7 +34,10 @@ public class PostV2Service {
     private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
     private final UserContext userContext;
-    private final AIClient aiClient;
+    private final AiTextCorrectionService aiTextCorrectionService;
+    private final PostTransactionalService postTransactionalService;
+
+    private final Executor executor = Executors.newFixedThreadPool(10);
 
     public PostV2Dto createPostAsDraft(PostV2CreateDto postV2CreateDto) {
         long userId = userContext.getUserId();
@@ -90,10 +95,7 @@ public class PostV2Service {
         postRepository.save(post);
     }
 
-    public PageResponse<PostV2Dto> findAllPublishedByFilter(
-            Long authorId,
-            Pageable pageable
-    ) {
+    public PageResponse<PostV2Dto> findAllPublishedByFilter(Long authorId, Pageable pageable) {
         Specification<Post> spec = PostSpecification.filter(authorId, true);
         Page<Post> page = postRepository.findAll(spec, pageable);
 
@@ -125,26 +127,24 @@ public class PostV2Service {
         }
     }
 
-    @Transactional
     public void correctDraftPosts() {
-        postRepository.findAllByPublishedFalseAndDeletedFalse()
-                .forEach(post -> {
-                    try {
-                        String correctedText = correctTextWithRetry(post.getContent());
-                        post.setContent(correctedText);
-                        postRepository.save(post);
-                    } catch (Exception e) {
-                        log.error("Error editing post id={} - {}", post.getId(), e.getMessage());
-                    }
-                });
+        List<Post> posts = postTransactionalService.loadPostsForAiEditing();
+
+        List<CompletableFuture<Void>> futures = posts.stream()
+                .map(post -> CompletableFuture.runAsync(() -> processPost(post), executor))
+                .toList();
+
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
     }
 
-    @Retryable(
-            retryFor = { RuntimeException.class },
-            maxAttempts = 3,
-            backoff = @Backoff(delay = 2000)
-    )
-    public String correctTextWithRetry(String text) {
-        return aiClient.correctText(text);
+    private void processPost(Post post) {
+        try {
+            String correctedText = aiTextCorrectionService.correct(post.getContent());
+            post.setContent(correctedText);
+            post.setAiEdited(true);
+            postRepository.save(post);
+        } catch (Exception e) {
+            log.error("Error editing post id={} - {}", post.getId(), e.getMessage());
+        }
     }
 }
