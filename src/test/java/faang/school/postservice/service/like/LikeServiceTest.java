@@ -88,7 +88,7 @@ public class LikeServiceTest {
                 .comment(comment)
                 .build();
 
-        userDto = new UserDto(VALID_USER_ID, "testuser", "test@example.com");
+        userDto = new UserDto(VALID_USER_ID, "testuser", "test@example.com", true);
     }
 
     @Test
@@ -124,7 +124,7 @@ public class LikeServiceTest {
 
     @Test
     void addLikeToPost_UserIdMismatch_ShouldThrowException() {
-        UserDto mismatchedUserDto = new UserDto(DIFFERENT_USER_ID, "otheruser", "other@example.com");
+        UserDto mismatchedUserDto = new UserDto(DIFFERENT_USER_ID, "otheruser", "other@example.com", true);
 
         when(userContext.getUserId()).thenReturn(VALID_USER_ID);
         when(userServiceClient.getUser(VALID_USER_ID)).thenReturn(mismatchedUserDto);
@@ -222,7 +222,7 @@ public class LikeServiceTest {
 
     @Test
     void addLikeToComment_UserIdMismatch_ShouldThrowException() {
-        UserDto mismatchedUserDto = new UserDto(DIFFERENT_USER_ID, "otheruser", "other@example.com");
+        UserDto mismatchedUserDto = new UserDto(DIFFERENT_USER_ID, "otheruser", "other@example.com", true);
 
         when(userContext.getUserId()).thenReturn(VALID_USER_ID);
         when(userServiceClient.getUser(VALID_USER_ID)).thenReturn(mismatchedUserDto);
