@@ -8,6 +8,8 @@ databaseChangeLog:
   - include:
       file: db/changelog/changeset/post_V004_alter_comment_add_image_keys.sql
   - include:
+      file: db/changelog/changeset/post_V005__add_constraints_for_likes.sql
+  - include:
       file: db/changelog/changeset/post_V005__add_ai_edited_column.sql
   - include:
       file: db/changelog/changeset/post_V008_alter_comments.sql

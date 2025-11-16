@@ -3,13 +3,16 @@ package faang.school.postservice.repository;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.model.Post;
 import jakarta.persistence.LockModeType;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface PostRepository extends JpaRepository<Post, Long>, JpaSpecificationExecutor<Post> {
 
@@ -56,4 +59,23 @@ public interface PostRepository extends JpaRepository<Post, Long>, JpaSpecificat
             AND p.deleted = false
             """)
     List<Post> findAllForAiEditingWithLock();
+
+    default Post findPostWithLikesOrThrow(long postId) {
+        return findPostWithLikes(postId)
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Post %d not found", postId)));
+    }
+
+    @Query("""
+            SELECT p FROM Post p 
+            LEFT JOIN FETCH p.likes 
+            WHERE p.id = :postId
+            """)
+    Optional<Post> findPostWithLikes(Long postId);
+
+    @Query("""
+        SELECT p FROM Post p
+        LEFT JOIN Like l ON p.id = l.postId
+        WHERE p.id IN :postIds
+        """)
+    List<Post> getPostsWithLikes(List<Long> postIds, Pageable pageable);
 }

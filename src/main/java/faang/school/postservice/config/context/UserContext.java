@@ -12,7 +12,11 @@ public class UserContext {
     }
 
     public long getUserId() {
-        return userIdHolder.get();
+        Long userId = userIdHolder.get();
+        if (userId == null) {
+            throw new IllegalStateException("User ID not found in context");
+        }
+        return userId;
     }
 
     public void clear() {
