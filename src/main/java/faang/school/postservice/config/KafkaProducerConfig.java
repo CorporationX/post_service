@@ -2,8 +2,8 @@ package faang.school.postservice.config;
 
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.ser.std.StringSerializer;
-import faang.school.postservice.dto.post.PostViewEvent;
 import org.apache.kafka.clients.producer.ProducerConfig;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,22 +20,18 @@ public class KafkaProducerConfig {
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
 
-    @Bean
-    public Map<String, Object> producerConfigs() {
+    @Bean("postViewProducerFactory")
+    public ProducerFactory<String, Object> producerFactory() {
         Map<String, Object> props = new HashMap<>();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
-        return props;
-    }
 
-    @Bean("postViewProducerFactory")
-    public ProducerFactory<String, PostViewEvent> producerFactory() {
-        return new DefaultKafkaProducerFactory<>(producerConfigs());
+        return new DefaultKafkaProducerFactory<>(props);
     }
 
     @Bean("postViewKafkaTemplate")
-    public KafkaTemplate<String, PostViewEvent> kafkaTemplate(ProducerFactory<String, PostViewEvent> factory) {
+    public KafkaTemplate<String, Object> kafkaTemplate(@Qualifier("postViewProducerFactory") ProducerFactory<String, Object> factory) {
         return new KafkaTemplate<>(factory);
     }
 }
