@@ -17,10 +17,12 @@ import feign.FeignException;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.ListUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -28,6 +30,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 
 @Slf4j
 @Service
@@ -36,17 +40,21 @@ public class PostServiceImpl implements PostService {
     private final static String DRAFT_LOG_PREFIX = "drafts";
     private final static String PUBLISHED_LOG_PREFIX = "published posts";
 
-    @Value("${posts.max-unverified-posts}")
-    private int maxUnverifiedPosts;
-    @Value("${posts.find-unverified-posts-page-size}")
-    private int findUnverifiedPostsPageSize;
-
+    private final BatchPublishingService batchPublishingService;
     private final PostMapper postMapper;
     private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
+    private final ExecutorService scheduledPostExecutor;
     private final UserBanEventPublisher userBanEventPublisher;
     private final UserService userService;
+  
+    @Value("${app.scheduled-posts.batch-size:1000}")
+    private int scheduledPostsBatchSize;
+    @Value("${posts.max-unverified-posts}")
+    private int maxUnverifiedPosts;
+    @Value("${posts.find-unverified-posts-page-size}")
+    private int findUnverifiedPostsPageSize;
 
     @Override
     public PostDto createDraft(CreatePostDto postDto) {
@@ -85,6 +93,7 @@ public class PostServiceImpl implements PostService {
             throw new DataValidationException("Cannot change the author or project of a post.");
         }
         post.setContent(postDto.content());
+        post.setUpdatedAt(LocalDateTime.now());
         post = postRepository.save(post);
 
         log.info("Post with ID {} has been updated", post.getId());
@@ -133,6 +142,29 @@ public class PostServiceImpl implements PostService {
         return getFilteredPostDto(projectId, posts, true, PUBLISHED_LOG_PREFIX);
     }
 
+    @Override
+    @Transactional
+    public void publishScheduledPosts() {
+        log.info("Start of publication of planned posts");
+
+        List<Post> postsToPublish = postRepository.findReadyToPublish();
+
+        if (postsToPublish.isEmpty()) {
+            log.info("There are no posts to publish");
+            return;
+        }
+
+        log.info("Found {} posts to publish", postsToPublish.size());
+        List<List<Post>> batches = ListUtils.partition(postsToPublish, scheduledPostsBatchSize);
+
+        List<CompletableFuture<Void>> futures = batches.stream()
+                .map(batch -> CompletableFuture.runAsync(() -> batchPublishingService.publishBatch(batch), scheduledPostExecutor))
+                .toList();
+
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+
+        log.info("Publication of planned posts is completed. Total published: {}", postsToPublish.size());
+    }
 
     @Override
     public void findAuthorsForBan() {
