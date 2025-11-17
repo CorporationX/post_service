@@ -65,11 +65,6 @@ public class CommentService {
         kafkaTemplate.send(producerRecord);
 
         try {
-//            String key = "authors_" + comment.getAuthorId();
-//            CommentRedisDto redisDto = createRedisDto(comment);
-//            String string = objectMapper.writeValueAsString(redisDto);
-//            stringRedisTemplate.opsForList().rightPushAll(key, List.of(string));
-//            stringRedisTemplate.expire(key, Duration.ofMillis(Long.parseLong(commentExpire)));
             CommentRedis commentRedis = new CommentRedis();
             commentRedis.setAuthorId(comment.getAuthorId());
             commentRedis.getComments().add(createRedisDto(comment));
@@ -82,11 +77,7 @@ public class CommentService {
             redisCommentRepository.save(commentRedis);
         } catch(Exception e) {
             log.error(e.getMessage());
-            try {
-                throw e;
-            } catch (Exception ex) {
-                throw ex;
-            }
+            throw e;
         }
 
         log.info("Comment {} successfully created for post {} by user {}",
