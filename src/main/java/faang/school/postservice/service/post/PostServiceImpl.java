@@ -4,21 +4,29 @@ import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.CreatePostDto;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.event.UserBanEvent;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.UserBanEventPublisher;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.user.UserService;
 import feign.FeignException;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @Slf4j
@@ -28,10 +36,17 @@ public class PostServiceImpl implements PostService {
     private final static String DRAFT_LOG_PREFIX = "drafts";
     private final static String PUBLISHED_LOG_PREFIX = "published posts";
 
+    @Value("${posts.max-unverified-posts}")
+    private int maxUnverifiedPosts;
+    @Value("${posts.find-unverified-posts-page-size}")
+    private int findUnverifiedPostsPageSize;
+
     private final PostMapper postMapper;
     private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
+    private final UserBanEventPublisher userBanEventPublisher;
+    private final UserService userService;
 
     @Override
     public PostDto createDraft(CreatePostDto postDto) {
@@ -116,6 +131,40 @@ public class PostServiceImpl implements PostService {
     public List<PostDto> getPublishedByProject(Long projectId) {
         List<Post> posts = postRepository.findByProjectId(projectId);
         return getFilteredPostDto(projectId, posts, true, PUBLISHED_LOG_PREFIX);
+    }
+
+
+    @Override
+    public void findAuthorsForBan() {
+        int page = 0;
+        Map<Long, Long> postsByAuthors = new HashMap<>();
+
+        while (true) {
+            Page<Post> chunk = postRepository.findUnverified(PageRequest.of(page, findUnverifiedPostsPageSize));
+
+            if (chunk.isEmpty()) {
+                break;
+            }
+
+            for (Post post : chunk.getContent()) {
+                postsByAuthors.merge(post.getAuthorId(), 1L, Long::sum);
+            }
+
+            page++;
+        }
+
+        List<Long> authorsToBan = postsByAuthors.entrySet().stream()
+                .filter(entry -> entry.getValue() > maxUnverifiedPosts)
+                .map(Map.Entry::getKey)
+                .toList();
+
+        if (!authorsToBan.isEmpty()) {
+            authorsToBan = userService.getNotBannedUsersIds(authorsToBan);
+        }
+
+        if (!authorsToBan.isEmpty()) {
+            userBanEventPublisher.publish(UserBanEvent.builder().userIds(authorsToBan).build());
+        }
     }
 
     @NotNull

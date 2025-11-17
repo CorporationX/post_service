@@ -29,6 +29,17 @@ spring:
     multipart:
       max-file-size: 5MB
       max-request-size: 50MB
+  kafka:
+    bootstrap-servers: localhost:9094
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.add.type.headers: false
+
+kafka:
+  topic:
+    user-ban: user_ban
 
 server:
   port: 8081
@@ -44,6 +55,10 @@ user-service:
   port: 8080
   servlet:
     context-path: /api
+  retryable:
+    maxAttempts: 3
+    delay: 1000
+    multiplier: 2
 project-service:
   host: localhost
   port: 8082
@@ -69,3 +84,17 @@ app:
       - "image/gif"
       - "video/mp4"
       - "audio/mpeg"
+
+threads:
+  delete-ads-pool-size: 3
+
+cron:
+  delete-expired-ads-cron: 0 0 0 * * *
+  find-authors-for-ban-cron: 0 0 0 * * *
+
+ads:
+  max-delete-per-thread: 100
+
+posts:
+  max-unverified-posts: 5
+  find-unverified-posts-page-size: 100

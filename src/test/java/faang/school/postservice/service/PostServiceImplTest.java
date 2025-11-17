@@ -5,28 +5,39 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.CreatePostDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.project.ProjectDto;
+import faang.school.postservice.dto.user.GetUsersDto;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.event.UserBanEvent;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.UserBanEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.post.PostServiceImpl;
+import faang.school.postservice.service.user.UserServiceImpl;
 import feign.FeignException;
 import feign.Request;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mapstruct.factory.Mappers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.nio.charset.Charset;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -53,6 +64,10 @@ public class PostServiceImplTest {
     private UserServiceClient userServiceClient;
     @Mock
     private ProjectServiceClient projectServiceClient;
+    @Mock
+    private UserBanEventPublisher userBanEventPublisher;
+    @Mock
+    private UserServiceImpl userService;
     @Spy
     private PostMapper postMapper = Mappers.getMapper(PostMapper.class);
 
@@ -64,7 +79,8 @@ public class PostServiceImplTest {
     private final long userId = DEFAULT_ID;
     private final LocalDateTime time1 = LocalDateTime.of(2024, 1, 1, 0, 0);
     private final LocalDateTime time2 = LocalDateTime.of(2024, 1, 2, 0, 0);
-
+    private final int maxUnverifiedPosts = 5;
+    private final int findUnverifiedPostsPageSize = maxUnverifiedPosts + 1;
 
     private final PostDto postDtoAuthorExists = PostDto.builder().id(postId).content("content")
             .authorId(authorId).projectId(null)
@@ -78,8 +94,18 @@ public class PostServiceImplTest {
             .createdAt(LocalDateTime.now()).updatedAt(null)
             .build();
 
-    private final UserDto mockUser = new UserDto(DEFAULT_ID, "mockUser", "mockUser@example.com");
+    private final UserDto mockUser = UserDto.builder()
+            .id(DEFAULT_ID)
+            .username("mockUser")
+            .email("mockUser@example.com")
+            .build();
     private final ProjectDto mockProject = new ProjectDto(projectId, "mockProject");
+
+    @BeforeEach
+    void setUp() {
+        ReflectionTestUtils.setField(postService, "maxUnverifiedPosts", maxUnverifiedPosts);
+        ReflectionTestUtils.setField(postService, "findUnverifiedPostsPageSize", findUnverifiedPostsPageSize);
+    }
 
     @Test
     public void testCreateDraftWithoutAuthorAndProject() {
@@ -474,5 +500,59 @@ public class PostServiceImplTest {
         assertEquals(2, result.size());
         assertEquals(expected.get(0), result.get(0));
         assertEquals(expected.get(1), result.get(1));
+    }
+
+    @Test
+    void testFindAuthorsForBanNotCallPublishIfPostsLessThanMax() {
+        List<Post> posts = new ArrayList<>();
+
+        for (int i = 0; i < maxUnverifiedPosts; i++) {
+            posts.add(Post.builder().authorId(1L).build());
+        }
+
+        Page<Post> firstPage = new PageImpl<>(posts);
+        Page<Post> emptyPage = Page.empty();
+        when(postRepository.findUnverified(any(Pageable.class)))
+                .thenReturn(firstPage)
+                .thenReturn(emptyPage);
+
+        postService.findAuthorsForBan();
+
+        verify(userServiceClient, Mockito.never()).getUsersByIds(Mockito.any(GetUsersDto.class));
+        verify(userBanEventPublisher, Mockito.never()).publish(Mockito.any(UserBanEvent.class));
+    }
+
+    @Test
+    void testFindAuthorsForBanPositive() {
+        List<Post> posts = new ArrayList<>();
+        long userId = 1L;
+        for (int i = 0; i < maxUnverifiedPosts + 1; i++) {
+            posts.add(Post.builder().authorId(userId).build());
+        }
+
+        List<Long> usersIds = List.of(userId);
+        Page<Post> firstPage = new PageImpl<>(posts);
+        Page<Post> emptyPage = Page.empty();
+
+        when(postRepository.findUnverified(any(Pageable.class)))
+                .thenReturn(firstPage)
+                .thenReturn(emptyPage);
+        when(userService.getNotBannedUsersIds(Mockito.anyList())).thenReturn(usersIds);
+
+        postService.findAuthorsForBan();
+
+        ArgumentCaptor<List<Long>> longListArgumentCaptor = ArgumentCaptor.forClass(List.class);
+        ArgumentCaptor<UserBanEvent> userBanEventArgumentCaptor = ArgumentCaptor.forClass(UserBanEvent.class);
+
+        verify(userService).getNotBannedUsersIds(longListArgumentCaptor.capture());
+        verify(userBanEventPublisher).publish(userBanEventArgumentCaptor.capture());
+
+        List<Long> allAuthorsIds = longListArgumentCaptor.getValue();
+        List<Long> usersForBan = userBanEventArgumentCaptor.getValue().userIds();
+
+        assertEquals(1, allAuthorsIds.size());
+        assertEquals(1, usersForBan.size());
+        assertEquals(userId, allAuthorsIds.get(0));
+        assertEquals(userId, usersForBan.get(0));
     }
 }
