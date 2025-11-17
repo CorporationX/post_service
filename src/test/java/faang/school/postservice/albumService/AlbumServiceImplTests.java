@@ -65,7 +65,7 @@ class AlbumServiceImplTests {
         albumDto.setVisibility(AlbumVisibility.PUBLIC);
         post = new Post();
         post.setId(1L);
-        userDto = new UserDto(1L, "v", "@");
+        userDto = new UserDto(1L, "v", "@", "+1", "ABOUT");
 
         albumServiceImpl = new AlbumServiceImpl(
             albumRepository,

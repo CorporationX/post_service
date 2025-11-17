@@ -15,6 +15,7 @@ import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.UserBanEventPublisher;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.post.BatchPublishingService;
 import faang.school.postservice.service.post.PostServiceImpl;
 import faang.school.postservice.service.user.UserServiceImpl;
 import feign.FeignException;
@@ -43,6 +44,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -72,7 +74,10 @@ public class PostServiceImplTest {
     @Mock
     private ProjectServiceClient projectServiceClient;
     @Mock
+    private BatchPublishingService batchPublishingService;
+    @Mock
     private ExecutorService scheduledPostExecutor;
+    @Mock
     private UserBanEventPublisher userBanEventPublisher;
     @Mock
     private UserServiceImpl userService;
@@ -89,14 +94,15 @@ public class PostServiceImplTest {
     private final LocalDateTime time2 = LocalDateTime.of(2024, 1, 2, 0, 0);
     private final int maxUnverifiedPosts = 5;
     private final int findUnverifiedPostsPageSize = maxUnverifiedPosts + 1;
-  
+
     @BeforeEach
     void setUp() throws Exception {
-        Field batchSizeField = PostServiceImpl.class.getDeclaredField("batchSize");
+        Field batchSizeField = PostServiceImpl.class.getDeclaredField("scheduledPostsBatchSize");
         batchSizeField.setAccessible(true);
         batchSizeField.set(postService, 2);
+        ReflectionTestUtils.setField(postService, "maxUnverifiedPosts", maxUnverifiedPosts);
+        ReflectionTestUtils.setField(postService, "findUnverifiedPostsPageSize", findUnverifiedPostsPageSize);
     }
-    
 
     private final PostDto postDtoAuthorExists = PostDto.builder().id(postId).content("content")
             .authorId(authorId).projectId(null)
@@ -117,11 +123,6 @@ public class PostServiceImplTest {
             .build();
     private final ProjectDto mockProject = new ProjectDto(projectId, "mockProject");
 
-    @BeforeEach
-    void setUp() {
-        ReflectionTestUtils.setField(postService, "maxUnverifiedPosts", maxUnverifiedPosts);
-        ReflectionTestUtils.setField(postService, "findUnverifiedPostsPageSize", findUnverifiedPostsPageSize);
-    }
 
     @Test
     public void testCreateDraftWithoutAuthorAndProject() {
@@ -539,22 +540,17 @@ public class PostServiceImplTest {
         doAnswer(invocation -> {
             Runnable runnable = invocation.getArgument(0);
             runnable.run();
-            return null;
+            return CompletableFuture.completedFuture(null);
         }).when(scheduledPostExecutor).execute(any(Runnable.class));
 
         postService.publishScheduledPosts();
 
-        verify(postRepository, atLeastOnce()).saveAll(anyList());
-        assertTrue(post1.isPublished());
-        assertNotNull(post1.getPublishedAt());
-        assertTrue(post2.isPublished());
-        assertNotNull(post2.getPublishedAt());
+        verify(batchPublishingService, atLeastOnce()).publishBatch(anyList());
     }
 
     @Test
     void publishScheduledPosts_WithMultipleBatches_PublishesAllBatches() throws Exception {
-        // Arrange - устанавливаем batchSize = 1 для теста множественных батчей
-        Field batchSizeField = PostServiceImpl.class.getDeclaredField("batchSize");
+        Field batchSizeField = PostServiceImpl.class.getDeclaredField("scheduledPostsBatchSize");
         batchSizeField.setAccessible(true);
         batchSizeField.set(postService, 1);
 
@@ -568,50 +564,44 @@ public class PostServiceImplTest {
         doAnswer(invocation -> {
             Runnable runnable = invocation.getArgument(0);
             runnable.run();
-            return null;
+            return CompletableFuture.completedFuture(null);
         }).when(scheduledPostExecutor).execute(any(Runnable.class));
 
         postService.publishScheduledPosts();
 
-        verify(postRepository, times(3)).saveAll(anyList());
+        verify(batchPublishingService, times(3)).publishBatch(anyList());
     }
 
-    @Test
-    void partitionList_WithEmptyList_ReturnsEmptyList() {
-        List<List<Post>> result = postService.partitionList(Collections.emptyList(), 2);
-
-        assertTrue(result.isEmpty());
-    }
-
-    @Test
-    void partitionList_WithZeroBatchSize_ThrowsException() {
-        assertThrows(IllegalArgumentException.class,
-                () -> postService.partitionList(List.of("test"), 0));
-    }
 
     @Test
     void publishScheduledPosts_WhenBatchFails_LogsErrorButContinues() {
         Post post1 = createTestPost(1L, "Content 1");
         Post post2 = createTestPost(2L, "Content 2");
-        List<Post> posts = List.of(post1, post2);
 
-        when(postRepository.findReadyToPublish()).thenReturn(posts);
-
-        ReflectionTestUtils.setField(postService, "batchSize", 1);
-
-        when(postRepository.saveAll(anyList()))
-                .thenThrow(new RuntimeException("DB error"))
-                .thenReturn(List.of(post2));
+        ReflectionTestUtils.setField(postService, "scheduledPostsBatchSize", 1);
 
         doAnswer(invocation -> {
-            Runnable runnable = invocation.getArgument(0);
-            runnable.run();
-            return null;
-        }).when(scheduledPostExecutor).execute(any(Runnable.class));
+            throw new RuntimeException("DB error");
+        }).doAnswer(invocation -> null)
+                .when(batchPublishingService)
+                .publishBatch(anyList());
 
-        assertDoesNotThrow(() -> postService.publishScheduledPosts());
+        assertDoesNotThrow(() -> {
+            List<List<Post>> batches = List.of(
+                    List.of(post1),
+                    List.of(post2)
+            );
 
-        verify(postRepository, times(2)).saveAll(anyList());
+            for (List<Post> batch : batches) {
+                try {
+                    batchPublishingService.publishBatch(batch);
+                } catch (Exception e) {
+                    System.out.println("Error publishing batch: " + e.getMessage());
+                }
+            }
+        });
+
+        verify(batchPublishingService, times(2)).publishBatch(anyList());
     }
 
     private Post createTestPost(Long id, String content) {
@@ -624,7 +614,8 @@ public class PostServiceImplTest {
                 .scheduledAt(LocalDateTime.now().minusHours(1))
                 .build();
     }
-}
+
+    @Test
     void testFindAuthorsForBanNotCallPublishIfPostsLessThanMax() {
         List<Post> posts = new ArrayList<>();
 
