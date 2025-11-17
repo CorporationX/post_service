@@ -8,12 +8,9 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -45,13 +42,9 @@ public class AIClient {
         log.info("AIClient initialized with spellcheck URL: {}", spellcheckUrl);
     }
 
-
     public String correctText(String text) {
         try {
-            String body = "text=" + URLEncoder.encode(text, StandardCharsets.UTF_8);
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-            HttpEntity<String> request = new HttpEntity<>(body, headers);
+            HttpEntity<String> request = buildFormRequest(text);
 
             CorrectionDto[] correctionsArray = restTemplate.postForObject(
                     spellcheckUrl,
@@ -59,7 +52,8 @@ public class AIClient {
                     CorrectionDto[].class
             );
 
-            List<CorrectionDto> corrections = correctionsArray == null ? List.of() : Arrays.asList(correctionsArray);
+            List<CorrectionDto> corrections =
+                    correctionsArray == null ? List.of() : Arrays.asList(correctionsArray);
 
             if (corrections.isEmpty()) {
                 log.info("No spelling errors found");
@@ -92,7 +86,7 @@ public class AIClient {
      * @param corrections Список исправлений. Каждое исправление должно быть картой с ключами:
      *                    "pos" - позиция в тексте (int),
      *                    "len" - длина исправляемого фрагмента (int),
-     *                    "s"   - список вариантов исправления (List<String>)
+     *                    "s" - список вариантов исправления (List<String>)
      * @return Исправленный текст
      */
     public static String applyCorrections(String text, List<CorrectionDto> corrections) {
