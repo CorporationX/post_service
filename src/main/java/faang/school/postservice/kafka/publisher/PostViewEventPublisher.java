@@ -21,7 +21,7 @@ public class PostViewEventPublisher {
     }
 
     public void publish(PostViewEvent event) {
-        String key = event.postId().toString() + event.currentTime().toString(); //id post + viewer id + post view time
+        String key = event.postId().toString() + event.currentTime().toString(); //todo id post + viewer id + post view time
 
         kafkaTemplate.send(TOPIC_NAME, key, event);
 
