@@ -2,12 +2,9 @@ package faang.school.postservice.repository;
 
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.model.Post;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
-import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -44,22 +41,16 @@ public interface PostRepository extends JpaRepository<Post, Long>, JpaSpecificat
             WHERE p.published = false AND p.deleted = false AND p.authorId = :authorId""")
     List<Post> findPostToDraftByAuthorId(Long authorId);
 
-    default Post findPostWithLikesOrThrow(long postId) {
-        return findPostWithLikes(postId)
+    default Post findPostWithLikesAndCommentOrThrow(long postId) {
+        return findPostWithLikesAndComment(postId)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Post %d not found", postId)));
     }
 
     @Query("""
-            SELECT p FROM Post p 
-            LEFT JOIN FETCH p.likes 
+            SELECT p FROM Post p
+            LEFT JOIN FETCH p.likes
+            LEFT JOIN FETCH p.comments
             WHERE p.id = :postId
             """)
-    Optional<Post> findPostWithLikes(Long postId);
-
-    @Query("""
-        SELECT p FROM Post p
-        LEFT JOIN Like l ON p.id = l.postId
-        WHERE p.id IN :postIds
-        """)
-    List<Post> getPostsWithLikes(List<Long> postIds, Pageable pageable);
+    Optional<Post> findPostWithLikesAndComment(Long postId);
 }

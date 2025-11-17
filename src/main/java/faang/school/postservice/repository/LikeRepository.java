@@ -2,17 +2,10 @@ package faang.school.postservice.repository;
 
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.model.Like;
-import faang.school.postservice.model.Post;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 public interface LikeRepository extends CrudRepository<Like, Long> {
     @Transactional

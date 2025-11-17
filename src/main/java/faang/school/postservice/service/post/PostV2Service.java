@@ -9,9 +9,7 @@ import faang.school.postservice.dto.post.PostV2UpdateDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.mapper.PostV2Mapper;
-import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.spec.PostSpecification;
 import lombok.RequiredArgsConstructor;
@@ -22,8 +20,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
 
 @RequiredArgsConstructor
 @Service
@@ -31,7 +27,6 @@ public class PostV2Service {
     private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
     private final UserContext userContext;
-    private final LikeRepository likeRepository;
 
     @Transactional
     public PostV2Dto createPostAsDraft(PostV2CreateDto postV2CreateDto) {
@@ -42,7 +37,7 @@ public class PostV2Service {
         post.setAuthorId(userId);
 
         Post savedPost = postRepository.save(post);
-        return PostV2Mapper.toDto(savedPost, 0L, Collections.emptyList());
+        return PostV2Mapper.toDtoBasic(savedPost);
     }
 
     @Transactional
@@ -61,24 +56,20 @@ public class PostV2Service {
         post.setPublishedAt(LocalDateTime.now());
 
         Post saved = postRepository.save(post);
-        return PostV2Mapper.toDto(saved, 0L, Collections.emptyList());
+        return PostV2Mapper.toDtoBasic(saved);
     }
 
     @Transactional
     public PostV2Dto updatePost(Long postId, PostV2UpdateDto postV2UpdateDto) {
         long userId = userContext.getUserId();
         UserDto user = userServiceClient.getUser(userId);
-        Post post = postRepository.findPostWithLikesOrThrow(postId);
+        Post post = postRepository.findPostWithLikesAndCommentOrThrow(postId);
 
         validatePostOwner(post, userId);
         PostV2Mapper.update(post, postV2UpdateDto);
 
         Post saved = postRepository.save(post);
-        List<Long> likesIds = saved.getLikes().stream()
-                .map(Like::getId)
-                .toList();
-        Long likesCount = (long) likesIds.size();
-        return PostV2Mapper.toDto(saved, likesCount, likesIds);
+        return PostV2Mapper.toDto(saved);
     }
 
     @Transactional
@@ -104,13 +95,7 @@ public class PostV2Service {
         Specification<Post> spec = PostSpecification.filter(authorId, true);
         Page<Post> page = postRepository.findAll(spec, pageable);
 
-        return PageResponse.from(page, post -> PostV2Mapper.toDto(post,
-                (long) post.getLikes().size(),
-                post.getLikes().stream()
-                        .map(Like::getId)
-                        .toList()
-                )
-        );
+        return PageResponse.from(page, PostV2Mapper::toDto);
     }
 
     @Transactional(readOnly = true)
@@ -121,25 +106,16 @@ public class PostV2Service {
         Specification<Post> spec = PostSpecification.filter(userId, false);
         Page<Post> page = postRepository.findAll(spec, pageable);
 
-        return PageResponse.from(page, post -> PostV2Mapper.toDto(post,
-                        (long) post.getLikes().size(),
-                        post.getLikes().stream()
-                                .map(Like::getId)
-                                .toList()
-                )
-        );
+        return PageResponse.from(page, PostV2Mapper::toDto);
+
     }
 
     @Transactional(readOnly = true)
     public PostV2Dto findById(Long postId) {
         long userId = userContext.getUserId();
         UserDto user = userServiceClient.getUser(userId);
-        Post post = postRepository.findPostWithLikesOrThrow(postId);
-        List<Long> likesIds = post.getLikes().stream()
-                .map(Like::getId)
-                .toList();
-        Long likesCount = (long) likesIds.size();
-        return PostV2Mapper.toDto(post, likesCount, likesIds);
+        Post post = postRepository.findPostWithLikesAndCommentOrThrow(postId);
+        return PostV2Mapper.toDto(post);
     }
 
     private void validatePostOwner(Post post, long userId) {
