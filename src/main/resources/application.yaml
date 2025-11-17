@@ -25,6 +25,10 @@ spring:
         calculations_channel:
           name: calculations_channel
 
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 50MB
   kafka:
     bootstrap-servers: localhost:9094
     producer:
@@ -63,6 +67,23 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+s3:
+  endpoint: http://localhost:9000
+  accessKey: user
+  secretKey: password
+  bucketName: corpbucket
+app:
+  resources:
+    max-file-size: 5242880
+    max-files-per-post: 10
+    image-max-width: 1080
+    image-max-height: 1080
+    allowed-content-types:
+      - "image/jpeg"
+      - "image/png"
+      - "image/gif"
+      - "video/mp4"
+      - "audio/mpeg"
 
 threads:
   delete-ads-pool-size: 3

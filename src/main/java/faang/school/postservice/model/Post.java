@@ -1,12 +1,14 @@
 package faang.school.postservice.model;
 
 import faang.school.postservice.model.ad.Ad;
+import faang.school.postservice.model.resource.Resource;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
@@ -58,7 +60,8 @@ public class Post {
     @OneToOne(mappedBy = "post", cascade = CascadeType.ALL)
     private Ad ad;
 
-    @OneToMany(mappedBy = "post", orphanRemoval = true)
+    @OneToMany
+    @JoinColumn(name = "post_id")
     private List<Resource> resources;
 
     @Column(name = "published", nullable = false)
