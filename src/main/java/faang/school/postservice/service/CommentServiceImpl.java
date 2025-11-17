@@ -8,6 +8,7 @@ import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.EventsPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import feign.FeignException;
@@ -17,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -30,6 +32,7 @@ public class CommentServiceImpl implements CommentService {
     private final PostService postService;
     private final CommentMapper commentMapper;
     private final UserServiceClient userServiceClient;
+    private final EventsPublisher eventsPublisher;
 
     @Override
     @Transactional(readOnly = true)
@@ -68,8 +71,9 @@ public class CommentServiceImpl implements CommentService {
         comment.setAuthorId(userId);
 
         Comment savedComment = commentRepository.save(comment);
-        log.info("Created comment with id: {} for post with id: {} by user {}", savedComment.getId(), postId, userId);
 
+        log.info("Created comment with id: {} for post with id: {} by user {}", savedComment.getId(), postId, userId);
+        eventsPublisher.publishCommentCreate(postId, userId, savedComment.getId(), post.getAuthorId(), LocalDateTime.now());
         return commentMapper.toResponseDto(savedComment);
     }
 

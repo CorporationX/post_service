@@ -8,6 +8,7 @@ import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.EventsPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.CommentServiceImpl;
@@ -31,6 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -53,7 +55,7 @@ public class CommentServiceImplTest {
     private static final String BLANK_CONTENT = "   ";
     private static final String LONG_CONTENT = "а".repeat(4097);
 
-    private final Post testPost = Post.builder().id(POST_ID).build();
+    private final Post testPost = Post.builder().id(POST_ID).authorId(456L).build();
     private final Comment testComment = Comment.builder()
             .id(COMMENT_ID)
             .content(CONTENT)
@@ -62,6 +64,9 @@ public class CommentServiceImplTest {
             .createdAt(LocalDateTime.now().minusHours(1))
             .updatedAt(LocalDateTime.now().minusHours(1))
             .build();
+
+    @Mock
+    private EventsPublisher eventsPublisher;
 
     @Mock
     private CommentRepository commentRepository;
@@ -120,6 +125,8 @@ public class CommentServiceImplTest {
         verify(commentMapper).toEntity(createDto);
         verify(commentRepository).save(any(Comment.class));
         verify(commentMapper).toResponseDto(testComment);
+        verify(eventsPublisher).publishCommentCreate(eq(POST_ID), eq(USER_ID),
+                eq(testComment.getId()), eq(testPost.getAuthorId()), any(LocalDateTime.class));
     }
 
     @Test
