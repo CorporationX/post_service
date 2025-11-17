@@ -66,7 +66,7 @@ public class PostController {
         postService.delete(postId);
     }
 
-    @GetMapping("/author/{authorId}")
+    @GetMapping("/by-author/{authorId}")
     public List<PostDto> getProjectsByAuthorId(
             @PathVariable long authorId,
             @RequestParam(defaultValue = "false") boolean deleted,
@@ -75,10 +75,10 @@ public class PostController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDirection) {
-        return postService.getPostsByAuthorId(authorId, deleted, published, page, size, sortBy, sortDirection);
+        return postService.getPosts(authorId, 0, deleted, published, page, size, sortBy, sortDirection);
     }
 
-    @GetMapping("/project/{projectId}")
+    @GetMapping("/by-project/{projectId}")
     public List<PostDto> getProjectsByProjectId(
             @PathVariable long projectId,
             @RequestParam(defaultValue = "false") boolean deleted,
@@ -87,7 +87,7 @@ public class PostController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDirection) {
-        return postService.getPostsByProjectId(projectId, deleted, published, page, size, sortBy, sortDirection);
+        return postService.getPosts(0, projectId, deleted, published, page, size, sortBy, sortDirection);
     }
 
     @GetMapping("{postId}")
