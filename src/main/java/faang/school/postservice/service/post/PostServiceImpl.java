@@ -6,7 +6,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Pageable;
 
-
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import faang.school.postservice.dto.post.CreatePostDto;
@@ -26,14 +25,15 @@ import java.util.function.Function;
 @Slf4j
 @RequiredArgsConstructor
 public class PostServiceImpl implements PostService {
-    public final PostRepository postRepository;
-    public final PostMapper mapper;
+    private final PostRepository postRepository;
+    private final PostMapper mapper;
 
     @Override
     @Transactional
     public PostDto create(CreatePostDto dto) {
         if (dto.authorId() != null && dto.projectId() != null) {
-            log.warn("Attempting to create a post with both authorId=%d and projectId=%d".formatted(dto.authorId(), dto.projectId()));
+            log.warn("Attempting to create a post with both authorId=%d and projectId=%d".formatted(dto.authorId(),
+                    dto.projectId()));
             throw new DataValidationException("The author of a post can be either a project or a user, but not both");
         }
         if (dto.authorId() == null && dto.projectId() == null) {
@@ -51,7 +51,7 @@ public class PostServiceImpl implements PostService {
         Post post = getPostByIdOrThrow(postId);
         if (post.isPublished()) {
             log.warn("Attempting to publish already published project (projectId=%d)".formatted(postId));
-            throw new DataValidationException("This project is already published"); 
+            throw new DataValidationException("This project is already published");
         }
         if (post.isDeleted()) {
             log.warn("Attempting to publish deleted project (projectId=%d)".formatted(postId));
@@ -68,7 +68,7 @@ public class PostServiceImpl implements PostService {
         mapper.updateModel(dto, post);
         return mapper.toDto(post);
     }
-    
+
     @Override
     @Transactional
     public void softDelete(long postId) {
@@ -76,7 +76,7 @@ public class PostServiceImpl implements PostService {
         if (post.isDeleted()) {
             log.warn("Attempting to delete already deleted project (projectId=%d)".formatted(postId));
             throw new DataValidationException("Post (postId=%d) is already deleted".formatted(postId));
-        } 
+        }
         post.setDeleted(true);
         post.setPublished(false);
         postRepository.save(post);
@@ -89,11 +89,11 @@ public class PostServiceImpl implements PostService {
         if (!post.isDeleted()) {
             log.warn("Attempting to restore project (projectId=%d) that was not deleted".formatted(postId));
             throw new DataValidationException("Post (postId=%d) was not deleted to be recovered".formatted(postId));
-        } 
+        }
         post.setDeleted(false);
         postRepository.save(post);
     }
-     
+
     @Override
     @Transactional
     public void delete(long postId) {
@@ -104,32 +104,31 @@ public class PostServiceImpl implements PostService {
     @Override
     public Post getPostByIdOrThrow(long postId) {
         return postRepository.findById(postId)
-            .orElseThrow(() -> new EntityNotFoundException("No model found for the specified %d id!".formatted(postId)));
+                .orElseThrow(
+                        () -> new EntityNotFoundException("No model found for the specified %d id!".formatted(postId)));
     }
 
-    @Override
-    public List<PostDto> getPostsByAuthorId(long authorId, boolean deleted, boolean published, int page, int size, String sortBy, String sortDirection) {
-        return getPosts(
-                pageable -> postRepository.findByAuthorIdAndDeletedStatusAndPublished(authorId, deleted, published, pageable),
-                page, size, sortBy, sortDirection
-                );
-    }
+    public List<PostDto> getPosts(long authorId, long projectId, boolean deleted, boolean published,
+            int page, int size,
+            String sortBy, String sortDirection) {
+        Function<Pageable, Page<Post>> repositoryRequest;
 
-    @Override
-    public List<PostDto> getPostsByProjectId(long projectId, boolean deleted, boolean published, int page, int size, String sortBy, String sortDirection) {
-        return getPosts(
-                pageable -> postRepository.findByProjectIdAndDeletedStatusAndPublished(projectId, deleted, published, pageable),
-                page, size, sortBy, sortDirection
-                );
-    }
+        if (authorId != 0) {
+            repositoryRequest = (pageable) -> postRepository.findByAuthorIdAndDeletedStatusAndPublished(authorId,
+                    deleted, published, pageable);
+        } else if (projectId != 0) {
+            repositoryRequest = (pageable) -> postRepository.findByProjectIdAndDeletedStatusAndPublished(projectId,
+                    deleted, published, pageable);
+        } else {
+            return null;
+        }
 
-    private List<PostDto> getPosts(Function<Pageable, Page<Post>> repositoryRequest, int page, int size, String sortBy, String sortDirection) {
         Pageable pageable = PageRequest.of(
                 page, size,
-                Sort.by(Sort.Direction.fromString(sortDirection), sortBy)
-                );
-        Page<Post> postPage = repositoryRequest.apply(pageable);  
-        
+                Sort.by(Sort.Direction.fromString(sortDirection), sortBy));
+
+        Page<Post> postPage = repositoryRequest.apply(pageable);
+
         return postPage.map(mapper::toDto).getContent();
     }
 }

@@ -15,7 +15,8 @@ public interface PostService {
     void softDelete(long postId);
     void restore(long postId);
     void delete(long postId);
-    List<PostDto> getPostsByAuthorId(long authorId, boolean deleted, boolean published, int page, int size, String sortBy, String sortDirection);
-    List<PostDto> getPostsByProjectId(long projectId, boolean deleted, boolean published, int page, int size, String sortBy, String sortDirection);
+    List<PostDto> getPosts(long authorId, long projectId, boolean deleted, boolean published, 
+            int page, int size,
+            String sortBy, String sortDirection);
     Post getPostByIdOrThrow(long postId);
 }
