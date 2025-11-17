@@ -73,7 +73,7 @@ public class LikeServiceImpl implements LikeService {
     }
 
     private UserDto getUserByContextUserId(long userId) {
-        return userServiceClient.getUser(userId);
+        return userServiceClient.getUser(userId).getBody();
     }
 
 

@@ -25,4 +25,6 @@ public interface PostService {
     List<PostDto> getPublishedByProject(Long projectId);
 
     void publishScheduledPosts();
+  
+    void findAuthorsForBan();
 }

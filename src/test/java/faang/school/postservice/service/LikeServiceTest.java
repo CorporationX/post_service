@@ -25,6 +25,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.ResponseEntity;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -144,7 +145,7 @@ public class LikeServiceTest {
     void testSuccessfullyLikeOnPostSet() {
         when(userContext.getUserId()).thenReturn(userId);
         when(likeValidator.validateLikeOnPost(postId, userId, isTrue)).thenReturn(post);
-        when(userServiceClient.getUser(userId)).thenReturn(userDto);
+        when(userServiceClient.getUser(userId)).thenReturn(ResponseEntity.ok(userDto));
 
         likeDto = likeService.setLikeOnPost(postId);
 
@@ -160,7 +161,7 @@ public class LikeServiceTest {
     @Test
     void testSuccessfullyLikeOnCommentSet() {
         when(userContext.getUserId()).thenReturn(userId);
-        when(userServiceClient.getUser(userId)).thenReturn(userDto);
+        when(userServiceClient.getUser(userId)).thenReturn(ResponseEntity.ok(userDto));
         when(likeValidator.validateLikeOnComment(commentId, userId, isTrue)).thenReturn(comment);
 
         likeDto = likeService.setLikeOnComment(commentId);
@@ -177,7 +178,7 @@ public class LikeServiceTest {
     @Test
     void testFailSetLikeWhenPostDoesNotExist() {
         when(userContext.getUserId()).thenReturn(userId);
-        when(userServiceClient.getUser(userId)).thenReturn(userDto);
+        when(userServiceClient.getUser(userId)).thenReturn(ResponseEntity.ok(userDto));
         doThrow(new IllegalArgumentException("Post doesn't exist"))
                 .when(likeValidator)
                 .validateLikeOnPost(notExistPostId, userId, isTrue);
@@ -190,7 +191,7 @@ public class LikeServiceTest {
     @Test
     void testFailWhenLikeAlreadySetOnPost() {
         when(userContext.getUserId()).thenReturn(userId);
-        when(userServiceClient.getUser(userId)).thenReturn(userDto);
+        when(userServiceClient.getUser(userId)).thenReturn(ResponseEntity.ok(userDto));
         doThrow(new DataValidationException("User has already set like for the post"))
                 .when(likeValidator)
                 .validateLikeOnPost(postId, userId, isTrue);
@@ -203,7 +204,7 @@ public class LikeServiceTest {
     @Test
     void testFailSetLikeWhenCommentDoesNotExist() {
         when(userContext.getUserId()).thenReturn(userId);
-        when(userServiceClient.getUser(userId)).thenReturn(userDto);
+        when(userServiceClient.getUser(userId)).thenReturn(ResponseEntity.ok(userDto));
         doThrow(new IllegalArgumentException("Comment doesn't exist"))
                 .when(likeValidator)
                 .validateLikeOnComment(notExistCommentId, userId, isTrue);
@@ -216,7 +217,7 @@ public class LikeServiceTest {
     @Test
     void testFailWhenLikeAlreadySetOnComment() {
         when(userContext.getUserId()).thenReturn(userId);
-        when(userServiceClient.getUser(userId)).thenReturn(userDto);
+        when(userServiceClient.getUser(userId)).thenReturn(ResponseEntity.ok(userDto));
         doThrow(new DataValidationException("User has already set like for the comment"))
                 .when(likeValidator)
                 .validateLikeOnComment(commentId, userId, isTrue);
@@ -229,7 +230,7 @@ public class LikeServiceTest {
     @Test
     void testSuccessfullyLikeOnPostUnset() {
         when(userContext.getUserId()).thenReturn(userId);
-        when(userServiceClient.getUser(userId)).thenReturn(userDto);
+        when(userServiceClient.getUser(userId)).thenReturn(ResponseEntity.ok(userDto));
         when(likeValidator.validateLikeOnPost(postId, userId, isFalse)).thenReturn(post);
 
         likeService.unsetLikeOnPost(postId);
@@ -240,7 +241,7 @@ public class LikeServiceTest {
     @Test
     void testSuccessfullyLikeOnCommentUnset() {
         when(userContext.getUserId()).thenReturn(userId);
-        when(userServiceClient.getUser(userId)).thenReturn(userDto);
+        when(userServiceClient.getUser(userId)).thenReturn(ResponseEntity.ok(userDto));
         when(likeValidator.validateLikeOnComment(commentId, userId, isFalse)).thenReturn(comment);
 
         likeService.unsetLikeOnComment(commentId);
@@ -251,7 +252,7 @@ public class LikeServiceTest {
     @Test
     void testFailUnsetLikeWhenPostDoesNotExist() {
         when(userContext.getUserId()).thenReturn(userId);
-        when(userServiceClient.getUser(userId)).thenReturn(userDto);
+        when(userServiceClient.getUser(userId)).thenReturn(ResponseEntity.ok(userDto));
         doThrow(new IllegalArgumentException("Post doesn't exist"))
                 .when(likeValidator)
                 .validateLikeOnPost(notExistPostId, userId, isFalse);
@@ -264,7 +265,7 @@ public class LikeServiceTest {
     @Test
     void testFailUnsetLikeWhenLikeNotSetOnPost() {
         when(userContext.getUserId()).thenReturn(userId);
-        when(userServiceClient.getUser(userId)).thenReturn(userDto);
+        when(userServiceClient.getUser(userId)).thenReturn(ResponseEntity.ok(userDto));
         doThrow(new DataValidationException("User hasn't set like for the post"))
                 .when(likeValidator)
                 .validateLikeOnPost(postId, userId, isFalse);
@@ -277,7 +278,7 @@ public class LikeServiceTest {
     @Test
     void testFailUnsetLikeWhenCommentDoesNotExist() {
         when(userContext.getUserId()).thenReturn(userId);
-        when(userServiceClient.getUser(userId)).thenReturn(userDto);
+        when(userServiceClient.getUser(userId)).thenReturn(ResponseEntity.ok(userDto));
         doThrow(new IllegalArgumentException("Comment doesn't exist"))
                 .when(likeValidator)
                 .validateLikeOnComment(notExistCommentId, userId, isFalse);
@@ -290,7 +291,7 @@ public class LikeServiceTest {
     @Test
     void testFailUnsetLikeWhenLikeNotSetOnComment() {
         when(userContext.getUserId()).thenReturn(userId);
-        when(userServiceClient.getUser(userId)).thenReturn(userDto);
+        when(userServiceClient.getUser(userId)).thenReturn(ResponseEntity.ok(userDto));
         doThrow(new DataValidationException("User hasn't set like for the comment"))
                 .when(likeValidator)
                 .validateLikeOnComment(commentId, userId, isFalse);
