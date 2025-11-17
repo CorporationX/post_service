@@ -4,7 +4,6 @@ import faang.school.postservice.dto.post.PostRedisDto;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
-import org.springframework.stereotype.Indexed;
 
 import java.util.List;
 

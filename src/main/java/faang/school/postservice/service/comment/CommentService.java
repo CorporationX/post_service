@@ -61,7 +61,8 @@ public class CommentService {
 
         comment = commentRepository.save(comment);
 
-        ProducerRecord<String, String> producerRecord = new ProducerRecord<>(commentTopic, createRecordData(comment.getId(), currentUserId));
+        ProducerRecord<String, String> producerRecord = new ProducerRecord<>(commentTopic,
+                createRecordData(comment.getId(), currentUserId, comment.getPost().getId()));
         kafkaTemplate.send(producerRecord);
 
         try {
@@ -145,8 +146,8 @@ public class CommentService {
         );
     }
 
-    private String createRecordData(long objectId, long currentUserId) {
-        KafkaCommentDto kafkaCommentDto = new KafkaCommentDto(objectId, currentUserId);
+    private String createRecordData(long objectId, long currentUserId, long postId) {
+        KafkaCommentDto kafkaCommentDto = new KafkaCommentDto(objectId, currentUserId, postId);
         ObjectMapper objectMapper = new ObjectMapper();
         String commentDtoAsString = null;
         try {

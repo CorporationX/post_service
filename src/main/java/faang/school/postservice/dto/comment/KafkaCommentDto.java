@@ -7,7 +7,9 @@ import jakarta.validation.constraints.Size;
 public record KafkaCommentDto(
         Long id,
 
-        Long authorId
+        Long authorId,
+
+        Long postId
 
         ) {
 }

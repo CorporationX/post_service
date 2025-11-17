@@ -40,6 +40,12 @@ post-kafka:
     topic: posts
     group-id: post
 
+comment-kafka:
+  enabled: true
+  consumer:
+    topic: comments
+    group-id: comments
+
 audit-kafka:
   enabled: false
   backoff:
