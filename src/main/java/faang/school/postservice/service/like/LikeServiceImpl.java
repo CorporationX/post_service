@@ -2,15 +2,18 @@ package faang.school.postservice.service.like;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
+import faang.school.postservice.event.LikeEvent;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.LikeEventPublisher;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.service.comment.CommentService;
 import faang.school.postservice.service.post.PostService;
 import feign.FeignException;
 import jakarta.transaction.Transactional;
+import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,6 +27,7 @@ public class LikeServiceImpl implements LikeService {
     private final LikeMapper likeMapper;
     private final PostService postService;
     private final CommentService commentService;
+    private final LikeEventPublisher likeEventPublisher;
 
     @Transactional
     public LikeDto likePost(long postId, long userId) {
@@ -39,6 +43,15 @@ public class LikeServiceImpl implements LikeService {
         Like like = Like.builder().userId(userId).post(post).comment(null).build();
         Like saved = likeRepository.save(like);
         log.info("like post success: postId={}, userId={}", postId, userId);
+
+        LikeEvent event = new LikeEvent(
+                postId,
+                post.getAuthorId(),
+                userId,
+                LocalDateTime.now()
+        );
+
+        likeEventPublisher.publish(event);
 
         return likeMapper.toDto(saved);
     }
