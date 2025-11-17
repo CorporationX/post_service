@@ -11,10 +11,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface PublishPostEvent {
     boolean async() default  true;
-    Mode mode() default  Mode.COLLECTION;
 
-    enum Mode {
-        SINGLE,
-        COLLECTION
-    }
+    Class<?> eventClass();
 }
