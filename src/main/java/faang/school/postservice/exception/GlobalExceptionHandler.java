@@ -7,8 +7,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -22,7 +24,6 @@ public class GlobalExceptionHandler {
         log.error(description, e);
         return buildExceptionResponse(HttpStatus.NOT_FOUND, description, e.getMessage());
     }
-
 
     @ExceptionHandler(DataValidationException.class)
     public ResponseEntity<ExceptionDto> handleResourceBadRequest(DataValidationException e) {
@@ -80,6 +81,18 @@ public class GlobalExceptionHandler {
         String description = "Service is currently unavailable. Please try again later.";
         log.error(description, e);
         return buildExceptionResponse(HttpStatus.SERVICE_UNAVAILABLE, description, e.getMessage());
+    }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleResourceNotFoundException(ResourceNotFoundException exception) {
+        return new ErrorResponse(LocalDateTime.now(), exception.getMessage());
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleRuntimeException(RuntimeException exception) {
+        return new ErrorResponse(LocalDateTime.now(), exception.getMessage());
     }
 
     private ResponseEntity<ExceptionDto> buildExceptionResponse(HttpStatus status, String description, String errorMessage) {
