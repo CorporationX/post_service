@@ -19,7 +19,7 @@ kafka:
     value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 
   topic:
-    notifications: notifications.events
+    comments: comment.event
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
