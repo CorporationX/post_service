@@ -1,12 +1,5 @@
 <configuration>
 
-    <springProfile name="local">
-        <property name="LOG_LEVEL" value="DEBUG"/>
-    </springProfile>
-    <springProfile name="!local">
-        <property name="LOG_LEVEL" value="INFO"/>
-    </springProfile>
-
     <property name="SERVICE_NAME" value="${spring.profiles.active:-default}"/>
 
     <property name="LOG_PATTERN" value="%d{HH:mm:ss.SSS} [%green(%thread)] %highlight(%-5level){ERROR=red, WARN=yellow, INFO=blue, DEBUG=green} %cyan(%logger{36}) - %msg%n"/>

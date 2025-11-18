@@ -11,10 +11,8 @@ import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.mapper.PostV2Mapper;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.spec.PostSpecification;
-import faang.school.postservice.service.ai.AiPostCorrectionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -24,11 +22,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 import java.util.Collections;
+import java.util.List;
 
 
 @Slf4j
@@ -38,9 +33,6 @@ public class PostV2Service {
     private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
     private final UserContext userContext;
-    private final AiPostCorrectionService aiPostCorrectionService;
-
-    private final Executor executor = Executors.newFixedThreadPool(10);
 
     @Transactional
     public PostV2Dto createPostAsDraft(PostV2CreateDto postV2CreateDto) {
@@ -151,16 +143,5 @@ public class PostV2Service {
                 throw new ForbiddenException("User id=%s is not author of post".formatted(userId));
             }
         }
-    }
-
-    @Transactional
-    public void correctDraftPosts() {
-        List<Post> posts = postRepository.findAllForAiEditingWithLock();
-
-        List<CompletableFuture<Void>> futures = posts.stream()
-                .map(post -> CompletableFuture.runAsync(() -> aiPostCorrectionService.correctPost(post), executor))
-                .toList();
-
-        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
     }
 }

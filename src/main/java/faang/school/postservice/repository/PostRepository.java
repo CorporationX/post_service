@@ -53,11 +53,10 @@ public interface PostRepository extends JpaRepository<Post, Long>, JpaSpecificat
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("""
-            SELECT p FROM Post p
-            WHERE p.published = false 
-            AND p.deleted = false
-            """)
-    List<Post> findAllForAiEditingWithLock();
+           SELECT p FROM Post p 
+           WHERE p.published = false AND p.deleted = false
+           """)
+    List<Post> findUnpublished();
 
     default Post findPostWithLikesOrThrow(long postId) {
         return findPostWithLikes(postId)
