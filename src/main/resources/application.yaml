@@ -39,6 +39,7 @@ spring:
 kafka:
   topic:
     user-ban: user_ban
+    comment-event: comment_events
 
 server:
   port: 8081

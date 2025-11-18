@@ -3,6 +3,7 @@ package faang.school.postservice.publisher;
 import faang.school.postservice.dto.comment.CommentEventDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
@@ -13,7 +14,9 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class CommentEventPublisher {
     private final KafkaTemplate<String, Object> kafkaTemplate;
-    private static final String ANALYTICS_TOPIC = "comment-events";
+
+    @Value("${kafka.topic.comment-event}")
+    private String analyticsTopic;
 
     public void publish(long postId,
                         long authorId,
@@ -28,7 +31,7 @@ public class CommentEventPublisher {
                 authorId,
                 commentId);
         try {
-            kafkaTemplate.send(ANALYTICS_TOPIC, commentEventDto);
+            kafkaTemplate.send(analyticsTopic, commentEventDto);
             log.info("Successfully published comment event: {}", commentEventDto);
         } catch (Exception exception) {
             log.error("Failed to publish comment event: {}", commentEventDto, exception);
