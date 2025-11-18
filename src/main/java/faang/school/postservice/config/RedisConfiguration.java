@@ -37,7 +37,7 @@ public class RedisConfiguration {
     }
 
     @Bean
-    ChannelTopic topic() {
+    ChannelTopic likeTopic() {
         return new ChannelTopic(topicName);
     }
 }
