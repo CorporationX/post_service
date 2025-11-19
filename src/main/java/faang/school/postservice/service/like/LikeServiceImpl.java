@@ -30,8 +30,7 @@ public class LikeServiceImpl implements LikeService {
 
     @Override
     public LikeDto setLikeOnPost(long postId) {
-        UserDto userDto = getUserByContextUserId(userContext.getUserId()).getBody();
-        assert userDto != null;
+        UserDto userDto = getUserByContextUserId(userContext.getUserId());
         Post post = likeValidator.validateLikeOnPost(postId, userDto.id(), true);
         Like like = Like.builder()
                 .post(post)
@@ -43,16 +42,14 @@ public class LikeServiceImpl implements LikeService {
 
     @Override
     public void unsetLikeOnPost(long postId) {
-        UserDto userDto = getUserByContextUserId(userContext.getUserId()).getBody();
-        assert userDto != null;
+        UserDto userDto = getUserByContextUserId(userContext.getUserId());
         likeValidator.validateLikeOnPost(postId, userDto.id(), false);
         likeRepository.deleteByPostIdAndUserId(postId, userDto.id());
     }
 
     @Override
     public LikeDto setLikeOnComment(long commentId) {
-        UserDto userDto = getUserByContextUserId(userContext.getUserId()).getBody();
-        assert userDto != null;
+        UserDto userDto = getUserByContextUserId(userContext.getUserId());
         Comment comment = likeValidator.validateLikeOnComment(commentId, userDto.id(), true);
         Like like = Like.builder()
                 .comment(comment)
@@ -64,8 +61,7 @@ public class LikeServiceImpl implements LikeService {
 
     @Override
     public void unsetLikeOnComment(long commentId) {
-        UserDto userDto = getUserByContextUserId(userContext.getUserId()).getBody();
-        assert userDto != null;
+        UserDto userDto = getUserByContextUserId(userContext.getUserId());
         likeValidator.validateLikeOnComment(commentId, userDto.id(), false);
         likeRepository.deleteByCommentIdAndUserId(commentId, userDto.id());
     }
@@ -77,8 +73,12 @@ public class LikeServiceImpl implements LikeService {
         return post.getLikes().size();
     }
 
-    private ResponseEntity<UserDto> getUserByContextUserId(long userId) {
-        return userServiceClient.getUser(userId);
+    private UserDto getUserByContextUserId(long userId) {
+        ResponseEntity<UserDto> responseEntity = userServiceClient.getUser(userId);
+        if (responseEntity.getBody() == null) {
+            throw new EntityNotFoundException("User " + userId + " not found");
+        }
+        return responseEntity.getBody();
     }
 
 
