@@ -174,7 +174,8 @@ public class PostServiceImpl implements PostService {
         log.debug("Fetching drafts for userId={}", userId);
         return postRepository.findByAuthorId(userId).stream()
                 .filter(p -> !p.isDeleted() && !p.isPublished())
-                .sorted(Comparator.comparing(Post::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder())).reversed())
+                .sorted(Comparator.comparing(Post::getCreatedAt,
+                        Comparator.nullsLast(Comparator.naturalOrder())).reversed())
                 .map(postMapper::toDto)
                 .collect(Collectors.toList());
     }
@@ -185,7 +186,8 @@ public class PostServiceImpl implements PostService {
         log.debug("Fetching drafts for projectId={}", projectId);
         return postRepository.findByProjectId(projectId).stream()
                 .filter(p -> !p.isDeleted() && !p.isPublished())
-                .sorted(Comparator.comparing(Post::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder())).reversed())
+                .sorted(Comparator.comparing(Post::getCreatedAt,
+                        Comparator.nullsLast(Comparator.naturalOrder())).reversed())
                 .map(postMapper::toDto)
                 .collect(Collectors.toList());
     }
@@ -196,7 +198,8 @@ public class PostServiceImpl implements PostService {
         log.debug("Fetching published posts for userId={}", userId);
         return postRepository.findByAuthorId(userId).stream()
                 .filter(p -> !p.isDeleted() && p.isPublished())
-                .sorted(Comparator.comparing(Post::getPublishedAt, Comparator.nullsLast(Comparator.naturalOrder())).reversed())
+                .sorted(Comparator.comparing(Post::getPublishedAt,
+                        Comparator.nullsLast(Comparator.naturalOrder())).reversed())
                 .map(postMapper::toDto)
                 .collect(Collectors.toList());
     }
@@ -207,7 +210,8 @@ public class PostServiceImpl implements PostService {
         log.debug("Fetching published posts for projectId={}", projectId);
         return postRepository.findByProjectId(projectId).stream()
                 .filter(p -> !p.isDeleted() && p.isPublished())
-                .sorted(Comparator.comparing(Post::getPublishedAt, Comparator.nullsLast(Comparator.naturalOrder())).reversed())
+                .sorted(Comparator.comparing(Post::getPublishedAt,
+                        Comparator.nullsLast(Comparator.naturalOrder())).reversed())
                 .map(postMapper::toDto)
                 .collect(Collectors.toList());
     }
@@ -274,8 +278,8 @@ public class PostServiceImpl implements PostService {
                 int offset = match.offset();
                 int length = match.length();
 
-                if (offset >= 0 && offset <= correctedText.length() &&
-                        offset + length <= correctedText.length()) {
+                if (offset >= 0 && offset <= correctedText.length()
+                        && offset + length <= correctedText.length()) {
                     correctedText.replace(offset, offset + length, replacement);
                 } else {
                     log.warn("Invalid match offsets for post correction: offset={}, length={}, text length={}",

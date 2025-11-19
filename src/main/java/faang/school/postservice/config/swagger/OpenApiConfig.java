@@ -27,7 +27,8 @@ public class OpenApiConfig {
                 .addSecurityItem(new SecurityRequirement().addList(schemeName))
                 .info(new Info()
                         .title("Post Service API")
-                        .description("CRUD и управление постами (создание, обновление, публикация, лайки, комментарии).")
+                        .description(
+                                "CRUD и управление постами (создание, обновление, публикация, лайки, комментарии).")
                         .version("v1")
                         .contact(new Contact().name("Team CorporationX")));
     }

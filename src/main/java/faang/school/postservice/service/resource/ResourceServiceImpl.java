@@ -143,13 +143,15 @@ public class ResourceServiceImpl implements ResourceService {
         files.forEach(this::validateImageFile);
     }
 
-    private void validateImageCount(Post post, int newImagesCount) {
+    private void validateImageCount(Post post, int newImagesCount) throws DataValidationException {
         long currentImageCount = resourceRepository.countByPostIdAndType(post.getId(), ResourceType.IMAGE.name());
 
         if (currentImageCount + newImagesCount > maxImagesPerPost) {
             throw new DataValidationException(
-                    String.format("Cannot upload %d images. Post already has %d images. Maximum %d images allowed per post.",
-                            newImagesCount, currentImageCount, maxImagesPerPost)
+                    String.format(
+                            "Cannot upload %d images. Post already has %d images. Maximum %d images allowed per post.",
+                            newImagesCount, currentImageCount, maxImagesPerPost
+                    )
             );
         }
     }

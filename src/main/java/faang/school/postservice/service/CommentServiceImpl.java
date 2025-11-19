@@ -10,7 +10,6 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.EventsPublisher;
 import faang.school.postservice.repository.CommentRepository;
-import faang.school.postservice.repository.PostRepository;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -73,7 +72,11 @@ public class CommentServiceImpl implements CommentService {
         Comment savedComment = commentRepository.save(comment);
 
         log.info("Created comment with id: {} for post with id: {} by user {}", savedComment.getId(), postId, userId);
-        eventsPublisher.publishCommentCreate(postId, userId, savedComment.getId(), post.getAuthorId(), LocalDateTime.now());
+        eventsPublisher.publishCommentCreate(postId,
+                userId,
+                savedComment.getId(),
+                post.getAuthorId(),
+                LocalDateTime.now());
         return commentMapper.toResponseDto(savedComment);
     }
 

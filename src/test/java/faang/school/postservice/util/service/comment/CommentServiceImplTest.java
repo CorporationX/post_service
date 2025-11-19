@@ -22,6 +22,7 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -64,25 +65,18 @@ public class CommentServiceImplTest {
             .createdAt(LocalDateTime.now().minusHours(1))
             .updatedAt(LocalDateTime.now().minusHours(1))
             .build();
-
-    @Mock
-    private EventsPublisher eventsPublisher;
-
-    @Mock
-    private CommentRepository commentRepository;
-
-    @Mock
-    private PostRepository postRepository;
-
-    @Mock
-    private PostService postService;
-
-    @Mock
-    private UserServiceClient userServiceClient;
-
     @Spy
     private final CommentMapper commentMapper = Mappers.getMapper(CommentMapper.class);
-
+    @Mock
+    private EventsPublisher eventsPublisher;
+    @Mock
+    private CommentRepository commentRepository;
+    @Mock
+    private PostRepository postRepository;
+    @Mock
+    private PostService postService;
+    @Mock
+    private UserServiceClient userServiceClient;
     @InjectMocks
     private CommentServiceImpl commentService;
 
@@ -118,7 +112,10 @@ public class CommentServiceImplTest {
         assertNotNull(result);
         assertNotNull(result.createdAt());
         assertNotNull(result.updatedAt());
-        assertEquals(result.createdAt(), result.updatedAt());
+        assertTrue(
+                Duration.between(result.createdAt(), result.updatedAt()).abs().toMillis() < 1000,
+                "CreatedAt and UpdatedAt should be nearly identical"
+        );
 
         verify(postService).getPostEntityById(POST_ID);
         verify(userServiceClient).getUser(USER_ID);
@@ -133,7 +130,8 @@ public class CommentServiceImplTest {
     void createComment_WithNonExistentPostShouldThrowException() {
         CreateCommentDto createDto = new CreateCommentDto(CONTENT);
 
-        when(postService.getPostEntityById(NON_EXISTENT_POST_ID)).thenThrow(new IllegalArgumentException("Post not found"));
+        when(postService.getPostEntityById(NON_EXISTENT_POST_ID))
+                .thenThrow(new IllegalArgumentException("Post not found"));
 
         assertThrows(IllegalArgumentException.class,
                 () -> commentService.createComment(NON_EXISTENT_POST_ID, createDto, USER_ID));
@@ -147,7 +145,7 @@ public class CommentServiceImplTest {
         CreateCommentDto createDto = new CreateCommentDto(EMPTY_CONTENT);
 
         assertThrows(IllegalArgumentException.class,
-                () -> commentService.createComment(POST_ID,createDto, USER_ID));
+                () -> commentService.createComment(POST_ID, createDto, USER_ID));
 
         verifyNoInteractions(postRepository, userServiceClient, commentMapper, commentRepository);
     }

@@ -132,8 +132,11 @@ public class LikeServiceImplTest {
     }
 
     private void getUsersLikerByCommentIdOrPostId_ChunksMerged(Supplier<List<UserDto>> fn) {
-        when(userServiceClient.getUsersByIds(eq(List.of(like1.getUserId(), like2.getUserId())))).thenReturn(List.of(user1, user2));
-        when(userServiceClient.getUsersByIds(eq(List.of(like3.getUserId(), like4.getUserId())))).thenReturn(List.of(user3, user4));
+        when(userServiceClient.getUsersByIds(eq(List.of(like1.getUserId(),
+                like2.getUserId())))).thenReturn(List.of(user1, user2));
+
+        when(userServiceClient.getUsersByIds(eq(List.of(like3.getUserId(),
+                like4.getUserId())))).thenReturn(List.of(user3, user4));
 
         List<UserDto> resultUsersDto = fn.get();
 

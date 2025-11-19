@@ -16,9 +16,14 @@ public class EventsPublisher {
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private static final String COMMENT_CREATE_TOPIC = "comment-create-events";
 
-    public void publishCommentCreate(long postId, long actorId, long commentId, long postAuthorId, LocalDateTime createdAt) {
+    public void publishCommentCreate(long postId,
+                                     long actorId,
+                                     long commentId,
+                                     long postAuthorId,
+                                     LocalDateTime createdAt) {
         CommentEventDto event = new CommentEventDto(postId, actorId, commentId, postAuthorId, createdAt);
-        log.info("Publishing comment create event: postId={}, actorId={}, commentId={}, postAuthorId={}",  postId, actorId, commentId, postAuthorId);
+        log.info("Publishing comment create event: postId={}, actorId={}, commentId={}, postAuthorId={}",
+                postId, actorId, commentId, postAuthorId);
         try {
             kafkaTemplate.send(COMMENT_CREATE_TOPIC, event);
             log.debug("Successfully published comment create event: {}", event);
