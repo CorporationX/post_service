@@ -72,7 +72,7 @@ public class LikeServiceImpl implements LikeService {
         try {
             return fn.get();
         } catch (RuntimeException e) {
-            throw new ExternalServiceConnectException("userService", "The service is not available", e);
+            throw new ExternalServiceConnectException("userService", "The service is not available ", e);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
