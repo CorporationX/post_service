@@ -6,6 +6,7 @@ import faang.school.postservice.service.PostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -40,7 +41,7 @@ public class PostController {
         postService.updatePost(postDto);
     }
 
-    @PutMapping("/deleted/{postId}")
+    @DeleteMapping("/deleted/{postId}")
     public void deletePost(@PathVariable long postId) {
         postService.deletePost(postId);
     }
@@ -112,7 +113,7 @@ public class PostController {
         Long xProjectId = userContext.getProjectId();
 
         if (xUserId == null && xProjectId == null) {
-            throw new NullPointerException("ID of the author of the post should not be null");
+            throw new NullPointerException("ID of the project of the post should not be null");
         }
         if (xUserId != null && xProjectId != null) {
             throw new IllegalArgumentException("Сan be only one author");
