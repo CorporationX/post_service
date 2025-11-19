@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Indexed;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -30,5 +31,5 @@ public class PostRedisDto {
 
     private LocalDateTime publishedAt;
 
-    private List<CommentDto> comments;
+    private List<CommentDto> comments = new ArrayList<>();
 }

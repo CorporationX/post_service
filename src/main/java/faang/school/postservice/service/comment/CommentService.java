@@ -50,12 +50,12 @@ public class CommentService {
     private final StringRedisTemplate stringRedisTemplate;
     private final RedisCommentRepository redisCommentRepository;
 
+
     public CommentDto create(CommentDto commentDto) {
         long currentUserId = userContext.getUserId();
         log.info("Start create comment for post {} by user {}", commentDto.postId(), currentUserId);
         validateAuthor(currentUserId, commentDto.authorId());
         Post post = findPostById(commentDto.postId());
-//        checkUserExists(currentUserId);
         Comment comment = mapper.toComment(commentDto);
         comment.setPost(post);
 

@@ -29,7 +29,7 @@ spring:
     bootstrap-servers: localhost:9092
     producer:
       enable-idempotence: true
-      acks: all
+#      acks: all
     topic:
       commentNew: comment.new
       like: likes

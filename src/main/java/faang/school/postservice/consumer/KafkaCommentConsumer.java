@@ -2,6 +2,7 @@ package faang.school.postservice.consumer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CommentEventDto;
 import faang.school.postservice.model.PostRedis;
 import faang.school.postservice.repository.RedisPostRepository;
@@ -31,7 +32,7 @@ public class KafkaCommentConsumer {
             containerFactory = "kafkaListenerContainerFactory",
             groupId = "${comment-kafka.consumer.group-id}"
     )
-    public void consume(@Payload String commentEventDto, Acknowledgment acknowledgment) {
+    public void consume(@Payload String commentEventDto) {
 
         try {
             CommentEventDto commentEventObject = objectMapper.readValue(commentEventDto, CommentEventDto.class);
@@ -40,9 +41,17 @@ public class KafkaCommentConsumer {
             Long postId = commentEventObject.getPostId();
             Optional<PostRedis> postById = redisPostRepository.findById(postId);
             if (postById.isPresent()) {
-//                postById.get().getPost().
+                postById.get().getPost().get(0).getComments().add(
+                        new CommentDto(commentEventObject.getId(),
+                                commentEventObject.getComment(),
+                                commentEventObject.getAuthorId(),
+                                4,
+                                commentEventObject.getPostId(),
+                                null,
+                                null
+                                ));
             }
-        acknowledgment.acknowledge();
+//        acknowledgment.acknowledge();
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
