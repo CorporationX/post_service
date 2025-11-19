@@ -20,6 +20,16 @@ public class ErrorResponseFactory {
                 .build();
     }
 
+    public static ErrorResponse createNotValid(HttpServletRequest req, HttpStatus status) {
+        return ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .url(safeUrl(req))
+                .status(status.value())
+                .error(status.getReasonPhrase())
+                .message("Validation failed")
+                .build();
+    }
+
     private static String safeMessage(Throwable e, HttpStatus status) {
         if (status.is5xxServerError()) {
             return "Internal server error";

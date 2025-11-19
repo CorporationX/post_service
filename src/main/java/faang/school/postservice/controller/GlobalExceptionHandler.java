@@ -21,7 +21,7 @@ public class GlobalExceptionHandler {
     public ErrorResponse handleMethodArgumentNotValidException(MethodArgumentNotValidException e,
                                                                HttpServletRequest req) {
         log.warn("Method argument not valid exception" + e);
-        return ErrorResponseFactory.create(e, req, HttpStatus.BAD_REQUEST);
+        return ErrorResponseFactory.createNotValid(req, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler({

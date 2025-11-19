@@ -27,7 +27,9 @@ public class PostControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value("Bad Request"));
+                .andExpect(jsonPath("$.error").value("Bad Request"))
+                .andExpect(jsonPath("$.url").value("/test/validation"))
+                .andExpect(jsonPath("$.message").value("Validation failed"));
     }
 
     @Test
