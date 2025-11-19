@@ -30,12 +30,12 @@ public class LikeServiceImpl implements LikeService {
 
     @Override
     public LikeDto setLikeOnPost(long postId) {
-        ResponseEntity<UserDto> userDto = getUserByContextUserId(userContext.getUserId());
-        assert userDto.getBody() != null;
-        Post post = likeValidator.validateLikeOnPost(postId, userDto.getBody().id(), true);
+        UserDto userDto = getUserByContextUserId(userContext.getUserId()).getBody();
+        assert userDto != null;
+        Post post = likeValidator.validateLikeOnPost(postId, userDto.id(), true);
         Like like = Like.builder()
                 .post(post)
-                .userId(userDto.getBody().id())
+                .userId(userDto.id())
                 .build();
         likeRepository.save(like);
         return likeMapper.toLikeDto(like);
@@ -43,20 +43,20 @@ public class LikeServiceImpl implements LikeService {
 
     @Override
     public void unsetLikeOnPost(long postId) {
-        ResponseEntity<UserDto> userDto = getUserByContextUserId(userContext.getUserId());
-        assert userDto.getBody() != null;
-        likeValidator.validateLikeOnPost(postId, userDto.getBody().id(), false);
-        likeRepository.deleteByPostIdAndUserId(postId, userDto.getBody().id());
+        UserDto userDto = getUserByContextUserId(userContext.getUserId()).getBody();
+        assert userDto != null;
+        likeValidator.validateLikeOnPost(postId, userDto.id(), false);
+        likeRepository.deleteByPostIdAndUserId(postId, userDto.id());
     }
 
     @Override
     public LikeDto setLikeOnComment(long commentId) {
-        ResponseEntity<UserDto> userDto = getUserByContextUserId(userContext.getUserId());
-        assert userDto.getBody() != null;
-        Comment comment = likeValidator.validateLikeOnComment(commentId, userDto.getBody().id(), true);
+        UserDto userDto = getUserByContextUserId(userContext.getUserId()).getBody();
+        assert userDto != null;
+        Comment comment = likeValidator.validateLikeOnComment(commentId, userDto.id(), true);
         Like like = Like.builder()
                 .comment(comment)
-                .userId(userDto.getBody().id())
+                .userId(userDto.id())
                 .build();
         likeRepository.save(like);
         return likeMapper.toLikeDto(like);
@@ -64,10 +64,10 @@ public class LikeServiceImpl implements LikeService {
 
     @Override
     public void unsetLikeOnComment(long commentId) {
-        ResponseEntity<UserDto> userDto = getUserByContextUserId(userContext.getUserId());
-        assert userDto.getBody() != null;
-        likeValidator.validateLikeOnComment(commentId, userDto.getBody().id(), false);
-        likeRepository.deleteByCommentIdAndUserId(commentId, userDto.getBody().id());
+        UserDto userDto = getUserByContextUserId(userContext.getUserId()).getBody();
+        assert userDto != null;
+        likeValidator.validateLikeOnComment(commentId, userDto.id(), false);
+        likeRepository.deleteByCommentIdAndUserId(commentId, userDto.id());
     }
 
     @Override

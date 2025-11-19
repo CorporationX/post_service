@@ -24,7 +24,6 @@ public interface UserServiceClient {
 
     @PostMapping("/subscriptions/{followeeId}")
     List<UserDto> getFollowers(@PathVariable("followeeId") Long followeeId);
-}
 
     @GetMapping("/users/not-banned")
     List<Long> getNotBannedUsersIds(@RequestParam List<Long> ids);
