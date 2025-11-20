@@ -1,9 +1,6 @@
 package faang.school.postservice.dto.post;
 
-import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.common.PageResponse;
-import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.kafka.publisher.PostViewEventPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,12 +19,11 @@ import java.util.Collection;
 @Slf4j
 public class PostEventAspect {
     private final PostViewEventPublisher eventPublisher;
-    private final UserContext userContext;
-    private final UserServiceClient userServiceClient;
     private final TaskExecutor taskExecutor;
 
     @AfterReturning(pointcut = "@annotation(publishPostEvent)", returning = "result")
-    public void publishPostEvent(JoinPoint joinPoint, Object result, PublishPostEvent publishPostEvent) throws Throwable {
+    public void publishPostEvent(JoinPoint joinPoint, Object result,
+                                 PublishPostEvent publishPostEvent) throws Throwable {
 
         if (result != null) {
             if (publishPostEvent.async()) {
@@ -40,15 +36,12 @@ public class PostEventAspect {
 
     private void publishEvents(Class<?> eventClass, Object methodResult) {
         try {
-            long userId = userContext.getUserId();
-            UserDto user = userServiceClient.getUser(userId);
-
             if (eventClass == PostV2Dto.class) {
-                publishSingleEvent((PostV2Dto) methodResult, userId);
+                PostV2Dto postDto = (PostV2Dto) methodResult;
+                publishSingleEvent(postDto, postDto.authorId());
             } else if (eventClass == PageResponse.class) {
-                publishCollectionEvents((PageResponse) methodResult, userId);
+                publishCollectionEvents((PageResponse) methodResult);
             }
-
         } catch (Exception e) {
             log.error("Failed to publish PostViewEvent: {}", e.getMessage());
         }
@@ -66,14 +59,14 @@ public class PostEventAspect {
 
     }
 
-    private void publishCollectionEvents(Object methodResult, long userId) {
+    private void publishCollectionEvents(Object methodResult) {
         if (methodResult instanceof PageResponse<?> pageResponse) {
             pageResponse.content().forEach(item -> {
                 if (item instanceof PostV2Dto postDto) {
                     PostViewEvent event = new PostViewEvent(
                             postDto.id(),
                             postDto.authorId(),
-                            userId,
+                            postDto.authorId(),
                             LocalDateTime.now()
                     );
                     eventPublisher.publish(event);
@@ -85,7 +78,7 @@ public class PostEventAspect {
                     PostViewEvent event = new PostViewEvent(
                             postDto.id(),
                             postDto.authorId(),
-                            userId,
+                            postDto.authorId(),
                             LocalDateTime.now()
                     );
                     eventPublisher.publish(event);
