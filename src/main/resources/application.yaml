@@ -32,13 +32,8 @@ spring:
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       properties:
         spring.json.trusted.packages: "*"
-
-kafka:
-  publishers:
-    post-view:
-      group-id: post-view-group
-      concurrency: 3
-      topic: analytics.post-view
+    topics:
+      post-view: analytics.post-view
 
 server:
   port: 8081
