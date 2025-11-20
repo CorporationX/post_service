@@ -2,12 +2,14 @@ package faang.school.postservice.service.like;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
+import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.mapper.LikeMapper;
+import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
-import faang.school.postservice.service.comment.CommentService;
 import faang.school.postservice.service.post.PostService;
 import feign.FeignException;
 import jakarta.transaction.Transactional;
@@ -23,7 +25,8 @@ public class LikeServiceImpl implements LikeService {
     private final UserServiceClient userServiceClient;
     private final LikeMapper likeMapper;
     private final PostService postService;
-    private final CommentService commentService;
+    private final PostMapper postMapper;
+    private final CommentRepository commentRepository;
 
     @Transactional
     public LikeDto likePost(long postId, long userId) {
@@ -35,7 +38,7 @@ public class LikeServiceImpl implements LikeService {
             throw new IllegalStateException("Like already exists for this post and user");
         });
 
-        Post post = postService.getById(postId, userId);
+        Post post = postMapper.toPost(postService.getPostById(postId));
         Like like = Like.builder().userId(userId).post(post).comment(null).build();
         Like saved = likeRepository.save(like);
         log.info("like post success: postId={}, userId={}", postId, userId);
@@ -67,7 +70,8 @@ public class LikeServiceImpl implements LikeService {
                         }
                 );
 
-        Comment comment = commentService.getById(commentId, userId);
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new DataValidationException("Comment with provided Id does not exist!"));
         Like like = Like.builder()
                 .userId(userId)
                 .post(null)

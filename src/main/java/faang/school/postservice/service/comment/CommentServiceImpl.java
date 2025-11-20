@@ -10,7 +10,7 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +19,7 @@ import java.util.List;
 
 @Service
 @Slf4j
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class CommentServiceImpl implements CommentService {
 
     private final UserContext userContext;
@@ -27,13 +27,10 @@ public class CommentServiceImpl implements CommentService {
     private final CommentMapper commentMapper;
     private final UserServiceClient userServiceClient;
     private final CommentRepository commentRepository;
-    private static final int MAX_ALLOWED_COMMENT_TEXT_SIZE = 4096;
 
     @Override
     public CommentDto addComment(Long postId, CreateCommentDto commentDto) {
         log.info("Adding comment to post {}", postId);
-        validateCommentLength(commentDto.content());
-        validateNotNull(commentDto.createdAt(), "Creation time/date");
         long userId = userServiceClient.getUser(userContext.getUserId()).id();
         Post post = validatePostExists(postId);
 
@@ -41,14 +38,14 @@ public class CommentServiceImpl implements CommentService {
         comment.setPost(post);
         comment.setAuthorId(userId);
         commentRepository.save(comment);
+        log.info("Comment {} saved", comment.getId());
         return commentMapper.toCommentDto(comment);
     }
 
     @Override
     public CommentDto updateComment(Long userId, UpdateCommentDto commentDto) {
         log.info("Updating comment {}", commentDto.id());
-        validateCommentLength(commentDto.content());
-        validateNotNull(commentDto.updatedAt(), "Update time/date");
+
         Comment comment = validateCommentExists(commentDto.id());
         if (!userId.equals(comment.getAuthorId())) {
             log.error("User/author ID mismatch");
@@ -97,17 +94,5 @@ public class CommentServiceImpl implements CommentService {
     private Comment validateCommentExists(Long commentId) {
         return commentRepository.findById(commentId)
                 .orElseThrow(() -> new IllegalArgumentException("Comment with this ID does not exist: " + commentId));
-    }
-
-    private void validateNotNull(Object value, String paramName) {
-        if (value == null) {
-            throw new IllegalArgumentException(paramName + " should be present!");
-        }
-    }
-
-    private void validateCommentLength(String content) {
-        if (content.length() > MAX_ALLOWED_COMMENT_TEXT_SIZE || content.isBlank()) {
-            throw new IllegalArgumentException("Comment length should be less than 4096 characters and cannot be empty!");
-        }
     }
 }

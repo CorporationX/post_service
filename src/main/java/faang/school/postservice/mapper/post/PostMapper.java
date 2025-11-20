@@ -21,6 +21,8 @@ public interface PostMapper {
 
     Post toPost(CreatePostDto createPostDto);
 
+    Post toPost(PostDto postDto);
+
     List<Post> toListPost(List<PostDto> postDtos);
 
     void updatePostDto(UpdatePostDto updatePostDto, @MappingTarget Post post);

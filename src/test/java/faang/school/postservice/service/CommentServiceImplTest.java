@@ -58,7 +58,6 @@ public class CommentServiceImplTest {
     private static final Long TEST_AUTHOR_ID = 5L;
     private static final Long INVALID_AUTHOR_ID = 6L;
     private static final String TEST_COMMENT_CONTENT = "Test comment text";
-    private static final String INVALID_TEST_COMMENT_CONTENT = "a".repeat(4097);
     private static final LocalDateTime TEST_COMMENT_CREATED_AT = LocalDateTime.now();
     private static final LocalDateTime TEST_COMMENT_UPDATED_AT = LocalDateTime.now().plusHours(2);
     private static final Post post = new Post();
@@ -96,33 +95,6 @@ public class CommentServiceImplTest {
     }
 
     @Test
-    void testAddCommentContentTooLong() {
-        CreateCommentDto contentTooLongDto = new CreateCommentDto(TEST_AUTHOR_ID,
-                TEST_POST_ID, INVALID_TEST_COMMENT_CONTENT, TEST_COMMENT_CREATED_AT);
-        assertThrows(IllegalArgumentException.class, () -> commentService
-                .addComment(TEST_POST_ID, contentTooLongDto),
-                "Comment length should be less than 4096 characters and cannot be empty!");
-    }
-
-    @Test
-    void testAddCommentContentIsEmpty() {
-        CreateCommentDto contentIsEmptyDto = new CreateCommentDto(TEST_AUTHOR_ID,
-                TEST_POST_ID, "", TEST_COMMENT_CREATED_AT);
-        assertThrows(IllegalArgumentException.class, () -> commentService
-                .addComment(TEST_POST_ID, contentIsEmptyDto),
-                "Comment length should be less than 4096 characters and cannot be empty!");
-    }
-
-    @Test
-    void testAddCommentCreatedAtIsNull() {
-        CreateCommentDto createdAtIsNullDto = new CreateCommentDto(TEST_AUTHOR_ID,
-                TEST_POST_ID, TEST_COMMENT_CONTENT, null);
-        assertThrows(IllegalArgumentException.class, () -> commentService
-                .addComment(TEST_POST_ID, createdAtIsNullDto),
-                "Update time/date should be present!");
-    }
-
-    @Test
     void testUpdateCommentSuccess() {
         CommentDto expectedCommentDto = new CommentDto(TEST_COMMENT_ID,
                 TEST_AUTHOR_ID, TEST_POST_ID, TEST_COMMENT_CONTENT, TEST_COMMENT_CREATED_AT, TEST_COMMENT_UPDATED_AT);
@@ -137,33 +109,6 @@ public class CommentServiceImplTest {
 
         Mockito.verify(postRepository).findById(TEST_POST_ID);
         assertEquals(expectedCommentDto, result);
-    }
-
-    @Test
-    void testUpdateCommentContentTooLong() {
-        UpdateCommentDto contentTooLongDto = new UpdateCommentDto(TEST_COMMENT_ID,
-                TEST_AUTHOR_ID, TEST_POST_ID, INVALID_TEST_COMMENT_CONTENT, TEST_COMMENT_CREATED_AT);
-        assertThrows(IllegalArgumentException.class, () -> commentService
-                .updateComment(TEST_POST_ID, contentTooLongDto),
-                "Comment length should be less than 4096 characters and cannot be empty!");
-    }
-
-    @Test
-    void testUpdateCommentContentIsEmpty() {
-        UpdateCommentDto contentIsEmptyDto = new UpdateCommentDto(TEST_COMMENT_ID,
-                TEST_AUTHOR_ID, TEST_POST_ID, "", TEST_COMMENT_CREATED_AT);
-        assertThrows(IllegalArgumentException.class, () -> commentService
-                .updateComment(TEST_POST_ID, contentIsEmptyDto),
-                "Comment length should be less than 4096 characters and cannot be empty!");
-    }
-
-    @Test
-    void testUpdateCommentCreatedAtIsNull() {
-        UpdateCommentDto updatedAtIsNull = new UpdateCommentDto(TEST_COMMENT_ID,
-                TEST_AUTHOR_ID, TEST_POST_ID, TEST_COMMENT_CONTENT, null);
-        assertThrows(IllegalArgumentException.class, () -> commentService
-                .updateComment(TEST_POST_ID, updatedAtIsNull),
-                "Update time/date should be present!");
     }
 
     @Test
