@@ -4,6 +4,7 @@ import faang.school.postservice.model.ad.Ad;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,4 +14,7 @@ public interface AdRepository extends CrudRepository<Ad, Long> {
     Optional<Ad> findByPostId(long postId);
 
     List<Ad> findAllByBuyerId(long buyerId);
+
+    @Query("SELECT a FROM Ad a WHERE a.post.id = ?1")
+    List<Long> getExpiredAdIds(LocalDateTime localDateTime);
 }
