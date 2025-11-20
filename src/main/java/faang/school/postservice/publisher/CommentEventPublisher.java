@@ -26,13 +26,9 @@ public class CommentEventPublisher {
                 authorId,
                 commentId,
                 createdAt);
-        log.info("Publishing comment event: post Id = {}, author Id = {}, comment Id = {}",
-                postId,
-                authorId,
-                commentId);
         try {
             kafkaTemplate.send(analyticsTopic, commentEventDto);
-            log.info("Successfully published comment event: {}", commentEventDto);
+            log.debug("Successfully published comment event: {}", commentEventDto);
         } catch (Exception exception) {
             log.error("Failed to publish comment event: {}", commentEventDto, exception);
         }
