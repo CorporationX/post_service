@@ -11,6 +11,7 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.comment.CommentServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -57,7 +58,6 @@ public class CommentServiceImplTest {
     private static final Long TEST_AUTHOR_ID = 5L;
     private static final Long INVALID_AUTHOR_ID = 6L;
     private static final String TEST_COMMENT_CONTENT = "Test comment text";
-    private static final String INVALID_TEST_COMMENT_CONTENT = "a".repeat(4097);
     private static final LocalDateTime TEST_COMMENT_CREATED_AT = LocalDateTime.now();
     private static final LocalDateTime TEST_COMMENT_UPDATED_AT = LocalDateTime.now().plusHours(2);
     private static final Post post = new Post();
