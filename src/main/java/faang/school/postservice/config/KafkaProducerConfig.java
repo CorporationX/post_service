@@ -21,7 +21,7 @@ public class KafkaProducerConfig {
     private String bootstrapServers;
 
     @Bean("postViewProducerFactory")
-    public ProducerFactory<String, Object> producerFactory() {
+    public ProducerFactory<String, String> producerFactory() {
         Map<String, Object> props = new HashMap<>();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
@@ -31,7 +31,7 @@ public class KafkaProducerConfig {
     }
 
     @Bean("postViewKafkaTemplate")
-    public KafkaTemplate<String, Object> kafkaTemplate(@Qualifier("postViewProducerFactory") ProducerFactory<String, Object> factory) {
+    public KafkaTemplate<String, String> kafkaTemplate(@Qualifier("postViewProducerFactory") ProducerFactory<String, String> factory) {
         return new KafkaTemplate<>(factory);
     }
 }
