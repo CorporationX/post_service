@@ -25,11 +25,10 @@ public class AiPostCorrectionService {
         for (Post post : posts) {
             try {
                 String corrected = aiClient.correctText(post.getContent());
+
                 post.setContent(corrected);
                 post.setAiEdited(true);
                 postRepository.save(post);
-
-                log.info("Post {} corrected", post.getId());
 
             } catch (Exception e) {
                 log.error("Failed to correct post {}: {}", post.getId(), e.getMessage());
