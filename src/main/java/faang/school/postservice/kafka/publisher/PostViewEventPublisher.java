@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @RequiredArgsConstructor
 public class PostViewEventPublisher {
-    @Value("${kafka.publishers.post-view.topic}")
+    @Value("${spring.kafka.topics.post-view}")
     private String topicName;
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
