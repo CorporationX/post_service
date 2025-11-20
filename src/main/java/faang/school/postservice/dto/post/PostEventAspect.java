@@ -7,8 +7,8 @@ import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.kafka.publisher.PostViewEventPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.annotation.After;
+import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
@@ -26,13 +26,12 @@ public class PostEventAspect {
     private final UserServiceClient userServiceClient;
     private final TaskExecutor taskExecutor;
 
-    @After("@annotation(publishPostEvent)")
-    public void publishPostEvent(ProceedingJoinPoint joinPoint, PublishPostEvent publishPostEvent) throws  Throwable {
-        Object result = joinPoint.proceed();
+    @AfterReturning(pointcut = "@annotation(publishPostEvent)", returning = "result")
+    public void publishPostEvent(JoinPoint joinPoint, Object result, PublishPostEvent publishPostEvent) throws Throwable {
 
         if (result != null) {
             if (publishPostEvent.async()) {
-                taskExecutor.execute(()-> publishEvents(publishPostEvent.eventClass(), result));
+                taskExecutor.execute(() -> publishEvents(publishPostEvent.eventClass(), result));
             } else {
                 publishEvents(publishPostEvent.eventClass(), result);
             }
@@ -57,13 +56,13 @@ public class PostEventAspect {
 
     private void publishSingleEvent(PostV2Dto postDto, long userId) {
 
-            PostViewEvent event = new PostViewEvent(
-                    postDto.id(),
-                    postDto.authorId(),
-                    userId,
-                    LocalDateTime.now()
-            );
-            eventPublisher.publish(event);
+        PostViewEvent event = new PostViewEvent(
+                postDto.id(),
+                postDto.authorId(),
+                userId,
+                LocalDateTime.now()
+        );
+        eventPublisher.publish(event);
 
     }
 
