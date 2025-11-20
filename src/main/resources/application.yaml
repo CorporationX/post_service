@@ -24,18 +24,22 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
-
   kafka:
     bootstrap-servers: localhost:9094
+    properties:
+      security:
+        protocol: PLAINTEXT
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
       properties:
         spring.json.add.type.headers: false
 
 kafka:
   topic:
     user-ban: user_ban
+    comment-event: comment_events
 
 server:
   port: 8081

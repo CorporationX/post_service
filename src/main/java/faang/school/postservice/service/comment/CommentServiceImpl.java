@@ -8,6 +8,7 @@ import faang.school.postservice.exception.ResourceNotFoundException;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.CommentValidator;
@@ -15,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,6 +35,8 @@ public class CommentServiceImpl implements CommentService {
 
     private final CommentValidator commentValidator;
 
+    private final CommentEventPublisher commentEventPublisher;
+
     @Override
     public ResponseComment createComment(RequestCreateComment requestCreateComment,
                                          Long postId) {
@@ -41,6 +45,11 @@ public class CommentServiceImpl implements CommentService {
         Comment comment = commentMapper.toEntity(requestCreateComment);
         comment.setAuthorId(authorId);
         comment.setPost(post);
+        Comment savedComment = commentRepository.save(comment);
+        commentEventPublisher.publish(postId,
+                authorId,
+                savedComment.getId(),
+                LocalDateTime.now());
         return commentMapper.toDto(commentRepository.save(comment));
     }
 
