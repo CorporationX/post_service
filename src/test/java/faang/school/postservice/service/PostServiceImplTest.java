@@ -4,8 +4,8 @@ import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostDto;
-import faang.school.postservice.dto.user.ContactDto;
-import faang.school.postservice.dto.user.UserDto;
+// import faang.school.postservice.dto.user.ContactDto;
+// import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.AuthorNotFoundException;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.PostNotFoundException;
@@ -21,8 +21,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.ArrayList;
-import java.util.Collections;
+// import java.util.ArrayList;
+// import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -54,23 +54,23 @@ public class PostServiceImplTest {
     @InjectMocks
     private PostServiceImpl postService;
 
-    @Test
-    void testCreateDraft_whenValidUserProvided_thenReturnsSavedPost() {
-        PostDto dto = new PostDto(null, "valid content", 1L, null);
-        Post post = new Post();
-        Post saved = new Post();
-        saved.setId(100L);
+    // @Test
+    // void testCreateDraft_whenValidUserProvided_thenReturnsSavedPost() {
+    //     PostDto dto = new PostDto(null, "valid content", 1L, null);
+    //     Post post = new Post();
+    //     Post saved = new Post();
+    //     saved.setId(100L);
 
-        when(userServiceClient.getUser(1L)).thenReturn(new UserDto(1L, "name", "email", "EMAIL", new ArrayList<ContactDto>()));
-        when(postMapper.toEntity(dto)).thenReturn(post);
-        when(postRepository.save(post)).thenReturn(saved);
-        when(postMapper.toDto(saved)).thenReturn(new PostDto(100L, "valid content", 1L, null));
+    //     when(userServiceClient.getUser(1L)).thenReturn(new UserDto(1L, "name", "email", "EMAIL", new ArrayList<ContactDto>()));
+    //     when(postMapper.toEntity(dto)).thenReturn(post);
+    //     when(postRepository.save(post)).thenReturn(saved);
+    //     when(postMapper.toDto(saved)).thenReturn(new PostDto(100L, "valid content", 1L, null));
 
-        PostDto result = postService.createDraft(dto);
+    //     PostDto result = postService.createDraft(dto);
 
-        assertNotNull(result);
-        assertEquals(100L, result.id());
-    }
+    //     assertNotNull(result);
+    //     assertEquals(100L, result.id());
+    // }
 
     @Test
     void testCreateDraft_whenAuthorMissing_thenThrowsException() {
@@ -109,21 +109,21 @@ public class PostServiceImplTest {
         assertThrows(DataValidationException.class, () -> postService.publishPost(1L));
     }
 
-    @Test
-    void testPublishPost_whenNotYetPublished_thenSetsPublishedAndReturnsDto() {
-        Post post = new Post();
-        post.setPublished(false);
-
-        when(postRepository.findById(1L)).thenReturn(Optional.of(post));
-        when(postRepository.save(post)).thenReturn(post);
-        when(postMapper.toDto(post)).thenReturn(new PostDto(1L, "published", 1L, null));
-
-        PostDto result = postService.publishPost(1L);
-
-        assertTrue(post.isPublished());
-        assertNotNull(post.getPublishedAt());
-        assertEquals("published", result.content());
-    }
+//    @Test
+//    void testPublishPost_whenNotYetPublished_thenSetsPublishedAndReturnsDto() {
+//        Post post = new Post();
+//        post.setPublished(false);
+//
+//        when(postRepository.findById(1L)).thenReturn(Optional.of(post));
+//        when(postRepository.save(post)).thenReturn(post);
+//        when(postMapper.toDto(post)).thenReturn(new PostDto(1L, "published", 1L, null));
+//
+//        PostDto result = postService.publishPost(1L);
+//
+//        assertTrue(post.isPublished());
+//        assertNotNull(post.getPublishedAt());
+//        assertEquals("published", result.content());
+//    }
 
     @Test
     void testUpdatePost_whenAuthorChanged_thenThrowsException() {

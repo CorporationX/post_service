@@ -21,6 +21,11 @@ spring:
     redis:
       port: 6379
       host: localhost
+      channel:
+        profile-view: profile_view_channel
+        likes: likes_channel
+        likeReceived: likes_received
+        postCreated: post_created
       channels:
         comment: comment_channel
         postView: post_view_channel
@@ -29,11 +34,37 @@ spring:
         postCreated: post_created
         calculations_channel:
           name: calculations_channel
+      ttlMins: 10
+      collections:
+        feed:
+          name: feed
+          ttlMins: 3600
+        posts:
+          name: posts
+          ttlMins: 1440
+        comments:
+          name: comments
+          ttlMins: 3600
+        likes:
+          name: likes
+          ttlMins: 3600
 
   servlet:
     multipart:
       max-file-size: 50MB
       max-request-size: 100MB
+
+  kafka:
+    bootstrap-servers: localhost:9094
+    acks: all
+    retries: 5
+    delivery-timeout-ms: 20000
+    linger-ms: 5
+    request-timeout-ms: 3000
+    batch-size: 16384
+    enable-idempotence: true
+    topics:
+      profile-view: profile-view-events
 
 server:
   port: 8081
@@ -41,6 +72,18 @@ server:
 logging:
   level:
     root: info
+
+kafka:
+  topics:
+    postCreateEvent: post-create-event
+    heatFeedRequest: heat-feed-request
+    heatPostRequest: heat-post-reqeust
+    heatUserRequest: heat-user-request
+
+heatpagesize:
+  heatFeedPageSize: 1
+  heatPostPageSize: 1
+  heatUserPageSize: 1
 
 user-service:
   host: localhost:8080

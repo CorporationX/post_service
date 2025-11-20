@@ -7,6 +7,7 @@ public record UserDto(
     String username,
     String email,
     String preference,
-    List<ContactDto> contacts
+    List<ContactDto> contacts,
+    List<Long> followers
 ) {
 }

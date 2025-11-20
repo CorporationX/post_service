@@ -9,9 +9,13 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.PostNotFoundException;
 import faang.school.postservice.mapper.PostMapper;
+import faang.school.postservice.mapper.kafka.KafkaPostMapper;
+import faang.school.postservice.mapper.redis.RedisPostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import faang.school.postservice.publisher.post.RedisPostCreateEventPublisher;
+import faang.school.postservice.publisher.post.kafka.KafkaPostCreateProducer;
+import faang.school.postservice.repository.RedisPostRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.resource.ResourceService;
 import faang.school.postservice.util.LanguageTool;
@@ -29,6 +33,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @Slf4j
 @Service
@@ -47,6 +52,10 @@ public class PostServiceImpl implements PostService {
     private final PostActionService postActionService;
     private final ExecutorService scheduledPostExecutorService;
     private final RedisPostCreateEventPublisher redisPostCreateEventPublisher;
+    private final RedisPostRepository redisPostRepository;
+    private final RedisPostMapper redisPostMapper;
+    private final KafkaPostCreateProducer kafkaProducer;
+    private final KafkaPostMapper kafkaPostMapper;
 
     @Override
     @Transactional
@@ -80,7 +89,11 @@ public class PostServiceImpl implements PostService {
         post.setPublishedAt(LocalDateTime.now());
 
         Post updatedPost = postRepository.save(post);
+
+        // service actions after the post is saved
         redisPostCreateEventPublisher.publish(postMapper.toPostCreateEventDto(updatedPost));
+        redisPostRepository.save(redisPostMapper.toRedisPost(updatedPost));
+        kafkaProducer.sendMessage(kafkaPostMapper.toKafkaPostMessage(updatedPost));
 
         return postMapper.toDto(updatedPost);
     }
@@ -212,6 +225,7 @@ public class PostServiceImpl implements PostService {
         }
     }
 
+    @SuppressWarnings("null")
     private void validateAuthor(Long authorId, Long projectId) {
         if ((authorId == null && projectId == null) || (authorId != null && projectId != null)) {
             throw new DataValidationException("Author must be either a user or a project, but not both or neither");
@@ -262,7 +276,10 @@ public class PostServiceImpl implements PostService {
             post.setPublished(true);
             post.setPublishedAt(publishTime);
         });
-        postRepository.saveAll(batch);
+        Iterable<Post> savedPosts = postRepository.saveAll(batch);
+        List<Post> redisPosts = StreamSupport.stream(savedPosts.spliterator(), false)
+            .collect(Collectors.toList());
+        redisPostRepository.saveAll(redisPostMapper.toRedisPosts(redisPosts));
         log.debug("Successfully published {} posts", batch.size());
     }
 }
