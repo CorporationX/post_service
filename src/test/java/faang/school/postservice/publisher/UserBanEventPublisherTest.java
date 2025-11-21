@@ -1,16 +1,11 @@
 package faang.school.postservice.publisher;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.event.UserBanEvent;
-import faang.school.postservice.exception.EventPublishingException;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
@@ -19,60 +14,66 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class UserBanEventPublisherTest {
+class UserBanEventPublisherTest {
 
     private final String userBanTopic = "user-ban-topic";
-    private final UserBanEvent event = new UserBanEvent(List.of(1L, 2L));
-    private final String json = "{\"userIds\":[1,2]}";
 
     @Mock
-    private KafkaTemplate<String, String> kafkaTemplate;
-
-    @Mock
-    private ObjectMapper objectMapper;
+    private KafkaTemplate<String, UserBanEvent> kafkaTemplate;
 
     @InjectMocks
     private UserBanEventPublisher publisher;
 
+    private UserBanEvent event;
+
     @BeforeEach
     void setUp() {
+        // Подставляем значение из application.yml, чтоб не тянуть контекст
         ReflectionTestUtils.setField(publisher, "userBanTopic", userBanTopic);
+        event = new UserBanEvent(List.of(1L, 2L));
     }
 
     @Test
-    void publish_ShouldSendEventToKafka() throws Exception {
-        when(objectMapper.writeValueAsString(event)).thenReturn(json);
-        when(kafkaTemplate.send(anyString(), anyString()))
-                .thenReturn(CompletableFuture.completedFuture(mock(SendResult.class)));
+    void publish_ShouldSendEventToKafka() {
+        CompletableFuture<SendResult<String, UserBanEvent>> future = new CompletableFuture<>();
+        future.complete(mock(SendResult.class));
 
-        publisher.publish(event);
+        when(kafkaTemplate.send(eq(userBanTopic), any(UserBanEvent.class)))
+                .thenReturn(future);
 
-        verify(kafkaTemplate).send(userBanTopic, json);
-        verify(objectMapper).writeValueAsString(event);
+        assertDoesNotThrow(() -> publisher.publish(event));
+
+        verify(kafkaTemplate).send(userBanTopic, event);
     }
 
     @Test
-    void publish_ShouldLogError_WhenKafkaFails() throws Exception {
-        when(objectMapper.writeValueAsString(event)).thenReturn(json);
-        when(kafkaTemplate.send(anyString(), anyString()))
-                .thenReturn(CompletableFuture.failedFuture(new RuntimeException("Kafka error")));
+    void publish_ShouldNotThrow_WhenKafkaFutureCompletesExceptionally() {
+        CompletableFuture<SendResult<String, UserBanEvent>> future = new CompletableFuture<>();
+        future.completeExceptionally(new RuntimeException("Kafka error"));
 
-        publisher.publish(event);
+        when(kafkaTemplate.send(eq(userBanTopic), any(UserBanEvent.class)))
+                .thenReturn(future);
 
-        verify(kafkaTemplate).send(userBanTopic, json);
+        // publish сам ничего не кидает — просто логирует
+        assertDoesNotThrow(() -> publisher.publish(event));
+
+        verify(kafkaTemplate).send(userBanTopic, event);
     }
 
     @Test
-    void publish_ShouldThrowEventPublishingException_WhenJsonFails() throws Exception {
-        when(objectMapper.writeValueAsString(event)).thenThrow(JsonProcessingException.class);
+    void publish_ShouldPropagateException_WhenKafkaSendThrowsSynchronously() {
+        when(kafkaTemplate.send(eq(userBanTopic), any(UserBanEvent.class)))
+                .thenThrow(new RuntimeException("Kafka send failed"));
 
-        Assertions.assertThrows(EventPublishingException.class, () -> publisher.publish(event));
-        verify(kafkaTemplate, Mockito.never()).send(anyString(), anyString());
+        assertThrows(RuntimeException.class, () -> publisher.publish(event));
+
+        verify(kafkaTemplate).send(eq(userBanTopic), any(UserBanEvent.class));
     }
 }
