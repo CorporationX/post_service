@@ -56,7 +56,6 @@ public class LikeService {
         } catch (Exception e) {
             log.error("Failed to publish like event for post {} by user {}", postId, userId, e);
         }
-
         return LikeMapper.toDtoWithPost(like);
     }
 
