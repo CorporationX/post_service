@@ -109,5 +109,4 @@ public class PostService {
     private void existsUserById(Long userId) {
         userServiceClient.getUser(userId);
     }
-
 }
