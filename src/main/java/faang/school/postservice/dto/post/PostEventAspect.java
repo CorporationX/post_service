@@ -1,6 +1,5 @@
 package faang.school.postservice.dto.post;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.dto.common.PageResponse;
 import faang.school.postservice.kafka.publisher.PostViewEventPublisher;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +20,6 @@ import java.util.Collection;
 public class PostEventAspect {
     private final PostViewEventPublisher eventPublisher;
     private final TaskExecutor taskExecutor;
-    private final ObjectMapper objectMapper;
 
     @AfterReturning(pointcut = "@annotation(publishPostEvent)", returning = "result")
     public void publishPostEvent(JoinPoint joinPoint, Object result,
@@ -59,7 +57,6 @@ public class PostEventAspect {
         );
 
         eventPublisher.publish(event);
-
     }
 
     private void publishCollectionEvents(Object methodResult) {
