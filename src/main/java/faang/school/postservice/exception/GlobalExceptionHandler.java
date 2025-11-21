@@ -27,7 +27,8 @@ public class GlobalExceptionHandler {
             DuplicateLikeException.class, HttpStatus.CONFLICT,
             RuntimeException.class, HttpStatus.INTERNAL_SERVER_ERROR,
             IllegalArgumentException.class, HttpStatus.BAD_REQUEST,
-            ConstraintViolationException.class, HttpStatus.BAD_REQUEST
+            ConstraintViolationException.class, HttpStatus.BAD_REQUEST,
+            EventPublishingException.class, HttpStatus.INTERNAL_SERVER_ERROR
     );
 
     @ExceptionHandler(Exception.class)

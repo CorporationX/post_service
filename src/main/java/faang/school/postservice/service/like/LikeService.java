@@ -1,4 +1,4 @@
-package faang.school.postservice.service;
+package faang.school.postservice.service.like;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
@@ -11,6 +11,8 @@ import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.like.LikeEventPublisher;
+import faang.school.postservice.publisher.like.UnlikeEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -30,12 +32,15 @@ public class LikeService {
     private final UserServiceClient userServiceClient;
     private final LikeRepository likeRepository;
     private final UserContext userContext;
+    private final LikeEventPublisher likeEventPublisher;
+    private final UnlikeEventPublisher unlikeEventPublisher;
 
     @Transactional
     public LikeDto addLikeToPost(Long postId) {
         Long userId = userContext.getUserId();
         validateUserExist(userId);
         Post post = postRepository.getByIdOrThrow(postId);
+        Long postAuthorId = post.getAuthorId();
         validateAlreadyLikedPost(postId, userId);
 
         Like like = Like.builder()
@@ -44,6 +49,14 @@ public class LikeService {
                 .build();
         likeRepository.save(like);
         log.info("Like added to post {} by user {}", postId, userId);
+
+        try {
+            likeEventPublisher.publishLikeEvent(postAuthorId, userId, postId);
+            log.info("Like event published for post {} by user {}", postId, userId);
+        } catch (Exception e) {
+            log.error("Failed to publish like event for post {} by user {}", postId, userId, e);
+        }
+
         return LikeMapper.toDtoWithPost(like);
     }
 
@@ -51,10 +64,19 @@ public class LikeService {
     public LikeDto removeLikeFromPost(Long postId) {
         Long userId = userContext.getUserId();
         validateUserExist(userId);
+        Post post = postRepository.getByIdOrThrow(postId);
+        Long postAuthorId = post.getAuthorId();
         Like like = likeRepository.findByPostIdAndUserIdOrThrow(postId, userId);
         validateAuthorLike(like, userId);
         likeRepository.deleteByPostIdAndUserId(postId, userId);
         log.info("Like removed from post {} by user {}", postId, userId);
+
+        try {
+            unlikeEventPublisher.publishUnlikeEvent(postAuthorId, userId, postId);
+            log.info("Unlike event published for post {} by user {}", postId, userId);
+        } catch (Exception e) {
+            log.error("Failed to publish unlike event for post {} by user {}", postId, userId, e);
+        }
         return LikeMapper.toDtoWithPost(like);
     }
 
