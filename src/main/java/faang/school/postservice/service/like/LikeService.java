@@ -116,7 +116,6 @@ public class LikeService {
         }
     }
 
-
     private void validateAlreadyLikedPost(Long postId, Long userId) {
         if (likeRepository.findByPostIdAndUserId(postId, userId).isPresent()) {
             throw new DuplicateLikeException(String.format("User %d already liked post %d ", userId, postId));
