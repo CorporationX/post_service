@@ -2,24 +2,29 @@ package faang.school.postservice.dto.post;
 
 import faang.school.postservice.dto.common.PageResponse;
 import faang.school.postservice.kafka.publisher.PostViewEventPublisher;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
-import org.springframework.core.task.TaskExecutor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.concurrent.Executor;
 
 @Aspect
 @Component
-@RequiredArgsConstructor
 @Slf4j
 public class PostEventAspect {
     private final PostViewEventPublisher eventPublisher;
-    private final TaskExecutor taskExecutor;
+    private final Executor taskExecutor;
+
+    public PostEventAspect(PostViewEventPublisher eventPublisher,
+                           @Qualifier("postEventTaskExecutor") Executor taskExecutor) {
+        this.eventPublisher = eventPublisher;
+        this.taskExecutor = taskExecutor;
+    }
 
     @AfterReturning(pointcut = "@annotation(publishPostEvent)", returning = "result")
     public void publishPostEvent(JoinPoint joinPoint, Object result,

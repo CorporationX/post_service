@@ -35,6 +35,15 @@ spring:
     topics:
       post-view: analytics.post-view
 
+  task:
+    execution:
+      pool:
+        post-event:
+          core-size: 5
+          max-size: 10
+          queue-capacity: 100
+          thread-name-prefix: "PostEvent-"
+          keep-alive-seconds: 60
 server:
   port: 8081
 
