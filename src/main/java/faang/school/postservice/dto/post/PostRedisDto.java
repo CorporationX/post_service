@@ -10,6 +10,7 @@ import org.springframework.stereotype.Indexed;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 @Data
 @AllArgsConstructor
@@ -31,5 +32,5 @@ public class PostRedisDto {
 
     private LocalDateTime publishedAt;
 
-    private List<CommentDto> comments = new ArrayList<>();
+    private List<CommentDto> comments = new CopyOnWriteArrayList<>();
 }

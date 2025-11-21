@@ -39,8 +39,7 @@ public class KafkaPostConsumer {
             containerFactory = "kafkaListenerContainerFactory",
             groupId = "${post-kafka.consumer.group-id}"
     )
-    public void consume(@Payload String postEvent,
-                        Acknowledgment acknowledgment) {
+    public void consume(@Payload String postEvent, Acknowledgment acknowledgment) {
         PostEvent postEventObject = null;
         try {
             postEventObject = objectMapper.readValue(postEvent, PostEvent.class);

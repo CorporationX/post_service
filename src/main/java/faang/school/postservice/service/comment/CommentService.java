@@ -66,16 +66,18 @@ public class CommentService {
         kafkaTemplate.send(producerRecord);
 
         try {
-            CommentRedis commentRedis = new CommentRedis();
-            commentRedis.setAuthorId(comment.getAuthorId());
-            commentRedis.getComments().add(createRedisDto(comment));
-            Optional<CommentRedis> commentById = redisCommentRepository.findById(comment.getAuthorId());
-            if (commentById.isPresent()) {
-                CommentRedis findComment = commentById.get();
-                findComment.getComments().add(createRedisDto(comment));
-                redisCommentRepository.save(findComment);
-            }
-            redisCommentRepository.save(commentRedis);
+
+                CommentRedis commentRedis = new CommentRedis();
+                commentRedis.setAuthorId(comment.getAuthorId());
+                commentRedis.getComments().add(createRedisDto(comment));
+                Optional<CommentRedis> commentById = redisCommentRepository.findById(comment.getAuthorId());
+                if (commentById.isPresent()) {
+                    CommentRedis findComment = commentById.get();
+                    findComment.getComments().add(createRedisDto(comment));
+                    redisCommentRepository.save(findComment);
+                }
+                redisCommentRepository.save(commentRedis);
+
         } catch(Exception e) {
             log.error(e.getMessage());
             throw e;

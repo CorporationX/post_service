@@ -12,12 +12,14 @@ import faang.school.postservice.integration.user.service.UserServiceClient;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.model.PostRedis;
+import faang.school.postservice.model.PostRedisByAuthor;
 import faang.school.postservice.producer.AnalyticsEventProducer;
 import faang.school.postservice.producer.AnalyticsEventProducer.AnalyticsEvent;
 import faang.school.postservice.producer.PostEventProducer;
 import faang.school.postservice.producer.PostViewedProducer;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.RedisPostRepository;
+import faang.school.postservice.repository.RedisPostRepositoryByAuthor;
 import faang.school.postservice.service.PostService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -51,6 +53,7 @@ public class PostServiceImpl implements PostService {
     private String postExpire;
     private final PostEventProducer postEventProducer;
     private final PostViewedProducer postViewedProducer;
+    private final RedisPostRepositoryByAuthor redisPostRepositoryByAuthor;
 
 
     @Override
@@ -104,9 +107,12 @@ public class PostServiceImpl implements PostService {
         }
         Post savedPost = postRepository.save(post);
         try {
-            String key = "authors:" + post.getAuthorId() + ":list";
-            redisTemplate.opsForList().rightPush(key, post);
-            redisTemplate.expire(key, Duration.ofMillis(Long.parseLong(postExpire)));
+//            String key = "authors:" + post.getAuthorId() + ":list";
+//            redisTemplate.opsForList().rightPush(key, post);
+//            redisTemplate.expire(key, Duration.ofMillis(Long.parseLong(postExpire)));
+
+            PostRedisByAuthor postRedisByAuthor = postToPostRedisByAuthor(post);
+            redisPostRepositoryByAuthor.save(postRedisByAuthor);
         } catch(Exception e) {
             log.error(e.getMessage());
             throw new RuntimeException("Ошибка сохранения в кеш");
@@ -230,6 +236,23 @@ public class PostServiceImpl implements PostService {
         postRedisDtos.add(postRedisDto);
         postRedis.setPost(postRedisDtos);
         return postRedis;
+    }
+
+    private PostRedisByAuthor postToPostRedisByAuthor(Post post) {
+        PostRedisByAuthor postRedisByAuthor = new PostRedisByAuthor();
+        postRedisByAuthor.setAuthorId(post.getAuthorId());
+        PostRedisDto postRedisDto = new PostRedisDto();
+        postRedisDto.setId(post.getId());
+        postRedisDto.setContent(post.getContent());
+        postRedisDto.setAuthorId(post.getAuthorId());
+        postRedisDto.setProjectId(post.getProjectId());
+        postRedisDto.setPublished(post.isPublished());
+        postRedisDto.setPublishedAt(post.getPublishedAt());
+        postRedisDto.setDeleted(post.isDeleted());
+        List<PostRedisDto> postRedisDtos = new ArrayList<>();
+        postRedisDtos.add(postRedisDto);
+        postRedisByAuthor.setPost(postRedisDtos);
+        return postRedisByAuthor;
     }
 
 }

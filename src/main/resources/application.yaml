@@ -26,6 +26,8 @@ spring:
           name: calculations_channel
 
   kafka:
+    listener:
+      ack-mode: MANUAL
     bootstrap-servers: localhost:9092
     producer:
       enable-idempotence: true
@@ -82,3 +84,6 @@ redis:
 
 feed:
   max-size: 500
+
+comments-redis:
+  max-comments-size: 3
