@@ -13,6 +13,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.spec.PostSpecification;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -21,6 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
+
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class PostV2Service {
@@ -72,7 +75,6 @@ public class PostV2Service {
         return PostV2Mapper.toDto(saved);
     }
 
-    @Transactional
     public void deletePostSoftly(Long postId) {
         long userId = userContext.getUserId();
         UserDto user = userServiceClient.getUser(userId);
@@ -88,17 +90,13 @@ public class PostV2Service {
         postRepository.save(post);
     }
 
-    @Transactional(readOnly = true)
-    public PageResponse<PostV2Dto> findAllPublishedByFilter(
-            Long authorId,
-            Pageable pageable) {
+    public PageResponse<PostV2Dto> findAllPublishedByFilter(Long authorId, Pageable pageable) {
         Specification<Post> spec = PostSpecification.filter(authorId, true);
         Page<Post> page = postRepository.findAll(spec, pageable);
 
         return PageResponse.from(page, PostV2Mapper::toDto);
     }
 
-    @Transactional(readOnly = true)
     public PageResponse<PostV2Dto> findAllDraftsByAuthor(Pageable pageable) {
         long userId = userContext.getUserId();
         UserDto user = userServiceClient.getUser(userId);
@@ -110,7 +108,6 @@ public class PostV2Service {
 
     }
 
-    @Transactional(readOnly = true)
     public PostV2Dto findById(Long postId) {
         long userId = userContext.getUserId();
         UserDto user = userServiceClient.getUser(userId);
