@@ -7,19 +7,23 @@ import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
-import org.springframework.core.task.TaskExecutor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.concurrent.Executor;
 
 @Aspect
 @Component
-@RequiredArgsConstructor
+@RequiredArgsConstructor(onConstructor_ = {@Qualifier("postEventTaskExecutor")})
 @Slf4j
 public class PostEventAspect {
     private final PostViewEventPublisher eventPublisher;
-    private final TaskExecutor taskExecutor;
+
+    @Qualifier("postEventTaskExecutor")
+    private final Executor taskExecutor;
+
 
     @AfterReturning(pointcut = "@annotation(publishPostEvent)", returning = "result")
     public void publishPostEvent(JoinPoint joinPoint, Object result,
