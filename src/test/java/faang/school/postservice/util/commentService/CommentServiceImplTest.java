@@ -53,6 +53,7 @@ class CommentServiceImplTest {
     @Spy
     private final CommentMapper commentMapper = Mappers.getMapper(CommentMapper.class);
 
+
     private CommentService commentService;
 
     private Post testPost;
@@ -60,6 +61,7 @@ class CommentServiceImplTest {
     private RequestCreateComment requestCreateComment;
     private RequestUpdateComment requestUpdateComment;
     private ResponseComment responseComment;
+    @Mock
     private CommentEventPublisher commentEventPublisher;
 
     @BeforeEach
