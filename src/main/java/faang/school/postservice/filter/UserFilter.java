@@ -18,7 +18,6 @@ public class UserFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
-        String userIdHeader = request.getHeader("X-User-Id");
         String uri = request.getRequestURI();
 
         if (uri.startsWith("/swagger-ui")
@@ -28,6 +27,8 @@ public class UserFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
+
+        String userIdHeader = request.getHeader("X-User-Id");
 
         if (userIdHeader == null) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -43,6 +44,7 @@ public class UserFilter extends OncePerRequestFilter {
             response.getWriter().write("Invalid userId");
             return;
         }
+
         filterChain.doFilter(request, response);
     }
 }

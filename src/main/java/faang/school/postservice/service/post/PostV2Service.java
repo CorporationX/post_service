@@ -11,10 +11,10 @@ import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.mapper.PostV2Mapper;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.spec.PostSpecification;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -25,13 +25,14 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 
+
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class PostV2Service {
     private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
     private final UserContext userContext;
-    private final LikeRepository likeRepository;
 
     @Transactional
     public PostV2Dto createPostAsDraft(PostV2CreateDto postV2CreateDto) {
@@ -81,7 +82,6 @@ public class PostV2Service {
         return PostV2Mapper.toDto(saved, likesCount, likesIds);
     }
 
-    @Transactional
     public void deletePostSoftly(Long postId) {
         long userId = userContext.getUserId();
         UserDto user = userServiceClient.getUser(userId);
@@ -97,10 +97,7 @@ public class PostV2Service {
         postRepository.save(post);
     }
 
-    @Transactional(readOnly = true)
-    public PageResponse<PostV2Dto> findAllPublishedByFilter(
-            Long authorId,
-            Pageable pageable) {
+    public PageResponse<PostV2Dto> findAllPublishedByFilter(Long authorId, Pageable pageable) {
         Specification<Post> spec = PostSpecification.filter(authorId, true);
         Page<Post> page = postRepository.findAll(spec, pageable);
 
@@ -113,7 +110,6 @@ public class PostV2Service {
         );
     }
 
-    @Transactional(readOnly = true)
     public PageResponse<PostV2Dto> findAllDraftsByAuthor(Pageable pageable) {
         long userId = userContext.getUserId();
         UserDto user = userServiceClient.getUser(userId);
@@ -130,7 +126,6 @@ public class PostV2Service {
         );
     }
 
-    @Transactional(readOnly = true)
     public PostV2Dto findById(Long postId) {
         long userId = userContext.getUserId();
         UserDto user = userServiceClient.getUser(userId);
