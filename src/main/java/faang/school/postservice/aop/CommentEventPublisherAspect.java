@@ -15,6 +15,8 @@ import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
 
+import java.util.concurrent.CompletableFuture;
+
 @Aspect
 @Component
 @RequiredArgsConstructor
@@ -59,10 +61,17 @@ public class CommentEventPublisherAspect {
                 .commentText(comment.getContent())
                 .build();
 
+        CompletableFuture.runAsync(() -> {
+            try {
+                commentEventProducer.publish(event);
+            } catch (Exception ex) {
+                log.error("Failed to publish CommentEvent asynchronously [postId={}, commentId={}]",
+                        event.postId(), event.commentId(), ex);
+            }
+        });
+
         log.info("AOP: Publishing enriched CommentEvent [postId={}, commentId={}, author={}]",
                 event.postId(), event.commentId(), event.commentAuthorName());
-
-        commentEventProducer.publish(event);
     }
 
     private String getShortContent(String content, int limit) {

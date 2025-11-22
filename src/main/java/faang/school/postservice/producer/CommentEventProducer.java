@@ -4,6 +4,7 @@ import faang.school.postservice.dto.kafka.CommentEventDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
@@ -14,7 +15,7 @@ public class CommentEventProducer {
 
     private final KafkaTemplate<String, CommentEventDto> kafkaTemplate;
 
-    @Value("${kafka.topic.notifications}")
+    @Value("${kafka.topic.comments}")
     private String topic;
 
     public void publish(CommentEventDto event) {
