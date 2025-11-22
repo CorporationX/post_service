@@ -50,7 +50,7 @@ public class CommentServiceImpl implements CommentService {
                 authorId,
                 savedComment.getId(),
                 LocalDateTime.now());
-        return commentMapper.toDto(commentRepository.save(comment));
+        return commentMapper.toDto(savedComment);
     }
 
     @Override

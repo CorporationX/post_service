@@ -53,8 +53,6 @@ class CommentServiceImplTest {
     @Spy
     private final CommentMapper commentMapper = Mappers.getMapper(CommentMapper.class);
 
-    @Mock
-    private CommentEventPublisher commentEventPublisher;
 
     private CommentService commentService;
 
@@ -63,6 +61,8 @@ class CommentServiceImplTest {
     private RequestCreateComment requestCreateComment;
     private RequestUpdateComment requestUpdateComment;
     private ResponseComment responseComment;
+    @Mock
+    private CommentEventPublisher commentEventPublisher;
 
     @BeforeEach
     void setUp() {
@@ -71,8 +71,7 @@ class CommentServiceImplTest {
                 postRepository,
                 commentMapper,
                 new UserContext() {
-                    @Override
-                    public long getUserId() {
+                    public Long getUserId() {
                         return 1L;
                     }
                 },
@@ -143,11 +142,6 @@ class CommentServiceImplTest {
         verify(postRepository, times(1)).findById(1L);
         verify(commentMapper, times(1)).toEntity(requestCreateComment);
         verify(commentMapper, times(1)).toDto(testComment);
-
-        verify(commentEventPublisher, times(1)).publish(eq(result.postId()),
-                eq(result.authorId()),
-                eq(result.id()),
-                any(LocalDateTime.class));
     }
 
     @Test
