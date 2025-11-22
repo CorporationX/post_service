@@ -52,8 +52,11 @@ payment-service:
   host: localhost
   port: 9080
 
+ai:
+  spellcheck-url: https://speller.yandex.net/services/spellservice.json/checkText
+
 post-correcter:
-  cron: "0 0 2 * * ?"
+  cron: "*/30 * * * * *"
 
 app:
   moderation:

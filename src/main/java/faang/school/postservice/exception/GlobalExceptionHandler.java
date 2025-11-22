@@ -2,6 +2,7 @@ package faang.school.postservice.exception;
 
 import feign.FeignException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.FieldError;
@@ -17,12 +18,18 @@ import java.util.stream.Collectors;
 @Slf4j
 public class GlobalExceptionHandler {
 
-    private static final Map<Class<? extends Exception>, HttpStatus> EXCEPTION_STATUS_MAP = Map.of(
-            DataValidationException.class, HttpStatus.BAD_REQUEST,
-            EntityNotFoundException.class, HttpStatus.NOT_FOUND,
-            ForbiddenException.class, HttpStatus.FORBIDDEN,
-            MethodArgumentNotValidException.class, HttpStatus.BAD_REQUEST,
-            FeignException.class, HttpStatus.INTERNAL_SERVER_ERROR
+    private static final Map<Class<? extends Exception>, HttpStatus> EXCEPTION_STATUS_MAP = Map.ofEntries(
+            Map.entry(DataValidationException.class, HttpStatus.BAD_REQUEST),
+            Map.entry(EntityNotFoundException.class, HttpStatus.NOT_FOUND),
+            Map.entry(ForbiddenException.class, HttpStatus.FORBIDDEN),
+            Map.entry(MethodArgumentNotValidException.class, HttpStatus.BAD_REQUEST),
+            Map.entry(FeignException.class, HttpStatus.INTERNAL_SERVER_ERROR),
+            Map.entry(AiServiceException.class, HttpStatus.SERVICE_UNAVAILABLE),
+            Map.entry(MissingAiConfigException.class, HttpStatus.NOT_FOUND),
+            Map.entry(DuplicateLikeException.class, HttpStatus.CONFLICT),
+            Map.entry(RuntimeException.class, HttpStatus.INTERNAL_SERVER_ERROR),
+            Map.entry(IllegalArgumentException.class, HttpStatus.BAD_REQUEST),
+            Map.entry(ConstraintViolationException.class, HttpStatus.BAD_REQUEST)
     );
 
     @ExceptionHandler(Exception.class)
@@ -54,10 +61,8 @@ public class GlobalExceptionHandler {
             }
             return e.getMessage();
         }
-
         return "Internal server error";
     }
-
 }
 
 

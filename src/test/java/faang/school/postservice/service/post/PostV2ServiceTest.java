@@ -11,6 +11,7 @@ import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.helpers.TestUtils;
 import faang.school.postservice.mapper.PostV2Mapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,6 +26,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -42,6 +44,8 @@ class PostV2ServiceTest {
     private UserServiceClient userServiceClient;
     @Mock
     private UserContext userContext;
+    @Mock
+    private LikeRepository likeRepository;
     @InjectMocks
     private PostV2Service postV2Service;
     @Captor
@@ -131,7 +135,7 @@ class PostV2ServiceTest {
 
         when(userContext.getUserId()).thenReturn(userId);
         when(userServiceClient.getUser(userId)).thenReturn(user);
-        when(postRepository.getByIdOrThrow(postId)).thenReturn(post);
+        when(postRepository.findPostWithLikesOrThrow(postId)).thenReturn(post);
 
         TestUtils.assertThrowsWithMessage(
                 ForbiddenException.class,
@@ -147,7 +151,7 @@ class PostV2ServiceTest {
 
         when(userContext.getUserId()).thenReturn(userId);
         when(userServiceClient.getUser(userId)).thenReturn(user);
-        when(postRepository.getByIdOrThrow(postId)).thenReturn(post);
+        when(postRepository.findPostWithLikesOrThrow(postId)).thenReturn(post);
         when(postRepository.save(postCaptor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
 
         String updatedContent = "Updated content";
@@ -206,21 +210,21 @@ class PostV2ServiceTest {
         assertTrue(capturedPost.isDeleted());
     }
 
-    @Test
-    void findById_shouldReturnPostDto_whenPostExists() {
-        post.setAuthorId(userId);
-        post.setContent(content);
+     @Test
+             void findById_shouldReturnPostDto_whenPostExists() {
+             post.setAuthorId(userId);
+             post.setContent(content);
 
-        when(userContext.getUserId()).thenReturn(userId);
-        when(userServiceClient.getUser(userId)).thenReturn(user);
-        when(postRepository.getByIdOrThrow(postId)).thenReturn(post);
+             when(userContext.getUserId()).thenReturn(userId);
+             when(userServiceClient.getUser(userId)).thenReturn(user);
+             when(postRepository.findPostWithLikesOrThrow(postId)).thenReturn(post);
 
-        PostV2Dto found = postV2Service.findById(postId);
+             PostV2Dto found = postV2Service.findById(postId);
 
-        assertEquals(postId, found.id());
-        assertEquals(content, found.content());
-        assertEquals(userId, found.authorId());
-    }
+             assertEquals(postId, found.id());
+             assertEquals(content, found.content());
+             assertEquals(userId, found.authorId());
+         }
 
     @Test
     void findAllDraftsByAuthor_shouldReturnPage() {
@@ -240,11 +244,11 @@ class PostV2ServiceTest {
 
         List<PostV2Dto> content = pageResponse.content();
         assertEquals(5, content.size());
-        assertEquals(content.get(0), PostV2Mapper.toDto(posts.get(0)));
-        assertEquals(content.get(1), PostV2Mapper.toDto(posts.get(1)));
-        assertEquals(content.get(2), PostV2Mapper.toDto(posts.get(2)));
-        assertEquals(content.get(3), PostV2Mapper.toDto(posts.get(3)));
-        assertEquals(content.get(4), PostV2Mapper.toDto(posts.get(4)));
+        assertEquals(content.get(0), PostV2Mapper.toDto(posts.get(0),0L, Collections.emptyList()));
+        assertEquals(content.get(1), PostV2Mapper.toDto(posts.get(1),0L, Collections.emptyList()));
+        assertEquals(content.get(2), PostV2Mapper.toDto(posts.get(2),0L, Collections.emptyList()));
+        assertEquals(content.get(3), PostV2Mapper.toDto(posts.get(3),0L, Collections.emptyList()));
+        assertEquals(content.get(4), PostV2Mapper.toDto(posts.get(4),0L, Collections.emptyList()));
     }
 
     @Test
@@ -262,11 +266,11 @@ class PostV2ServiceTest {
 
         List<PostV2Dto> content = pageResponse.content();
         assertEquals(5, content.size());
-        assertEquals(content.get(0), PostV2Mapper.toDto(posts.get(0)));
-        assertEquals(content.get(1), PostV2Mapper.toDto(posts.get(1)));
-        assertEquals(content.get(2), PostV2Mapper.toDto(posts.get(2)));
-        assertEquals(content.get(3), PostV2Mapper.toDto(posts.get(3)));
-        assertEquals(content.get(4), PostV2Mapper.toDto(posts.get(4)));
+        assertEquals(content.get(0), PostV2Mapper.toDto(posts.get(0),0L, Collections.emptyList()));
+        assertEquals(content.get(1), PostV2Mapper.toDto(posts.get(1),0L, Collections.emptyList()));
+        assertEquals(content.get(2), PostV2Mapper.toDto(posts.get(2),0L, Collections.emptyList()));
+        assertEquals(content.get(3), PostV2Mapper.toDto(posts.get(3),0L, Collections.emptyList()));
+        assertEquals(content.get(4), PostV2Mapper.toDto(posts.get(4),0L, Collections.emptyList()));
     }
 
     private List<Post> generateListPosts() {
