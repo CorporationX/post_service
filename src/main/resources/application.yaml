@@ -5,15 +5,8 @@ spring:
     username: user
     password: password
 
-kafka:
-  bootstrap-servers: localhost:9092
-
-  producer:
-    key-serializer: org.apache.kafka.common.serialization.StringSerializer
-    value-serializer: org.apache.kafka.common.serialization.StringSerializer
-
-  topic:
-    comments: comment.event
+  kafka:
+    bootstrap-servers: localhost:9092
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
@@ -35,16 +28,6 @@ kafka:
         calculations_channel:
           name: calculations_channel
 
-  kafka:
-    bootstrap-servers: localhost:9092
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-      properties:
-        spring.json.trusted.packages: "*"
-    topics:
-      post-view: analytics.post-view
-
   task:
     execution:
       pool:
@@ -54,6 +37,12 @@ kafka:
           queue-capacity: 100
           thread-name-prefix: "PostEvent-"
           keep-alive-seconds: 60
+
+kafka:
+  topic:
+    comments: comment.event
+    post-view: analytics.post-view
+
 server:
   port: 8081
 
