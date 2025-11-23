@@ -1,7 +1,7 @@
 package faang.school.postservice.dto.post;
 
 import faang.school.postservice.dto.common.PageResponse;
-import faang.school.postservice.kafka.publisher.PostViewEventPublisher;
+import faang.school.postservice.producer.PostViewEventProducer;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
@@ -17,10 +17,10 @@ import java.util.concurrent.Executor;
 @Component
 @Slf4j
 public class PostEventAspect {
-    private final PostViewEventPublisher eventPublisher;
+    private final PostViewEventProducer eventPublisher;
     private final Executor taskExecutor;
 
-    public PostEventAspect(PostViewEventPublisher eventPublisher,
+    public PostEventAspect(PostViewEventProducer eventPublisher,
                            @Qualifier("postEventTaskExecutor") Executor taskExecutor) {
         this.eventPublisher = eventPublisher;
         this.taskExecutor = taskExecutor;

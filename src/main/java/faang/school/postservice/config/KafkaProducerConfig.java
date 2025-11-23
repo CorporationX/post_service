@@ -1,5 +1,6 @@
 package faang.school.postservice.config;
 
+import faang.school.postservice.dto.kafka.CommentEventDto;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -21,7 +22,7 @@ public class KafkaProducerConfig {
     private String bootstrapServers;
 
     @Bean("postViewProducerFactory")
-    public ProducerFactory<String, String> producerFactory() {
+    public ProducerFactory<String, String> stringProducerFactory() {
         Map<String, Object> props = new HashMap<>();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
@@ -31,7 +32,22 @@ public class KafkaProducerConfig {
     }
 
     @Bean("postViewKafkaTemplate")
-    public KafkaTemplate<String, String> kafkaTemplate(@Qualifier("postViewProducerFactory") ProducerFactory<String, String> factory) {
-        return new KafkaTemplate<>(factory);
+    public KafkaTemplate<String, String> stringKafkaTemplate() {
+        return new KafkaTemplate<>(stringProducerFactory());
+    }
+
+    @Bean
+    public ProducerFactory<String, CommentEventDto> commentEventProducerFactory() {
+        Map<String, Object> props = new HashMap<>();
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+
+        return new DefaultKafkaProducerFactory<>(props);
+    }
+
+    @Bean
+    public KafkaTemplate<String, CommentEventDto> commentEventKafkaTemplate() {
+        return new KafkaTemplate<>(commentEventProducerFactory());
     }
 }

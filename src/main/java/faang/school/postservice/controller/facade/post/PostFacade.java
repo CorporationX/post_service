@@ -5,7 +5,7 @@ import faang.school.postservice.dto.post.PostCreateDraftDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.PostUpdateDto;
 import faang.school.postservice.dto.post.PostViewEvent;
-import faang.school.postservice.kafka.publisher.PostViewEventPublisher;
+import faang.school.postservice.producer.PostViewEventProducer;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.service.post.PostService;
@@ -24,7 +24,7 @@ public class PostFacade {
     private final PostMapper postMapping;
     private final PostService postService;
     private final UserContext userContext;
-    private final PostViewEventPublisher eventPublisher;
+    private final PostViewEventProducer eventPublisher;
 
     public PostDto createDraftPost(PostCreateDraftDto postCreateDraftDto) {
         Post post = postMapping.toPost(postCreateDraftDto);

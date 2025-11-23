@@ -1,4 +1,4 @@
-package faang.school.postservice.kafka.publisher;
+package faang.school.postservice.producer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,11 +12,11 @@ import org.springframework.stereotype.Component;
 @Component
 @Slf4j
 @RequiredArgsConstructor
-public class PostViewEventPublisher {
-    @Value("${spring.kafka.topics.post-view}")
+public class PostViewEventProducer {
+    @Value("${kafka.topic.post-view}")
     private String topicName;
 
-    private final KafkaTemplate<String, String> kafkaTemplate;
+    private final KafkaTemplate<String, String> stringKafkaTemplate;
     private final ObjectMapper objectMapper;
 
     public void publish(PostViewEvent event) {
@@ -24,7 +24,7 @@ public class PostViewEventPublisher {
 
         try {
             String value = objectMapper.writeValueAsString(event);
-            kafkaTemplate.send(topicName, key, value);
+            stringKafkaTemplate.send(topicName, key, value);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
