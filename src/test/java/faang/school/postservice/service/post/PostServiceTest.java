@@ -1,10 +1,12 @@
 package faang.school.postservice.service.post;
 
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.event.PostPublishedEvent;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.PostEventProducer;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.util.client.ProjectServiceClientAdapter;
 import faang.school.postservice.util.client.UserServiceClientAdapter;
@@ -50,6 +52,8 @@ class PostServiceTest {
     private UserServiceClientAdapter userServiceClientAdapter;
     @Mock
     private ProjectServiceClientAdapter projectServiceClientAdapter;
+    @Mock
+    private PostEventProducer postEventProducer;
     @Captor
     private ArgumentCaptor<Post> postArgumentCaptor;
     @InjectMocks
@@ -87,7 +91,7 @@ class PostServiceTest {
         assertEquals("content", actualPostDto.content());
         assertEquals(1L, actualPostDto.authorId());
 
-        verify(userContext, times(1)). getUserId();
+        verify(userContext, times(1)).getUserId();
         verify(userServiceClientAdapter, times(1)).getUserById(currentUserId);
         verify(postValidator, times(1)).validateUser(eq(currentUserId), any(PostDto.class));
         verify(projectServiceClientAdapter, never()).getProjectById(anyLong());
@@ -133,7 +137,7 @@ class PostServiceTest {
         assertEquals("content", actualPostDto.content());
         assertEquals(2L, actualPostDto.projectId());
 
-        verify(userContext, times(1)). getUserId();
+        verify(userContext, times(1)).getUserId();
         verify(userServiceClientAdapter, times(1)).getUserById(currentUserId);
         verify(postValidator, never()).validateUser(anyLong(), any(PostDto.class));
         verify(projectServiceClientAdapter, times(1)).getProjectById(projectId);
@@ -160,6 +164,7 @@ class PostServiceTest {
         doNothing().when(postValidator).validatePostIsDeleted(post);
         when(postRepository.save(postArgumentCaptor.capture()))
                 .thenAnswer(invocation -> postArgumentCaptor.getValue());
+        doNothing().when(postEventProducer).sendPostPublishedEvent(any(PostPublishedEvent.class));
 
         PostDto actualPostDto = postService.publishPost(postId);
 
@@ -179,6 +184,8 @@ class PostServiceTest {
         verify(postValidator, times(1)).validatePostIsPublished(post);
         verify(postValidator, times(1)).validatePostIsDeleted(post);
         verify(postRepository, times(1)).save(postArgumentCaptor.capture());
+        verify(postEventProducer, times(1))
+                .sendPostPublishedEvent(any(PostPublishedEvent.class));
     }
 
     @Test
@@ -202,6 +209,7 @@ class PostServiceTest {
         doNothing().when(postValidator).validatePostIsDeleted(post);
         when(postRepository.save(postArgumentCaptor.capture()))
                 .thenAnswer(invocation -> postArgumentCaptor.getValue());
+        doNothing().when(postEventProducer).sendPostPublishedEvent(any(PostPublishedEvent.class));
 
         PostDto actualPostDto = postService.publishPost(postId);
 
@@ -221,6 +229,8 @@ class PostServiceTest {
         verify(postValidator, times(1)).validatePostIsPublished(post);
         verify(postValidator, times(1)).validatePostIsDeleted(post);
         verify(postRepository, times(1)).save(postArgumentCaptor.capture());
+        verify(postEventProducer, times(1))
+                .sendPostPublishedEvent(any(PostPublishedEvent.class));
     }
 
     @Test
