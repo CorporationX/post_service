@@ -14,7 +14,6 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.spec.PostSpecification;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -23,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
-@Slf4j
 @RequiredArgsConstructor
 @Service
 public class PostV2Service {
@@ -89,6 +87,7 @@ public class PostV2Service {
         post.setDeleted(true);
         postRepository.save(post);
     }
+
     @PublishPostEvent(eventClass = PageResponse.class)
     public PageResponse<PostV2Dto> findAllPublishedByFilter(Long authorId, Pageable pageable) {
         Specification<Post> spec = PostSpecification.filter(authorId, true);
