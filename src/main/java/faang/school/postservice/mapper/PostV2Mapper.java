@@ -10,7 +10,6 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Resource;
 import lombok.experimental.UtilityClass;
 
-import java.util.List;
 import java.util.Objects;
 
 @UtilityClass
@@ -34,7 +33,7 @@ public class PostV2Mapper {
         post.setContent(postV2UpdateDto.content());
     }
 
-    public static PostV2Dto toDto(Post post, Long likesCount, List<Long> likesIds) {
+    public static PostV2Dto toDto(Post post) {
         if (post == null) {
             return null;
         }
@@ -44,7 +43,7 @@ public class PostV2Mapper {
                 .content(post.getContent())
                 .authorId(post.getAuthorId())
                 .projectId(post.getProjectId())
-                .likesIds(likesIds)
+                .likesIds(post.getLikes().stream().map(Like::getId).toList())
                 .commentsIds(post.getComments().stream().map(Comment::getId).toList())
                 .albumsIds(post.getAlbums().stream().map(Album::getId).toList())
                 .adId(post.getAd() != null ? post.getAd().getId() : null)
@@ -54,7 +53,25 @@ public class PostV2Mapper {
                 .scheduledAt(post.getScheduledAt())
                 .createdAt(post.getCreatedAt())
                 .updatedAt(post.getUpdatedAt())
-                .likesCount(likesCount)
+                .likesCount((long) post.getLikes().size())
+                .build();
+    }
+
+    public static PostV2Dto toDtoBasic(Post post) {
+        if (post == null) {
+            return null;
+        }
+
+        return PostV2Dto.builder()
+                .id(post.getId())
+                .content(post.getContent())
+                .authorId(post.getAuthorId())
+                .projectId(post.getProjectId())
+                .published(post.isPublished())
+                .publishedAt(post.getPublishedAt())
+                .scheduledAt(post.getScheduledAt())
+                .createdAt(post.getCreatedAt())
+                .updatedAt(post.getUpdatedAt())
                 .build();
     }
 }

@@ -5,6 +5,16 @@ spring:
     username: user
     password: password
 
+kafka:
+  bootstrap-servers: localhost:9092
+
+  producer:
+    key-serializer: org.apache.kafka.common.serialization.StringSerializer
+    value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+  topic:
+    comments: comment.event
+
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
