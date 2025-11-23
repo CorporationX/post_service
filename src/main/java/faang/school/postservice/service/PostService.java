@@ -127,11 +127,10 @@ public class PostService {
         try {
             if (postDto.getAuthorId() != null) {
                 userServiceClient.getUser(postDto.getAuthorId());
-            }
-            if (postDto.getProjectId() != null) {
+            } else {
                 projectServiceClient.getProject(postDto.getProjectId());
             }
-        } catch (NullPointerException e) {
+        } catch (NullPointerException  e) {
             log.error("Element not found exception:", e);
             throw new NullPointerException("Author with this id will not be found");
         } catch (RuntimeException e) {

@@ -31,6 +31,10 @@ public class ErrorResponseFactory {
     }
 
     private static String safeMessage(Throwable e, HttpStatus status) {
+        if (e.getClass() == NullPointerException.class) {
+            return e.getMessage();
+        }
+
         if (status.is5xxServerError()) {
             return "Internal server error";
         }

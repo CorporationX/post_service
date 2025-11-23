@@ -1,6 +1,5 @@
 package faang.school.postservice.controller;
 
-import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.service.PostService;
 import jakarta.validation.Valid;
@@ -23,7 +22,6 @@ import java.util.List;
 @RequestMapping("/api/v1/posts")
 public class PostController {
     private final PostService postService;
-    private final UserContext userContext;
 
     @PostMapping("/creating")
     public void createPost(@RequestBody @Valid PostDto postDto) {
@@ -51,75 +49,41 @@ public class PostController {
         return postService.getPost(postId);
     }
 
-    @GetMapping("/drafts/author")
-    public List<PostDto> getPostDraftsByAuthorId() {
-        validateAuthorId();
-        return postService.getPostDraftsByAuthorId(userContext.getUserId());
+    @GetMapping("/drafts/author/{authorId}")
+    public List<PostDto> getPostDraftsByAuthorId(@PathVariable long authorId) {
+        return postService.getPostDraftsByAuthorId(authorId);
     }
 
-    @GetMapping("/drafts/project")
-    public List<PostDto> getPostDraftsByProjectId() {
-        validateProjectId();
-        return postService.getPostDraftsByProjectId(userContext.getProjectId());
+    @GetMapping("/drafts/project/{projectId}")
+    public List<PostDto> getPostDraftsByProjectId(@PathVariable long projectId) {
+        return postService.getPostDraftsByProjectId(projectId);
     }
 
-    @GetMapping("/published/author")
-    public List<PostDto> getPostPublishedByAuthorId() {
-        validateAuthorId();
-        return postService.getPostPublishedByAuthorId(userContext.getUserId());
+    @GetMapping("/published/author/{authorId}")
+    public List<PostDto> getPostPublishedByAuthorId(@PathVariable long authorId) {
+        return postService.getPostPublishedByAuthorId(authorId);
     }
 
-    @GetMapping("/published/project")
-    public List<PostDto> getPostPublishedByProjectId() {
-        validateProjectId();
-        return postService.getPostPublishedByProjectId(userContext.getProjectId());
+    @GetMapping("/published/project/{projectId}")
+    public List<PostDto> getPostPublishedByProjectId(@PathVariable long projectId) {
+        return postService.getPostPublishedByProjectId(projectId);
     }
 
     private void validateCreatorId(PostDto post) {
-        Long xUserId = userContext.getUserId();
-        Long xProjectId = userContext.getProjectId();
+        Long authorId = post.getAuthorId();
+        Long projectId = post.getProjectId();
 
-        if (xUserId == null && xProjectId == null) {
+        if (authorId == null && projectId == null) {
             throw new NullPointerException("ID of the author of the post should not be null");
         }
-        if (xUserId != null && xProjectId != null) {
+        if (authorId != null && projectId != null) {
             throw new IllegalArgumentException("Сan be only one author");
         }
 
-        if (xUserId != null) {
-            post.setAuthorId(xUserId);
+        if (authorId != null) {
+            post.setAuthorId(authorId);
         } else {
-            post.setProjectId(xProjectId);
-        }
-    }
-
-    private void validateAuthorId() {
-        Long xUserId = userContext.getUserId();
-        Long xProjectId = userContext.getProjectId();
-
-        if (xUserId == null && xProjectId == null) {
-            throw new NullPointerException("ID of the author of the post should not be null");
-        }
-        if (xUserId != null && xProjectId != null) {
-            throw new IllegalArgumentException("Сan be only one author");
-        }
-        if (xProjectId != null) {
-            throw new IllegalArgumentException("Viewing is prohibited");
-        }
-    }
-
-    private void validateProjectId() {
-        Long xUserId = userContext.getUserId();
-        Long xProjectId = userContext.getProjectId();
-
-        if (xUserId == null && xProjectId == null) {
-            throw new NullPointerException("ID of the project of the post should not be null");
-        }
-        if (xUserId != null && xProjectId != null) {
-            throw new IllegalArgumentException("Сan be only one author");
-        }
-        if (xUserId != null) {
-            throw new IllegalArgumentException("Viewing is prohibited");
+            post.setProjectId(projectId);
         }
     }
 }

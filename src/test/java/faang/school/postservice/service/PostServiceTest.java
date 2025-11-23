@@ -46,7 +46,7 @@ public class PostServiceTest {
     private PostMapperImpl postMapper;
 
     @Test
-    void testValidateAuthorPresence_NoSuchElementException() {
+    void testCreatingPostForAuthor_NullPointerException() {
         PostDto post = new PostDto();
         post.setAuthorId(20L);
 
@@ -56,7 +56,7 @@ public class PostServiceTest {
     }
 
     @Test
-    void testValidateAuthorPresence_RuntimeException() {
+    void testCreatingPostForAuthor_RuntimeException() {
         PostDto post = new PostDto();
         post.setAuthorId(1L);
 
@@ -66,17 +66,17 @@ public class PostServiceTest {
     }
 
     @Test
-    void testValidateProjectPresence_NoSuchElementException() {
+    void testCreatingPostForProject_NullPointerException() {
         PostDto post = new PostDto();
         post.setProjectId(20L);
 
-        doThrow(new NullPointerException()).when(projectServiceClient).getProject(anyLong());
+        doThrow(new NullPointerException ()).when(projectServiceClient).getProject(anyLong());
 
         assertThrows(NullPointerException.class, () -> postService.createPost(post));
     }
 
     @Test
-    void testValidateProjectPresence_RuntimeException() {
+    void testCreatingPostForProject_RuntimeException() {
         PostDto post = new PostDto();
         post.setProjectId(1L);
 
@@ -86,7 +86,7 @@ public class PostServiceTest {
     }
 
     @Test
-    void testCreatingPostByAuthorId() {
+    void testCreatingPostForAuthor() {
         PostDto postDto = new PostDto();
         postDto.setContent("assd");
         postDto.setAuthorId(1L);
@@ -103,7 +103,7 @@ public class PostServiceTest {
     }
 
     @Test
-    void testCreatingPostByProjectId() {
+    void testCreatingPostForProject() {
         PostDto postDto = new PostDto();
         postDto.setContent("assd");
         postDto.setProjectId(1L);
@@ -128,7 +128,6 @@ public class PostServiceTest {
         when(postRepository.findById(postId)).thenReturn(Optional.of(post));
 
         assertThrows(IllegalArgumentException.class, () -> postService.publishPost(postId));
-
     }
 
     @Test

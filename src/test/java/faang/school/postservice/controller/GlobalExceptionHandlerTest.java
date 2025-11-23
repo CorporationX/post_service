@@ -17,7 +17,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(controllers = TestController.class)
 @Import(UserContext.class)
 @AutoConfigureMockMvc
-public class PostControllerTest {
+public class GlobalExceptionHandlerTest {
     @Autowired
     MockMvc mockMvc;
 
@@ -62,8 +62,8 @@ public class PostControllerTest {
     @Test
     void testNull() throws Exception {
         mockMvc.perform(get("/test/null"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value("Bad Request"))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.error").value("Internal Server Error"))
                 .andExpect(jsonPath("$.url").value("/test/null"))
                 .andExpect(jsonPath("$.message")
                         .value("ID of the author of the post should not be null"));

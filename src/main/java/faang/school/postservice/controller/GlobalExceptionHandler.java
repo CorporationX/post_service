@@ -20,22 +20,14 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleMethodArgumentNotValidException(MethodArgumentNotValidException e,
                                                                HttpServletRequest req) {
-        log.warn("Method argument not valid exception" + e);
+        log.warn("Method argument not valid exception:" + e);
         return ErrorResponseFactory.createNotValid(req, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler({
-            NullPointerException.class,
-            IllegalArgumentException.class
-    })
+    @ExceptionHandler(IllegalArgumentException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleBadInput(RuntimeException e, HttpServletRequest req) {
-        if (e instanceof NullPointerException) {
-            log.error("Null pointer exception occurred:", e);
-        } else if (e instanceof IllegalArgumentException) {
-            log.warn("Invalid argument provided occurred:", e);
-        }
-
+    public ErrorResponse handleBadInput(IllegalArgumentException e, HttpServletRequest req) {
+        log.warn("Invalid argument provided occurred:", e);
         return ErrorResponseFactory.create(e, req, HttpStatus.BAD_REQUEST);
     }
 
@@ -49,7 +41,15 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(RuntimeException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleRuntimeException(RuntimeException e, HttpServletRequest req) {
-        log.error("Runtime exception occurred:", e);
+        log.error(e.getClass().getSimpleName() + " occurred:", e);
+        return ErrorResponseFactory.create(e, req, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleUnexpectedException(Exception e, HttpServletRequest req) {
+        log.error(e.getClass().getSimpleName() + " occurred:", e);
+
         return ErrorResponseFactory.create(e, req, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
