@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotBlank;
 public record PostUpdateDto(
         @Schema(description = "Контент для поста", example = "мой первый пост")
         @NotBlank(message = "the content is irrelevant or an empty string ")
-        @Max(value = 8192, message = "The message is too long")
+        @Max(value = 4096, message = "The message is too long")
         String content
 ) {
 }

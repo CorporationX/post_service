@@ -72,6 +72,7 @@ class CommentServiceTest {
 
     @Test
     void create_success() {
+        post.setAuthorId(1L);
         when(postRepository.getByIdOrThrow(1L)).thenReturn(post);
         when(userServiceClient.getUser(1L)).thenReturn(userDto);
         when(commentRepository.save(any(Comment.class))).thenAnswer(invocation -> invocation.getArgument(0));

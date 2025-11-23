@@ -1,5 +1,6 @@
 package faang.school.postservice.service.comment;
 
+import faang.school.postservice.aop.PublishCommentEvent;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentCreateDto;
 import faang.school.postservice.dto.comment.CommentDto;
@@ -30,6 +31,7 @@ public class CommentService {
     private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
 
+    @PublishCommentEvent
     @Transactional
     public Comment create(CommentCreateDto commentCreateDto, Long userId) {
         CommentValidator.validateCommentContent(commentCreateDto.content());
@@ -40,8 +42,8 @@ public class CommentService {
 
         Comment comment = CommentMapper.toEntity(commentCreateDto, post, userId);
         comment = commentRepository.save(comment);
-        log.info("Creating comment for postId={} by userId={}", commentCreateDto.postId(), userId);
 
+        log.info("Creating comment for postId={} by userId={}", post.getId(), userId);
         return comment;
     }
 
