@@ -2,6 +2,7 @@ package faang.school.postservice.service.feed;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.feed.CommentFeedDto;
 import faang.school.postservice.dto.feed.PostFeedDto;
 import faang.school.postservice.dto.redis.PostRedisDto;
 import faang.school.postservice.dto.redis.UserRedisDto;
@@ -10,6 +11,7 @@ import faang.school.postservice.mapper.FeedMapper;
 import faang.school.postservice.mapper.UserMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.redis.CommentRedisRepository;
 import faang.school.postservice.repository.redis.FeedRedisRepository;
 import faang.school.postservice.repository.redis.PostRedisRepository;
 import faang.school.postservice.repository.redis.UserRedisRepository;
@@ -20,6 +22,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -41,6 +45,7 @@ public class FeedServiceImpl implements FeedService {
     private final FeedRedisRepository feedRedisRepository;
     private final PostRedisRepository postRedisRepository;
     private final UserRedisRepository userRedisRepository;
+    private final CommentRedisRepository commentRedisRepository;
 
     @Value("${feed.feed-size}")
     private int feedSize;
@@ -57,8 +62,20 @@ public class FeedServiceImpl implements FeedService {
 
         List<UserRedisDto> authors = getUserRedisDtosWithFallback(userIds);
 
+        Map<Long, UserRedisDto> authorMap = authors.stream()
+                .collect(Collectors.toMap(UserRedisDto::id, user -> user));
+
+        List<PostFeedDto> result = posts.stream()
+                .map(post -> {
+                    UserRedisDto author = authorMap.get(post.authorId());
+
+                    List<CommentFeedDto> comments = commentRedisRepository.getLatestComments(post.latestComments());
+                    return feedMapper.toFeedDto(post, author, comments);
+                })
+                .toList();
+
         log.info("Feed для пользователя был успешно сформирован");
-        return feedMapper.toFeedDtos(posts, authors);
+        return result;
     }
 
     private List<Long> getFeedFromDatabase(Long lastPostId) {

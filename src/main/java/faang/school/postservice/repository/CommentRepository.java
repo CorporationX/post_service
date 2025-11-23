@@ -19,13 +19,13 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     @Modifying
     @Transactional
     @Query(nativeQuery = true, value = """
-        UPDATE comments 
-        SET content = :content, 
+        UPDATE comments
+        SET content = :content,
             large_image_file_key = :largeImageFileKey,
             small_image_file_key = :smallImageFileKey,
             updated_at = NOW()
         WHERE id = :commentId
-            AND post_id = :postId 
+            AND post_id = :postId
             AND author_id = :authorId
         RETURNING *
         """)
@@ -40,6 +40,13 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 
     default Comment findByIdAndPostIdOrThrow(Long postId, Long commentId) {
         return findByIdAndPostId(postId, commentId)
+                .orElseThrow(() -> new EntityNotFoundException("Комментарий с id " + commentId + " не найден"));
+    }
+
+    Optional<Comment> findById(Long commentId);
+
+    default Comment findByIdOrThrow(Long commentId) {
+        return findById(commentId)
                 .orElseThrow(() -> new EntityNotFoundException("Комментарий с id " + commentId + " не найден"));
     }
 }

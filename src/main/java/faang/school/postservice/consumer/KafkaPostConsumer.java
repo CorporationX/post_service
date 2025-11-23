@@ -22,7 +22,7 @@ import java.util.concurrent.CompletableFuture;
 
 /**
  * Слушатель топика posts.
- * Принимает ивет {@link PostPublishedEventAvro} и по нему получает подписчиков пользователя и отправляет
+ * Принимает ивент {@link PostPublishedEventAvro} и по нему получает подписчиков пользователя и отправляет
  * ивент {@link FeedBatchEventAvro} в топик feeds. Отправка реализована по батчам подписок пользователя
  *
  * @author Linempy

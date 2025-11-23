@@ -1,6 +1,5 @@
 package faang.school.postservice.dto.feed;
 
-import faang.school.postservice.dto.comment.CommentViewDto;
 import faang.school.postservice.dto.redis.UserRedisDto;
 
 import java.time.LocalDateTime;
@@ -17,7 +16,7 @@ public record PostFeedDto(
         String content,
         Long projectId,
         UserRedisDto authorUser,
-        List<CommentViewDto> comments,
+        List<CommentFeedDto> latestComments,
         Long likeCounter,
         Long commentCounter,
         LocalDateTime publishedAt

@@ -14,11 +14,11 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 
 /**
  * Класс для сохранения поста в коллекцию {@code posts} в Redis
@@ -34,6 +34,9 @@ public class PostRedisRepository {
 
     @Value("${redis.schema.post.ttl-day}")
     private int ttlDay;
+
+    @Value("${redis.schema.comment.max-size}")
+    private int maxSizeComments;
 
     private final RedisTemplate<String, Object> redisTemplate;
     private final PostRepository postRepository;
@@ -85,14 +88,20 @@ public class PostRedisRepository {
 
     public PostRedisDto getPost(Long id) {
         String key = getFormattedKey(id);
+        Object data = redisTemplate.opsForValue().get(key);
 
-        return Optional.ofNullable((PostRedisDto) redisTemplate.opsForValue().get(key))
-            .orElseGet(() -> {
-                    PostRedisDto post = processGetRedisDtoFromDb(id);
-                    savePost(post);
-                    return post;
-                }
-            );
+        if (data != null) {
+            try {
+                PostRedisDto post = objectMapper.convertValue(data, PostRedisDto.class);
+                return post;
+            } catch (IllegalArgumentException e) {
+                log.warn("Ошибка конвертации Redis data в PostRedisDto для ключа: {}", key);
+            }
+        }
+
+        PostRedisDto post = processGetRedisDtoFromDb(id);
+        savePost(post);
+        return post;
     }
 
     public List<PostRedisDto> getPosts(List<Long> ids) {
@@ -114,6 +123,24 @@ public class PostRedisRepository {
         Post postFromDb = postRepository.findPostOrThrow(id);
         PostStatisticProjection counts = postRepository.findPostCounts(id);
         return mapper.toRedisDto(postFromDb, counts.getLikeCount(), counts.getCommentCount());
+    }
+
+    public void updateLatestComments(Long postId, Long commentId) {
+        String key = getFormattedKey(postId);
+        PostRedisDto post = getPost(postId);
+        if (post != null) {
+            List<Long> currentComments = post.latestComments();
+            List<Long> updatedComments = currentComments != null
+                    ? new ArrayList<>(currentComments) : new ArrayList<>();
+
+            updatedComments.add(0, commentId);
+            if (updatedComments.size() > maxSizeComments) {
+                updatedComments = updatedComments.subList(0, maxSizeComments);
+            }
+
+            PostRedisDto updatedPost = mapper.toUpdateComments(post, updatedComments);
+            redisTemplate.opsForValue().set(key, updatedPost);
+        }
     }
 
     private String getFormattedKey(Long id) {

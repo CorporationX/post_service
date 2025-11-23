@@ -51,13 +51,25 @@ public interface PostMapper {
     PostRedisDto toRedisDto(Post post, Long likeCount, Long commentCount);
 
     @Mapping(target = "authorUser", ignore = true)
-    @Mapping(target = "comments", ignore = true)
+    @Mapping(target = "latestComments", ignore = true)
     PostFeedDto toFeedDto(PostRedisDto post);
 
     default List<PostFeedDto> toFeedDtos(List<PostRedisDto> posts) {
         return posts.stream()
                 .map(this::toFeedDto)
                 .toList();
+    }
+
+    default PostRedisDto toUpdateComments(PostRedisDto old, List<Long> comments) {
+        return new PostRedisDto(old.id(),
+                old.content(),
+                old.authorId(),
+                old.projectId(),
+                old.likeCount(),
+                old.commentCount(),
+                comments,
+                old.publishedAt()
+        );
     }
 
 }
