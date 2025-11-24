@@ -21,9 +21,11 @@ spring:
     redis:
       port: 6379
       host: localhost
+      password: password
       channels:
         calculations_channel:
           name: calculations_channel
+        comment: comment_channel
 
   config:
     import: optional:classpath:application-secrets.yml
