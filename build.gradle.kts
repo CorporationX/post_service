@@ -131,3 +131,71 @@ val test by tasks.getting(Test::class) { testLogging.showStandardStreams = true 
 tasks.bootJar {
     archiveFileName.set("service.jar")
 }
+
+
+val jacocoClassExclude = listOf(
+    "com.json.student.*",
+    "faang.school.postservice.client.*",
+    "faang.school.postservice.config.*",
+    "faang.school.postservice.model.*",
+    "faang.school.postservice.dto.*",
+    "faang.school.postservice.mapper.*",
+    "faang.school.postservice.PostServiceApp",
+    "faang.school.postservice.repository.*",
+    "faang.school.postservice.utils.*",
+    "faang.school.postservice.service.S3Service",
+    "faang.school.postservice.controller.*",
+    "faang.school.postservice.exception.*",
+    "faang.school.postservice.scheduled",
+    "faang.school.postservice.publisher.*",
+    "faang.school.postservice.scheduler.ThreadPoolConfig"
+
+)
+
+tasks.jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            element = "CLASS"
+            isEnabled = true
+            excludes = jacocoClassExclude
+            limit {
+                counter = "LINE"
+                value = "COVEREDRATIO"
+                minimum = "0.7".toBigDecimal()
+            }
+        }
+    }
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+
+    reports {
+        html.required.set(true)
+        xml.required.set(true)
+    }
+
+    classDirectories.setFrom(
+        classDirectories.files.map { dir ->
+            fileTree(dir) {
+                exclude(
+                    "com/json/student/**",
+                    "faang/school/postservice/client/**",
+                    "faang/school/postservice/config/**",
+                    "faang/school/postservice/model/**",
+                    "faang/school/postservice/dto/**",
+                    "faang/school/postservice/mapper/**",
+                    "faang/school/postservice/PostServiceApp*",
+                    "faang/school/postservice/repository/**",
+                    "faang/school/postservice/utils/**",
+                    "faang/school/postservice/service/S3Service*",
+                    "faang/school/postservice/controller/**",
+                    "faang/school/postservice/exception/**",
+                    "faang/school/postservice/scheduled/**",
+                    "faang/school/postservice/publisher/**",
+                    "faang/school/postservice/scheduler/ThreadPoolConfig*"
+                )
+            }
+        }
+    )
+}
