@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class EventPublisher {
 
-    private static final String COMMENT_TOPIC = "comment_topic";
+    private static final String COMMENT_TOPIC = "create_comment_topic";
 
     private final KafkaTemplate<Long, CommentEvent> commentEventKafkaTemplate;
 
