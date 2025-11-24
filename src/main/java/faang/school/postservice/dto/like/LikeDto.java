@@ -13,7 +13,7 @@ public record LikeDto(
         boolean hasPost = postId != null;
         boolean hasComment = commentId != null;
         if (hasPost == hasComment) {
-            throw new IllegalArgumentException("PostId or commentId must be provided.");
+            throw new IllegalArgumentException("postId or commentId must be provided.");
         }
     }
 }

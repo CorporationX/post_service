@@ -3,14 +3,15 @@ package faang.school.postservice.service;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.comment.CommentEvent;
 import faang.school.postservice.dto.comment.CreateCommentDto;
 import faang.school.postservice.dto.comment.UpdateCommentDto;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,7 @@ public class CommentServiceImpl implements CommentService {
     private final CommentMapper commentMapper;
     private final UserServiceClient userServiceClient;
     private final CommentRepository commentRepository;
+    private final CommentEventPublisher commentEventPublisher;
 
     @Override
     public CommentDto addComment(Long postId, CreateCommentDto commentDto) {
@@ -38,9 +40,14 @@ public class CommentServiceImpl implements CommentService {
         Comment comment = commentMapper.toComment(commentDto);
         comment.setPost(post);
         comment.setAuthorId(userId);
-        commentRepository.save(comment);
-        log.info("Comment {} saved", comment.getId());
-        return commentMapper.toCommentDto(comment);
+        comment = commentRepository.save(comment);
+        CommentDto returnedCommentDto = commentMapper.toCommentDto(comment);
+        log.info("Comment with ID {} has been added", comment.getId());
+
+        CommentEvent commentEvent = commentMapper.toCommentEvent(comment);
+        commentEventPublisher.publishMessage(commentEvent);
+
+        return returnedCommentDto;
     }
 
     @Override
