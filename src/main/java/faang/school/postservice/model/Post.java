@@ -24,9 +24,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Getter
 @Setter
@@ -53,11 +51,11 @@ public class Post {
 
     @OneToMany(mappedBy = "post", orphanRemoval = true)
     @Builder.Default
-    private Set<Like> likes = new HashSet<>();
+    private List<Like> likes = new ArrayList<>();
 
     @OneToMany(mappedBy = "post", orphanRemoval = true)
     @Builder.Default
-    private Set<Comment> comments = new HashSet<>();
+    private List<Comment> comments = new ArrayList<>();
 
     @ManyToMany(mappedBy = "posts")
     @Builder.Default

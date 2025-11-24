@@ -108,10 +108,12 @@ public class PostV2Service {
     }
 
     @PublishPostEvent(eventClass = PostV2Dto.class)
+    @Transactional
     public PostV2Dto findById(Long postId) {
         long userId = userContext.getUserId();
         UserDto user = userServiceClient.getUser(userId);
-        Post post = postRepository.findPostWithLikesAndCommentOrThrow(postId);
+        Post post = postRepository.findById(postId).orElseThrow();
+
         return PostV2Mapper.toDto(post);
     }
 

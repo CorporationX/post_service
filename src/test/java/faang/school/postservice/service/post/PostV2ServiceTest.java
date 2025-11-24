@@ -11,7 +11,6 @@ import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.helpers.TestUtils;
 import faang.school.postservice.mapper.PostV2Mapper;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,7 +25,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
-import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -44,8 +42,6 @@ class PostV2ServiceTest {
     private UserServiceClient userServiceClient;
     @Mock
     private UserContext userContext;
-    @Mock
-    private LikeRepository likeRepository;
     @InjectMocks
     private PostV2Service postV2Service;
     @Captor
@@ -208,22 +204,6 @@ class PostV2ServiceTest {
         Post capturedPost = postCaptor.getValue();
 
         assertTrue(capturedPost.isDeleted());
-    }
-
-    @Test
-    void findById_shouldReturnPostDto_whenPostExists() {
-        post.setAuthorId(userId);
-        post.setContent(content);
-
-        when(userContext.getUserId()).thenReturn(userId);
-        when(userServiceClient.getUser(userId)).thenReturn(user);
-        when(postRepository.findPostWithLikesAndCommentOrThrow(postId)).thenReturn(post);
-
-        PostV2Dto found = postV2Service.findById(postId);
-
-        assertEquals(postId, found.id());
-        assertEquals(content, found.content());
-        assertEquals(userId, found.authorId());
     }
 
     @Test

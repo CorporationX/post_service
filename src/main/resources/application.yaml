@@ -16,6 +16,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
+    open-in-view: false
 
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
@@ -37,6 +38,7 @@ spring:
           queue-capacity: 100
           thread-name-prefix: "PostEvent-"
           keep-alive-seconds: 60
+          await-termination-seconds: 30
 
 kafka:
   topic:
