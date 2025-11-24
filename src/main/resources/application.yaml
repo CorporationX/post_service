@@ -53,6 +53,9 @@ payment-service:
   host: localhost
   port: 9080
 
+scheduling:
+  commenter-banner:
+    cron: 0 0 10 * * *
 app:
   cron:
     check-spelling: "0 0 0 * * *"
