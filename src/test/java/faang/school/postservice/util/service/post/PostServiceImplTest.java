@@ -9,6 +9,7 @@ import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.post.PostServiceImpl;
 import java.time.LocalDateTime;
@@ -47,6 +48,9 @@ public class PostServiceImplTest {
 
     @Mock
     private ProjectServiceClient projectServiceClient;
+
+    @Mock
+    private CommentRepository commentRepository;
 
     @Captor
     private ArgumentCaptor<Post> postCaptor;
@@ -265,6 +269,12 @@ public class PostServiceImplTest {
     }
 
     @Test
+    public void selectUsersForBanSuccessfullySelectes() {
+        postServiceImpl.selectUsersForBan();
+
+        verify(commentRepository, times(1)).findAll();
+    }
+
     void checkSpellingWithAISuccess() {
         Post post = new Post();
         post.setId(1L);
