@@ -1,6 +1,7 @@
 package faang.school.postservice.service.post;
 
 import faang.school.postservice.client.ProjectServiceClient;
+import faang.school.postservice.client.TextGearsClient;
 import faang.school.postservice.dto.post.CreatePostDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
@@ -13,11 +14,6 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-
-import javax.xml.bind.ValidationException;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
@@ -25,15 +21,20 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+import javax.xml.bind.ValidationException;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class PostServiceImpl implements PostService{
+public class PostServiceImpl implements PostService {
     private final PostMapper postMapper;
     private final PostRepository postRepository;
     private final ProjectServiceClient projectServiceClient;
     private final CommentRepository commentRepository;
+    private final TextGearsClient textGearsClient;
 
     @Override
     @Transactional
@@ -182,5 +183,23 @@ public class PostServiceImpl implements PostService{
                 .filter(violator -> violator.getValue() > minViolationsForBan)
                 .map(Map.Entry::getKey)
                 .toList();
+                
+    @org.springframework.transaction.annotation.Transactional
+    @Override
+    public void checkSpellingWithAI() {
+        List<Post> unpublishedPosts = postRepository.findReadyToPublish();
+        for (Post post : unpublishedPosts) {
+            try {
+                String correctedText = textGearsClient.correctText(post.getContent())
+                        .block();
+
+                post.setContent(correctedText);
+                postRepository.save(post);
+
+                log.info("Пост id={} успешно исправлен", post.getId());
+            } catch (Exception e) {
+                log.error("Ошибка при проверке поста id={}: {}", post.getId(), e.getMessage());
+            }
+        }
     }
 }
