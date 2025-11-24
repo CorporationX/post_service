@@ -11,7 +11,9 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.concurrent.Executor;
+import java.util.stream.Collectors;
 
 @Aspect
 @Component
@@ -65,30 +67,45 @@ public class PostEventAspect {
     }
 
     private void publishCollectionEvents(Object methodResult) {
+        extractPostDtos(methodResult)
+                .forEach(postDto -> publishEventForPost(postDto, postDto.authorId()));
+    }
+
+    private Collection<PostV2Dto> extractPostDtos(Object methodResult) {
         if (methodResult instanceof PageResponse<?> pageResponse) {
-            pageResponse.content().forEach(item -> {
-                if (item instanceof PostV2Dto postDto) {
-                    PostViewEvent event = new PostViewEvent(
-                            postDto.id(),
-                            postDto.authorId(),
-                            postDto.authorId(),
-                            LocalDateTime.now()
-                    );
-                    eventPublisher.publish(event);
-                }
-            });
+            return extractFromPageResponse(pageResponse);
         } else if (methodResult instanceof Collection<?> collection) {
-            collection.forEach(item -> {
-                if (item instanceof PostV2Dto postDto) {
-                    PostViewEvent event = new PostViewEvent(
-                            postDto.id(),
-                            postDto.authorId(),
-                            postDto.authorId(),
-                            LocalDateTime.now()
-                    );
-                    eventPublisher.publish(event);
-                }
-            });
+            return extractFromCollection(collection);
         }
+        return Collections.emptyList();
+    }
+
+    private Collection<PostV2Dto> extractFromPageResponse(PageResponse<?> pageResponse) {
+        return extractPostDtosFromSource(pageResponse.content());
+    }
+
+    private Collection<PostV2Dto> extractFromCollection(Collection<?> collection) {
+        return extractPostDtosFromSource(collection);
+    }
+
+    private Collection<PostV2Dto> extractPostDtosFromSource(Collection<?> source) {
+        return source.stream()
+                .filter(PostV2Dto.class::isInstance)
+                .map(PostV2Dto.class::cast)
+                .collect(Collectors.toList());
+    }
+
+    private void publishEventForPost(PostV2Dto postDto, long userId) {
+        PostViewEvent event = createPostViewEvent(postDto, userId);
+        eventPublisher.publish(event);
+    }
+
+    private PostViewEvent createPostViewEvent(PostV2Dto postDto, long userId) {
+        return new PostViewEvent(
+                postDto.id(),
+                postDto.authorId(),
+                userId,
+                LocalDateTime.now()
+        );
     }
 }

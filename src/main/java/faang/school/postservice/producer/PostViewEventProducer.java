@@ -19,7 +19,7 @@ public class PostViewEventProducer {
     private final KafkaTemplate<String, PostViewEvent> kafkaTemplate;
 
     public void publish(PostViewEvent event) {
-        String key = event.postId().toString() + event.authorId() + event.currentTime().toString();
+        String key = String.format("%d%d%s", event.postId(), event.authorId(), event.currentTime());
 
         try {
             kafkaTemplate.send(topicName, key, event);
