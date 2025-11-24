@@ -7,7 +7,6 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
@@ -23,49 +22,23 @@ public class KafkaProducerConfig {
     private String bootstrapServers;
 
     @Bean
-    @Primary
-    public ProducerFactory<String, Object> producerFactory() {
+    public ProducerFactory producerFactory() {
         Map<String, Object> props = new HashMap<>();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
-
-        return new DefaultKafkaProducerFactory<>(props);
-    }
-
-    @Bean
-    @Primary
-    public KafkaTemplate<String, Object> kafkaTemplate() {
-        return new KafkaTemplate<>(producerFactory());
-    }
-
-    @Bean("postViewEventProducerFactory")
-    public ProducerFactory<String, PostViewEvent> postViewEventProducerFactory() {
-        Map<String, Object> props = new HashMap<>();
-        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+        props.put(JsonSerializer.ADD_TYPE_INFO_HEADERS, true);
 
         return new DefaultKafkaProducerFactory<>(props);
     }
 
     @Bean("postViewEventKafkaTemplate")
-    public KafkaTemplate<String, PostViewEvent> postViewEventKafkaTemplate() {
-        return new KafkaTemplate<>(postViewEventProducerFactory());
-    }
-
-    @Bean("commentEventProducerFactory")
-    public ProducerFactory<String, CommentEventDto> commentEventProducerFactory() {
-        Map<String, Object> props = new HashMap<>();
-        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
-
-        return new DefaultKafkaProducerFactory<>(props);
+    public KafkaTemplate<String, PostViewEvent> postViewEventKafkaTemplate(ProducerFactory factory) {
+        return new KafkaTemplate<>(factory);
     }
 
     @Bean("commentEventKafkaTemplate")
-    public KafkaTemplate<String, CommentEventDto> commentEventKafkaTemplate() {
-        return new KafkaTemplate<>(commentEventProducerFactory());
+    public KafkaTemplate<String, CommentEventDto> commentEventKafkaTemplate(ProducerFactory factory) {
+        return new KafkaTemplate<>(factory);
     }
 }

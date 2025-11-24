@@ -19,14 +19,15 @@ public class PostViewEventProducer {
     private final KafkaTemplate<String, PostViewEvent> kafkaTemplate;
 
     public void publish(PostViewEvent event) {
-        String key = event.postId().toString() + event.authorId() + event.currentTime().toString();
+        String key = String.format("%d%d%s",
+                event.postId(),
+                event.author().id(),
+                event.currentTime());
 
         try {
             kafkaTemplate.send(topicName, key, event);
         } catch (Exception e) {
             log.error("Error sending PostViewEvent: {}", e.getMessage());
         }
-
-        log.debug("PostViewEvent sent asynchronously: {}", event);
     }
 }

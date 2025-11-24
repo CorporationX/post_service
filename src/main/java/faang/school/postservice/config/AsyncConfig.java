@@ -27,12 +27,6 @@ public class AsyncConfig {
     @Value("${spring.task.execution.pool.post-event.thread-name-prefix:PostEvent-}")
     private String threadNamePrefix;
 
-    @Value("${spring.task.execution.pool.post-event.keep-alive-seconds:60}")
-    private int keepAliveSeconds;
-
-    @Value("${spring.task.execution.pool.post-event.await-termination-seconds:30}")
-    private int awaitTerminationSeconds;
-
     @Bean(name = "postEventTaskExecutor")
     public Executor postEventTaskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
@@ -40,10 +34,6 @@ public class AsyncConfig {
         executor.setMaxPoolSize(maxSize);
         executor.setQueueCapacity(queueCapacity);
         executor.setThreadNamePrefix(threadNamePrefix);
-        executor.setKeepAliveSeconds(keepAliveSeconds);
-        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
-        executor.setWaitForTasksToCompleteOnShutdown(true);
-        executor.setAwaitTerminationSeconds(awaitTerminationSeconds);
         executor.initialize();
         return executor;
     }

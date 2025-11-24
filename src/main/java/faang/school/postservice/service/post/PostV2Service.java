@@ -88,7 +88,8 @@ public class PostV2Service {
         postRepository.save(post);
     }
 
-    @PublishPostEvent(eventClass = PageResponse.class)
+    @PublishPostEvent(eventClass = PageResponse.class, async = false)
+    @Transactional(readOnly = true)
     public PageResponse<PostV2Dto> findAllPublishedByFilter(Long authorId, Pageable pageable) {
         Specification<Post> spec = PostSpecification.filter(authorId, true);
         Page<Post> page = postRepository.findAll(spec, pageable);
@@ -107,8 +108,8 @@ public class PostV2Service {
 
     }
 
-    @PublishPostEvent(eventClass = PostV2Dto.class)
-    @Transactional
+    @PublishPostEvent(eventClass = PostV2Dto.class, async = false)
+    @Transactional(readOnly = true)
     public PostV2Dto findById(Long postId) {
         long userId = userContext.getUserId();
         UserDto user = userServiceClient.getUser(userId);

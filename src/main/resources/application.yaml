@@ -37,8 +37,6 @@ spring:
           max-size: 10
           queue-capacity: 100
           thread-name-prefix: "PostEvent-"
-          keep-alive-seconds: 60
-          await-termination-seconds: 30
 
 kafka:
   topic:
