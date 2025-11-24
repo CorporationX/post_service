@@ -4,9 +4,8 @@ import faang.school.postservice.dto.post.CreatePostDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
 import jakarta.validation.Valid;
-import org.springframework.validation.annotation.Validated;
-
 import java.util.List;
+import org.springframework.validation.annotation.Validated;
 
 @Validated
 public interface PostService {
@@ -27,4 +26,8 @@ public interface PostService {
     List<PostDto> getAllPublishedPostsByAuthor(long authorId);
 
     List<PostDto> getAllPublishedPostsByProject(long projectId);
+
+    List<Long> selectUsersForBan();
+  
+    void checkSpellingWithAI();
 }

@@ -25,6 +25,9 @@ spring:
         calculations_channel:
           name: calculations_channel
 
+  config:
+    import: optional:classpath:application-secrets.yml
+
 server:
   port: 8081
 
@@ -47,3 +50,15 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+scheduling:
+  commenter-banner:
+    cron: 0 0 10 * * *
+app:
+  cron:
+    check-spelling: "0 0 0 * * *"
+
+textgears:
+  base-url: https://api.textgears.com
+  api:
+    key: ${TEXTGEARS_API_KEY}
