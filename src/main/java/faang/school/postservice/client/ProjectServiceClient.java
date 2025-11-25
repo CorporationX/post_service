@@ -12,7 +12,7 @@ import java.util.List;
 
 @FeignClient(name = "project-service",
         url = "${project-service.host}:${project-service.port}",
-        path = "${project-service.context-path}" )
+        path = "${project-service.context-path}")
 public interface ProjectServiceClient {
     @GetMapping("/project/{projectId}")
     ResponseEntity<ProjectDto> getProject(@PathVariable long projectId);

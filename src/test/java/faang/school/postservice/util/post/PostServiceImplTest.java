@@ -6,8 +6,8 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.LanguageToolConfig;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.CreatePostRequestDto;
-import faang.school.postservice.dto.post.UpdatePostRequestDto;
 import faang.school.postservice.dto.post.PostResponseDto;
+import faang.school.postservice.dto.post.UpdatePostRequestDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.text.MatchDto;
 import faang.school.postservice.dto.text.ReplacementDto;
@@ -38,9 +38,23 @@ import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.anyLong;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class PostServiceImplTest {
@@ -68,21 +82,18 @@ class PostServiceImplTest {
     @Mock
     ProjectServiceClient projectServiceClient;
     @Mock
-    private FeignLanguageToolClient feignLanguageTool;
-    @Mock
     LanguageToolConfig languageToolConfig;
     @Mock
-    private UserContext userContext;
-    @Mock
     ThreadPoolConfig threadPoolConfig;
-
-    @Spy
-    private PostMapper postMapper = Mappers.getMapper(PostMapper.class);
-
     @Spy
     @InjectMocks
     PostServiceImpl service;
-
+    @Mock
+    private FeignLanguageToolClient feignLanguageTool;
+    @Mock
+    private UserContext userContext;
+    @Spy
+    private PostMapper postMapper = Mappers.getMapper(PostMapper.class);
     private Post postDbEntity;
 
     @BeforeEach
@@ -371,9 +382,9 @@ class PostServiceImplTest {
         PostResponseDto out = service.publish(POST_ID);
 
         verify(postMapper, times(1)).toDto(any(Post.class));
+        assertEquals(createdBefore, out.createdAt());
         assertTrue(out.published());
         assertNotNull(out.publishedAt());
-        assertEquals(createdBefore, out.createdAt());
         assertNotNull(out.updatedAt());
     }
 
@@ -551,16 +562,17 @@ class PostServiceImplTest {
                            LocalDateTime createdAt, LocalDateTime publishedAt) {
         return Post.builder()
                 .id(id)
+                .published(published)
                 .authorId(authorId)
                 .projectId(projectId)
                 .content(content)
-                .published(published)
                 .deleted(deleted)
                 .createdAt(createdAt)
                 .publishedAt(publishedAt)
                 .build();
     }
 
+    @SuppressWarnings("checkstyle:VariableDeclarationUsageDistance")
     @Test
     @DisplayName("processTextChecking: corrects unpublished posts")
     void processTextCheckingCorrectsUnpublishedPosts() {

@@ -4,7 +4,12 @@ import faang.school.postservice.dto.post.CreatePostRequestDto;
 import faang.school.postservice.dto.post.PostResponseDto;
 import faang.school.postservice.dto.post.UpdatePostRequestDto;
 import faang.school.postservice.model.Post;
-import org.mapstruct.*;
+import org.mapstruct.BeanMapping;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.Mappings;
+import org.mapstruct.NullValuePropertyMappingStrategy;
 
 /**
  * MapStruct-маппер между Post и DTO.

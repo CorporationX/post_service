@@ -70,19 +70,14 @@ public class ResourceServiceTest {
             .post(testPost)
             .createdAt(LocalDateTime.now().minusHours(1))
             .build();
-
-    @Mock
-    private PostRepository postRepository;
-
-    @Mock
-    private ResourceRepository resourceRepository;
-
-    @Mock
-    private S3Service s3Service;
-
     @Spy
     private final ResourceMapper resourceMapper = Mappers.getMapper(ResourceMapper.class);
-
+    @Mock
+    private PostRepository postRepository;
+    @Mock
+    private ResourceRepository resourceRepository;
+    @Mock
+    private S3Service s3Service;
     @InjectMocks
     private ResourceServiceImpl resourceService;
 
@@ -131,7 +126,7 @@ public class ResourceServiceTest {
     }
 
     @Test
-    void uploadResources_WithMoreThanTenFiles_ShouldThrowDataValidationException() {
+    void uploadResources_withMoreThanTenFiles_shouldThrowDataValidationException() {
         List<MultipartFile> tooManyFiles = new ArrayList<>();
         for (int i = 0; i < TOO_MANY_FILES; i++) {
             tooManyFiles.add(createMultipartFile("image" + i + ".jpg", MediaType.IMAGE_JPEG_VALUE,
@@ -188,7 +183,7 @@ public class ResourceServiceTest {
     }
 
     @Test
-    void uploadResources_WithIOExceptionDuringFileProcessingShouldThrowDataValidationException() throws IOException {
+    void uploadResources_withIoExceptionDuringFileProcessingShouldThrowDataValidationException() throws IOException {
         MultipartFile problematicFile = mock(MultipartFile.class);
         when(problematicFile.isEmpty()).thenReturn(false);
         when(problematicFile.getSize()).thenReturn(VALID_FILE_SIZE);
@@ -219,7 +214,8 @@ public class ResourceServiceTest {
     @Test
     void getResourcesByPostId_WithExistingPostShouldReturnImageResources() {
         when(postRepository.existsById(POST_ID)).thenReturn(true);
-        when(resourceRepository.findByPostIdAndType(POST_ID, ResourceType.IMAGE.name())).thenReturn(List.of(testResource));
+        when(resourceRepository.findByPostIdAndType(POST_ID,
+                ResourceType.IMAGE.name())).thenReturn(List.of(testResource));
 
         List<ResourceDto> result = resourceService.getResourcesByPostId(POST_ID);
 
@@ -235,7 +231,8 @@ public class ResourceServiceTest {
         Resource videoResource = Resource.builder().id(2L).type("VIDEO").build();
 
         when(postRepository.existsById(POST_ID)).thenReturn(true);
-        when(resourceRepository.findByPostIdAndType(POST_ID, ResourceType.IMAGE.name())).thenReturn(List.of(imageResource));
+        when(resourceRepository
+                .findByPostIdAndType(POST_ID, ResourceType.IMAGE.name())).thenReturn(List.of(imageResource));
         List<ResourceDto> result = resourceService.getResourcesByPostId(POST_ID);
 
         assertNotNull(result);
@@ -246,7 +243,7 @@ public class ResourceServiceTest {
     }
 
     @Test
-    void getResourcesByPostId_WithNoImages_ShouldReturnEmptyList() {
+    void getResourcesByPostId_withNoImages_shouldReturnEmptyList() {
         when(postRepository.existsById(POST_ID)).thenReturn(true);
         when(resourceRepository.findByPostIdAndType(POST_ID, ResourceType.IMAGE.name())).thenReturn(List.of());
         List<ResourceDto> result = resourceService.getResourcesByPostId(POST_ID);
@@ -258,7 +255,7 @@ public class ResourceServiceTest {
     }
 
     @Test
-    void deleteResource_WithExistingResourceShouldDeleteFromStorageAndDatabase() {
+    void deleteResource_withExistingResourceShouldDeleteFromStorageAndDatabase() {
         when(resourceRepository.findById(RESOURCE_ID)).thenReturn(Optional.of(testResource));
 
         resourceService.deleteResource(RESOURCE_ID);
@@ -271,7 +268,7 @@ public class ResourceServiceTest {
     }
 
     @Test
-    void deleteResource_WithNonExistentResourceShouldThrowResourceNotFoundException() {
+    void deleteResource_withNonExistentResourceShouldThrowResourceNotFoundException() {
         when(resourceRepository.findById(NON_EXISTENT_RESOURCE_ID)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class,
@@ -282,7 +279,7 @@ public class ResourceServiceTest {
     }
 
     @Test
-    void downloadResource_WithExistingResourceShouldReturnFileWithCorrectHeaders() {
+    void downloadResource_withExistingResourceShouldReturnFileWithCorrectHeaders() {
         byte[] fileContent = CONTENT.getBytes();
         when(resourceRepository.findById(RESOURCE_ID)).thenReturn(Optional.of(testResource));
         when(s3Service.downloadFile(FILE_KEY)).thenReturn(fileContent);
@@ -300,7 +297,7 @@ public class ResourceServiceTest {
     }
 
     @Test
-    void downloadResource_WithNonExistentResourceShouldThrowResourceNotFoundException() {
+    void downloadResource_withNonExistentResourceShouldThrowResourceNotFoundException() {
         when(resourceRepository.findById(NON_EXISTENT_RESOURCE_ID)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class,

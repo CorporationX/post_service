@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 @FeignClient(name = "payment-service",
         url = "${payment-service.host}:${payment-service.port}",
-        path = "${payment-service.context-path}" )
+        path = "${payment-service.context-path}")
 public interface PaymentServiceClient {
 
     @PostMapping("/api/payment")
