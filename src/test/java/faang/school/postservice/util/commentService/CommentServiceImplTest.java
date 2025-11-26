@@ -10,6 +10,7 @@ import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.CommentEventPublisher;
+import faang.school.postservice.publisher.EventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.comment.CommentService;
@@ -33,6 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -63,9 +65,13 @@ class CommentServiceImplTest {
     private ResponseComment responseComment;
     @Mock
     private CommentEventPublisher commentEventPublisher;
+    @Mock
+    private EventPublisher eventPublisher;
 
     @BeforeEach
     void setUp() {
+        LocalDateTime fixedTime = LocalDateTime.of(2025, 1, 1, 12, 0, 0);
+
         commentService = new CommentServiceImpl(
                 commentRepository,
                 postRepository,
@@ -76,7 +82,8 @@ class CommentServiceImplTest {
                     }
                 },
                 commentValidator,
-                commentEventPublisher
+                commentEventPublisher,
+                eventPublisher
         );
 
         testPost = Post.builder()
@@ -90,8 +97,8 @@ class CommentServiceImplTest {
                 .content("Test Comment")
                 .authorId(1L)
                 .post(testPost)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
+                .createdAt(fixedTime)
+                .updatedAt(fixedTime)
                 .build();
 
         requestCreateComment = RequestCreateComment.builder()
@@ -107,8 +114,8 @@ class CommentServiceImplTest {
                 .content("Test Comment")
                 .authorId(1L)
                 .postId(1L)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
+                .createdAt(fixedTime)
+                .updatedAt(fixedTime)
                 .build();
     }
 
@@ -142,6 +149,13 @@ class CommentServiceImplTest {
         verify(postRepository, times(1)).findById(1L);
         verify(commentMapper, times(1)).toEntity(requestCreateComment);
         verify(commentMapper, times(1)).toDto(testComment);
+
+        verify(eventPublisher, times(1)).publish(argThat(event ->
+                event.getAuthorId() == testComment.getAuthorId() &&
+                        event.getPostId() == testPost.getId() &&
+                        event.getCommentId() == testComment.getId() &&
+                        event.getContent().equals(testComment.getContent())
+        ));
     }
 
     @Test

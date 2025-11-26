@@ -4,11 +4,13 @@ import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.Request.RequestCreateComment;
 import faang.school.postservice.dto.comment.Request.RequestUpdateComment;
 import faang.school.postservice.dto.comment.Response.ResponseComment;
+import faang.school.postservice.dto.event.CommentEvent;
 import faang.school.postservice.exception.ResourceNotFoundException;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.CommentEventPublisher;
+import faang.school.postservice.publisher.EventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.CommentValidator;
@@ -37,6 +39,8 @@ public class CommentServiceImpl implements CommentService {
 
     private final CommentEventPublisher commentEventPublisher;
 
+    private final EventPublisher eventPublisher;
+
     @Override
     public ResponseComment createComment(RequestCreateComment requestCreateComment,
                                          Long postId) {
@@ -46,10 +50,20 @@ public class CommentServiceImpl implements CommentService {
         comment.setAuthorId(authorId);
         comment.setPost(post);
         Comment savedComment = commentRepository.save(comment);
+
         commentEventPublisher.publish(postId,
                 authorId,
                 savedComment.getId(),
                 LocalDateTime.now());
+
+        CommentEvent event = new CommentEvent(
+                authorId,
+                postId,
+                savedComment.getId(),
+                savedComment.getContent()
+        );
+        eventPublisher.publish(event);
+
         return commentMapper.toDto(savedComment);
     }
 

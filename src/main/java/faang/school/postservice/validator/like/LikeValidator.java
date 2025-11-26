@@ -25,7 +25,7 @@ public class LikeValidator {
 
     public Post validateLikeOnPost(long postId, long userId, boolean doSet) {
         Optional<Post> post = postRepository.findById(postId);
-        if (post.isEmpty()){
+        if (post.isEmpty()) {
             log.error("Post doesn't exist");
             throw new ResourceNotFoundException("Post doesn't exist");
         }
@@ -43,7 +43,7 @@ public class LikeValidator {
 
     public Comment validateLikeOnComment(long commentId, long userId, boolean doSet) {
         Optional<Comment> comment = commentRepository.findById(commentId);
-        if(comment.isEmpty()) {
+        if (comment.isEmpty()) {
             log.error("Comment doesn't exist");
             throw new ResourceNotFoundException("Comment doesn't exist");
         }

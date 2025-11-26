@@ -54,6 +54,7 @@ public class LikeServiceTest {
     private final static boolean DEFAULT_FALSE_SIGN = false;
     private final static long NOT_EXIST_ID = 123L;
     private final static int LIKES_COUNT = 2;
+    private final static int ZERO = 0;
 
     @InjectMocks
     private LikeServiceImpl likeService;
