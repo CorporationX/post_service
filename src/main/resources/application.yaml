@@ -51,3 +51,14 @@ payment-service:
 cleanup:
   cron: "0 0 0 * * *"
   chunk-size: 1000
+scheduling:
+  commenter-banner:
+    cron: 0 0 10 * * *
+app:
+  cron:
+    check-spelling: "0 0 0 * * *"
+
+textgears:
+  base-url: https://api.textgears.com
+  api:
+    key: ${TEXTGEARS_API_KEY}

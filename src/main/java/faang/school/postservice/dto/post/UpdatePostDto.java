@@ -14,9 +14,6 @@ public record UpdatePostDto(
         @JsonProperty("project_id") Long projectId,
         @JsonProperty("album_ids") List<Long> albumIds,
         @JsonProperty("ad_id") Long adId,
-        @JsonProperty("resourse_keys") List<String> resourceKeys,
-
-        @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
-        @JsonProperty("scheduled_at") LocalDateTime scheduledAt
+        @JsonProperty("resourse_keys") List<String> resourceKeys
 ) {
 }
