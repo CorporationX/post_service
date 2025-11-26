@@ -10,18 +10,20 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 public class AnalysisCommentsProducer {
-    @Value("spring.topic.analytics")
-    private String topic;
 
+    private final String topic;
     private final KafkaTemplate<String, CommentAnalysisEventDto> stringCommentAnalysisEventDtoKafkaTemplate;
 
-    public AnalysisCommentsProducer(
-            @Qualifier("stringCommentAnalysisEventDtoKafkaTemplate") KafkaTemplate<String,
-                    CommentAnalysisEventDto> stringCommentAnalysisEventDtoKafkaTemplate) {
+    public AnalysisCommentsProducer(@Value("${spring.topic.analytics}") String topic,
+                                    @Qualifier("analyticKafkaTemplate") KafkaTemplate<String, CommentAnalysisEventDto> stringCommentAnalysisEventDtoKafkaTemplate) {
+        this.topic = topic;
         this.stringCommentAnalysisEventDtoKafkaTemplate = stringCommentAnalysisEventDtoKafkaTemplate;
     }
 
     public void publish(CommentAnalysisEventDto event) {
+
+        ///
+
         stringCommentAnalysisEventDtoKafkaTemplate.send(topic, event)
                 .whenComplete((result, ex) -> {
                     if (ex == null) {

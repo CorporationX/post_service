@@ -9,7 +9,6 @@ import faang.school.postservice.dto.common.PageResponse;
 import faang.school.postservice.dto.kafka.CommentAnalysisEventDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.ValidationException;
-import faang.school.postservice.job.moderator.ModerationDictionary;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
