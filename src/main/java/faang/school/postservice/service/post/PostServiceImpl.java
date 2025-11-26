@@ -183,8 +183,9 @@ public class PostServiceImpl implements PostService {
                 .filter(violator -> violator.getValue() > minViolationsForBan)
                 .map(Map.Entry::getKey)
                 .toList();
+    }
                 
-    @org.springframework.transaction.annotation.Transactional
+    @Transactional
     @Override
     public void checkSpellingWithAI() {
         List<Post> unpublishedPosts = postRepository.findReadyToPublish();
