@@ -6,12 +6,14 @@ import faang.school.postservice.dto.comment.CommentCreateDto;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CommentUpdateDto;
 import faang.school.postservice.dto.common.PageResponse;
+import faang.school.postservice.dto.kafka.CommentAnalysisEventDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.ValidationException;
 import faang.school.postservice.job.moderator.ModerationDictionary;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.AnalysisCommentsProducer;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.validator.comment.CommentValidator;
@@ -22,6 +24,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -30,6 +34,7 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
+    private final AnalysisCommentsProducer analysisCommentsProducer;
 
     @PublishCommentEvent
     @Transactional
@@ -44,6 +49,13 @@ public class CommentService {
         comment = commentRepository.save(comment);
 
         log.info("Creating comment for postId={} by userId={}", post.getId(), userId);
+
+        CommentAnalysisEventDto commentAnalysisEventDto = new CommentAnalysisEventDto(
+                post.getId(),
+                comment.getAuthorId(),
+                comment.getId(),
+                LocalDateTime.now());
+        analysisCommentsProducer.publish(commentAnalysisEventDto);
         return comment;
     }
 

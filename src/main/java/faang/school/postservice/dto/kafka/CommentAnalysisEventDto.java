@@ -6,7 +6,6 @@ import java.time.LocalDateTime;
 
 @Builder
 public record CommentAnalysisEventDto(
-    Long id,
     Long postId,
     Long authorId,
     Long commentId,
