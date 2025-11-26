@@ -25,10 +25,9 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
+        like: like_channel
         comment: comment_channel
 
-  config:
-    import: optional:classpath:application-secrets.yml
 
 server:
   port: 8081
@@ -53,6 +52,9 @@ payment-service:
   host: localhost
   port: 9080
 
+cleanup:
+  cron: "0 0 0 * * *"
+  chunk-size: 1000
 scheduling:
   commenter-banner:
     cron: 0 0 10 * * *

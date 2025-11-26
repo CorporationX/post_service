@@ -1,10 +1,14 @@
 package faang.school.postservice.util;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.like.LikeDto;
+import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.mapper.LikeMapper;
+import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.service.comment.CommentService;
 import faang.school.postservice.service.like.LikeServiceImpl;
@@ -12,8 +16,10 @@ import faang.school.postservice.service.post.PostService;
 import feign.FeignException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mapstruct.factory.Mappers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
@@ -41,6 +47,15 @@ class LikeServiceImplTest {
     @Mock
     private CommentService commentService;
 
+    @Mock
+    private CommentRepository commentRepository;
+
+    @Spy
+    private PostMapper postMapper = Mappers.getMapper(PostMapper.class);
+
+    @Spy
+    private CommentMapper commentMapper = Mappers.getMapper(CommentMapper.class);
+
     @InjectMocks
     private LikeServiceImpl likeService;
 
@@ -54,7 +69,8 @@ class LikeServiceImplTest {
 
         Post post = new Post();
         post.setId(postId);
-        when(postService.getById(postId, userId)).thenReturn(post);
+        PostDto postDto = postMapper.toPostDto(post);
+        when(postService.getPostById(postId)).thenReturn(postDto);
 
         Like saved = Like.builder().id(111L).userId(userId).post(post).build();
         when(likeRepository.save(any(Like.class))).thenReturn(saved);
@@ -67,7 +83,7 @@ class LikeServiceImplTest {
         assertEquals(expected.id(), result.id());
         verify(userServiceClient).getUser(userId);
         verify(likeRepository).findByPostIdAndUserId(postId, userId);
-        verify(postService).getById(postId, userId);
+        verify(postService).getPostById(postId);
         verify(likeRepository).save(any(Like.class));
         verify(likeMapper).toDto(saved);
         verifyNoMoreInteractions(userServiceClient, likeRepository, postService, likeMapper, commentService);
@@ -85,7 +101,7 @@ class LikeServiceImplTest {
 
         verify(userServiceClient).getUser(userId);
         verify(likeRepository).findByPostIdAndUserId(postId, userId);
-        verify(postService, never()).getById(anyLong(), anyLong());
+        verify(postService, never()).getPostById(anyLong());
         verify(likeRepository, never()).save(any());
         verifyNoMoreInteractions(userServiceClient, likeRepository);
         verifyNoInteractions(postService, commentService, likeMapper);
@@ -152,7 +168,7 @@ class LikeServiceImplTest {
 
         Comment comment = new Comment();
         comment.setId(commentId);
-        when(commentService.getById(commentId, userId)).thenReturn(comment);
+        when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
 
         Like saved = Like.builder().id(222L).userId(userId).comment(comment).build();
         when(likeRepository.save(any(Like.class))).thenReturn(saved);
@@ -166,7 +182,7 @@ class LikeServiceImplTest {
         assertEquals(expected.id(), result.id());
         verify(userServiceClient).getUser(userId);
         verify(likeRepository).findByCommentIdAndUserId(commentId, userId);
-        verify(commentService).getById(commentId, userId);
+        verify(commentRepository).findById(commentId);
         verify(likeRepository).save(any(Like.class));
         verify(likeMapper).toDto(saved);
         verifyNoMoreInteractions(userServiceClient, likeRepository, commentService, likeMapper);
@@ -185,7 +201,7 @@ class LikeServiceImplTest {
 
         verify(userServiceClient).getUser(userId);
         verify(likeRepository).findByCommentIdAndUserId(commentId, userId);
-        verify(commentService, never()).getById(anyLong(), anyLong());
+        verify(commentRepository, never()).findById(anyLong());
         verify(likeRepository, never()).save(any());
         verifyNoMoreInteractions(userServiceClient, likeRepository);
         verifyNoInteractions(commentService, postService, likeMapper);
