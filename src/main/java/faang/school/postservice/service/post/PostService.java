@@ -27,5 +27,7 @@ public interface PostService {
 
     List<PostDto> getAllPublishedPostsByProject(long projectId);
 
+    List<Long> selectUsersForBan();
+  
     void checkSpellingWithAI();
 }

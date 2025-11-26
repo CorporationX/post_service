@@ -6,7 +6,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
@@ -16,37 +15,31 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Getter
-@Setter
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
+@Setter
+@Getter
 @Builder
 @Entity
-@Table(name = "comment")
-public class Comment {
+@Table(name = "favorite_albums")
+public class FavoriteAlbums {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    long id;
 
-    @Column(name = "content", nullable = false, length = 4096)
-    private String content;
+    @Column(name = "users_id", nullable = false)
+    private long userId;
 
-    @Column(name = "author_id", nullable = false)
-    private Long authorId;
-
-    @OneToMany(mappedBy = "comment", orphanRemoval = true)
-    private List<Like> likes;
-
-    @ManyToOne
-    @JoinColumn(name = "post_id", nullable = false)
-    private Post post;
+    @Column(name = "album_id", nullable = false)
+    private long albumId;
 
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
@@ -57,13 +50,4 @@ public class Comment {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
-    @Column(name = "large_image_file_key")
-    private String largeImageFileKey;
-
-    @Column(name = "small_image_file_key")
-    private String smallImageFileKey;
-
-    @Column(name = "verified", nullable = false)
-    private Boolean verified;
 }
