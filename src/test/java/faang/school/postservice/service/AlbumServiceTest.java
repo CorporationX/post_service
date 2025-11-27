@@ -1,7 +1,6 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.album.AlbumDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.ForbiddenException;
@@ -38,9 +37,6 @@ public class AlbumServiceTest {
 
     @Mock
     AlbumRepository albumRepository;
-
-    @Mock
-    UserContext userContext;
 
     @Mock
     UserServiceClient userServiceClient;
@@ -85,27 +81,29 @@ public class AlbumServiceTest {
                 () -> albumService.createAlbum(albumDto, 1L));
     }
 
-//    @Test
-//    public void testCreateExistingUsersAlbum() {
-//        when(userServiceClient.getUser(anyLong())).thenReturn(null);
-//        when(albumRepository.existsByTitleAndAuthorId(any(), anyLong())).thenReturn(true);
-//
-//        assertThrows(ForbiddenException.class,
-//                () -> albumService.createAlbum(albumDto, 1L));
-//    }
-//
-//    @Test
-//    public void testCreateAlbum() {
-//        when(userServiceClient.getUser(anyLong())).thenReturn(null);
-//        when(albumRepository.existsByTitleAndAuthorId(any(), anyLong())).thenReturn(false);
-//        when(albumRepository.save(any())).thenReturn(new Album());
-//
-//        albumService.createAlbum(albumDto, 1L);
-//
-//        verify(albumRepository).save(albumCaptor.capture());
-//        Album album = albumCaptor.getValue();
-//        assertEquals(2L, album.getAuthorId());
-//    }
+    @Test
+    public void testCreateExistingUsersAlbum() {
+        when(userServiceClient.getUser(anyLong())).thenReturn(null);
+        when(albumRepository.existsById(anyLong())).thenReturn(true);
+        when(albumRepository.existsByTitleAndAuthorId(any(), anyLong())).thenReturn(true);
+
+        assertThrows(ForbiddenException.class,
+                () -> albumService.createAlbum(albumDto, 1L));
+    }
+
+    @Test
+    public void testCreateAlbum() {
+        when(userServiceClient.getUser(anyLong())).thenReturn(null);
+        when(albumRepository.existsById(anyLong())).thenReturn(true);
+        when(albumRepository.existsByTitleAndAuthorId(any(), anyLong())).thenReturn(false);
+        when(albumRepository.save(any())).thenReturn(new Album());
+
+        albumService.createAlbum(albumDto, 1L);
+
+        verify(albumRepository).save(albumCaptor.capture());
+        Album album = albumCaptor.getValue();
+        assertEquals(2L, album.getAuthorId());
+    }
 
     @Test
     public void testUpdateNotExistingAlbum() {
@@ -209,11 +207,11 @@ public class AlbumServiceTest {
 
     @Test
     public void testAddExistingToFavoriteAlbums() {
-    when(favoriteAlbumsRepository.existsByAlbumIdAndUserId(anyLong(), anyLong()))
-            .thenReturn(true);
+        when(favoriteAlbumsRepository.existsByAlbumIdAndUserId(anyLong(), anyLong()))
+                .thenReturn(true);
 
-    assertThrows(ForbiddenException.class,
-            () -> albumService.addToFavoriteAlbums(1L, 1L));
+        assertThrows(ForbiddenException.class,
+                () -> albumService.addToFavoriteAlbums(1L, 1L));
     }
 
     @Test

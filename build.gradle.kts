@@ -98,28 +98,28 @@ tasks.jacocoTestReport {
     }
 }
 
-//tasks.jacocoTestCoverageVerification {
-//    dependsOn(tasks.test)
-//
-//    violationRules {
-//        rule {
-//            element = "CLASS"
-//            excludes = listOf(
-//                "faang.school.postservice.client.*",
-//                "faang.school.postservice.config.*",
-//                "faang.school.postservice.dto.*",
-//                "faang.school.postservice.model.*",
-//                "faang.school.postservice.repository.*"
-//            )
-//
-//            limit {
-//                counter = "INSTRUCTION"
-//                value = "COVEREDRATIO"
-//                minimum = "0.80".toBigDecimal()
-//            }
-//        }
-//    }
-//}
+tasks.jacocoTestCoverageVerification {
+    dependsOn(tasks.test)
+
+    violationRules {
+        rule {
+            element = "CLASS"
+            excludes = listOf(
+                "faang.school.postservice.client.*",
+                "faang.school.postservice.config.*",
+                "faang.school.postservice.dto.*",
+                "faang.school.postservice.model.*",
+                "faang.school.postservice.repository.*"
+            )
+
+            limit {
+                counter = "INSTRUCTION"
+                value = "COVEREDRATIO"
+                minimum = "0.80".toBigDecimal()
+            }
+        }
+    }
+}
 
 tasks.check {
     dependsOn(tasks.jacocoTestReport)
