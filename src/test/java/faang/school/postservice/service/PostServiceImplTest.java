@@ -2,6 +2,7 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dictionary.ModerationDictionary;
 import faang.school.postservice.dto.post.CreatePostDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.project.ProjectDto;
@@ -32,6 +33,7 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -55,6 +57,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
@@ -81,6 +84,8 @@ public class PostServiceImplTest {
     private UserBanEventPublisher userBanEventPublisher;
     @Mock
     private UserServiceImpl userService;
+    @Mock
+    private ModerationDictionary moderationDictionary;
     @Spy
     private PostMapper postMapper = Mappers.getMapper(PostMapper.class);
 
@@ -94,6 +99,7 @@ public class PostServiceImplTest {
     private final LocalDateTime time2 = LocalDateTime.of(2024, 1, 2, 0, 0);
     private final int maxUnverifiedPosts = 5;
     private final int findUnverifiedPostsPageSize = maxUnverifiedPosts + 1;
+    private final int maxPostsToModeratePerThread = 5;
 
     @BeforeEach
     void setUp() throws Exception {
@@ -102,6 +108,7 @@ public class PostServiceImplTest {
         batchSizeField.set(postService, 2);
         ReflectionTestUtils.setField(postService, "maxUnverifiedPosts", maxUnverifiedPosts);
         ReflectionTestUtils.setField(postService, "findUnverifiedPostsPageSize", findUnverifiedPostsPageSize);
+        ReflectionTestUtils.setField(postService, "maxPostsToModeratePerThread", maxPostsToModeratePerThread);
     }
 
     private final PostDto postDtoAuthorExists = PostDto.builder().id(postId).content("content")
@@ -625,7 +632,7 @@ public class PostServiceImplTest {
 
         Page<Post> firstPage = new PageImpl<>(posts);
         Page<Post> emptyPage = Page.empty();
-        when(postRepository.findUnverified(any(Pageable.class)))
+        when(postRepository.findRejected(any(Pageable.class)))
                 .thenReturn(firstPage)
                 .thenReturn(emptyPage);
 
@@ -647,7 +654,7 @@ public class PostServiceImplTest {
         Page<Post> firstPage = new PageImpl<>(posts);
         Page<Post> emptyPage = Page.empty();
 
-        when(postRepository.findUnverified(any(Pageable.class)))
+        when(postRepository.findRejected(any(Pageable.class)))
                 .thenReturn(firstPage)
                 .thenReturn(emptyPage);
         when(userService.getNotBannedUsersIds(Mockito.anyList())).thenReturn(usersIds);
@@ -667,5 +674,71 @@ public class PostServiceImplTest {
         assertEquals(1, usersForBan.size());
         assertEquals(userId, allAuthorsIds.get(0));
         assertEquals(userId, usersForBan.get(0));
+    }
+
+    @Test
+    void testModeratePost_WhenNoPosts_ShouldNotProcess() {
+        when(postRepository.findUnmoderated(any(PageRequest.class)))
+                .thenReturn(new PageImpl<>(Collections.emptyList()));
+
+        postService.moderatePost();
+
+        verify(postRepository, never()).saveAll(any());
+    }
+
+    @Test
+    void testModeratePost_WhenPostsExist_ShouldProcessAllPages() {
+        List<Post> page1 = List.of(createPost(1L), createPost(2L));
+        List<Post> page2 = List.of(createPost(3L));
+
+        when(postRepository.findUnmoderated(PageRequest.of(0, findUnverifiedPostsPageSize)))
+                .thenReturn(new PageImpl<>(page1));
+        when(postRepository.findUnmoderated(PageRequest.of(1, findUnverifiedPostsPageSize)))
+                .thenReturn(new PageImpl<>(page2));
+        when(postRepository.findUnmoderated(PageRequest.of(2, findUnverifiedPostsPageSize)))
+                .thenReturn(new PageImpl<>(Collections.emptyList()));
+
+        postService.moderatePost();
+
+        verify(postRepository, atLeastOnce()).saveAll(any());
+    }
+
+    @Test
+    void testModeratePost_WhenOffensiveContent_ShouldUnverifyPosts() {
+        Post offensivePost = createPost(1L);
+        List<Post> posts = List.of(offensivePost);
+
+        when(postRepository.findUnmoderated(any(PageRequest.class)))
+                .thenReturn(new PageImpl<>(posts))
+                .thenReturn(new PageImpl<>(Collections.emptyList()));
+
+        when(moderationDictionary.hasOffensiveWords(anyString())).thenReturn(true);
+
+        postService.moderatePost();
+
+        verify(postRepository).saveAll(posts);
+    }
+
+    @Test
+    void testModeratePostWhenCleanContentShouldVerifyPosts() {
+        Post cleanPost = createPost(1L);
+        List<Post> posts = List.of(cleanPost);
+
+        when(postRepository.findUnmoderated(any(PageRequest.class)))
+                .thenReturn(new PageImpl<>(posts))
+                .thenReturn(new PageImpl<>(Collections.emptyList()));
+
+        when(moderationDictionary.hasOffensiveWords(anyString())).thenReturn(false);
+
+        postService.moderatePost();
+
+        verify(postRepository).saveAll(posts);
+    }
+
+    private Post createPost(Long id) {
+        Post post = new Post();
+        post.setId(id);
+        post.setContent("test content");
+        return post;
     }
 }

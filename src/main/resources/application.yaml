@@ -74,6 +74,7 @@ threads:
 cron:
   delete-expired-ads-cron: 0 0 0 * * *
   find-authors-for-ban-cron: 0 0 0 * * *
+  moderate-posts-cron: 0 0 0 * * *
 
 ads:
   max-delete-per-thread: 100
@@ -86,3 +87,7 @@ app:
 posts:
   max-unverified-posts: 5
   find-unverified-posts-page-size: 100
+  max-posts-to-moderate-per-thread: 10
+
+files-path:
+  offensive-words: src/main/resources/offensive-words.txt
