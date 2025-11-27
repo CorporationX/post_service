@@ -19,7 +19,7 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class TextGearsClient {
 
-    @Value("${textgears.api.key}")
+    @Value("${textgears.api.key:default_test_key}")
     private String apiKey;
 
     private final WebClient textGearsWebClient;

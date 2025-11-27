@@ -7,6 +7,7 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.stereotype.Component;
 
@@ -18,6 +19,9 @@ public class RedisConfiguration {
 
     @Value("${spring.data.redis.port}")
     private int redisPort;
+
+    @Value("${spring.data.redis.channels.like}")
+    private String topicName;
 
     @Bean
     public JedisConnectionFactory jedisConnectionFactory() {
@@ -35,5 +39,10 @@ public class RedisConfiguration {
         template.setKeySerializer(new StringRedisSerializer());
         template.setValueSerializer(new StringRedisSerializer());
         return template;
+    }
+
+    @Bean
+    ChannelTopic likeTopic() {
+        return new ChannelTopic(topicName);
     }
 }

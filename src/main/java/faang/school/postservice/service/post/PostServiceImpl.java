@@ -13,7 +13,6 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
-import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
@@ -25,6 +24,7 @@ import javax.xml.bind.ValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -183,8 +183,9 @@ public class PostServiceImpl implements PostService {
                 .filter(violator -> violator.getValue() > minViolationsForBan)
                 .map(Map.Entry::getKey)
                 .toList();
-                
-    @org.springframework.transaction.annotation.Transactional
+    }
+
+    @Transactional
     @Override
     public void checkSpellingWithAI() {
         List<Post> unpublishedPosts = postRepository.findReadyToPublish();
