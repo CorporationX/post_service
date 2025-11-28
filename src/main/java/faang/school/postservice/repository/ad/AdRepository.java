@@ -18,6 +18,6 @@ public interface AdRepository extends CrudRepository<Ad, Long> {
     @Query("SELECT a FROM Ad a WHERE a.post.id = ?1")
     List<Long> getExpiredAdIds(LocalDateTime localDateTime);
 
-    @Query("SELECT a.id FROM Ad a WHERE a.appearances_left = 0 OR a.endDate < CURRENT_TIMESTAMP")
+    @Query("SELECT a.id FROM Ad a WHERE a.appearancesLeft = 0 OR a.endDate < CURRENT_TIMESTAMP")
     List<Long> findExpiredAdIds();
 }

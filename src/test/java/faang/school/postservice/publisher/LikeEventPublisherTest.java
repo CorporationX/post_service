@@ -10,21 +10,23 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 public class LikeEventPublisherTest {
     @Mock
     private RedisTemplate<String, Object> redisTemplate;
+    @Mock
+    private ChannelTopic topic;
 
     @InjectMocks
     private LikeEventPublisher publisher;
 
     @BeforeEach
     void setUp() {
-        ReflectionTestUtils.setField(publisher, "channelName", "like_channel");
+        Mockito.when(topic.getTopic()).thenReturn("like_channel");
     }
-
     @Test
     void testPublish_sendsMessageToRedis() {
 

@@ -15,6 +15,6 @@ public record CreatePostDto(
         @NotNull
         @JsonProperty("ad_id") Long adId,
         @NotNull
-        @JsonProperty("resource_keys") List<String> resourceKeys,
+        @JsonProperty("resource_keys") List<String> resourceKeys
 ) {
 }

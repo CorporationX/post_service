@@ -12,6 +12,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.LikeEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
+import faang.school.postservice.service.comment.CommentService;
 import faang.school.postservice.service.post.PostService;
 import feign.FeignException;
 import jakarta.transaction.Transactional;
@@ -28,7 +29,6 @@ public class LikeServiceImpl implements LikeService {
     private final UserServiceClient userServiceClient;
     private final LikeMapper likeMapper;
     private final PostService postService;
-    private final CommentService commentService;
     private final LikeEventPublisher likeEventPublisher;
     private final PostMapper postMapper;
     private final CommentRepository commentRepository;
