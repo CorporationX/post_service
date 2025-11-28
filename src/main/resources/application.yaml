@@ -65,4 +65,4 @@ app:
 textgears:
   base-url: https://api.textgears.com
   api:
-    key: ${TEXTGEARS_API_KEY}
+    key: "test_api_key_for_development_12345"

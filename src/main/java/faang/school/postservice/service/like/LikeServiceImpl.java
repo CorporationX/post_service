@@ -29,7 +29,6 @@ public class LikeServiceImpl implements LikeService {
     private final UserServiceClient userServiceClient;
     private final LikeMapper likeMapper;
     private final PostService postService;
-    private final CommentService commentService;
     private final LikeEventPublisher likeEventPublisher;
     private final PostMapper postMapper;
     private final CommentRepository commentRepository;
