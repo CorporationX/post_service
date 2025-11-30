@@ -21,7 +21,7 @@ public class AnalysisCommentsKafkaProducerConfig {
     private String bootstrapServers;
 
     @Bean("analyticProducerFactory")
-    private ProducerFactory<String, Object> createProducerFactory() {
+    public ProducerFactory<String, Object> createProducerFactory() {
         Map<String, Object> props = new HashMap<>();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
@@ -30,7 +30,7 @@ public class AnalysisCommentsKafkaProducerConfig {
     }
 
     @Bean("analyticAndCommentKafkaTemplate")
-    private KafkaTemplate<String, Object> createKafkaTemplateAnalytic(
+    public KafkaTemplate<String, Object> createKafkaTemplateAnalytic(
             @Qualifier("analyticProducerFactory") ProducerFactory<String, Object> factory) {
         return new KafkaTemplate<>(factory);
     }

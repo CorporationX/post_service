@@ -45,8 +45,6 @@ public class CommentService {
         comment = commentRepository.save(comment);
 
         log.info("Creating comment for postId={} by userId={}", post.getId(), userId);
-
-        analysisCommentsProducer.publish(post, comment);
         return comment;
     }
 
