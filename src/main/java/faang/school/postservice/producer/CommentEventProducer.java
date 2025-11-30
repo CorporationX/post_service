@@ -12,10 +12,10 @@ import org.springframework.stereotype.Component;
 public class CommentEventProducer {
 
     private final String topic;
-    private final KafkaTemplate<String, CommentEventDto> kafkaTemplate;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
     public CommentEventProducer(@Value("${spring.topic.comments}") String topic,
-                                @Qualifier("analyticKafkaTemplate") KafkaTemplate<String, CommentEventDto> kafkaTemplate) {
+                                KafkaTemplate<String, Object> kafkaTemplate) {
         this.topic = topic;
         this.kafkaTemplate = kafkaTemplate;
     }

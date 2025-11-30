@@ -1,4 +1,4 @@
-package faang.school.postservice.dto.kafka;
+package faang.school.postservice.dto.commentanalysis;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;
@@ -6,11 +6,11 @@ import lombok.Builder;
 import java.time.LocalDateTime;
 
 @Builder
-public record CommentAnalysisEventDto(
+public record AnalysisCommentsEventDto(
         Long postId,
         Long authorId,
         Long commentId,
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Europe/Moscow")
+        @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
         LocalDateTime createdAt
 ) {
 }
