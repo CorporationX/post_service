@@ -21,7 +21,11 @@ public class CommentEventPublisher {
         log.info("Publishing comment event notification, authorId: {}, receiverId: {}, commentId: {}, postId: {}",
                 commentEventDto.authorId(), commentEventDto.receivedId(),
                 commentEventDto.commentId(), commentEventDto.postId());
-        redisTemplate.convertAndSend(channel, commentEventDto);
+        try {
+            redisTemplate.convertAndSend(channel, commentEventDto);
+        } catch (RuntimeException e) {
+            log.error("Conversion or sending message failed with error: ", e);
+        }
         log.info("Comment event notification sent");
     }
 }
