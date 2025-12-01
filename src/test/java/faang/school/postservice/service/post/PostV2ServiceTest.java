@@ -26,6 +26,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -49,7 +50,7 @@ class PostV2ServiceTest {
 
     private final Long userId = 1L;
     private final Long postId = 3L;
-    private final UserDto user = new UserDto(userId, "name", "email",  Boolean.TRUE);
+    private final UserDto user = new UserDto(userId, "name", "email", Boolean.TRUE);
     private final String content = "Post content";
     private final Post post = Post.builder().id(postId).build();
     private final Pageable pageableDefault = PageRequest.of(0, 5);
@@ -62,7 +63,8 @@ class PostV2ServiceTest {
 
         PostV2CreateDto postV2CreateDto = new PostV2CreateDto(content);
 
-        PostV2Dto createdDraft = postV2Service.createPostAsDraft(postV2CreateDto);
+        PostV2Dto createdDraft;
+        createdDraft = postV2Service.createPostAsDraft(postV2CreateDto);
 
         Post capturedPost = postCaptor.getValue();
         assertEquals(capturedPost.getAuthorId(), userId);
@@ -204,6 +206,22 @@ class PostV2ServiceTest {
         Post capturedPost = postCaptor.getValue();
 
         assertTrue(capturedPost.isDeleted());
+    }
+
+    @Test
+    void findById_shouldReturnPostDto_whenPostExists() {
+        post.setAuthorId(userId);
+        post.setContent(content);
+
+        when(userContext.getUserId()).thenReturn(userId);
+        when(userServiceClient.getUser(userId)).thenReturn(user);
+        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+
+        PostV2Dto found = postV2Service.findById(postId);
+
+        assertEquals(postId, found.id());
+        assertEquals(content, found.content());
+        assertEquals(userId, found.authorId());
     }
 
     @Test
