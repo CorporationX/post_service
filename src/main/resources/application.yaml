@@ -52,3 +52,9 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+app:
+  kafka:
+    topics:
+      post-published:
+        name: post-published-events
