@@ -17,10 +17,10 @@ import java.util.List;
 @Slf4j
 @Component
 public class ModerationDictionary {
-    private final List<String> offensiveWords;
+    private final String [] offensiveWordsArray;
 
     public ModerationDictionary(@Value("${files-path.offensive-words}") String filePath) {
-        this.offensiveWords = loadWordsFromFile(filePath);
+        this.offensiveWordsArray = loadWordsFromFile(filePath).toArray(String[]::new);
     }
 
     public List<String> loadWordsFromFile(String filePath) {
@@ -40,6 +40,6 @@ public class ModerationDictionary {
     }
 
     public boolean hasOffensiveWords(String textToVerify) {
-        return StringUtils.containsAny(textToVerify, offensiveWords.toArray(String[]::new));
+        return StringUtils.containsAny(textToVerify, offensiveWordsArray);
     }
 }
