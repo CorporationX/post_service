@@ -1,10 +1,8 @@
 package faang.school.postservice.dto.post;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import java.time.LocalDateTime;
 import java.util.List;
 
 public record CreatePostDto(
@@ -17,10 +15,6 @@ public record CreatePostDto(
         @NotNull
         @JsonProperty("ad_id") Long adId,
         @NotNull
-        @JsonProperty("resource_keys") List<String> resourceKeys,
-
-        @NotNull
-        @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
-        @JsonProperty("schedule_at") LocalDateTime scheduledAt
+        @JsonProperty("resource_keys") List<String> resourceKeys
 ) {
 }

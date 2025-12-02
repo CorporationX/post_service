@@ -9,6 +9,7 @@ import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.post.PostServiceImpl;
 import java.time.LocalDateTime;
@@ -30,6 +31,7 @@ import reactor.core.publisher.Mono;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -47,6 +49,9 @@ public class PostServiceImplTest {
 
     @Mock
     private ProjectServiceClient projectServiceClient;
+
+    @Mock
+    private CommentRepository commentRepository;
 
     @Captor
     private ArgumentCaptor<Post> postCaptor;
@@ -265,6 +270,12 @@ public class PostServiceImplTest {
     }
 
     @Test
+    public void selectUsersForBanSuccessfullySelectes() {
+        postServiceImpl.selectUsersForBan();
+
+        verify(commentRepository, times(1)).findAll();
+    }
+
     void checkSpellingWithAISuccess() {
         Post post = new Post();
         post.setId(1L);
@@ -291,18 +302,15 @@ public class PostServiceImplTest {
         post.setContent("Превет мир");
         post.setPublished(false);
 
-        List<Post> posts = List.of(post);
-        when(postRepository.findReadyToPublish()).thenReturn(posts);
-
-        when(textGearsClient.correctText("Превет мир")).thenReturn(
-                Mono.error(new RuntimeException("TextGears API error"))
-        );
+        when(postRepository.findReadyToPublish()).thenReturn(List.of(post));
+        when(textGearsClient.correctText("Превет мир"))
+                .thenReturn(Mono.error(new RuntimeException("TextGears API error")));
 
         postServiceImpl.checkSpellingWithAI();
 
         assertEquals("Превет мир", post.getContent());
 
-        verify(postRepository).save(post);
+        verify(postRepository, never()).save(post);
     }
 
 
@@ -312,8 +320,7 @@ public class PostServiceImplTest {
                 2L,
                 List.of(3L, 2L),
                 2L,
-                List.of("3", "2"),
-                LocalDateTime.of(2025, 10, 29, 12, 0, 0)
+                List.of("3", "2")
         );
     }
 
@@ -324,8 +331,7 @@ public class PostServiceImplTest {
                 2L,
                 List.of(3L, 2L),
                 2L,
-                List.of("3", "2"),
-                LocalDateTime.now()
+                List.of("3", "2")
         );
     }
 }
