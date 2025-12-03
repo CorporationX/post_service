@@ -32,6 +32,11 @@ spring:
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
     topic:
       comment-events: comment-events-topic
+    properties:
+      spring.json.add.type.headers: false
+      acks: all
+      retries: 3
+      enable.idempotence: true
 
 server:
   port: 8081
@@ -49,3 +54,9 @@ project-service:
 payment-service:
   host: localhost
   port: 9080
+
+app:
+  kafka:
+    topics:
+      post-published:
+        name: post-published-events
