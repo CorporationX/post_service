@@ -39,8 +39,9 @@ public class CommentServiceImpl implements CommentService {
 
         Comment comment = commentMapper.toComment(commentDto);
         comment.setPost(post);
-        comment.setAuthorId(userId);
+        comment.setVerified(true);
         comment = commentRepository.save(comment);
+
         CommentDto returnedCommentDto = commentMapper.toCommentDto(comment);
         log.info("Comment with ID {} has been added", comment.getId());
 

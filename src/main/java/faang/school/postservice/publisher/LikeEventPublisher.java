@@ -11,9 +11,9 @@ import org.springframework.stereotype.Service;
 public class LikeEventPublisher {
 
     private final RedisTemplate<String, Object> redisTemplate;
-    private final ChannelTopic topic;
+    private final ChannelTopic likeTopic;
 
     public void publish(LikeEvent event) {
-        redisTemplate.convertAndSend(topic.getTopic(), event);
+        redisTemplate.convertAndSend(likeTopic.getTopic(), event);
     }
 }
