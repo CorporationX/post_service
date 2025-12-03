@@ -1,9 +1,11 @@
 package faang.school.postservice.service.post;
 
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.event.PostPublishedEvent;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.PostEventProducer;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.util.client.ProjectServiceClientAdapter;
 import faang.school.postservice.util.client.UserServiceClientAdapter;
@@ -29,6 +31,7 @@ public class PostServiceImpl implements PostService {
     private final UserServiceClientAdapter userServiceClientAdapter;
     private final ProjectServiceClientAdapter projectServiceClientAdapter;
     private final UserContext userContext;
+    private final PostEventProducer postEventProducer;
 
     @Override
     @Transactional
@@ -53,6 +56,13 @@ public class PostServiceImpl implements PostService {
         post.setPublishedAt(LocalDateTime.now());
         post = postRepository.save(post);
         log.info("Post #{} is published", postId);
+        postEventProducer.sendPostPublishedEvent(
+                new PostPublishedEvent(
+                        post.getId(),
+                        post.getAuthorId(),
+                        post.getContent(),
+                        post.getPublishedAt()
+                ));
         return postMapper.toPostDto(post);
     }
 

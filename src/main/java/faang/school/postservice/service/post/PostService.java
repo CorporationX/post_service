@@ -101,7 +101,7 @@ public interface PostService {
      * </ul>
      *
      * @param authorId идентификатор автора, чьи черновики ищет пользователь
-     * @return объект {@link List<PostDto>}, содержащий список найденных черновиков
+     * @return объект {@code List<}{@link PostDto}{@code >}, содержащий список найденных черновиков
      */
     List<PostDto> findDraftsByAuthorId(long authorId);
 
@@ -114,7 +114,7 @@ public interface PostService {
      * </ul>
      *
      * @param projectId идентификатор проекта, чьи черновики ищет пользователь
-     * @return объект {@link List<PostDto>}, содержащий список найденных черновиков
+     * @return объект {@code List<}{@link PostDto}{@code >}, содержащий список найденных черновиков
      */
     List<PostDto> findDraftsByProjectId(long projectId);
 
@@ -127,7 +127,7 @@ public interface PostService {
      * </ul>
      *
      * @param authorId идентификатор автора, чьи посты ищет пользователь
-     * @return объект {@link List<PostDto>}, содержащий список найденных постов
+     * @return объект {@code List<}{@link PostDto}{@code >}, содержащий список найденных постов
      */
     List<PostDto> findPostsByAuthorId(long authorId);
 
@@ -141,7 +141,7 @@ public interface PostService {
      * </ul>
      *
      * @param projectId идентификатор проекта, чьи посты ищет пользователь
-     * @return объект {@link List<PostDto>}, содержащий список найденных постов
+     * @return объект {@code List<}{@link PostDto}{@code >}, содержащий список найденных постов
      */
     List<PostDto> findPostsByProjectId(long projectId);
 }
