@@ -44,7 +44,10 @@ public class PostEventAspect {
         if (result != null) {
             long userId = userContext.getUserId();
             if (publishPostEvent.async()) {
-                taskExecutor.execute(() -> publishEvents(publishPostEvent.eventClass(), result, userId));
+                taskExecutor.execute(() -> {
+                    userContext.setUserId(userId);
+                    publishEvents(publishPostEvent.eventClass(), result, userId);
+                });
             } else {
                 publishEvents(publishPostEvent.eventClass(), result, userId);
             }
