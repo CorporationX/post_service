@@ -13,3 +13,5 @@ databaseChangeLog:
       file: db/changelog/changeset/post_V005_create_album_users.sql
   - include:
       file: db/changelog/changeset/post_V006_alter_visibility_add.sql
+  - include:
+      file: db/changelog/changeset/post_V007_alter_posts_add_verified_date.sql

@@ -32,6 +32,13 @@ public class GlobalExceptionHandler {
         return buildExceptionResponse(HttpStatus.BAD_REQUEST, description, e.getMessage());
     }
 
+    @ExceptionHandler(FileException.class)
+    public ResponseEntity<ExceptionDto> handleFileException(FileException e) {
+        String description = "File not found or incorrect";
+        log.error(description, e);
+        return buildExceptionResponse(HttpStatus.BAD_REQUEST, description, e.getMessage());
+    }
+
     @ExceptionHandler(ForbiddenException.class)
     public ResponseEntity<ExceptionDto> handleResourceBadRequest(ForbiddenException e) {
         String description = "Forbidden action";

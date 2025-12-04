@@ -24,5 +24,8 @@ public interface PostRepository extends CrudRepository<Post, Long> {
     List<Post> findReadyToPublish();
 
     @Query("SELECT p FROM Post p WHERE p.verified = false")
-    Page<Post> findUnverified(Pageable pageable);
+    Page<Post> findRejected(Pageable pageable);
+
+    @Query("SELECT p FROM Post p WHERE p.verified IS NULL")
+    Page<Post> findUnmoderated(Pageable pageable);
 }

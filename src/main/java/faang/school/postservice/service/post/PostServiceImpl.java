@@ -2,6 +2,7 @@ package faang.school.postservice.service.post;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dictionary.ModerationDictionary;
 import faang.school.postservice.dto.post.CreatePostDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.event.UserBanEvent;
@@ -32,6 +33,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -48,13 +50,16 @@ public class PostServiceImpl implements PostService {
     private final ExecutorService scheduledPostExecutor;
     private final UserBanEventPublisher userBanEventPublisher;
     private final UserService userService;
-  
+    private final ModerationDictionary moderationDictionary;
+
     @Value("${app.scheduled-posts.batch-size:1000}")
     private int scheduledPostsBatchSize;
     @Value("${posts.max-unverified-posts}")
     private int maxUnverifiedPosts;
     @Value("${posts.find-unverified-posts-page-size}")
     private int findUnverifiedPostsPageSize;
+    @Value("${posts.max-posts-to-moderate-per-thread}")
+    private int maxPostsToModeratePerThread;
 
     @Override
     public PostDto createDraft(CreatePostDto postDto) {
@@ -172,7 +177,7 @@ public class PostServiceImpl implements PostService {
         Map<Long, Long> postsByAuthors = new HashMap<>();
 
         while (true) {
-            Page<Post> chunk = postRepository.findUnverified(PageRequest.of(page, findUnverifiedPostsPageSize));
+            Page<Post> chunk = postRepository.findRejected(PageRequest.of(page, findUnverifiedPostsPageSize));
 
             if (chunk.isEmpty()) {
                 break;
@@ -196,6 +201,29 @@ public class PostServiceImpl implements PostService {
 
         if (!authorsToBan.isEmpty()) {
             userBanEventPublisher.publish(UserBanEvent.builder().userIds(authorsToBan).build());
+        }
+    }
+
+    @Override
+    public void moderatePost() {
+        int page = 0;
+
+        while (true) {
+            Page<Post> chunk = postRepository.findUnmoderated(PageRequest.of(page, findUnverifiedPostsPageSize));
+
+            if (chunk.isEmpty()) {
+                break;
+            }
+
+            List<List<Post>> batches = ListUtils.partition(chunk.getContent(), maxPostsToModeratePerThread);
+
+            List<CompletableFuture<Void>> futures = batches.stream()
+                    .map(batch -> CompletableFuture.runAsync(() -> processModeratePostBatch(batch)))
+                    .toList();
+
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+
+            page++;
         }
     }
 
@@ -270,6 +298,35 @@ public class PostServiceImpl implements PostService {
     private void validateIdNotNegative(Long id, String entityName) {
         if (id != null && id < 0) {
             throw new DataValidationException(entityName + " ID cannot be negative");
+        }
+    }
+
+    private List<Post> setVerified(List<Post> posts, boolean verify) {
+        return posts.stream().peek(post -> post.setVerified(verify)).collect(Collectors.toList());
+    }
+
+    private List<Long> saveAll(List<Post> posts) {
+        List<Post> savedPosts = (List<Post>) postRepository.saveAll(posts);
+        return savedPosts.stream().map(Post::getId).collect(Collectors.toList());
+    }
+
+    private void processModeratePostBatch(List<Post> posts) {
+        Map<Boolean, List<Post>> partitionedPosts = posts.parallelStream()
+                .collect(Collectors.partitioningBy(post -> moderationDictionary
+                        .hasOffensiveWords(post.getContent())));
+
+        List<Post> postsToUnverify = setVerified(partitionedPosts.get(true), false);
+        List<Post> postsToVerify = setVerified(partitionedPosts.get(false), true);
+
+        if (!postsToUnverify.isEmpty()) {
+            List<Long> unverifiedPostsIds = saveAll(postsToUnverify);
+            log.info("Posts {} were unverified", unverifiedPostsIds);
+        }
+
+        if (!postsToVerify.isEmpty()) {
+            postsToVerify.forEach(post -> post.setVerifiedDate(LocalDateTime.now()));
+            List<Long> verifiedPostsIds = saveAll(postsToVerify);
+            log.info("Posts {} were verified", verifiedPostsIds);
         }
     }
 }
