@@ -17,7 +17,7 @@ public class ProjectServiceClientAdapter {
         try {
             return projectServiceClient.getProjectById(projectId);
         } catch (FeignException.NotFound e) {
-            throw new EntityNotFoundException(e.getMessage());
+            throw new EntityNotFoundException(String.format("Project #%d is not found", projectId));
         }
     }
 }
