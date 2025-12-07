@@ -6,6 +6,7 @@ import faang.school.postservice.dto.common.PageResponse;
 import faang.school.postservice.dto.post.PostV2CreateDto;
 import faang.school.postservice.dto.post.PostV2Dto;
 import faang.school.postservice.dto.post.PostV2UpdateDto;
+import faang.school.postservice.dto.post.PublishPostEvent;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.mapper.PostV2Mapper;
@@ -13,7 +14,6 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.spec.PostSpecification;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -22,8 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
-
-@Slf4j
 @RequiredArgsConstructor
 @Service
 public class PostV2Service {
@@ -90,6 +88,8 @@ public class PostV2Service {
         postRepository.save(post);
     }
 
+    @PublishPostEvent(eventClass = PageResponse.class)
+    @Transactional(readOnly = true)
     public PageResponse<PostV2Dto> findAllPublishedByFilter(Long authorId, Pageable pageable) {
         Specification<Post> spec = PostSpecification.filter(authorId, true);
         Page<Post> page = postRepository.findAll(spec, pageable);
@@ -108,6 +108,8 @@ public class PostV2Service {
 
     }
 
+    @PublishPostEvent(eventClass = PostV2Dto.class)
+    @Transactional(readOnly = true)
     public PostV2Dto findById(Long postId) {
         long userId = userContext.getUserId();
         UserDto user = userServiceClient.getUser(userId);

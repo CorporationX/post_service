@@ -21,7 +21,7 @@ public class CommentEventProducer {
     }
 
     public void publish(CommentEventDto event) {
-        kafkaTemplate.send(topic, event.commentId().toString(), event)
+        commentEventKafkaTemplate.send(topic, event.commentId().toString(), event)
                 .whenComplete((result, ex) -> {
                     if (ex == null) {
                         log.info("Sent CommentEvent [postId={}, commentId={}] to topic={} partition={}",

@@ -24,6 +24,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
+    open-in-view: false
 
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
@@ -35,6 +36,20 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
+
+  task:
+    execution:
+      pool:
+        post-event:
+          core-size: 5
+          max-size: 10
+          queue-capacity: 100
+          thread-name-prefix: "PostEvent-"
+
+kafka:
+  topic:
+    comments: comment.event
+    post-view: analytics.post-view
 
 server:
   port: 8081
