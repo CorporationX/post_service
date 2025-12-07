@@ -25,8 +25,9 @@ public class AnalysisCommentsProducer {
 
     public void publish(Post post, Comment comment) {
         AnalysisCommentsEventDto dto = new AnalysisCommentsEventDto(
-                post.getId(),
+                post.getAuthorId(),
                 comment.getAuthorId(),
+                post.getId(),
                 comment.getId(),
                 LocalDateTime.now());
 
