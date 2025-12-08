@@ -4,6 +4,7 @@ import faang.school.postservice.dto.kafka.CommentEventDto;
 import faang.school.postservice.dto.post.PostViewEvent;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,7 +22,7 @@ public class KafkaProducerConfig {
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
 
-    @Bean
+    @Bean("eventProducerFactory")
     public ProducerFactory producerFactory() {
         Map<String, Object> props = new HashMap<>();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
@@ -33,12 +34,14 @@ public class KafkaProducerConfig {
     }
 
     @Bean("postViewEventKafkaTemplate")
-    public KafkaTemplate<String, PostViewEvent> postViewEventKafkaTemplate(ProducerFactory factory) {
+    public KafkaTemplate<String, PostViewEvent> postViewEventKafkaTemplate(
+            @Qualifier("eventProducerFactory") ProducerFactory factory) {
         return new KafkaTemplate<>(factory);
     }
 
     @Bean("commentEventKafkaTemplate")
-    public KafkaTemplate<String, CommentEventDto> commentEventKafkaTemplate(ProducerFactory factory) {
+    public KafkaTemplate<String, CommentEventDto> commentEventKafkaTemplate(
+            @Qualifier("eventProducerFactory") ProducerFactory factory) {
         return new KafkaTemplate<>(factory);
     }
 }

@@ -1,5 +1,6 @@
 package faang.school.postservice.aop.commentanalysis;
 
+import faang.school.postservice.dto.commentanalysis.AnalysisCommentsEventDto;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.producer.commentanalysis.AnalysisCommentsProducer;
@@ -9,6 +10,8 @@ import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
+
+import java.time.LocalDateTime;
 
 @Aspect
 @Component
@@ -23,17 +26,24 @@ public class PublishCommentEventAspect {
     )
     public void publishCommentEvent(JoinPoint joinPoint, Object result) {
         if (!(result instanceof Comment comment)) {
-            log.warn("Method annotated with @PublishCommentEvent did not return a Comment");
+            log.error("Method annotated with @PublishCommentEvent did not return a Comment");
             return;
         }
 
         Post post = comment.getPost();
         if (post == null) {
-            log.warn("Comment id={} has no associated Post, skipping event publishing", comment.getId());
+            log.error("Comment id={} has no associated Post, skipping event publishing", comment.getId());
             return;
         }
 
-        log.debug("Publishing analysis event for comment id={}", comment.getId());
-        analysisCommentsProducer.publish(post, comment);
+        AnalysisCommentsEventDto dto = new AnalysisCommentsEventDto(
+                post.getAuthorId(),
+                comment.getAuthorId(),
+                post.getId(),
+                comment.getId(),
+                LocalDateTime.now());
+
+        log.info("Publishing analysis event for comment id={}", comment.getId());
+        analysisCommentsProducer.publish(dto);
     }
 }

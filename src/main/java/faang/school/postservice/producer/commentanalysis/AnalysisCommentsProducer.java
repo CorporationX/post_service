@@ -1,14 +1,10 @@
 package faang.school.postservice.producer.commentanalysis;
 
 import faang.school.postservice.dto.commentanalysis.AnalysisCommentsEventDto;
-import faang.school.postservice.model.Comment;
-import faang.school.postservice.model.Post;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
-
-import java.time.LocalDateTime;
 
 @Slf4j
 @Component
@@ -23,13 +19,7 @@ public class AnalysisCommentsProducer {
         this.kafkaTemplate = stringCommentAnalysisEventDtoKafkaTemplate;
     }
 
-    public void publish(Post post, Comment comment) {
-        AnalysisCommentsEventDto dto = new AnalysisCommentsEventDto(
-                post.getAuthorId(),
-                comment.getAuthorId(),
-                post.getId(),
-                comment.getId(),
-                LocalDateTime.now());
+    public void publish(AnalysisCommentsEventDto dto) {
 
         kafkaTemplate.send(topic, dto)
                 .whenComplete((result, ex) -> {
