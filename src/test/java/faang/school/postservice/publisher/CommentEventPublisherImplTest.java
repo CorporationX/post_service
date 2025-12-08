@@ -1,6 +1,7 @@
 package faang.school.postservice.publisher;
 
 import faang.school.postservice.dto.event.CommentEvent;
+import faang.school.postservice.producer.CommentEventPublisherImpl;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.TopicPartition;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,7 +30,7 @@ import static org.mockito.Mockito.*;
 class CommentEventPublisherImplTest {
 
     @Mock
-    private KafkaTemplate<String, CommentEvent> kafkaTemplate;
+    private KafkaTemplate<String, Object> kafkaTemplate;
 
     @InjectMocks
     private CommentEventPublisherImpl commentEventPublisher;
@@ -78,12 +79,12 @@ class CommentEventPublisherImplTest {
                 0
         );
 
-        SendResult<String, CommentEvent> sendResult = new SendResult<>(
+        SendResult<String, Object> sendResult = new SendResult<>(
                 null,
                 recordMetadata
         );
 
-        CompletableFuture<SendResult<String, CommentEvent>> future = CompletableFuture.completedFuture(sendResult);
+        CompletableFuture<SendResult<String, Object>> future = CompletableFuture.completedFuture(sendResult);
 
         when(kafkaTemplate.send(anyString(), anyString(), any(CommentEvent.class))).thenReturn(future);
 
@@ -119,7 +120,7 @@ class CommentEventPublisherImplTest {
                 .build();
 
         RuntimeException kafkaException = new RuntimeException("Kafka send failed");
-        CompletableFuture<SendResult<String, CommentEvent>> failedFuture = new CompletableFuture<>();
+        CompletableFuture<SendResult<String, Object>> failedFuture = new CompletableFuture<>();
         failedFuture.completeExceptionally(kafkaException);
 
         when(kafkaTemplate.send(anyString(), anyString(), any(CommentEvent.class))).thenReturn(failedFuture);
@@ -165,12 +166,12 @@ class CommentEventPublisherImplTest {
                 0
         );
 
-        SendResult<String, CommentEvent> sendResult = new SendResult<>(
+        SendResult<String, Object> sendResult = new SendResult<>(
                 null,
                 recordMetadata
         );
 
-        CompletableFuture<SendResult<String, CommentEvent>> future = CompletableFuture.completedFuture(sendResult);
+        CompletableFuture<SendResult<String, Object>> future = CompletableFuture.completedFuture(sendResult);
 
         when(kafkaTemplate.send(anyString(), anyString(), any(CommentEvent.class))).thenReturn(future);
 
@@ -210,12 +211,12 @@ class CommentEventPublisherImplTest {
                 0
         );
 
-        SendResult<String, CommentEvent> sendResult = new SendResult<>(
+        SendResult<String, Object> sendResult = new SendResult<>(
                 null,
                 recordMetadata
         );
 
-        CompletableFuture<SendResult<String, CommentEvent>> future = CompletableFuture.completedFuture(sendResult);
+        CompletableFuture<SendResult<String, Object>> future = CompletableFuture.completedFuture(sendResult);
 
         when(kafkaTemplate.send(anyString(), anyString(), any(CommentEvent.class))).thenReturn(future);
 

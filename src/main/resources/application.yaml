@@ -30,8 +30,6 @@ spring:
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-    topic:
-      comment-events: comment-events-topic
     properties:
       spring.json.add.type.headers: false
       acks: all
@@ -60,3 +58,7 @@ app:
     topics:
       post-published:
         name: post-published-events
+      comment-events:
+        name: comment-events-topic
+        partitions: 3
+        replication-factor: 1

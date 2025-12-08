@@ -1,4 +1,4 @@
-package faang.school.postservice.publisher;
+package faang.school.postservice.producer;
 
 import faang.school.postservice.dto.event.CommentEvent;
 import lombok.RequiredArgsConstructor;
@@ -15,14 +15,14 @@ import java.util.concurrent.CompletableFuture;
 @Slf4j
 public class CommentEventPublisherImpl implements CommentEventPublisher {
 
-    private final KafkaTemplate<String, CommentEvent> kafkaTemplate;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    @Value("${spring.kafka.topic.comment-events}")
+    @Value("${app.kafka.topics.comment-events.name}")
     private String topic;
 
     @Override
     public void publish(CommentEvent event) {
-        CompletableFuture<SendResult<String, CommentEvent>> future =
+        CompletableFuture<SendResult<String, Object>> future =
                 kafkaTemplate.send(topic, String.valueOf(event.getPostId()), event);
 
         future.whenComplete((result, ex) -> {
