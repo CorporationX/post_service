@@ -1,5 +1,6 @@
-package faang.school.postservice.event.like;
+package faang.school.postservice.dto.kafka.event.like;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -8,7 +9,6 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @ToString
 @Setter
@@ -17,9 +17,10 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 public class LikeEvent {
-    private UUID eventId = UUID.randomUUID();
+    private Long likeId;
     private Long postAuthorId;
     private Long likeAuthorId;
     private Long postId;
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd'T'HH:mm:ss'Z'", timezone="GMT")
+    private LocalDateTime createdAt;
 }

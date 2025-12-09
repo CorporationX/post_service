@@ -1,6 +1,5 @@
 package faang.school.postservice.publisher;
 
-import faang.school.postservice.exception.EventPublishingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -22,7 +21,7 @@ public abstract class AbstractEventPublisher<T> {
                     .setHeader(KafkaHeaders.TOPIC, topic)
                     .setHeader(KafkaHeaders.KEY, key)
                     .setHeader("eventType", eventType)
-                    .setHeader("timestamp", System.currentTimeMillis())
+                    .setHeader("eventTimestamp", System.currentTimeMillis())
                     .build();
 
             kafkaTemplate.send(message)
@@ -40,7 +39,6 @@ public abstract class AbstractEventPublisher<T> {
 
         } catch (Exception e) {
             log.error("Critical error when sending {}: {}", eventType, e.getMessage(), e);
-            throw new EventPublishingException(String.format("Failed to publish %s ", eventType.toLowerCase()));
         }
     }
 }

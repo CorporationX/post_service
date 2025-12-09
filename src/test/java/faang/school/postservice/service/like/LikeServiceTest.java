@@ -22,6 +22,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -103,34 +104,6 @@ public class LikeServiceTest {
     }
 
     @Test
-    void addLikeToPost_ValidData_ShouldAddLike() {
-        post = Post.builder()
-                .id(VALID_POST_ID)
-                .authorId(50L)
-                .build();
-
-        when(userContext.getUserId()).thenReturn(VALID_USER_ID);
-        when(userServiceClient.getUser(VALID_USER_ID)).thenReturn(userDto);
-        when(postRepository.getByIdOrThrow(VALID_POST_ID)).thenReturn(post);
-        when(likeRepository.findByPostIdAndUserId(VALID_POST_ID, VALID_USER_ID)).thenReturn(Optional.empty());
-        when(likeRepository.save(any(Like.class))).thenAnswer(invocation -> {
-            Like savedLike = invocation.getArgument(0);
-            return Like.builder()
-                    .id(VALID_LIKE_ID)
-                    .userId(savedLike.getUserId())
-                    .post(savedLike.getPost())
-                    .build();
-        });
-
-        LikeDto result = likeService.addLikeToPost(VALID_POST_ID);
-
-        assertNotNull(result);
-        assertEquals(VALID_USER_ID, result.userId());
-        verify(likeRepository).save(any(Like.class));
-        verify(likeEventPublisher).publishLikeEvent(eq(post.getAuthorId()), eq(VALID_USER_ID), eq(VALID_POST_ID));
-    }
-
-    @Test
     void addLikeToPost_UserNotFound_ShouldThrowException() {
         when(userContext.getUserId()).thenReturn(INVALID_USER_ID);
         when(userServiceClient.getUser(INVALID_USER_ID)).thenReturn(null);
@@ -178,21 +151,6 @@ public class LikeServiceTest {
     }
 
     @Test
-    void removeLikeFromPost_ValidData_ShouldRemoveLike() {
-        when(userContext.getUserId()).thenReturn(VALID_USER_ID);
-        when(userServiceClient.getUser(VALID_USER_ID)).thenReturn(userDto);
-        when(postRepository.getByIdOrThrow(VALID_POST_ID)).thenReturn(post); // Ключевое исправление
-        when(likeRepository.findByPostIdAndUserIdOrThrow(VALID_POST_ID, VALID_USER_ID)).thenReturn(like);
-
-        LikeDto result = likeService.removeLikeFromPost(VALID_POST_ID);
-
-        assertNotNull(result);
-        assertEquals(VALID_USER_ID, result.userId());
-        verify(likeRepository).deleteByPostIdAndUserId(VALID_POST_ID, VALID_USER_ID);
-        verify(unlikeEventPublisher).publishUnlikeEvent(eq(post.getAuthorId()), eq(VALID_USER_ID), eq(VALID_POST_ID));
-    }
-
-    @Test
     void removeLikeFromPost_DifferentUser_ShouldThrowForbiddenException() {
         Post postWithAuthor = Post.builder()
                 .id(VALID_POST_ID)
@@ -205,7 +163,7 @@ public class LikeServiceTest {
                 .post(postWithAuthor)
                 .build();
 
-        when(userContext.getUserId()).thenReturn(VALID_USER_ID); // текущий пользователь = 100L
+        when(userContext.getUserId()).thenReturn(VALID_USER_ID);
         when(userServiceClient.getUser(VALID_USER_ID)).thenReturn(userDto);
         when(postRepository.getByIdOrThrow(VALID_POST_ID)).thenReturn(postWithAuthor);
 

@@ -30,7 +30,8 @@ dependencies {
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     implementation("org.springframework.retry:spring-retry:2.0.7")
     implementation("org.springframework.kafka:spring-kafka")
-    implementation("org.springframework.boot:spring-boot-starter-webflux")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.2")
+
     /**
      * Database
      */
@@ -53,9 +54,10 @@ dependencies {
     /**
      * Test containers
      */
-    implementation(platform("org.testcontainers:testcontainers-bom:1.17.6"))
+    implementation(platform("org.testcontainers:testcontainers-bom:1.19.3"))
     testImplementation("org.testcontainers:junit-jupiter")
     testImplementation("org.testcontainers:postgresql")
+    testImplementation("org.testcontainers:kafka")
     testImplementation("com.redis.testcontainers:testcontainers-redis-junit-jupiter:1.4.6")
 
     /**
@@ -64,6 +66,12 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.9.2")
     testImplementation("org.assertj:assertj-core:3.24.2")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.kafka:spring-kafka-test")
+
+    /**
+     * Для проверки Kafka messages
+     */
+    testImplementation("org.awaitility:awaitility:4.2.0")
 
     /**
      * Kafka
@@ -74,13 +82,23 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+    // Ускоряем тесты - повторное использование контейнеров
+    systemProperty("testcontainers.reuse.enable", "true")
+    // Увеличиваем таймауты для контейнеров
+    systemProperty("testcontainers.checks.disable", "true")
 }
 
 tasks.withType<Test> {
     useJUnitPlatform()
+    testLogging {
+        events("passed", "skipped", "failed")
+        showStandardStreams = true
+    }
 }
 
-val test by tasks.getting(Test::class) { testLogging.showStandardStreams = true }
+val test by tasks.getting(Test::class) {
+    testLogging.showStandardStreams = true
+}
 
 tasks.bootJar {
     archiveFileName.set("service.jar")

@@ -5,15 +5,9 @@ spring:
     username: user
     password: password
 
-kafka:
-  bootstrap-servers: localhost:9092
-
   producer:
     key-serializer: org.apache.kafka.common.serialization.StringSerializer
     value-serializer: org.apache.kafka.common.serialization.StringSerializer
-
-  topic:
-    comments: comment.event
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
@@ -36,21 +30,10 @@ kafka:
           name: calculations_channel
   kafka:
     bootstrap-servers: localhost:9092
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-      properties:
-        spring.json.trusted.packages: "*"
-        spring.json.add.type.headers: false
-        acks: all
-        retries: 3
-        enable.idempotence: true
-        max.in.flight.requests.per.connection: 1
-        request.timeout.ms: 30000
-        delivery.timeout.ms: 60000
     topics:
       like-events: "like-events-topic"
       unlike-events: "unlike-events-topic"
+      comments: comment.event
 
 server:
   port: 8081

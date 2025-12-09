@@ -13,9 +13,9 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class CommentEventProducer {
 
-    private final KafkaTemplate<String, CommentEventDto> kafkaTemplate;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    @Value("${kafka.topic.comments}")
+    @Value("${spring.kafka.topics.comments}")
     private String topic;
 
     public void publish(CommentEventDto event) {
