@@ -48,6 +48,12 @@ comment-kafka:
     topic: comments
     group-id: comments
 
+like-kafka:
+  enabled: true
+  consumer:
+    topic: likes
+    group-id: likes
+
 audit-kafka:
   enabled: false
   backoff:

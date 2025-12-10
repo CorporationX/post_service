@@ -33,4 +33,6 @@ public class PostRedisDto {
     private LocalDateTime publishedAt;
 
     private List<CommentDto> comments = new CopyOnWriteArrayList<>();
+
+    private Integer likes;
 }
