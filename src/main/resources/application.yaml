@@ -26,12 +26,41 @@ spring:
           name: calculations_channel
 
   kafka:
+    listener:
+      ack-mode: MANUAL
     bootstrap-servers: localhost:9092
     producer:
       enable-idempotence: true
-      acks: all
+#      acks: all
     topic:
       commentNew: comment.new
+      like: likes
+
+post-kafka:
+  enabled: true
+  consumer:
+    topic: posts
+    group-id: post
+
+comment-kafka:
+  enabled: true
+  consumer:
+    topic: comments
+    group-id: comments
+
+like-kafka:
+  enabled: true
+  consumer:
+    topic: likes
+    group-id: likes
+
+audit-kafka:
+  enabled: false
+  backoff:
+    init-interval: 1000
+    max-retries: 2
+    max-interval: 5000
+    multiplier: 2
 
 server:
   port: 8081
@@ -40,12 +69,27 @@ logging:
   level:
     root: info
 
-user-service:
+integration:
+  user-service:
+    host: localhost
+    port: 8888
+    get-user-url: /api/user
+  project-service:
+    host: ${PROJECT_SERVICE_HOST:localhost}
+    port: 8082
+    get-project-url: /api/project
+  payment-service:
+    host: localhost
+    port: 9080
+
+redis:
   host: localhost
-  port: 8080
-project-service:
-  host: localhost
-  port: 8082
-payment-service:
-  host: localhost
-  port: 9080
+  port: 6379
+  post-expire: 86400000
+  comment-expire: 86400000
+
+feed:
+  max-size: 500
+
+comments-redis:
+  max-comments-size: 3
