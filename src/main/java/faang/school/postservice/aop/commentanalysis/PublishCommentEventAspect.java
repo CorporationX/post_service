@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
 @Slf4j
 @RequiredArgsConstructor
 public class PublishCommentEventAspect {
+
     private final AnalysisCommentsProducer analysisCommentsProducer;
 
     @AfterReturning(
@@ -36,12 +37,13 @@ public class PublishCommentEventAspect {
             return;
         }
 
-        AnalysisCommentsEventDto dto = new AnalysisCommentsEventDto(
-                post.getAuthorId(),
-                comment.getAuthorId(),
-                post.getId(),
-                comment.getId(),
-                LocalDateTime.now());
+        AnalysisCommentsEventDto dto = AnalysisCommentsEventDto.builder()
+                .receiverId(post.getAuthorId())
+                .authorId(comment.getAuthorId())
+                .postId(post.getId())
+                .commentId(comment.getId())
+                .createdAt(LocalDateTime.now())
+                .build();
 
         log.info("Publishing analysis event for comment id={}", comment.getId());
         analysisCommentsProducer.publish(dto);

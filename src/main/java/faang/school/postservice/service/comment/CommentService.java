@@ -30,7 +30,6 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
-    private final AnalysisCommentsProducer analysisCommentsProducer;
 
     @PublishCommentEvent
     @Transactional

@@ -2,6 +2,7 @@ package faang.school.postservice.producer;
 
 import faang.school.postservice.dto.kafka.CommentEventDto;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
@@ -14,7 +15,7 @@ public class CommentEventProducer {
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
     public CommentEventProducer(@Value("${spring.topic.comments}") String topic,
-                                KafkaTemplate<String, Object> kafkaTemplate) {
+                                @Qualifier("commentEventKafkaTemplate") KafkaTemplate<String, Object> kafkaTemplate) {
         this.topic = topic;
         this.kafkaTemplate = kafkaTemplate;
     }
