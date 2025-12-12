@@ -113,8 +113,7 @@ public class PostV2Service {
     public PostV2Dto findById(Long postId) {
         long userId = userContext.getUserId();
         UserDto user = userServiceClient.getUser(userId);
-        Post post = postRepository.findById(postId).orElseThrow();
-
+        Post post = postRepository.findPostWithLikesAndCommentOrThrow(postId);
         return PostV2Mapper.toDto(post);
     }
 

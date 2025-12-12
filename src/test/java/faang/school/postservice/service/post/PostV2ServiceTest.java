@@ -215,7 +215,7 @@ class PostV2ServiceTest {
 
         when(userContext.getUserId()).thenReturn(userId);
         when(userServiceClient.getUser(userId)).thenReturn(user);
-        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+        when(postRepository.findPostWithLikesAndCommentOrThrow(postId)).thenReturn(post);
 
         PostV2Dto found = postV2Service.findById(postId);
 

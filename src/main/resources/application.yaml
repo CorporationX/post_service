@@ -8,6 +8,10 @@ spring:
   kafka:
     bootstrap-servers: localhost:9092
 
+  topic:
+    comments: comment.event
+    analytics: analytics.comment-analysis
+
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
