@@ -1,11 +1,10 @@
 package faang.school.postservice.publisher.like;
 
 import faang.school.postservice.dto.like.LikeDto;
-import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
 
@@ -19,100 +18,54 @@ public class EventPublishingAspect {
 
     private final LikeEventPublisher likeEventPublisher;
     private final UnlikeEventPublisher unlikeEventPublisher;
-    private final PostRepository postRepository;
 
-    @Around("@annotation(PublishLikeEvent)")
-    public Object handleLikeEvent(ProceedingJoinPoint joinPoint) throws Throwable {
-        Object[] args = joinPoint.getArgs();
-        Long postId = (args.length > 0 && args[0] instanceof Long) ? (Long) args[0] : null;
-
-        Long postAuthorId = null;
-        if (postId != null) {
-            postAuthorId = postRepository.findAuthorIdByIdOrThrow(postId);
-        }
-
-        Object result = joinPoint.proceed();
-
-        if (!(result instanceof LikeDto likeDto)) {
-            log.error("Method did not return LikeDto");
-            return result;
-        }
-
-        if (postId == null || postAuthorId == null) {
-            log.error("Missing required data for event publishing");
-            return result;
-        }
-
-        Long userId = likeDto.userId();
-        if (userId == null) {
-            log.error("User ID not found in LikeDto");
-            return result;
-        }
-        final Long finalPostAuthorId = postAuthorId;
-        final Long finalUserId = userId;
-        final Long finalPostId = postId;
-        final Long finalLikeId = likeDto.id();
-        CompletableFuture.runAsync(() -> {
-            try {
-                likeEventPublisher.publishLikeEvent(
-                        finalPostAuthorId,
-                        finalUserId,
-                        finalPostId,
-                        finalLikeId
-                );
-                log.info("Like event published asynchronously for post {} by user {}", postId, userId);
-            } catch (Exception e) {
-                log.error("Failed to publish like event asynchronously for post {}", postId, e);
-            }
-        });
-        return result;
+    @AfterReturning(
+            pointcut = "@annotation(PublishLikeEvent)",
+            returning = "likeDto")
+    public void publishLikeEvent(JoinPoint joinPoint, LikeDto likeDto) {
+        publishEvent(joinPoint, likeDto, true);
     }
 
-    @Around("@annotation(PublishUnlikeEvent)")
-    public Object handleUnlikeEvent(ProceedingJoinPoint joinPoint) throws Throwable {
+    @AfterReturning(
+            pointcut = "@annotation(PublishUnlikeEvent)",
+            returning = "likeDto")
+    public void publishUnlikeEvent(JoinPoint joinPoint, LikeDto likeDto) {
+        publishEvent(joinPoint, likeDto, false);
+    }
+
+
+    private void publishEvent(JoinPoint joinPoint, LikeDto likeDto, boolean isLike) {
+        if (likeDto == null || likeDto.userId() == null) {
+            log.error("LikeDto or userId is null, event will not publisher");
+        }
+
         Object[] args = joinPoint.getArgs();
-        Long postId = (args.length > 0 && args[0] instanceof Long) ? (Long) args[0] : null;
-
-        Long postAuthorId = null;
-        if (postId != null) {
-            postAuthorId = postRepository.findAuthorIdByIdOrThrow(postId);
+        if (args.length == 0 || !(args[0] instanceof Long postId)) {
+            log.error("PostId not found in method arguments");
         }
 
-        Object result = joinPoint.proceed();
-
-        if (!(result instanceof LikeDto likeDto)) {
-            log.error("Method did not return LikeDto");
-            return result;
-        }
-
-        if (postId == null || postAuthorId == null) {
-            log.error("Missing required data for event publishing");
-            return result;
-        }
-
-        Long userId = likeDto.userId();
-        if (userId == null) {
-            log.error("User ID not found in LikeDto");
-            return result;
-        }
-
-        final Long finalPostAuthorId = postAuthorId;
-        final Long finalLikeAuthorId = userId;
-        final Long finalPostId = postId;
-        final Long finalLikeId = likeDto.id();
         CompletableFuture.runAsync(() -> {
             try {
-                unlikeEventPublisher.publishUnlikeEvent(
-                        finalPostAuthorId,
-                        finalLikeAuthorId,
-                        finalPostId,
-                        finalLikeId
-                );
-                log.info("Unlike event published asynchronously for post {} by user {}", postId, userId);
+                if (isLike) {
+                    likeEventPublisher.publishLikeEvent(
+                            likeDto.postAuthorId(),
+                            likeDto.userId(),
+                            likeDto.postId(),
+                            likeDto.id()
+                    );
+                    log.info("Like event published for post {} by user {}", likeDto.postId(), likeDto.userId());
+                } else {
+                    unlikeEventPublisher.publishUnlikeEvent(
+                            likeDto.postAuthorId(),
+                            likeDto.userId(),
+                            likeDto.postId(),
+                            likeDto.id()
+                    );
+                    log.info("Like event published for post {} by user {}", likeDto.postId(), likeDto.userId());
+                }
             } catch (Exception e) {
-                log.error("Failed to publish unlike event asynchronously for post {}", postId, e);
+                log.error("Failed publish {} event for post {}", isLike ? "like" : "unlike", likeDto.postId(), e);
             }
         });
-        return result;
     }
 }
