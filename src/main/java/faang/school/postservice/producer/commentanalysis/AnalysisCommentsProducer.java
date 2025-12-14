@@ -16,7 +16,7 @@ public class AnalysisCommentsProducer {
     private final KafkaTemplate<String, String> kafkaTemplate;
     private final ObjectMapper objectMapper;
 
-    public AnalysisCommentsProducer(@Value("${spring.topic.analytics}") String topic,
+    public AnalysisCommentsProducer(@Value("${spring.kafka.topics.analytics}") String topic,
                                     @Qualifier("analyticAndCommentKafkaTemplate") KafkaTemplate<String, String> stringCommentAnalysisEventDtoKafkaTemplate,
                                     ObjectMapper objectMapper) {
         this.topic = topic;
