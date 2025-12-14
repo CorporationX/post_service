@@ -1,6 +1,5 @@
 package faang.school.postservice.config;
 
-import faang.school.postservice.dto.kafka.CommentEventDto;
 import faang.school.postservice.dto.post.PostViewEvent;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
@@ -22,11 +21,12 @@ public class KafkaProducerConfig {
     private String bootstrapServers;
 
     @Bean
-    public ProducerFactory<String, Object> producerFactory() {
+    public ProducerFactory producerFactory() {
         Map<String, Object> props = new HashMap<>();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+        props.put(JsonSerializer.ADD_TYPE_INFO_HEADERS, true);
 
         props.put(ProducerConfig.ACKS_CONFIG, "1");
         props.put(ProducerConfig.RETRIES_CONFIG, 3);
@@ -49,7 +49,7 @@ public class KafkaProducerConfig {
     }
 
     @Bean("commentEventKafkaTemplate")
-    public KafkaTemplate<String, CommentEventDto> commentEventKafkaTemplate(ProducerFactory factory) {
+    public KafkaTemplate<String, Object> commentEventKafkaTemplate(ProducerFactory factory) {
         return new KafkaTemplate<>(factory);
     }
 }

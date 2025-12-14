@@ -1,6 +1,5 @@
 package faang.school.postservice.aop;
 
-
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.kafka.CommentEventDto;
 import faang.school.postservice.dto.user.UserDto;

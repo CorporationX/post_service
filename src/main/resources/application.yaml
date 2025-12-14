@@ -32,6 +32,7 @@ spring:
       unlike-events: "unlike-events-topic"
       comments: comment.event
       post-view: analytics.post-view
+      analytics: analytics.comment-analysis
 
   task:
     execution:
