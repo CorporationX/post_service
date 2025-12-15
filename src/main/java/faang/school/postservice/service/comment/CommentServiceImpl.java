@@ -16,8 +16,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.LocalDateTime;
 
@@ -49,7 +47,7 @@ public class CommentServiceImpl implements CommentService {
                 savedComment.getId(), post.getId(), currentUserId);
 
         if (!currentUserId.equals(post.getAuthorId())) {
-            publishAfterCommit(() -> publishCommentEvent(savedComment, post));
+            publishCommentEvent(savedComment, post);
         }
 
         return commentMapper.toDto(savedComment);
@@ -121,14 +119,5 @@ public class CommentServiceImpl implements CommentService {
 
         commentEventPublisher.publish(event);
         log.info("Comment event published for comment #{}", comment.getId());
-    }
-
-    private void publishAfterCommit(Runnable eventAction) {
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-            @Override
-            public void afterCommit() {
-                eventAction.run();
-            }
-        });
     }
 }

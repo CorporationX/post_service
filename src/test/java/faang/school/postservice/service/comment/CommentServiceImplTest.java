@@ -23,8 +23,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
-import org.junit.jupiter.api.AfterEach;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -66,18 +64,6 @@ class CommentServiceImplTest {
     private static final Long POST_ID = 10L;
     private static final Long COMMENT_ID = 100L;
     private static final Long POST_AUTHOR_ID = 2L;
-
-    @BeforeEach
-    void setUp() {
-        TransactionSynchronizationManager.initSynchronization();
-    }
-
-    @AfterEach
-    void tearDown() {
-        if (TransactionSynchronizationManager.isSynchronizationActive()) {
-            TransactionSynchronizationManager.clear();
-        }
-    }
 
     // ==================== createComment() ====================
 
@@ -135,8 +121,8 @@ class CommentServiceImplTest {
     }
 
     @Test
-    @DisplayName("Should register event publishing when comment author is different from post author")
-    void createComment_WithDifferentAuthor_ShouldRegisterEventPublishing() {
+    @DisplayName("Should publish event when comment author is different from post author")
+    void createComment_WithDifferentAuthor_ShouldPublishEvent() {
         // Arrange
         CommentDto commentDto = CommentDto.builder()
                 .content("Test comment")
@@ -173,7 +159,16 @@ class CommentServiceImplTest {
         // Assert
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo(COMMENT_ID);
-        // Verify
+        
+        // Verify event was published
+        verify(commentEventPublisher, times(1)).publish(eventCaptor.capture());
+        CommentEvent publishedEvent = eventCaptor.getValue();
+        assertThat(publishedEvent.getCommentId()).isEqualTo(COMMENT_ID);
+        assertThat(publishedEvent.getCommentAuthorId()).isEqualTo(USER_ID);
+        assertThat(publishedEvent.getPostAuthorId()).isEqualTo(POST_AUTHOR_ID);
+        assertThat(publishedEvent.getPostId()).isEqualTo(POST_ID);
+        assertThat(publishedEvent.getCommentText()).isEqualTo("Test comment");
+        
         verify(commentRepository, times(1)).save(any(Comment.class));
     }
 
