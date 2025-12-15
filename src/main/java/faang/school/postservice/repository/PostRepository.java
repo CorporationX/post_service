@@ -70,4 +70,15 @@ public interface PostRepository extends JpaRepository<Post, Long>, JpaSpecificat
             WHERE p.id = :postId
             """)
     Optional<Post> findPostWithLikesAndComment(Long postId);
+
+    default Long findAuthorIdByIdOrThrow(Long postId) {
+        return findAuthorIdById(postId)
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Post %d not found", postId)));
+    }
+
+    @Query("""
+            SELECT p.authorId
+            FROM Post p 
+            WHERE p.id = :postId""")
+    Optional<Long> findAuthorIdById(Long postId);
 }

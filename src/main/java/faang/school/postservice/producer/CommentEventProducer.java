@@ -14,7 +14,7 @@ public class CommentEventProducer {
     private final String topic;
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    public CommentEventProducer(@Value("${spring.topic.comments}") String topic,
+    public CommentEventProducer(@Value("${spring.kafka.topics.comments}") String topic,
                                 @Qualifier("commentEventKafkaTemplate") KafkaTemplate<String, Object> kafkaTemplate) {
         this.topic = topic;
         this.kafkaTemplate = kafkaTemplate;

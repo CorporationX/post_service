@@ -7,6 +7,7 @@ public record LikeDto(
          Long id,
          Long userId,
          Long postId,
-         Long commentId
+         Long commentId,
+         Long postAuthorId
 ) {
 }

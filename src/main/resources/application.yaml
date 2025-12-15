@@ -5,13 +5,6 @@ spring:
     username: user
     password: password
 
-  kafka:
-    bootstrap-servers: localhost:9092
-
-  topic:
-    comments: comment.event
-    analytics: analytics.comment-analysis
-
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
@@ -32,6 +25,14 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
+  kafka:
+    bootstrap-servers: localhost:9092
+    topics:
+      like-events: "like-events-topic"
+      unlike-events: "unlike-events-topic"
+      comments: comment.event
+      post-view: analytics.post-view
+      analytics: analytics.comment-analysis
 
   task:
     execution:
@@ -41,11 +42,6 @@ spring:
           max-size: 10
           queue-capacity: 100
           thread-name-prefix: "PostEvent-"
-
-kafka:
-  topic:
-    comments: comment.event
-    post-view: analytics.post-view
 
 server:
   port: 8081
