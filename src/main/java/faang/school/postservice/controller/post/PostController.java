@@ -34,8 +34,8 @@ public class PostController {
     }
 
     @PutMapping("/{id}/publish")
-    public boolean publishPost(@PathVariable("id") long postId) {
-        return postService.publishPost(userContext.getUserId(), postId);
+    public void publishPost(@PathVariable("id") long postId) {
+        postService.publishPost(userContext.getUserId(), postId);
     }
 
     @PutMapping("/{id}")
