@@ -14,6 +14,7 @@ import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.KafkaPostProducer;
 import faang.school.postservice.publisher.UserBanEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.post.BatchPublishingService;
@@ -82,6 +83,8 @@ public class PostServiceImplTest {
     private ExecutorService scheduledPostExecutor;
     @Mock
     private UserBanEventPublisher userBanEventPublisher;
+	@Mock
+	private KafkaPostProducer kafkaPostProducer;
     @Mock
     private UserServiceImpl userService;
     @Mock
@@ -734,6 +737,56 @@ public class PostServiceImplTest {
 
         verify(postRepository).saveAll(posts);
     }
+
+	@Test
+	void publishPost_whenPostSuccessfullyPublished_shouldPublishKafkaEvent() {
+		Post post = Post.builder()
+				.id(DEFAULT_ID)
+				.authorId(authorId)
+				.content("content")
+				.published(false)
+				.publishedAt(null)
+				.build();
+
+		PostDto publishedPostDto = PostDto.builder()
+				.id(DEFAULT_ID)
+				.content("content")
+				.authorId(authorId)
+				.published(true)
+				.publishedAt(LocalDateTime.now())
+				.build();
+
+		when(postRepository.findById(DEFAULT_ID)).thenReturn(Optional.of(post));
+		when(postMapper.toPostDto(any(Post.class))).thenReturn(publishedPostDto);
+		when(postRepository.save(any(Post.class))).thenAnswer(invocation -> {
+			Post savedPost = invocation.getArgument(0);
+			savedPost.setPublished(true);
+			savedPost.setPublishedAt(LocalDateTime.now());
+			return savedPost;
+		});
+
+		postService.publishPost(DEFAULT_ID);
+
+		verify(kafkaPostProducer, times(1)).publishPostEvent(any(Post.class));
+	}
+
+	@Test
+	void publishPost_whenEntityNotFoundExceptionThrown_shouldNotPublishKafkaEvent() {
+		when(postRepository.findById(DEFAULT_ID)).thenReturn(Optional.empty());
+
+		assertThrows(EntityNotFoundException.class, () -> postService.publishPost(DEFAULT_ID));
+		verify(kafkaPostProducer, never()).publishPostEvent(any(Post.class));
+	}
+
+	@Test
+	void publishPost_whenForbiddenExceptionThrown_shouldNotPublishKafkaEvent() {
+		Post post = Post.builder().id(DEFAULT_ID).published(true).build();
+		when(postRepository.findById(DEFAULT_ID)).thenReturn(Optional.of(post));
+
+		assertThrows(ForbiddenException.class, () -> postService.publishPost(DEFAULT_ID));
+		verify(kafkaPostProducer, never()).publishPostEvent(any(Post.class));
+	}
+
 
     private Post createPost(Long id) {
         Post post = new Post();

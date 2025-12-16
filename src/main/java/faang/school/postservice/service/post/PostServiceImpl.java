@@ -11,6 +11,7 @@ import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.KafkaPostProducer;
 import faang.school.postservice.publisher.UserBanEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.user.UserService;
@@ -51,8 +52,9 @@ public class PostServiceImpl implements PostService {
     private final UserBanEventPublisher userBanEventPublisher;
     private final UserService userService;
     private final ModerationDictionary moderationDictionary;
+	private final KafkaPostProducer kafkaPostProducer;
 
-    @Value("${app.scheduled-posts.batch-size:1000}")
+	@Value("${app.scheduled-posts.batch-size:1000}")
     private int scheduledPostsBatchSize;
     @Value("${posts.max-unverified-posts}")
     private int maxUnverifiedPosts;
@@ -83,6 +85,8 @@ public class PostServiceImpl implements PostService {
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
         post = postRepository.save(post);
+
+		kafkaPostProducer.publishPostEvent(post);
 
         log.info("Post published successfully with ID: {}", post.getId());
         return postMapper.toPostDto(post);
