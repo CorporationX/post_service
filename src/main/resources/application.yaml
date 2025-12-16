@@ -46,7 +46,7 @@ spring:
 
 scheduler:
   cron:
-    expression: 0 * * * * *
+    expression: 0 0 * * * *
     zone: GMT
   thread-pool:
     size: 10
