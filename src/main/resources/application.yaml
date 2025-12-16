@@ -41,6 +41,7 @@ kafka:
     user-ban: user_ban
     comment-event: comment_events
 
+
 server:
   port: 8081
   servlet:
