@@ -49,6 +49,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.anyLong;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doReturn;
@@ -222,7 +223,16 @@ class PostServiceImplTest {
     void publish_ok() {
         when(postRepository.findById(POST_ID)).thenReturn(Optional.of(postDbEntity));
         when(postRepository.save(any(Post.class))).thenAnswer(inv -> inv.getArgument(0));
-        when(userServiceClient.getFollowerIds(AUTHOR_ID)).thenReturn(List.of(FOLLOWER_1_ID, FOLLOWER_2_ID));
+        when(userServiceClient.getFollowers(
+                eq(AUTHOR_ID),
+                isNull(),
+                isNull(),
+                eq(0),
+                eq(Integer.MAX_VALUE)))
+                .thenReturn(List.of(
+                        new UserDto(FOLLOWER_1_ID, "User1", "user1@mail.com"),
+                        new UserDto(FOLLOWER_2_ID, "User2", "user2@mail.com")
+                ));
         PostResponseDto out = service.publish(POST_ID);
 
         verify(postMapper, times(1)).toDto(any(Post.class));

@@ -2,7 +2,7 @@ name: Check PRs
 
 on:
   pull_request:
-    branches: [ chimera-master-stream12 ]
+    branches: [ chimera-stream12-news-feed-elya ]
     types: [ opened, reopened, synchronize, edited ]
 
 permissions:
