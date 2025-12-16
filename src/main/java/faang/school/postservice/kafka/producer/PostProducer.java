@@ -19,12 +19,6 @@ public class PostProducer {
     public void sendToKafka(PostEvent postEvent) {
         postKafkaTemplate.send(topicName, postEvent);
         log.info("Новый postEvent с postId: {} отправлен в Kafka.", postEvent.postId());
-
-
-        //Пока только вставили готовый шаблон из своего вордовского образца. Теперь нужно смотреть и делать все
-        // по задаче, начиная с первого пункта
-
-
     }
 }
 
