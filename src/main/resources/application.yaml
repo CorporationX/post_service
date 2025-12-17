@@ -17,11 +17,15 @@ spring:
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
 
+  cache:
+    type: redis
   data:
     redis:
       port: 6379
       host: localhost
       password: password
+      ttl:
+        post: 40
       channels:
         calculations_channel:
           name: calculations_channel

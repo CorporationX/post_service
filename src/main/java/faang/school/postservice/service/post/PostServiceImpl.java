@@ -7,14 +7,17 @@ import faang.school.postservice.dto.kafka.PostEvent;
 import faang.school.postservice.dto.post.CreatePostDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
+import faang.school.postservice.dto.redis.RedisPostDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.kafka.producer.PostProducer;
 import faang.school.postservice.mapper.post.PostMapper;
+import faang.school.postservice.mapper.post.RedisPostMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.repository.CachePostRepository;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import java.time.LocalDateTime;
@@ -27,6 +30,7 @@ import java.util.stream.StreamSupport;
 import javax.xml.bind.ValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,6 +45,11 @@ public class PostServiceImpl implements PostService {
     private final TextGearsClient textGearsClient;
     private final UserServiceClient userServiceClient;
     private final PostProducer postProducer;
+    private final RedisPostMapper redisPostMapper;
+    private final CachePostRepository cachePostRepository;
+
+    @Value("${spring.data.redis.ttl.post:86400}")
+    private Long ttlPostInRedis;
 
     @Override
     @Transactional
@@ -76,7 +85,11 @@ public class PostServiceImpl implements PostService {
         postToPublish.setPublished(true);
         postToPublish.setPublishedAt(LocalDateTime.now());
         postRepository.save(postToPublish);
-        log.info("Пост с id: {} успешно опубликован пользователем с id: {}.", postId, requesterId);
+        log.info("Пост с id: {} успешно опубликован.", postId);
+        RedisPostDto redisPostDto = redisPostMapper.toRedisPostDto(postToPublish);
+        redisPostDto.setTimeToLive(ttlPostInRedis);
+        cachePostRepository.save(redisPostDto);
+        log.info("Пост с id: {} добавлен в Redis", postId);
         List<Long> followerIds = userServiceClient.getFollowers(requesterId).stream()
                 .map((UserDto::id))
                 .toList();

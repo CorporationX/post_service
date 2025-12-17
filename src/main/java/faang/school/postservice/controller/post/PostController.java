@@ -28,7 +28,7 @@ public class PostController {
     private final UserContext userContext;
     private final PostService postService;
 
-    @PostMapping("/")
+    @PostMapping
     public ResponseEntity<PostDto> createPost(@RequestBody @Valid CreatePostDto createPostDto) throws Exception {
         return ResponseEntity.ok(postService.createPost(userContext.getUserId(), createPostDto));
     }
