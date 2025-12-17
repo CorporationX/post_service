@@ -10,6 +10,17 @@ spring:
       acks: all
       properties:
         spring.json.add.type.headers: false
+    consumer:
+      group-id: post-service-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+         spring.json.trusted.packages: "*"
+         spring.json.type.mapping: postEvent:faang.school.postservice.dto.post.PostEventDto
+         spring.json.use.type.headers: false
+         spring.json.value.default.type: "faang.school.postservice.dto.post.PostEventDto"
+    listener:
+      ack-mode: manual
 
   servlet:
     multipart:
@@ -96,6 +107,12 @@ app:
       max-file-size-mb: 5
       max-per-post: 10
       type: "IMAGE"
+  kafka:
+    topics:
+      posts-create-topic: "posts"
+  feed:
+    max-size: 500
+    ttl-days: 30
 
 post-correcter:
   cron: "0 0 3 * * *" # every day at 3:00
