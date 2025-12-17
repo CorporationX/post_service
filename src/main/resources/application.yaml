@@ -29,12 +29,18 @@ spring:
     properties:
       security:
         protocol: PLAINTEXT
+
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       acks: all
       properties:
         spring.json.add.type.headers: false
+
+    consumer:
+      group-id: post-consumer-group
+      auto-offset-reset: earliest
+      enable-auto-commit: false
 
 kafka:
   topic:
@@ -60,6 +66,7 @@ user-service:
     maxAttempts: 3
     delay: 1000
     multiplier: 2
+
 project-service:
   host: localhost
   port: 8082
@@ -92,3 +99,8 @@ posts:
 
 files-path:
   offensive-words: src/main/resources/offensive-words.txt
+
+feed:
+  max_size: 500
+  collection: feed
+  ttl: 24  # 24 часа
