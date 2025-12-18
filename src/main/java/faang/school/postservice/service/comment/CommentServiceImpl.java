@@ -7,7 +7,7 @@ import faang.school.postservice.dto.comment.UpdateCommentDto;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.publisher.kafka.CommentEventKafkaPublisher;
+import faang.school.postservice.publisher.kafka.KafkaCommentProducer;
 import faang.school.postservice.publisher.redis.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -27,7 +27,7 @@ public class CommentServiceImpl implements CommentService {
     private final CommentMapper commentMapper;
     private final CommentRepository commentRepository;
     private final CommentEventPublisher commentEventPublisher;
-    private final CommentEventKafkaPublisher commentEventKafkaPublisher;
+    private final KafkaCommentProducer commentEventKafkaPublisher;
 
     @Override
     public CommentDto addComment(Long postId, CreateCommentDto commentDto) {
