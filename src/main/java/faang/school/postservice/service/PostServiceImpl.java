@@ -18,13 +18,13 @@ import faang.school.postservice.exception.ProjectNotFoundException;
 import faang.school.postservice.exception.UserNotFoundException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.publisher.KafkaPostProducer;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.scheduler.ThreadPoolConfig;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.retry.annotation.Backoff;
@@ -57,7 +57,7 @@ public class PostServiceImpl implements PostService {
     private final FeignLanguageToolClient feignLanguageTool;
     private final UserContext userContext;
     private final ThreadPoolConfig threadPoolConfig;
-    private final KafkaPostProducer kafkaPostProducer;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Value("${scheduler.thread-pool.batchSize:50}")
     private int batchSize;
@@ -131,7 +131,7 @@ public class PostServiceImpl implements PostService {
                 saved.getPublishedAt()
         );
 
-        kafkaPostProducer.publishPostCreate(event);
+        eventPublisher.publishEvent(event);
         return postMapper.toDto(saved);
     }
 

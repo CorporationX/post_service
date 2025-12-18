@@ -10,6 +10,10 @@ spring:
       acks: all
       properties:
         spring.json.add.type.headers: false
+        max.block.ms: 3000
+        delivery.timeout.ms: 10000
+        request.timeout.ms: 5000
+        enable.idempotence: true
 
   servlet:
     multipart:
@@ -61,6 +65,11 @@ logging:
   level:
     root: info
 
+kafka:
+  topics:
+    posts: posts
+  producer:
+        timeout-seconds: 3
 user-service:
   host: localhost
   port: 8080
