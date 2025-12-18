@@ -29,6 +29,18 @@ spring:
           name: comment_event
         like: like_channel
         comment: achievement_channel
+    kafka:
+      topic:
+        comment:
+          name: comment_event
+        partition: 3
+        replication: 1
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 
 
 server:
