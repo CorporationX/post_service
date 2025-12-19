@@ -1,9 +1,12 @@
 package faang.school.postservice.service.comment;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CommentEvent;
 import faang.school.postservice.dto.comment.CreateCommentDto;
 import faang.school.postservice.dto.comment.UpdateCommentDto;
+import faang.school.postservice.dto.user.CashUserDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
@@ -11,8 +14,10 @@ import faang.school.postservice.publisher.kafka.KafkaCommentProducer;
 import faang.school.postservice.publisher.redis.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.redis.RedisUserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
@@ -28,9 +33,14 @@ public class CommentServiceImpl implements CommentService {
     private final CommentRepository commentRepository;
     private final CommentEventPublisher commentEventPublisher;
     private final KafkaCommentProducer commentEventKafkaPublisher;
+    private final UserServiceClient userServiceClient;
+    private final RedisUserRepository redisUserRepository;
+
+    @Value("${spring.redis.user-repository.ttl-days:1}")
+    private long ttlDays;
 
     @Override
-    public CommentDto addComment(Long postId, CreateCommentDto commentDto) {
+    public CommentDto addComment(Long postId, CreateCommentDto commentDto, Long userId) {
         log.info("Adding comment to post {}", postId);
         Post post = validatePostExists(postId);
 
@@ -38,13 +48,20 @@ public class CommentServiceImpl implements CommentService {
         comment.setPost(post);
         comment.setVerified(true);
         comment = commentRepository.save(comment);
-
-        CommentDto returnedCommentDto = commentMapper.toCommentDto(comment);
         log.info("Comment with ID {} has been added", comment.getId());
+
+        UserDto userDto = userServiceClient.getUser(userId);
+        CashUserDto cashUserDto = new CashUserDto(
+                userDto.id(),
+                userDto.username(),
+                ttlDays
+                );
+        redisUserRepository.save(cashUserDto);
+        log.info("User with ID {} has been saved in cash", userId);
 
         publishCommentEvent(comment);
 
-        return returnedCommentDto;
+        return commentMapper.toCommentDto(comment);
     }
 
     @Override
