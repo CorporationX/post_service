@@ -2,11 +2,15 @@ package faang.school.postservice.util.service.post;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.TextGearsClient;
+import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.kafka.PostEvent;
 import faang.school.postservice.dto.post.CreatePostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.ForbiddenException;
+import faang.school.postservice.kafka.producer.PostProducer;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
@@ -30,6 +34,7 @@ import reactor.core.publisher.Mono;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -58,6 +63,12 @@ public class PostServiceImplTest {
 
     @Mock
     private TextGearsClient textGearsClient;
+
+    @Mock
+    private UserServiceClient userServiceClient;
+
+    @Mock
+    private PostProducer postProducer;
 
     @Test
     public void createPostNonexistentProject() {
@@ -97,7 +108,7 @@ public class PostServiceImplTest {
         postToPublish.setPublished(true);
         when(postRepository.findById(postId)).thenReturn(Optional.of(postToPublish));
 
-        assertThrows(ForbiddenException.class, () -> postServiceImpl.publishPost(requesterId, postId));
+        assertThrows(DataValidationException.class, () -> postServiceImpl.publishPost(requesterId, postId));
     }
 
     @Test
@@ -119,10 +130,14 @@ public class PostServiceImplTest {
         postToPublish.setAuthorId(1L);
         postToPublish.setId(1L);
         when(postRepository.findById(postId)).thenReturn(Optional.of(postToPublish));
+        when(userServiceClient.getFollowers(requesterId))
+                .thenReturn(List.of(new UserDto(1L, "anyName", "anyEmail")));
 
         postServiceImpl.publishPost(requesterId, postId);
 
         verify(postRepository, times(1)).save(postCaptor.capture());
+        verify(postProducer).sendToKafka(any(PostEvent.class));
+        verify(userServiceClient).getFollowers(requesterId);
         Post publishedPost = postCaptor.getValue();
         assertEquals(postToPublish.getId(), publishedPost.getId());
     }
