@@ -366,10 +366,10 @@ public class PostServiceImpl implements PostService {
             return Collections.emptyList();
         } catch (FeignException e) {
             log.error("Failed to get followers from user-service for author {}", authorId, e);
-            return Collections.emptyList();
+            throw new RuntimeException("Cannot fetch followers - user-service unavailable", e);
         } catch (Exception e) {
             log.error("Unexpected error when searching for followers for an author {}", authorId, e);
-            return Collections.emptyList();
+            throw new RuntimeException("Cannot fetch followers - unexpected error", e);
         }
     }
 }

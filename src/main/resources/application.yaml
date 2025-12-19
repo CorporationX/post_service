@@ -65,11 +65,18 @@ logging:
   level:
     root: info
 
-kafka:
-  topics:
-    posts: posts
+app:
+  kafka:
+    topics:
+      posts-create-topic: posts
   producer:
-        timeout-seconds: 3
+    timeout-seconds: 3
+  resources:
+    image:
+      max-file-size-mb: 5
+      max-per-post: 10
+      type: "IMAGE"
+
 user-service:
   host: localhost
   port: 8080
@@ -98,13 +105,6 @@ services:
     accessKey: user
     secretKey: password
     bucketName: corpbucket
-
-app:
-  resources:
-    image:
-      max-file-size-mb: 5
-      max-per-post: 10
-      type: "IMAGE"
 
 post-correcter:
   cron: "0 0 3 * * *" # every day at 3:00
