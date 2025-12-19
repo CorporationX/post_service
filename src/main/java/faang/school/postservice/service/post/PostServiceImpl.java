@@ -2,15 +2,22 @@ package faang.school.postservice.service.post;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.TextGearsClient;
+import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.kafka.PostEvent;
 import faang.school.postservice.dto.post.CreatePostDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
+import faang.school.postservice.dto.redis.CachedPostDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.ForbiddenException;
+import faang.school.postservice.kafka.producer.PostProducer;
 import faang.school.postservice.mapper.post.PostMapper;
+import faang.school.postservice.mapper.post.CachedPostMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.repository.CachePostRepository;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import java.time.LocalDateTime;
@@ -23,6 +30,7 @@ import java.util.stream.StreamSupport;
 import javax.xml.bind.ValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,6 +43,13 @@ public class PostServiceImpl implements PostService {
     private final ProjectServiceClient projectServiceClient;
     private final CommentRepository commentRepository;
     private final TextGearsClient textGearsClient;
+    private final UserServiceClient userServiceClient;
+    private final PostProducer postProducer;
+    private final CachedPostMapper cachedPostMapper;
+    private final CachePostRepository cachePostRepository;
+
+    @Value("${spring.data.redis.ttl.post:86400}")
+    private Long ttlPostInRedis;
 
     @Override
     @Transactional
@@ -55,26 +70,35 @@ public class PostServiceImpl implements PostService {
 
     @Override
     @Transactional
-    public boolean publishPost(long requesterId, long postId) {
+    public void publishPost(long requesterId, long postId) {
         Optional<Post> optionalPostToPublish = postRepository.findById(postId);
         if (optionalPostToPublish.isEmpty()) {
-            log.error("Проект с id: {} невозможно опубликовать, он не существует.", postId);
-            throw new EntityNotFoundException("");
+            throw new EntityNotFoundException("Данный пост не существует, его невозможно опубликовать.");
         }
         Post postToPublish = optionalPostToPublish.get();
         if (postToPublish.isPublished()) {
-            log.error("Пост с id: {} уже опубликован, его невозможно опубликовать повторно.", postId);
-            throw new ForbiddenException("");
+            throw new DataValidationException("Данный пост уже опубликован, его невозможно опубликовать повторно.");
         }
         if (postToPublish.getAuthorId() != requesterId) {
-            log.error("У пользователя с id: {} нет прав на публикацию поста с id: {}", requesterId, postId);
-            throw new ForbiddenException("");
+            throw new ForbiddenException("Вы не можете опубликовать пост от чужого имени.");
         }
         postToPublish.setPublished(true);
         postToPublish.setPublishedAt(LocalDateTime.now());
         postRepository.save(postToPublish);
-        log.info("Пост с id: {} успешно опубликован пользователем с id: {}.", postId, requesterId);
-        return true;
+        log.info("Пост с id: {} успешно опубликован.", postId);
+        CachedPostDto cachedPostDto = cachedPostMapper.toCachedPostDto(postToPublish);
+        cachedPostDto.setTimeToLive(ttlPostInRedis);
+        cachePostRepository.save(cachedPostDto);
+        log.info("Пост с id: {} добавлен в Redis", postId);
+        List<Long> followerIds = userServiceClient.getFollowers(requesterId).stream()
+                .map((UserDto::id))
+                .toList();
+        int batchSize = 100;
+        for (int i = 0; i < followerIds.size(); i += batchSize) {
+            postProducer.sendToKafka(new PostEvent(
+                    postId,
+                    followerIds.subList(i, Math.min(followerIds.size(), i + batchSize))));
+        }
     }
 
     @Override

@@ -1,18 +1,24 @@
-package faang.school.postservice.util.service.post;
+package faang.school.postservice.service.post;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.TextGearsClient;
+import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.kafka.PostEvent;
 import faang.school.postservice.dto.post.CreatePostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
+import faang.school.postservice.dto.redis.CachedPostDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.ForbiddenException;
+import faang.school.postservice.kafka.producer.PostProducer;
 import faang.school.postservice.mapper.post.PostMapper;
+import faang.school.postservice.mapper.post.CachedPostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.repository.CachePostRepository;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.post.PostServiceImpl;
-import java.time.LocalDateTime;
+
 import java.util.List;
 import java.util.Optional;
 import javax.xml.bind.ValidationException;
@@ -30,6 +36,7 @@ import reactor.core.publisher.Mono;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -58,6 +65,18 @@ public class PostServiceImplTest {
 
     @Mock
     private TextGearsClient textGearsClient;
+
+    @Mock
+    private UserServiceClient userServiceClient;
+
+    @Mock
+    private PostProducer postProducer;
+
+    @Mock
+    private CachePostRepository cachePostRepository;
+
+    @Mock
+    private CachedPostMapper cachedPostMapper;
 
     @Test
     public void createPostNonexistentProject() {
@@ -97,7 +116,7 @@ public class PostServiceImplTest {
         postToPublish.setPublished(true);
         when(postRepository.findById(postId)).thenReturn(Optional.of(postToPublish));
 
-        assertThrows(ForbiddenException.class, () -> postServiceImpl.publishPost(requesterId, postId));
+        assertThrows(DataValidationException.class, () -> postServiceImpl.publishPost(requesterId, postId));
     }
 
     @Test
@@ -119,10 +138,17 @@ public class PostServiceImplTest {
         postToPublish.setAuthorId(1L);
         postToPublish.setId(1L);
         when(postRepository.findById(postId)).thenReturn(Optional.of(postToPublish));
+        when(userServiceClient.getFollowers(requesterId))
+                .thenReturn(List.of(new UserDto(1L, "anyName", "anyEmail")));
+        when(cachedPostMapper.toCachedPostDto(postToPublish)).thenReturn(new CachedPostDto());
 
         postServiceImpl.publishPost(requesterId, postId);
 
         verify(postRepository, times(1)).save(postCaptor.capture());
+        verify(postProducer).sendToKafka(any(PostEvent.class));
+        verify(userServiceClient).getFollowers(requesterId);
+        verify(cachePostRepository).save(any(CachedPostDto.class));
+        verify(cachedPostMapper, times(1)).toCachedPostDto(any(Post.class));
         Post publishedPost = postCaptor.getValue();
         assertEquals(postToPublish.getId(), publishedPost.getId());
     }
@@ -207,7 +233,7 @@ public class PostServiceImplTest {
         postToDelete.setId(1L);
         when(postRepository.findById(postId)).thenReturn(Optional.of(postToDelete));
 
-        postServiceImpl.publishPost(requesterId, postId);
+        postServiceImpl.deletePost(requesterId, postId);
 
         verify(postRepository, times(1)).save(postCaptor.capture());
         Post publishedPost = postCaptor.getValue();

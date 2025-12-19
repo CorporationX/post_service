@@ -17,11 +17,15 @@ spring:
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
 
+  cache:
+    type: redis
   data:
     redis:
       port: 6379
       host: localhost
       password: password
+      ttl:
+        post: 40
       channels:
         calculations_channel:
           name: calculations_channel
@@ -29,7 +33,12 @@ spring:
           name: comment_event
         like: like_channel
         comment: achievement_channel
-
+kafka:
+  bootstrap_servers: localhost:9092
+  topics:
+    posts:
+      topic_name: posts
+      group_id: posts-group
 
 server:
   port: 8081
@@ -68,3 +77,6 @@ textgears:
   base-url: https://api.textgears.com
   api:
     key: "test_api_key_for_development_12345"
+
+feed:
+  max_size: 500

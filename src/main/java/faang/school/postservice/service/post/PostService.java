@@ -11,7 +11,7 @@ import org.springframework.validation.annotation.Validated;
 public interface PostService {
     PostDto createPost(long authorId, @Valid CreatePostDto createPostDto) throws Exception;
 
-    boolean publishPost(long requesterId, long postId);
+    void publishPost(long requesterId, long postId);
 
     PostDto updatePost(long postId, long requesterId, @Valid UpdatePostDto updatePostDto);
 

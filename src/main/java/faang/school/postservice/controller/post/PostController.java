@@ -28,14 +28,14 @@ public class PostController {
     private final UserContext userContext;
     private final PostService postService;
 
-    @PostMapping("/")
+    @PostMapping
     public ResponseEntity<PostDto> createPost(@RequestBody @Valid CreatePostDto createPostDto) throws Exception {
         return ResponseEntity.ok(postService.createPost(userContext.getUserId(), createPostDto));
     }
 
     @PutMapping("/{id}/publish")
-    public boolean publishPost(@PathVariable("id") long postId) {
-        return postService.publishPost(userContext.getUserId(), postId);
+    public void publishPost(@PathVariable("id") long postId) {
+        postService.publishPost(userContext.getUserId(), postId);
     }
 
     @PutMapping("/{id}")
