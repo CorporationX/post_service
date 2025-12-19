@@ -61,3 +61,8 @@ post-correcter:
 app:
   moderation:
     time: 30000
+
+cache:
+  redis:
+    author:
+      ttl: 1d
