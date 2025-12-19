@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @RequiredArgsConstructor
 public class PostProducer {
-    private final KafkaTemplate<String, PostEvent> postKafkaTemplate;
+    private final KafkaTemplate<String, Object> postKafkaTemplate;
 
     @Value("${kafka.topics.posts.topic_name}")
     private String topicName;

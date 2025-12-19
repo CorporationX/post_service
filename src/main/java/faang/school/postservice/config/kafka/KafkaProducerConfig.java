@@ -23,17 +23,17 @@ public class KafkaProducerConfig {
     private String bootstrapServers;
 
     @Bean
-    public ProducerFactory<String, PostEvent> postKafkaProducerFactory() {
+    public ProducerFactory<String, Object> postKafkaProducerFactory() {
         Map<String, Object> configProperties = new HashMap<>();
-        JsonSerializer<PostEvent> serializer = new JsonSerializer<>();
+        JsonSerializer<Object> serializer = new JsonSerializer<>();
         serializer.setAddTypeInfo(false);
         configProperties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         return new DefaultKafkaProducerFactory<>(configProperties, new StringSerializer(), serializer);
     }
 
     @Bean
-    public KafkaTemplate<String, PostEvent> postKafkaTemplate(
-            ProducerFactory<String, PostEvent> postKafkaProducerFactory
+    public KafkaTemplate<String, Object> postKafkaTemplate(
+            ProducerFactory<String, Object> postKafkaProducerFactory
     ) {
         return new KafkaTemplate<>(postKafkaProducerFactory);
     }
