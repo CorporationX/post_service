@@ -1,4 +1,4 @@
-package faang.school.postservice.util.service.post;
+package faang.school.postservice.service.post;
 
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.TextGearsClient;
@@ -6,19 +6,19 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.kafka.PostEvent;
 import faang.school.postservice.dto.post.CreatePostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
-import faang.school.postservice.dto.redis.RedisPostDto;
+import faang.school.postservice.dto.redis.CachedPostDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.kafka.producer.PostProducer;
 import faang.school.postservice.mapper.post.PostMapper;
-import faang.school.postservice.mapper.post.RedisPostMapper;
+import faang.school.postservice.mapper.post.CachedPostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CachePostRepository;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.post.PostServiceImpl;
+
 import java.util.List;
 import java.util.Optional;
 import javax.xml.bind.ValidationException;
@@ -76,7 +76,7 @@ public class PostServiceImplTest {
     private CachePostRepository cachePostRepository;
 
     @Mock
-    private RedisPostMapper redisPostMapper;
+    private CachedPostMapper cachedPostMapper;
 
     @Test
     public void createPostNonexistentProject() {
@@ -140,15 +140,15 @@ public class PostServiceImplTest {
         when(postRepository.findById(postId)).thenReturn(Optional.of(postToPublish));
         when(userServiceClient.getFollowers(requesterId))
                 .thenReturn(List.of(new UserDto(1L, "anyName", "anyEmail")));
-        when(redisPostMapper.toRedisPostDto(postToPublish)).thenReturn(new RedisPostDto());
+        when(cachedPostMapper.toCachedPostDto(postToPublish)).thenReturn(new CachedPostDto());
 
         postServiceImpl.publishPost(requesterId, postId);
 
         verify(postRepository, times(1)).save(postCaptor.capture());
         verify(postProducer).sendToKafka(any(PostEvent.class));
         verify(userServiceClient).getFollowers(requesterId);
-        verify(cachePostRepository).save(any(RedisPostDto.class));
-        verify(redisPostMapper, times(1)).toRedisPostDto(any(Post.class));
+        verify(cachePostRepository).save(any(CachedPostDto.class));
+        verify(cachedPostMapper, times(1)).toCachedPostDto(any(Post.class));
         Post publishedPost = postCaptor.getValue();
         assertEquals(postToPublish.getId(), publishedPost.getId());
     }

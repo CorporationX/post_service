@@ -16,10 +16,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.List;
 
 @ExtendWith(MockitoExtension.class)
-public class RedisPostMapperTest {
+public class CachedPostMapperTest {
 
-    private final RedisPostMapper redisPostMapper =
-            Mappers.getMapper(RedisPostMapper.class);
+    private final CachedPostMapper cachedPostMapper =
+            Mappers.getMapper(CachedPostMapper.class);
 
     @Test
     public void toRedisPostDto_successfullyMappes() {
@@ -49,14 +49,14 @@ public class RedisPostMapperTest {
         anyPost.setAd(anyAd);
         anyPost.setResources(List.of(anyResource));
 
-        assertEquals(anyLong, redisPostMapper.toRedisPostDto(anyPost).getId());
-        assertEquals(anyString, redisPostMapper.toRedisPostDto(anyPost).getContent());
-        assertEquals(anyLong, redisPostMapper.toRedisPostDto(anyPost).getAuthorId());
-        assertEquals(anyOtherLong, redisPostMapper.toRedisPostDto(anyPost).getProjectId());
-        assertEquals(List.of(anyLong), redisPostMapper.toRedisPostDto(anyPost).getLikeIds());
-        assertEquals(List.of(anyOtherLong), redisPostMapper.toRedisPostDto(anyPost).getCommentIds());
-        assertEquals(List.of(anyOtherLong), redisPostMapper.toRedisPostDto(anyPost).getAlbumIds());
-        assertEquals(anyLong, redisPostMapper.toRedisPostDto(anyPost).getAdId());
-        assertEquals(List.of(anyOtherLong), redisPostMapper.toRedisPostDto(anyPost).getResourceIds());
+        assertEquals(anyLong, cachedPostMapper.toCachedPostDto(anyPost).getId());
+        assertEquals(anyString, cachedPostMapper.toCachedPostDto(anyPost).getContent());
+        assertEquals(anyLong, cachedPostMapper.toCachedPostDto(anyPost).getAuthorId());
+        assertEquals(anyOtherLong, cachedPostMapper.toCachedPostDto(anyPost).getProjectId());
+        assertEquals(List.of(anyLong), cachedPostMapper.toCachedPostDto(anyPost).getLikeIds());
+        assertEquals(List.of(anyOtherLong), cachedPostMapper.toCachedPostDto(anyPost).getCommentIds());
+        assertEquals(List.of(anyOtherLong), cachedPostMapper.toCachedPostDto(anyPost).getAlbumIds());
+        assertEquals(anyLong, cachedPostMapper.toCachedPostDto(anyPost).getAdId());
+        assertEquals(List.of(anyOtherLong), cachedPostMapper.toCachedPostDto(anyPost).getResourceIds());
     }
 }

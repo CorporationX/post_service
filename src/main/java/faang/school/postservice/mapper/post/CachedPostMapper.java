@@ -1,6 +1,6 @@
 package faang.school.postservice.mapper.post;
 
-import faang.school.postservice.dto.redis.RedisPostDto;
+import faang.school.postservice.dto.redis.CachedPostDto;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
@@ -15,14 +15,14 @@ import org.mapstruct.ReportingPolicy;
 @Mapper(componentModel = "spring",
         unmappedTargetPolicy = ReportingPolicy.IGNORE,
         nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-public interface RedisPostMapper {
+public interface CachedPostMapper {
 
     @Mapping(source = "likes", target = "likeIds")
     @Mapping(source = "comments", target = "commentIds")
     @Mapping(source = "albums", target = "albumIds")
     @Mapping(source = "ad", target = "adId")
     @Mapping(source = "resources", target = "resourceIds")
-    RedisPostDto toRedisPostDto(Post post);
+    CachedPostDto toCachedPostDto(Post post);
 
     default Long map(Like like) {
         return like == null ? null : like.getId();

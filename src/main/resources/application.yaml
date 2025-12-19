@@ -38,6 +38,7 @@ kafka:
   topics:
     posts:
       topic_name: posts
+      group_id: posts-group
 
 server:
   port: 8081
@@ -76,3 +77,6 @@ textgears:
   base-url: https://api.textgears.com
   api:
     key: "test_api_key_for_development_12345"
+
+feed:
+  max_size: 500

@@ -7,14 +7,14 @@ import faang.school.postservice.dto.kafka.PostEvent;
 import faang.school.postservice.dto.post.CreatePostDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
-import faang.school.postservice.dto.redis.RedisPostDto;
+import faang.school.postservice.dto.redis.CachedPostDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.kafka.producer.PostProducer;
 import faang.school.postservice.mapper.post.PostMapper;
-import faang.school.postservice.mapper.post.RedisPostMapper;
+import faang.school.postservice.mapper.post.CachedPostMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CachePostRepository;
@@ -45,7 +45,7 @@ public class PostServiceImpl implements PostService {
     private final TextGearsClient textGearsClient;
     private final UserServiceClient userServiceClient;
     private final PostProducer postProducer;
-    private final RedisPostMapper redisPostMapper;
+    private final CachedPostMapper cachedPostMapper;
     private final CachePostRepository cachePostRepository;
 
     @Value("${spring.data.redis.ttl.post:86400}")
@@ -86,9 +86,9 @@ public class PostServiceImpl implements PostService {
         postToPublish.setPublishedAt(LocalDateTime.now());
         postRepository.save(postToPublish);
         log.info("Пост с id: {} успешно опубликован.", postId);
-        RedisPostDto redisPostDto = redisPostMapper.toRedisPostDto(postToPublish);
-        redisPostDto.setTimeToLive(ttlPostInRedis);
-        cachePostRepository.save(redisPostDto);
+        CachedPostDto cachedPostDto = cachedPostMapper.toCachedPostDto(postToPublish);
+        cachedPostDto.setTimeToLive(ttlPostInRedis);
+        cachePostRepository.save(cachedPostDto);
         log.info("Пост с id: {} добавлен в Redis", postId);
         List<Long> followerIds = userServiceClient.getFollowers(requesterId).stream()
                 .map((UserDto::id))

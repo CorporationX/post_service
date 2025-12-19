@@ -16,7 +16,7 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class RedisPostDto implements Serializable {
+public class CachedPostDto implements Serializable {
 
         @Id
         private Long id;
