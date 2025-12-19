@@ -1,7 +1,7 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.dto.AlbumDto;;
+import faang.school.postservice.dto.AlbumDto;
 import faang.school.postservice.mapper.AlbumMapper;
 import faang.school.postservice.model.Album;
 import faang.school.postservice.model.AlbumVisibility;
@@ -26,19 +26,19 @@ public class AlbumServiceImpl implements AlbumService {
 
     public AlbumDto getAlbum(long albumId) {
         Album album = albumRepository.findById(albumId)
-            .orElseThrow(() -> new EntityNotFoundException("Album with id %s not found".formatted(albumId)));
+                .orElseThrow(() -> new EntityNotFoundException("Album with id %s not found".formatted(albumId)));
 
         if (!albumValidator.hasPermission(album)) {
             throw new IllegalArgumentException("User with id %s dont have permission to album id %s"
-                .formatted(userContext.getUserId(), albumId));
+                    .formatted(userContext.getUserId(), albumId));
         }
         return albumMapper.toDto(album);
     }
 
     public List<AlbumDto> getAllAlbums() {
         return albumRepository.findAll().stream()
-            .filter(albumValidator::hasPermission)
-            .map(albumMapper::toDto).toList();
+                .filter(albumValidator::hasPermission)
+                .map(albumMapper::toDto).toList();
     }
 
     public AlbumDto update(AlbumDto albumDto) {
@@ -60,6 +60,6 @@ public class AlbumServiceImpl implements AlbumService {
 
     private Album getAlbumById(Long albumId) {
         return albumRepository.findById(albumId)
-            .orElseThrow(() -> new EntityNotFoundException("Album with id %s not found".formatted(albumId)));
+                .orElseThrow(() -> new EntityNotFoundException("Album with id %s not found".formatted(albumId)));
     }
 }

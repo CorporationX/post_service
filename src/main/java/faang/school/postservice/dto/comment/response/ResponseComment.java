@@ -1,4 +1,4 @@
-package faang.school.postservice.dto.comment.Response;
+package faang.school.postservice.dto.comment.response;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

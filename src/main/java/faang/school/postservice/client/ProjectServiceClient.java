@@ -10,7 +10,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 
-@FeignClient(name = "project-service", url = "${project-service.host}:${project-service.port}${project-service.servlet.context-path}")
+@FeignClient(name = "project-service",
+        url = "${project-service.host}:${project-service.port}${project-service.servlet.context-path}")
 public interface ProjectServiceClient {
     @GetMapping("/projects/{projectId}")
     ResponseEntity<ProjectDto> getProject(@PathVariable long projectId);

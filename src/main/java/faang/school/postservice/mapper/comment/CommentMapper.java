@@ -1,7 +1,7 @@
 package faang.school.postservice.mapper.comment;
 
-import faang.school.postservice.dto.comment.Request.RequestCreateComment;
-import faang.school.postservice.dto.comment.Response.ResponseComment;
+import faang.school.postservice.dto.comment.request.RequestCreateComment;
+import faang.school.postservice.dto.comment.response.ResponseComment;
 import faang.school.postservice.model.Comment;
 import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;

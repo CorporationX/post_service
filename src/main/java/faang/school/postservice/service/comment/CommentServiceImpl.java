@@ -1,9 +1,9 @@
 package faang.school.postservice.service.comment;
 
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.dto.comment.Request.RequestCreateComment;
-import faang.school.postservice.dto.comment.Request.RequestUpdateComment;
-import faang.school.postservice.dto.comment.Response.ResponseComment;
+import faang.school.postservice.dto.comment.request.RequestCreateComment;
+import faang.school.postservice.dto.comment.request.RequestUpdateComment;
+import faang.school.postservice.dto.comment.response.ResponseComment;
 import faang.school.postservice.dto.event.CommentEvent;
 import faang.school.postservice.exception.ResourceNotFoundException;
 import faang.school.postservice.mapper.comment.CommentMapper;

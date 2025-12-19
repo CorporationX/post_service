@@ -2,7 +2,6 @@ package faang.school.postservice.albumService;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.UserContext;
-import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.dto.AlbumDto;
 import faang.school.postservice.mapper.AlbumMapper;
 import faang.school.postservice.model.Album;
@@ -52,7 +51,6 @@ class AlbumServiceImplTests {
     private Album album;
     private AlbumDto albumDto;
     private Post post;
-    private UserDto userDto;
     private List<Album> albums;
 
     @BeforeEach
@@ -65,7 +63,6 @@ class AlbumServiceImplTests {
         albumDto.setVisibility(AlbumVisibility.PUBLIC);
         post = new Post();
         post.setId(1L);
-        userDto = new UserDto(1L, "v", "@", "+1", "ABOUT");
 
         albumServiceImpl = new AlbumServiceImpl(
             albumRepository,

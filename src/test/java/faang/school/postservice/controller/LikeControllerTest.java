@@ -3,7 +3,6 @@ package faang.school.postservice.controller;
 import faang.school.postservice.controller.like.LikeController;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.exception.DataValidationException;
-import faang.school.postservice.exception.GlobalExceptionHandler;
 import faang.school.postservice.exception.ResourceNotFoundException;
 import faang.school.postservice.service.like.LikeServiceImpl;
 import org.junit.jupiter.api.BeforeEach;

@@ -1,6 +1,5 @@
 package faang.school.postservice.controller;
 
-import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.AlbumDto;
 import faang.school.postservice.model.AlbumVisibility;
 import faang.school.postservice.service.AlbumService;
@@ -24,7 +23,6 @@ import java.util.List;
 @Validated
 public class AlbumController {
     private final AlbumService albumService;
-    private final UserContext userContext;
 
     @GetMapping("/{albumId}")
     public AlbumDto getAlbum(@PathVariable Long albumId) {

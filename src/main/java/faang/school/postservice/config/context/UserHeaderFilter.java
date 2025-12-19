@@ -23,8 +23,8 @@ public class UserHeaderFilter implements Filter {
         HttpServletRequest req = (HttpServletRequest) request;
         String userId = req.getHeader("x-user-id");
         if (userId == null) {
-            throw new IllegalArgumentException("Missing required header 'x-user-id'. " +
-                    "Please include 'x-user-id' header with a valid user ID in your request.");
+            throw new IllegalArgumentException("Missing required header 'x-user-id'. "
+                    + "Please include 'x-user-id' header with a valid user ID in your request.");
         }
 
         userContext.setUserId(Long.parseLong(userId));

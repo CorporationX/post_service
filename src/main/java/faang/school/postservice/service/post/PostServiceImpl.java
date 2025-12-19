@@ -39,8 +39,8 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class PostServiceImpl implements PostService {
-    private final static String DRAFT_LOG_PREFIX = "drafts";
-    private final static String PUBLISHED_LOG_PREFIX = "published posts";
+    private static final String DRAFT_LOG_PREFIX = "drafts";
+    private static final String PUBLISHED_LOG_PREFIX = "published posts";
 
     private final BatchPublishingService batchPublishingService;
     private final PostMapper postMapper;
@@ -93,8 +93,8 @@ public class PostServiceImpl implements PostService {
         validatePost(postDto);
 
         Post post = findPostOrThrow(postId);
-        if ((!Objects.equals(post.getAuthorId(), postDto.authorId())) ||
-                (!Objects.equals(post.getProjectId(), postDto.projectId()))) {
+        if ((!Objects.equals(post.getAuthorId(), postDto.authorId()))
+                || (!Objects.equals(post.getProjectId(), postDto.projectId()))) {
             throw new DataValidationException("Cannot change the author or project of a post.");
         }
         post.setContent(postDto.content());
@@ -163,7 +163,8 @@ public class PostServiceImpl implements PostService {
         List<List<Post>> batches = ListUtils.partition(postsToPublish, scheduledPostsBatchSize);
 
         List<CompletableFuture<Void>> futures = batches.stream()
-                .map(batch -> CompletableFuture.runAsync(() -> batchPublishingService.publishBatch(batch), scheduledPostExecutor))
+                .map(batch -> CompletableFuture.runAsync(() ->
+                                batchPublishingService.publishBatch(batch), scheduledPostExecutor))
                 .toList();
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
