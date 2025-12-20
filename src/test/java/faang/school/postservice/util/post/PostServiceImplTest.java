@@ -236,9 +236,9 @@ class PostServiceImplTest {
                 ));
         PostResponseDto out = service.publish(POST_ID);
 
-        verify(postMapper, times(1)).toDto(any(Post.class));
         assertTrue(out.published());
         assertNotNull(out.publishedAt());
+        verify(postMapper, times(1)).toDto(any(Post.class));
 
         ArgumentCaptor<PostEventDto> eventCaptor = ArgumentCaptor.forClass(PostEventDto.class);
         verify(eventPublisher).publishEvent(eventCaptor.capture());
