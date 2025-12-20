@@ -25,8 +25,10 @@ public class RedisService {
     }
 
     public void savePostInRedis(PostV2Dto postV2Dto) {
+        String key = KEY_PREFIX_BY_POST + postV2Dto.id();
+
         try {
-            redisTemplatePosts.opsForValue().set(KEY_PREFIX_BY_POST, postV2Dto, ttlAuthorPostInRedis, TimeUnit.SECONDS);
+            redisTemplatePosts.opsForValue().set(key, postV2Dto, ttlAuthorPostInRedis, TimeUnit.DAYS);
             log.info("Saved post into redis: {}", postV2Dto);
         } catch (Exception e) {
             log.error("Error while saving post into redis", e);
