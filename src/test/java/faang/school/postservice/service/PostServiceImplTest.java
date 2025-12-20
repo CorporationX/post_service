@@ -8,14 +8,17 @@ import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.user.GetUsersDto;
 import faang.school.postservice.dto.user.UserDto;
+import faang.school.postservice.event.PostEvent;
 import faang.school.postservice.event.UserBanEvent;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.PostEventPublisher;
 import faang.school.postservice.publisher.UserBanEventPublisher;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.SubscriptionRepository;
 import faang.school.postservice.service.post.BatchPublishingService;
 import faang.school.postservice.service.post.PostServiceImpl;
 import faang.school.postservice.service.user.UserServiceImpl;
@@ -26,6 +29,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mapstruct.factory.Mappers;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -86,8 +90,15 @@ public class PostServiceImplTest {
     private UserServiceImpl userService;
     @Mock
     private ModerationDictionary moderationDictionary;
+    @Mock
+    private PostEventPublisher postEventPublisher;
+    @Mock
+    private SubscriptionRepository subscriptionRepository;
     @Spy
     private PostMapper postMapper = Mappers.getMapper(PostMapper.class);
+
+    @Captor
+    private ArgumentCaptor<PostEvent> postEventArgumentCaptor = ArgumentCaptor.forClass(PostEvent.class);
 
     private static final long DEFAULT_ID = 1L;
     private static final long DEFAULT_NEGATIVE_ID = -1L;
@@ -255,6 +266,7 @@ public class PostServiceImplTest {
     void publishPost_whenPostIsNotPublished_shouldSetPublishedTrue() {
         Post post = Post.builder()
                 .id(DEFAULT_ID)
+                .authorId(1L)
                 .published(false)
                 .publishedAt(null)
                 .build();
@@ -277,11 +289,14 @@ public class PostServiceImplTest {
 
         ArgumentCaptor<Post> postCaptor = ArgumentCaptor.forClass(Post.class);
         verify(postRepository).save(postCaptor.capture());
+        verify(postEventPublisher).publish(postEventArgumentCaptor.capture());
 
+        PostEvent capturedPostEvent = postEventArgumentCaptor.getValue();
         Post savedPost = postCaptor.getValue();
         assertEquals(DEFAULT_ID, savedPost.getId());
         assertTrue(savedPost.isPublished());
         assertNotNull(savedPost.getPublishedAt());
+        assertEquals(DEFAULT_ID, capturedPostEvent.postId());
     }
 
     @Test
