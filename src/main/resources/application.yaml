@@ -89,6 +89,8 @@ executor:
 
 
 redis:
+  ttl:
+    author-cache-second: 1440
   topics:
     user-ban-topic: "user-ban-topic"
 

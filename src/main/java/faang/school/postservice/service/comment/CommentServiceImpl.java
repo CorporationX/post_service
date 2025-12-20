@@ -11,6 +11,7 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.cache.CacheService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -31,6 +32,7 @@ public class CommentServiceImpl implements CommentService {
     private final CommentRepository commentRepository;
     private final CommentMapper commentMapper;
     private final PostRepository postRepository;
+    private final CacheService cacheService;
 
 
     @Transactional
@@ -42,7 +44,9 @@ public class CommentServiceImpl implements CommentService {
         Comment newComment = commentMapper.toEntity(createCommentDto);
         newComment.setPost(post);
         newComment.setAuthorId(userContext.getUserId());
-        return commentMapper.toDto(commentRepository.save(newComment));
+        ResponseCommentDto dto = commentMapper.toDto(commentRepository.save(newComment));
+        cacheService.saveAuthorComment(userContext.getUserId(), newComment.getId());
+        return dto;
     }
 
     @Transactional
