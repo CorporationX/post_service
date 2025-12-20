@@ -1,6 +1,6 @@
 package faang.school.postservice.service.redis;
 
-import faang.school.postservice.model.Post;
+import faang.school.postservice.dto.post.PostV2Dto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,25 +11,25 @@ import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
-public class RedisService {
-    private static final String KEY_PREFIX_BY_AUTHOR_POST = "post_";
 
-    @Value("${spring.data.redis.ttl.author-post}")
+public class RedisService {
+    private static final String KEY_PREFIX_BY_POST = "post_";
+
+    @Value("${spring.data.redis.ttl.post}")
     private Long ttlAuthorPostInRedis;
 
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final RedisTemplate<String, PostV2Dto> redisTemplatePosts;
 
-    public RedisService(@Qualifier("redisTemplateAuthorPost") RedisTemplate<String, Object> redisTemplate) {
-        this.redisTemplate = redisTemplate;
+    public RedisService(@Qualifier("redisTemplatePost") RedisTemplate<String, PostV2Dto> redisTemplatePosts) {
+        this.redisTemplatePosts = redisTemplatePosts;
     }
 
-    public void saveAuthorPosts(Post post) {
+    public void savePostInRedis(PostV2Dto postV2Dto) {
         try {
-            redisTemplate.opsForValue().set(KEY_PREFIX_BY_AUTHOR_POST + post.getId(), post.getAuthorId(), ttlAuthorPostInRedis, TimeUnit.DAYS);
-            log.info("Author {} posts {} saved to redis", post.getAuthorId(), post.getId());
+            redisTemplatePosts.opsForValue().set(KEY_PREFIX_BY_POST, postV2Dto, ttlAuthorPostInRedis, TimeUnit.SECONDS);
+            log.info("Saved post into redis: {}", postV2Dto);
         } catch (Exception e) {
-            log.error("Error while saving author posts", e);
+            log.error("Error while saving post into redis", e);
         }
-
     }
 }

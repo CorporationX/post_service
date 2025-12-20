@@ -1,6 +1,8 @@
 package faang.school.postservice.config.redis;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import faang.school.postservice.dto.post.PostV2Dto;
 import io.lettuce.core.ClientOptions;
 import io.lettuce.core.SocketOptions;
 import io.lettuce.core.TimeoutOptions;
@@ -61,14 +63,16 @@ public class RedisConfig {
         return new LettuceConnectionFactory(config, poolConfig);
     }
 
-    @Bean(name = "redisTemplateAuthorPost")
-    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
-        RedisTemplate<String, Object> template = new RedisTemplate<>();
+
+    @Bean(name = "redisTemplatePost")
+    public RedisTemplate<String, PostV2Dto> redisTemplatePost(RedisConnectionFactory connectionFactory,
+                                                              ObjectMapper objectMapper) {
+        RedisTemplate<String, PostV2Dto> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
 
         StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
-        Jackson2JsonRedisSerializer<Object> jsonSerializer = new Jackson2JsonRedisSerializer<>(Object.class);
-
+        Jackson2JsonRedisSerializer<PostV2Dto> jsonSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, PostV2Dto.class);
+        //jsonSerializer.setObjectMapper(objectMapper);
 
         template.setKeySerializer(stringRedisSerializer);
         template.setValueSerializer(jsonSerializer);
