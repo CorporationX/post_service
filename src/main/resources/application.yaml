@@ -9,7 +9,7 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: none
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         format_sql: true
@@ -22,9 +22,22 @@ spring:
     redis:
       port: 6379
       host: localhost
+      timeout: 1000 #ms
+      lettuce:
+        pool:
+          max-active: 5000
+          max-idle: 5000
+          min-idle: 1000
+          max-wait: 5000 #ms
+          time-between-eviction-runs: 10s
+        shutdown-timeout: 1000 #ms
+      connect-timeout: 1000
       channels:
         calculations_channel:
           name: calculations_channel
+      ttl:
+        author-post: 1 # в днях
+
   kafka:
     bootstrap-servers: localhost:9092
     topics:
