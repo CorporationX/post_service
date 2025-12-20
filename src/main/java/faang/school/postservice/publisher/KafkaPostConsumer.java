@@ -15,7 +15,7 @@ public class KafkaPostConsumer {
 
     private final FeedService feedService;
 
-    @KafkaListener(topics = "${app.kafka.topics.posts-create-topic}", groupId = "post-feed-consumer-group")
+    @KafkaListener(topics = "${app.kafka.topics.posts-create-topic}", groupId = "${spring.kafka.consumer.group-id}")
     public void handlePostsCreateEvents(PostEventDto event, Acknowledgment ack) {
         log.info("Received post event: postId={}, followerCount={}",
                 event.postId(),
@@ -25,6 +25,7 @@ public class KafkaPostConsumer {
             ack.acknowledge();
         } catch (Exception e) {
             log.error("Failed to process post: {}", event.postId(), e);
+            throw e;
         }
     }
 }

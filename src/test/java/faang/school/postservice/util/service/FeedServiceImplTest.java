@@ -21,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -34,8 +35,6 @@ public class FeedServiceImplTest {
     private static final Long FOLLOWER_1_ID = 1L;
     private static final Long FOLLOWER_2_ID = 2L;
     private static final Long FOLLOWER_3_ID = 3L;
-    private static final Long FEED_SIZE_NORMAL = 100L;
-    private static final Long FEED_SIZE_MAXIMUM = 501L;
 
     private static final int MAX_FEED_SIZE = 500;
     private static final int FEED_TTL_DAYS = 30;
@@ -70,7 +69,6 @@ public class FeedServiceImplTest {
     @Test
     void updateFeeds_shouldAddPostToAllFollowers() {
         when(redisTemplate.opsForZSet()).thenReturn(zsetOperations);
-        when(zsetOperations.size(anyString())).thenReturn(FEED_SIZE_NORMAL);
 
         PostEventDto event = createTestEvent(List.of(FOLLOWER_1_ID, FOLLOWER_2_ID, FOLLOWER_3_ID));
         double expectedScore = -event.publishedAt().toInstant(ZoneOffset.UTC).toEpochMilli();
@@ -81,7 +79,8 @@ public class FeedServiceImplTest {
         verify(zsetOperations).add("feed:" + FOLLOWER_2_ID, POST_ID, expectedScore);
         verify(zsetOperations).add("feed:" + FOLLOWER_3_ID, POST_ID, expectedScore);
 
-        verify(zsetOperations, times(3)).size(anyString());
+        verify(zsetOperations, times(3)).removeRange(anyString(),
+                eq((long) MAX_FEED_SIZE), eq(-1L));
         verify(redisTemplate, times(3)).expire(anyString(), any(Duration.class));
     }
 
@@ -109,12 +108,11 @@ public class FeedServiceImplTest {
     @Test
     void updateFeeds_shouldDecreaseSize() {
         when(redisTemplate.opsForZSet()).thenReturn(zsetOperations);
-        when(zsetOperations.size("feed:" + FOLLOWER_1_ID)).thenReturn(FEED_SIZE_MAXIMUM);
 
         PostEventDto event = createTestEvent(List.of(FOLLOWER_1_ID));
 
         feedService.updateFeeds(event);
 
-        verify(zsetOperations).removeRange("feed:" + FOLLOWER_1_ID, -1L, -1L);
+        verify(zsetOperations).removeRange("feed:" + FOLLOWER_1_ID, MAX_FEED_SIZE, -1);
     }
 }

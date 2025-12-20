@@ -20,7 +20,7 @@ public class FeedServiceImpl implements FeedService {
     @Value("${app.feed.max-size}")
     private int maxFeedSize;
 
-    @Value("${app.feed.ttl-days:30}")
+    @Value("${app.feed.ttl-days:1}")
     private int feedTtlDays;
 
     @Override
@@ -38,16 +38,10 @@ public class FeedServiceImpl implements FeedService {
                 String feedKey = "feed:" + followerId;
 
                 redisTemplate.opsForZSet().add(feedKey, event.postId(), score);
-
-                Long size = redisTemplate.opsForZSet().size(feedKey);
-                if (size != null && size > maxFeedSize) {
-                    long toRemove = size - maxFeedSize;
-                    redisTemplate.opsForZSet().removeRange(feedKey, -toRemove, -1);
-                }
-
+                redisTemplate.opsForZSet().removeRange(feedKey, maxFeedSize, -1);
                 redisTemplate.expire(feedKey, Duration.ofDays(feedTtlDays));
-
                 log.debug("Updated feed for follower {}: added post {}", followerId, event.postId());
+
             } catch (Exception e) {
                 log.error("Failed to update feed for follower {}, post {}", followerId, event.postId(), e);
                 throw e;

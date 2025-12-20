@@ -1,26 +1,28 @@
 spring:
   kafka:
     bootstrap-servers: localhost:9092
+    consumer:
+      group-id: post-service-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      enable-auto-commit: false
+      auto-offset-reset: earliest
     properties:
-      security:
-        protocol: PLAINTEXT
+      security.protocol: PLAINTEXT
+      spring.json.trusted.packages: "*"
+      spring.json.value.default.type: faang.school.postservice.dto.post.PostEventDto
+    listener:
+      ack-mode: MANUAL
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       acks: all
       properties:
         spring.json.add.type.headers: false
-    consumer:
-      group-id: post-service-group
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      properties:
-         spring.json.trusted.packages: "*"
-         spring.json.type.mapping: postEvent:faang.school.postservice.dto.post.PostEventDto
-         spring.json.use.type.headers: false
-         spring.json.value.default.type: "faang.school.postservice.dto.post.PostEventDto"
-    listener:
-      ack-mode: manual
+        max.block.ms: 3000
+        delivery.timeout.ms: 10000
+        request.timeout.ms: 5000
+        enable.idempotence: true
 
   servlet:
     multipart:
@@ -72,6 +74,21 @@ logging:
   level:
     root: info
 
+app:
+  kafka:
+    topics:
+      posts-create-topic: posts
+  feed:
+    max-size: 500
+    ttl-days: 1
+  producer:
+    timeout-seconds: 3
+  resources:
+    image:
+      max-file-size-mb: 5
+      max-per-post: 10
+      type: "IMAGE"
+
 user-service:
   host: localhost
   port: 8080
@@ -100,19 +117,6 @@ services:
     accessKey: user
     secretKey: password
     bucketName: corpbucket
-
-app:
-  resources:
-    image:
-      max-file-size-mb: 5
-      max-per-post: 10
-      type: "IMAGE"
-  kafka:
-    topics:
-      posts-create-topic: "posts"
-  feed:
-    max-size: 500
-    ttl-days: 30
 
 post-correcter:
   cron: "0 0 3 * * *" # every day at 3:00

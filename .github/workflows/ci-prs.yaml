@@ -41,7 +41,8 @@ jobs:
       - name: Checkstyle verification
         run: ./gradlew checkstyleMain checkstyleTest --no-daemon --continue
 
-
+      - name: Test with Gradle
+        run: ./gradlew test -x testClasses --no-daemon --continue
 
       - name: Archive test report
         if: always()
@@ -57,8 +58,6 @@ jobs:
           name: checkstyle_report
           path: build/reports/checkstyle
 
-      - name: Test with Gradle
-        run: ./gradlew test -x testClasses --no-daemon --continue
 
       - name: Generate Jacoco Report
         run: ./gradlew jacocoTestReport --no-daemon --continue
