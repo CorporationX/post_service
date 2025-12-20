@@ -2,13 +2,11 @@ package faang.school.postservice.service.comment;
 
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CreateCommentDto;
-import faang.school.postservice.dto.comment.ModelEventDto;
 import faang.school.postservice.dto.comment.ResponseCommentDto;
 import faang.school.postservice.dto.comment.UpdateCommentDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.mapper.CommentMapper;
-import faang.school.postservice.messages.spring.publishers.SpringCommentPublisher;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
