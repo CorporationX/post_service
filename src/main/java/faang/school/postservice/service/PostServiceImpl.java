@@ -6,6 +6,7 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.LanguageToolConfig;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.CreatePostRequestDto;
+import faang.school.postservice.dto.post.PostEventDto;
 import faang.school.postservice.dto.post.UpdatePostRequestDto;
 import faang.school.postservice.dto.post.PostResponseDto;
 import faang.school.postservice.dto.project.ProjectDto;
@@ -23,6 +24,7 @@ import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.retry.annotation.Backoff;
@@ -32,6 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -54,6 +57,7 @@ public class PostServiceImpl implements PostService {
     private final FeignLanguageToolClient feignLanguageTool;
     private final UserContext userContext;
     private final ThreadPoolConfig threadPoolConfig;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Value("${scheduler.thread-pool.batchSize:50}")
     private int batchSize;
@@ -118,6 +122,16 @@ public class PostServiceImpl implements PostService {
         Post saved = postRepository.save(post);
 
         log.info("Post published id={} at {}", id, saved.getPublishedAt());
+        List<Long> followerIds = getFollowerIds(saved.getAuthorId());
+        PostEventDto event = new PostEventDto(
+                saved.getId(),
+                saved.getAuthorId(),
+                saved.getProjectId(),
+                followerIds,
+                saved.getPublishedAt()
+        );
+
+        eventPublisher.publishEvent(event);
         return postMapper.toDto(saved);
     }
 
@@ -328,5 +342,34 @@ public class PostServiceImpl implements PostService {
             result.add(ready.subList(i, Math.min(i + batchSize, size)));
         }
         return result;
+    }
+
+    private List<Long> getFollowerIds(Long authorId) {
+        if (authorId == null) {
+            log.warn("AuthorId is null, can't find followers");
+            return Collections.emptyList();
+        }
+
+        try {
+            List<UserDto> followers = userServiceClient.getFollowers(
+                    authorId,
+                    null,
+                    null,
+                    0,
+                    Integer.MAX_VALUE
+            );
+            return followers.stream()
+                    .map(UserDto::id)
+                    .collect(Collectors.toList());
+        } catch (FeignException.NotFound e) {
+            log.warn("User {} not found when getting followers", authorId);
+            return Collections.emptyList();
+        } catch (FeignException e) {
+            log.error("Failed to get followers from user-service for author {}", authorId, e);
+            throw new RuntimeException("Cannot fetch followers - user-service unavailable", e);
+        } catch (Exception e) {
+            log.error("Unexpected error when searching for followers for an author {}", authorId, e);
+            throw new RuntimeException("Cannot fetch followers - unexpected error", e);
+        }
     }
 }

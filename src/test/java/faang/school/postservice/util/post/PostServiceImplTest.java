@@ -6,6 +6,7 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.LanguageToolConfig;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.CreatePostRequestDto;
+import faang.school.postservice.dto.post.PostEventDto;
 import faang.school.postservice.dto.post.PostResponseDto;
 import faang.school.postservice.dto.post.UpdatePostRequestDto;
 import faang.school.postservice.dto.project.ProjectDto;
@@ -25,10 +26,12 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mapstruct.factory.Mappers;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.ResponseEntity;
 
 import java.lang.reflect.Field;
@@ -46,6 +49,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.anyLong;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doReturn;
@@ -63,6 +68,8 @@ class PostServiceImplTest {
     private static final long AUTHOR_ID = 10L;
     private static final long PROJECT_ID = 7L;
     private static final long SAVED_ID = 42L;
+    private static final long FOLLOWER_1_ID = 100L;
+    private static final long FOLLOWER_2_ID = 200L;
 
     private static final String CONTENT = "Hello";
     private static final String CONTENT_CREATE = "Hi";
@@ -92,6 +99,8 @@ class PostServiceImplTest {
     private FeignLanguageToolClient feignLanguageTool;
     @Mock
     private UserContext userContext;
+    @Mock
+    ApplicationEventPublisher eventPublisher;
     @Spy
     private PostMapper postMapper = Mappers.getMapper(PostMapper.class);
     private Post postDbEntity;
@@ -215,12 +224,33 @@ class PostServiceImplTest {
     void publish_ok() {
         when(postRepository.findById(POST_ID)).thenReturn(Optional.of(postDbEntity));
         when(postRepository.save(any(Post.class))).thenAnswer(inv -> inv.getArgument(0));
-
+        when(userServiceClient.getFollowers(
+                eq(AUTHOR_ID),
+                isNull(),
+                isNull(),
+                eq(0),
+                eq(Integer.MAX_VALUE)))
+                .thenReturn(List.of(
+                        new UserDto(FOLLOWER_1_ID, "User1", "user1@mail.com"),
+                        new UserDto(FOLLOWER_2_ID, "User2", "user2@mail.com")
+                ));
         PostResponseDto out = service.publish(POST_ID);
 
-        verify(postMapper, times(1)).toDto(any(Post.class));
         assertTrue(out.published());
         assertNotNull(out.publishedAt());
+        verify(postMapper, times(1)).toDto(any(Post.class));
+
+        ArgumentCaptor<PostEventDto> eventCaptor = ArgumentCaptor.forClass(PostEventDto.class);
+        verify(eventPublisher).publishEvent(eventCaptor.capture());
+
+        PostEventDto capturedEvent = eventCaptor.getValue();
+        assertEquals(POST_ID, capturedEvent.postId());
+        assertEquals(AUTHOR_ID, capturedEvent.authorId());
+        assertNotNull(capturedEvent.followerIds());
+        assertEquals(2, capturedEvent.followerIds().size());
+        assertTrue(capturedEvent.followerIds().contains(FOLLOWER_1_ID));
+        assertTrue(capturedEvent.followerIds().contains(FOLLOWER_2_ID));
+        assertNotNull(capturedEvent.publishedAt());
     }
 
     @Test
