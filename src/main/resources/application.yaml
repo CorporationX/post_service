@@ -68,7 +68,7 @@ logging:
 app:
   kafka:
     topics:
-      posts-create-topic: posts
+      posts-create-topic: posts-create-topic
   producer:
     timeout-seconds: 3
   resources:
