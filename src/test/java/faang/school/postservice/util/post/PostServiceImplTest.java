@@ -17,7 +17,6 @@ import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.publisher.KafkaPostProducer;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.scheduler.ThreadPoolConfig;
 import faang.school.postservice.service.PostServiceImpl;
@@ -27,10 +26,12 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mapstruct.factory.Mappers;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.ResponseEntity;
 
 import java.lang.reflect.Field;
@@ -99,7 +100,7 @@ class PostServiceImplTest {
     @Mock
     private UserContext userContext;
     @Mock
-    private KafkaPostProducer kafkaPostProducer;
+    ApplicationEventPublisher eventPublisher;
     @Spy
     private PostMapper postMapper = Mappers.getMapper(PostMapper.class);
     private Post postDbEntity;
@@ -236,9 +237,20 @@ class PostServiceImplTest {
         PostResponseDto out = service.publish(POST_ID);
 
         verify(postMapper, times(1)).toDto(any(Post.class));
-        verify(kafkaPostProducer).publishPostCreate(any(PostEventDto.class));
         assertTrue(out.published());
         assertNotNull(out.publishedAt());
+
+        ArgumentCaptor<PostEventDto> eventCaptor = ArgumentCaptor.forClass(PostEventDto.class);
+        verify(eventPublisher).publishEvent(eventCaptor.capture());
+
+        PostEventDto capturedEvent = eventCaptor.getValue();
+        assertEquals(POST_ID, capturedEvent.postId());
+        assertEquals(AUTHOR_ID, capturedEvent.authorId());
+        assertNotNull(capturedEvent.followerIds());
+        assertEquals(2, capturedEvent.followerIds().size());
+        assertTrue(capturedEvent.followerIds().contains(FOLLOWER_1_ID));
+        assertTrue(capturedEvent.followerIds().contains(FOLLOWER_2_ID));
+        assertNotNull(capturedEvent.publishedAt());
     }
 
     @Test
