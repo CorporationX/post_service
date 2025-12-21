@@ -6,6 +6,7 @@ public record CommentEventDto(
         long postId,
         long authorId,
         long commentId,
+        String content,
         LocalDateTime createdAt
 ) {
 }
