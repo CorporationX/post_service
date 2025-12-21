@@ -4,9 +4,11 @@ import org.springframework.boot.Banner;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.cloud.openfeign.EnableFeignClients;
+import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
+@EnableKafka
 @SpringBootApplication
 @EnableScheduling
 @EnableRetry
