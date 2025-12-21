@@ -1,4 +1,4 @@
-package faang.school.postservice.dto.user;
+package faang.school.postservice.dto.cash;
 
 
 import org.springframework.data.annotation.Id;

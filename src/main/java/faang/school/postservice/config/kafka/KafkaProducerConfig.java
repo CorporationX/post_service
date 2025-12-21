@@ -1,4 +1,4 @@
-package faang.school.postservice.config;
+package faang.school.postservice.config.kafka;
 
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -18,7 +18,7 @@ import java.util.Map;
 
 @Configuration
 @EnableKafka
-public class KafkaConfig {
+public class KafkaProducerConfig {
 
     @Value("${kafka.topic.comment.name:comment-topic}")
     private String commentTopicName;

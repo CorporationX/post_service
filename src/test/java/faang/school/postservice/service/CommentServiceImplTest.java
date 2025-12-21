@@ -12,7 +12,7 @@ import faang.school.postservice.publisher.kafka.KafkaCommentProducer;
 import faang.school.postservice.publisher.redis.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.repository.redis.RedisUserRepository;
+import faang.school.postservice.repository.cash.RedisUserRepository;
 import faang.school.postservice.service.comment.CommentServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
