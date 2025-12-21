@@ -65,4 +65,4 @@ app:
 cache:
   redis:
     author:
-      ttl: 1d
+      ttl-seconds: 86400
