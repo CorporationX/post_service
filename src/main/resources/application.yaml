@@ -40,7 +40,7 @@ kafka:
   topic:
     user-ban: user_ban
     comment-event: comment_events
-    posts: posts
+    posts-publish: posts_publish
 
 server:
   port: 8081

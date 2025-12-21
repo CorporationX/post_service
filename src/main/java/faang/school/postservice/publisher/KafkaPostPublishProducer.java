@@ -12,11 +12,11 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class KafkaPostProducer {
+public class KafkaPostPublishProducer {
 	private final KafkaTemplate<String, PostEvent> postEventKafkaTemplate;
 	private final SubscriptionRepository subscriptionRepository;
 
-	@Value("${kafka.topic.posts:posts}")
+	@Value("${kafka.topic.posts-publish:posts_publish}")
 	private String postsTopic;
 
 	public void publishPostEvent(Post post) {
