@@ -8,7 +8,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -45,6 +47,12 @@ public class FeedServiceImplTest {
     @Mock
     private ZSetOperations<String, Object> zsetOperations;
 
+    @Mock
+    private ValueOperations<String, Object> valueOperations;
+
+    @Mock
+    private HashOperations<String, Object, Object> hashOperations;
+
     @InjectMocks
     private FeedServiceImpl feedService;
 
@@ -70,19 +78,23 @@ public class FeedServiceImplTest {
     @Test
     void updateFeeds_shouldAddPostToAllFollowers() {
         when(redisTemplate.opsForZSet()).thenReturn(zsetOperations);
+        when(redisTemplate.opsForHash()).thenReturn(hashOperations);
+        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+        when(redisTemplate.hasKey(anyString())).thenReturn(false);
 
         PostEventDto event = createTestEvent(List.of(FOLLOWER_1_ID, FOLLOWER_2_ID, FOLLOWER_3_ID));
         double expectedScore = -event.publishedAt().toInstant(ZoneOffset.UTC).toEpochMilli();
 
         feedService.updateFeeds(event);
 
-        verify(zsetOperations).add("feed:" + FOLLOWER_1_ID, POST_ID, expectedScore);
-        verify(zsetOperations).add("feed:" + FOLLOWER_2_ID, POST_ID, expectedScore);
-        verify(zsetOperations).add("feed:" + FOLLOWER_3_ID, POST_ID, expectedScore);
+        verify(zsetOperations).add("feed:" + FOLLOWER_1_ID, POST_ID.toString(), expectedScore);
+        verify(zsetOperations).add("feed:" + FOLLOWER_2_ID, POST_ID.toString(), expectedScore);
+        verify(zsetOperations).add("feed:" + FOLLOWER_3_ID, POST_ID.toString(), expectedScore);
 
         verify(zsetOperations, times(3)).removeRange(anyString(),
                 eq((long) MAX_FEED_SIZE), eq(-1L));
-        verify(redisTemplate, times(3)).expire(anyString(), any(Duration.class));
+        verify(redisTemplate, times(4)).expire(anyString(),
+                any(Duration.class));
     }
 
     @Test
@@ -97,10 +109,6 @@ public class FeedServiceImplTest {
 
     @Test
     void updateFeeds_whenRedisThrowsException_shouldRethrow() {
-        when(redisTemplate.opsForZSet()).thenReturn(zsetOperations);
-        when(zsetOperations.add(anyString(), any(), anyDouble()))
-                .thenThrow(new RuntimeException("Redis error"));
-
         PostEventDto event = createTestEvent(List.of(FOLLOWER_1_ID));
 
         assertThrows(RuntimeException.class, () -> feedService.updateFeeds(event));
@@ -109,6 +117,9 @@ public class FeedServiceImplTest {
     @Test
     void updateFeeds_shouldDecreaseSize() {
         when(redisTemplate.opsForZSet()).thenReturn(zsetOperations);
+        when(redisTemplate.opsForHash()).thenReturn(hashOperations);
+        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+        when(redisTemplate.hasKey(anyString())).thenReturn(false);
 
         PostEventDto event = createTestEvent(List.of(FOLLOWER_1_ID));
 
