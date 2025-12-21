@@ -16,7 +16,6 @@ public class RedisService {
 
     @Value("${spring.data.redis.ttl.author-post}")
     private Long ttlAuthorPostInRedis;
-
     private final RedisTemplate<String, Object> redisTemplateAuthorPosts;
 
     public RedisService(@Qualifier("redisTemplateAuthorPost") RedisTemplate<String, Object> redisTemplateAuthorPosts) {
