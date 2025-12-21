@@ -6,6 +6,20 @@ spring:
     bootstrap-servers: ${KAFKA_HOST}:${KAFKA_PORT}
     topics:
       comment: "comment-topic"
+    consumer:
+      group-id:
+        comment: "comment"
+      trustedPackage: "faang.school.postservice.dto*"
+      acks: all
+      retries: 5
+      properties:
+        enable.idempotence: true
+        max.in.flight.requests.per.connection: 5
+
+  kafka:
+    bootstrap-servers: ${KAFKA_HOST}:${KAFKA_PORT}
+    topics:
+      comment: "comment-topic"
     producer:
       acks: "all"
       retries: 5
@@ -42,6 +56,17 @@ spring:
 
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
+
+  kafka:
+    bootstrap-servers: ${KAFKA_HOST}:${KAFKA_PORT}
+    topics:
+      comment: "comment-topic"
+    producer:
+      acks: "all"
+      retries: 5
+      properties:
+        enable.idempotence: true
+        max.in.flight.requests.per.connection: 5
 
   data:
     redis:
