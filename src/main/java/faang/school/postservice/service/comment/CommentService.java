@@ -19,6 +19,7 @@ import faang.school.postservice.repository.cache.AuthorCacheRepository;
 import faang.school.postservice.validator.comment.CommentValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -33,6 +34,9 @@ public class CommentService {
     private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
     private final AuthorCacheRepository authorCacheRepository;
+
+    @Value("${cache.redis.author.ttl-seconds}")
+    private Long authorTtlSeconds;
 
     @PublishCommentEvent
     @Transactional
@@ -51,7 +55,8 @@ public class CommentService {
                         user.id(),
                         user.username(),
                         user.email(),
-                        user.active()
+                        user.active(),
+                        authorTtlSeconds
                 )
         );
 
