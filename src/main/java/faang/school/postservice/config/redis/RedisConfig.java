@@ -26,13 +26,4 @@ public class RedisConfig {
 
         return template;
     }
-
-    @Bean
-    public RedisMappingContext redisMappingContext(
-            @Value("${cache.redis.author.ttl-seconds}") long ttlSeconds) {
-
-        RedisMappingContext context = new RedisMappingContext();
-        context.setTimeToLive(Duration.ofSeconds(ttlSeconds));
-        return context;
-    }
 }
