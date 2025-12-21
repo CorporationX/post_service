@@ -125,6 +125,7 @@ public class PostServiceImpl implements PostService {
         List<Long> followerIds = getFollowerIds(saved.getAuthorId());
         PostEventDto event = new PostEventDto(
                 saved.getId(),
+                saved.getContent(),
                 saved.getAuthorId(),
                 saved.getProjectId(),
                 followerIds,

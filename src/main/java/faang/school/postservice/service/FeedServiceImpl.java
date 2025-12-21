@@ -9,7 +9,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.ZoneOffset;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -31,24 +33,55 @@ public class FeedServiceImpl implements FeedService {
             return;
         }
 
-        double score = -event.publishedAt().toInstant(ZoneOffset.UTC).toEpochMilli();
+        String processedKey = "processed:post:" + event.postId();
 
-        for (Long followerId : followerIds) {
-            try {
-                String feedKey = "feed:" + followerId;
-
-                redisTemplate.opsForZSet().add(feedKey, event.postId(), score);
-                redisTemplate.opsForZSet().removeRange(feedKey, maxFeedSize, -1);
-                redisTemplate.expire(feedKey, Duration.ofDays(feedTtlDays));
-                log.debug("Updated feed for follower {}: added post {}", followerId, event.postId());
-
-            } catch (Exception e) {
-                log.error("Failed to update feed for follower {}, post {}", followerId, event.postId(), e);
-                throw e;
-            }
+        if (Boolean.TRUE.equals(redisTemplate.hasKey(processedKey))) {
+            log.info("Post {} already processed, skipping", event.postId());
+            return;
         }
 
-        log.info("Successfully updated feeds for {} followers, postId={}",
-                followerIds.size(), event.postId());
+        try {
+            savePostDetails(event);
+            double score = -event.publishedAt().toInstant(ZoneOffset.UTC).toEpochMilli();
+
+            for (Long followerId : followerIds) {
+                updateSingleFeed(followerId, event.postId(), score);
+            }
+
+            redisTemplate.opsForValue().set(processedKey, "1", Duration.ofDays(feedTtlDays));
+            log.info("Successfully updated feeds for {} followers, postId={}",
+                    followerIds.size(), event.postId());
+
+        } catch (Exception e) {
+            log.error("Failed to process post {}", event.postId(), e);
+            throw e;
+        }
+    }
+
+    private void savePostDetails(PostEventDto event) {
+        final String postKey = "post:" + event.postId();
+
+        Map<String, String> postData = new HashMap<>();
+        postData.put("id", event.postId().toString());
+        postData.put("content", event.content());
+        postData.put("publishedAt", event.publishedAt().toString());
+
+        if (event.authorId() != null) {
+            postData.put("authorId", event.authorId().toString());
+        }
+        if (event.projectId() != null) {
+            postData.put("projectId", event.projectId().toString());
+        }
+
+        redisTemplate.opsForHash().putAll(postKey, postData);
+        redisTemplate.expire(postKey, Duration.ofDays(feedTtlDays));
+    }
+
+    private void updateSingleFeed(Long followerId, Long postId, double score) {
+        String feedKey = "feed:" + followerId;
+
+        redisTemplate.opsForZSet().add(feedKey, postId.toString(), score);
+        redisTemplate.opsForZSet().removeRange(feedKey, maxFeedSize, -1);
+        redisTemplate.expire(feedKey, Duration.ofDays(feedTtlDays));
     }
 }

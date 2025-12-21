@@ -59,6 +59,7 @@ public class FeedServiceImplTest {
     private PostEventDto createTestEvent(List<Long> followerIds) {
         return new PostEventDto(
                 POST_ID,
+                "Test post",
                 AUTHOR_ID,
                 null,
                 followerIds,

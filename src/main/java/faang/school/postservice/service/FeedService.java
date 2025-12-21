@@ -12,5 +12,5 @@ public interface FeedService {
      *
      * @param event событие поста с данными о посте и подписчиках
      */
-    public void updateFeeds(PostEventDto event);
+    void updateFeeds(PostEventDto event);
 }
