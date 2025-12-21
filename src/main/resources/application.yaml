@@ -2,6 +2,21 @@ spring:
   config:
     import: optional:classpath:application.properties
 
+  kafka:
+    bootstrap-servers: ${KAFKA_HOST}:${KAFKA_PORT}
+    topics:
+      post-created: "post.created"
+      post-to-feed: "post.to-feed"
+    producer:
+      acks: all
+      retries: 5
+      properties:
+        enable.idempotence: true
+        max.in.flight.requests.per.connection: 5
+
+  outbox:
+    fixed-delay-ms: 5000
+
   servlet:
     multipart:
       max-file-size: 5MB
@@ -21,7 +36,7 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: none
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         format_sql: true
