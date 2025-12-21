@@ -80,7 +80,7 @@ public class LikeServiceImpl implements LikeService {
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public List<LikeDto> getLikesFromPost(long postId) {
         List<Like> likes = likeRepository.findAllByPostId(postId).orElse(Collections.emptyList());
         return likeMapper.toLikeDtos(likes);
