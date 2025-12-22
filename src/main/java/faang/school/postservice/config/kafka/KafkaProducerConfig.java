@@ -33,11 +33,14 @@ public class KafkaProducerConfig {
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress);
         props.put(ProducerConfig.ACKS_CONFIG, akcs);
         props.put(ProducerConfig.RETRIES_CONFIG, retries);
-        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+
+        JsonSerializer<Object> jsonSerializer = new JsonSerializer<>();
+        jsonSerializer.setAddTypeInfo(true);
+
         props.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, idempotence);
         props.put(ProducerConfig.MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, connections);
-        return new DefaultKafkaProducerFactory<>(props);
+
+        return new DefaultKafkaProducerFactory<>(props, new StringSerializer(), jsonSerializer);
     }
 
     @Bean("kafkaTemplate")

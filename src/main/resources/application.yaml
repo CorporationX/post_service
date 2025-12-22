@@ -37,7 +37,7 @@ spring:
     topics:
       comment: "comment-topic"
     producer:
-      acks: all
+      acks: "all"
       retries: 5
       properties:
         enable.idempotence: true
