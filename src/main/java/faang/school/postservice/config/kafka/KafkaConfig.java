@@ -1,6 +1,7 @@
 package faang.school.postservice.config.kafka;
 
 import faang.school.postservice.dto.event.CommentEvent;
+import faang.school.postservice.dto.event.LikeEventDto;
 import faang.school.postservice.dto.event.PostPublishEventDto;
 import faang.school.postservice.event.UserBanEvent;
 import org.apache.kafka.clients.producer.ProducerConfig;
