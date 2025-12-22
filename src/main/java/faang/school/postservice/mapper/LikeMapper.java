@@ -15,10 +15,4 @@ public interface LikeMapper {
     LikeDto toLikeDto(Like like);
 
     List<LikeDto> toLikeDtos(List<Like> likes);
-
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "post", ignore = true)
-    @Mapping(target = "comment", ignore = true)
-    @Mapping(target = "createdAt", ignore = true)
-    Like toLike(LikeDto likeDto);
 }

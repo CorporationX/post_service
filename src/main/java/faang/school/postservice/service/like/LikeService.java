@@ -22,10 +22,9 @@ public interface LikeService {
      * </ul>
      *
      * @param postId  идентификатор поста, на который пользователь ставит лайк
-     * @param likeDto объект {@link LikeDto}, содержащий информацию о лайке
      * @return объект {@link LikeDto}, содержащий информацию о лайке
      */
-    LikeDto addLikeToPost(long postId, LikeDto likeDto);
+    LikeDto addLikeToPost(long postId);
 
     /**
      * Пользователь убирает поставленный лайк с поста
@@ -51,10 +50,9 @@ public interface LikeService {
      * </lu>
      *
      * @param commentId идентификатор комментария, на который пользователь ставит лайк
-     * @param likeDto   объект {@link LikeDto}, содержащий информацию о лайке
      * @return объект {@link LikeDto}, содержащий информацию о лайке
      */
-    LikeDto addLikeToComment(long commentId, LikeDto likeDto);
+    LikeDto addLikeToComment(long commentId);
 
     /**
      * Пользователь убирает поставленный лайк с комментария

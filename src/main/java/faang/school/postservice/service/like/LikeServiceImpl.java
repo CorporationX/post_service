@@ -11,7 +11,6 @@ import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.util.client.UserServiceClientAdapter;
-import faang.school.postservice.util.like.LikeValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -30,17 +29,19 @@ public class LikeServiceImpl implements LikeService {
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final LikeRepository likeRepository;
-    private final LikeValidator likeValidator;
     private final UserServiceClientAdapter userServiceClientAdapter;
 
     @Override
     @Transactional
-    public LikeDto addLikeToPost(long postId, LikeDto likeDto) {
-        likeValidator.validateUser(userServiceClientAdapter.getUserById(userContext.getUserId()), likeDto);
-        Post currentPost = postRepository.findById(likeDto.postId()).orElseThrow(() ->
-                new EntityNotFoundException(String.format("Post #%d is not found", likeDto.postId())));
-        Like like = likeMapper.toLike(likeDto);
-        like.setPost(currentPost);
+    public LikeDto addLikeToPost(long postId) {
+        long userId = userContext.getUserId();
+        userServiceClientAdapter.getUserById(userId);
+        Post currentPost = postRepository.findById(postId).orElseThrow(() ->
+                new EntityNotFoundException(String.format("Post #%d is not found", postId)));
+        Like like = Like.builder()
+                .userId(userId)
+                .post(currentPost)
+                .build();
         like = likeRepository.save(like);
         return likeMapper.toLikeDto(like);
     }
@@ -58,12 +59,15 @@ public class LikeServiceImpl implements LikeService {
 
     @Override
     @Transactional
-    public LikeDto addLikeToComment(long commentId, LikeDto likeDto) {
-        likeValidator.validateUser(userServiceClientAdapter.getUserById(userContext.getUserId()), likeDto);
+    public LikeDto addLikeToComment(long commentId) {
+        long userId = userContext.getUserId();
+        userServiceClientAdapter.getUserById(userId);
         Comment currentComment = commentRepository.findById(commentId).orElseThrow(() ->
-                new EntityNotFoundException(String.format("Comment #%d is not found", likeDto.commentId())));
-        Like like = likeMapper.toLike(likeDto);
-        like.setComment(currentComment);
+                new EntityNotFoundException(String.format("Comment #%d is not found", commentId)));
+        Like like = Like.builder()
+                .userId(userId)
+                .comment(currentComment)
+                .build();
         like = likeRepository.save(like);
         return likeMapper.toLikeDto(like);
     }
