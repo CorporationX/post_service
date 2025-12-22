@@ -21,6 +21,8 @@ public class KafkaConsumerConfig {
     private String bootstrapAddress;
     @Value("${spring.kafka.consumer.trustedPackage}")
     private String trustedPackage;
+    @Value("${spring.kafka.consumer.properties.auto.offset}")
+    private String autoOffset;
 
     @Bean(name = "consumerFactory")
     public ConsumerFactory<String, Object> consumerFactory() {
@@ -30,7 +32,7 @@ public class KafkaConsumerConfig {
         configProperties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress);
         configProperties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         configProperties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
-        configProperties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        configProperties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, autoOffset);
         return new DefaultKafkaConsumerFactory<>(configProperties, new StringDeserializer(), deserializer);
     }
 
