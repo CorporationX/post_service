@@ -9,6 +9,7 @@ public record PublishCommentDto(
         Long commentId,
         Long authorId,
         Long postId,
+        String content,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
