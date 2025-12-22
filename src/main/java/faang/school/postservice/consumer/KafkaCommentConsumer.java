@@ -47,7 +47,10 @@ public class KafkaCommentConsumer {
         log.info("Пользователь из Redis: {}, существует: {}", userFromRedis, userFromRedis.isPresent());
 
         UserRedisDto user = userFromRedis.orElseGet(() -> {
-            log.info("Пользователь {} не был найден в Redis, обращение к клиенту пользователей...", event.getAuthorId());
+            log.info(
+                    "Пользователь {} не был найден в Redis, обращение к клиенту пользователей...",
+                    event.getAuthorId()
+            );
             UserViewDto response = client.getUser(event.getAuthorId()).orElseGet(
                     () -> new UserViewDto(null, "Пользователь не найден", null)
             );
