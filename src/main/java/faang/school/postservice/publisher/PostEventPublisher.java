@@ -1,6 +1,6 @@
 package faang.school.postservice.publisher;
 
-import faang.school.postservice.dto.event.PostEventDto;
+import faang.school.postservice.dto.event.PostPublishEventDto;
 import faang.school.postservice.repository.SubscriptionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +24,7 @@ public class PostEventPublisher {
                         long authorId,
                         String content) {
         List<Long> subscribers = subscriptionRepository.findFollowerIdByFolloweeId(authorId);
-        PostEventDto postEventDto = PostEventDto
+        PostPublishEventDto postPublishEventDto = PostPublishEventDto
                 .builder()
                 .postId(postId)
                 .authorId(authorId)
@@ -37,10 +37,10 @@ public class PostEventPublisher {
                 authorId,
                 content);
         try {
-            kafkaTemplate.send(postEventsTopic, postEventDto);
-            log.info("Successfully published post event: {}", postEventDto);
+            kafkaTemplate.send(postEventsTopic, postPublishEventDto);
+            log.info("Successfully published post event: {}", postPublishEventDto);
         } catch (Exception exception) {
-            log.error("Failed to publish post event: {}", postEventDto, exception);
+            log.error("Failed to publish post event: {}", postPublishEventDto, exception);
         }
     }
 }
