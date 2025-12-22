@@ -11,6 +11,7 @@ import org.springframework.data.redis.core.TimeToLive;
 import org.springframework.data.redis.core.index.Indexed;
 
 import java.io.Serializable;
+import java.util.concurrent.TimeUnit;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -28,6 +29,6 @@ public class Author implements Serializable {
 
     private Long modelId;
 
-    @TimeToLive
+    @TimeToLive(unit = TimeUnit.SECONDS)
     private Long ttl;
 }
