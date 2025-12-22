@@ -5,7 +5,7 @@ import lombok.Builder;
 import java.util.List;
 
 @Builder
-public record PostEventDto(
+public record PostPublishEventDto(
         Long postId,
         Long authorId,
         String content,

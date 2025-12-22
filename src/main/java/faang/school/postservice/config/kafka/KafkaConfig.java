@@ -1,8 +1,7 @@
 package faang.school.postservice.config.kafka;
 
 import faang.school.postservice.dto.event.CommentEvent;
-import faang.school.postservice.dto.event.LikeEventDto;
-import faang.school.postservice.dto.event.PostEventDto;
+import faang.school.postservice.dto.event.PostPublishEventDto;
 import faang.school.postservice.event.UserBanEvent;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.LongSerializer;
@@ -55,12 +54,12 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ProducerFactory<String, PostEventDto> postEventProducerFactory() {
+    public ProducerFactory<String, PostPublishEventDto> postEventProducerFactory() {
         return new DefaultKafkaProducerFactory<>(getConfigProps(StringSerializer.class));
     }
 
     @Bean
-    public KafkaTemplate<String, PostEventDto> postEventKafkaTemplate() {
+    public KafkaTemplate<String, PostPublishEventDto> postEventKafkaTemplate() {
         return new KafkaTemplate<>(postEventProducerFactory());
     }
 
