@@ -1,0 +1,12 @@
+{
+  "type": "record",
+  "name": "LikeCreateEventAvro",
+  "namespace": "faang.school.postservice.dto.avro",
+  "fields": [
+    {"name": "postId", "type": "long"},
+    {"name": "commentId", "type": ["null", "long"], "default": null},
+    {"name": "userId", "type": "long"},
+    {"name": "content", "type": "string"},
+    {"name": "createdAt", "type": {"type": "long", "logicalType": "timestamp-millis"}}
+  ]
+}

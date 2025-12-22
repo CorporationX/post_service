@@ -49,4 +49,18 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
         return findById(commentId)
                 .orElseThrow(() -> new EntityNotFoundException("Комментарий с id " + commentId + " не найден"));
     }
+
+    @Query(nativeQuery = true, value = """
+            SELECT post_id FROM comment
+            WHERE author_id = :authorId
+            """)
+    List<Long> findPostIdByAuthorId(@Param("authorId") Long authorId);
+
+    @Query(nativeQuery = true, value = """
+            SELECT content FROM comment
+            WHERE author_id = :authorId
+            LIMIT :limit
+            """)
+    List<String> findContentByAuthorId(@Param("authorId") Long authorId,
+                                       @Param("limit") int limit);
 }

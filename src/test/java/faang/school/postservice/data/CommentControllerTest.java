@@ -55,7 +55,7 @@ public class CommentControllerTest {
                 COMMENT_ID, "Test content", AUTHOR_ID, POST_ID, "large.jpg", "small.jpg"
         );
 
-        when(commentService.create(any(CommentCreateDto.class), eq(POST_ID))).thenReturn(viewDto);
+        when(commentService.create(any(CommentCreateDto.class))).thenReturn(viewDto);
 
         mockMvc.perform(post("/posts/{postId}/comments", POST_ID)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -65,7 +65,7 @@ public class CommentControllerTest {
                 .andExpect(jsonPath("$.content").value("Test content"))
                 .andExpect(jsonPath("$.authorId").value(AUTHOR_ID));
 
-        verify(commentService).create(any(CommentCreateDto.class), eq(POST_ID));
+        verify(commentService).create(any(CommentCreateDto.class));
     }
 
     @Test

@@ -127,7 +127,7 @@ public class PostRedisRepository {
 
     public void updateLatestComments(Long postId, Long commentId) {
         String key = getFormattedKey(postId);
-        PostRedisDto post = getPost(postId);
+        PostRedisDto post = processGetRedisDtoFromDb(postId);
         if (post != null) {
             List<Long> currentComments = post.latestComments();
             List<Long> updatedComments = currentComments != null

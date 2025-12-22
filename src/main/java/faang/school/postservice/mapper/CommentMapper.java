@@ -27,6 +27,7 @@ public abstract class CommentMapper {
 
     public abstract Comment toEntity(CommentCreateDto createDto);
 
+    @Mapping(expression = "java(comment.getPost().getId())", target = "postId")
     public abstract CommentViewDto toViewDto(Comment comment);
 
     public CommentCreatedEventAvro toAvro(Comment comment) {

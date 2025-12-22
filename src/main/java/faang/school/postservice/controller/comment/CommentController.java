@@ -27,9 +27,8 @@ public class CommentController {
 
     @PostMapping
     public ResponseEntity<CommentViewDto> create(
-            @PathVariable Long postId,
             @RequestBody @Valid CommentCreateDto createDto) {
-        CommentViewDto createdComment = service.create(createDto, postId);
+        CommentViewDto createdComment = service.create(createDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdComment);
     }
 

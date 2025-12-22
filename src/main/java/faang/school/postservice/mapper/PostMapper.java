@@ -35,6 +35,7 @@ public interface PostMapper {
         return new PostPublishedEventAvro(
                 String.valueOf(post.getId()),
                 String.valueOf(post.getAuthorId()),
+                post.getContent(),
                 String.valueOf(post.getProjectId()),
                 post.getPublishedAt().atZone(ZoneOffset.UTC).toInstant()
         );

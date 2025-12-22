@@ -110,7 +110,7 @@ public class CommentServiceImplTest {
         when(commentMapper.toViewDto(comment)).thenReturn(viewDto);
         when(commentMapper.toAvro(comment)).thenReturn(commentCreatedEventAvro);
 
-        CommentViewDto result = commentService.create(createDto, POST_ID);
+        CommentViewDto result = commentService.create(createDto);
 
         assertNotNull(result);
         assertEquals(COMMENT_ID, result.id());
@@ -135,7 +135,7 @@ public class CommentServiceImplTest {
                 .thenThrow(new EntityNotFoundException("Пост с id " + POST_ID + " не найден"));
 
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class,
-                () -> commentService.create(createDto, POST_ID));
+                () -> commentService.create(createDto));
 
         assertEquals("Пост с id " + POST_ID + " не найден", exception.getMessage());
         verify(postRepository).findPostOrThrow(POST_ID);
@@ -312,7 +312,7 @@ public class CommentServiceImplTest {
         when(commentRepository.save(any(Comment.class))).thenReturn(comment);
         when(commentMapper.toViewDto(comment)).thenReturn(viewDto);
 
-        commentService.create(createDto, POST_ID);
+        commentService.create(createDto);
 
         verify(postRepository).findPostOrThrow(POST_ID);
     }
@@ -326,7 +326,7 @@ public class CommentServiceImplTest {
         when(postRepository.findPostOrThrow(POST_ID))
                 .thenThrow(new EntityNotFoundException("Пост с id " + POST_ID + " не найден"));
 
-        assertThrows(EntityNotFoundException.class, () -> commentService.create(createDto, POST_ID));
+        assertThrows(EntityNotFoundException.class, () -> commentService.create(createDto));
 
         verify(postRepository).findPostOrThrow(POST_ID);
     }
