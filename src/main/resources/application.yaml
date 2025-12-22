@@ -90,7 +90,7 @@ executor:
 
 redis:
   ttl:
-    author-cache-second: 120 #86400
+    author-cache-second: 86400
   topics:
     user-ban-topic: "user-ban-topic"
 
