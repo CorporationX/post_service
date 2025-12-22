@@ -2,6 +2,7 @@ package faang.school.postservice.service.comment;
 
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CreateCommentDto;
+import faang.school.postservice.dto.comment.PublishCommentDto;
 import faang.school.postservice.dto.comment.ResponseCommentDto;
 import faang.school.postservice.dto.comment.UpdateCommentDto;
 import faang.school.postservice.exception.EntityNotFoundException;
