@@ -40,6 +40,7 @@ kafka:
   topic:
     user-ban: user_ban
     comment-event: comment_events
+    posts-publish: posts_publish
 
 
 server:
