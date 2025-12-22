@@ -90,11 +90,11 @@ public class FeedServiceImplTest {
 
         List<PostFeedDto> expectedFeedDtos = getFeedDtos();
         when(feedMapper.toFeedDto(any(), any(), any()))
-                .thenReturn(
-                        expectedFeedDtos.get(0),
-                        expectedFeedDtos.get(1),
-                        expectedFeedDtos.get(2)
-                );
+            .thenReturn(
+                expectedFeedDtos.get(0),
+                expectedFeedDtos.get(1),
+                expectedFeedDtos.get(2)
+            );
 
         List<PostFeedDto> result = feedService.getFeed(null);
 
@@ -116,11 +116,11 @@ public class FeedServiceImplTest {
 
         List<PostFeedDto> expectedFeedDtos = getFeedDtos();
         when(feedMapper.toFeedDto(any(), any(), any()))
-                .thenReturn(
-                        expectedFeedDtos.get(0),
-                        expectedFeedDtos.get(1),
-                        expectedFeedDtos.get(2)
-                );
+            .thenReturn(
+                expectedFeedDtos.get(0),
+                expectedFeedDtos.get(1),
+                expectedFeedDtos.get(2)
+            );
 
 
         List<PostFeedDto> result = feedService.getFeed(null);
