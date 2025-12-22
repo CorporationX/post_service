@@ -40,6 +40,8 @@ kafka:
   topic:
     user-ban: user_ban
     comment-event: comment_events
+    post-event: post_events
+    like-event: like_create
 
 server:
   port: 8081

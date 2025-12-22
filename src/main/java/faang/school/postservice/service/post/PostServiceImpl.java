@@ -11,6 +11,7 @@ import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.PostEventPublisher;
 import faang.school.postservice.publisher.UserBanEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.user.UserService;
@@ -51,6 +52,7 @@ public class PostServiceImpl implements PostService {
     private final UserBanEventPublisher userBanEventPublisher;
     private final UserService userService;
     private final ModerationDictionary moderationDictionary;
+    private final PostEventPublisher postEventPublisher;
 
     @Value("${app.scheduled-posts.batch-size:1000}")
     private int scheduledPostsBatchSize;
@@ -83,8 +85,9 @@ public class PostServiceImpl implements PostService {
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
         post = postRepository.save(post);
-
         log.info("Post published successfully with ID: {}", post.getId());
+        postEventPublisher.publish(post.getId(), post.getAuthorId(), post.getContent());
+        log.info("Post successfully sended to Kafka: {}", post);
         return postMapper.toPostDto(post);
     }
 
@@ -164,7 +167,7 @@ public class PostServiceImpl implements PostService {
 
         List<CompletableFuture<Void>> futures = batches.stream()
                 .map(batch -> CompletableFuture.runAsync(() ->
-                                batchPublishingService.publishBatch(batch), scheduledPostExecutor))
+                        batchPublishingService.publishBatch(batch), scheduledPostExecutor))
                 .toList();
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();

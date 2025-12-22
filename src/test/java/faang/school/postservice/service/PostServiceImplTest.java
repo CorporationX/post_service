@@ -14,6 +14,7 @@ import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.PostEventPublisher;
 import faang.school.postservice.publisher.UserBanEventPublisher;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.post.BatchPublishingService;
@@ -58,6 +59,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
@@ -86,6 +88,8 @@ public class PostServiceImplTest {
     private UserServiceImpl userService;
     @Mock
     private ModerationDictionary moderationDictionary;
+    @Mock
+    private PostEventPublisher postEventPublisher;
     @Spy
     private PostMapper postMapper = Mappers.getMapper(PostMapper.class);
 
@@ -255,6 +259,8 @@ public class PostServiceImplTest {
     void publishPost_whenPostIsNotPublished_shouldSetPublishedTrue() {
         Post post = Post.builder()
                 .id(DEFAULT_ID)
+                .authorId(DEFAULT_ID)
+                .content("content")
                 .published(false)
                 .publishedAt(null)
                 .build();
@@ -277,6 +283,10 @@ public class PostServiceImplTest {
 
         ArgumentCaptor<Post> postCaptor = ArgumentCaptor.forClass(Post.class);
         verify(postRepository).save(postCaptor.capture());
+        verify(postEventPublisher, times(1)).publish(
+                eq(DEFAULT_ID),
+                eq(DEFAULT_ID),
+                eq("content"));
 
         Post savedPost = postCaptor.getValue();
         assertEquals(DEFAULT_ID, savedPost.getId());

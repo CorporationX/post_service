@@ -10,6 +10,7 @@ import faang.school.postservice.mapper.like.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.LikeEventPublisher;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.like.LikeServiceImpl;
@@ -39,6 +40,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -67,6 +69,8 @@ public class LikeServiceTest {
     private LikeRepository likeRepository;
     @Mock
     private LikeValidator likeValidator;
+    @Mock
+    private LikeEventPublisher likeEventPublisher;
     @Spy
     private LikeMapper likeMapper = Mappers.getMapper(LikeMapper.class);
     @Captor
@@ -152,6 +156,11 @@ public class LikeServiceTest {
         verify(likeRepository, times(1)).save(likeCaptor.capture());
         verify(likeMapper, times(1)).toLikeDto(any(Like.class));
         savedLike = likeCaptor.getValue();
+        verify(likeEventPublisher, times(1)).publish(
+                eq(savedLike.getId()),
+                eq(savedLike.getUserId()),
+                eq(postId));
+
         assertEquals(likeDtoForPost.userId(), savedLike.getUserId());
         assertEquals(likeDtoForPost.postId(), savedLike.getPost().getId());
         assertNull(savedLike.getComment());
@@ -270,7 +279,7 @@ public class LikeServiceTest {
                 .validateLikeOnPost(postId, userId, isFalse);
 
         assertThrows(DataValidationException.class,
-                ()-> likeService.unsetLikeOnPost(postId));
+                () -> likeService.unsetLikeOnPost(postId));
         verify(likeRepository, never()).deleteByPostIdAndUserId(postId, userId);
     }
 
@@ -296,7 +305,7 @@ public class LikeServiceTest {
                 .validateLikeOnComment(commentId, userId, isFalse);
 
         assertThrows(DataValidationException.class,
-                ()-> likeService.unsetLikeOnComment(commentId));
+                () -> likeService.unsetLikeOnComment(commentId));
         verify(likeRepository, never()).deleteByCommentIdAndUserId(commentId, userId);
     }
 
