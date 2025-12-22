@@ -30,6 +30,13 @@ spring:
         like: like_channel
         comment: achievement_channel
 
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    topics:
+      like_topic: like
 
 server:
   port: 8081
