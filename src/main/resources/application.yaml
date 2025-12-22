@@ -66,3 +66,7 @@ cache:
   redis:
     author:
       ttl-seconds: 86400
+
+post:
+  comments:
+    max-size: 3
