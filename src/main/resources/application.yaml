@@ -2,6 +2,17 @@ spring:
   config:
     import: optional:classpath:application.properties
 
+  kafka:
+    bootstrap-servers: ${KAFKA_HOST}:${KAFKA_PORT}
+    topics:
+      comment: "comment-topic"
+    producer:
+      acks: "all"
+      retries: 5
+      properties:
+        enable.idempotence: true
+        max.in.flight.requests.per.connection: 5
+
   servlet:
     multipart:
       max-file-size: 5MB
@@ -31,17 +42,6 @@ spring:
 
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
-
-  kafka:
-    bootstrap-servers: ${KAFKA_HOST}:${KAFKA_PORT}
-    topics:
-      comment: "comment-topic"
-    producer:
-      acks: "all"
-      retries: 5
-      properties:
-        enable.idempotence: true
-        max.in.flight.requests.per.connection: 5
 
   data:
     redis:
