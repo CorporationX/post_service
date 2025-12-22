@@ -11,6 +11,7 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.cache.CacheService;
 import faang.school.postservice.service.comment.CommentServiceImpl;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -43,6 +44,8 @@ public class CommentServiceTest {
     private CommentRepository commentRepository;
     @Mock
     private CommentMapper commentMapper;
+    @Mock
+    CacheService cacheService;
     @Mock
     private PostRepository postRepository;
     @InjectMocks
