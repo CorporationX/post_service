@@ -29,6 +29,18 @@ spring:
           name: comment_event
         like: like_channel
         comment: achievement_channel
+  kafka:
+    partitions: 6
+    replicas: 1
+    topic:
+      name: post_views
+    consumer:
+      group:
+        name: post-views-group
+    producer:
+      bootstrap-servers: localhost:9092
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 
 
 server:
