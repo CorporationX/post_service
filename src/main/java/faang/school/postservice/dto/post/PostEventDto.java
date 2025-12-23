@@ -10,6 +10,7 @@ import java.util.List;
 public record PostEventDto(
         @NotNull(message = "Post ID cannot be null")
         Long postId,
+        String content,
         Long authorId,
         Long projectId,
         @NotNull(message = "Follower IDs list cannot be null")

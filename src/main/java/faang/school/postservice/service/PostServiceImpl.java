@@ -125,6 +125,7 @@ public class PostServiceImpl implements PostService {
         List<Long> followerIds = getFollowerIds(saved.getAuthorId());
         PostEventDto event = new PostEventDto(
                 saved.getId(),
+                saved.getContent(),
                 saved.getAuthorId(),
                 saved.getProjectId(),
                 followerIds,
@@ -351,6 +352,7 @@ public class PostServiceImpl implements PostService {
         }
 
         try {
+            log.info("Getting followers for author {}", authorId);
             List<UserDto> followers = userServiceClient.getFollowers(
                     authorId,
                     null,

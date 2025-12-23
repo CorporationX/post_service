@@ -16,8 +16,10 @@ public class PostPublishedEventListener {
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handlePostPublished(PostEventDto event) {
+        log.info("PostPublishedEventListener: Received event for postId={}", event.postId());
         try {
             kafkaProducer.publishPostCreate(event);
+            log.info("PostPublishedEventListener: Successfully sent to Kafka");
         } catch (Exception e) {
             log.error("Failed to send to Kafka: postId={}", event.postId(), e);
         }

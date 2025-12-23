@@ -1,9 +1,18 @@
 spring:
   kafka:
     bootstrap-servers: localhost:9092
+    consumer:
+      group-id: post-service-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      enable-auto-commit: false
+      auto-offset-reset: earliest
     properties:
-      security:
-        protocol: PLAINTEXT
+      security.protocol: PLAINTEXT
+      spring.json.trusted.packages: "*"
+      spring.json.value.default.type: faang.school.postservice.dto.post.PostEventDto
+    listener:
+      ack-mode: MANUAL
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
@@ -69,6 +78,9 @@ app:
   kafka:
     topics:
       posts-create-topic: posts-create-topic
+  feed:
+    max-size: 500
+    ttl-days: 1
   producer:
     timeout-seconds: 3
   resources:
