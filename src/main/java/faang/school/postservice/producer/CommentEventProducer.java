@@ -17,7 +17,7 @@ public class CommentEventProducer {
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    @Value("${kafka.topic.comments}")
+    @Value("${kafka.topic.comment}")
     private String topic;
 
     public void publish(CommentEventDto event) {

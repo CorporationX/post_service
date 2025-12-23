@@ -12,8 +12,16 @@ kafka:
     key-serializer: org.apache.kafka.common.serialization.StringSerializer
     value-serializer: org.apache.kafka.common.serialization.StringSerializer
 
+  consumer:
+    key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+    properties:
+      spring.json.trusted.packages: "*"
+
   topic:
     comments: comment.event
+    comment: comment.feet
+
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
