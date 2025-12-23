@@ -17,6 +17,7 @@ public interface LikeMapper {
                 .userId(like.getUserId())
                 .postId(like.getPost().getId())
                 .commentId(null)
+                .postAuthorId(like.getPost().getAuthorId())
                 .build();
     }
 
@@ -26,7 +27,7 @@ public interface LikeMapper {
                 .userId(like.getUserId())
                 .commentId(like.getComment().getId())
                 .postId(null)
+                .postAuthorId(null)
                 .build();
     }
-
 }

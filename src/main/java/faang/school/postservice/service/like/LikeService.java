@@ -11,6 +11,8 @@ import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.like.PublishLikeEvent;
+import faang.school.postservice.publisher.like.PublishUnlikeEvent;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -31,30 +33,37 @@ public class LikeService {
     private final LikeRepository likeRepository;
     private final UserContext userContext;
 
+    @PublishLikeEvent
     @Transactional
     public LikeDto addLikeToPost(Long postId) {
         Long userId = userContext.getUserId();
         validateUserExist(userId);
         Post post = postRepository.getByIdOrThrow(postId);
+
         validateAlreadyLikedPost(postId, userId);
 
         Like like = Like.builder()
                 .userId(userId)
                 .post(post)
                 .build();
-        likeRepository.save(like);
+        Like savedLike = likeRepository.save(like);
         log.info("Like added to post {} by user {}", postId, userId);
-        return LikeMapper.toDtoWithPost(like);
+
+        return LikeMapper.toDtoWithPost(savedLike);
     }
 
+    @PublishUnlikeEvent
     @Transactional
     public LikeDto removeLikeFromPost(Long postId) {
         Long userId = userContext.getUserId();
         validateUserExist(userId);
+        Post post = postRepository.getByIdOrThrow(postId);
+
         Like like = likeRepository.findByPostIdAndUserIdOrThrow(postId, userId);
         validateAuthorLike(like, userId);
         likeRepository.deleteByPostIdAndUserId(postId, userId);
         log.info("Like removed from post {} by user {}", postId, userId);
+
         return LikeMapper.toDtoWithPost(like);
     }
 
@@ -93,7 +102,6 @@ public class LikeService {
             throw new EntityNotFoundException(String.format("User with id %d not found", userId));
         }
     }
-
 
     private void validateAlreadyLikedPost(Long postId, Long userId) {
         if (likeRepository.findByPostIdAndUserId(postId, userId).isPresent()) {

@@ -26,5 +26,6 @@ public record PostV2Dto(Long id,
                         @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
                       LocalDateTime updatedAt,
                         Long likesCount
+
 ) {
 }
