@@ -14,7 +14,6 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.repository.cache.AuthorCacheRepository;
 import faang.school.postservice.service.author.AuthorCacheService;
 import faang.school.postservice.validator.comment.CommentValidator;
 import lombok.RequiredArgsConstructor;
@@ -35,13 +34,11 @@ public class CommentService {
     private final UserServiceClient userServiceClient;
     private final AuthorCacheService authorCacheService;
 
-    @Value("${cache.redis.author.ttl-seconds}")
-    private Long authorTtlSeconds;
-
     @PublishCommentEvent
     @Transactional
     public Comment create(CommentCreateDto commentCreateDto, Long userId) {
         CommentValidator.validateCommentContent(commentCreateDto.content());
+
         UserDto user = userServiceClient.getUser(userId);
         CommentValidator.validateUser(user);
 
@@ -50,9 +47,13 @@ public class CommentService {
         Comment comment = CommentMapper.toEntity(commentCreateDto, post, userId);
         comment = commentRepository.save(comment);
 
-        AuthorDto authorDto = AuthorDto.from(comment.getAuthorId());
+        AuthorDto authorDto = new AuthorDto(
+                String.valueOf(user.id()),
+                user.username(),
+                null
+        );
 
-        authorCacheService.cacheAuthor(authorDto);
+        authorCacheService.put(authorDto);
 
         log.info("Creating comment for postId={} by userId={}", post.getId(), userId);
         return comment;
