@@ -156,6 +156,14 @@ class CommentServiceImplTest {
                         event.getCommentId() == testComment.getId() &&
                         event.getContent().equals(testComment.getContent())
         ));
+
+        verify(commentEventPublisher, times(1)).publish(
+                eq(testComment.getAuthorId()),
+                eq(testPost.getId()),
+                eq(testComment.getId()),
+                eq(testComment.getContent()),
+                any(LocalDateTime.class)
+        );
     }
 
     @Test

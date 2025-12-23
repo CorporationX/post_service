@@ -54,6 +54,7 @@ public class CommentServiceImpl implements CommentService {
         commentEventPublisher.publish(postId,
                 authorId,
                 savedComment.getId(),
+                savedComment.getContent(),
                 LocalDateTime.now());
 
         CommentEvent event = new CommentEvent(

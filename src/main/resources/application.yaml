@@ -39,10 +39,11 @@ spring:
 kafka:
   topic:
     user-ban: user_ban
-    comment-event: comment_events
+    comment-events:
+      - comment_events
+      - comments
     post-event: post_events
     like-event: like_create
-
 server:
   port: 8081
   servlet:
