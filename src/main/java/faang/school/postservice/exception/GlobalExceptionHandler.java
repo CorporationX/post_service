@@ -29,8 +29,9 @@ public class GlobalExceptionHandler {
             Map.entry(DuplicateLikeException.class, HttpStatus.CONFLICT),
             Map.entry(RuntimeException.class, HttpStatus.INTERNAL_SERVER_ERROR),
             Map.entry(IllegalArgumentException.class, HttpStatus.BAD_REQUEST),
-            Map.entry(ConstraintViolationException.class, HttpStatus.BAD_REQUEST)
-    );
+            Map.entry(ConstraintViolationException.class, HttpStatus.BAD_REQUEST),
+            Map.entry(RedisSystemException.class, HttpStatus.ALREADY_REPORTED)
+            );
 
     @ExceptionHandler(Exception.class)
     public ErrorResponse handleException(Exception e, HttpServletRequest rq) {
