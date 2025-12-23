@@ -1,7 +1,9 @@
 package faang.school.postservice.consumer;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.dto.kafka.CommentEventDto;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.RedisSystemException;
@@ -16,22 +18,26 @@ import java.util.Map;
 
 @Slf4j
 @Component
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class KafkaCommentConsumer {
 
     private final StringRedisTemplate redisTemplate;
+    private final ObjectMapper objectMapper;
 
     @Value("${post.comments.max-size}")
-    private int maxComments;
+    private Integer maxComments;
 
-    @KafkaListener(topics = "comments",
-            groupId = "comments-group"
+    @KafkaListener(topics = "${kafka.topic.comment}",
+                   groupId = "comments-group"
     )
-    public void listen(CommentEventDto event, Acknowledgment ack) {
-
-        String key = "post:" + event.postId() + ":comments";
+    public void listen(String message, Acknowledgment ack) {
 
         try {
+            CommentEventDto event =
+                    objectMapper.readValue(message, CommentEventDto.class);
+
+            String key = "post:" + event.postId() + ":comments";
+
             redisTemplate.opsForStream().add(
                     StreamRecords.mapBacked(
                                     Map.of(
@@ -44,17 +50,28 @@ public class KafkaCommentConsumer {
                             .withId(RecordId.of(event.commentId().toString()))
             );
 
-            redisTemplate.opsForStream().trim(key, maxComments);
+            redisTemplate.opsForStream().trim(key, maxComments, true);
 
             ack.acknowledge();
 
+        } catch (JsonProcessingException e) {
+
+            log.error("Invalid JSON message: {}", message, e);
+            ack.acknowledge();
+
         } catch (RedisSystemException e) {
-            if (e.getMessage().contains("BUSYGROUP") || e.getMessage().contains("already exists")) {
+
+            if (isDuplicate(e)) {
+                log.info("Duplicate comment ignored");
                 ack.acknowledge();
             } else {
                 throw e;
             }
-            ack.acknowledge();
         }
+    }
+
+    private boolean isDuplicate(RedisSystemException e) {
+        return e.getMessage() != null &&
+                e.getMessage().contains("already exists");
     }
 }
