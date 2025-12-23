@@ -2,7 +2,7 @@ package faang.school.postservice.service.comment;
 
 import faang.school.postservice.aop.PublishCommentEvent;
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.config.redis.AuthorCache;
+import faang.school.postservice.dto.author.AuthorDto;
 import faang.school.postservice.dto.comment.CommentCreateDto;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CommentUpdateDto;
@@ -15,6 +15,7 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.cache.AuthorCacheRepository;
+import faang.school.postservice.service.author.AuthorCacheService;
 import faang.school.postservice.validator.comment.CommentValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +33,7 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
-    private final AuthorCacheRepository authorCacheRepository;
+    private final AuthorCacheService authorCacheService;
 
     @Value("${cache.redis.author.ttl-seconds}")
     private Long authorTtlSeconds;
@@ -49,15 +50,9 @@ public class CommentService {
         Comment comment = CommentMapper.toEntity(commentCreateDto, post, userId);
         comment = commentRepository.save(comment);
 
-        authorCacheRepository.save(
-                new AuthorCache(
-                        user.id(),
-                        user.username(),
-                        user.email(),
-                        user.active(),
-                        authorTtlSeconds
-                )
-        );
+        AuthorDto authorDto = AuthorDto.from(comment.getAuthorId());
+
+        authorCacheService.cacheAuthor(authorDto);
 
         log.info("Creating comment for postId={} by userId={}", post.getId(), userId);
         return comment;
