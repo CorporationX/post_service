@@ -1,6 +1,5 @@
 package faang.school.postservice.config.redis;
 
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.dto.post.PostV2Dto;
 import io.lettuce.core.ClientOptions;
@@ -72,7 +71,6 @@ public class RedisConfig {
 
         StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
         Jackson2JsonRedisSerializer<PostV2Dto> jsonSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, PostV2Dto.class);
-        //jsonSerializer.setObjectMapper(objectMapper);
 
         template.setKeySerializer(stringRedisSerializer);
         template.setValueSerializer(jsonSerializer);

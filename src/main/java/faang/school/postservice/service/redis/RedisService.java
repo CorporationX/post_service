@@ -2,10 +2,13 @@ package faang.school.postservice.service.redis;
 
 import faang.school.postservice.dto.post.PostV2Dto;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.Post;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.TimeUnit;
@@ -29,6 +32,7 @@ public class RedisService {
         this.redisTemplateAuthorPosts = redisTemplateAuthorPosts;
     }
 
+    @Async("postEventTaskExecutor")
     public void savePostInRedis(PostV2Dto postV2Dto) {
         String key = KEY_PREFIX_BY_POST + postV2Dto.id();
 
@@ -40,6 +44,7 @@ public class RedisService {
         }
     }
 
+    @Async("postEventTaskExecutor")
     public void saveAuthorPosts(Post post) {
         try {
             redisTemplateAuthorPosts.opsForValue().set(KEY_PREFIX_BY_AUTHOR_POST + post.getId(), post.getAuthorId(), ttlAuthorPostInRedis, TimeUnit.DAYS);
