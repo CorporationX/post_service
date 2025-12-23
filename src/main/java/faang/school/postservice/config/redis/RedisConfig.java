@@ -85,4 +85,25 @@ public class RedisConfig {
 
         return template;
     }
+
+    @Bean(name = "redisTemplateAuthorPost")
+    public RedisTemplate<String, Object> redisTemplateAuthorPosts(RedisConnectionFactory connectionFactory) {
+        RedisTemplate<String, Object> template = new RedisTemplate<>();
+        template.setConnectionFactory(connectionFactory);
+
+        StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
+        Jackson2JsonRedisSerializer<Object> jsonSerializer = new Jackson2JsonRedisSerializer<>(Object.class);
+
+
+        template.setKeySerializer(stringRedisSerializer);
+        template.setValueSerializer(jsonSerializer);
+
+        template.setHashKeySerializer(stringRedisSerializer);
+        template.setHashValueSerializer(stringRedisSerializer);
+
+        template.setEnableTransactionSupport(false);
+        template.setExposeConnection(false);
+
+        return template;
+    }
 }

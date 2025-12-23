@@ -71,7 +71,7 @@ public class PostV2Service {
         log.info("Post {} published", postId);
 
         PostV2Dto postV2Dto = PostV2Mapper.toDtoBasic(saved);
-
+        CompletableFuture.runAsync(() -> redisService.saveAuthorPosts(saved), executorService);
         CompletableFuture.runAsync(() -> redisService.savePostInRedis(postV2Dto), executorService);
         return postV2Dto;
     }
