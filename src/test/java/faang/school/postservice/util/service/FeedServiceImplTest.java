@@ -1,6 +1,11 @@
 package faang.school.postservice.util.service;
 
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.post.PostEventDto;
+import faang.school.postservice.mapper.post.PostMapper;
+import faang.school.postservice.repository.PostCacheRepository;
+import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.UserCacheRepository;
 import faang.school.postservice.service.FeedServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -52,13 +57,26 @@ public class FeedServiceImplTest {
     @Mock
     private HashOperations<String, Object, Object> hashOperations;
 
+    @Mock
+    private PostRepository postRepository;
+
+    @Mock
+    private UserServiceClient userServiceClient;
+
+    @Mock
+    private PostMapper postMapper;
+
+    @Mock
+    private PostCacheRepository postCacheRepository;
+
+    @Mock
+    private UserCacheRepository userCacheRepository;
+
     @InjectMocks
     private FeedServiceImpl feedService;
 
     @BeforeEach
     void setUp() {
-        feedService = new FeedServiceImpl(redisTemplate);
-
         ReflectionTestUtils.setField(feedService, "maxFeedSize", MAX_FEED_SIZE);
         ReflectionTestUtils.setField(feedService, "feedTtlDays", FEED_TTL_DAYS);
     }
@@ -92,8 +110,10 @@ public class FeedServiceImplTest {
 
         verify(zsetOperations, times(3)).removeRange(anyString(),
                 eq((long) MAX_FEED_SIZE), eq(-1L));
-        verify(redisTemplate, times(4)).expire(anyString(),
-                any(Duration.class));
+        verify(redisTemplate).expire(eq("post:" + POST_ID), any(Duration.class));
+        verify(redisTemplate).expire(eq("feed:" + FOLLOWER_1_ID), any(Duration.class));
+        verify(redisTemplate).expire(eq("feed:" + FOLLOWER_2_ID), any(Duration.class));
+        verify(redisTemplate).expire(eq("feed:" + FOLLOWER_3_ID), any(Duration.class));
     }
 
     @Test
@@ -108,6 +128,7 @@ public class FeedServiceImplTest {
 
     @Test
     void updateFeeds_whenRedisThrowsException_shouldRethrow() {
+        when(redisTemplate.opsForHash()).thenThrow(new RuntimeException("Redis error"));
         PostEventDto event = createTestEvent(List.of(FOLLOWER_1_ID));
 
         assertThrows(RuntimeException.class, () -> feedService.updateFeeds(event));
@@ -124,6 +145,7 @@ public class FeedServiceImplTest {
 
         feedService.updateFeeds(event);
 
-        verify(zsetOperations).removeRange("feed:" + FOLLOWER_1_ID, MAX_FEED_SIZE, -1);
+        verify(zsetOperations).removeRange("feed:" + FOLLOWER_1_ID, (long) MAX_FEED_SIZE, -1L);
+        verify(redisTemplate).expire(eq("feed:" + FOLLOWER_1_ID), any(Duration.class));
     }
 }

@@ -1,9 +1,12 @@
 package faang.school.postservice.repository;
 
 import faang.school.postservice.model.Post;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface PostRepository extends CrudRepository<Post, Long> {
@@ -22,4 +25,14 @@ public interface PostRepository extends CrudRepository<Post, Long> {
             + "p.deleted = false AND p.scheduledAt <= CURRENT_TIMESTAMP")
     List<Post> findReadyToPublish();
 
+    @Query("SELECT p FROM Post p WHERE p.authorId IN :authorIds AND p.published = true AND p.deleted"
+            + " = false ORDER BY p.publishedAt DESC")
+    List<Post> findFeedPosts(@Param("authorIds") List<Long> authorIds,
+                             Pageable pageable);
+
+    @Query("SELECT p FROM Post p WHERE p.authorId IN :authorIds AND p.published = true AND p.deleted"
+            + " = false AND p.publishedAt > :publishedAfter ORDER BY p.publishedAt DESC")
+    List<Post> findFeedPostsAfter(@Param("authorIds") List<Long> authorIds,
+                                  @Param("publishedAfter") LocalDateTime publishedAfter,
+                                  Pageable pageable);
 }
