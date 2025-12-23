@@ -31,9 +31,6 @@ import java.util.concurrent.Executors;
 @RequiredArgsConstructor
 @Service
 public class PostV2Service {
-    private static final Integer COUNT_THREADS_IN_EXECUTOR = 100;
-
-    private ExecutorService executorService = Executors.newFixedThreadPool(COUNT_THREADS_IN_EXECUTOR);
 
     private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
@@ -69,8 +66,6 @@ public class PostV2Service {
 
         Post saved = postRepository.save(post);
         log.info("Post {} published", postId);
-
-        CompletableFuture.runAsync(() -> redisService.saveAuthorPosts(saved), executorService);
 
         return PostV2Mapper.toDtoBasic(saved);
     }

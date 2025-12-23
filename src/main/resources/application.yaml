@@ -37,6 +37,8 @@ spring:
           name: calculations_channel
       ttl:
         author-post: 1 # в днях
+      post-feed:
+        maximum-feed: 4
 
   kafka:
     bootstrap-servers: localhost:9092
@@ -46,6 +48,7 @@ spring:
       comments: comment.event
       post-view: analytics.post-view
       analytics: analytics.comment-analysis
+      post-feed: post.post-feed
 
   task:
     execution:
