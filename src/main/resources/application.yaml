@@ -104,3 +104,4 @@ feed:
   max_size: 500
   collection: feed
   ttl: 24  # 24 часа
+  limit-posts: 20
