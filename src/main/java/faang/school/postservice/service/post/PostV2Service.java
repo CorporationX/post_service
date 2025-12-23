@@ -13,7 +13,9 @@ import faang.school.postservice.mapper.PostV2Mapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.repository.spec.PostSpecification;
+import faang.school.postservice.service.redis.RedisService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -21,13 +23,22 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class PostV2Service {
+    private static final Integer COUNT_THREADS_IN_EXECUTOR = 100;
+
+    private ExecutorService executorService = Executors.newFixedThreadPool(COUNT_THREADS_IN_EXECUTOR);
+
     private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
     private final UserContext userContext;
+    private final RedisService redisService;
 
     @Transactional
     public PostV2Dto createPostAsDraft(PostV2CreateDto postV2CreateDto) {
@@ -57,6 +68,10 @@ public class PostV2Service {
         post.setPublishedAt(LocalDateTime.now());
 
         Post saved = postRepository.save(post);
+        log.info("Post {} published", postId);
+
+        CompletableFuture.runAsync(() -> redisService.saveAuthorPosts(saved), executorService);
+
         return PostV2Mapper.toDtoBasic(saved);
     }
 
