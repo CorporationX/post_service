@@ -42,7 +42,8 @@ kafka:
     comment-events:
       - comment_events
       - comments
-
+    post-event: post_events
+    like-event: like_create
 server:
   port: 8081
   servlet:

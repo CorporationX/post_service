@@ -1,6 +1,8 @@
 package faang.school.postservice.config.kafka;
 
 import faang.school.postservice.dto.event.CommentEvent;
+import faang.school.postservice.dto.event.LikeEventDto;
+import faang.school.postservice.dto.event.PostPublishEventDto;
 import faang.school.postservice.event.UserBanEvent;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.LongSerializer;
@@ -24,27 +26,7 @@ public class KafkaConfig {
 
     @Bean
     public ProducerFactory<String, Object> stringObjectProducerFactory() {
-        Map<String, Object> configProps = new HashMap<>();
-        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
-        configProps.put(JsonSerializer.ADD_TYPE_INFO_HEADERS, false);
-        return new DefaultKafkaProducerFactory<>(configProps);
-    }
-
-    @Bean
-    public ProducerFactory<Long, CommentEvent> longCommentEventProducerFactory() {
-        Map<String, Object> configProps = new HashMap<>();
-        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, LongSerializer.class);
-        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
-        configProps.put(JsonSerializer.ADD_TYPE_INFO_HEADERS, false);
-        return new DefaultKafkaProducerFactory<>(configProps);
-    }
-
-    @Bean
-    public KafkaTemplate<Long, CommentEvent> longCommentEventKafkaTemplate() {
-        return new KafkaTemplate<>(longCommentEventProducerFactory());
+        return new DefaultKafkaProducerFactory<>(getConfigProps(StringSerializer.class));
     }
 
     @Bean
@@ -53,17 +35,51 @@ public class KafkaConfig {
     }
 
     @Bean
+    public ProducerFactory<Long, CommentEvent> longCommentEventProducerFactory() {
+        return new DefaultKafkaProducerFactory<>(getConfigProps(LongSerializer.class));
+    }
+
+    @Bean
+    public KafkaTemplate<Long, CommentEvent> longCommentEventKafkaTemplate() {
+        return new KafkaTemplate<>(longCommentEventProducerFactory());
+    }
+
+    @Bean
     public ProducerFactory<String, UserBanEvent> userBanEventProducerFactory() {
-        Map<String, Object> configProps = new HashMap<>();
-        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
-        configProps.put(JsonSerializer.ADD_TYPE_INFO_HEADERS, false);
-        return new DefaultKafkaProducerFactory<>(configProps);
+        return new DefaultKafkaProducerFactory<>(getConfigProps(StringSerializer.class));
     }
 
     @Bean
     public KafkaTemplate<String, UserBanEvent> userBanEventKafkaTemplate() {
         return new KafkaTemplate<>(userBanEventProducerFactory());
+    }
+
+    @Bean
+    public ProducerFactory<String, PostPublishEventDto> postEventProducerFactory() {
+        return new DefaultKafkaProducerFactory<>(getConfigProps(StringSerializer.class));
+    }
+
+    @Bean
+    public KafkaTemplate<String, PostPublishEventDto> postEventKafkaTemplate() {
+        return new KafkaTemplate<>(postEventProducerFactory());
+    }
+
+    @Bean
+    public ProducerFactory<String, LikeEventDto> likeEventProducerFactory() {
+        return new DefaultKafkaProducerFactory<>(getConfigProps(StringSerializer.class));
+    }
+
+    @Bean
+    public KafkaTemplate<String, LikeEventDto> likeEventKafkaTemplate() {
+        return new KafkaTemplate<>(likeEventProducerFactory());
+    }
+
+    private Map<String, Object> getConfigProps(Class<?> keySerializerClass) {
+        Map<String, Object> configProps = new HashMap<>();
+        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, keySerializerClass);
+        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+        configProps.put(JsonSerializer.ADD_TYPE_INFO_HEADERS, false);
+        return configProps;
     }
 }
