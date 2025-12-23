@@ -19,10 +19,10 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class KafkaProducerConfig {
 
-    @Value("${kafka.bootstrap-servers}")
+    @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
 
-    @Value("${kafka.topics.like_topic}")
+    @Value("${spring.kafka.consumer.topics.like_topic}")
     private String likeTopicName;
 
     @Bean
@@ -42,7 +42,7 @@ public class KafkaProducerConfig {
     }
 
     @Bean
-    public NewTopic likeTopic() {
+    public NewTopic kafkaLikeTopic() {
         return new NewTopic(likeTopicName, 1, (short) 1);
     }
 }

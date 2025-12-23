@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 public class KafkaLikeProducer {
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    @Value("${kafka.topics.like_topic}")
+    @Value("${spring.kafka.consumer.topics.like_topic}")
     private String topicName;
 
     public void publishToKafka(LikeEvent likeEvent) {
