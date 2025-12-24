@@ -145,6 +145,7 @@ public class PostServiceImpl implements PostService {
     private Long getCommentCount(Post post) {
         return post.getComments() == null ? 0L : (long) post.getComments().size();
     }
+
     @Override
     public PostResponseDto update(long id, UpdatePostRequestDto dto) {
         log.info("Updating post id={}", id);
