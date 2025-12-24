@@ -36,7 +36,6 @@ public class RedisConfig {
     }
 
     @Bean(value = "forRedisTemplatePost")
-    @Primary
     public LettuceConnectionFactory redisConnectionFactoryPost() {
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(redisProperties.getHost(), redisProperties.getPort());
         config.setDatabase(1);
