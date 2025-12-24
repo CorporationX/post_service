@@ -4,6 +4,7 @@ import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.event.PostPublishedEvent;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.project.ProjectDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.PostMapperImpl;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.producer.PostEventProducer;
@@ -62,34 +63,32 @@ class PostServiceTest {
     @Test
     public void testCreateDraftAuthorIdSuccessful() {
         final long currentUserId = 1L;
-        final PostDto postDto = new PostDto(
-                null,
-                "content",
-                currentUserId,
-                null,
-                false,
-                null,
-                false
-        );
+        final long postId = 3L;
+        final String content = "content";
+        final UserDto userDto = initUserDto(currentUserId);
+        final PostDto postDto = PostDto.builder()
+                .content(content)
+                .authorId(currentUserId)
+                .build();
 
         when(userContext.getUserId()).thenReturn(currentUserId);
-        doNothing().when(userServiceClientAdapter).getUserById(currentUserId);
+        when(userServiceClientAdapter.getUserById(currentUserId)).thenReturn(userDto);
         doNothing().when(postValidator).validateUser(eq(currentUserId), any(PostDto.class));
         doNothing().when(postValidator).validatePostIsPublished(any(Post.class));
         doNothing().when(postValidator).validatePostIsDeleted(any(Post.class));
         when(postRepository.save(postArgumentCaptor.capture()))
                 .thenAnswer(invocation -> {
                     Post post = postArgumentCaptor.getValue();
-                    post.setId(3L);
+                    post.setId(postId);
                     return post;
                 });
 
         PostDto actualPostDto = postService.createDraft(postDto);
 
         assertNotNull(actualPostDto);
-        assertEquals(3L, actualPostDto.id());
-        assertEquals("content", actualPostDto.content());
-        assertEquals(1L, actualPostDto.authorId());
+        assertEquals(postId, actualPostDto.id());
+        assertEquals(postDto.content(), actualPostDto.content());
+        assertEquals(postDto.authorId(), actualPostDto.authorId());
 
         verify(userContext, times(1)).getUserId();
         verify(userServiceClientAdapter, times(1)).getUserById(currentUserId);
@@ -104,21 +103,19 @@ class PostServiceTest {
     @Test
     public void testCreateDraftOwnerIdSuccessful() {
         final long currentUserId = 1L;
+        final long postId = 3L;
         final long projectId = 2L;
-        final PostDto postDto = new PostDto(
-                null,
-                "content",
-                null,
-                projectId,
-                false,
-                null,
-                false
-        );
         final long ownerId = currentUserId;
-        final ProjectDto projectDto = new ProjectDto(projectId, null, ownerId);
+        final String content = "content";
+        final UserDto userDto = initUserDto(currentUserId);
+        final PostDto postDto = PostDto.builder()
+                .content(content)
+                .projectId(projectId)
+                .build();
+        final ProjectDto projectDto = initProjectDto(projectId, ownerId);
 
         when(userContext.getUserId()).thenReturn(currentUserId);
-        doNothing().when(userServiceClientAdapter).getUserById(currentUserId);
+        when(userServiceClientAdapter.getUserById(currentUserId)).thenReturn(userDto);
         when(projectServiceClientAdapter.getProjectById(projectId)).thenReturn(projectDto);
         doNothing().when(postValidator).validateProject(ownerId, currentUserId, projectId);
         doNothing().when(postValidator).validatePostIsPublished(any(Post.class));
@@ -126,16 +123,16 @@ class PostServiceTest {
         when(postRepository.save(postArgumentCaptor.capture()))
                 .thenAnswer(invocation -> {
                     Post post = postArgumentCaptor.getValue();
-                    post.setId(3L);
+                    post.setId(postId);
                     return post;
                 });
 
         PostDto actualPostDto = postService.createDraft(postDto);
 
         assertNotNull(actualPostDto);
-        assertEquals(3L, actualPostDto.id());
-        assertEquals("content", actualPostDto.content());
-        assertEquals(2L, actualPostDto.projectId());
+        assertEquals(postId, actualPostDto.id());
+        assertEquals(postDto.content(), actualPostDto.content());
+        assertEquals(postDto.projectId(), actualPostDto.projectId());
 
         verify(userContext, times(1)).getUserId();
         verify(userServiceClientAdapter, times(1)).getUserById(currentUserId);
@@ -151,14 +148,13 @@ class PostServiceTest {
     public void testPublishPostAuthorIdSuccessful() {
         final long postId = 5L;
         final long currentUserId = 1L;
-        final Post post = new Post();
-        post.setId(postId);
-        post.setContent("content");
-        post.setAuthorId(currentUserId);
+        final String content = "content";
+        final UserDto userDto = initUserDto(currentUserId);
+        final Post post = initPostByAuthor(postId, content, currentUserId);
 
         when(postRepositoryAdapter.getPostById(postId)).thenReturn(post);
         when(userContext.getUserId()).thenReturn(currentUserId);
-        doNothing().when(userServiceClientAdapter).getUserById(currentUserId);
+        when(userServiceClientAdapter.getUserById(currentUserId)).thenReturn(userDto);
         doNothing().when(postValidator).validateUser(eq(currentUserId), any(PostDto.class));
         doNothing().when(postValidator).validatePostIsPublished(post);
         doNothing().when(postValidator).validatePostIsDeleted(post);
@@ -169,9 +165,9 @@ class PostServiceTest {
         PostDto actualPostDto = postService.publishPost(postId);
 
         assertNotNull(actualPostDto);
-        assertEquals(postId, actualPostDto.id());
-        assertEquals("content", actualPostDto.content());
-        assertEquals(currentUserId, actualPostDto.authorId());
+        assertEquals(post.getId(), actualPostDto.id());
+        assertEquals(post.getContent(), actualPostDto.content());
+        assertEquals(post.getAuthorId(), actualPostDto.authorId());
         assertTrue(actualPostDto.published());
         assertNotNull(actualPostDto.publishedAt());
 
@@ -194,15 +190,14 @@ class PostServiceTest {
         final long currentUserId = 1L;
         final long projectId = 2L;
         final long ownerId = currentUserId;
-        final ProjectDto projectDto = new ProjectDto(projectId, null, ownerId);
-        final Post post = new Post();
-        post.setId(postId);
-        post.setContent("content");
-        post.setProjectId(projectId);
+        final String content = "content";
+        final UserDto userDto = initUserDto(currentUserId);
+        final ProjectDto projectDto = initProjectDto(projectId, ownerId);
+        final Post post = initPostByProject(postId, content, projectId);
 
         when(postRepositoryAdapter.getPostById(postId)).thenReturn(post);
         when(userContext.getUserId()).thenReturn(currentUserId);
-        doNothing().when(userServiceClientAdapter).getUserById(currentUserId);
+        when(userServiceClientAdapter.getUserById(currentUserId)).thenReturn(userDto);
         when(projectServiceClientAdapter.getProjectById(projectId)).thenReturn(projectDto);
         doNothing().when(postValidator).validateProject(ownerId, currentUserId, projectId);
         doNothing().when(postValidator).validatePostIsPublished(post);
@@ -214,9 +209,9 @@ class PostServiceTest {
         PostDto actualPostDto = postService.publishPost(postId);
 
         assertNotNull(actualPostDto);
-        assertEquals(postId, actualPostDto.id());
-        assertEquals("content", actualPostDto.content());
-        assertEquals(projectId, actualPostDto.projectId());
+        assertEquals(post.getId(), actualPostDto.id());
+        assertEquals(post.getContent(), actualPostDto.content());
+        assertEquals(post.getProjectId(), actualPostDto.projectId());
         assertTrue(actualPostDto.published());
         assertNotNull(actualPostDto.publishedAt());
 
@@ -237,22 +232,18 @@ class PostServiceTest {
     public void testUpdatePostAuthorIdSuccessful() {
         final long postId = 5L;
         final long currentUserId = 1L;
-        final PostDto postDto = new PostDto(
-                postId,
-                "new content",
-                currentUserId,
-                null,
-                false,
-                null,
-                false
-        );
-        final Post post = new Post();
-        post.setId(postId);
-        post.setContent("old content");
-        post.setAuthorId(currentUserId);
+        final String newContent = "new content";
+        final String oldContent = "old content";
+        final UserDto userDto = initUserDto(currentUserId);
+        final PostDto postDto = PostDto.builder()
+                .id(postId)
+                .content(newContent)
+                .authorId(currentUserId)
+                .build();
+        final Post post = initPostByAuthor(postId, oldContent, currentUserId);
 
         when(userContext.getUserId()).thenReturn(currentUserId);
-        doNothing().when(userServiceClientAdapter).getUserById(currentUserId);
+        when(userServiceClientAdapter.getUserById(currentUserId)).thenReturn(userDto);
         doNothing().when(postValidator).validateUser(currentUserId, postDto);
         when(postRepositoryAdapter.getPostById(postId)).thenReturn(post);
         doNothing().when(postValidator).validatePostIsDeleted(post);
@@ -282,23 +273,19 @@ class PostServiceTest {
         final long currentUserId = 1L;
         final long projectId = 2L;
         final long ownerId = currentUserId;
-        final PostDto postDto = new PostDto(
-                postId,
-                "new content",
-                null,
-                projectId,
-                false,
-                null,
-                false
-        );
+        final String newContent = "new content";
+        final String oldContent = "old content";
+        final UserDto userDto = initUserDto(currentUserId);
+        final PostDto postDto = PostDto.builder()
+                .id(postId)
+                .content(newContent)
+                .projectId(projectId)
+                .build();
         final ProjectDto projectDto = new ProjectDto(projectId, null, ownerId);
-        final Post post = new Post();
-        post.setId(postId);
-        post.setContent("old content");
-        post.setProjectId(projectId);
+        final Post post = initPostByProject(postId, oldContent, projectId);
 
         when(userContext.getUserId()).thenReturn(currentUserId);
-        doNothing().when(userServiceClientAdapter).getUserById(currentUserId);
+        when(userServiceClientAdapter.getUserById(currentUserId)).thenReturn(userDto);
         when(projectServiceClientAdapter.getProjectById(projectId)).thenReturn(projectDto);
         doNothing().when(postValidator).validateProject(ownerId, currentUserId, projectId);
         when(postRepositoryAdapter.getPostById(postId)).thenReturn(post);
@@ -327,14 +314,13 @@ class PostServiceTest {
     public void testDeletePostAuthorIdSuccessful() {
         final long postId = 5L;
         final long currentUserId = 1L;
-        final Post post = new Post();
-        post.setId(postId);
-        post.setContent("content");
-        post.setAuthorId(currentUserId);
+        final String content = "content";
+        final UserDto userDto = initUserDto(currentUserId);
+        final Post post = initPostByAuthor(postId, content, currentUserId);
 
         when(postRepositoryAdapter.getPostById(postId)).thenReturn(post);
         when(userContext.getUserId()).thenReturn(currentUserId);
-        doNothing().when(userServiceClientAdapter).getUserById(currentUserId);
+        when(userServiceClientAdapter.getUserById(currentUserId)).thenReturn(userDto);
         doNothing().when(postValidator).validateUser(eq(currentUserId), any(PostDto.class));
         when(postRepository.save(postArgumentCaptor.capture()))
                 .thenAnswer(invocation -> postArgumentCaptor.getValue());
@@ -342,9 +328,9 @@ class PostServiceTest {
         PostDto actualPostDto = postService.deletePost(postId);
 
         assertNotNull(actualPostDto);
-        assertEquals(postId, actualPostDto.id());
-        assertEquals("content", actualPostDto.content());
-        assertEquals(currentUserId, actualPostDto.authorId());
+        assertEquals(post.getId(), actualPostDto.id());
+        assertEquals(post.getContent(), actualPostDto.content());
+        assertEquals(post.getAuthorId(), actualPostDto.authorId());
         assertTrue(actualPostDto.deleted());
 
         verify(postRepositoryAdapter, times(1)).getPostById(postId);
@@ -362,15 +348,14 @@ class PostServiceTest {
         final long currentUserId = 1L;
         final long projectId = 2L;
         final long ownerId = currentUserId;
-        final ProjectDto projectDto = new ProjectDto(projectId, null, ownerId);
-        final Post post = new Post();
-        post.setId(postId);
-        post.setContent("content");
-        post.setProjectId(projectId);
+        final String content = "content";
+        final UserDto userDto = initUserDto(currentUserId);
+        final ProjectDto projectDto = initProjectDto(projectId, ownerId);
+        final Post post = initPostByProject(postId, content, projectId);
 
         when(postRepositoryAdapter.getPostById(postId)).thenReturn(post);
         when(userContext.getUserId()).thenReturn(currentUserId);
-        doNothing().when(userServiceClientAdapter).getUserById(currentUserId);
+        when(userServiceClientAdapter.getUserById(currentUserId)).thenReturn(userDto);
         when(projectServiceClientAdapter.getProjectById(projectId)).thenReturn(projectDto);
         doNothing().when(postValidator).validateProject(ownerId, currentUserId, projectId);
         when(postRepository.save(postArgumentCaptor.capture()))
@@ -379,9 +364,9 @@ class PostServiceTest {
         PostDto actualPostDto = postService.deletePost(postId);
 
         assertNotNull(actualPostDto);
-        assertEquals(postId, actualPostDto.id());
-        assertEquals("content", actualPostDto.content());
-        assertEquals(projectId, actualPostDto.projectId());
+        assertEquals(post.getId(), actualPostDto.id());
+        assertEquals(post.getContent(), actualPostDto.content());
+        assertEquals(post.getProjectId(), actualPostDto.projectId());
         assertTrue(actualPostDto.deleted());
 
         verify(postRepositoryAdapter, times(1)).getPostById(postId);
@@ -396,10 +381,9 @@ class PostServiceTest {
     @Test
     public void testFindPostIsSuccessful() {
         final long postId = 5L;
-        final Post post = new Post();
-        post.setId(postId);
-        post.setContent("content");
-        post.setAuthorId(1L);
+        final long authorId = 1L;
+        final String content = "content";
+        final Post post = initPostByAuthor(postId, content, authorId);
 
         when(postRepositoryAdapter.getPostById(postId)).thenReturn(post);
         doNothing().when(postValidator).validatePostIsUnpublished(post);
@@ -408,9 +392,9 @@ class PostServiceTest {
         PostDto postDto = postService.findPostById(postId);
 
         assertNotNull(postDto);
-        assertEquals(postId, postDto.id());
-        assertEquals("content", postDto.content());
-        assertEquals(1L, postDto.authorId());
+        assertEquals(post.getId(), postDto.id());
+        assertEquals(post.getContent(), postDto.content());
+        assertEquals(post.getAuthorId(), postDto.authorId());
 
         verify(postRepositoryAdapter, times(1)).getPostById(postId);
         verify(postValidator, times(1)).validatePostIsUnpublished(post);
@@ -483,5 +467,34 @@ class PostServiceTest {
 
         verify(postRepository, times(1))
                 .findByPublishedTrueAndProjectIdAndDeletedFalseOrderByPublishedAtDesc(projectId);
+    }
+
+    private UserDto initUserDto(long userId) {
+        return UserDto.builder()
+                .id(userId)
+                .build();
+    }
+
+    private Post initPostByAuthor(long postId, String content, long authorId) {
+        Post post = new Post();
+        post.setId(postId);
+        post.setContent(content);
+        post.setAuthorId(authorId);
+        return post;
+    }
+
+    private Post initPostByProject(long postId, String content, long projectId) {
+        Post post = new Post();
+        post.setId(postId);
+        post.setContent(content);
+        post.setProjectId(projectId);
+        return post;
+    }
+
+    private ProjectDto initProjectDto(long projectId, long ownerId) {
+        return ProjectDto.builder()
+                .id(projectId)
+                .ownerId(ownerId)
+                .build();
     }
 }
