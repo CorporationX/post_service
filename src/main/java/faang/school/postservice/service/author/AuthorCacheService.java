@@ -19,8 +19,8 @@ public class AuthorCacheService {
     private final StringRedisTemplate redisTemplate;
     private final ObjectMapper objectMapper;
 
-    @Value("${cache.redis.author.ttl}")
-    private long ttl;
+    @Value("${spring.data.redis.ttl.author-post}")
+    private Long ttl;
 
     public Optional<AuthorDto> get(String authorId) {
         String key = "author:" + authorId;
