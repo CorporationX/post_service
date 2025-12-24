@@ -1,4 +1,4 @@
-package faang.school.postservice.config;
+package faang.school.postservice.dto.post;
 
 import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;

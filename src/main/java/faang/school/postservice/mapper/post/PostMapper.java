@@ -1,6 +1,6 @@
 package faang.school.postservice.mapper.post;
 
-import faang.school.postservice.config.PostCache;
+import faang.school.postservice.dto.post.PostCache;
 import faang.school.postservice.dto.post.CreatePostRequestDto;
 import faang.school.postservice.dto.post.PostFeedDto;
 import faang.school.postservice.dto.post.PostResponseDto;

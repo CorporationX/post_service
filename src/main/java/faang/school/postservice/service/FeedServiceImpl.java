@@ -1,10 +1,10 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.config.PostCache;
-import faang.school.postservice.config.UserCache;
+import faang.school.postservice.dto.post.PostCache;
 import faang.school.postservice.dto.post.PostEventDto;
 import faang.school.postservice.dto.post.PostFeedDto;
+import faang.school.postservice.dto.user.UserCache;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
@@ -85,22 +85,18 @@ public class FeedServiceImpl implements FeedService {
     }
 
     private void savePostDetails(PostEventDto event) {
-        final String postKey = "post:" + event.postId();
+        PostCache postCache = PostCache.builder()
+                .postId(event.postId())
+                .content(event.content())
+                .publishedAt(event.publishedAt())
+                .authorId(event.authorId())
+                .projectId(event.projectId())
+                .likeCount(event.likeCount())
+                .commentCount(event.commentCount())
+                .ttl(Duration.ofDays(feedTtlDays).toSeconds())
+                .build();
 
-        Map<String, String> postData = new HashMap<>();
-        postData.put("id", event.postId().toString());
-        postData.put("content", event.content());
-        postData.put("publishedAt", event.publishedAt().toString());
-
-        if (event.authorId() != null) {
-            postData.put("authorId", event.authorId().toString());
-        }
-        if (event.projectId() != null) {
-            postData.put("projectId", event.projectId().toString());
-        }
-
-        redisTemplate.opsForHash().putAll(postKey, postData);
-        redisTemplate.expire(postKey, Duration.ofDays(feedTtlDays));
+        postCacheRepository.save(postCache);
     }
 
     private void updateSingleFeed(Long followerId, Long postId, double score) {
@@ -123,7 +119,7 @@ public class FeedServiceImpl implements FeedService {
             feed.addAll(getFromDb(userId, lastFeedId, size - feed.size()));
         }
 
-        return feed.size() > size ? feed.subList(0, size) : feed;
+        return feed;
     }
 
     private List<Long> getRedisIds(Long userId, Long afterId, int limit) {
@@ -153,18 +149,23 @@ public class FeedServiceImpl implements FeedService {
             return List.of();
         }
 
-        Map<Long, Post> posts = getPosts(postIds);
+        Map<Long, PostFeedDto> posts = getPosts(postIds);
         Set<Long> authorIds = posts.values().stream()
-                .map(Post::getAuthorId).collect(Collectors.toSet());
+                .map(PostFeedDto::authorId).collect(Collectors.toSet());
         Map<Long, UserDto> authors = getAuthors(authorIds);
 
         return postIds.stream()
-                .map(posts::get).filter(Objects::nonNull)
-                .filter(p -> authors.containsKey(p.getAuthorId()))
-                .map(postMapper::toFeedDto).toList();
+                .map(posts::get)
+                .filter(Objects::nonNull)
+                .filter(p -> authors.containsKey(p.authorId()))
+                .toList();
     }
 
-    private List<PostFeedDto> getFromDb(Long userId, Long afterId, int needed) {
+    private List<PostFeedDto> getFromDb(Long userId, Long afterId, int limit) {
+        if (limit <= 0) {
+            return List.of();
+        }
+
         List<Long> followeeIds = getFolloweeIds(userId);
         if (followeeIds.isEmpty()) {
             return List.of();
@@ -173,8 +174,9 @@ public class FeedServiceImpl implements FeedService {
         LocalDateTime afterTime = afterId == null ? null
                 : postRepository.findById(afterId).map(Post::getPublishedAt).orElse(null);
 
-        return getFeedPostsFromDb(followeeIds, afterTime, needed).stream()
+        return getFeedPostsFromDb(followeeIds, afterTime, limit).stream()
                 .map(postMapper::toFeedDto)
+                .limit(limit)
                 .toList();
     }
 
@@ -190,24 +192,33 @@ public class FeedServiceImpl implements FeedService {
                 .collect(Collectors.toMap(Post::getId, p -> p));
     }
 
-    private Map<Long, Post> getPosts(List<Long> ids) {
-        Map<Long, Post> result = new HashMap<>();
-        postCacheRepository.findByPostIdIn(ids)
-                .forEach(cache -> result.put(cache.getPostId(), toPost(cache)));
-        getPostsByIdsFromDb(ids.stream()
-                .filter(id -> !result.containsKey(id)).toList())
-                .forEach(result::put);
+    private Map<Long, PostFeedDto> getPosts(List<Long> ids) {
+        Map<Long, PostFeedDto> result = new HashMap<>();
+        ids.forEach(id -> {
+            postCacheRepository.findByPostId(id)
+                    .ifPresent(cache -> result.put(id, postMapper.toFeedDto(cache)));
+        });
+
+        List<Long> missingIds = ids.stream()
+                .filter(id -> !result.containsKey(id))
+                .toList();
+
+        if (!missingIds.isEmpty()) {
+            getPostsByIdsFromDb(missingIds).values().stream()
+                    .forEach(post -> result.put(
+                            post.getId(),
+                            postMapper.toFeedDto(post)
+                    ));
+        }
         return result;
     }
 
     private Map<Long, UserDto> getAuthors(Set<Long> userIds) {
-        Map<Long, UserDto> result = userCacheRepository.findByUserIdIn(new ArrayList<>(userIds))
-                .stream()
-                .collect(Collectors.toMap(
-                        UserCache::getUserId,
-                        cache -> new UserDto(cache.getUserId(), cache.getUsername(),
-                                cache.getEmail())
-                ));
+        if (userIds == null || userIds.isEmpty()) {
+            return Map.of();
+        }
+
+        Map<Long, UserDto> result = getAuthorsFromCache(userIds);
 
         List<Long> missing = userIds.stream()
                 .filter(id -> !result.containsKey(id))
@@ -215,7 +226,44 @@ public class FeedServiceImpl implements FeedService {
 
         if (!missing.isEmpty()) {
             userServiceClient.getUsersByIds(missing)
-                    .forEach(user -> result.put(user.id(), user));
+                    .forEach(user -> {
+                        cacheUser(user);
+                        result.put(user.id(), user);
+                    });
+        }
+
+        return result;
+    }
+
+    private void cacheUser(UserDto user) {
+        try {
+            UserCache userCache = UserCache.builder()
+                    .userId(user.id())
+                    .username(user.username())
+                    .email(user.email())
+                    .ttl(Duration.ofDays(1).toSeconds())
+                    .build();
+
+            userCacheRepository.save(userCache);
+            log.debug("Cached user {} in Redis", user.id());
+        } catch (Exception e) {
+            log.warn("Failed to cache user {}: {}", user.id(), e.getMessage());
+        }
+    }
+
+    private Map<Long, UserDto> getAuthorsFromCache(Set<Long> userIds) {
+        if (userIds == null || userIds.isEmpty()) {
+            return Map.of();
+        }
+
+        Map<Long, UserDto> result = new HashMap<>();
+
+        for (Long userId : userIds) {
+            userCacheRepository.findByUserId(userId)
+                    .ifPresent(cache -> result.put(
+                            userId,
+                            new UserDto(cache.getUserId(), cache.getUsername(), cache.getEmail())
+                    ));
         }
 
         return result;
@@ -232,15 +280,5 @@ public class FeedServiceImpl implements FeedService {
             log.error("Failed to get followees for user {}", userId, e);
             return List.of();
         }
-    }
-
-    private Post toPost(PostCache cache) {
-        return Post.builder()
-                .id(cache.getPostId())
-                .content(cache.getContent())
-                .publishedAt(cache.getPublishedAt())
-                .authorId(cache.getAuthorId())
-                .projectId(cache.getProjectId())
-                .build();
     }
 }

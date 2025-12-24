@@ -129,13 +129,22 @@ public class PostServiceImpl implements PostService {
                 saved.getAuthorId(),
                 saved.getProjectId(),
                 followerIds,
-                saved.getPublishedAt()
+                saved.getPublishedAt(),
+                getLikeCount(saved),
+                getCommentCount(saved)
         );
 
         eventPublisher.publishEvent(event);
         return postMapper.toDto(saved);
     }
 
+    private Long getLikeCount(Post post) {
+        return post.getLikes() == null ? 0L : (long) post.getLikes().size();
+    }
+
+    private Long getCommentCount(Post post) {
+        return post.getComments() == null ? 0L : (long) post.getComments().size();
+    }
     @Override
     public PostResponseDto update(long id, UpdatePostRequestDto dto) {
         log.info("Updating post id={}", id);

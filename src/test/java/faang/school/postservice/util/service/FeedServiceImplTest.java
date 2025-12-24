@@ -1,6 +1,7 @@
 package faang.school.postservice.util.service;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.post.PostCache;
 import faang.school.postservice.dto.post.PostEventDto;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.repository.PostCacheRepository;
@@ -10,8 +11,10 @@ import faang.school.postservice.service.FeedServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mapstruct.factory.Mappers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -55,16 +58,13 @@ public class FeedServiceImplTest {
     private ValueOperations<String, Object> valueOperations;
 
     @Mock
-    private HashOperations<String, Object, Object> hashOperations;
-
-    @Mock
     private PostRepository postRepository;
 
     @Mock
     private UserServiceClient userServiceClient;
 
-    @Mock
-    private PostMapper postMapper;
+    @Spy
+    private PostMapper postMapper = Mappers.getMapper(PostMapper.class);
 
     @Mock
     private PostCacheRepository postCacheRepository;
@@ -88,14 +88,15 @@ public class FeedServiceImplTest {
                 AUTHOR_ID,
                 null,
                 followerIds,
-                LocalDateTime.now()
-        );
+                LocalDateTime.now(),
+                0L,
+                0L
+                );
     }
 
     @Test
     void updateFeeds_shouldAddPostToAllFollowers() {
         when(redisTemplate.opsForZSet()).thenReturn(zsetOperations);
-        when(redisTemplate.opsForHash()).thenReturn(hashOperations);
         when(redisTemplate.opsForValue()).thenReturn(valueOperations);
         when(redisTemplate.hasKey(anyString())).thenReturn(false);
 
@@ -110,10 +111,12 @@ public class FeedServiceImplTest {
 
         verify(zsetOperations, times(3)).removeRange(anyString(),
                 eq((long) MAX_FEED_SIZE), eq(-1L));
-        verify(redisTemplate).expire(eq("post:" + POST_ID), any(Duration.class));
         verify(redisTemplate).expire(eq("feed:" + FOLLOWER_1_ID), any(Duration.class));
         verify(redisTemplate).expire(eq("feed:" + FOLLOWER_2_ID), any(Duration.class));
         verify(redisTemplate).expire(eq("feed:" + FOLLOWER_3_ID), any(Duration.class));
+        verify(postCacheRepository).save(any(PostCache.class));
+        verify(valueOperations).set(eq("processed:post:" + POST_ID), eq("1"),
+                any(Duration.class));
     }
 
     @Test
@@ -128,7 +131,8 @@ public class FeedServiceImplTest {
 
     @Test
     void updateFeeds_whenRedisThrowsException_shouldRethrow() {
-        when(redisTemplate.opsForHash()).thenThrow(new RuntimeException("Redis error"));
+        when(postCacheRepository.save(any(PostCache.class)))
+                .thenThrow(new RuntimeException("Redis error"));
         PostEventDto event = createTestEvent(List.of(FOLLOWER_1_ID));
 
         assertThrows(RuntimeException.class, () -> feedService.updateFeeds(event));
@@ -137,7 +141,6 @@ public class FeedServiceImplTest {
     @Test
     void updateFeeds_shouldDecreaseSize() {
         when(redisTemplate.opsForZSet()).thenReturn(zsetOperations);
-        when(redisTemplate.opsForHash()).thenReturn(hashOperations);
         when(redisTemplate.opsForValue()).thenReturn(valueOperations);
         when(redisTemplate.hasKey(anyString())).thenReturn(false);
 
