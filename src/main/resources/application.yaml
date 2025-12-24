@@ -1,4 +1,7 @@
 spring:
+  application:
+    name: post-service
+
   config:
     import: optional:classpath:application.properties
 
@@ -56,6 +59,8 @@ spring:
         calculations_channel:
           name: calculations_channel
       user-ban-topic: "user-ban-topic"
+      posts-ttl-seconds: 86400
+      posts-key-prefix: posts
 
 server:
   port: 8081

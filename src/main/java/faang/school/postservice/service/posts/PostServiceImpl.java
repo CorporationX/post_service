@@ -15,6 +15,8 @@ import faang.school.postservice.model.Post;
 import faang.school.postservice.outbox.repository.OutboxRepository;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +28,10 @@ public class PostServiceImpl implements PostService {
     private final UserContext userContext;
     private final OutboxRepository outboxRepository;
     private final ObjectMapper objectMapper;
+    private final ApplicationEventPublisher eventPublisher;
+
+    @Value("${spring.application.name}")
+    private String serviceName;
 
     @Override
     @Transactional
@@ -33,6 +39,8 @@ public class PostServiceImpl implements PostService {
         Post post = postMapper.toModel(requestPostDto);
         post.setAuthorId(userContext.getUserId());
         Post savedPost = postRepository.save(post);
+
+        eventPublisher.publishEvent(new PostCreatedInternalEvent(savedPost));
 
         PostCreatedEvent event = PostCreatedEvent.builder()
                 .id(savedPost.getId())
@@ -53,7 +61,7 @@ public class PostServiceImpl implements PostService {
                 .status(OutboxStatus.NEW)
                 .eventType(OutboxEventType.POST_CREATED)
                 .payload(payload)
-                .sourceService("post-service")
+                .sourceService(serviceName)
                 .build();
 
         outboxRepository.save(outboxEvent);

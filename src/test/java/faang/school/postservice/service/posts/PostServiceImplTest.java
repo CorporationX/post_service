@@ -22,7 +22,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
+import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -37,25 +39,45 @@ import static org.mockito.Mockito.verify;
 class PostServiceImplTest {
     @Mock
     private PostRepository postRepository;
+
     @Mock
     private PostMapper postMapper;
+
     @Mock
     private UserContext userContext;
+
     @Mock
     private OutboxRepository outboxRepository;
+
     @Mock
     private ObjectMapper objectMapper;
+
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
+
     @InjectMocks
     private PostServiceImpl postService;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         postRepository = mock(PostRepository.class);
         postMapper = mock(PostMapper.class);
         userContext = mock(UserContext.class);
         outboxRepository = mock(OutboxRepository.class);
         objectMapper = new ObjectMapper();
-        postService = new PostServiceImpl(postMapper, postRepository, userContext, outboxRepository, objectMapper);
+        eventPublisher = mock(ApplicationEventPublisher.class);
+        postService = new PostServiceImpl(
+                postMapper,
+                postRepository,
+                userContext,
+                outboxRepository,
+                objectMapper,
+                eventPublisher
+        );
+
+        Field serviceNameField = PostServiceImpl.class.getDeclaredField("serviceName");
+        serviceNameField.setAccessible(true);
+        serviceNameField.set(postService, "post-service");
     }
 
     @Test
@@ -111,7 +133,14 @@ class PostServiceImplTest {
     @Test
     void create_shouldThrowOutboxSerializationException_whenJsonFails() throws JsonProcessingException {
         ObjectMapper badMapper = mock(ObjectMapper.class);
-        postService = new PostServiceImpl(postMapper, postRepository, userContext, outboxRepository, badMapper);
+        postService = new PostServiceImpl(
+                postMapper,
+                postRepository,
+                userContext,
+                outboxRepository,
+                badMapper,
+                eventPublisher
+        );
 
         RequestPostDto requestDto = new RequestPostDto(
                 "Some content",

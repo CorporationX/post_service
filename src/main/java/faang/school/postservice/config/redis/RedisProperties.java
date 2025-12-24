@@ -14,10 +14,19 @@ import org.springframework.validation.annotation.Validated;
 public class RedisProperties {
     @NotBlank(message = "Redis host not be null")
     private String host;
+
     @Positive(message = "Redis port cannot be negative")
     private int port;
+
     @NotBlank(message = "Redis password cannot be null or empty")
     private String password;
+
     @NotBlank(message = "Redis userBanTopic must not be null or empty")
     private String userBanTopic;
+
+    @Positive(message = "Posts TTL must be positive")
+    private long postsTtlSeconds;
+
+    @NotBlank(message = "Posts key prefix must not be empty")
+    private String postsKeyPrefix;
 }
