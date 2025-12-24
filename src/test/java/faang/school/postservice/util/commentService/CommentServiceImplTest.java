@@ -13,6 +13,7 @@ import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.publisher.EventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.cache.CacheService;
 import faang.school.postservice.service.comment.CommentService;
 import faang.school.postservice.service.comment.CommentServiceImpl;
 import faang.school.postservice.validator.CommentValidator;
@@ -67,6 +68,8 @@ class CommentServiceImplTest {
     private CommentEventPublisher commentEventPublisher;
     @Mock
     private EventPublisher eventPublisher;
+    @Mock
+    private CacheService cacheService;
 
     @BeforeEach
     void setUp() {
@@ -83,7 +86,8 @@ class CommentServiceImplTest {
                 },
                 commentValidator,
                 commentEventPublisher,
-                eventPublisher
+                eventPublisher,
+                cacheService
         );
 
         testPost = Post.builder()
