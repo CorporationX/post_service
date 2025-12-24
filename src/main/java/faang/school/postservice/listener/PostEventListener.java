@@ -29,10 +29,11 @@ public class PostEventListener {
                             postPublishEventDto.postId(),
                             Instant.now());
                 }
-                acknowledgment.acknowledge();
             }
         } catch (Exception exception) {
             log.error("Failed to process a post event {}", postPublishEventDto, exception);
+            return;
         }
+        acknowledgment.acknowledge();
     }
 }
