@@ -8,7 +8,10 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Repository
@@ -40,5 +43,28 @@ public class FeedCacheRepository {
         }
 
         redisTemplate.expire(key, ttlDays, TimeUnit.DAYS);
+    }
+
+    public List<Long> get(Long followerId, Long lastPostId, int size) {
+        String key = collection + followerId;
+
+        if (lastPostId == null) {
+            Set<String> ids = redisTemplate.opsForZSet().reverseRange(key, 0, size - 1);
+            return convertToLong(ids);
+        }
+
+        Double lastScore = redisTemplate.opsForZSet().score(key, lastPostId.toString());
+
+        if (lastScore == null) {
+            return get(followerId, null, size);
+        }
+
+        Set<String> ids = redisTemplate.opsForZSet()
+                .reverseRangeByScore(key, 0, lastScore - 0.001, 0, size);
+        return convertToLong(ids);
+    }
+
+    private List<Long> convertToLong(Set<String> ids) {
+        return ids.stream().map(Long::parseLong).collect(Collectors.toList());
     }
 }
