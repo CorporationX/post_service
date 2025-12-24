@@ -21,9 +21,13 @@ spring:
     redis:
       port: 6379
       host: localhost
+      ttl:
+        author-cache-second: 86400
       channels:
         calculations_channel:
           name: calculations_channel
+      user-ban-topic: "user-ban-topic"
+      password: "user-ban-topic"
   kafka:
     bootstrap-servers: localhost:9094
     properties:
