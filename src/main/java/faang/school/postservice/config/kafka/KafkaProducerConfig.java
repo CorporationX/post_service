@@ -29,7 +29,7 @@ public class KafkaProducerConfig {
     public ProducerFactory<String, Object> postKafkaProducerFactory() {
         Map<String, Object> configProperties = new HashMap<>();
         JsonSerializer<Object> serializer = new JsonSerializer<>();
-        serializer.setAddTypeInfo(false);
+        serializer.setAddTypeInfo(true);
         configProperties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         return new DefaultKafkaProducerFactory<>(configProperties, new StringSerializer(), serializer);
     }

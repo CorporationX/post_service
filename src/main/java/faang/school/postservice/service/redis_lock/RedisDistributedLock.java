@@ -36,7 +36,7 @@ public class RedisDistributedLock {
             }
 
             try {
-                Thread.sleep(100); // Фиксированный интервал
+                Thread.sleep(100);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 return false;

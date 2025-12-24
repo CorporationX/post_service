@@ -25,18 +25,15 @@ public class RedisPostLikeService {
         String lockKey = "like:" + postId;
         String requestId = UUID.randomUUID().toString();
 
-        // Проверяем наличие поста в Redis
         if (!redisTemplate.hasKey(POST_KEY + postId)) {
             return;
         }
 
         try {
-            // Пытаемся получить блокировку
             if (!distributedLock.tryLockWithWait(lockKey, requestId)) {
                 throw new IllegalStateException("Could not acquire lock for post " + postId);
             }
 
-            // Атомарно добавляем лайк
             String likesKey = POST_LIKES_KEY + postId;
             Long added = redisTemplate.opsForSet().add(likesKey, event.getLikedByUserId());
 
