@@ -7,8 +7,10 @@ import io.lettuce.core.SocketOptions;
 import io.lettuce.core.TimeoutOptions;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
@@ -24,10 +26,96 @@ import java.time.Duration;
 public class RedisConfig {
     private final RedisProperties redisProperties;
 
-    @Bean
+    @Bean(value = "forRedisTemplate")
+    @Primary
     public LettuceConnectionFactory redisConnectionFactory() {
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(redisProperties.getHost(), redisProperties.getPort());
+        config.setDatabase(0);
 
+        return baseConfigRedis(config);
+    }
+
+    @Bean(value = "forRedisTemplatePost")
+    @Primary
+    public LettuceConnectionFactory redisConnectionFactoryPost() {
+        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(redisProperties.getHost(), redisProperties.getPort());
+        config.setDatabase(1);
+
+        return baseConfigRedis(config);
+    }
+
+    @Bean(value = "forRedisTemplateAuthorPost")
+    public LettuceConnectionFactory redisConnectionFactoryAuthorPost() {
+        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(redisProperties.getHost(), redisProperties.getPort());
+        config.setDatabase(2);
+
+        return baseConfigRedis(config);
+    }
+
+    @Bean(name = "redisTemplatePost")
+    public RedisTemplate<String, PostV2Dto> redisTemplate(@Qualifier("forRedisTemplate") RedisConnectionFactory connectionFactory,
+                                                              ObjectMapper objectMapper) {
+        RedisTemplate<String, PostV2Dto> template = new RedisTemplate<>();
+        template.setConnectionFactory(connectionFactory);
+
+        StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
+        Jackson2JsonRedisSerializer<PostV2Dto> jsonSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, PostV2Dto.class);
+
+        template.setKeySerializer(stringRedisSerializer);
+        template.setValueSerializer(jsonSerializer);
+
+        template.setHashKeySerializer(stringRedisSerializer);
+        template.setHashValueSerializer(stringRedisSerializer);
+
+        template.setEnableTransactionSupport(false);
+        template.setExposeConnection(false);
+
+        return template;
+    }
+
+    @Bean(name = "redisTemplatePost")
+    public RedisTemplate<String, PostV2Dto> redisTemplatePost(@Qualifier("forRedisTemplatePost") RedisConnectionFactory connectionFactory,
+                                                              ObjectMapper objectMapper) {
+        RedisTemplate<String, PostV2Dto> template = new RedisTemplate<>();
+        template.setConnectionFactory(connectionFactory);
+
+        StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
+        Jackson2JsonRedisSerializer<PostV2Dto> jsonSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, PostV2Dto.class);
+
+        template.setKeySerializer(stringRedisSerializer);
+        template.setValueSerializer(jsonSerializer);
+
+        template.setHashKeySerializer(stringRedisSerializer);
+        template.setHashValueSerializer(stringRedisSerializer);
+
+        template.setEnableTransactionSupport(false);
+        template.setExposeConnection(false);
+
+        return template;
+    }
+
+    @Bean(name = "redisTemplateAuthorPost")
+    public RedisTemplate<String, Object> redisTemplateAuthorPosts(@Qualifier("forRedisTemplateAuthorPost") RedisConnectionFactory connectionFactory) {
+        RedisTemplate<String, Object> template = new RedisTemplate<>();
+        template.setConnectionFactory(connectionFactory);
+
+        StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
+        Jackson2JsonRedisSerializer<Object> jsonSerializer = new Jackson2JsonRedisSerializer<>(Object.class);
+
+
+        template.setKeySerializer(stringRedisSerializer);
+        template.setValueSerializer(jsonSerializer);
+
+        template.setHashKeySerializer(stringRedisSerializer);
+        template.setHashValueSerializer(stringRedisSerializer);
+
+        template.setEnableTransactionSupport(false);
+        template.setExposeConnection(false);
+
+        return template;
+    }
+
+    private LettuceConnectionFactory baseConfigRedis(RedisStandaloneConfiguration config){
         SocketOptions socketOptions = SocketOptions.builder()
                 .connectTimeout(Duration.ofMillis(redisProperties.getConnectTimeout()))
                 .keepAlive(true)
@@ -60,48 +148,5 @@ public class RedisConfig {
                 .poolConfig(genericObjectPoolConfig)
                 .build();
         return new LettuceConnectionFactory(config, poolConfig);
-    }
-
-
-    @Bean(name = "redisTemplatePost")
-    public RedisTemplate<String, PostV2Dto> redisTemplatePost(RedisConnectionFactory connectionFactory,
-                                                              ObjectMapper objectMapper) {
-        RedisTemplate<String, PostV2Dto> template = new RedisTemplate<>();
-        template.setConnectionFactory(connectionFactory);
-
-        StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
-        Jackson2JsonRedisSerializer<PostV2Dto> jsonSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, PostV2Dto.class);
-
-        template.setKeySerializer(stringRedisSerializer);
-        template.setValueSerializer(jsonSerializer);
-
-        template.setHashKeySerializer(stringRedisSerializer);
-        template.setHashValueSerializer(stringRedisSerializer);
-
-        template.setEnableTransactionSupport(false);
-        template.setExposeConnection(false);
-
-        return template;
-    }
-
-    @Bean(name = "redisTemplateAuthorPost")
-    public RedisTemplate<String, Object> redisTemplateAuthorPosts(RedisConnectionFactory connectionFactory) {
-        RedisTemplate<String, Object> template = new RedisTemplate<>();
-        template.setConnectionFactory(connectionFactory);
-
-        StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
-        Jackson2JsonRedisSerializer<Object> jsonSerializer = new Jackson2JsonRedisSerializer<>(Object.class);
-
-
-        template.setKeySerializer(stringRedisSerializer);
-        template.setValueSerializer(jsonSerializer);
-
-        template.setHashKeySerializer(stringRedisSerializer);
-        template.setHashValueSerializer(stringRedisSerializer);
-
-        template.setEnableTransactionSupport(false);
-        template.setExposeConnection(false);
-
-        return template;
     }
 }
