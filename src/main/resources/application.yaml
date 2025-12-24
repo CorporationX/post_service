@@ -1,4 +1,8 @@
 spring:
+
+  main:
+    allow-bean-definition-overriding: true
+
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://localhost:5432/postgres
@@ -22,6 +26,12 @@ spring:
       port: 6379
       host: localhost
       password: password
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
       channels:
         calculations_channel:
           name: calculations_channel
@@ -29,7 +39,29 @@ spring:
           name: comment_event
         like: like_channel
         comment: achievement_channel
+      lock:
+        timeout: 5000
+        wait-time: 3000
 
+  kafka:
+    bootstrap-servers: localhost:9092
+
+    consumer:
+      group-id: post-service-like-consumer
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+        spring.json.type.mapping: "likeEvent:faang.school.postservice.event.LikeEvent"
+      topics:
+        like_topic: post_likes
+
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.add.type.headers: false
 
 server:
   port: 8081

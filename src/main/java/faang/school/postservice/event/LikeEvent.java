@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class LikeEvent {
+public class LikeEvent implements KafkaEvent {
     private Long postId;
     private Long authorId;
     private Long likedByUserId;
