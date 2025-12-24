@@ -35,7 +35,10 @@ spring:
       acks: all
       properties:
         spring.json.add.type.headers: false
-
+    consumer:
+      trusted-packages: "faang.school.postservice.dto.event"
+      group-id: "post-consumer-group"
+      ack-mode: manual
 kafka:
   topic:
     user-ban: user_ban
@@ -85,7 +88,7 @@ app:
   scheduled-posts:
     thread-pool-size: 10
     batch-size: 1000
-    cron: "0 * * * * *"
+    cron: "0 0 0 * * *"
 posts:
   max-unverified-posts: 5
   find-unverified-posts-page-size: 100
@@ -93,3 +96,10 @@ posts:
 
 files-path:
   offensive-words: src/main/resources/offensive-words.txt
+
+redis:
+  cache:
+    feed:
+      key-prefix: "feed:"
+      max-size: 500
+      ttl-days: 30
