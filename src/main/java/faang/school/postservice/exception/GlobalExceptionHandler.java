@@ -30,6 +30,9 @@ public class GlobalExceptionHandler {
             Map.entry(RuntimeException.class, HttpStatus.INTERNAL_SERVER_ERROR),
             Map.entry(IllegalArgumentException.class, HttpStatus.BAD_REQUEST),
             Map.entry(ConstraintViolationException.class, HttpStatus.BAD_REQUEST),
+            Map.entry(EventPublishingException.class, HttpStatus.INTERNAL_SERVER_ERROR)
+    );
+            Map.entry(ConstraintViolationException.class, HttpStatus.BAD_REQUEST),
             Map.entry(RedisSystemException.class, HttpStatus.ALREADY_REPORTED)
             );
 

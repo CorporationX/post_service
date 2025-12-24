@@ -12,25 +12,18 @@ kafka:
     key-serializer: org.apache.kafka.common.serialization.StringSerializer
     value-serializer: org.apache.kafka.common.serialization.StringSerializer
 
-  consumer:
-    key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-    value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-    properties:
-      spring.json.trusted.packages: "*"
-
   topic:
     comments: comment.event
-    comment: comment.feet
-
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: none
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         format_sql: true
+    open-in-view: false
 
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
@@ -39,9 +32,39 @@ kafka:
     redis:
       port: 6379
       host: localhost
+      timeout: 1000 #ms
+      lettuce:
+        pool:
+          max-active: 5000
+          max-idle: 5000
+          min-idle: 1000
+          max-wait: 5000 #ms
+          time-between-eviction-runs: 10s
+        shutdown-timeout: 1000 #ms
+      connect-timeout: 1000
       channels:
         calculations_channel:
           name: calculations_channel
+      ttl:
+        author-post: 1 # в днях
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    topics:
+      like-events: "like-events-topic"
+      unlike-events: "unlike-events-topic"
+      comments: comment.event
+      post-view: analytics.post-view
+      analytics: analytics.comment-analysis
+
+  task:
+    execution:
+      pool:
+        post-event:
+          core-size: 5
+          max-size: 10
+          queue-capacity: 100
+          thread-name-prefix: "PostEvent-"
 
 server:
   port: 8081
@@ -69,11 +92,6 @@ post-correcter:
 app:
   moderation:
     time: 30000
-
-cache:
-  redis:
-    author:
-      ttl-seconds: 86400
 
 post:
   comments:

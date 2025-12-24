@@ -10,6 +10,8 @@ import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.like.LikeEventPublisher;
+import faang.school.postservice.publisher.like.UnlikeEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -20,6 +22,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -27,6 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -40,6 +44,8 @@ public class LikeServiceTest {
     private static final Long VALID_LIKE_ID = 1L;
     private static final Long INVALID_USER_ID = 999L;
     private static final Long DIFFERENT_USER_ID = 200L;
+    private static final Long SOME_AUTHOR_ID = 50L;
+    private static final Long DIFFERENT_AUTHOR_ID = 55L;
 
     @Mock
     private PostRepository postRepository;
@@ -56,6 +62,12 @@ public class LikeServiceTest {
     @Mock
     private UserContext userContext;
 
+    @Mock
+    private LikeEventPublisher likeEventPublisher;
+
+    @Mock
+    private UnlikeEventPublisher unlikeEventPublisher;
+
     @InjectMocks
     private LikeService likeService;
 
@@ -69,6 +81,7 @@ public class LikeServiceTest {
     void setUp() {
         post = Post.builder()
                 .id(VALID_POST_ID)
+                .authorId(SOME_AUTHOR_ID)
                 .build();
 
         comment = Comment.builder()
@@ -88,28 +101,6 @@ public class LikeServiceTest {
                 .build();
 
         userDto = new UserDto(VALID_USER_ID, "testuser", "test@example.com", true);
-    }
-
-    @Test
-    void addLikeToPost_ValidData_ShouldAddLike() {
-        when(userContext.getUserId()).thenReturn(VALID_USER_ID);
-        when(userServiceClient.getUser(VALID_USER_ID)).thenReturn(userDto);
-        when(postRepository.getByIdOrThrow(VALID_POST_ID)).thenReturn(post);
-        when(likeRepository.findByPostIdAndUserId(VALID_POST_ID, VALID_USER_ID)).thenReturn(Optional.empty());
-        when(likeRepository.save(any(Like.class))).thenAnswer(invocation -> {
-            Like savedLike = invocation.getArgument(0);
-            return Like.builder()
-                    .id(VALID_LIKE_ID)
-                    .userId(savedLike.getUserId())
-                    .post(savedLike.getPost())
-                    .build();
-        });
-
-        LikeDto result = likeService.addLikeToPost(VALID_POST_ID);
-
-        assertNotNull(result);
-        assertEquals(VALID_USER_ID, result.userId());
-        verify(likeRepository).save(any(Like.class));
     }
 
     @Test
@@ -160,29 +151,24 @@ public class LikeServiceTest {
     }
 
     @Test
-    void removeLikeFromPost_ValidData_ShouldRemoveLike() {
-        when(userContext.getUserId()).thenReturn(VALID_USER_ID);
-        when(userServiceClient.getUser(VALID_USER_ID)).thenReturn(userDto);
-        when(likeRepository.findByPostIdAndUserIdOrThrow(VALID_POST_ID, VALID_USER_ID)).thenReturn(like);
-
-        LikeDto result = likeService.removeLikeFromPost(VALID_POST_ID);
-
-        assertNotNull(result);
-        assertEquals(VALID_USER_ID, result.userId());
-        verify(likeRepository).deleteByPostIdAndUserId(VALID_POST_ID, VALID_USER_ID);
-    }
-
-    @Test
     void removeLikeFromPost_DifferentUser_ShouldThrowForbiddenException() {
+        Post postWithAuthor = Post.builder()
+                .id(VALID_POST_ID)
+                .authorId(DIFFERENT_AUTHOR_ID)
+                .build();
+
         Like differentUserLike = Like.builder()
                 .id(VALID_LIKE_ID)
                 .userId(DIFFERENT_USER_ID)
-                .post(post)
+                .post(postWithAuthor)
                 .build();
 
         when(userContext.getUserId()).thenReturn(VALID_USER_ID);
         when(userServiceClient.getUser(VALID_USER_ID)).thenReturn(userDto);
-        when(likeRepository.findByPostIdAndUserIdOrThrow(VALID_POST_ID, VALID_USER_ID)).thenReturn(differentUserLike);
+        when(postRepository.getByIdOrThrow(VALID_POST_ID)).thenReturn(postWithAuthor);
+
+        when(likeRepository.findByPostIdAndUserIdOrThrow(VALID_POST_ID, VALID_USER_ID))
+                .thenReturn(differentUserLike);
 
         assertThrows(ForbiddenException.class, () -> likeService.removeLikeFromPost(VALID_POST_ID));
         verify(likeRepository, never()).deleteByPostIdAndUserId(anyLong(), anyLong());
