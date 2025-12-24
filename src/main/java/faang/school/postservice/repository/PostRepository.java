@@ -58,22 +58,27 @@ public interface PostRepository extends JpaRepository<Post, Long>, JpaSpecificat
            """)
     List<Post> findUnpublished();
 
-    default Post findPostWithLikesOrThrow(long postId) {
-        return findPostWithLikes(postId)
+    default Post findPostWithLikesAndCommentOrThrow(long postId) {
+        return findPostWithLikesAndComment(postId)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Post %d not found", postId)));
     }
 
     @Query("""
-            SELECT p FROM Post p 
-            LEFT JOIN FETCH p.likes 
+            SELECT p FROM Post p
+            LEFT JOIN FETCH p.likes
+            LEFT JOIN FETCH p.comments
             WHERE p.id = :postId
             """)
-    Optional<Post> findPostWithLikes(Long postId);
+    Optional<Post> findPostWithLikesAndComment(Long postId);
+
+    default Long findAuthorIdByIdOrThrow(Long postId) {
+        return findAuthorIdById(postId)
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Post %d not found", postId)));
+    }
 
     @Query("""
-            SELECT p FROM Post p 
-            LEFT JOIN Like l ON p.id = l.post.id 
-            WHERE p.id IN :postIds
-            """)
-    List<Post> getPostsWithLikes(@Param("postIds") List<Long> postIds, Pageable pageable);
+            SELECT p.authorId
+            FROM Post p 
+            WHERE p.id = :postId""")
+    Optional<Long> findAuthorIdById(Long postId);
 }

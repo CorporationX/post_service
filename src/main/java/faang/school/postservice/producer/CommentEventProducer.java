@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.dto.kafka.CommentEventDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 
 import org.springframework.kafka.core.KafkaTemplate;
@@ -15,10 +16,14 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class CommentEventProducer {
 
+    private final String topic;
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    @Value("${kafka.topic.comments}")
-    private String topic;
+    public CommentEventProducer(@Value("${spring.kafka.topics.comments}") String topic,
+                                @Qualifier("commentEventKafkaTemplate") KafkaTemplate<String, Object> kafkaTemplate) {
+        this.topic = topic;
+        this.kafkaTemplate = kafkaTemplate;
+    }
 
     public void publish(CommentEventDto event) {
         kafkaTemplate.send(topic, event.commentId().toString(), event)
