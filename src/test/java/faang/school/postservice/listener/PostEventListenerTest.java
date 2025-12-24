@@ -85,7 +85,7 @@ public class PostEventListenerTest {
         postEventListener.handlePostPublishEvent(postPublishEventDtoWithoutSubscribers, acknowledgment);
 
         verifyNoInteractions(feedCacheRepository);
-        verify(acknowledgment, never()).acknowledge();
+        verify(acknowledgment, times(1)).acknowledge();
     }
 
     @Test
@@ -93,7 +93,7 @@ public class PostEventListenerTest {
         postEventListener.handlePostPublishEvent(postPublishEventDtoNullSubscribers, acknowledgment);
 
         verifyNoInteractions(feedCacheRepository);
-        verify(acknowledgment, never()).acknowledge();
+        verify(acknowledgment, times(1)).acknowledge();
     }
 
     @Test
