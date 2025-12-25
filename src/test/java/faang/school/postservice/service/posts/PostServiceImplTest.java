@@ -95,13 +95,14 @@ class PostServiceImplTest {
         savedPost.setContent("content");
         savedPost.setProjectId(123L);
         savedPost.setAuthorId(42L);
+        savedPost.setCreatedAt(LocalDateTime.now());
 
         PostDto postDto = new PostDto(
                 1L,
                 "content",
                 123L,
                 42L,
-                LocalDateTime.now(),
+                savedPost.getCreatedAt(),
                 LocalDateTime.now()
         );
 
@@ -128,6 +129,7 @@ class PostServiceImplTest {
         assertTrue(payload.contains("\"content\":\"content\""));
         assertTrue(payload.contains("\"projectId\":123"));
         assertTrue(payload.contains("\"authorId\":42"));
+        assertTrue(payload.contains("\"createdAt\""));
     }
 
     @Test
@@ -152,6 +154,7 @@ class PostServiceImplTest {
         savedPost.setContent("content");
         savedPost.setProjectId(123L);
         savedPost.setAuthorId(42L);
+        savedPost.setCreatedAt(LocalDateTime.now());
 
         when(postMapper.toModel(requestDto)).thenReturn(postModel);
         when(userContext.getUserId()).thenReturn(42L);
