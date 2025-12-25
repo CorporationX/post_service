@@ -1,4 +1,36 @@
 spring:
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: post-service-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      enable-auto-commit: false
+      auto-offset-reset: earliest
+    properties:
+      security.protocol: PLAINTEXT
+      spring.json.trusted.packages: "*"
+      spring.json.value.default.type: faang.school.postservice.dto.post.PostEventDto
+    listener:
+      ack-mode: MANUAL
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      properties:
+        spring.json.add.type.headers: false
+        max.block.ms: 3000
+        delivery.timeout.ms: 10000
+        request.timeout.ms: 5000
+        enable.idempotence: true
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 5MB
+      max-request-size: 50MB
+      file-size-threshold: 2KB
+
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://localhost:5432/postgres
@@ -25,19 +57,73 @@ spring:
         calculations_channel:
           name: calculations_channel
 
+scheduler:
+  cron:
+    expression: 0 0 * * * *
+    zone: GMT
+  thread-pool:
+    size: 10
+    batchSize: 50
+
 server:
   port: 8081
+  servlet:
+    context-path: /api/v1
 
 logging:
   level:
     root: info
 
+app:
+  kafka:
+    topics:
+      posts-create-topic: posts-create-topic
+  feed:
+    max-size: 500
+    ttl-days: 1
+    default-size: 20
+    cache-ttl-seconds: 86400
+  producer:
+    timeout-seconds: 3
+  resources:
+    image:
+      max-file-size-mb: 5
+      max-per-post: 10
+      type: "IMAGE"
+
 user-service:
   host: localhost
   port: 8080
+  context-path: /api/v1
+
 project-service:
   host: localhost
   port: 8082
+  context-path: /api/v1
+
 payment-service:
   host: localhost
   port: 9080
+  context-path: /api/v1
+
+like:
+  chunk:
+    size: 100
+
+springdoc:
+  override-with-generic-response: false
+
+services:
+  s3:
+    endpoint: http://localhost:9000
+    accessKey: user
+    secretKey: password
+    bucketName: corpbucket
+
+post-correcter:
+  cron: "0 0 3 * * *" # every day at 3:00
+
+languagetool:
+  api-url: "https://api.languagetool.org"
+  language: "auto"
+
