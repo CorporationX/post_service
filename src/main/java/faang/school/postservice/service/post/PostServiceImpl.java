@@ -5,14 +5,17 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dictionary.ModerationDictionary;
 import faang.school.postservice.dto.post.CreatePostDto;
 import faang.school.postservice.dto.post.PostDto;
+import faang.school.postservice.event.PostEvent;
 import faang.school.postservice.event.UserBanEvent;
 import faang.school.postservice.exception.DataValidationException;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.mapper.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.PostEventPublisher;
 import faang.school.postservice.publisher.UserBanEventPublisher;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.SubscriptionRepository;
 import faang.school.postservice.service.user.UserService;
 import feign.FeignException;
 import jakarta.validation.constraints.NotNull;
@@ -51,6 +54,8 @@ public class PostServiceImpl implements PostService {
     private final UserBanEventPublisher userBanEventPublisher;
     private final UserService userService;
     private final ModerationDictionary moderationDictionary;
+    private final PostEventPublisher postEventPublisher;
+    private final SubscriptionRepository subscriptionRepository;
 
     @Value("${app.scheduled-posts.batch-size:1000}")
     private int scheduledPostsBatchSize;
@@ -85,6 +90,17 @@ public class PostServiceImpl implements PostService {
         post = postRepository.save(post);
 
         log.info("Post published successfully with ID: {}", post.getId());
+
+        PostEvent postEvent = PostEvent.builder()
+                .postId(post.getId())
+                .authorId(post.getAuthorId())
+                .content(post.getContent())
+                .followersIds(subscriptionRepository.findFollowerIdsByFolloweeId(post.getAuthorId()))
+                .build();
+
+        postEventPublisher.publish(postEvent);
+        log.debug("Post {} has been sent to message broker", post.getId());
+
         return postMapper.toPostDto(post);
     }
 

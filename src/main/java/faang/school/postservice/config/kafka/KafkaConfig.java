@@ -51,6 +51,7 @@ public class KafkaConfig {
     public KafkaTemplate<String, Object> stringObjectKafkaTemplate() {
         return new KafkaTemplate<>(stringObjectProducerFactory());
     }
+
     @Bean
     public ProducerFactory<String, UserBanEvent> userBanEventProducerFactory() {
         Map<String, Object> configProps = new HashMap<>();

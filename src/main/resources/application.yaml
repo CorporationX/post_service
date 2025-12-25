@@ -36,10 +36,12 @@ spring:
       properties:
         spring.json.add.type.headers: false
 
+
 kafka:
   topic:
     user-ban: user_ban
     comment-event: comment_events
+    post: post
 
 server:
   port: 8081
