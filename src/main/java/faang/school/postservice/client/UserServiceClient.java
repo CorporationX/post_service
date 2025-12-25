@@ -28,4 +28,11 @@ public interface UserServiceClient {
             @RequestParam(defaultValue = "0") int experienceMin,
             @RequestParam(defaultValue = "2147483647") int experienceMax
     );
+
+    @GetMapping("/subscriptions/{followerId}/followees")
+    List<UserDto> getFollowees(@PathVariable long followerId,
+                               @RequestParam(required = false) String namePattern,
+                               @RequestParam(required = false) String phonePattern,
+                               @RequestParam(defaultValue = "0") int experienceMin,
+                               @RequestParam(defaultValue = "2147483647") int experienceMax);
 }

@@ -81,6 +81,8 @@ app:
   feed:
     max-size: 500
     ttl-days: 1
+    default-size: 20
+    cache-ttl-seconds: 86400
   producer:
     timeout-seconds: 3
   resources:

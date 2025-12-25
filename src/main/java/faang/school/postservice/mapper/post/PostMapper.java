@@ -1,6 +1,8 @@
 package faang.school.postservice.mapper.post;
 
+import faang.school.postservice.dto.post.PostCache;
 import faang.school.postservice.dto.post.CreatePostRequestDto;
+import faang.school.postservice.dto.post.PostFeedDto;
 import faang.school.postservice.dto.post.PostResponseDto;
 import faang.school.postservice.dto.post.UpdatePostRequestDto;
 import faang.school.postservice.model.Post;
@@ -52,6 +54,19 @@ public interface PostMapper {
             @Mapping(target = "resources", ignore = true),
             @Mapping(target = "scheduledAt", ignore = true)
     })
+
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateEntityFromDto(UpdatePostRequestDto dto, @MappingTarget Post entity);
+
+    @Mappings({
+            @Mapping(target = "id", source = "postId"),
+            @Mapping(target = "content", source = "content"),
+            @Mapping(target = "publishedAt", source = "publishedAt"),
+            @Mapping(target = "likeCount", source = "likeCount"),
+            @Mapping(target = "commentCount", source = "commentCount"),
+            @Mapping(target = "authorId", source = "authorId")
+    })
+    PostFeedDto toFeedDto(PostCache postCache);
+
+    PostFeedDto toFeedDto(Post post);
 }
