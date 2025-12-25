@@ -1,18 +1,26 @@
 package faang.school.postservice.listener;
 
+import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.cache.UserCacheDto;
 import faang.school.postservice.dto.event.PostPublishEventDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.repository.cache.FeedCacheRepository;
+import faang.school.postservice.repository.cache.UserCacheRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.support.Acknowledgment;
 
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -20,6 +28,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class PostEventListenerTest {
@@ -40,7 +49,22 @@ public class PostEventListenerTest {
     private FeedCacheRepository feedCacheRepository;
 
     @Mock
+    private UserCacheRepository userCacheRepository;
+
+    @Mock
     private Acknowledgment acknowledgment;
+
+    @Mock
+    private UserServiceClient userServiceClient;
+
+    @Captor
+    private ArgumentCaptor<UserCacheDto> userArgumentCaptor;
+
+
+    UserDto userDto = UserDto.builder()
+            .id(authorId)
+            .username("Author Name")
+            .build();
 
     PostPublishEventDto postPublishEventDto = PostPublishEventDto.builder()
             .content("content")
@@ -71,7 +95,13 @@ public class PostEventListenerTest {
 
     @Test
     public void testSuccessfullyPostEventListened() {
+        when(userServiceClient.getUser(authorId)).thenReturn(ResponseEntity.ok(userDto));
         postEventListener.handlePostPublishEvent(postPublishEventDto, acknowledgment);
+
+        verify(userCacheRepository, times(1)).save(userArgumentCaptor.capture());
+
+        UserCacheDto savedUser = userArgumentCaptor.getValue();
+        assertEquals(authorId, savedUser.id());
 
         verify(feedCacheRepository, times(1)).save(
                 eq(subscriberId),
@@ -82,6 +112,7 @@ public class PostEventListenerTest {
 
     @Test
     public void testDoNothingWhenSubscribersIsEmpty() {
+        when(userServiceClient.getUser(authorId)).thenReturn(ResponseEntity.ok(userDto));
         postEventListener.handlePostPublishEvent(postPublishEventDtoWithoutSubscribers, acknowledgment);
 
         verifyNoInteractions(feedCacheRepository);
@@ -90,6 +121,7 @@ public class PostEventListenerTest {
 
     @Test
     public void testDoNothingWhenSubscribersIsNull() {
+        when(userServiceClient.getUser(authorId)).thenReturn(ResponseEntity.ok(userDto));
         postEventListener.handlePostPublishEvent(postPublishEventDtoNullSubscribers, acknowledgment);
 
         verifyNoInteractions(feedCacheRepository);
@@ -98,6 +130,7 @@ public class PostEventListenerTest {
 
     @Test
     public void testFailWhileRedisExceptionReturned() {
+        when(userServiceClient.getUser(incorrectAuthorId)).thenReturn(ResponseEntity.ok(userDto));
         doThrow(new RuntimeException("Can't add a value in Redis"))
                 .when(feedCacheRepository)
                 .save(eq(subscriberId), eq(postId), any(Instant.class));
@@ -107,6 +140,19 @@ public class PostEventListenerTest {
                 eq(postId),
                 any(Instant.class));
 
+        verify(acknowledgment, never()).acknowledge();
+    }
+
+    @Test
+    public void testFailWhileUserRedisExceptionReturned() {
+        when(userServiceClient.getUser(incorrectAuthorId)).thenReturn(ResponseEntity.ok(userDto));
+        doThrow(new RuntimeException("Can't add a value in User Redis"))
+                .when(userCacheRepository)
+                .save(any(UserCacheDto.class));
+
+        postEventListener.handlePostPublishEvent(postPublishEventDtoError, acknowledgment);
+        verify(userCacheRepository, times(1)).save(any(UserCacheDto.class));
+        verifyNoInteractions(feedCacheRepository);
         verify(acknowledgment, never()).acknowledge();
     }
 }
