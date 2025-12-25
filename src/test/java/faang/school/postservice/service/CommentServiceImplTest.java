@@ -6,6 +6,7 @@ import faang.school.postservice.dto.comment.CreateCommentDto;
 import faang.school.postservice.dto.comment.UpdateCommentDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.CommentMapper;
+import faang.school.postservice.mapper.UserMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.kafka.KafkaCommentProducer;
@@ -46,6 +47,9 @@ public class CommentServiceImplTest {
 
     @Spy
     private CommentMapper commentMapper = Mappers.getMapper(CommentMapper.class);
+
+    @Spy
+    private UserMapper userMapper = Mappers.getMapper(UserMapper.class);
 
     @Mock
     private UserServiceClient userServiceClient;
@@ -96,7 +100,6 @@ public class CommentServiceImplTest {
         Mockito.when(postRepository.findById(TEST_POST_ID)).thenReturn(Optional.of(post));
         Mockito.when(userServiceClient.getUser(TEST_AUTHOR_ID)).thenReturn(testUserDto);
         Mockito.when(commentRepository.save(any(Comment.class))).thenReturn(comment);
-        Mockito.when(redisUserRepository.save(any())).thenReturn(null);
         doNothing().when(commentEventPublisher).publishMessage(any());
         doNothing().when(commentEventKafkaPublisher).sendCommentEvent(any());
 
