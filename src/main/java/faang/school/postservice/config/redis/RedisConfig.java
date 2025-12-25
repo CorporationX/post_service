@@ -51,6 +51,34 @@ public class RedisConfig {
         return baseConfigRedis(config);
     }
 
+    @Bean(value = "forRedisTemplateFeed")
+    public LettuceConnectionFactory redisConnectionFactoryFeed() {
+        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(redisProperties.getHost(), redisProperties.getPort());
+        config.setDatabase(3);
+
+        return baseConfigRedis(config);
+    }
+
+    @Bean(name = "redisTemplateFeed")
+    public RedisTemplate<String, Object> redisTemplateFeed(@Qualifier("forRedisTemplateFeed") RedisConnectionFactory connectionFactory) {
+        RedisTemplate<String, Object> template = new RedisTemplate<>();
+        template.setConnectionFactory(connectionFactory);
+
+        StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
+        Jackson2JsonRedisSerializer<Object> jsonSerializer = new Jackson2JsonRedisSerializer<>(Object.class);
+
+        template.setKeySerializer(stringRedisSerializer);
+        template.setValueSerializer(jsonSerializer);
+
+        template.setHashKeySerializer(stringRedisSerializer);
+        template.setHashValueSerializer(jsonSerializer);
+
+        template.setEnableTransactionSupport(false);
+        template.setExposeConnection(false);
+
+        return template;
+    }
+
     @Bean(name = "redisTemplatePost")
     public RedisTemplate<String, PostV2Dto> redisTemplate(@Qualifier("forRedisTemplate") RedisConnectionFactory connectionFactory,
                                                               ObjectMapper objectMapper) {

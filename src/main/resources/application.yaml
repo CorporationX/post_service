@@ -83,3 +83,6 @@ post-correcter:
 app:
   moderation:
     time: 30000
+
+feed:
+  batch-size: 20

@@ -3,7 +3,6 @@ package faang.school.postservice.repository;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.model.Post;
 import jakarta.persistence.LockModeType;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Lock;
@@ -53,9 +52,9 @@ public interface PostRepository extends JpaRepository<Post, Long>, JpaSpecificat
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("""
-           SELECT p FROM Post p 
-           WHERE p.published = false AND p.deleted = false
-           """)
+            SELECT p FROM Post p 
+            WHERE p.published = false AND p.deleted = false
+            """)
     List<Post> findUnpublished();
 
     default Post findPostWithLikesAndCommentOrThrow(long postId) {
@@ -81,4 +80,14 @@ public interface PostRepository extends JpaRepository<Post, Long>, JpaSpecificat
             FROM Post p 
             WHERE p.id = :postId""")
     Optional<Long> findAuthorIdById(Long postId);
+
+    @Query("""
+            SELECT p.id FROM Post p 
+            WHERE p.published = true 
+            AND p.deleted = false 
+            AND (:lastPostId IS NULL OR p.id < :lastPostId)
+            ORDER BY p.publishedAt DESC 
+            LIMIT :limit
+            """)
+    List<Long> findPublishedPostsAfterCursor(@Param("lastPostId") Long lastPostId, @Param("limit") int limit);
 }

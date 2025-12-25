@@ -4,6 +4,8 @@ import faang.school.postservice.dto.common.PageResponse;
 import faang.school.postservice.dto.post.PostV2CreateDto;
 import faang.school.postservice.dto.post.PostV2Dto;
 import faang.school.postservice.dto.post.PostV2UpdateDto;
+import faang.school.postservice.feed.FeedDto;
+import faang.school.postservice.service.post.PostFeedService;
 import faang.school.postservice.service.post.PostV2Service;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class PostV2Controller implements PostV2Api {
 
     private final PostV2Service postV2Service;
+    private final PostFeedService postFeedService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -70,5 +73,12 @@ public class PostV2Controller implements PostV2Api {
     @PatchMapping("/{postId}")
     public PostV2Dto updatePost(@PathVariable Long postId, @Valid @RequestBody PostV2UpdateDto postV2UpdateDto) {
         return postV2Service.updatePost(postId, postV2UpdateDto);
+    }
+
+    @GetMapping("/feed")
+    public FeedDto getFeed(
+            @RequestParam(required = false) String lastPostId,
+            @RequestParam(required = false, defaultValue = "20") Integer limit) {
+        return postFeedService.getFeed(lastPostId, limit);
     }
 }
