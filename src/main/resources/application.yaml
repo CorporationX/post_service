@@ -103,3 +103,7 @@ redis:
       key-prefix: "feed:"
       max-size: 500
       ttl-days: 30
+    post:
+      key-prefix: "post:"
+      ttl-days: 1
+

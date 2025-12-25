@@ -1,9 +1,13 @@
 package faang.school.postservice.listener;
 
+import faang.school.postservice.dto.cache.PostCacheDto;
 import faang.school.postservice.dto.event.PostPublishEventDto;
 import faang.school.postservice.repository.cache.FeedCacheRepository;
+import faang.school.postservice.repository.cache.PostCacheRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -13,6 +17,8 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -40,7 +46,13 @@ public class PostEventListenerTest {
     private FeedCacheRepository feedCacheRepository;
 
     @Mock
+    private PostCacheRepository postCacheRepository;
+
+    @Mock
     private Acknowledgment acknowledgment;
+
+    @Captor
+    private ArgumentCaptor<PostCacheDto> postArgumentCaptor;
 
     PostPublishEventDto postPublishEventDto = PostPublishEventDto.builder()
             .content("content")
@@ -69,9 +81,24 @@ public class PostEventListenerTest {
             .subscriberIds(subscribers)
             .build();
 
+    PostCacheDto postCacheDto = PostCacheDto.builder()
+            .id(postId)
+            .authorId(authorId)
+            .content("content")
+            .createdAt(Instant.now())
+            .build();
+
     @Test
     public void testSuccessfullyPostEventListened() {
         postEventListener.handlePostPublishEvent(postPublishEventDto, acknowledgment);
+
+        verify(postCacheRepository, times(1)).save(postArgumentCaptor.capture());
+
+        PostCacheDto savedPost = postArgumentCaptor.getValue();
+        assertEquals(postId, savedPost.id());
+        assertEquals(authorId, savedPost.authorId());
+        assertEquals("content", savedPost.content());
+        assertNotNull(savedPost.createdAt());
 
         verify(feedCacheRepository, times(1)).save(
                 eq(subscriberId),
@@ -107,6 +134,18 @@ public class PostEventListenerTest {
                 eq(postId),
                 any(Instant.class));
 
+        verify(acknowledgment, never()).acknowledge();
+    }
+
+    @Test
+    public void testFailWhilePostRedisExceptionReturned() {
+        doThrow(new RuntimeException("Can't add a value in Post Redis"))
+                .when(postCacheRepository)
+                .save(any(PostCacheDto.class));
+
+        postEventListener.handlePostPublishEvent(postPublishEventDtoError, acknowledgment);
+        verify(postCacheRepository, times(1)).save(any(PostCacheDto.class));
+        verifyNoInteractions(feedCacheRepository);
         verify(acknowledgment, never()).acknowledge();
     }
 }

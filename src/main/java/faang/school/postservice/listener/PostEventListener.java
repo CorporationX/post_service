@@ -1,7 +1,9 @@
 package faang.school.postservice.listener;
 
+import faang.school.postservice.dto.cache.PostCacheDto;
 import faang.school.postservice.dto.event.PostPublishEventDto;
 import faang.school.postservice.repository.cache.FeedCacheRepository;
+import faang.school.postservice.repository.cache.PostCacheRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -15,6 +17,7 @@ import java.time.Instant;
 @Slf4j
 public class PostEventListener {
     private final FeedCacheRepository feedCacheRepository;
+    private final PostCacheRepository postCacheRepository;
 
     @KafkaListener(
             topics = "${kafka.topic.post-event}",
@@ -22,6 +25,13 @@ public class PostEventListener {
     public void handlePostPublishEvent(PostPublishEventDto postPublishEventDto, Acknowledgment acknowledgment) {
         log.info("New post publish event: {}", postPublishEventDto);
         try {
+            postCacheRepository.save(PostCacheDto.builder()
+                    .id(postPublishEventDto.postId())
+                    .authorId(postPublishEventDto.authorId())
+                    .content(postPublishEventDto.content())
+                    .createdAt(Instant.now())
+                    .build());
+
             if (postPublishEventDto.subscriberIds() != null
                     && !postPublishEventDto.subscriberIds().isEmpty()) {
                 for (Long subscriberId : postPublishEventDto.subscriberIds()) {
