@@ -1,5 +1,7 @@
 package faang.school.postservice.listener;
 
+import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.cache.UserCacheDto;
 import faang.school.postservice.dto.cache.PostCacheDto;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.cache.UserCacheDto;
@@ -7,6 +9,7 @@ import faang.school.postservice.dto.event.PostPublishEventDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.repository.cache.FeedCacheRepository;
+import faang.school.postservice.repository.cache.UserCacheRepository;
 import faang.school.postservice.repository.cache.PostCacheRepository;
 import faang.school.postservice.repository.cache.UserCacheRepository;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +36,12 @@ public class PostEventListener {
     public void handlePostPublishEvent(PostPublishEventDto postPublishEventDto, Acknowledgment acknowledgment) {
         log.info("New post publish event: {}", postPublishEventDto);
         try {
+            UserDto userDto = getUserAuthorId(postPublishEventDto.authorId());
+            userCacheRepository.save(UserCacheDto.builder()
+                    .id(userDto.id())
+                    .name(userDto.username())
+                    .build());
+
             postCacheRepository.save(PostCacheDto.builder()
                     .id(postPublishEventDto.postId())
                     .authorId(postPublishEventDto.authorId())
