@@ -37,6 +37,7 @@ spring:
           name: calculations_channel
       ttl:
         author-post: 1 # в днях
+        post: 1
       post-feed:
         maximum-feed: 500
 

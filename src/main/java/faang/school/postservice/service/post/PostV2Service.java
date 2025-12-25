@@ -23,9 +23,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -67,7 +64,10 @@ public class PostV2Service {
         Post saved = postRepository.save(post);
         log.info("Post {} published", postId);
 
-        return PostV2Mapper.toDtoBasic(saved);
+        PostV2Dto postV2Dto = PostV2Mapper.toDtoBasic(saved);
+        redisService.saveAuthorPosts(saved);
+        redisService.savePostInRedis(postV2Dto);
+        return postV2Dto;
     }
 
     @Transactional
