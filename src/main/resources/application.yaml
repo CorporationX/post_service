@@ -50,6 +50,9 @@ spring:
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
 
+  feed:
+    max-size: 500
+
   data:
     redis:
       host: ${REDIS_HOST}

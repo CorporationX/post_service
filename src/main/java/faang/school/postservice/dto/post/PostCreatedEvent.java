@@ -10,4 +10,5 @@ public class PostCreatedEvent {
     private String content;
     private long projectId;
     private long authorId;
+    private long createdAt;
 }

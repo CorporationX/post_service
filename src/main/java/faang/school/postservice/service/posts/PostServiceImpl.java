@@ -20,6 +20,8 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.ZoneOffset;
+
 @Service
 @RequiredArgsConstructor
 public class PostServiceImpl implements PostService {
@@ -47,6 +49,7 @@ public class PostServiceImpl implements PostService {
                 .content(savedPost.getContent())
                 .projectId(savedPost.getProjectId())
                 .authorId(savedPost.getAuthorId())
+                .createdAt(savedPost.getCreatedAt().toInstant(ZoneOffset.UTC).toEpochMilli())
                 .build();
 
         String payload;
