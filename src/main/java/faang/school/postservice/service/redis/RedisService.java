@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
@@ -39,7 +40,7 @@ public class RedisService {
 
     public RedisService(@Qualifier("redisTemplatePost") RedisTemplate<String, PostV2Dto> redisTemplatePosts,
                         @Qualifier("redisTemplateAuthorPost") RedisTemplate<String, Object> redisTemplateAuthorPosts,
-                        @Qualifier("redisTemplateForKafkaPostConsumer") RedisTemplate<String, Object> redisTemplatePostFeed,
+                        @Qualifier("redisTemplate") RedisTemplate<String, Object> redisTemplatePostFeed,
                         ObjectMapper objectMapperPostFeed) {
         this.redisTemplatePosts = redisTemplatePosts;
         this.redisTemplateAuthorPosts = redisTemplateAuthorPosts;
@@ -67,17 +68,18 @@ public class RedisService {
         } catch (Exception e) {
             log.error("Error while saving author posts", e);
         }
+    }
 
+    @Async("postEventTaskExecutor")
     public void savePostForFeed(PostForFeedDto postForFeedDto) {
         List<Long> subscriberIds = postForFeedDto.subscriberIds();
         for (Long id : subscriberIds) {
             String key = KEY_PREFIX_BY_POST_FEED + id;
-
-          saveToRedis(key, postForFeedDto.postId());
+            saveToRedis(key, postForFeedDto.postId());
         }
     }
 
-    public List<Long> getSubscriberIdsForPost(Long subscriberIds) {
+    public List<Long> getPostsByUserId(Long subscriberIds) {
         Object value = redisTemplatePostFeed.opsForZSet().range(KEY_PREFIX_BY_POST_FEED + subscriberIds, 0, -1);
         if (value != null) {
             return objectMapperPostFeed.convertValue(value, List.class);

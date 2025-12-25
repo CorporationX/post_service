@@ -80,7 +80,9 @@ public class PostV2Service {
         PostV2Mapper.update(post, postV2UpdateDto);
 
         Post saved = postRepository.save(post);
-        return PostV2Mapper.toDto(saved);
+        PostV2Dto postV2Dto = PostV2Mapper.toDtoBasic(saved);
+        redisService.savePostInRedis(postV2Dto);
+        return postV2Dto;
     }
 
     public void deletePostSoftly(Long postId) {
