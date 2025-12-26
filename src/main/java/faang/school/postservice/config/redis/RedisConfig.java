@@ -49,4 +49,9 @@ public class RedisConfig {
     public ChannelTopic userBanTopic() {
         return new ChannelTopic(redisProperties.getUserBanTopic());
     }
+
+    @Bean
+    public ChannelTopic commentTopic() {
+        return new ChannelTopic(redisProperties.getCommentTopic());
+    }
 }

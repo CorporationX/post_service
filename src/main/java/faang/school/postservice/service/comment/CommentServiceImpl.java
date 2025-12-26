@@ -1,22 +1,27 @@
 package faang.school.postservice.service.comment;
 
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.comment.CommentEvent;
 import faang.school.postservice.dto.comment.CreateCommentDto;
 import faang.school.postservice.dto.comment.ResponseCommentDto;
 import faang.school.postservice.dto.comment.UpdateCommentDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.mapper.CommentMapper;
+import faang.school.postservice.messages.redis.publishers.Publisher;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,7 +36,10 @@ public class CommentServiceImpl implements CommentService {
     private final CommentRepository commentRepository;
     private final CommentMapper commentMapper;
     private final PostRepository postRepository;
-
+    
+    @Qualifier("commentTopic")
+    private final ChannelTopic commentTopic;
+    private final Publisher eventPublisher;
 
     @Transactional
     @Override
@@ -42,7 +50,18 @@ public class CommentServiceImpl implements CommentService {
         Comment newComment = commentMapper.toEntity(createCommentDto);
         newComment.setPost(post);
         newComment.setAuthorId(userContext.getUserId());
-        return commentMapper.toDto(commentRepository.save(newComment));
+        
+        Comment savedComment = commentRepository.save(newComment);
+
+        CommentEvent event = new CommentEvent(
+                post.getId(),
+                savedComment.getAuthorId(),
+                savedComment.getId(),
+                savedComment.getCreatedAt()
+                );
+
+        eventPublisher.publish(commentTopic, event);
+        return commentMapper.toDto(savedComment);
     }
 
     @Transactional

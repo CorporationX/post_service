@@ -4,6 +4,8 @@ import faang.school.postservice.messages.redis.publishers.Publisher;
 import faang.school.postservice.repository.CommentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.stereotype.Service;
@@ -16,7 +18,10 @@ import java.util.List;
 public class UserBanServiceImpl implements UserBanService {
     private final CommentRepository commentRepository;
     private final Publisher publisher;
+
+    @Qualifier("userBanTopic")
     private final ChannelTopic userBanTopic;
+
     @Value("${scheduler.comment.count-ban-size}")
     private int banSize;
 
