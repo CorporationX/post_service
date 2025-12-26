@@ -17,7 +17,7 @@ public class KafkaPostViewProducer {
     @Value("${spring.kafka.topic.name}")
     private String topic;
 
-    private final KafkaTemplate<String, PostViewEvent> kafkaTemplate;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
     public void sendPostView(Long postId, Long viewerId) {
         PostViewEvent event = new PostViewEvent(
@@ -26,11 +26,21 @@ public class KafkaPostViewProducer {
                 Instant.now()
         );
 
-        log.info("Sending post view event");
-        kafkaTemplate.send(
-                topic,
-                postId.toString(),
-                event
-        );
+        kafkaTemplate.send(topic, postId.toString(), event)
+                .whenComplete((result, ex) -> {
+                    if (ex != null) {
+                        log.error(
+                                "Failed to send PostViewEvent. postId={}, viewerId={}",
+                                postId, viewerId, ex
+                        );
+                    } else {
+                        log.debug(
+                                "PostViewEvent sent successfully. topic={}, partition={}, offset={}",
+                                result.getRecordMetadata().topic(),
+                                result.getRecordMetadata().partition(),
+                                result.getRecordMetadata().offset()
+                        );
+                    }
+                });
     }
 }

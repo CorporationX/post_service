@@ -36,6 +36,14 @@ spring:
       name: post_views
     producer:
       bootstrap-servers: localhost:9092
+      acks: all
+      retries: 5
+      properties:
+        enable.idempotence: true
+        max.in.flight.requests.per.connection: 5
+        delivery.timeout.ms: 120000
+        request.timeout.ms: 30000
+        linger.ms: 5
 
 server:
   port: 8081
