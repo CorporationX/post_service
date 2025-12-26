@@ -1,0 +1,2 @@
+GET http://localhost:8081/api/v1/posts/1
+Accept: application/json
