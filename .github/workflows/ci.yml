@@ -3,7 +3,7 @@ name: Post Service CI Pipeline
 on:
   pull_request:
     branches:
-      - hippogriff-master-stream8
+      - triton-master-stream12
 
 jobs:
   build:
@@ -63,7 +63,7 @@ jobs:
         run: ./gradlew clean build test jacocoTestReport jacocoTestCoverageVerification
 
       - name: Upload JaCoCo Report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: jacoco-report
           path: build/reports/jacoco/test

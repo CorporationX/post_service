@@ -1,6 +1,5 @@
 package faang.school.postservice.service.minio;
 
-
 import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
@@ -9,7 +8,7 @@ import com.amazonaws.services.s3.model.ListObjectsV2Result;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import faang.school.postservice.config.s3.MinioConfig;
-import faang.school.postservice.exceptions.FileException;
+import faang.school.postservice.exception.FileException;
 import faang.school.postservice.model.Resource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
