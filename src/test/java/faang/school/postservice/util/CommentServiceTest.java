@@ -1,12 +1,14 @@
 package faang.school.postservice.util;
 
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.comment.CommentEvent;
 import faang.school.postservice.dto.comment.CreateCommentDto;
 import faang.school.postservice.dto.comment.ResponseCommentDto;
 import faang.school.postservice.dto.comment.UpdateCommentDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.mapper.CommentMapper;
+import faang.school.postservice.messages.redis.publishers.Publisher;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
@@ -19,12 +21,14 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.Mockito.any;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.redis.listener.ChannelTopic;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +49,11 @@ public class CommentServiceTest {
     private CommentMapper commentMapper;
     @Mock
     private PostRepository postRepository;
+    @Mock
+    private Publisher publisher;
+    @Mock
+    private ChannelTopic commentTopic;
+
     @InjectMocks
     CommentServiceImpl service;
 
@@ -76,6 +85,7 @@ public class CommentServiceTest {
                 .id(2L)
                 .build();
         Comment comment = Comment.builder()
+                .id(3L)
                 .post(post)
                 .authorId(2L)
                 .build();
@@ -92,6 +102,7 @@ public class CommentServiceTest {
         ResponseCommentDto responseCommentDto = service.createComment(dto);
 
         verify(commentRepository).save(comment);
+        verify(publisher).publish(any(ChannelTopic.class), any(CommentEvent.class)); 
         Assertions.assertEquals(2L, responseCommentDto.postId());
     }
 
