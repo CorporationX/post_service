@@ -29,6 +29,14 @@ spring:
     properties:
       security:
         protocol: PLAINTEXT
+    listener:
+      ack-mode: manual
+    consumer:
+      group-id: notification-service-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      enable-auto-commit: false
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
@@ -93,3 +101,9 @@ posts:
 
 files-path:
   offensive-words: src/main/resources/offensive-words.txt
+
+cache:
+  feed:
+    collection: feed
+    max-size: 500
+    ttl-days: 7

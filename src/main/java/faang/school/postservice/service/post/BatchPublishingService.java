@@ -43,6 +43,7 @@ public class BatchPublishingService {
                         .authorId(post.getAuthorId())
                         .content(post.getContent())
                         .followersIds(subscriptionRepository.findFollowerIdsByFolloweeId(post.getAuthorId()))
+                        .createdAt(LocalDateTime.now())
                         .build();
 
                 postEventPublisher.publish(postEvent);
