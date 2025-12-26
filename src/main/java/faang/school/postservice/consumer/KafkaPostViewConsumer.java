@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -13,24 +14,23 @@ import org.springframework.stereotype.Service;
 public class KafkaPostViewConsumer {
 
     private final StringRedisTemplate redisTemplate;
+
     private static final String VIEWS_KEY_SUFFIX = ":views";
 
-    @KafkaListener(topics = "${spring.kafka.topic.name}", groupId = "${spring.kafka.consumer.group.name}")
-    public void consume(PostViewEvent event) {
+    @KafkaListener(
+            topics = "${spring.kafka.topic.name}",
+            groupId = "${spring.kafka.consumer.group.name}"
+    )
+    public void consume(PostViewEvent event, Acknowledgment ack) {
         if (event == null || event.postId() == null) {
-            log.warn("Received null event or postId");
+            log.warn("Invalid PostViewEvent: {}", event);
+            ack.acknowledge();
             return;
         }
-        try {
-            incrementViewCount(event.postId());
-        } catch (Exception e) {
-            log.error("Failed to increment view count for post {}", event.postId(), e);
-        }
-    }
 
-    private void incrementViewCount(Long postId) {
-        String key = getPostViewsKey(postId);
-        redisTemplate.opsForValue().increment(key, 1);
+
+        redisTemplate.opsForValue().increment(getPostViewsKey(event.postId()));
+        ack.acknowledge();
     }
 
     private String getPostViewsKey(Long postId) {
