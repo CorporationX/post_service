@@ -23,17 +23,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 @Slf4j
 @RequiredArgsConstructor
 @Service
 public class PostV2Service {
-    private static final Integer COUNT_THREADS_IN_EXECUTOR = 100;
-
-    private ExecutorService executorService = Executors.newFixedThreadPool(COUNT_THREADS_IN_EXECUTOR);
 
     private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
@@ -70,9 +64,10 @@ public class PostV2Service {
         Post saved = postRepository.save(post);
         log.info("Post {} published", postId);
 
-        CompletableFuture.runAsync(() -> redisService.saveAuthorPosts(saved), executorService);
-
-        return PostV2Mapper.toDtoBasic(saved);
+        PostV2Dto postV2Dto = PostV2Mapper.toDtoBasic(saved);
+        redisService.saveAuthorPosts(saved);
+        redisService.savePostInRedis(postV2Dto);
+        return postV2Dto;
     }
 
     @Transactional

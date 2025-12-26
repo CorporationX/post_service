@@ -12,6 +12,7 @@ import faang.school.postservice.helpers.TestUtils;
 import faang.school.postservice.mapper.PostV2Mapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.redis.RedisService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -43,6 +44,8 @@ class PostV2ServiceTest {
     private UserServiceClient userServiceClient;
     @Mock
     private UserContext userContext;
+    @Mock
+    private RedisService redisService;
     @InjectMocks
     private PostV2Service postV2Service;
     @Captor
