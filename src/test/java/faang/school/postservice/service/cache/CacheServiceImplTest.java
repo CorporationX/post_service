@@ -47,7 +47,7 @@ class CacheServiceImplTest {
 
         when(authorRepository.save(any(Author.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        service.saveAuthorComment(authorId, modelId);
+        service.saveAuthor(authorId, modelId);
 
         ArgumentCaptor<Author> captor = ArgumentCaptor.forClass(Author.class);
         verify(authorRepository, times(1)).save(captor.capture());

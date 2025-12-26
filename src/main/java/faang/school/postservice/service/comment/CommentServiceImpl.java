@@ -2,16 +2,17 @@ package faang.school.postservice.service.comment;
 
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CreateCommentDto;
+import faang.school.postservice.dto.comment.ModelEventDto;
 import faang.school.postservice.dto.comment.ResponseCommentDto;
 import faang.school.postservice.dto.comment.UpdateCommentDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.mapper.CommentMapper;
+import faang.school.postservice.messages.spring.publishers.SpringCommentPublisher;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.service.cache.CacheService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -32,7 +33,7 @@ public class CommentServiceImpl implements CommentService {
     private final CommentRepository commentRepository;
     private final CommentMapper commentMapper;
     private final PostRepository postRepository;
-    private final CacheService cacheService;
+    private final SpringCommentPublisher commentPublisher;
 
 
     @Transactional
@@ -45,7 +46,9 @@ public class CommentServiceImpl implements CommentService {
         newComment.setPost(post);
         newComment.setAuthorId(userContext.getUserId());
         ResponseCommentDto dto = commentMapper.toDto(commentRepository.save(newComment));
-        cacheService.saveAuthorComment(userContext.getUserId(), newComment.getId());
+
+        commentPublisher.handleCommentCreated(new ModelEventDto(userContext.getUserId(), newComment.getId()));
+
         return dto;
     }
 

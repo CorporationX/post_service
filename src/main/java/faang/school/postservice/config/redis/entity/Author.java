@@ -1,6 +1,7 @@
 package faang.school.postservice.config.redis.entity;
 
 import jakarta.persistence.Id;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -25,8 +26,10 @@ public class Author implements Serializable {
     private String id;
 
     @Indexed
+    @NotNull
     private Long authorId;
 
+    @NotNull
     private Long modelId;
 
     @TimeToLive(unit = TimeUnit.SECONDS)
