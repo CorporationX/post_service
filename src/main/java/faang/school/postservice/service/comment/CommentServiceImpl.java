@@ -1,7 +1,5 @@
 package faang.school.postservice.service.comment;
 
-import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CommentEvent;
 import faang.school.postservice.dto.comment.CreateCommentDto;
@@ -9,7 +7,8 @@ import faang.school.postservice.dto.comment.UpdateCommentDto;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.publisher.CommentEventPublisher;
+import faang.school.postservice.publisher.kafka.KafkaCommentProducer;
+import faang.school.postservice.publisher.redis.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,17 +23,15 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CommentServiceImpl implements CommentService {
 
-    private final UserContext userContext;
     private final PostRepository postRepository;
     private final CommentMapper commentMapper;
-    private final UserServiceClient userServiceClient;
     private final CommentRepository commentRepository;
     private final CommentEventPublisher commentEventPublisher;
+    private final KafkaCommentProducer commentEventKafkaPublisher;
 
     @Override
     public CommentDto addComment(Long postId, CreateCommentDto commentDto) {
         log.info("Adding comment to post {}", postId);
-        long userId = userServiceClient.getUser(userContext.getUserId()).id();
         Post post = validatePostExists(postId);
 
         Comment comment = commentMapper.toComment(commentDto);
@@ -45,8 +42,7 @@ public class CommentServiceImpl implements CommentService {
         CommentDto returnedCommentDto = commentMapper.toCommentDto(comment);
         log.info("Comment with ID {} has been added", comment.getId());
 
-        CommentEvent commentEvent = commentMapper.toCommentEvent(comment);
-        commentEventPublisher.publishMessage(commentEvent);
+        publishCommentEvent(comment);
 
         return returnedCommentDto;
     }
@@ -103,5 +99,11 @@ public class CommentServiceImpl implements CommentService {
     private Comment validateCommentExists(Long commentId) {
         return commentRepository.findById(commentId)
                 .orElseThrow(() -> new IllegalArgumentException("Comment with this ID does not exist: " + commentId));
+    }
+
+    private void publishCommentEvent(Comment comment) {
+        CommentEvent commentEvent = commentMapper.toCommentEvent(comment);
+        commentEventPublisher.publishMessage(commentEvent);
+        commentEventKafkaPublisher.sendCommentEvent(commentEvent);
     }
 }
