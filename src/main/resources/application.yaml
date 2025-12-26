@@ -41,6 +41,7 @@ spring:
         calculations_channel:
           name: calculations_channel
       user-ban-topic: "user-ban-topic"
+      comment-topic: "comment-events"
 
 server:
   port: 8081
