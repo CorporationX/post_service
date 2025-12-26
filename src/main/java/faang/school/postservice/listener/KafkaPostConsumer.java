@@ -20,7 +20,7 @@ public class KafkaPostConsumer {
 	)
 	public void consumePostEvent(PostEvent postEvent, Acknowledgment acknowledgment) {
 		try {
-			int subscriberCount = postEvent.subscriberIds() != null ? postEvent.subscriberIds().size() : 0;
+			int subscriberCount = postEvent.subscriberIds() == null ? 0 : postEvent.subscriberIds().size();
 			log.info("Processing post event for postId: {} with {} subscribers",
 					postEvent.postId(), subscriberCount);
 
