@@ -8,6 +8,7 @@ import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.CreatePostRequestDto;
 import faang.school.postservice.dto.post.PostCreatedEventDto;
 import faang.school.postservice.dto.post.PostResponseDto;
+import faang.school.postservice.dto.post.PublisherType;
 import faang.school.postservice.dto.post.UpdatePostRequestDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.text.MatchDto;
@@ -668,7 +669,7 @@ class PostServiceImplTest {
         assertNotNull(event.occurredAt());
         assertEquals(POST_ID, event.postId());
         assertEquals(followerIds, event.followerIds());
-        assertEquals(faang.school.postservice.dto.post.PostCreatedEventDto.PublisherType.USER, event.publisher().type());
+        assertEquals(PublisherType.USER, event.publisher().type());
         assertEquals(AUTHOR_ID, event.publisher().id());
         assertEquals(1, event.version());
     }
@@ -686,15 +687,15 @@ class PostServiceImplTest {
 
         verify(followersService, never()).getFollowerIds(any());
 
-        ArgumentCaptor<faang.school.postservice.dto.post.PostCreatedEventDto> captor =
-                ArgumentCaptor.forClass(faang.school.postservice.dto.post.PostCreatedEventDto.class);
+        ArgumentCaptor<PostCreatedEventDto> captor =
+                ArgumentCaptor.forClass(PostCreatedEventDto.class);
 
         verify(applicationEventPublisher, times(1)).publishEvent(captor.capture());
 
         var event = captor.getValue();
         assertEquals(POST_ID, event.postId());
         assertTrue(event.followerIds().isEmpty());
-        assertEquals(faang.school.postservice.dto.post.PostCreatedEventDto.PublisherType.PROJECT, event.publisher().type());
+        assertEquals(PublisherType.PROJECT, event.publisher().type());
         assertEquals(PROJECT_ID, event.publisher().id());
     }
 

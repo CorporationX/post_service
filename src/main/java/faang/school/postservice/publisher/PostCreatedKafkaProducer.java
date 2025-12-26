@@ -22,7 +22,12 @@ public class PostCreatedKafkaProducer {
         kafkaTemplate.send(postCreatedEventTopic, key, event)
                 .whenComplete((res, ex) -> {
                     if (ex != null) {
-                        log.error("Failed to send PostCreatedEvent: postId={}, eventId={}", event.postId(), event.eventId(), ex);
+                        log.error(
+                                "Failed to send PostCreatedEvent: postId={}, eventId={}",
+                                event.postId(),
+                                event.eventId(),
+                                ex
+                        );
                     }
                 });
         log.info("PostCreatedEvent sent to Kafka: postId={}, eventId={}", event.postId(), event.eventId());

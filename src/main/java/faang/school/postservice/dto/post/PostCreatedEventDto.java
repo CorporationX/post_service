@@ -17,14 +17,4 @@ public record PostCreatedEventDto(
         List<Long> followerIds,
         int version
 ) {
-    public record Publisher(
-            PublisherType type,
-            long id
-    ) {
-    }
-
-    public enum PublisherType {
-        USER,
-        PROJECT
-    }
 }

@@ -6,6 +6,7 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.LanguageToolConfig;
 import faang.school.postservice.dto.post.CreatePostRequestDto;
 import faang.school.postservice.dto.post.PostCreatedEventDto;
+import faang.school.postservice.dto.post.Publisher;
 import faang.school.postservice.dto.post.UpdatePostRequestDto;
 import faang.school.postservice.dto.post.PostResponseDto;
 import faang.school.postservice.dto.project.ProjectDto;
@@ -40,8 +41,8 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-import static faang.school.postservice.dto.post.PostCreatedEventDto.PublisherType.PROJECT;
-import static faang.school.postservice.dto.post.PostCreatedEventDto.PublisherType.USER;
+import static faang.school.postservice.dto.post.PublisherType.PROJECT;
+import static faang.school.postservice.dto.post.PublisherType.USER;
 
 @Slf4j
 @Service
@@ -102,7 +103,7 @@ public class PostServiceImpl implements PostService {
         return postMapper.toDto(saved);
     }
 
-    private PostCreatedEventDto.Publisher resolvePublisher(Post post) {
+    private Publisher resolvePublisher(Post post) {
         boolean hasAuthor = post.getAuthorId() != null;
         boolean hasProject = post.getProjectId() != null;
 
@@ -111,9 +112,9 @@ public class PostServiceImpl implements PostService {
         }
 
         if (hasAuthor) {
-            return new PostCreatedEventDto.Publisher(USER, post.getAuthorId());
+            return new Publisher(USER, post.getAuthorId());
         }
-        return new PostCreatedEventDto.Publisher(PROJECT, post.getProjectId());
+        return new Publisher(PROJECT, post.getProjectId());
     }
 
     @Override
@@ -130,7 +131,7 @@ public class PostServiceImpl implements PostService {
             throw new IllegalStateException("Post is already published");
         }
 
-        PostCreatedEventDto.Publisher publisher = resolvePublisher(post);
+        Publisher publisher = resolvePublisher(post);
 
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
@@ -139,10 +140,10 @@ public class PostServiceImpl implements PostService {
 
         log.info("Post published id={} at {}", id, saved.getPublishedAt());
 
-        List<Long> followerIds = switch (publisher.type()) {
-            case USER -> followersService.getFollowerIds(publisher.id());
-            case PROJECT -> List.of(); // not created yet, so no followers
-        };
+        List<Long> followerIds =
+                publisher.type() == USER
+                        ? followersService.getFollowerIds(publisher.id())
+                        : List.of(); // not created yet, so no followers
 
         PostCreatedEventDto event = new PostCreatedEventDto(
                 UUID.randomUUID(),
