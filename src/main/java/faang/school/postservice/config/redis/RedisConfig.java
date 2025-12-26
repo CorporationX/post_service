@@ -51,14 +51,13 @@ public class RedisConfig {
         return baseConfigRedis(config);
     }
 
-    @Bean(name = "redisTemplatePost")
-    public RedisTemplate<String, PostV2Dto> redisTemplate(@Qualifier("forRedisTemplate") RedisConnectionFactory connectionFactory,
-                                                              ObjectMapper objectMapper) {
-        RedisTemplate<String, PostV2Dto> template = new RedisTemplate<>();
+    @Bean(name = "redisTemplate")
+    public RedisTemplate<String, Object> redisTemplate(@Qualifier("forRedisTemplate") RedisConnectionFactory connectionFactory) {
+        RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
 
         StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
-        Jackson2JsonRedisSerializer<PostV2Dto> jsonSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, PostV2Dto.class);
+        Jackson2JsonRedisSerializer<Object> jsonSerializer = new Jackson2JsonRedisSerializer<>(Object.class);
 
         template.setKeySerializer(stringRedisSerializer);
         template.setValueSerializer(jsonSerializer);
