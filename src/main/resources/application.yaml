@@ -47,6 +47,7 @@ kafka:
           name: calculations_channel
       ttl:
         author-post: 1 # в днях
+        post: 1 # в днях
 
   kafka:
     bootstrap-servers: localhost:9092
