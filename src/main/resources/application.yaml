@@ -30,7 +30,7 @@ spring:
         like: like_channel
         comment: achievement_channel
       user-repository:
-        ttl-days: 1
+        ttl-days: 1d
 
     kafka:
       topic:

@@ -220,10 +220,12 @@ public class PostServiceImpl implements PostService {
 
     private void cacheAuthor(long authorId) {
         UserDto userDto = userServiceClient.getUser(authorId);
-        CacheUserDto cacheUserDto = CacheUserDto.builder().build();
-        cacheUserDto.setId(authorId);
-        cacheUserDto.setUsername(userDto.username());
-        cacheUserDto.setTtlDays(ttl.toDays());
+
+        CacheUserDto cacheUserDto = CacheUserDto.builder()
+                .id(authorId)
+                .username(userDto.username())
+                .ttlDays(ttl.toDays())
+                .build();
 
         redisUserRepository.save(cacheUserDto);
     }
