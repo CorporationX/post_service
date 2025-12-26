@@ -44,6 +44,7 @@ spring:
     topics:
       like-events: "like-events-topic"
       unlike-events: "unlike-events-topic"
+      publish-post: "post.publish-post"
       comments: comment.event
       post-view: analytics.post-view
       analytics: analytics.comment-analysis

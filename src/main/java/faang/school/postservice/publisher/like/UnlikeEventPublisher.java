@@ -14,7 +14,7 @@ public class UnlikeEventPublisher extends AbstractEventPublisher<UnlikeEvent> {
 
     private final String unlikeEventsTopic;
 
-    public UnlikeEventPublisher(@Qualifier("KafkaTemplateLikeUnlikeNotification") KafkaTemplate<String, Object> kafkaTemplate,
+    public UnlikeEventPublisher(@Qualifier("KafkaTemplate") KafkaTemplate<String, Object> kafkaTemplate,
                                 @Value("${spring.kafka.topics.unlike-events}") String unlikeEventsTopic) {
         super(kafkaTemplate, unlikeEventsTopic);
         this.unlikeEventsTopic = unlikeEventsTopic;
