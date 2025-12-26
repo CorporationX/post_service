@@ -31,7 +31,7 @@ public class CommentController {
     @PostMapping
     public ResponseEntity<CommentDto> addComment(@PathVariable @Validated Long postId,
                                  @RequestBody @Validated CreateCommentDto commentDto) {
-        return ResponseEntity.ok(commentService.addComment(postId, commentDto));
+        return ResponseEntity.ok(commentService.addComment(postId, commentDto, userContext.getUserId()));
     }
 
     @PutMapping("/{id}")

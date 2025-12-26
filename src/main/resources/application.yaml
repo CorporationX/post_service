@@ -29,6 +29,9 @@ spring:
           name: comment_event
         like: like_channel
         comment: achievement_channel
+      user-repository:
+        ttl-days: 1
+
     kafka:
       topic:
         comment:
