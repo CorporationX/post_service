@@ -40,11 +40,8 @@ spring:
       channels:
         calculations_channel:
           name: calculations_channel
-<<<<<<< HEAD
-=======
       user-ban-topic: "user-ban-topic"
       comment-topic: "comment-events"
->>>>>>> dd76b393e (Add Comment Event publishing (Redis pub/sub))
 
 server:
   port: 8081
