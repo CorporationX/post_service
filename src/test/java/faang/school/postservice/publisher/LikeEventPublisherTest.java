@@ -2,6 +2,8 @@ package faang.school.postservice.publisher;
 
 import faang.school.postservice.event.LikeEvent;
 import java.time.LocalDateTime;
+
+import faang.school.postservice.publisher.redis.LikeEventPublisher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,7 +13,6 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
-import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 public class LikeEventPublisherTest {

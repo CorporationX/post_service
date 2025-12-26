@@ -1,16 +1,19 @@
 package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CreateCommentDto;
 import faang.school.postservice.dto.comment.UpdateCommentDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.CommentMapper;
+import faang.school.postservice.mapper.UserMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.publisher.kafka.KafkaCommentProducer;
+import faang.school.postservice.publisher.redis.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.redis.RedisUserRepository;
 import faang.school.postservice.service.comment.CommentServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,24 +33,35 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 
 @ExtendWith(MockitoExtension.class)
 public class CommentServiceImplTest {
 
     @Mock
-    private UserContext userContext;
+    private PostRepository postRepository;
 
     @Mock
-    private PostRepository postRepository;
+    private RedisUserRepository redisUserRepository;
 
     @Spy
     private CommentMapper commentMapper = Mappers.getMapper(CommentMapper.class);
+
+    @Spy
+    private UserMapper userMapper = Mappers.getMapper(UserMapper.class);
 
     @Mock
     private UserServiceClient userServiceClient;
 
     @Mock
     private CommentRepository commentRepository;
+
+    @Mock
+    private CommentEventPublisher commentEventPublisher;
+
+    @Mock
+    private KafkaCommentProducer commentEventKafkaPublisher;
 
     @InjectMocks
     private CommentServiceImpl commentService;
@@ -84,11 +98,12 @@ public class CommentServiceImplTest {
         UserDto testUserDto = new UserDto(TEST_AUTHOR_ID, "Test user", "test@email.com");
 
         Mockito.when(postRepository.findById(TEST_POST_ID)).thenReturn(Optional.of(post));
-        Mockito.when(userContext.getUserId()).thenReturn(TEST_AUTHOR_ID);
         Mockito.when(userServiceClient.getUser(TEST_AUTHOR_ID)).thenReturn(testUserDto);
-        Mockito.when(commentRepository.save(Mockito.any(Comment.class))).thenReturn(comment);
+        Mockito.when(commentRepository.save(any(Comment.class))).thenReturn(comment);
+        doNothing().when(commentEventPublisher).publishMessage(any());
+        doNothing().when(commentEventKafkaPublisher).sendCommentEvent(any());
 
-        CommentDto result = commentService.addComment(TEST_POST_ID, createCommentDto);
+        CommentDto result = commentService.addComment(TEST_POST_ID, createCommentDto, TEST_AUTHOR_ID);
 
         Mockito.verify(postRepository).findById(TEST_POST_ID);
         assertEquals(expectedCommentDto, result);
@@ -103,7 +118,7 @@ public class CommentServiceImplTest {
 
         Mockito.when(commentRepository.findById(TEST_COMMENT_ID)).thenReturn(Optional.of(comment));
         Mockito.when(postRepository.findById(TEST_POST_ID)).thenReturn(Optional.of(post));
-        Mockito.when(commentRepository.save(Mockito.any(Comment.class))).thenReturn(comment);
+        Mockito.when(commentRepository.save(any(Comment.class))).thenReturn(comment);
 
         CommentDto result = commentService.updateComment(TEST_AUTHOR_ID, updateCommentDto);
 
