@@ -24,9 +24,6 @@ import java.util.Optional;
 @Slf4j
 public class HashCommentService {
 
-    @Value("${spring.data.redis.post-repository.ttl-days:1}")
-    private long ttlDays;
-
     @Value("${spring.data.redis.post-repository.max-comments:3}")
     private int maxComments;
 

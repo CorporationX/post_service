@@ -42,7 +42,7 @@ spring:
       topic:
         comment:
           name: comment_event
-          groupId: comment_group
+          group-id: comment_group
         partition: 3
         replication: 1
 
@@ -51,6 +51,12 @@ spring:
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      ack: all
+      max-in-flight-requests-per-connection: 5
+      idempotence: true
+      retry:
+        retries: 3
+        backoff: 1000
 
 
 server:

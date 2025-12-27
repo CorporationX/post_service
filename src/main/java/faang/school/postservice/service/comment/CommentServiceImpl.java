@@ -1,11 +1,11 @@
 package faang.school.postservice.service.comment;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.cache.CacheUserDto;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CommentEvent;
 import faang.school.postservice.dto.comment.CreateCommentDto;
 import faang.school.postservice.dto.comment.UpdateCommentDto;
-import faang.school.postservice.dto.user.CacheUserDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.mapper.UserMapper;
@@ -39,7 +39,7 @@ public class CommentServiceImpl implements CommentService {
     private final RedisUserRepository redisUserRepository;
 
     @Value("${spring.data.redis.user-repository.ttl-days:1}")
-    private long ttlDays;
+    private int ttlDays;
 
     @Override
     public CommentDto addComment(Long postId, CreateCommentDto commentDto, Long userId) {

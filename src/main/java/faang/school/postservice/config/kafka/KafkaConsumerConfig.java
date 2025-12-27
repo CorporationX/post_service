@@ -23,11 +23,14 @@ public class KafkaConsumerConfig {
     @Value("${spring.kafka.bootstrap-servers:localhost:9092}")
     private String bootstrapServers;
 
+    @Value("${spring.data.kafka.topic.comment.group-id}")
+    private String commentGroupId;
+
     @Bean
     public ConsumerFactory<String, CommentEvent> commentEventConsumerFactory() {
         Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, "${spring.data.kafka.topic.comment.groupId}");
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, commentGroupId);
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
         props.put(JsonDeserializer.TRUSTED_PACKAGES, "faang.school.postservice.dto.comment");

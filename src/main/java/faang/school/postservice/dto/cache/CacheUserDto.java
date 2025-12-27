@@ -17,5 +17,5 @@ public class CacheUserDto {
     private Long id;
     private String username;
     @TimeToLive(unit = TimeUnit.DAYS)
-    private Long ttlDays;
+    private int ttlDays;
 }

@@ -16,7 +16,7 @@ public class KafkaCommentConsumer {
     private final HashCommentService hashCommentService;
 
     @KafkaListener(topics = "${spring.data.kafka.topic.comment.name}",
-            groupId = "${spring.data.kafka.topic.comment.groupId}",
+            groupId = "${spring.data.kafka.topic.comment.group-id}",
             containerFactory = "manualAckKafkaListenerContainerFactory")
     public void listen(CommentEvent event, Acknowledgment ack) {
         try {
