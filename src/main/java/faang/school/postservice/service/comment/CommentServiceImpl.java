@@ -1,11 +1,11 @@
 package faang.school.postservice.service.comment;
 
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.dto.cache.CacheUserDto;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CommentEvent;
 import faang.school.postservice.dto.comment.CreateCommentDto;
 import faang.school.postservice.dto.comment.UpdateCommentDto;
+import faang.school.postservice.dto.user.CacheUserDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.mapper.UserMapper;
@@ -53,7 +53,7 @@ public class CommentServiceImpl implements CommentService {
         log.info("Comment with ID {} has been added", comment.getId());
 
         UserDto userDto = userServiceClient.getUser(userId);
-        CacheUserDto cacheUserDto = userMapper.toCasheUserDto(userDto);
+        CacheUserDto cacheUserDto = userMapper.toCacheUserDto(userDto);
         cacheUserDto.setTtlDays(ttlDays);
 
         redisUserRepository.save(cacheUserDto);
