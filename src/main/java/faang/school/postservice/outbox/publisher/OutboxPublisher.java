@@ -7,6 +7,10 @@ import faang.school.postservice.outbox.repository.OutboxRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,15 +19,20 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class OutboxPublisher {
 
     private final OutboxRepository outboxRepository;
     private final List<OutboxEventPublisher> publishers;
-
     private Map<OutboxEventType, OutboxEventPublisher> publisherMap;
+
+    @Value("${spring.application.name}")
+    private String serviceName;
+
+    @Value("${spring.outbox.page-size}")
+    private int pageSize;
 
     @PostConstruct
     void init() {
@@ -34,30 +43,41 @@ public class OutboxPublisher {
     }
 
     @Scheduled(fixedDelayString = "${spring.outbox.fixed-delay-ms}")
-    @Transactional
     public void publishPendingEvents() {
-        String thisService = "post-service";
+        int page = 0;
+        Page<OutboxEvent> eventPage;
 
-        List<OutboxEvent> events = outboxRepository.findByStatusAndSourceService(OutboxStatus.NEW, thisService);
+        do {
+            Pageable pageable = PageRequest.of(page, pageSize);
+            eventPage = outboxRepository.findByStatusAndSourceService(OutboxStatus.NEW, serviceName, pageable);
 
-        for (OutboxEvent event : events) {
-            try {
-                OutboxEventPublisher publisher =
-                        publisherMap.get(event.getEventType());
-
-                if (publisher == null) {
-                    throw new IllegalStateException(
-                            "No OutboxEventPublisher for type " + event.getEventType()
-                    );
-                }
-
-                publisher.publish(event.getPayload());
-                event.setStatus(OutboxStatus.SENT);
-
-            } catch (Exception e) {
-                log.error("Failed to publish outbox event {}", event.getId(), e);
-                event.setStatus(OutboxStatus.FAILED);
+            List<OutboxEvent> events = eventPage.getContent();
+            for (OutboxEvent event : events) {
+                publishSingleEvent(event);
             }
+
+            page++;
+        } while (!eventPage.isEmpty());
+    }
+
+    @Transactional
+    public void publishSingleEvent(OutboxEvent event) {
+        try {
+            OutboxEventPublisher publisher = publisherMap.get(event.getEventType());
+            if (publisher == null) {
+                throw new IllegalStateException(
+                        "No OutboxEventPublisher for type " + event.getEventType()
+                );
+            }
+
+            publisher.publish(event.getPayload());
+            event.setStatus(OutboxStatus.SENT);
+            outboxRepository.save(event);
+
+        } catch (Exception e) {
+            log.error("Failed to publish outbox event {}", event.getId(), e);
+            event.setStatus(OutboxStatus.FAILED);
+            outboxRepository.save(event);
         }
     }
 }

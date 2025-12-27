@@ -1,5 +1,6 @@
 package faang.school.postservice.outbox.publisher.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.dto.post.PostCreatedEvent;
 import faang.school.postservice.messages.kafka.producers.PostCreatedProducer;
@@ -23,12 +24,10 @@ public class PostCreatedOutboxPublisher implements OutboxEventPublisher {
     @Override
     public void publish(String payload) {
         try {
-            PostCreatedEvent event =
-                    objectMapper.readValue(payload, PostCreatedEvent.class);
-
+            PostCreatedEvent event = objectMapper.readValue(payload, PostCreatedEvent.class);
             postPublisher.publish(event);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Failed to parse PostCreatedEvent payload", e);
         }
     }
 }

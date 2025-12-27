@@ -3,6 +3,7 @@ package faang.school.postservice.service.posts;
 import faang.school.postservice.config.redis.RedisProperties;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.redis.model.RedisPost;
+import faang.school.postservice.service.posts.mapper.PostRedisMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -29,6 +30,9 @@ class PostCacheServiceTest {
     @Mock
     private RedisProperties redisProperties;
 
+    @Mock
+    private PostRedisMapper postRedisMapper;
+
     @InjectMocks
     private PostCacheService postCacheService;
 
@@ -40,9 +44,17 @@ class PostCacheServiceTest {
         post.setProjectId(3L);
         post.setContent("test content");
 
+        RedisPost redisPost = RedisPost.builder()
+                .id(42L)
+                .authorId(7L)
+                .projectId(3L)
+                .content("test content")
+                .build();
+
         when(redisTemplate.opsForValue()).thenReturn(valueOperations);
         when(redisProperties.getPostsKeyPrefix()).thenReturn("posts");
         when(redisProperties.getPostsTtlSeconds()).thenReturn(86400L);
+        when(postRedisMapper.toRedis(post)).thenReturn(redisPost);
 
         postCacheService.save(post);
 

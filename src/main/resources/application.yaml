@@ -19,6 +19,7 @@ spring:
 
   outbox:
     fixed-delay-ms: 5000
+    page-size: 100
 
   servlet:
     multipart:

@@ -1,7 +1,9 @@
 package faang.school.postservice.kafka.consumer;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.dto.post.PostToFeedEvent;
+import faang.school.postservice.exception.FeedProcessingException;
 import faang.school.postservice.service.posts.FeedService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,8 +26,11 @@ public class KafkaPostConsumer {
             feedService.addPostToFeeds(event);
 
             ack.acknowledge();
-        } catch (Exception e) {
-            log.error("Failed to process kafka message: {}", message, e);
+        } catch (JsonProcessingException e) {
+            log.error("Failed to deserialize message: {}", message, e);
+        } catch (FeedProcessingException e) {
+            log.error("Business logic failed for message: {}", message, e);
+            throw e;
         }
     }
 }
