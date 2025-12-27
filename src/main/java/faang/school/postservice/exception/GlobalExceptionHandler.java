@@ -87,4 +87,11 @@ public class GlobalExceptionHandler {
         Map<String, String> error = Map.of("error", ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
+
+    @ExceptionHandler(FeedProcessingException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public Map<String, String> handleFeedProcessing(FeedProcessingException ex) {
+        log.error("Error processing feed event", ex);
+        return Map.of("error", ex.getMessage());
+    }
 }
