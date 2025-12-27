@@ -2,6 +2,7 @@ package faang.school.postservice.service.comment;
 
 import faang.school.postservice.aop.PublishCommentEvent;
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.author.AuthorDto;
 import faang.school.postservice.dto.comment.CommentCreateDto;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CommentUpdateDto;
@@ -11,9 +12,9 @@ import faang.school.postservice.exception.ValidationException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.producer.commentanalysis.AnalysisCommentsProducer;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.author.AuthorCacheService;
 import faang.school.postservice.validator.comment.CommentValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,11 +31,13 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
+    private final AuthorCacheService authorCacheService;
 
     @PublishCommentEvent
     @Transactional
     public Comment create(CommentCreateDto commentCreateDto, Long userId) {
         CommentValidator.validateCommentContent(commentCreateDto.content());
+
         UserDto user = userServiceClient.getUser(userId);
         CommentValidator.validateUser(user);
 
@@ -42,6 +45,14 @@ public class CommentService {
 
         Comment comment = CommentMapper.toEntity(commentCreateDto, post, userId);
         comment = commentRepository.save(comment);
+
+        AuthorDto authorDto = new AuthorDto(
+                String.valueOf(user.id()),
+                user.username(),
+                null
+        );
+
+        authorCacheService.put(authorDto);
 
         log.info("Creating comment for postId={} by userId={}", post.getId(), userId);
         return comment;
