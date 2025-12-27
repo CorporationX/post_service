@@ -13,6 +13,7 @@ import faang.school.postservice.publisher.CommentEventPublisher;
 import faang.school.postservice.publisher.EventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.cache.CacheService;
 import faang.school.postservice.validator.CommentValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,6 +42,9 @@ public class CommentServiceImpl implements CommentService {
 
     private final EventPublisher eventPublisher;
 
+    private final CacheService cacheService;
+
+
     @Override
     public ResponseComment createComment(RequestCreateComment requestCreateComment,
                                          Long postId) {
@@ -64,7 +68,9 @@ public class CommentServiceImpl implements CommentService {
         );
         eventPublisher.publish(event);
 
-        return commentMapper.toDto(savedComment);
+        ResponseComment responseComment = commentMapper.toDto(savedComment);
+        cacheService.saveAuthorComment(userContext.getUserId(), responseComment.id());
+        return responseComment;
     }
 
     @Override
