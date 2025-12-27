@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mapstruct.factory.Mappers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -36,6 +37,8 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class FeedServiceImplTest {
 
+    private final PostMapper postMapper = Mappers.getMapper(PostMapper.class);
+
     @Mock
     private FeedCacheRepository feedCacheRepository;
 
@@ -50,9 +53,6 @@ class FeedServiceImplTest {
 
     @Mock
     private UserService userService;
-
-    @Mock
-    private PostMapper postMapper;
 
     @Mock
     private AuthorMapper authorMapper;
