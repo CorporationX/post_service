@@ -1,12 +1,14 @@
 package faang.school.postservice.service.like;
 
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.event.LikeAddedEvent;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.mapper.LikeMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.like.LikeEventProducer;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -30,6 +32,7 @@ public class LikeServiceImpl implements LikeService {
     private final CommentRepository commentRepository;
     private final LikeRepository likeRepository;
     private final UserServiceClientAdapter userServiceClientAdapter;
+    private final LikeEventProducer likeEventProducer;
 
     @Override
     @Transactional
@@ -43,6 +46,14 @@ public class LikeServiceImpl implements LikeService {
                 .post(currentPost)
                 .build();
         like = likeRepository.save(like);
+        log.info("User #{} added like to the Post #{}", like.getUserId(), like.getPost().getId());
+        likeEventProducer.sendLikeAddedEvent(
+                new LikeAddedEvent(
+                        like.getId(),
+                        like.getUserId(),
+                        like.getPost().getId(),
+                        like.getCreatedAt()
+                ));
         return likeMapper.toLikeDto(like);
     }
 

@@ -1,6 +1,7 @@
 package faang.school.postservice.service.like;
 
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.event.LikeAddedEvent;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.EntityNotFoundException;
@@ -8,6 +9,7 @@ import faang.school.postservice.mapper.LikeMapperImpl;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.producer.like.LikeEventProducer;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.LikeRepository;
 import faang.school.postservice.repository.PostRepository;
@@ -49,6 +51,8 @@ public class LikeServiceTest {
     private LikeRepository likeRepository;
     @Mock
     private UserServiceClientAdapter userServiceClientAdapter;
+    @Mock
+    private LikeEventProducer likeEventProducer;
     @Spy
     private LikeMapperImpl likeMapper;
     @Captor
@@ -70,6 +74,7 @@ public class LikeServiceTest {
         verify(userServiceClientAdapter, times(1)).getUserById(userId);
         verify(postRepository, never()).findById(anyLong());
         verify(likeRepository, never()).save(any(Like.class));
+        verify(likeEventProducer, never()).sendLikeAddedEvent(any(LikeAddedEvent.class));
         verify(likeMapper, never()).toLikeDto(any(Like.class));
     }
 
@@ -89,6 +94,7 @@ public class LikeServiceTest {
         verify(userServiceClientAdapter, times(1)).getUserById(userId);
         verify(postRepository, times(1)).findById(postId);
         verify(likeRepository, never()).save(any(Like.class));
+        verify(likeEventProducer, never()).sendLikeAddedEvent(any(LikeAddedEvent.class));
         verify(likeMapper, never()).toLikeDto(any(Like.class));
     }
 
@@ -110,6 +116,7 @@ public class LikeServiceTest {
                     like.setCreatedAt(LocalDateTime.now());
                     return like;
                 });
+        doNothing().when(likeEventProducer).sendLikeAddedEvent(any(LikeAddedEvent.class));
 
         LikeDto likeDtoResult = likeService.addLikeToPost(postId);
 
@@ -124,6 +131,7 @@ public class LikeServiceTest {
         verify(userServiceClientAdapter, times(1)).getUserById(userId);
         verify(postRepository, times(1)).findById(postId);
         verify(likeRepository, times(1)).save(likeArgumentCaptor.capture());
+        verify(likeEventProducer, times(1)).sendLikeAddedEvent(any(LikeAddedEvent.class));
         verify(likeMapper, times(1)).toLikeDto(any(Like.class));
     }
 
