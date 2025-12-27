@@ -31,12 +31,11 @@ public class KafkaPostConsumer {
 
         try {
             event.followerIds().forEach(
-                    followerId -> feedService.addPostToFeed
-                            (
-                                    followerId,
-                                    event.postId(),
-                                    event.occurredAt()
-                            ));
+                    followerId -> feedService.addPostToFeed(
+                            followerId,
+                            event.postId(),
+                            event.occurredAt()
+                    ));
 
             ack.acknowledge();
 

@@ -29,14 +29,14 @@ public class FeedServiceImpl implements FeedService {
         ADD_AND_TRIM_SCRIPT = new DefaultRedisScript<>();
         ADD_AND_TRIM_SCRIPT.setResultType(Long.class);
         ADD_AND_TRIM_SCRIPT.setScriptText(
-                "local added = redis.call('ZADD', KEYS[1], 'NX', ARGV[1], ARGV[2]) " +
-                        "local size = redis.call('ZCARD', KEYS[1]) " +
-                        "local maxSize = tonumber(ARGV[3]) " +
-                        "if size > maxSize then " +
-                        "  local extra = size - maxSize " +
-                        "  redis.call('ZREMRANGEBYRANK', KEYS[1], 0, extra - 1) " +
-                        "end " +
-                        "return added"
+                "local added = redis.call('ZADD', KEYS[1], 'NX', ARGV[1], ARGV[2]) "
+                        + "local size = redis.call('ZCARD', KEYS[1]) "
+                        + "local maxSize = tonumber(ARGV[3]) "
+                        + "if size > maxSize then "
+                        + "  local extra = size - maxSize "
+                        + "  redis.call('ZREMRANGEBYRANK', KEYS[1], 0, extra - 1) "
+                        + "end "
+                        + "return added"
         );
     }
 
