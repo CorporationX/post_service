@@ -20,4 +20,7 @@ public interface UserServiceClient {
 
     @GetMapping("/api/v1/users/{userId}/followers")
     List<UserDto> getFollowers(@PathVariable long userId);
+
+    @PostMapping("/api/v1/users/existent")
+    List<Long> checkExistentFollowers(@RequestBody List<Long> followerIds);
 }

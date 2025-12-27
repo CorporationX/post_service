@@ -17,8 +17,8 @@ public class PostConsumer {
     @KafkaListener(topics = "${kafka.topics.posts.topic_name}", groupId = "${kafka.topics.posts.group_id}",
             containerFactory = "postContainerFactory")
     public void consumeEvent(PostEvent postEvent, Acknowledgment ack) throws InterruptedException {
-        log.info("Из Kafka получен новый PostEvent c postId: {} и батчом followerIds, начинающимся с followerId: {}",
-                postEvent.postId(), postEvent.followerIds().get(0));
+        if (postEvent.followerIds().isEmpty()) {}
+        log.info("Из Kafka получен новый PostEvent c postId: {}", postEvent.postId());
         feedService.updateFeeds(postEvent);
         ack.acknowledge();
         log.info("PostEvent из Kafka с postId: {} и батчом followerIds, начинающимся с followerId: {} обработан.",

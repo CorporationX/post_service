@@ -71,34 +71,13 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional
     public void publishPost(long requesterId, long postId) {
-        Optional<Post> optionalPostToPublish = postRepository.findById(postId);
-        if (optionalPostToPublish.isEmpty()) {
-            throw new EntityNotFoundException("Данный пост не существует, его невозможно опубликовать.");
-        }
-        Post postToPublish = optionalPostToPublish.get();
-        if (postToPublish.isPublished()) {
-            throw new DataValidationException("Данный пост уже опубликован, его невозможно опубликовать повторно.");
-        }
-        if (postToPublish.getAuthorId() != requesterId) {
-            throw new ForbiddenException("Вы не можете опубликовать пост от чужого имени.");
-        }
+        Post postToPublish = checkAndGetPost(postId, requesterId);
         postToPublish.setPublished(true);
         postToPublish.setPublishedAt(LocalDateTime.now());
         postRepository.save(postToPublish);
         log.info("Пост с id: {} успешно опубликован.", postId);
-        CachedPostDto cachedPostDto = cachedPostMapper.toCachedPostDto(postToPublish);
-        cachedPostDto.setTimeToLive(ttlPostInRedis);
-        cachePostRepository.save(cachedPostDto);
-        log.info("Пост с id: {} добавлен в Redis", postId);
-        List<Long> followerIds = userServiceClient.getFollowers(requesterId).stream()
-                .map((UserDto::id))
-                .toList();
-        int batchSize = 100;
-        for (int i = 0; i < followerIds.size(); i += batchSize) {
-            postProducer.sendToKafka(new PostEvent(
-                    postId,
-                    followerIds.subList(i, Math.min(followerIds.size(), i + batchSize))));
-        }
+        savePostToRedis(postToPublish);
+        sendPostEventToKafka(postId, requesterId);
     }
 
     @Override
@@ -226,5 +205,39 @@ public class PostServiceImpl implements PostService {
                 log.error("Ошибка при проверке поста id={}: {}", post.getId(), e.getMessage());
             }
         }
+    }
+
+    private void sendPostEventToKafka(long postId, long requesterId) {
+        List<Long> followerIds = userServiceClient.getFollowers(requesterId).stream()
+                .map((UserDto::id))
+                .toList();
+        int batchSize = 100;
+        for (int i = 0; i < followerIds.size(); i += batchSize) {
+            postProducer.sendToKafka(new PostEvent(
+                    postId,
+                    followerIds.subList(i, Math.min(followerIds.size(), i + batchSize))));
+        }
+    }
+
+    private void savePostToRedis(Post postToPublish) {
+        CachedPostDto cachedPostDto = cachedPostMapper.toCachedPostDto(postToPublish);
+        cachedPostDto.setTimeToLive(ttlPostInRedis);
+        cachePostRepository.save(cachedPostDto);
+        log.info("Пост с id: {} добавлен в Redis", postToPublish.getId());
+    }
+
+    private Post checkAndGetPost(long postId, long requesterId) {
+        Optional<Post> optionalPostToPublish = postRepository.findById(postId);
+        if (optionalPostToPublish.isEmpty()) {
+            throw new EntityNotFoundException("Данный пост не существует, его невозможно опубликовать.");
+        }
+        Post postToPublish = optionalPostToPublish.get();
+        if (postToPublish.isPublished()) {
+            throw new DataValidationException("Данный пост уже опубликован, его невозможно опубликовать повторно.");
+        }
+        if (postToPublish.getAuthorId() != requesterId) {
+            throw new ForbiddenException("Вы не можете опубликовать пост от чужого имени.");
+        }
+        return postToPublish;
     }
 }
