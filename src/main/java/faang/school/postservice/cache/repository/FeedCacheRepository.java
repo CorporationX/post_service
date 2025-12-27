@@ -1,8 +1,10 @@
-package faang.school.postservice.cache;
+package faang.school.postservice.cache.repository;
 
+import faang.school.postservice.model.Post;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -42,6 +44,28 @@ public class FeedCacheRepository {
 
         }
 
+        redisTemplate.expire(key, ttlDays, TimeUnit.DAYS);
+    }
+
+    public void saveAll(Long followerId, List<Post> posts) {
+        String key = collection + followerId;
+
+        redisTemplate.executePipelined((RedisCallback<Void>) connection -> {
+            for (Post post : posts) {
+                double score = post.getPublishedAt().toEpochSecond(ZoneOffset.UTC);
+                connection.zAdd(
+                        key.getBytes(),
+                        score,
+                        post.getId().toString().getBytes()
+                );
+            }
+
+            Long size = connection.zCard(key.getBytes());
+            if (size != null && size > maxSize) {
+                connection.zRemRange(key.getBytes(), 0, size - maxSize - 1);
+            }
+            return null;
+        });
         redisTemplate.expire(key, ttlDays, TimeUnit.DAYS);
     }
 
