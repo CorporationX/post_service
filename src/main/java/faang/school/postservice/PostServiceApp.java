@@ -1,12 +1,15 @@
 package faang.school.postservice;
 
+import faang.school.postservice.config.FeedRedisProperties;
 import org.springframework.boot.Banner;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
+@EnableConfigurationProperties(FeedRedisProperties.class)
 @SpringBootApplication
 @EnableScheduling
 @EnableFeignClients(basePackages = "faang.school.postservice.client")

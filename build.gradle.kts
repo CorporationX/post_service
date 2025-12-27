@@ -5,11 +5,11 @@ plugins {
     id("checkstyle")
     id("org.jsonschema2pojo") version "1.2.1"
     id("jacoco")
+    kotlin("jvm")
 }
 
 group = "faang.school"
 version = "1.0"
-java.sourceCompatibility = JavaVersion.VERSION_17
 
 repositories {
     mavenCentral()
@@ -84,6 +84,7 @@ dependencies {
     testImplementation("org.assertj:assertj-core:3.24.2")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.kafka:spring-kafka-test")
+    implementation(kotlin("stdlib-jdk8"))
 }
 
 configure<JacocoPluginExtension> {
@@ -198,4 +199,7 @@ tasks.jacocoTestReport {
             }
         }
     )
+}
+kotlin {
+    jvmToolchain(17)
 }
