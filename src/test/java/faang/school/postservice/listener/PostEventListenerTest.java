@@ -53,6 +53,8 @@ public class PostEventListenerTest {
 
     @Mock
     private PostCacheRepository postCacheRepository;
+
+    @Mock
     private UserCacheRepository userCacheRepository;
 
     @Mock
@@ -173,6 +175,7 @@ public class PostEventListenerTest {
         verify(postCacheRepository, times(1)).save(any(PostCacheDto.class));
         verifyNoInteractions(feedCacheRepository);
         verify(acknowledgment, never()).acknowledge();
+    }
     
     @Test  
     public void testFailWhileUserRedisExceptionReturned() {

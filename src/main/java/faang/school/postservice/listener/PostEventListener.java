@@ -38,6 +38,8 @@ public class PostEventListener {
                     .authorId(postPublishEventDto.authorId())
                     .content(postPublishEventDto.content())
                     .createdAt(Instant.now())
+                    .build());
+
             UserDto userDto = getUserAuthorId(postPublishEventDto.authorId());
             userCacheRepository.save(UserCacheDto.builder()
                     .id(userDto.id())

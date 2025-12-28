@@ -107,7 +107,6 @@ redis:
     post:
       key-prefix: "post:"
       ttl-days: 1
-
-    author:
+    user:
       key-prefix: "user:"
       ttl-days: 1
