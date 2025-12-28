@@ -1,5 +1,6 @@
 package faang.school.postservice.listener;
 
+import faang.school.postservice.dto.cache.PostCacheDto;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.cache.UserCacheDto;
 import faang.school.postservice.dto.cache.PostCacheDto;
@@ -9,6 +10,7 @@ import faang.school.postservice.dto.event.PostPublishEventDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.repository.cache.FeedCacheRepository;
+import faang.school.postservice.repository.cache.PostCacheRepository;
 import faang.school.postservice.repository.cache.UserCacheRepository;
 import faang.school.postservice.repository.cache.PostCacheRepository;
 import faang.school.postservice.repository.cache.UserCacheRepository;
@@ -29,6 +31,7 @@ public class PostEventListener {
     private final PostCacheRepository postCacheRepository;
     private final UserCacheRepository userCacheRepository;
     private final UserServiceClient userServiceClient;
+    private final PostCacheRepository postCacheRepository;
 
     @KafkaListener(
             topics = "${kafka.topic.post-event}",
