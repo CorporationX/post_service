@@ -2,6 +2,7 @@ package faang.school.postservice.service;
 
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentDto;
+import faang.school.postservice.dto.comment.CommentEvent;
 import faang.school.postservice.dto.comment.CreateCommentDto;
 import faang.school.postservice.dto.comment.UpdateCommentDto;
 import faang.school.postservice.dto.user.UserDto;
@@ -13,7 +14,7 @@ import faang.school.postservice.publisher.kafka.KafkaCommentProducer;
 import faang.school.postservice.publisher.redis.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.repository.redis.RedisUserRepository;
+import faang.school.postservice.repository.cashe.RedisUserRepository;
 import faang.school.postservice.service.comment.CommentServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -101,7 +102,7 @@ public class CommentServiceImplTest {
         Mockito.when(userServiceClient.getUser(TEST_AUTHOR_ID)).thenReturn(testUserDto);
         Mockito.when(commentRepository.save(any(Comment.class))).thenReturn(comment);
         doNothing().when(commentEventPublisher).publishMessage(any());
-        doNothing().when(commentEventKafkaPublisher).sendCommentEvent(any());
+        doNothing().when(commentEventKafkaPublisher).sendCommentEvent(any(CommentEvent.class));
 
         CommentDto result = commentService.addComment(TEST_POST_ID, createCommentDto, TEST_AUTHOR_ID);
 

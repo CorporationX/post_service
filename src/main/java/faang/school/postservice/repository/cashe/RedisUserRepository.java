@@ -1,6 +1,6 @@
-package faang.school.postservice.repository.redis;
+package faang.school.postservice.repository.cashe;
 
-import faang.school.postservice.dto.user.CacheUserDto;
+import faang.school.postservice.dto.cache.CacheUserDto;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
