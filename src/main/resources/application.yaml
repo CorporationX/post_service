@@ -2,6 +2,23 @@ spring:
   config:
     import: optional:classpath:application.properties
 
+  kafka:
+    bootstrap-servers: ${KAFKA_HOST}:${KAFKA_PORT}
+    topics:
+      comment: "comment-topic"
+    producer:
+      acks: "all"
+      retries: 5
+      properties:
+        enable.idempotence: true
+        max.in.flight.requests.per.connection: 5
+    consumer:
+      group-id:
+        comment: "comment"
+      trustedPackage: "faang.school.postservice.dto*"
+      properties:
+        auto.offset: "earliest"
+
   servlet:
     multipart:
       max-file-size: 5MB
@@ -87,6 +104,7 @@ executor:
   max-thread-pool: 30
   await-time-seconds: 30
 
+max-comment: 3
 
 redis:
   ttl:
