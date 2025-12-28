@@ -1,4 +1,4 @@
-package faang.school.postservice.aop;
+package faang.school.postservice.aop.comment;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

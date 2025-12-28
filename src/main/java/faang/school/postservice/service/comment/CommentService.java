@@ -1,19 +1,20 @@
 package faang.school.postservice.service.comment;
 
-import faang.school.postservice.aop.PublishCommentEvent;
+import faang.school.postservice.aop.comment.PublishCommentEvent;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.dto.comment.CommentCreateDto;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CommentUpdateDto;
 import faang.school.postservice.dto.common.PageResponse;
+import faang.school.postservice.dto.kafka.CommentEventDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.ValidationException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.producer.commentanalysis.AnalysisCommentsProducer;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.service.redis.RedisService;
 import faang.school.postservice.validator.comment.CommentValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +31,7 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
+    private final RedisService redisService;
 
     @PublishCommentEvent
     @Transactional
@@ -42,6 +44,9 @@ public class CommentService {
 
         Comment comment = CommentMapper.toEntity(commentCreateDto, post, userId);
         comment = commentRepository.save(comment);
+
+        CommentEventDto author = CommentMapper.toDto(comment, user, post);
+        redisService.saveAuthorComment(author);
 
         log.info("Creating comment for postId={} by userId={}", post.getId(), userId);
         return comment;
