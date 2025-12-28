@@ -36,7 +36,7 @@ spring:
       properties:
         spring.json.add.type.headers: false
     consumer:
-      trusted-packages: "faang.school.postservice.dto.event"
+      trusted-packages: "faang.school.postservice.dto.*"
       group-id: "post-consumer-group"
       ack-mode: manual
 kafka:
@@ -47,6 +47,7 @@ kafka:
       - comments
     post-event: post_events
     like-event: like_create
+    comment-event: comments
 server:
   port: 8081
   servlet:
@@ -110,7 +111,6 @@ redis:
     user:
       key-prefix: "user:"
       ttl-days: 1
-
     author:
       key-prefix: "user:"
       ttl-days: 1

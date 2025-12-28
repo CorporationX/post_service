@@ -10,6 +10,7 @@ public record PostCacheDto(
         Long authorId,
         String content,
         Instant createdAt,
-        Long likeCount
+        Long likeCount,
+        Long commentCount
 ) {
 }
