@@ -4,6 +4,7 @@ import java.util.List;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.controller.post.PostController;
 import faang.school.postservice.dto.post.CreatePostDto;
+import faang.school.postservice.messaging.KafkaPostViewProducer;
 import faang.school.postservice.service.post.PostService;
 import faang.school.postservice.dto.post.PostDto;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,6 +32,9 @@ public class PostControllerTest {
 
     @Mock
     private PostService postService;
+
+    @Mock
+    private KafkaPostViewProducer kafkaPostViewProducer;
 
     @InjectMocks
     private PostController postController;
