@@ -13,6 +13,7 @@ import faang.school.postservice.outbox.entity.OutboxEventType;
 import faang.school.postservice.outbox.entity.OutboxStatus;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.outbox.repository.OutboxRepository;
+import faang.school.postservice.outbox.utils.OutboxEventSerializer;
 import faang.school.postservice.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,6 +32,7 @@ public class PostServiceImpl implements PostService {
     private final OutboxRepository outboxRepository;
     private final ObjectMapper objectMapper;
     private final ApplicationEventPublisher eventPublisher;
+    private final OutboxEventSerializer outboxEventSerializer;
 
     @Value("${spring.application.name}")
     private String serviceName;
@@ -52,12 +54,7 @@ public class PostServiceImpl implements PostService {
                 .createdAt(savedPost.getCreatedAt().toInstant(ZoneOffset.UTC).toEpochMilli())
                 .build();
 
-        String payload;
-        try {
-            payload = objectMapper.writeValueAsString(event);
-        } catch (JsonProcessingException e) {
-            throw new OutboxSerializationException("Failed to serialize PostCreatedEvent for Outbox", e);
-        }
+        String payload = outboxEventSerializer.serialize(event);
 
         OutboxEvent outboxEvent = OutboxEvent.builder()
                 .aggregateId(savedPost.getId())

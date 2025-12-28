@@ -14,6 +14,7 @@ import faang.school.postservice.outbox.entity.OutboxEvent;
 import faang.school.postservice.outbox.entity.OutboxEventType;
 import faang.school.postservice.outbox.entity.OutboxStatus;
 import faang.school.postservice.outbox.repository.OutboxRepository;
+import faang.school.postservice.outbox.utils.OutboxEventSerializer;
 import faang.school.postservice.repository.PostRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 
@@ -55,33 +56,20 @@ class PostServiceImplTest {
     @Mock
     private ApplicationEventPublisher eventPublisher;
 
+    @Mock
+    private OutboxEventSerializer outboxEventSerializer;
+
     @InjectMocks
     private PostServiceImpl postService;
 
     @BeforeEach
     void setUp() throws Exception {
-        postRepository = mock(PostRepository.class);
-        postMapper = mock(PostMapper.class);
-        userContext = mock(UserContext.class);
-        outboxRepository = mock(OutboxRepository.class);
-        objectMapper = new ObjectMapper();
-        eventPublisher = mock(ApplicationEventPublisher.class);
-        postService = new PostServiceImpl(
-                postMapper,
-                postRepository,
-                userContext,
-                outboxRepository,
-                objectMapper,
-                eventPublisher
-        );
-
         Field serviceNameField = PostServiceImpl.class.getDeclaredField("serviceName");
         serviceNameField.setAccessible(true);
         serviceNameField.set(postService, "post-service");
     }
-
     @Test
-    void create_shouldSavePostAndOutboxEvent() throws JsonProcessingException {
+    void create_shouldSavePostAndOutboxEvent() {
         RequestPostDto requestDto = new RequestPostDto(
                 "Some content",
                 123L
@@ -110,6 +98,9 @@ class PostServiceImplTest {
         when(userContext.getUserId()).thenReturn(42L);
         when(postRepository.save(postModel)).thenReturn(savedPost);
         when(postMapper.toDto(savedPost)).thenReturn(postDto);
+        when(outboxEventSerializer.serialize(any(PostCreatedEvent.class)))
+                .thenReturn("{\"id\":1,\"content\":\"content\",\"projectId\":123," +
+                        "\"authorId\":42,\"createdAt\":123456789}");
 
         PostDto result = postService.create(requestDto);
 
@@ -132,26 +123,15 @@ class PostServiceImplTest {
         assertTrue(payload.contains("\"createdAt\""));
     }
 
-    @Test
-    void create_shouldThrowOutboxSerializationException_whenJsonFails() throws JsonProcessingException {
-        ObjectMapper badMapper = mock(ObjectMapper.class);
-        postService = new PostServiceImpl(
-                postMapper,
-                postRepository,
-                userContext,
-                outboxRepository,
-                badMapper,
-                eventPublisher
-        );
 
-        RequestPostDto requestDto = new RequestPostDto(
-                "Some content",
-                123L
-        );
+    @Test
+    void create_shouldThrowOutboxSerializationException_whenSerializationFails() {
+        RequestPostDto requestDto = new RequestPostDto("Some content", 123L);
+
         Post postModel = new Post();
         Post savedPost = new Post();
         savedPost.setId(1L);
-        savedPost.setContent("content");
+        savedPost.setContent("Some content");
         savedPost.setProjectId(123L);
         savedPost.setAuthorId(42L);
         savedPost.setCreatedAt(LocalDateTime.now());
@@ -159,7 +139,10 @@ class PostServiceImplTest {
         when(postMapper.toModel(requestDto)).thenReturn(postModel);
         when(userContext.getUserId()).thenReturn(42L);
         when(postRepository.save(postModel)).thenReturn(savedPost);
-        when(badMapper.writeValueAsString(any())).thenThrow(JsonProcessingException.class);
+
+        doThrow(new OutboxSerializationException("failed", null))
+                .when(outboxEventSerializer)
+                .serialize(any(PostCreatedEvent.class));
 
         assertThrows(OutboxSerializationException.class, () -> postService.create(requestDto));
     }
