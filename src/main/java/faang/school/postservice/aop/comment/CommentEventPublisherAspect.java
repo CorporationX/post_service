@@ -27,9 +27,9 @@ public class CommentEventPublisherAspect {
     private String topic;
 
     @AfterReturning(
-            pointcut = "@annotation(PublishCommentEvent)",
-            returning = "comment"
-    )
+            pointcut = "@annotation(PublishCommentEvent) && args(user, post, comment)",
+            returning = "comment",
+            argNames = "comment,user,post")
     public void publish(Comment comment, UserDto user, Post post) {
 
         if (comment == null) {
