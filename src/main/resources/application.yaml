@@ -91,6 +91,9 @@ services:
     bucketName: corpbucket
 
 app:
+  kafka:
+    topics:
+      posts-created-topic: posts-created-topic
   resources:
     image:
       max-file-size-mb: 5

@@ -4,8 +4,9 @@ import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.FeignLanguageToolClient;
 import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.LanguageToolConfig;
-import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.CreatePostRequestDto;
+import faang.school.postservice.dto.post.PostCreatedEventDto;
+import faang.school.postservice.dto.post.Publisher;
 import faang.school.postservice.dto.post.UpdatePostRequestDto;
 import faang.school.postservice.dto.post.PostResponseDto;
 import faang.school.postservice.dto.project.ProjectDto;
@@ -23,6 +24,7 @@ import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.retry.annotation.Backoff;
@@ -30,12 +32,17 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
+
+import static faang.school.postservice.dto.post.PublisherType.PROJECT;
+import static faang.school.postservice.dto.post.PublisherType.USER;
 
 @Slf4j
 @Service
@@ -48,12 +55,10 @@ public class PostServiceImpl implements PostService {
     private final UserServiceClient userServiceClient;
     private final ProjectServiceClient projectServiceClient;
     private final LanguageToolConfig languageToolConfig;
-    private static final long SECOND_DELAY_MS = 3000L;
-    private static final long THIRD_DELAY_MS = 4000L;
-    private static final long FOURTH_DELAY_MS = 5000L;
     private final FeignLanguageToolClient feignLanguageTool;
-    private final UserContext userContext;
     private final ThreadPoolConfig threadPoolConfig;
+    private final FollowersService followersService;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Value("${scheduler.thread-pool.batchSize:50}")
     private int batchSize;
@@ -98,6 +103,20 @@ public class PostServiceImpl implements PostService {
         return postMapper.toDto(saved);
     }
 
+    private Publisher resolvePublisher(Post post) {
+        boolean hasAuthor = post.getAuthorId() != null;
+        boolean hasProject = post.getProjectId() != null;
+
+        if (hasAuthor == hasProject) { // оба true или оба false
+            throw new IllegalStateException("Post must have exactly one publisher: authorId XOR projectId");
+        }
+
+        if (hasAuthor) {
+            return new Publisher(USER, post.getAuthorId());
+        }
+        return new Publisher(PROJECT, post.getProjectId());
+    }
+
     @Override
     public PostResponseDto publish(long id) {
         log.info("Publishing post id={}", id);
@@ -112,12 +131,34 @@ public class PostServiceImpl implements PostService {
             throw new IllegalStateException("Post is already published");
         }
 
+        Publisher publisher = resolvePublisher(post);
+
         post.setPublished(true);
         post.setPublishedAt(LocalDateTime.now());
         post.setUpdatedAt(LocalDateTime.now());
         Post saved = postRepository.save(post);
 
         log.info("Post published id={} at {}", id, saved.getPublishedAt());
+
+        List<Long> followerIds =
+                publisher.type() == USER
+                        ? followersService.getFollowerIds(publisher.id())
+                        : List.of(); // not created yet, so no followers
+
+        PostCreatedEventDto event = new PostCreatedEventDto(
+                UUID.randomUUID(),
+                Instant.now(),
+                saved.getId(),
+                publisher,
+                followerIds,
+                1
+        );
+
+        applicationEventPublisher.publishEvent(event);
+
+        log.info("Post published id={} and event queued (publisherType={}, publisherId={}, followersCount={})",
+                saved.getId(), publisher.type(), publisher.id(), followerIds.size());
+
         return postMapper.toDto(saved);
     }
 
@@ -227,7 +268,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    @Retryable(retryFor = {FeignException.class}, maxAttempts = 3, backoff = @Backoff(delay = 1000, multiplier = 2))
+    @Retryable(retryFor = {FeignException.class}, backoff = @Backoff(delay = 1000, multiplier = 2))
     public void processTextChecking() {
         List<Post> unpublishedPosts = postRepository.findReadyToPublish();
         log.info("Found {} posts for text correction", unpublishedPosts.size());
@@ -268,7 +309,7 @@ public class PostServiceImpl implements PostService {
 
         List<MatchDto> sortedMatches = response.matches().stream()
                 .sorted((m1, m2) -> Integer.compare(m2.offset(), m1.offset()))
-                .collect(Collectors.toList());
+                .toList();
 
         StringBuilder correctedText = new StringBuilder(originalText);
 

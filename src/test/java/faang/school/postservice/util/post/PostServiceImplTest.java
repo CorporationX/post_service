@@ -6,7 +6,9 @@ import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.context.LanguageToolConfig;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.CreatePostRequestDto;
+import faang.school.postservice.dto.post.PostCreatedEventDto;
 import faang.school.postservice.dto.post.PostResponseDto;
+import faang.school.postservice.dto.post.PublisherType;
 import faang.school.postservice.dto.post.UpdatePostRequestDto;
 import faang.school.postservice.dto.project.ProjectDto;
 import faang.school.postservice.dto.text.MatchDto;
@@ -18,6 +20,7 @@ import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.scheduler.ThreadPoolConfig;
+import faang.school.postservice.service.FollowersService;
 import faang.school.postservice.service.PostServiceImpl;
 import feign.FeignException;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,6 +32,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.ResponseEntity;
 
 import java.lang.reflect.Field;
@@ -55,6 +59,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import org.mockito.ArgumentCaptor;
 
 @ExtendWith(MockitoExtension.class)
 class PostServiceImplTest {
@@ -92,6 +98,10 @@ class PostServiceImplTest {
     private FeignLanguageToolClient feignLanguageTool;
     @Mock
     private UserContext userContext;
+    @Mock
+    FollowersService followersService;
+    @Mock
+    ApplicationEventPublisher applicationEventPublisher;
     @Spy
     private PostMapper postMapper = Mappers.getMapper(PostMapper.class);
     private Post postDbEntity;
@@ -632,4 +642,101 @@ class PostServiceImplTest {
         assertDoesNotThrow(() -> service.processTextChecking());
         verify(postRepository, never()).save(any(Post.class));
     }
+
+    @Test
+    @DisplayName("publish: USER publisher -> loads followerIds and publishes Spring event")
+    void publish_user_publishesEvent_withFollowers() {
+        when(postRepository.findById(POST_ID)).thenReturn(Optional.of(postDbEntity));
+        when(postRepository.save(any(Post.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        List<Long> followerIds = List.of(101L, 102L, 103L);
+        when(followersService.getFollowerIds(AUTHOR_ID)).thenReturn(followerIds);
+
+        PostResponseDto out = service.publish(POST_ID);
+
+        assertTrue(out.published());
+        assertNotNull(out.publishedAt());
+
+        verify(followersService, times(1)).getFollowerIds(AUTHOR_ID);
+
+        ArgumentCaptor<PostCreatedEventDto> captor =
+                ArgumentCaptor.forClass(PostCreatedEventDto.class);
+
+        verify(applicationEventPublisher, times(1)).publishEvent(captor.capture());
+
+        var event = captor.getValue();
+        assertNotNull(event.eventId());
+        assertNotNull(event.occurredAt());
+        assertEquals(POST_ID, event.postId());
+        assertEquals(followerIds, event.followerIds());
+        assertEquals(PublisherType.USER, event.publisher().type());
+        assertEquals(AUTHOR_ID, event.publisher().id());
+        assertEquals(1, event.version());
+    }
+
+    @Test
+    @DisplayName("publish: PROJECT publisher -> does not load followers, publishes event with empty followerIds")
+    void publish_project_publishesEvent_withoutFollowersCall() {
+        Post projectPost = buildPost(POST_ID, null, PROJECT_ID, CONTENT, false, false,
+                LocalDateTime.now().minusHours(1), null);
+
+        when(postRepository.findById(POST_ID)).thenReturn(Optional.of(projectPost));
+        when(postRepository.save(any(Post.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        service.publish(POST_ID);
+
+        verify(followersService, never()).getFollowerIds(any());
+
+        ArgumentCaptor<PostCreatedEventDto> captor =
+                ArgumentCaptor.forClass(PostCreatedEventDto.class);
+
+        verify(applicationEventPublisher, times(1)).publishEvent(captor.capture());
+
+        var event = captor.getValue();
+        assertEquals(POST_ID, event.postId());
+        assertTrue(event.followerIds().isEmpty());
+        assertEquals(PublisherType.PROJECT, event.publisher().type());
+        assertEquals(PROJECT_ID, event.publisher().id());
+    }
+
+    @Test
+    @DisplayName("publish: invalid publisher (both authorId and projectId) -> throws")
+    void publish_bothPublishers_throws() {
+        Post invalid = buildPost(POST_ID, AUTHOR_ID, PROJECT_ID, CONTENT, false, false,
+                LocalDateTime.now().minusHours(1), null);
+
+        when(postRepository.findById(POST_ID)).thenReturn(Optional.of(invalid));
+
+        assertThrows(IllegalStateException.class, () -> service.publish(POST_ID));
+
+        verify(postRepository, never()).save(any());
+        verify(applicationEventPublisher, never()).publishEvent(any());
+    }
+
+    @Test
+    @DisplayName("publish: invalid publisher (no authorId and no projectId) -> throws")
+    void publish_noPublisher_throws() {
+        Post invalid = buildPost(POST_ID, null, null, CONTENT, false, false,
+                LocalDateTime.now().minusHours(1), null);
+
+        when(postRepository.findById(POST_ID)).thenReturn(Optional.of(invalid));
+
+        assertThrows(IllegalStateException.class, () -> service.publish(POST_ID));
+
+        verify(applicationEventPublisher, never()).publishEvent(any());
+    }
+
+    @Test
+    @DisplayName("publish: followersService fails -> event not published")
+    void publish_followersServiceFails_eventNotPublished() {
+        when(postRepository.findById(POST_ID)).thenReturn(Optional.of(postDbEntity));
+        when(postRepository.save(any(Post.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        when(followersService.getFollowerIds(AUTHOR_ID)).thenThrow(new RuntimeException("user-service down"));
+
+        assertThrows(RuntimeException.class, () -> service.publish(POST_ID));
+
+        verify(applicationEventPublisher, never()).publishEvent(any());
+    }
+
 }
