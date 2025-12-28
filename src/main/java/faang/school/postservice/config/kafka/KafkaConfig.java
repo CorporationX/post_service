@@ -123,4 +123,18 @@ public class KafkaConfig {
         return concurrentKafkaListenerContainerFactory;
     }
 
+    @Bean
+    public ConsumerFactory<String, LikeEventDto> likeEventConsumerFactory() {
+        return new DefaultKafkaConsumerFactory<>(getConsumerConfigProps(groupId));
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, LikeEventDto> concurrentKafkaLikeListenerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, LikeEventDto> concurrentKafkaListenerContainerFactory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+        concurrentKafkaListenerContainerFactory.setConsumerFactory(likeEventConsumerFactory());
+        concurrentKafkaListenerContainerFactory.getContainerProperties().setAckMode(ackMode);
+        return concurrentKafkaListenerContainerFactory;
+    }
+
 }
