@@ -29,21 +29,38 @@ spring:
           name: comment_event
         like: like_channel
         comment: achievement_channel
+      user-repository:
+        ttl-days: 1
+      post-repository:
+        ttl-days: 1
+        max-comments: 3
+        retry:
+          max-attempts: 3
+          delay: 500
+
+    kafka:
+      topic:
+        comment:
+          name: comment_event
+          group-id: comment_group
+        partition: 3
+        replication: 1
+
   kafka:
     partitions: 6
     replicas: 1
     topic:
       name: post_views
     producer:
-      bootstrap-servers: localhost:9092
-      acks: all
-      retries: 5
-      properties:
-        enable.idempotence: true
-        max.in.flight.requests.per.connection: 5
-        delivery.timeout.ms: 120000
-        request.timeout.ms: 30000
-        linger.ms: 5
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      ack: all
+      max-in-flight-requests-per-connection: 5
+      idempotence: true
+      retry:
+        retries: 3
+        backoff: 1000
+
 
 server:
   port: 8081
