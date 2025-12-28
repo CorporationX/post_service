@@ -29,7 +29,7 @@ public class CommentCreatedEventListener {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handle(CommentCreatedEvent event) {
 
-        Comment comment = event.getComment();
+        Comment comment = event.comment();
 
         UserDto author = userServiceClient.getUser(comment.getAuthorId());
         Post post = postRepository.getByIdOrThrow(comment.getPost().getId());
