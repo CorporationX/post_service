@@ -7,6 +7,7 @@ import faang.school.postservice.dto.comment.UpdateCommentDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.mapper.CommentMapper;
+import faang.school.postservice.messages.spring.publishers.SpringCommentPublisher;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
@@ -15,8 +16,6 @@ import faang.school.postservice.service.comment.CommentServiceImpl;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -31,6 +30,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.Assert.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -44,16 +44,11 @@ public class CommentServiceTest {
     @Mock
     private CommentMapper commentMapper;
     @Mock
+    SpringCommentPublisher commentPublisher;
+    @Mock
     private PostRepository postRepository;
     @InjectMocks
     CommentServiceImpl service;
-
-    @Captor
-    ArgumentCaptor<Comment> captor;
-
-    @Captor
-    private ArgumentCaptor<Pageable> pageableCaptor;
-
 
     @Test
     public void sendComment_forbiddenException_shouldTrowEntityNotFoundException() {
@@ -92,6 +87,8 @@ public class CommentServiceTest {
         ResponseCommentDto responseCommentDto = service.createComment(dto);
 
         verify(commentRepository).save(comment);
+
+        verify(commentPublisher).handleCommentCreated(any());
         Assertions.assertEquals(2L, responseCommentDto.postId());
     }
 

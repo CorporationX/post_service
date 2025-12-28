@@ -2,11 +2,13 @@ package faang.school.postservice.service.comment;
 
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.CreateCommentDto;
+import faang.school.postservice.dto.comment.ModelEventDto;
 import faang.school.postservice.dto.comment.ResponseCommentDto;
 import faang.school.postservice.dto.comment.UpdateCommentDto;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.ForbiddenException;
 import faang.school.postservice.mapper.CommentMapper;
+import faang.school.postservice.messages.spring.publishers.SpringCommentPublisher;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.repository.CommentRepository;
@@ -31,6 +33,7 @@ public class CommentServiceImpl implements CommentService {
     private final CommentRepository commentRepository;
     private final CommentMapper commentMapper;
     private final PostRepository postRepository;
+    private final SpringCommentPublisher commentPublisher;
 
 
     @Transactional
@@ -42,7 +45,11 @@ public class CommentServiceImpl implements CommentService {
         Comment newComment = commentMapper.toEntity(createCommentDto);
         newComment.setPost(post);
         newComment.setAuthorId(userContext.getUserId());
-        return commentMapper.toDto(commentRepository.save(newComment));
+        ResponseCommentDto dto = commentMapper.toDto(commentRepository.save(newComment));
+
+        commentPublisher.handleCommentCreated(new ModelEventDto(userContext.getUserId(), newComment.getId()));
+
+        return dto;
     }
 
     @Transactional
