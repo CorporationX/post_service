@@ -27,6 +27,7 @@ public class PostEventListener {
     private final UserCacheRepository userCacheRepository;
     private final UserServiceClient userServiceClient;
 
+
     @KafkaListener(
             topics = "${kafka.topic.post-event}",
             containerFactory = "concurrentKafkaPostListenerFactory")
