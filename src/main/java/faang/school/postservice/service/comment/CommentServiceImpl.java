@@ -1,11 +1,11 @@
 package faang.school.postservice.service.comment;
 
 import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.cache.CacheUserDto;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CommentEvent;
 import faang.school.postservice.dto.comment.CreateCommentDto;
 import faang.school.postservice.dto.comment.UpdateCommentDto;
-import faang.school.postservice.dto.user.CacheUserDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.mapper.UserMapper;
@@ -15,7 +15,7 @@ import faang.school.postservice.publisher.kafka.KafkaCommentProducer;
 import faang.school.postservice.publisher.redis.CommentEventPublisher;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.repository.redis.RedisUserRepository;
+import faang.school.postservice.repository.cashe.RedisUserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,8 +38,8 @@ public class CommentServiceImpl implements CommentService {
     private final UserServiceClient userServiceClient;
     private final RedisUserRepository redisUserRepository;
 
-    @Value("${spring.redis.user-repository.ttl-days:1}")
-    private long ttlDays;
+    @Value("${spring.data.redis.user-repository.ttl-days:1}")
+    private int ttlDays;
 
     @Override
     public CommentDto addComment(Long postId, CreateCommentDto commentDto, Long userId) {

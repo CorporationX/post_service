@@ -4,6 +4,7 @@ import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.post.CreatePostDto;
 import faang.school.postservice.dto.post.PostDto;
 import faang.school.postservice.dto.post.UpdatePostDto;
+import faang.school.postservice.messaging.KafkaPostViewProducer;
 import faang.school.postservice.service.post.PostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,7 @@ import java.util.List;
 public class PostController {
     private final UserContext userContext;
     private final PostService postService;
+    private final KafkaPostViewProducer kafkaPostViewProducer;
 
     @PostMapping("/")
     public ResponseEntity<PostDto> createPost(@RequestBody @Valid CreatePostDto createPostDto) throws Exception {
@@ -50,7 +52,9 @@ public class PostController {
 
     @GetMapping("/{id}")
     public PostDto getPostById(@PathVariable("id") long postId) {
-        return postService.getPostById(postId);
+        PostDto postDto = postService.getPostById(postId);
+        kafkaPostViewProducer.sendPostView(postId, userContext.getUserId());
+        return postDto;
     }
 
     @GetMapping("/unpublished")

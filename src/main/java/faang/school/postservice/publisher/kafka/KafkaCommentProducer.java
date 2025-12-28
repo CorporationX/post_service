@@ -14,7 +14,7 @@ public class KafkaCommentProducer {
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    @Value("${kafka.topic.comment.name:comment-topic}")
+    @Value("${spring.data.kafka.topic.comment.name}")
     private String commentTopicName;
 
     public void sendCommentEvent(CommentEvent event) {
