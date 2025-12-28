@@ -5,6 +5,7 @@ import faang.school.postservice.dto.cache.UserCacheDto;
 import faang.school.postservice.dto.event.PostPublishEventDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.repository.cache.FeedCacheRepository;
+import faang.school.postservice.repository.cache.PostCacheRepository;
 import faang.school.postservice.repository.cache.UserCacheRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -50,6 +51,9 @@ public class PostEventListenerTest {
 
     @Mock
     private UserCacheRepository userCacheRepository;
+
+    @Mock
+    private PostCacheRepository postCacheRepository;
 
     @Mock
     private Acknowledgment acknowledgment;
