@@ -22,7 +22,7 @@ public class PublishCommentEventAspect {
     private final AnalysisCommentsProducer analysisCommentsProducer;
 
     @AfterReturning(
-            pointcut = "@annotation(faang.school.postservice.aop.PublishCommentEvent)",
+            pointcut = "@annotation(faang.school.postservice.aop.comment.PublishCommentEvent)",
             returning = "result"
     )
     public void publishCommentEvent(JoinPoint joinPoint, Object result) {

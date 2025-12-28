@@ -51,6 +51,7 @@ spring:
       post-view: analytics.post-view
       analytics: analytics.comment-analysis
       post-feed: post.post-feed
+      comments-feed: comment.feet
 
   task:
     execution:
@@ -90,3 +91,7 @@ app:
 
 feed:
   batch-size: 20
+
+post:
+  comments:
+    max-size: 3
