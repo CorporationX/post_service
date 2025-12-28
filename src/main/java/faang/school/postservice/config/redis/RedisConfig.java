@@ -51,6 +51,22 @@ public class RedisConfig {
         return baseConfigRedis(config);
     }
 
+    @Bean(value = "forRedisTemplateAuthorComment")
+    public LettuceConnectionFactory redisConnectionFactoryAuthorComment() {
+        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(redisProperties.getHost(), redisProperties.getPort());
+        config.setDatabase(3);
+
+        return baseConfigRedis(config);
+    }
+
+    @Bean(value = "forRedisTemplatePostForComments")
+    public LettuceConnectionFactory redisConnectionFactoryPostForComments() {
+        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(redisProperties.getHost(), redisProperties.getPort());
+        config.setDatabase(4);
+
+        return baseConfigRedis(config);
+    }
+
     @Bean(name = "redisTemplate")
     public RedisTemplate<String, Object> redisTemplate(@Qualifier("forRedisTemplate") RedisConnectionFactory connectionFactory) {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
@@ -94,6 +110,47 @@ public class RedisConfig {
 
     @Bean(name = "redisTemplateAuthorPost")
     public RedisTemplate<String, Object> redisTemplateAuthorPosts(@Qualifier("forRedisTemplateAuthorPost") RedisConnectionFactory connectionFactory) {
+        RedisTemplate<String, Object> template = new RedisTemplate<>();
+        template.setConnectionFactory(connectionFactory);
+
+        StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
+        Jackson2JsonRedisSerializer<Object> jsonSerializer = new Jackson2JsonRedisSerializer<>(Object.class);
+
+
+        template.setKeySerializer(stringRedisSerializer);
+        template.setValueSerializer(jsonSerializer);
+
+        template.setHashKeySerializer(stringRedisSerializer);
+        template.setHashValueSerializer(stringRedisSerializer);
+
+        template.setEnableTransactionSupport(false);
+        template.setExposeConnection(false);
+
+        return template;
+    }
+
+    @Bean(name = "redisTemplateAuthorComment")
+    public RedisTemplate<String, Object> redisTemplateAuthorComment(@Qualifier("forRedisTemplateAuthorComment") RedisConnectionFactory connectionFactory) {
+        RedisTemplate<String, Object> template = new RedisTemplate<>();
+        template.setConnectionFactory(connectionFactory);
+
+        StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
+        Jackson2JsonRedisSerializer<Object> jsonSerializer = new Jackson2JsonRedisSerializer<>(Object.class);
+
+        template.setKeySerializer(stringRedisSerializer);
+        template.setValueSerializer(jsonSerializer);
+
+        template.setHashKeySerializer(stringRedisSerializer);
+        template.setHashValueSerializer(stringRedisSerializer);
+
+        template.setEnableTransactionSupport(false);
+        template.setExposeConnection(false);
+
+        return template;
+    }
+
+    @Bean(name = "redisTemplatePostForComments")
+    public RedisTemplate<String, Object> redisTemplatePostForComments(@Qualifier("forRedisTemplatePostForComments") RedisConnectionFactory connectionFactory) {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
 

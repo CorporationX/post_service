@@ -1,26 +1,21 @@
 package faang.school.postservice.service.comment;
 
-import faang.school.postservice.aop.PublishCommentEvent;
+import faang.school.postservice.aop.comment.PublishCommentEvent;
 import faang.school.postservice.client.UserServiceClient;
-import faang.school.postservice.config.redis.AuthorCache;
 import faang.school.postservice.dto.comment.CommentCreateDto;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CommentUpdateDto;
 import faang.school.postservice.dto.common.PageResponse;
-import faang.school.postservice.dto.kafka.CommentEventDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.ValidationException;
 import faang.school.postservice.mapper.CommentMapper;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.producer.CommentEventProducer;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.repository.cache.AuthorCacheRepository;
 import faang.school.postservice.validator.comment.CommentValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -34,11 +29,6 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
-    private final AuthorCacheRepository authorCacheRepository;
-    private final CommentEventProducer commentEventProducer;
-
-    @Value("${cache.redis.author.ttl-seconds}")
-    private Long authorTtlSeconds;
 
     @PublishCommentEvent
     @Transactional

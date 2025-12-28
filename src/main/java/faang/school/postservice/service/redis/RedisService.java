@@ -1,9 +1,9 @@
 package faang.school.postservice.service.redis;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import faang.school.postservice.dto.kafka.CommentEventDto;
 import faang.school.postservice.dto.kafka.PostForFeedDto;
 import faang.school.postservice.dto.post.PostV2Dto;
-import faang.school.postservice.model.Post;
 import faang.school.postservice.model.Post;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -21,14 +21,17 @@ import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
-
 public class RedisService {
     private static final String KEY_PREFIX_BY_POST = "post_";
     private static final String KEY_PREFIX_BY_AUTHOR_POST = "posts_by_author_";
     private static final String KEY_PREFIX_BY_POST_FEED = "post_feed_by_subscriber_";
+    private static final String KEY_PREFIX_BY_POST_COMMENTS = "post_comments_";
 
     @Value("${spring.data.redis.post-feed.maximum-feed:500}")
     private Integer maxPostsPerSubscriber;
+
+    @Value("${post.comments.max-size:3}")
+    private Integer maxCommentsPerPost;
 
     @Value("${spring.data.redis.ttl.post}")
     private Long ttlAuthorPostInRedis;
@@ -36,16 +39,19 @@ public class RedisService {
     private final RedisTemplate<String, PostV2Dto> redisTemplatePosts;
     private final RedisTemplate<String, Object> redisTemplateAuthorPosts;
     private final RedisTemplate<String, Object> redisTemplatePostFeed;
+    private final RedisTemplate<String, Object> redisTemplatePostForComments;
     private final ObjectMapper objectMapperPostFeed;
 
     public RedisService(@Qualifier("redisTemplatePost") RedisTemplate<String, PostV2Dto> redisTemplatePosts,
                         @Qualifier("redisTemplateAuthorPost") RedisTemplate<String, Object> redisTemplateAuthorPosts,
                         @Qualifier("redisTemplate") RedisTemplate<String, Object> redisTemplatePostFeed,
+                        @Qualifier("redisTemplatePostForComments") RedisTemplate<String, Object> redisTemplatePostForComments,
                         ObjectMapper objectMapperPostFeed) {
         this.redisTemplatePosts = redisTemplatePosts;
         this.redisTemplateAuthorPosts = redisTemplateAuthorPosts;
         this.redisTemplatePostFeed = redisTemplatePostFeed;
         this.objectMapperPostFeed = objectMapperPostFeed;
+        this.redisTemplatePostForComments = redisTemplatePostForComments;
     }
 
     @Async("postEventTaskExecutor")
@@ -79,7 +85,20 @@ public class RedisService {
         }
     }
 
-    public List<Long> getPostsByUserId(Long subscriberIds) {
+    public void savePostForComments(CommentEventDto event) {
+        String key = KEY_PREFIX_BY_POST_COMMENTS + event.postId();
+        try {
+            redisTemplatePostForComments.opsForZSet().add(key, event.commentId(), -System.currentTimeMillis());
+            Long currentSize = redisTemplatePostForComments.opsForZSet().size(key);
+            if (currentSize != null && currentSize >= maxCommentsPerPost) {
+                redisTemplatePostForComments.opsForZSet().removeRange(key, maxCommentsPerPost, -1);
+            }
+        } catch (Exception e) {
+            log.error("Error while saving post for subscriber {}", event.postId(), e);
+        }
+    }
+
+    public List getPostsByUserId(Long subscriberIds) {
         Object value = redisTemplatePostFeed.opsForZSet().range(KEY_PREFIX_BY_POST_FEED + subscriberIds, 0, -1);
         if (value != null) {
             return objectMapperPostFeed.convertValue(value, List.class);
