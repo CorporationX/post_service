@@ -59,12 +59,24 @@ public class RedisConfig {
         return baseConfigRedis(config);
     }
 
-    @Bean(name = "redisTemplate")
-    public RedisTemplate<String, Object> redisTemplate(@Qualifier("forRedisTemplate") RedisConnectionFactory connectionFactory) {
+    @Bean(name = {"redisTemplate", "redisTemplateDefault"})
+    public RedisTemplate<String, Object> redisTemplateDefault(@Qualifier("forRedisTemplate") RedisConnectionFactory connectionFactory) {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
+        template.setConnectionFactory(connectionFactory);
 
+        StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
+        Jackson2JsonRedisSerializer<Object> jsonSerializer = new Jackson2JsonRedisSerializer<>(Object.class);
 
-        return baseConfigRedis(config);
+        template.setKeySerializer(stringRedisSerializer);
+        template.setValueSerializer(jsonSerializer);
+        template.setHashKeySerializer(stringRedisSerializer);
+        template.setHashValueSerializer(jsonSerializer);
+
+        template.setEnableTransactionSupport(false);
+        template.setExposeConnection(false);
+        template.afterPropertiesSet();
+
+        return template;
     }
 
     @Bean(name = "redisTemplateFeed")
@@ -80,27 +92,6 @@ public class RedisConfig {
 
         template.setHashKeySerializer(stringRedisSerializer);
         template.setHashValueSerializer(jsonSerializer);
-
-        template.setEnableTransactionSupport(false);
-        template.setExposeConnection(false);
-
-        return template;
-    }
-
-    @Bean(name = "redisTemplatePost")
-    public RedisTemplate<String, PostV2Dto> redisTemplate(@Qualifier("forRedisTemplate") RedisConnectionFactory connectionFactory,
-                                                              ObjectMapper objectMapper) {
-        RedisTemplate<String, PostV2Dto> template = new RedisTemplate<>();
-        template.setConnectionFactory(connectionFactory);
-
-        StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
-        Jackson2JsonRedisSerializer<Object> jsonSerializer = new Jackson2JsonRedisSerializer<>(Object.class);
-
-        template.setKeySerializer(stringRedisSerializer);
-        template.setValueSerializer(jsonSerializer);
-
-        template.setHashKeySerializer(stringRedisSerializer);
-        template.setHashValueSerializer(stringRedisSerializer);
 
         template.setEnableTransactionSupport(false);
         template.setExposeConnection(false);
