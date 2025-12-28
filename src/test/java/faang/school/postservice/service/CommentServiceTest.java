@@ -10,10 +10,8 @@ import faang.school.postservice.exception.ResourceNotFoundException;
 import faang.school.postservice.exception.ValidationException;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
-import faang.school.postservice.producer.CommentEventProducer;
 import faang.school.postservice.repository.CommentRepository;
 import faang.school.postservice.repository.PostRepository;
-import faang.school.postservice.repository.cache.AuthorCacheRepository;
 import faang.school.postservice.service.comment.CommentService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,10 +42,6 @@ class CommentServiceTest {
     private CommentRepository commentRepository;
     @Mock
     private PostRepository postRepository;
-    @Mock
-    private AuthorCacheRepository authorCacheRepository;
-    @Mock
-    private CommentEventProducer commentEventProducer;
     @Mock
     private UserServiceClient userServiceClient;
 
