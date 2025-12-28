@@ -47,7 +47,10 @@ spring:
         replication: 1
 
   kafka:
-    bootstrap-servers: localhost:9092
+    partitions: 6
+    replicas: 1
+    topic:
+      name: post_views
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
