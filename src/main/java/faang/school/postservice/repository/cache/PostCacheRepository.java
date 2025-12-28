@@ -52,6 +52,19 @@ public class PostCacheRepository {
         return result;
     }
 
+    private String commentsKey(Long postId) {
+        return keyPrefix + postId + ":comments";
+    }
+
+    public Long incrementCommentCount(Long postId) {
+        String key = commentsKey(postId);
+        Long result = redisTemplate.opsForValue().increment(key);
+        if (result != null && result == 1L) {
+            redisTemplate.expire(key, ttlDays, TimeUnit.DAYS);
+        }
+        return result;
+    }
+
     public Optional<PostCacheDto> findById(Long postId) {
         String key = keyPrefix + postId;
         String json = redisTemplate.opsForValue().get(key);
@@ -61,7 +74,8 @@ public class PostCacheRepository {
         try {
             PostCacheDto postCacheDto = objectMapper.readValue(json, PostCacheDto.class);
             long likesCount = getLikesCount(postId);
-            return Optional.of(getPostWithLikesCount(postCacheDto, likesCount));
+            long commentsCount = getCommentsCount(postId);
+            return Optional.of(getPostWithCounters(postCacheDto, likesCount, commentsCount));
         } catch (Exception e) {
             log.error("Failed to deserialize post {}", postId, e);
             return Optional.empty();
@@ -73,13 +87,19 @@ public class PostCacheRepository {
         return likesCount == null ? 0L : Long.parseLong(likesCount);
     }
 
-    private PostCacheDto getPostWithLikesCount(PostCacheDto postCacheDto, long likesCount) {
+    private long getCommentsCount(Long postId) {
+        String commentsCount = redisTemplate.opsForValue().get(commentsKey(postId));
+        return commentsCount == null ? 0L : Long.parseLong(commentsCount);
+    }
+
+    private PostCacheDto getPostWithCounters(PostCacheDto postCacheDto, long likesCount, long commentsCount) {
         return PostCacheDto.builder()
                 .id(postCacheDto.id())
                 .authorId(postCacheDto.authorId())
                 .content(postCacheDto.content())
                 .createdAt(postCacheDto.createdAt())
                 .likeCount(likesCount)
+                .commentCount(commentsCount)
                 .build();
     }
 }
