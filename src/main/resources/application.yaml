@@ -9,7 +9,25 @@ spring:
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       acks: all
       properties:
-        spring.json.add.type.headers: false
+        spring.json.add.type.headers: true
+        spring.json.type.mapping: postCreated:faang.school.postservice.dto.post.PostCreatedEventDto
+
+    consumer:
+      group-id: post-service-feed
+      enable-auto-commit: false
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.use.type.headers: true
+        spring.json.trusted.packages: "faang.school.postservice.dto.post"
+        spring.json.value.default.type: faang.school.postservice.dto.post.PostCreatedEventDto
+        spring.json.type.mapping: postCreated:faang.school.postservice.dto.post.PostCreatedEventDto
+
+    listener:
+      ack-mode: manual
+      # чтобы не прилетали пачки сообщений при ручном ack (обычно в учебных проектах так проще)
+      type: single
 
   servlet:
     multipart:
@@ -99,6 +117,10 @@ app:
       max-file-size-mb: 5
       max-per-post: 10
       type: "IMAGE"
+  feed:
+    redis:
+      max-size: 500
+      key-prefix: "feed:v1:"
 
 post-correcter:
   cron: "0 0 3 * * *" # every day at 3:00
