@@ -1,6 +1,6 @@
 package faang.school.postservice.config.kafka;
 
-import faang.school.postservice.dto.event.CommentEvent;
+import faang.school.postservice.dto.event.CommentEventDto;
 import faang.school.postservice.dto.event.LikeEventDto;
 import faang.school.postservice.dto.event.PostPublishEventDto;
 import faang.school.postservice.event.UserBanEvent;
@@ -51,12 +51,12 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ProducerFactory<Long, CommentEvent> longCommentEventProducerFactory() {
+    public ProducerFactory<Long, CommentEventDto> longCommentEventProducerFactory() {
         return new DefaultKafkaProducerFactory<>(getConfigProps(LongSerializer.class));
     }
 
     @Bean
-    public KafkaTemplate<Long, CommentEvent> longCommentEventKafkaTemplate() {
+    public KafkaTemplate<Long, CommentEventDto> longCommentEventKafkaTemplate() {
         return new KafkaTemplate<>(longCommentEventProducerFactory());
     }
 
@@ -137,4 +137,17 @@ public class KafkaConfig {
         return concurrentKafkaListenerContainerFactory;
     }
 
+    @Bean
+    public ConsumerFactory<String, CommentEventDto> commentEventConsumerFactory() {
+        return new DefaultKafkaConsumerFactory<>(getConsumerConfigProps(groupId));
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, CommentEventDto> concurrentKafkaCommentListenerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, CommentEventDto> concurrentKafkaListenerContainerFactory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+        concurrentKafkaListenerContainerFactory.setConsumerFactory(commentEventConsumerFactory());
+        concurrentKafkaListenerContainerFactory.getContainerProperties().setAckMode(ackMode);
+        return concurrentKafkaListenerContainerFactory;
+    }
 }

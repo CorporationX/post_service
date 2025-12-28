@@ -4,7 +4,7 @@ import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.comment.request.RequestCreateComment;
 import faang.school.postservice.dto.comment.request.RequestUpdateComment;
 import faang.school.postservice.dto.comment.response.ResponseComment;
-import faang.school.postservice.dto.event.CommentEvent;
+import faang.school.postservice.dto.event.CommentEventDto;
 import faang.school.postservice.exception.ResourceNotFoundException;
 import faang.school.postservice.mapper.comment.CommentMapper;
 import faang.school.postservice.model.Comment;
@@ -57,7 +57,7 @@ public class CommentServiceImpl implements CommentService {
                 savedComment.getContent(),
                 LocalDateTime.now());
 
-        CommentEvent event = new CommentEvent(
+        CommentEventDto event = new CommentEventDto(
                 authorId,
                 postId,
                 savedComment.getId(),
