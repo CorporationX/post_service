@@ -89,6 +89,9 @@ app:
   moderation:
     time: 30000
 
+feed:
+  batch-size: 20
+
 post:
   comments:
     max-size: 3

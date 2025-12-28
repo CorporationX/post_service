@@ -51,24 +51,36 @@ public class RedisConfig {
         return baseConfigRedis(config);
     }
 
-    @Bean(value = "forRedisTemplateAuthorComment")
-    public LettuceConnectionFactory redisConnectionFactoryAuthorComment() {
+    @Bean(value = "forRedisTemplateFeed")
+    public LettuceConnectionFactory redisConnectionFactoryFeed() {
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(redisProperties.getHost(), redisProperties.getPort());
         config.setDatabase(3);
 
         return baseConfigRedis(config);
     }
 
-    @Bean(value = "forRedisTemplatePostForComments")
-    public LettuceConnectionFactory redisConnectionFactoryPostForComments() {
-        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(redisProperties.getHost(), redisProperties.getPort());
-        config.setDatabase(4);
+    @Bean(name = {"redisTemplate", "redisTemplateDefault"})
+    public RedisTemplate<String, Object> redisTemplateDefault(@Qualifier("forRedisTemplate") RedisConnectionFactory connectionFactory) {
+        RedisTemplate<String, Object> template = new RedisTemplate<>();
+        template.setConnectionFactory(connectionFactory);
 
-        return baseConfigRedis(config);
+        StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
+        Jackson2JsonRedisSerializer<Object> jsonSerializer = new Jackson2JsonRedisSerializer<>(Object.class);
+
+        template.setKeySerializer(stringRedisSerializer);
+        template.setValueSerializer(jsonSerializer);
+        template.setHashKeySerializer(stringRedisSerializer);
+        template.setHashValueSerializer(jsonSerializer);
+
+        template.setEnableTransactionSupport(false);
+        template.setExposeConnection(false);
+        template.afterPropertiesSet();
+
+        return template;
     }
 
-    @Bean(name = "redisTemplate")
-    public RedisTemplate<String, Object> redisTemplate(@Qualifier("forRedisTemplate") RedisConnectionFactory connectionFactory) {
+    @Bean(name = "redisTemplateFeed")
+    public RedisTemplate<String, Object> redisTemplateFeed(@Qualifier("forRedisTemplateFeed") RedisConnectionFactory connectionFactory) {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
 
@@ -79,7 +91,7 @@ public class RedisConfig {
         template.setValueSerializer(jsonSerializer);
 
         template.setHashKeySerializer(stringRedisSerializer);
-        template.setHashValueSerializer(stringRedisSerializer);
+        template.setHashValueSerializer(jsonSerializer);
 
         template.setEnableTransactionSupport(false);
         template.setExposeConnection(false);
