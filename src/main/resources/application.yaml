@@ -110,3 +110,4 @@ redis:
     user:
       key-prefix: "user:"
       ttl-days: 1
+
