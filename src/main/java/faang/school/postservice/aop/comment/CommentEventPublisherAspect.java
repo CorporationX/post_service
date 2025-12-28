@@ -11,7 +11,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 @Aspect
@@ -20,7 +19,6 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class CommentEventPublisherAspect {
 
-    private final ApplicationEventPublisher eventPublisher;
     private final KafkaProducerService kafkaProducerService;
 
     @Value("${spring.kafka.topics.comments-feed}")

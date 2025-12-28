@@ -26,6 +26,7 @@ public class RedisService {
     private static final String KEY_PREFIX_BY_AUTHOR_POST = "posts_by_author_";
     private static final String KEY_PREFIX_BY_POST_FEED = "post_feed_by_subscriber_";
     private static final String KEY_PREFIX_BY_POST_COMMENTS = "post_comments_";
+    private static final String KEY_PREFIX_BY_AUTHOR_COMMENT = "comment_by_author_";
 
     @Value("${spring.data.redis.post-feed.maximum-feed:500}")
     private Integer maxPostsPerSubscriber;
@@ -34,24 +35,27 @@ public class RedisService {
     private Integer maxCommentsPerPost;
 
     @Value("${spring.data.redis.ttl.post}")
-    private Long ttlAuthorPostInRedis;
+    private Long ttlAuthorInRedis;
 
     private final RedisTemplate<String, PostV2Dto> redisTemplatePosts;
     private final RedisTemplate<String, Object> redisTemplateAuthorPosts;
     private final RedisTemplate<String, Object> redisTemplatePostFeed;
     private final RedisTemplate<String, Object> redisTemplatePostForComments;
     private final ObjectMapper objectMapperPostFeed;
+    private final RedisTemplate<String, Object> redisTemplateAuthorComment;
 
     public RedisService(@Qualifier("redisTemplatePost") RedisTemplate<String, PostV2Dto> redisTemplatePosts,
                         @Qualifier("redisTemplateAuthorPost") RedisTemplate<String, Object> redisTemplateAuthorPosts,
                         @Qualifier("redisTemplate") RedisTemplate<String, Object> redisTemplatePostFeed,
                         @Qualifier("redisTemplatePostForComments") RedisTemplate<String, Object> redisTemplatePostForComments,
+                        @Qualifier("redisTemplateAuthorComment") RedisTemplate<String, Object> redisTemplateAuthorComment,
                         ObjectMapper objectMapperPostFeed) {
         this.redisTemplatePosts = redisTemplatePosts;
         this.redisTemplateAuthorPosts = redisTemplateAuthorPosts;
         this.redisTemplatePostFeed = redisTemplatePostFeed;
         this.objectMapperPostFeed = objectMapperPostFeed;
         this.redisTemplatePostForComments = redisTemplatePostForComments;
+        this.redisTemplateAuthorComment = redisTemplateAuthorComment;
     }
 
     @Async("postEventTaskExecutor")
@@ -59,7 +63,7 @@ public class RedisService {
         String key = KEY_PREFIX_BY_POST + postV2Dto.id();
 
         try {
-            redisTemplatePosts.opsForValue().set(key, postV2Dto, ttlAuthorPostInRedis, TimeUnit.DAYS);
+            redisTemplatePosts.opsForValue().set(key, postV2Dto, ttlAuthorInRedis, TimeUnit.DAYS);
             log.info("Saved post into redis: {}", postV2Dto);
         } catch (Exception e) {
             log.error("Error while saving post into redis", e);
@@ -69,7 +73,7 @@ public class RedisService {
     @Async("postEventTaskExecutor")
     public void saveAuthorPosts(Post post) {
         try {
-            redisTemplateAuthorPosts.opsForValue().set(KEY_PREFIX_BY_AUTHOR_POST + post.getId(), post.getAuthorId(), ttlAuthorPostInRedis, TimeUnit.DAYS);
+            redisTemplateAuthorPosts.opsForValue().set(KEY_PREFIX_BY_AUTHOR_POST + post.getId(), post.getAuthorId(), ttlAuthorInRedis, TimeUnit.DAYS);
             log.info("Author {} posts {} saved to redis", post.getAuthorId(), post.getId());
         } catch (Exception e) {
             log.error("Error while saving author posts", e);
@@ -85,6 +89,7 @@ public class RedisService {
         }
     }
 
+    @Async("postEventTaskExecutor")
     public void savePostForComments(CommentEventDto event) {
         String key = KEY_PREFIX_BY_POST_COMMENTS + event.postId();
         try {
@@ -95,6 +100,16 @@ public class RedisService {
             }
         } catch (Exception e) {
             log.error("Error while saving post for subscriber {}", event.postId(), e);
+        }
+    }
+
+    @Async("postEventTaskExecutor")
+    public void saveAuthorComment(CommentEventDto event) {
+        try {
+            redisTemplateAuthorComment.opsForValue().set(KEY_PREFIX_BY_AUTHOR_COMMENT + event.commentId(), event.commentAuthorId(), ttlAuthorInRedis, TimeUnit.DAYS);
+            log.info("Author {} comment {} saved to redis", event.commentAuthorId(), event.postId());
+        } catch (Exception e) {
+            log.error("Error while saving author comment", e);
         }
     }
 
