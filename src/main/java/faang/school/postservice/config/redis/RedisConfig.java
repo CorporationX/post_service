@@ -1,7 +1,6 @@
 package faang.school.postservice.config.redis;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import faang.school.postservice.dto.post.PostV2Dto;
+
 import io.lettuce.core.ClientOptions;
 import io.lettuce.core.SocketOptions;
 import io.lettuce.core.TimeoutOptions;
@@ -92,28 +91,6 @@ public class RedisConfig {
         return template;
     }
 
-    @Bean(name = "redisTemplateAuthorPost")
-    public RedisTemplate<String, Object> redisTemplateAuthorPosts(@Qualifier("forRedisTemplateAuthorPost") RedisConnectionFactory connectionFactory) {
-        RedisTemplate<String, Object> template = new RedisTemplate<>();
-        template.setConnectionFactory(connectionFactory);
-
-        StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
-        Jackson2JsonRedisSerializer<Object> jsonSerializer = new Jackson2JsonRedisSerializer<>(Object.class);
-
-
-        template.setKeySerializer(stringRedisSerializer);
-        template.setValueSerializer(jsonSerializer);
-
-        template.setHashKeySerializer(stringRedisSerializer);
-        template.setHashValueSerializer(stringRedisSerializer);
-
-        template.setEnableTransactionSupport(false);
-        template.setExposeConnection(false);
-
-        return template;
-    }
-
-    private LettuceConnectionFactory baseConfigRedis(RedisStandaloneConfiguration config){
         SocketOptions socketOptions = SocketOptions.builder()
                 .connectTimeout(Duration.ofMillis(redisProperties.getConnectTimeout()))
                 .keepAlive(true)
@@ -146,5 +123,26 @@ public class RedisConfig {
                 .poolConfig(genericObjectPoolConfig)
                 .build();
         return new LettuceConnectionFactory(config, poolConfig);
+    }
+
+    @Bean(name = "redisTemplateAuthorPost")
+    public RedisTemplate<String, Object> redisTemplateAuthorPosts(RedisConnectionFactory connectionFactory) {
+        RedisTemplate<String, Object> template = new RedisTemplate<>();
+        template.setConnectionFactory(connectionFactory);
+
+        StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
+        Jackson2JsonRedisSerializer<Object> jsonSerializer = new Jackson2JsonRedisSerializer<>(Object.class);
+
+
+        template.setKeySerializer(stringRedisSerializer);
+        template.setValueSerializer(jsonSerializer);
+
+        template.setHashKeySerializer(stringRedisSerializer);
+        template.setHashValueSerializer(stringRedisSerializer);
+
+        template.setEnableTransactionSupport(false);
+        template.setExposeConnection(false);
+
+        return template;
     }
 }

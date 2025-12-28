@@ -7,6 +7,7 @@ import faang.school.postservice.dto.comment.CommentCreateDto;
 import faang.school.postservice.dto.comment.CommentDto;
 import faang.school.postservice.dto.comment.CommentUpdateDto;
 import faang.school.postservice.dto.common.PageResponse;
+import faang.school.postservice.dto.kafka.CommentEventDto;
 import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.exception.ValidationException;
 import faang.school.postservice.mapper.CommentMapper;
@@ -33,10 +34,6 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final UserServiceClient userServiceClient;
-    private final AuthorCacheRepository authorCacheRepository;
-
-    @Value("${cache.redis.author.ttl-seconds}")
-    private Long authorTtlSeconds;
 
     @PublishCommentEvent
     @Transactional
@@ -49,16 +46,6 @@ public class CommentService {
 
         Comment comment = CommentMapper.toEntity(commentCreateDto, post, userId);
         comment = commentRepository.save(comment);
-
-        authorCacheRepository.save(
-                new AuthorCache(
-                        user.id(),
-                        user.username(),
-                        user.email(),
-                        user.active(),
-                        authorTtlSeconds
-                )
-        );
 
         log.info("Creating comment for postId={} by userId={}", post.getId(), userId);
         return comment;
