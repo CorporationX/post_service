@@ -151,10 +151,10 @@ class CommentServiceImplTest {
         verify(commentMapper, times(1)).toDto(testComment);
 
         verify(eventPublisher, times(1)).publish(argThat(event ->
-                event.getAuthorId() == testComment.getAuthorId() &&
-                        event.getPostId() == testPost.getId() &&
-                        event.getCommentId() == testComment.getId() &&
-                        event.getContent().equals(testComment.getContent())
+                event.authorId() == testComment.getAuthorId() &&
+                        event.postId() == testPost.getId() &&
+                        event.commentId() == testComment.getId() &&
+                        event.content().equals(testComment.getContent())
         ));
 
         verify(commentEventPublisher, times(1)).publish(
