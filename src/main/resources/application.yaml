@@ -51,6 +51,7 @@ spring:
       post-view: analytics.post-view
       analytics: analytics.comment-analysis
       post-feed: post.post-feed
+      comments-feed: comment.feet
 
   task:
     execution:

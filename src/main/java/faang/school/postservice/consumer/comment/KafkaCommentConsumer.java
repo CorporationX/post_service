@@ -18,7 +18,7 @@ public class KafkaCommentConsumer {
     private final RedisService redisService;
     private final ObjectMapper objectMapper;
 
-    @KafkaListener(topics = "${kafka.topic.comment}", groupId = "comments-group")
+    @KafkaListener(topics = "${spring.kafka.topics.comments-feed}", groupId = "comments-group")
     public void listen(String message, Acknowledgment ack) {
         try {
             CommentEventDto event = objectMapper.readValue(message, CommentEventDto.class);
