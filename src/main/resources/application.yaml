@@ -50,6 +50,9 @@ kafka:
     user-ban: user_ban
     comment-event: comment_events
     post: post
+    feed-heater: feed-heater
+  consumer-group:
+    feed-heater: feed-heater-group
 
 server:
   port: 8081
@@ -109,8 +112,14 @@ cache:
     ttl-days: 7
   posts:
     collection: posts
+    ttl-days: 7
   users:
     collection: users
+    ttl-days: 7
 
 feed:
   posts-quantity-to-return: 20
+
+feed-heater:
+  size: 500
+  followers-partition-size: 50000

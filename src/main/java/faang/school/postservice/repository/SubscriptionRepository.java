@@ -14,5 +14,8 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
             """)
     List<Long> findFollowerIdsByFolloweeId(long followeeId);
 
-
+    @Query(nativeQuery = true, value = """
+               SELECT follower_id FROM subscription
+            """)
+    List<Long> findFollowerIds();
 }

@@ -1,8 +1,8 @@
 package faang.school.postservice.service.feed;
 
-import faang.school.postservice.cache.AuthorCacheRepository;
-import faang.school.postservice.cache.FeedCacheRepository;
-import faang.school.postservice.cache.PostCacheRepository;
+import faang.school.postservice.cache.repository.AuthorCacheRepository;
+import faang.school.postservice.cache.repository.FeedCacheRepository;
+import faang.school.postservice.cache.repository.PostCacheRepository;
 import faang.school.postservice.cache.model.author.AuthorCache;
 import faang.school.postservice.cache.model.post.PostCache;
 import faang.school.postservice.config.context.UserContext;

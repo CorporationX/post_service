@@ -1,6 +1,6 @@
 package faang.school.postservice.listener;
 
-import faang.school.postservice.cache.FeedCacheRepository;
+import faang.school.postservice.cache.repository.FeedCacheRepository;
 import faang.school.postservice.event.PostEvent;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

@@ -1,4 +1,4 @@
-package faang.school.postservice.cache;
+package faang.school.postservice.cache.repository;
 
 import faang.school.postservice.cache.model.author.AuthorCache;
 import lombok.RequiredArgsConstructor;
@@ -7,8 +7,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Repository
@@ -18,7 +21,38 @@ public class AuthorCacheRepository {
     @Value("${cache.users.collection}")
     private String collection;
 
+    @Value("${cache.users.ttl-days}")
+    private int ttlDays;
+
     private final StringRedisTemplate redisTemplate;
+
+    public void save(AuthorCache authorCache) {
+        String key = collection + authorCache.userId();
+
+        Map<String, String> hashData = new HashMap<>() {{
+            put(AuthorCache.Fields.userId, authorCache.userId().toString());
+            put(AuthorCache.Fields.username, authorCache.username());
+        }};
+
+        redisTemplate.opsForHash().putAll(key, hashData);
+        log.debug("Saved new author to cache. Key {}, id {}", key, authorCache.userId());
+
+        redisTemplate.expire(key, ttlDays, TimeUnit.DAYS);
+    }
+
+    public void saveAll(List<AuthorCache> authorCaches) {
+        for (AuthorCache cache : authorCaches) {
+            String key = collection + cache.userId();
+
+            Map<String, String> hashData = new HashMap<>() {{
+                put(AuthorCache.Fields.userId, cache.userId().toString());
+                put(AuthorCache.Fields.username, cache.username());
+            }};
+
+            redisTemplate.opsForHash().putAll(key, hashData);
+            redisTemplate.expire(key, ttlDays, TimeUnit.DAYS);
+        }
+    }
 
     public Optional<AuthorCache> get(Long authorId) {
         String key = collection + authorId;

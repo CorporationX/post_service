@@ -32,7 +32,7 @@ public interface PostRepository extends CrudRepository<Post, Long> {
     @Query("SELECT p FROM Post p WHERE p.verified IS NULL")
     Page<Post> findUnmoderated(Pageable pageable);
 
-    @Query("""
+    @Query( """
             SELECT p FROM Post p WHERE p.authorId IN (
                 SELECT s.followeeId FROM Subscription s WHERE s.followerId = :followerId
             )
@@ -44,6 +44,18 @@ public interface PostRepository extends CrudRepository<Post, Long> {
     List<Post> findFeedPosts(
             @Param("followerId") Long followerId,
             @Param("lastPublishedAt") LocalDateTime lastPublishedAt,
+            Pageable pageable
+    );
+
+    @Query("""
+    SELECT p FROM Post p 
+    WHERE p.authorId IN (SELECT s.followeeId FROM Subscription s WHERE s.followerId = :followerId)
+    AND p.published = true 
+    AND p.deleted = false
+    ORDER BY p.publishedAt DESC
+    """)
+    List<Post> findFeedPostsForHeating(
+            @Param("followerId") Long followerId,
             Pageable pageable
     );
 
