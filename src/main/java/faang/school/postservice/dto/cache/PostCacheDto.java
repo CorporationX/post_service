@@ -1,6 +1,5 @@
 package faang.school.postservice.dto.cache;
 
-
 import lombok.Builder;
 
 import java.time.Instant;
@@ -10,5 +9,7 @@ public record PostCacheDto(
         Long id,
         Long authorId,
         String content,
-        Instant createdAt) {
+        Instant createdAt,
+        Long likeCount
+) {
 }

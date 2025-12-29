@@ -25,6 +25,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
@@ -101,13 +102,6 @@ public class PostEventListenerTest {
             .subscriberIds(subscribers)
             .build();
 
-    PostCacheDto postCacheDto = PostCacheDto.builder()
-            .id(postId)
-            .authorId(authorId)
-            .content("content")
-            .createdAt(Instant.now())
-            .build();
-
     @Test
     public void testSuccessfullyPostEventListened() {
         when(userServiceClient.getUser(authorId)).thenReturn(ResponseEntity.ok(userDto));
@@ -167,6 +161,8 @@ public class PostEventListenerTest {
 
     @Test
     public void testFailWhilePostRedisExceptionReturned() {
+        when(userServiceClient.getUser(anyLong()))
+                .thenReturn(ResponseEntity.ok(userDto));
         doThrow(new RuntimeException("Can't add a value in Post Redis"))
                 .when(postCacheRepository)
                 .save(any(PostCacheDto.class));
