@@ -1,22 +1,31 @@
 package faang.school.postservice.listener;
 
+import faang.school.postservice.client.UserServiceClient;
+import faang.school.postservice.dto.cache.UserCacheDto;
 import faang.school.postservice.dto.comment.CommentEventDto;
+import faang.school.postservice.dto.user.UserDto;
 import faang.school.postservice.repository.cache.PostCacheRepository;
+import faang.school.postservice.repository.cache.UserCacheRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.support.Acknowledgment;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class CommentEventDtoListenerTest {
+public class CommentEventListenerTest {
     private final static long DEFAULT_ID = 1L;
     private final static long ANOTHER_DEFAULT_ID = 4L;
     private final static long INCORRECT_ID = 1124L;
@@ -34,6 +43,12 @@ public class CommentEventDtoListenerTest {
 
     @Mock
     PostCacheRepository postCacheRepository;
+    @Mock
+    UserCacheRepository userCacheRepository;
+    @Mock
+    UserServiceClient userServiceClient;
+    @Captor
+    private ArgumentCaptor<UserCacheDto> userArgumentCaptor;
 
     @Mock
     Acknowledgment acknowledgment;
@@ -52,9 +67,19 @@ public class CommentEventDtoListenerTest {
             .content(commentContent)
             .build();
 
+    UserDto userDto = UserDto.builder()
+            .id(authorId)
+            .username("Author Name")
+            .build();
+
     @Test
     public void testSuccessfullyCommentEventListened() {
+        when(userServiceClient.getUser(authorId)).thenReturn(ResponseEntity.ok(userDto));
         commentEventListener.handleCommentPublishEvent(commentEventDto, acknowledgment);
+
+        verify(userCacheRepository, times(1)).save(userArgumentCaptor.capture());
+        UserCacheDto savedUser = userArgumentCaptor.getValue();
+        assertEquals(authorId, savedUser.id());
 
         verify(postCacheRepository, times(1)).incrementCommentCount(
                 eq(postId));
@@ -63,6 +88,7 @@ public class CommentEventDtoListenerTest {
 
     @Test
     public void testFailWhileRedisExceptionReturned() {
+        when(userServiceClient.getUser(authorId)).thenReturn(ResponseEntity.ok(userDto));
         doThrow(new RuntimeException("Can't add a value in Redis"))
                 .when(postCacheRepository)
                 .incrementCommentCount(eq(postId));
