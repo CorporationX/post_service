@@ -34,6 +34,13 @@ public class PostEventListener {
     public void handlePostPublishEvent(PostPublishEventDto postPublishEventDto, Acknowledgment acknowledgment) {
         log.info("New post publish event: {}", postPublishEventDto);
         try {
+            postCacheRepository.save(PostCacheDto.builder()
+                    .id(postPublishEventDto.postId())
+                    .authorId(postPublishEventDto.authorId())
+                    .content(postPublishEventDto.content())
+                    .createdAt(Instant.now())
+                    .build());
+
             UserDto userDto = getUserAuthorId(postPublishEventDto.authorId());
             userCacheRepository.save(UserCacheDto.builder()
                     .id(userDto.id())
