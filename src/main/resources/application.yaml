@@ -114,9 +114,3 @@ redis:
     user:
       key-prefix: "user:"
       ttl-days: 1
-    author:
-      key-prefix: "user:"
-      ttl-days: 1
-    user:
-      key-prefix: "user:"
-      ttl-days: 1
