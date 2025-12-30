@@ -76,3 +76,5 @@ app:
         partitions: 3
         replication-factor: 1
         retention-ms: 604800000
+      like-added:
+        name: like-added-events
