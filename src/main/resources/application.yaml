@@ -30,11 +30,23 @@ spring:
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-    properties:
-      spring.json.add.type.headers: true
-      acks: all
-      retries: 3
-      enable.idempotence: true
+      properties:
+        spring.json.add.type.headers: true
+        acks: all
+        retries: 3
+        enable.idempotence: true
+    consumer:
+      group-id: post-service-group
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+        max.poll.records: 100
+        fetch.min.bytes: 1024
+        fetch.max.wait.ms: 500
+        max.poll.interval.ms: 300000
 
 server:
   port: 8081
@@ -62,5 +74,34 @@ app:
         name: comment-events-topic
         partitions: 3
         replication-factor: 1
-      like-added:
-        name: like-added-events
+      post-views-dlq:
+        name: post-views-dlq
+        partitions: 3
+        replication-factor: 1
+        retention-ms: 604800000
+      feed-heat:
+        name: feed-heat
+        partitions: 10
+        replication-factor: 1
+        batch-size: 1000
+        page-size: 10000
+      feed-heat-dlq:
+        name: feed-heat-dlq
+        partitions: 1
+        replication-factor: 1
+        retention-ms: 2592000000
+  feed:
+    heat:
+      feed-size: 500
+      user-batch-size: 100
+    cache:
+      feed-size: 500
+      feed-ttl-hours: 24
+      post-ttl-hours: 24
+      user-ttl-hours: 24
+  async:
+    feed-heat:
+      core-pool-size: 1
+      max-pool-size: 1
+      queue-capacity: 1
+      thread-name-prefix: feed-heat-
