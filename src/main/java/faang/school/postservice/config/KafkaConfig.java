@@ -1,6 +1,8 @@
 package faang.school.postservice.config;
 
+import faang.school.postservice.dto.event.FeedHeatEvent;
 import faang.school.postservice.dto.event.PostViewEvent;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -20,6 +22,7 @@ import org.springframework.util.backoff.FixedBackOff;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @Configuration
 public class KafkaConfig {
 
@@ -51,6 +54,30 @@ public class KafkaConfig {
     }
 
     /**
+     * Consumer Factory для FeedHeatEvent.
+     */
+    @Bean
+    public ConsumerFactory<String, FeedHeatEvent> feedHeatEventConsumerFactory() {
+        Map<String, Object> props = new HashMap<>();
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "feed-heat-group");
+        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
+        props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 10);
+
+        JsonDeserializer<FeedHeatEvent> deserializer = new JsonDeserializer<>(FeedHeatEvent.class);
+        deserializer.addTrustedPackages("*");
+        deserializer.setRemoveTypeHeaders(false);
+        deserializer.setUseTypeMapperForKey(false);
+
+        return new DefaultKafkaConsumerFactory<>(
+            props,
+            new StringDeserializer(),
+            deserializer
+        );
+    }
+
+    /**
      * Kafka Listener Container Factory с поддержкой DLQ.
      * Использует готовый KafkaTemplate<Object, Object> из Spring Boot auto-configuration.
      */
@@ -69,6 +96,36 @@ public class KafkaConfig {
             new DeadLetterPublishingRecoverer(kafkaTemplate,
                 (record, ex) -> new TopicPartition("post-views-dlq", -1)),
             new FixedBackOff(2000L, 3L)
+        ));
+        
+        return factory;
+    }
+
+    /**
+     * Kafka Listener Container Factory для FeedHeatEvent.
+     * Использует больше потоков для параллельной обработки батчей.
+     * Добавлен error handler с DLQ для обработки ошибок.
+     */
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, FeedHeatEvent> feedHeatListenerContainerFactory(
+            ConsumerFactory<String, FeedHeatEvent> consumerFactory,
+            KafkaTemplate<Object, Object> kafkaTemplate) {
+        
+        ConcurrentKafkaListenerContainerFactory<String, FeedHeatEvent> factory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(consumerFactory);
+        factory.setConcurrency(5);
+        factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
+        
+        // Error handling с DLQ: 2 попытки с задержкой 5 сек, затем в DLQ
+        factory.setCommonErrorHandler(new DefaultErrorHandler(
+            new DeadLetterPublishingRecoverer(kafkaTemplate,
+                (record, ex) -> {
+                    log.error("Sending feed-heat batch to DLQ: partition={}, offset={}", 
+                        record.partition(), record.offset());
+                    return new TopicPartition("feed-heat-dlq", -1);
+                }),
+            new FixedBackOff(5000L, 2L)
         ));
         
         return factory;
