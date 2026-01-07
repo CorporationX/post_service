@@ -43,7 +43,6 @@ public class EventDispatcher {
             if (resolvedEventType != null &&
                     KafkaEvent.class.isAssignableFrom(resolvedEventType)) {
 
-                @SuppressWarnings("unchecked")
                 Class<? extends KafkaEvent> typedEventType =
                         (Class<? extends KafkaEvent>) resolvedEventType;
 
@@ -59,7 +58,6 @@ public class EventDispatcher {
     /**
      * Диспетчеризация события к соответствующему обработчику
      */
-    @SuppressWarnings("unchecked")
     public void dispatch(KafkaEvent event) {
         Class<? extends KafkaEvent> eventType = event.getClass();
         EventHandler<KafkaEvent> handler = (EventHandler<KafkaEvent>) handlers.get(eventType);

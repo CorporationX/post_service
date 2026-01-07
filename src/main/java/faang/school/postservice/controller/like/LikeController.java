@@ -2,7 +2,6 @@ package faang.school.postservice.controller.like;
 
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.like.LikeDto;
-import faang.school.postservice.event.LikeEvent;
 import faang.school.postservice.service.like.LikeService;
 import faang.school.postservice.service.like.RedisPostLikeService;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -47,15 +45,5 @@ public class LikeController {
     public ResponseEntity<Void> unlikeComment(@PathVariable long commentId) {
         likeService.unlikeComment(commentId, userContext.getUserId());
         return ResponseEntity.noContent().build();
-    }
-
-    @PostMapping("/redis")
-    public ResponseEntity<String> addLikeToRedis(@RequestBody LikeEvent likeEvent) {
-        try {
-            redisPostLikeService.addLikeToPost(likeEvent);
-            return ResponseEntity.ok("Like added to Redis successfully");
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body("Failed to add like: " + e.getMessage());
-        }
     }
 }
