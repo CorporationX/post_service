@@ -7,6 +7,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.ResolvableType;
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.redis.RedisConnectionFailureException;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -58,6 +63,18 @@ public class EventDispatcher {
     /**
      * Диспетчеризация события к соответствующему обработчику
      */
+    @Retryable(
+            retryFor = {
+                    DataAccessException.class,
+                    RedisConnectionFailureException.class
+            },
+            maxAttempts = 5,
+            backoff = @Backoff(
+                    delay = 500,
+                    multiplier = 2.0,
+                    maxDelay = 5000
+            )
+    )
     public void dispatch(KafkaEvent event) {
         Class<? extends KafkaEvent> eventType = event.getClass();
         EventHandler<KafkaEvent> handler = (EventHandler<KafkaEvent>) handlers.get(eventType);
@@ -69,14 +86,19 @@ public class EventDispatcher {
                             eventType.getName())
             );
         }
+        log.info("Handling event {} [attempt]", eventType.getSimpleName());
+        handler.handle(event);
+    }
 
-        try {
-            handler.handle(event);
-        } catch (Exception e) {
-            log.error("Handler failed to process event of type {}: {}",
-                    eventType.getSimpleName(), event, e);
-            throw e;
-        }
+    @Recover
+    public void recover(RuntimeException ex, KafkaEvent event) {
+        log.error(
+                "Failed to process event {} after retries: {}",
+                event.getClass().getSimpleName(),
+                event,
+                ex
+        );
+        throw ex;
     }
 
     /**

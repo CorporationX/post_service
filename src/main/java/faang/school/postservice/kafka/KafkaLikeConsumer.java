@@ -13,7 +13,7 @@ public class KafkaLikeConsumer {
     private final RedisPostLikeService redisLikeService;
 
     @KafkaListener(
-            topics = "post_likes",
+            topics = "${spring.kafka.consumer.topics.like_topic}",
             containerFactory = "kafkaListenerContainerFactory"
     )
     public void consume(LikeEvent event) {

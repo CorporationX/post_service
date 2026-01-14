@@ -42,6 +42,8 @@ spring:
       lock:
         timeout: 5000
         wait-time: 3000
+      post-likes:
+        ttl-days: 30
 
   kafka:
     bootstrap-servers: localhost:9092

@@ -3,7 +3,6 @@ package faang.school.postservice.controller.like;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.like.LikeDto;
 import faang.school.postservice.service.like.LikeService;
-import faang.school.postservice.service.like.RedisPostLikeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,7 +18,6 @@ public class LikeController {
 
     private final LikeService likeService;
     private final UserContext userContext;
-    private final RedisPostLikeService redisPostLikeService;
 
     @PostMapping("/posts/{postId}")
     public ResponseEntity<LikeDto> likePost(

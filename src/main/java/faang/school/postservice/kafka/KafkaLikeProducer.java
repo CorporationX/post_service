@@ -17,7 +17,18 @@ public class KafkaLikeProducer {
     private String topicName;
 
     public void publishToKafka(LikeEvent likeEvent) {
-        kafkaTemplate.send(topicName, likeEvent);
-        log.info("LikeEvent sent to Kafka: {}", likeEvent);
+        kafkaTemplate.send(topicName, likeEvent)
+                .whenComplete((result, ex) -> {
+                    if (ex != null) {
+                        log.error("Failed to send LikeEvent to Kafka: {}", likeEvent, ex);
+                    } else {
+                        log.info(
+                                "LikeEvent sent to Kafka. topic={}, partition={}, offset={}",
+                                result.getRecordMetadata().topic(),
+                                result.getRecordMetadata().partition(),
+                                result.getRecordMetadata().offset()
+                        );
+                    }
+                });
     }
 }
