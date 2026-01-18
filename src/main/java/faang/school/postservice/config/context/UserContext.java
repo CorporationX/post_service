@@ -12,6 +12,14 @@ public class UserContext {
     }
 
     public long getUserId() {
+        Long id = userIdHolder.get();
+        if (id == null) {
+            throw new IllegalStateException("UserId is not set in UserContext (no x-user-id header / not in HTTP request)");
+        }
+        return id;
+    }
+
+    public Long getUserIdNullable() {
         return userIdHolder.get();
     }
 

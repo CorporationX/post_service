@@ -2,33 +2,44 @@ package faang.school.postservice.repository;
 
 import faang.school.postservice.model.Post;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
-import java.util.Collection;
 import java.util.List;
 
-public interface FeedDbRepository extends Repository<Post, Long> {
+public interface FeedDbRepository extends JpaRepository<Post, Long> {
 
     @Query("""
-            SELECT p
-            FROM Post p
-            WHERE p.published = true
-              AND p.deleted = false
-              AND p.authorId IN :authorIds
-              AND (
-                   :cursorCreatedAt IS NULL
-                   OR p.createdAt < :cursorCreatedAt
-                   OR (p.createdAt = :cursorCreatedAt AND p.id < :cursorId)
-              )
-            ORDER BY p.createdAt DESC, p.id DESC
+                select p
+                from Post p
+                where p.published = true
+                  and p.deleted = false
+                  and p.authorId in :followeeIds
+                order by p.createdAt desc, p.id desc
             """)
-    List<Post> findFeedPosts(
-            @Param("authorIds") Collection<Long> authorIds,
+    List<Post> findFeedPostsFirstPage(
+            @Param("followeeIds") List<Long> followeeIds,
+            Pageable pageable
+    );
+
+    @Query("""
+                select p
+                from Post p
+                where p.published = true
+                  and p.deleted = false
+                  and p.authorId in :followeeIds
+                  and (
+                      p.createdAt < :cursorCreatedAt
+                      or (p.createdAt = :cursorCreatedAt and p.id < :cursorPostId)
+                  )
+                order by p.createdAt desc, p.id desc
+            """)
+    List<Post> findFeedPostsAfterCursor(
+            @Param("followeeIds") List<Long> followeeIds,
             @Param("cursorCreatedAt") LocalDateTime cursorCreatedAt,
-            @Param("cursorId") Long cursorId,
+            @Param("cursorPostId") Long cursorPostId,
             Pageable pageable
     );
 }

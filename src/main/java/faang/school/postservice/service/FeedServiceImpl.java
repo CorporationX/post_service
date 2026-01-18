@@ -98,6 +98,7 @@ public class FeedServiceImpl implements FeedService {
 
     @Override
     public List<FeedPostResponseDto> getFeed(long userId, Long afterPostId, int limit) {
+        log.info("Feed request: userId={}, after={}, limit={}", userId, afterPostId, limit);
         List<Long> redisIds = loadFeedIds(userId, afterPostId, limit);
         List<Post> dbPosts = loadDbFallback(userId, afterPostId, redisIds, limit);
         List<Long> finalIds = mergeIds(redisIds, dbPosts, limit);
@@ -122,7 +123,6 @@ public class FeedServiceImpl implements FeedService {
 
         FeedCursor cursor = resolveDbCursor(afterPostId, redisIds);
 
-        // If the cursor was explicitly provided, but we can't resolve it, don't return the newest DB posts by accident.
         if (afterPostId != null && cursor.isEmpty()) {
             return List.of();
         }
@@ -132,18 +132,34 @@ public class FeedServiceImpl implements FeedService {
             return List.of();
         }
 
-        return feedDbRepository.findFeedPosts(
+        PageRequest pr = PageRequest.of(0, missing);
+
+        if (cursor.isEmpty()) {
+            return feedDbRepository.findFeedPostsFirstPage(followeeIds, pr);
+        }
+
+        return feedDbRepository.findFeedPostsAfterCursor(
                 followeeIds,
                 cursor.createdAt(),
                 cursor.id(),
-                PageRequest.of(0, missing)
+                pr
         );
     }
 
     private List<Long> mergeIds(List<Long> redisIds, List<Post> dbPosts, int limit) {
         LinkedHashSet<Long> ordered = new LinkedHashSet<>(limit);
-        ordered.addAll(redisIds);
-        dbPosts.forEach(p -> ordered.add(p.getId()));
+        for (Long id : redisIds) {
+            if (ordered.size() >= limit) {
+                break;
+            }
+            ordered.add(id);
+        }
+        for (Post p : dbPosts) {
+            if (ordered.size() >= limit) {
+                break;
+            }
+            ordered.add(p.getId());
+        }
         return new ArrayList<>(ordered);
     }
 
