@@ -20,8 +20,12 @@ import org.springframework.data.redis.core.script.DefaultRedisScript;
 import java.time.Instant;
 import java.util.List;
 
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class FeedServiceImplAddPostToFeedTest {

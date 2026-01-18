@@ -28,9 +28,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
+
 
 @ExtendWith(MockitoExtension.class)
 class FeedServiceImplGetFeedTest {
@@ -44,22 +54,29 @@ class FeedServiceImplGetFeedTest {
     private static final LocalDateTime T1 = LocalDateTime.of(2025, 1, 1, 10, 0);
     private static final LocalDateTime T2 = LocalDateTime.of(2025, 1, 1, 11, 0);
 
-    @Mock private FeedDbRepository feedDbRepository;
-    @Mock private UserServiceClient userServiceClient;
-    @Mock private PostRepository postRepository;
-    @Mock private PostCacheRepositoryImpl postCacheRepository;
-    @Mock private UserCacheRepositoryImpl userCacheRepository;
+    @Mock
+    private FeedDbRepository feedDbRepository;
+    @Mock
+    private UserServiceClient userServiceClient;
+    @Mock
+    private PostRepository postRepository;
+    @Mock
+    private PostCacheRepositoryImpl postCacheRepository;
+    @Mock
+    private UserCacheRepositoryImpl userCacheRepository;
 
-    @Mock private StringRedisTemplate redis;
-    @Mock private FeedRedisProperties props;
-    @Mock private ZSetOperations<String, String> zsetOps;
+    @Mock
+    private StringRedisTemplate redis;
+    @Mock
+    private FeedRedisProperties props;
+    @Mock
+    private ZSetOperations<String, String> zsetOps;
 
-    private FeedPostMapper feedPostMapper; // real MapStruct mapper
     private FeedServiceImpl service;
 
     @BeforeEach
     void setUp() {
-        feedPostMapper = Mappers.getMapper(FeedPostMapper.class);
+        FeedPostMapper feedPostMapper = Mappers.getMapper(FeedPostMapper.class);
 
         when(props.getKeyPrefix()).thenReturn(KEY_PREFIX);
         when(redis.opsForZSet()).thenReturn(zsetOps);
@@ -79,11 +96,13 @@ class FeedServiceImplGetFeedTest {
     @Test
     @DisplayName("getFeed: maps posts using caches when Redis provides enough ids (no DB fallback)")
     void getFeed_shouldReturnMappedDtos_fromRedisAndCaches_only() {
+        // redis ids
         when(zsetOps.reverseRange(eq(KEY_PREFIX + USER_ID), eq(0L), eq(2L)))
                 .thenReturn(new LinkedHashSet<>(List.of("101", "102", "103")));
 
         List<Long> finalIds = List.of(101L, 102L, 103L);
 
+        // posts cache hit
         Map<Long, PostCacheDto> postCache = Map.of(
                 101L, postCache(101L, AUTHOR_ID_1, T2),
                 102L, postCache(102L, AUTHOR_ID_2, T1),
@@ -91,23 +110,16 @@ class FeedServiceImplGetFeedTest {
         );
         when(postCacheRepository.findAllByIds(eq(finalIds))).thenReturn(postCache);
 
-        when(userCacheRepository.findAllByIds(eq(List.of(AUTHOR_ID_1, AUTHOR_ID_2))))
-                .thenReturn(Map.of());
-
-        when(userServiceClient.getUsersByIds(eq(List.of(AUTHOR_ID_1, AUTHOR_ID_2))))
-                .thenReturn(List.of(
-                        user(AUTHOR_ID_1, "u1"),
-                        user(AUTHOR_ID_2, "u2")
-                ));
+        // users cache miss -> user-service fetch (order may vary, so don't use eq(List.of(...)))
+        when(userCacheRepository.findAllByIds(anyList())).thenReturn(Map.of());
+        when(userServiceClient.getUsersByIds(anyList()))
+                .thenReturn(List.of(user(AUTHOR_ID_1, "u1"), user(AUTHOR_ID_2, "u2")));
 
         List<FeedPostResponseDto> out = service.getFeed(USER_ID, null, 3);
 
         assertEquals(3, out.size());
-        assertEquals(101L, out.get(0).id());
-        assertEquals(102L, out.get(1).id());
-        assertEquals(103L, out.get(2).id());
+        assertEquals(List.of(101L, 102L, 103L), out.stream().map(FeedPostResponseDto::id).toList());
 
-        // author mapping: username should be filled (because we fetched users)
         assertEquals(AUTHOR_ID_1, out.get(0).author().id());
         assertEquals("u1", out.get(0).author().username());
         assertEquals(AUTHOR_ID_2, out.get(1).author().id());
@@ -115,6 +127,13 @@ class FeedServiceImplGetFeedTest {
 
         verify(feedDbRepository, never()).findFeedPosts(anyList(), any(), any(), any(PageRequest.class));
         verify(postRepository, never()).findAllByIdIn(anyList());
+
+        verify(userCacheRepository).findAllByIds(argThat(ids ->
+                ids != null && ids.size() == 2 && ids.containsAll(List.of(AUTHOR_ID_1, AUTHOR_ID_2))
+        ));
+        verify(userServiceClient).getUsersByIds(argThat(ids ->
+                ids != null && ids.size() == 2 && ids.containsAll(List.of(AUTHOR_ID_1, AUTHOR_ID_2))
+        ));
     }
 
     @Test
@@ -123,7 +142,7 @@ class FeedServiceImplGetFeedTest {
         when(zsetOps.reverseRange(eq(KEY_PREFIX + USER_ID), eq(0L), eq(2L)))
                 .thenReturn(new LinkedHashSet<>(List.of("101")));
 
-        // cursor resolved from last redis id via cache
+        // cursor resolved from the last redis id via cache
         PostCacheDto cursorPost = postCache(101L, AUTHOR_ID_1, T2);
         when(postCacheRepository.findAllByIds(eq(List.of(101L))))
                 .thenReturn(Map.of(101L, cursorPost));
@@ -150,17 +169,15 @@ class FeedServiceImplGetFeedTest {
                         103L, postCache(103L, AUTHOR_ID_1, T1)
                 ));
 
-        when(userCacheRepository.findAllByIds(eq(List.of(AUTHOR_ID_1, AUTHOR_ID_2))))
-                .thenReturn(Map.of());
-
-        when(userServiceClient.getUsersByIds(eq(List.of(AUTHOR_ID_1, AUTHOR_ID_2))))
+        // order may vary => anyList + argThat verifications
+        when(userCacheRepository.findAllByIds(anyList())).thenReturn(Map.of());
+        when(userServiceClient.getUsersByIds(anyList()))
                 .thenReturn(List.of(user(AUTHOR_ID_1, "u1"), user(AUTHOR_ID_2, "u2")));
 
         List<FeedPostResponseDto> out = service.getFeed(USER_ID, null, 3);
 
         assertEquals(3, out.size());
-        assertEquals(List.of(101L, 102L, 103L),
-                out.stream().map(FeedPostResponseDto::id).toList());
+        assertEquals(List.of(101L, 102L, 103L), out.stream().map(FeedPostResponseDto::id).toList());
 
         verify(feedDbRepository).findFeedPosts(
                 eq(List.of(201L, 202L)),
@@ -168,6 +185,13 @@ class FeedServiceImplGetFeedTest {
                 eq(101L),
                 argThat(pr -> pr.getPageNumber() == 0 && pr.getPageSize() == 2)
         );
+
+        verify(userCacheRepository).findAllByIds(argThat(ids ->
+                ids != null && ids.size() == 2 && ids.containsAll(List.of(AUTHOR_ID_1, AUTHOR_ID_2))
+        ));
+        verify(userServiceClient).getUsersByIds(argThat(ids ->
+                ids != null && ids.size() == 2 && ids.containsAll(List.of(AUTHOR_ID_1, AUTHOR_ID_2))
+        ));
     }
 
     @Test
@@ -178,8 +202,7 @@ class FeedServiceImplGetFeedTest {
         when(zsetOps.score(eq(KEY_PREFIX + USER_ID), eq(String.valueOf(afterPostId))))
                 .thenReturn(null);
 
-        when(postCacheRepository.findAllByIds(eq(List.of(afterPostId))))
-                .thenReturn(Map.of());
+        when(postCacheRepository.findAllByIds(eq(List.of(afterPostId)))).thenReturn(Map.of());
         when(postRepository.findById(eq(afterPostId))).thenReturn(Optional.empty());
 
         List<FeedPostResponseDto> out = service.getFeed(USER_ID, afterPostId, 10);
@@ -188,6 +211,8 @@ class FeedServiceImplGetFeedTest {
         assertTrue(out.isEmpty());
 
         verify(feedDbRepository, never()).findFeedPosts(anyList(), any(), any(), any(PageRequest.class));
+        verifyNoInteractions(userCacheRepository);
+        verify(userServiceClient, never()).getUsersByIds(anyList());
     }
 
     // fixtures
