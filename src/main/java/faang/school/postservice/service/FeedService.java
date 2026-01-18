@@ -1,5 +1,6 @@
 package faang.school.postservice.service;
 
+import faang.school.postservice.dto.feed.FeedPostResponseDto;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -36,7 +37,7 @@ public interface FeedService {
      * appearing at the top of the feed.
      *
      * @param followerId id of the user whose feed is being updated
-     * @param postId id of the newly published post
+     * @param postId     id of the newly published post
      * @param occurredAt timestamp when the post was created/published
      */
     void addPostToFeed(long followerId, long postId, Instant occurredAt);
@@ -48,8 +49,24 @@ public interface FeedService {
      * (newest first).
      *
      * @param followerId id of the user whose feed is requested
-     * @param limit maximum number of posts to return
+     * @param limit      maximum number of posts to return
      * @return list of post ids ordered from newest to oldest
      */
     List<Long> getLatestPosts(long followerId, int limit);
+
+    /**
+     * Returns a page of the user's feed ordered from newest to oldest.
+     * <p>
+     * Loads post ids from the user's Redis feed using cursor-based pagination
+     * ({@code afterPostId}). If Redis does not contain enough data, the remaining
+     * posts are loaded from the database. Post details are assembled using Redis
+     * caches with database fallback.
+     *
+     * @param userId      id of the user whose feed is requested
+     * @param afterPostId optional cursor post id
+     * @param limit       maximum number of posts to return
+     * @return list of feed posts
+     */
+    List<FeedPostResponseDto> getFeed(long userId, Long afterPostId, int limit);
+
 }

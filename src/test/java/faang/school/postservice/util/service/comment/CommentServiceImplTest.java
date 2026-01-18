@@ -10,9 +10,9 @@ import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Post;
 import faang.school.postservice.publisher.EventsPublisher;
 import faang.school.postservice.repository.CommentRepository;
-import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.CommentServiceImpl;
 import faang.school.postservice.service.PostService;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mapstruct.factory.Mappers;
@@ -28,27 +28,23 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class CommentServiceImplTest {
+class CommentServiceImplTest {
 
-    private static final Long POST_ID = 1L;
-    private static final Long COMMENT_ID = 20L;
-    private static final Long USER_ID = 123L;
-    private static final Long ANOTHER_POST_ID = 2L;
-    private static final Long NON_EXISTENT_POST_ID = 999L;
-    private static final Long NON_EXISTENT_COMMENT_ID = 777L;
+    private static final long POST_ID = 1L;
+    private static final long COMMENT_ID = 20L;
+    private static final long USER_ID = 123L;
+    private static final long POST_AUTHOR_ID = 456L;
+    private static final long ANOTHER_POST_ID = 2L;
+
+    private static final long NON_EXISTENT_POST_ID = 999L;
+    private static final long NON_EXISTENT_COMMENT_ID = 777L;
 
     private static final String CONTENT = "Test comment content";
     private static final String UPDATED_CONTENT = "Updated comment content";
@@ -56,59 +52,72 @@ public class CommentServiceImplTest {
     private static final String BLANK_CONTENT = "   ";
     private static final String LONG_CONTENT = "а".repeat(4097);
 
-    private final Post testPost = Post.builder().id(POST_ID).authorId(456L).build();
-    private final Comment testComment = Comment.builder()
-            .id(COMMENT_ID)
-            .content(CONTENT)
-            .authorId(USER_ID)
-            .post(testPost)
-            .createdAt(LocalDateTime.now().minusHours(1))
-            .updatedAt(LocalDateTime.now().minusHours(1))
-            .build();
+    // deterministic timestamps (avoid LocalDateTime.now() in fixtures)
+    private static final LocalDateTime T1 = LocalDateTime.of(2025, 1, 1, 10, 0);
+    private static final LocalDateTime T2 = LocalDateTime.of(2025, 1, 1, 11, 0);
+
     @Spy
     private final CommentMapper commentMapper = Mappers.getMapper(CommentMapper.class);
+
     @Mock
     private EventsPublisher eventsPublisher;
+
     @Mock
     private CommentRepository commentRepository;
-    @Mock
-    private PostRepository postRepository;
+
     @Mock
     private PostService postService;
+
     @Mock
     private UserServiceClient userServiceClient;
+
     @InjectMocks
     private CommentServiceImpl commentService;
 
     @Test
-    void getAllComments_WithExistingPostShouldReturnSortedComments() {
-        Comment olderComment = createComment(2L, LocalDateTime.now().minusHours(3));
-        Comment newerComment = createComment(3L, LocalDateTime.now().minusMinutes(30));
-        List<Comment> comments = new ArrayList<>(List.of(testComment, olderComment, newerComment));
+    @DisplayName("getAllComments should return mapped comments for existing post")
+    void getAllComments_shouldReturnCommentsForExistingPost() {
+        // given
+        Post post = post(POST_ID, POST_AUTHOR_ID);
 
-        when(postService.getPostEntityById(POST_ID)).thenReturn(testPost);
+        Comment older = comment(2L, post, USER_ID, "older", T1.minusHours(2), T1.minusHours(2));
+        Comment base = comment(COMMENT_ID, post, USER_ID, CONTENT, T1, T1);
+        Comment newer = comment(3L, post, USER_ID, "newer", T2, T2);
+
+        List<Comment> comments = new ArrayList<>(List.of(base, older, newer));
+
+        when(postService.getPostEntityById(POST_ID)).thenReturn(post);
         when(commentRepository.findAllByPostId(POST_ID)).thenReturn(comments);
 
+        // when
         List<ResponseCommentDto> result = commentService.getAllComments(POST_ID);
 
+        // then
         assertNotNull(result);
         assertEquals(3, result.size());
+
+        verify(postService).getPostEntityById(POST_ID);
         verify(commentRepository).findAllByPostId(POST_ID);
         verify(commentMapper, times(3)).toResponseDto(any(Comment.class));
     }
 
     @Test
-    void createComment_WithValidDataShouldCreateComment() {
+    @DisplayName("createComment should create comment, set timestamps and publish event")
+    void createComment_shouldCreateCommentAndPublishEvent() {
+        // given
+        Post post = post(POST_ID, POST_AUTHOR_ID);
         CreateCommentDto createDto = new CreateCommentDto(CONTENT);
 
-        when(postService.getPostEntityById(POST_ID)).thenReturn(testPost);
-        when(userServiceClient.getUser(USER_ID)).thenReturn(ResponseEntity.ok(new UserDto(USER_ID,
-                "Test User", "test@example.com")));
+        when(postService.getPostEntityById(POST_ID)).thenReturn(post);
+        when(userServiceClient.getUser(USER_ID)).thenReturn(ResponseEntity.ok(user(USER_ID)));
 
-        when(commentRepository.save(any(Comment.class))).thenReturn(testComment);
+        Comment saved = comment(COMMENT_ID, post, USER_ID, CONTENT, T1, T1);
+        when(commentRepository.save(any(Comment.class))).thenReturn(saved);
 
+        // when
         ResponseCommentDto result = commentService.createComment(POST_ID, createDto, USER_ID);
 
+        // then
         assertNotNull(result);
         assertNotNull(result.createdAt());
         assertNotNull(result.updatedAt());
@@ -121,111 +130,124 @@ public class CommentServiceImplTest {
         verify(userServiceClient).getUser(USER_ID);
         verify(commentMapper).toEntity(createDto);
         verify(commentRepository).save(any(Comment.class));
-        verify(commentMapper).toResponseDto(testComment);
-        verify(eventsPublisher).publishCommentCreate(eq(POST_ID), eq(USER_ID),
-                eq(testComment.getId()), eq(testPost.getAuthorId()), any(LocalDateTime.class));
+        verify(eventsPublisher).publishCommentCreate(
+                eq(POST_ID),
+                eq(USER_ID),
+                eq(saved.getId()),
+                eq(post.getAuthorId()),
+                any(LocalDateTime.class)
+        );
     }
 
     @Test
-    void createComment_WithNonExistentPostShouldThrowException() {
+    @DisplayName("createComment should throw when post does not exist")
+    void createComment_shouldThrow_whenPostDoesNotExist() {
+        // given
         CreateCommentDto createDto = new CreateCommentDto(CONTENT);
 
         when(postService.getPostEntityById(NON_EXISTENT_POST_ID))
                 .thenThrow(new IllegalArgumentException("Post not found"));
 
-        assertThrows(IllegalArgumentException.class,
-                () -> commentService.createComment(NON_EXISTENT_POST_ID, createDto, USER_ID));
+        // when + then
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> commentService.createComment(NON_EXISTENT_POST_ID, createDto, USER_ID)
+        );
 
         verify(postService).getPostEntityById(NON_EXISTENT_POST_ID);
-        verifyNoInteractions(userServiceClient, commentMapper, commentRepository);
+        verifyNoInteractions(userServiceClient, commentMapper, commentRepository, eventsPublisher);
     }
 
     @Test
-    void createComment_WithEmptyContentShouldThrowException() {
+    @DisplayName("createComment should throw when content is empty")
+    void createComment_shouldThrow_whenContentEmpty() {
+        // given
         CreateCommentDto createDto = new CreateCommentDto(EMPTY_CONTENT);
 
-        assertThrows(IllegalArgumentException.class,
-                () -> commentService.createComment(POST_ID, createDto, USER_ID));
+        // when + then
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> commentService.createComment(POST_ID, createDto, USER_ID)
+        );
 
-        verifyNoInteractions(postRepository, userServiceClient, commentMapper, commentRepository);
+        verifyNoInteractions(postService, userServiceClient, commentMapper, commentRepository, eventsPublisher);
     }
 
     @Test
-    void createComment_WithBlankContentShouldThrowException() {
+    @DisplayName("createComment should throw when content is blank")
+    void createComment_shouldThrow_whenContentBlank() {
+        // given
         CreateCommentDto createDto = new CreateCommentDto(BLANK_CONTENT);
 
-        assertThrows(IllegalArgumentException.class,
-                () -> commentService.createComment(POST_ID, createDto, USER_ID));
+        // when + then
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> commentService.createComment(POST_ID, createDto, USER_ID)
+        );
 
-        verifyNoInteractions(postRepository, userServiceClient, commentMapper, commentRepository);
+        verifyNoInteractions(postService, userServiceClient, commentMapper, commentRepository, eventsPublisher);
     }
 
     @Test
-    void createComment_WithTooLongContentShouldThrowException() {
+    @DisplayName("createComment should throw when content exceeds max length")
+    void createComment_shouldThrow_whenContentTooLong() {
+        // given
         CreateCommentDto createDto = new CreateCommentDto(LONG_CONTENT);
 
-        assertThrows(IllegalArgumentException.class,
-                () -> commentService.createComment(POST_ID, createDto, USER_ID));
+        // when + then
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> commentService.createComment(POST_ID, createDto, USER_ID)
+        );
 
-        verifyNoInteractions(postRepository, userServiceClient, commentMapper, commentRepository);
+        verifyNoInteractions(postService, userServiceClient, commentMapper, commentRepository, eventsPublisher);
     }
 
     @Test
-    void createComment_ShouldSetBothTimes() {
+    @DisplayName("createComment should set createdAt and updatedAt to the same value")
+    void createComment_shouldSetBothTimesEqual() {
+        // given
+        Post post = post(POST_ID, POST_AUTHOR_ID);
         CreateCommentDto createDto = new CreateCommentDto(CONTENT);
 
-        when(postService.getPostEntityById(POST_ID)).thenReturn(testPost);
-        when(userServiceClient.getUser(USER_ID)).thenReturn(ResponseEntity.ok(new UserDto(USER_ID,
-                "Test User", "test@example.com")));
+        when(postService.getPostEntityById(POST_ID)).thenReturn(post);
+        when(userServiceClient.getUser(USER_ID)).thenReturn(ResponseEntity.ok(user(USER_ID)));
 
-        Comment savedComment = Comment.builder()
-                .id(COMMENT_ID)
-                .content(CONTENT)
-                .authorId(USER_ID)
-                .post(testPost)
-                .createdAt(LocalDateTime.of(2024, 1, 15, 10, 30))
-                .updatedAt(LocalDateTime.of(2024, 1, 15, 10, 30))
-                .build();
+        Comment saved = comment(COMMENT_ID, post, USER_ID, CONTENT,
+                LocalDateTime.of(2024, 1, 15, 10, 30),
+                LocalDateTime.of(2024, 1, 15, 10, 30)
+        );
+        when(commentRepository.save(any(Comment.class))).thenReturn(saved);
 
-        when(commentRepository.save(any(Comment.class))).thenReturn(savedComment);
-
+        // when
         ResponseCommentDto result = commentService.createComment(POST_ID, createDto, USER_ID);
 
+        // then
         assertNotNull(result.createdAt());
         assertNotNull(result.updatedAt());
         assertEquals(result.createdAt(), result.updatedAt());
     }
 
     @Test
-    void updateComment_ShouldUpdateOnlyUpdatedAt() {
+    @DisplayName("updateComment should update only updatedAt and keep createdAt")
+    void updateComment_shouldUpdateOnlyUpdatedAt() {
+        // given
+        Post post = post(POST_ID, POST_AUTHOR_ID);
         UpdateCommentDto updateDto = new UpdateCommentDto(UPDATED_CONTENT);
 
-        LocalDateTime oldCreatedAt = LocalDateTime.now().minusHours(2);
-        LocalDateTime oldUpdatedAt = LocalDateTime.now().minusHours(1);
+        LocalDateTime oldCreatedAt = T1.minusHours(2);
+        LocalDateTime oldUpdatedAt = T1.minusHours(1);
 
-        Comment existingComment = Comment.builder()
-                .id(COMMENT_ID)
-                .content(CONTENT)
-                .authorId(USER_ID)
-                .post(testPost)
-                .createdAt(oldCreatedAt)
-                .updatedAt(oldUpdatedAt)
-                .build();
+        Comment existing = comment(COMMENT_ID, post, USER_ID, CONTENT, oldCreatedAt, oldUpdatedAt);
+        Comment updated = comment(COMMENT_ID, post, USER_ID, UPDATED_CONTENT, oldCreatedAt, T2);
 
-        Comment updatedComment = Comment.builder()
-                .id(COMMENT_ID)
-                .content(UPDATED_CONTENT)
-                .authorId(USER_ID)
-                .post(testPost)
-                .createdAt(oldCreatedAt)
-                .updatedAt(LocalDateTime.now())
-                .build();
+        when(commentRepository.findById(COMMENT_ID)).thenReturn(Optional.of(existing));
+        when(commentRepository.save(any(Comment.class))).thenReturn(updated);
 
-        when(commentRepository.findById(COMMENT_ID)).thenReturn(Optional.of(existingComment));
-        when(commentRepository.save(any(Comment.class))).thenReturn(updatedComment);
-
+        // when
         ResponseCommentDto result = commentService.updateComment(POST_ID, COMMENT_ID, updateDto);
 
+        // then
         assertNotNull(result.createdAt());
         assertNotNull(result.updatedAt());
         assertEquals(oldCreatedAt, result.createdAt());
@@ -233,101 +255,144 @@ public class CommentServiceImplTest {
     }
 
     @Test
-    void updateComment_WithValidDataShouldUpdateComment() {
+    @DisplayName("updateComment should update comment when comment exists and postId matches")
+    void updateComment_shouldUpdate_whenValid() {
+        // given
+        Post post = post(POST_ID, POST_AUTHOR_ID);
+        Comment existing = comment(COMMENT_ID, post, USER_ID, CONTENT, T1, T1);
+
         UpdateCommentDto updateDto = new UpdateCommentDto(UPDATED_CONTENT);
 
-        when(commentRepository.findById(COMMENT_ID)).thenReturn(Optional.of(testComment));
-        when(commentRepository.save(testComment)).thenReturn(testComment);
+        when(commentRepository.findById(COMMENT_ID)).thenReturn(Optional.of(existing));
+        when(commentRepository.save(existing)).thenReturn(existing);
 
+        // when
         ResponseCommentDto result = commentService.updateComment(POST_ID, COMMENT_ID, updateDto);
 
+        // then
         assertNotNull(result);
         verify(commentRepository).findById(COMMENT_ID);
-        verify(commentMapper).updateEntity(updateDto, testComment);
-        verify(commentRepository).save(testComment);
-        verify(commentMapper).toResponseDto(testComment);
+        verify(commentMapper).updateEntity(updateDto, existing);
+        verify(commentRepository).save(existing);
+        verify(commentMapper).toResponseDto(existing);
     }
 
     @Test
-    void updateComment_WithNonExistentCommentShouldThrowException() {
+    @DisplayName("updateComment should throw when comment does not exist")
+    void updateComment_shouldThrow_whenCommentNotFound() {
+        // given
         UpdateCommentDto updateDto = new UpdateCommentDto(UPDATED_CONTENT);
-
         when(commentRepository.findById(NON_EXISTENT_COMMENT_ID)).thenReturn(Optional.empty());
 
-        assertThrows(IllegalArgumentException.class,
-                () -> commentService.updateComment(POST_ID, NON_EXISTENT_COMMENT_ID,
-                        updateDto));
+        // when + then
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> commentService.updateComment(POST_ID, NON_EXISTENT_COMMENT_ID, updateDto)
+        );
 
         verify(commentRepository).findById(NON_EXISTENT_COMMENT_ID);
-        verifyNoMoreInteractions(commentRepository, commentMapper);
+        verifyNoMoreInteractions(commentRepository);
+        verifyNoInteractions(commentMapper);
     }
 
     @Test
-    void updateComment_WithWrongPostIdShouldThrowException() {
+    @DisplayName("updateComment should throw when comment belongs to another post")
+    void updateComment_shouldThrow_whenPostIdMismatch() {
+        // given
         UpdateCommentDto updateDto = new UpdateCommentDto(UPDATED_CONTENT);
-        Comment commentWithDifferentPost = createCommentWithDifferentPost();
+        Comment otherPostComment = comment(COMMENT_ID, post(ANOTHER_POST_ID, POST_AUTHOR_ID), USER_ID, CONTENT, T1, T1);
 
-        when(commentRepository.findById(COMMENT_ID)).thenReturn(Optional.of(commentWithDifferentPost));
+        when(commentRepository.findById(COMMENT_ID)).thenReturn(Optional.of(otherPostComment));
 
-        assertThrows(IllegalArgumentException.class,
-                () -> commentService.updateComment(POST_ID, COMMENT_ID, updateDto));
+        // when + then
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> commentService.updateComment(POST_ID, COMMENT_ID, updateDto)
+        );
 
         verify(commentRepository).findById(COMMENT_ID);
-        verifyNoMoreInteractions(commentRepository, commentMapper);
+        verifyNoMoreInteractions(commentRepository);
+        verifyNoInteractions(commentMapper);
     }
 
     @Test
-    void deleteComment_WithValidDataShouldDeleteComment() {
-        when(commentRepository.findById(COMMENT_ID)).thenReturn(Optional.of(testComment));
+    @DisplayName("deleteComment should delete comment when comment exists and postId matches")
+    void deleteComment_shouldDelete_whenValid() {
+        // given
+        Comment existing = comment(COMMENT_ID, post(POST_ID, POST_AUTHOR_ID), USER_ID, CONTENT, T1, T1);
+        when(commentRepository.findById(COMMENT_ID)).thenReturn(Optional.of(existing));
 
+        // when
         commentService.deleteComment(POST_ID, COMMENT_ID);
 
+        // then
         verify(commentRepository).findById(COMMENT_ID);
         verify(commentRepository).deleteById(COMMENT_ID);
     }
 
     @Test
-    void deleteComment_WithNonExistentCommentShouldThrowException() {
+    @DisplayName("deleteComment should throw when comment does not exist")
+    void deleteComment_shouldThrow_whenCommentNotFound() {
+        // given
         when(commentRepository.findById(NON_EXISTENT_COMMENT_ID)).thenReturn(Optional.empty());
 
-        assertThrows(IllegalArgumentException.class,
-                () -> commentService.deleteComment(POST_ID, NON_EXISTENT_COMMENT_ID));
+        // when + then
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> commentService.deleteComment(POST_ID, NON_EXISTENT_COMMENT_ID)
+        );
 
         verify(commentRepository).findById(NON_EXISTENT_COMMENT_ID);
         verifyNoMoreInteractions(commentRepository);
     }
 
     @Test
-    void deleteComment_WithWrongPostIdShouldThrowException() {
-        Comment commentWithDifferentPost = createCommentWithDifferentPost();
+    @DisplayName("deleteComment should throw when comment belongs to another post")
+    void deleteComment_shouldThrow_whenPostIdMismatch() {
+        // given
+        Comment otherPostComment = comment(COMMENT_ID, post(ANOTHER_POST_ID, POST_AUTHOR_ID), USER_ID, CONTENT, T1, T1);
+        when(commentRepository.findById(COMMENT_ID)).thenReturn(Optional.of(otherPostComment));
 
-        when(commentRepository.findById(COMMENT_ID)).thenReturn(Optional.of(commentWithDifferentPost));
-
-        assertThrows(IllegalArgumentException.class,
-                () -> commentService.deleteComment(POST_ID, COMMENT_ID));
+        // when + then
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> commentService.deleteComment(POST_ID, COMMENT_ID)
+        );
 
         verify(commentRepository).findById(COMMENT_ID);
         verifyNoMoreInteractions(commentRepository);
     }
 
-    private Comment createComment(Long id, LocalDateTime createdAt) {
-        return Comment.builder()
+    // ----------------- test data helpers -----------------
+
+    private static Post post(long id, long authorId) {
+        return Post.builder()
                 .id(id)
-                .content("Comment " + id)
-                .authorId(USER_ID)
-                .post(testPost)
-                .createdAt(createdAt)
+                .authorId(authorId)
                 .build();
     }
 
-    private Comment createCommentWithDifferentPost() {
-        Post differentPost = Post.builder().id(ANOTHER_POST_ID).build();
+    private static Comment comment(long id,
+                                   Post post,
+                                   long authorId,
+                                   String content,
+                                   LocalDateTime createdAt,
+                                   LocalDateTime updatedAt) {
         return Comment.builder()
-                .id(COMMENT_ID)
-                .content(CONTENT)
-                .authorId(USER_ID)
-                .post(differentPost)
+                .id(id)
+                .content(content)
+                .authorId(authorId)
+                .post(post)
+                .createdAt(createdAt)
+                .updatedAt(updatedAt)
+                .build();
+    }
+
+    private static UserDto user(long id) {
+        return UserDto.builder()
+                .id(id)
+                .username("Test User")
+                .email("test@example.com")
                 .build();
     }
 }
-

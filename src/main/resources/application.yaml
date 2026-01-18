@@ -78,6 +78,7 @@ server:
 logging:
   level:
     root: info
+    faang.school.postservice.service.FeedServiceImpl: DEBUG
 
 user-service:
   host: localhost
@@ -118,6 +119,8 @@ app:
       max-per-post: 10
       type: "IMAGE"
   feed:
+    controller:
+      default-limit: 20
     redis:
       max-size: 500
       key-prefix: "feed:v1:"

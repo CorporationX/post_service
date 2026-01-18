@@ -1,14 +1,22 @@
 package faang.school.postservice.service.redis;
 
+import faang.school.postservice.cache.PostCacheRepositoryImpl;
+import faang.school.postservice.cache.UserCacheRepositoryImpl;
+import faang.school.postservice.client.UserServiceClient;
 import faang.school.postservice.config.FeedRedisProperties;
+import faang.school.postservice.mapper.feed.FeedPostMapper;
+import faang.school.postservice.repository.FeedDbRepository;
+import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.service.FeedService;
 import faang.school.postservice.service.FeedServiceImpl;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.autoconfigure.data.redis.DataRedisTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -36,22 +44,36 @@ class FeedServiceIntegrationTest {
     static void redisProps(DynamicPropertyRegistry registry) {
         registry.add("spring.data.redis.host", redisContainer::getHost);
         registry.add("spring.data.redis.port", () -> redisContainer.getMappedPort(6379));
+
+        // Must match your @ConfigurationProperties prefix
         registry.add("app.feed.redis.max-size", () -> 500);
         registry.add("app.feed.redis.key-prefix", () -> "feed:v1:");
     }
 
-    @Autowired
-    FeedService feedService;
+    // ---- MISSING BEANS for FeedServiceImpl (DataRedisTest doesn't create them) ----
+    @MockBean private FeedDbRepository feedDbRepository;
+    @MockBean private UserServiceClient userServiceClient;
+    @MockBean private PostRepository postRepository;
+    @MockBean private PostCacheRepositoryImpl postCacheRepository;
+    @MockBean private UserCacheRepositoryImpl userCacheRepository;
+    @MockBean private FeedPostMapper feedPostMapper;
 
-    @Autowired
-    StringRedisTemplate redis;
+    @Autowired FeedService feedService;
+    @Autowired StringRedisTemplate redis;
+    @Autowired FeedRedisProperties feedProps;
 
-    @Autowired
-    FeedRedisProperties feedProps;
+    private int originalMaxSize;
 
     @BeforeEach
     void cleanRedis() {
         redis.getConnectionFactory().getConnection().serverCommands().flushAll();
+        originalMaxSize = feedProps.getMaxSize();
+    }
+
+    @AfterEach
+    void restoreProps() {
+        // avoid test-order side effects
+        feedProps.setMaxSize(originalMaxSize);
     }
 
     @Test
@@ -75,7 +97,7 @@ class FeedServiceIntegrationTest {
         Instant ts = Instant.parse("2025-12-26T10:00:00Z");
 
         feedService.addPostToFeed(followerId, 42L, ts);
-        feedService.addPostToFeed(followerId, 42L, ts); // duplicate delivery
+        feedService.addPostToFeed(followerId, 42L, ts);
 
         String key = feedProps.getKeyPrefix() + followerId;
         Long size = redis.opsForZSet().zCard(key);
