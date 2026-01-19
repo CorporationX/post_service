@@ -124,6 +124,13 @@ app:
     redis:
       max-size: 500
       key-prefix: "feed:v1:"
+  outbox:
+    dispatcher:
+      fixed-delay-ms: 1000
+    handlers:
+      post-created:
+        event-type: postCreated
+        payload-class: faang.school.postservice.dto.post.PostCreatedEventDto
 
 post-correcter:
   cron: "0 0 3 * * *" # every day at 3:00

@@ -1,5 +1,6 @@
 package faang.school.postservice.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import faang.school.postservice.client.ProjectServiceClient;
 import faang.school.postservice.client.FeignLanguageToolClient;
 import faang.school.postservice.client.UserServiceClient;
@@ -18,13 +19,15 @@ import faang.school.postservice.exception.ProjectNotFoundException;
 import faang.school.postservice.exception.UserNotFoundException;
 import faang.school.postservice.mapper.post.PostMapper;
 import faang.school.postservice.model.Post;
+import faang.school.postservice.model.outbox.OutboxEvent;
+import faang.school.postservice.model.outbox.OutboxStatus;
+import faang.school.postservice.repository.OutboxEventRepository;
 import faang.school.postservice.repository.PostRepository;
 import faang.school.postservice.scheduler.ThreadPoolConfig;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.retry.annotation.Backoff;
@@ -34,6 +37,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -58,7 +62,8 @@ public class PostServiceImpl implements PostService {
     private final FeignLanguageToolClient feignLanguageTool;
     private final ThreadPoolConfig threadPoolConfig;
     private final FollowersService followersService;
-    private final ApplicationEventPublisher applicationEventPublisher;
+    private final OutboxEventRepository outboxEventRepository;
+    private final ObjectMapper objectMapper;
 
     @Value("${scheduler.thread-pool.batchSize:50}")
     private int batchSize;
@@ -107,7 +112,7 @@ public class PostServiceImpl implements PostService {
         boolean hasAuthor = post.getAuthorId() != null;
         boolean hasProject = post.getProjectId() != null;
 
-        if (hasAuthor == hasProject) { // оба true или оба false
+        if (hasAuthor == hasProject) {
             throw new IllegalStateException("Post must have exactly one publisher: authorId XOR projectId");
         }
 
@@ -138,12 +143,10 @@ public class PostServiceImpl implements PostService {
         post.setUpdatedAt(LocalDateTime.now());
         Post saved = postRepository.save(post);
 
-        log.info("Post published id={} at {}", id, saved.getPublishedAt());
-
         List<Long> followerIds =
                 publisher.type() == USER
                         ? followersService.getFollowerIds(publisher.id())
-                        : List.of(); // not created yet, so no followers
+                        : List.of();
 
         PostCreatedEventDto event = new PostCreatedEventDto(
                 UUID.randomUUID(),
@@ -154,10 +157,32 @@ public class PostServiceImpl implements PostService {
                 1
         );
 
-        applicationEventPublisher.publishEvent(event);
+        String payload;
+        try {
+            payload = objectMapper.writeValueAsString(event);
+        } catch (Exception e) {
+            throw new IllegalStateException("Cannot serialize PostCreatedEventDto", e);
+        }
 
-        log.info("Post published id={} and event queued (publisherType={}, publisherId={}, followersCount={})",
-                saved.getId(), publisher.type(), publisher.id(), followerIds.size());
+        OffsetDateTime now = OffsetDateTime.now();
+
+        outboxEventRepository.save(
+                OutboxEvent.builder()
+                        .eventId(event.eventId())
+                        .eventType("postCreated")
+                        .aggregateType("Post")
+                        .aggregateId(saved.getId())
+                        .payload(payload)
+                        .status(OutboxStatus.NEW)
+                        .attempts(0)
+                        .createdAt(now)
+                        .updatedAt(now)
+                        .build()
+        );
+
+
+        log.info("Post published id={} and outbox event stored (followersCount={})",
+                saved.getId(), followerIds.size());
 
         return postMapper.toDto(saved);
     }
