@@ -170,6 +170,11 @@ public class FeedServiceImpl implements FeedService {
 
         Map<Long, PostCacheDto> cached = postCacheRepository.findAllByIds(ids);
 
+        log.debug("cache keys types = {}", cached.keySet().stream()
+                .map(k -> k.getClass().getName())
+                .distinct().toList());
+        log.debug("cache keys = {}", cached.keySet());
+
         List<Long> missingIds = ids.stream()
                 .filter(id -> !cached.containsKey(id))
                 .toList();
@@ -179,6 +184,11 @@ public class FeedServiceImpl implements FeedService {
         }
 
         List<Post> dbPosts = postRepository.findAllByIdIn(missingIds);
+
+        log.debug("missingIds={}", missingIds);
+        log.debug("dbPosts ids={}", dbPosts.stream().map(Post::getId).toList());
+        log.debug("dbPosts published flags = {}", dbPosts.stream().map(Post::isPublished).toList());
+        log.debug("dbPosts deleted flags = {}", dbPosts.stream().map(Post::isDeleted).toList());
 
         Map<Long, PostCacheDto> dbAsCache = dbPosts.stream()
                 .map(this::toCacheDto)
