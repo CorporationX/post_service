@@ -56,11 +56,13 @@ public class PostServiceImpl implements PostService {
         post.setPublishedAt(LocalDateTime.now());
         post = postRepository.save(post);
         log.info("Post #{} is published", postId);
+        List<Long> followersIds = userServiceClientAdapter.getFollowersIds(post.getAuthorId());
         postEventProducer.sendPostPublishedEvent(
                 new PostPublishedEvent(
                         post.getId(),
                         post.getAuthorId(),
                         post.getContent(),
+                        followersIds,
                         post.getPublishedAt()
                 ));
         return postMapper.toPostDto(post);
