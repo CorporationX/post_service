@@ -19,8 +19,6 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class PostCacheRepositoryImpl implements PostCacheRepository {
 
-    private static final Duration TTL = Duration.ofHours(2);
-
     private final StringRedisTemplate redis;
     private final ObjectMapper objectMapper;
     private final FeedRedisProperties props;
@@ -70,7 +68,7 @@ public class PostCacheRepositoryImpl implements PostCacheRepository {
                 redis.opsForValue().set(
                         key(id),
                         objectMapper.writeValueAsString(dto),
-                        TTL
+                        props.getPostTtl()
                 );
             } catch (JsonProcessingException e) {
                 log.debug("Failed to serialize PostCacheDto id={}", id, e);
@@ -79,6 +77,8 @@ public class PostCacheRepositoryImpl implements PostCacheRepository {
     }
 
     private String key(Long postId) {
-        return props.getKeyPrefix() + "posts:" + postId;
+        String prefix = props.getKeyPrefix();
+        if (!prefix.endsWith(":")) prefix += ":";
+        return prefix + "posts:" + postId;
     }
 }

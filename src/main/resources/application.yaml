@@ -124,6 +124,8 @@ app:
     redis:
       max-size: 500
       key-prefix: "feed:v1:"
+      post-ttl: 2h
+      user-ttl: 6h
   outbox:
     dispatcher:
       fixed-delay-ms: 1000

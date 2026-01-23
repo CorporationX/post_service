@@ -19,7 +19,6 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class UserCacheRepositoryImpl implements UserCacheRepository {
 
-    private static final Duration TTL = Duration.ofHours(6);
 
     private final StringRedisTemplate redis;
     private final ObjectMapper objectMapper;
@@ -70,7 +69,7 @@ public class UserCacheRepositoryImpl implements UserCacheRepository {
                 redis.opsForValue().set(
                         key(id),
                         objectMapper.writeValueAsString(dto),
-                        TTL
+                        props.getUserTtl()
                 );
             } catch (JsonProcessingException e) {
                 log.debug("Failed to serialize UserDto id={}", id, e);
@@ -79,6 +78,8 @@ public class UserCacheRepositoryImpl implements UserCacheRepository {
     }
 
     private String key(Long userId) {
-        return props.getKeyPrefix() + "users:" + userId;
+        String prefix = props.getKeyPrefix();
+        if (!prefix.endsWith(":")) prefix += ":";
+        return prefix + "users:" + userId;
     }
 }
