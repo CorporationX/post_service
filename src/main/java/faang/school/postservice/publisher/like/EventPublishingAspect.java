@@ -37,6 +37,7 @@ public class EventPublishingAspect {
     private void publishEvent(JoinPoint joinPoint, LikeDto likeDto, boolean isLike) {
         if (likeDto == null || likeDto.userId() == null) {
             log.error("LikeDto or userId is null, event will not publisher");
+            return;
         }
 
         Object[] args = joinPoint.getArgs();
