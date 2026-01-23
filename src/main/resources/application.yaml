@@ -78,6 +78,7 @@ server:
 logging:
   level:
     root: info
+    faang.school.postservice.service.FeedServiceImpl: DEBUG
 
 user-service:
   host: localhost
@@ -118,9 +119,20 @@ app:
       max-per-post: 10
       type: "IMAGE"
   feed:
+    controller:
+      default-limit: 20
     redis:
       max-size: 500
       key-prefix: "feed:v1:"
+      post-ttl: 2h
+      user-ttl: 6h
+  outbox:
+    dispatcher:
+      fixed-delay-ms: 1000
+    handlers:
+      post-created:
+        event-type: postCreated
+        payload-class: faang.school.postservice.dto.post.PostCreatedEventDto
 
 post-correcter:
   cron: "0 0 3 * * *" # every day at 3:00

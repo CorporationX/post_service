@@ -1,12 +1,13 @@
 package faang.school.postservice.repository;
 
 import faang.school.postservice.model.Post;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
 
+import java.util.Collection;
 import java.util.List;
 
-public interface PostRepository extends CrudRepository<Post, Long> {
+public interface PostRepository extends JpaRepository<Post, Long> {
 
     List<Post> findByAuthorId(long authorId);
 
@@ -22,4 +23,5 @@ public interface PostRepository extends CrudRepository<Post, Long> {
             + "p.deleted = false AND p.scheduledAt <= CURRENT_TIMESTAMP")
     List<Post> findReadyToPublish();
 
+    List<Post> findAllByIdIn(Collection<Long> ids);
 }
