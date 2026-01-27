@@ -1,7 +1,9 @@
 package faang.school.postservice.service.cache;
 
 import faang.school.postservice.config.redis.entity.Author;
+import faang.school.postservice.config.redis.entity.PostCache;
 import faang.school.postservice.repository.redis.AuthorRepository;
+import faang.school.postservice.repository.redis.PostCacheRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -23,16 +25,31 @@ class CacheServiceImplTest {
     @Mock
     private AuthorRepository authorRepository;
 
+    @Mock
+    private PostCacheRepository postCacheRepository;
+
     @InjectMocks
     private CacheServiceImpl cacheService;
 
     private final Long ttlSecond = 300L;
+    private final Long postTtlSecond = 86400L;
 
     private CacheServiceImpl createServiceWithTtl() {
         try {
             var field = CacheServiceImpl.class.getDeclaredField("ttlSecond");
             field.setAccessible(true);
             field.set(cacheService, ttlSecond);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return cacheService;
+    }
+
+    private CacheServiceImpl createServiceWithPostTtl() {
+        try {
+            var field = CacheServiceImpl.class.getDeclaredField("postTtlSecond");
+            field.setAccessible(true);
+            field.set(cacheService, postTtlSecond);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -88,5 +105,26 @@ class CacheServiceImplTest {
         assertFalse(result.isPresent());
         verify(authorRepository, times(1)).findByAuthorId(authorId);
         verifyNoMoreInteractions(authorRepository);
+    }
+
+    @Test
+    void test_savePost_successfullySavesPostWithCorrectData() {
+        Long postId = 100L;
+        Long authorId = 200L;
+        Long projectId = 300L;
+        CacheServiceImpl service = createServiceWithPostTtl();
+
+        when(postCacheRepository.save(any(PostCache.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        service.savePost(postId, authorId, projectId);
+
+        ArgumentCaptor<PostCache> captor = ArgumentCaptor.forClass(PostCache.class);
+        verify(postCacheRepository, times(1)).save(captor.capture());
+
+        PostCache savedPost = captor.getValue();
+        assertEquals(postId, savedPost.getPostId());
+        assertEquals(authorId, savedPost.getAuthorId());
+        assertEquals(projectId, savedPost.getProjectId());
+        assertEquals(postTtlSecond, savedPost.getTtl());
     }
 }
