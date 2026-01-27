@@ -152,6 +152,9 @@ class PostServiceTest {
         final UserDto userDto = initUserDto(currentUserId);
         final Post post = initPostByAuthor(postId, content, currentUserId);
 
+        List<Long> followersIds = List.of(10L, 20L, 30L);
+
+        when(userServiceClientAdapter.getFollowersIds(currentUserId)).thenReturn(followersIds);
         when(postRepositoryAdapter.getPostById(postId)).thenReturn(post);
         when(userContext.getUserId()).thenReturn(currentUserId);
         when(userServiceClientAdapter.getUserById(currentUserId)).thenReturn(userDto);
@@ -172,6 +175,7 @@ class PostServiceTest {
         assertNotNull(actualPostDto.publishedAt());
 
         verify(postRepositoryAdapter, times(1)).getPostById(postId);
+        verify(userServiceClientAdapter, times(1)).getFollowersIds(currentUserId);
         verify(userContext, times(1)).getUserId();
         verify(userServiceClientAdapter, times(1)).getUserById(currentUserId);
         verify(postValidator, times(1)).validateUser(eq(currentUserId), any(PostDto.class));
@@ -195,6 +199,9 @@ class PostServiceTest {
         final ProjectDto projectDto = initProjectDto(projectId, ownerId);
         final Post post = initPostByProject(postId, content, projectId);
 
+        List<Long> followersIds = List.of(10L, 20L, 30L);
+
+        when(userServiceClientAdapter.getFollowersIds(ownerId)).thenReturn(followersIds);
         when(postRepositoryAdapter.getPostById(postId)).thenReturn(post);
         when(userContext.getUserId()).thenReturn(currentUserId);
         when(userServiceClientAdapter.getUserById(currentUserId)).thenReturn(userDto);
@@ -216,6 +223,7 @@ class PostServiceTest {
         assertNotNull(actualPostDto.publishedAt());
 
         verify(postRepositoryAdapter, times(1)).getPostById(postId);
+        verify(userServiceClientAdapter, times(1)).getFollowersIds(ownerId);
         verify(userContext, times(1)).getUserId();
         verify(userServiceClientAdapter, times(1)).getUserById(currentUserId);
         verify(postValidator, never()).validateUser(anyLong(), any(PostDto.class));
@@ -488,6 +496,7 @@ class PostServiceTest {
         post.setId(postId);
         post.setContent(content);
         post.setProjectId(projectId);
+        post.setAuthorId(1L);
         return post;
     }
 
