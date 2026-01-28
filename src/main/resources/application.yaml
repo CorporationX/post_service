@@ -25,6 +25,20 @@ spring:
         calculations_channel:
           name: calculations_channel
 
+cache:
+  author:
+    entry-ttl-hours: 24h
+    key:
+      prefix: "author:"
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      userService:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+
 server:
   port: 8081
 
