@@ -24,6 +24,12 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.cloud:spring-cloud-starter-openfeign:4.0.2")
     implementation("org.springframework.retry:spring-retry:2.0.2")
+    dependencies {
+        implementation(platform("io.github.resilience4j:resilience4j-bom:2.2.0"))
+
+        implementation("io.github.resilience4j:resilience4j-spring-boot3")
+        implementation("io.github.resilience4j:resilience4j-circuitbreaker")
+    }
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
     /**

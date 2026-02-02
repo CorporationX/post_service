@@ -14,10 +14,14 @@ import java.util.List;
 public class CommentService {
     private final CommentRepository commentRepository;
     private final CommentMapper commentMapper;
+    private final UserCacheService userCacheService;
 
     public CommentDto save(CommentDto commentDto) {
         Comment comment = commentMapper.toComment(commentDto);
         comment = commentRepository.save(comment);
+
+        userCacheService.cacheAuthor(commentDto.getAuthorId());
+
         return commentMapper.toDto(comment);
     }
 
