@@ -1,5 +1,6 @@
 package faang.school.postservice.util.service.likes;
 
+import faang.school.postservice.messages.kafka.producers.LikePublish;
 import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.exception.AlreadyLikedException;
 import faang.school.postservice.exception.EntityNotFoundException;
@@ -32,6 +33,9 @@ public class LikeServiceImplTest {
     private PostRepository postRepository;
     @Mock
     private CommentRepository commentRepository;
+    @Mock
+    private LikePublish eventPublisher;
+
     @InjectMocks
     private LikeServiceImpl likeService;
 

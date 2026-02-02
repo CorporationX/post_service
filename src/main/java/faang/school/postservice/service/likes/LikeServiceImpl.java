@@ -1,9 +1,11 @@
 package faang.school.postservice.service.likes;
 
 import faang.school.postservice.config.context.UserContext;
+import faang.school.postservice.dto.like.LikeEvent;
 import faang.school.postservice.exception.AlreadyLikedException;
 import faang.school.postservice.exception.EntityNotFoundException;
 import faang.school.postservice.exception.LikeNotFoundException;
+import faang.school.postservice.messages.kafka.producers.LikePublish;
 import faang.school.postservice.model.Comment;
 import faang.school.postservice.model.Like;
 import faang.school.postservice.model.Post;
@@ -21,6 +23,7 @@ public class LikeServiceImpl implements LikeService {
     private final UserContext userContext;
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
+    private final LikePublish eventPublisher;
 
     @Override
     public void createPostLike(Long postId) {
@@ -41,6 +44,14 @@ public class LikeServiceImpl implements LikeService {
                 .build();
 
         likeRepository.save(like);
+
+        LikeEvent likeEvent = LikeEvent.builder()
+            .postId(postId)
+            .userId(userId)
+            .build();
+        
+        eventPublisher.publish(likeEvent);
+            
     }
 
     @Override
