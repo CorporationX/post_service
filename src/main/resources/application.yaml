@@ -35,6 +35,15 @@ spring:
       acks: all
       retries: 3
       enable.idempotence: true
+    consumer:
+      group-id: post-service-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+        spring.json.type.mapping: postViewEvent:faang.school.postservice.dto.event.PostViewEvent
+      auto-offset-reset: earliest
+      enable-auto-commit: false
 
 server:
   port: 8081
@@ -62,5 +71,10 @@ app:
         name: comment-events-topic
         partitions: 3
         replication-factor: 1
+      post-views-dlq:
+        name: post-views-dlq
+        partitions: 3
+        replication-factor: 1
+        retention-ms: 604800000
       like-added:
         name: like-added-events
