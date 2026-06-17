@@ -41,8 +41,8 @@ public class AlbumServiceImpl implements AlbumService {
         var userId = userContext.getUserId();
 
         album.setAuthorId(userId);
-        albumValidator.validateUniqueTitle(album);
         userExistValidator.userExist(userId);
+        albumValidator.validateUniqueTitle(album);
 
         return albumMapper.toAlbumDto(albumRepository.save(album));
     }
