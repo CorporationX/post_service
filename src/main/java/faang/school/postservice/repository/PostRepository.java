@@ -1,6 +1,7 @@
 package faang.school.postservice.repository;
 
 import faang.school.postservice.model.Post;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
@@ -51,4 +52,6 @@ public interface PostRepository extends CrudRepository<Post, Long> {
                         """)
     @Modifying
     int publishingPostsOnSchedule();
+
+    List<Post> findAllByVerifiedDateIsNullOrderById(Pageable pageable);
 }

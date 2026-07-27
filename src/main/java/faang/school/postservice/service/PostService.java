@@ -69,4 +69,9 @@ public interface PostService {
      * @return the number of posts published on schedule.
      */
     int publishingPostsOnSchedule();
+
+    /**
+     * Moderates posts.
+     */
+    void moderationPostsOnSchedule();
 }

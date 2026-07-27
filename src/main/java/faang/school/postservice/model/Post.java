@@ -17,6 +17,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -45,9 +46,11 @@ public class Post {
     private Long projectId;
 
     @OneToMany(mappedBy = "post", orphanRemoval = true)
+    @BatchSize(size = 50)
     private List<Like> likes;
 
     @OneToMany(mappedBy = "post", orphanRemoval = true)
+    @BatchSize(size = 50)
     private List<Comment> comments;
 
     @ManyToMany(mappedBy = "posts")
@@ -57,6 +60,7 @@ public class Post {
     private Ad ad;
 
     @OneToMany(mappedBy = "post", orphanRemoval = true)
+    @BatchSize(size = 50)
     private List<Resource> resources;
 
     @Column(name = "published", nullable = false)
@@ -72,6 +76,13 @@ public class Post {
 
     @Column(name = "deleted", nullable = false)
     private boolean deleted;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "verified_date")
+    private LocalDateTime verifiedDate;
+
+    @Column(name = "verified")
+    private Boolean verified;
 
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)

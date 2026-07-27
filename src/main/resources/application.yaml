@@ -47,6 +47,16 @@ spring:
 
 scheduling:
   publishing-cron: "0 * * * * *"
+  moderation-cron: "0 * * * * *"
+
+moderation:
+  batch-size: 10
+  dictionary:
+    file: /dictionary/moderation_dictionary.txt
+
+task:
+  executor:
+    pool-size: 10
 
 server:
   port: 8081
