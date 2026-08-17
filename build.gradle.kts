@@ -2,6 +2,7 @@ import com.github.davidmc24.gradle.plugin.avro.AvroExtension
 
 plugins {
     java
+    jacoco
     id("org.springframework.boot") version "3.0.6"
     id("io.spring.dependency-management") version "1.1.0"
     id("jacoco")
@@ -13,7 +14,10 @@ plugins {
 
 group = "faang.school"
 version = "1.0"
-java.sourceCompatibility = JavaVersion.VERSION_17
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
 
 repositories {
     mavenCentral()
@@ -140,4 +144,60 @@ configure<AvroExtension> {
 tasks.withType<com.github.davidmc24.gradle.plugin.avro.GenerateAvroJavaTask> {
     setSource(file("src/main/resources/avro"))
     setOutputDir(file("$buildDir/generated-sources/avro"))
+}
+
+val jacocoExcludes = listOf(
+    "**/*Application.class",
+    "**/com/json/student/**",
+    "**/dto/**",
+    "**/config/**",
+    "**/client/**",
+    "**/repository/**",
+    "**/exception/**"
+)
+
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+
+    reports {
+        html.required.set(true)
+        xml.required.set(true)
+    }
+
+    classDirectories.setFrom(
+        files(classDirectories.files.map {
+            fileTree(it) {
+                exclude(jacocoExcludes)
+            }
+        })
+    )
+}
+
+tasks.jacocoTestCoverageVerification {
+    dependsOn(tasks.jacocoTestReport)
+
+    classDirectories.setFrom(
+        files(classDirectories.files.map {
+            fileTree(it) {
+                exclude(jacocoExcludes)
+            }
+        })
+    )
+
+    violationRules {
+        rule {
+            element = "BUNDLE"
+
+            limit {
+                counter = "LINE"
+                value = "COVEREDRATIO"
+                minimum = BigDecimal("0.70")
+            }
+        }
+    }
+}
+
+tasks.check {
+    dependsOn(tasks.jacocoTestCoverageVerification)
 }
