@@ -30,9 +30,9 @@ public class FeedServiceImplTestData {
 
     public static List<PostRedisDto> getPosts() {
         return List.of(
-                new PostRedisDto(POST_ID_1, "Content 1", 100L, 1L, 10L, 5L, null),
-                new PostRedisDto(POST_ID_2, "Content 2", 200L, 2L, 15L, 3L, null),
-                new PostRedisDto(POST_ID_3, "Content 3", 300L, 1L, 20L, 8L, null)
+                new PostRedisDto(POST_ID_1, "Content 1", 100L, 1L, 10L, 5L, null, null),
+                new PostRedisDto(POST_ID_2, "Content 2", 200L, 2L, 15L, 3L, null, null),
+                new PostRedisDto(POST_ID_3, "Content 3", 300L, 1L, 20L, 8L, null, null)
         );
     }
 

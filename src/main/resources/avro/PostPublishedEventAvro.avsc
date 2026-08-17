@@ -5,6 +5,7 @@
   "fields": [
     {"name": "postId", "type": "string"},
     {"name": "authorId", "type": "string"},
+    {"name": "content", "type": "string"},
     {"name": "projectId", "type": ["null", "string"], "default": null},
     {"name": "publishedAt", "type": {"type": "long", "logicalType": "timestamp-millis"}}
   ]

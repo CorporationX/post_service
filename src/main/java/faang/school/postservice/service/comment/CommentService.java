@@ -23,10 +23,9 @@ public interface CommentService {
      * Создает новый комментарий к указанному посту.
      *
      * @param createDto DTO с данными для создания комментария
-     * @param postId идентификатор поста, к которому добавляется комментарий
      * @return DTO созданного комментария
      */
-    CommentViewDto create(CommentCreateDto createDto, Long postId);
+    CommentViewDto create(CommentCreateDto createDto);
 
     /**
      * Удаляет комментарий по идентификаторам поста и комментария.

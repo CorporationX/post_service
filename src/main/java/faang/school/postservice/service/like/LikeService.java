@@ -36,4 +36,8 @@ public interface LikeService {
      * @throws EntityNotFoundException если комментарий не найден
      */
     List<UserViewDto> getUsersWhoLikedComment(Long commentId);
+
+    void addLikeToPost(Long postId);
+
+    void addLikeToComment(Long commentId);
 }

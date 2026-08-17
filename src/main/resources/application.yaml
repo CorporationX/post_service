@@ -33,6 +33,7 @@ spring:
       posts: posts
       feeds: feeds
       comments: "comments"
+      likes: likes
     producer:
       keySerializer: "org.apache.kafka.common.serialization.StringSerializer"
       valueSerializer: "io.confluent.kafka.serializers.KafkaAvroSerializer"
@@ -86,6 +87,9 @@ redis:
     feed:
       ttl-day: 3
       max-size: 500
+    comment:
+      max-size: 3
+      ttl-day: 2
     post:
       ttl-day: 2
     user:

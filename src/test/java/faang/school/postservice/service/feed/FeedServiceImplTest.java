@@ -5,6 +5,7 @@ import faang.school.postservice.config.context.UserContext;
 import faang.school.postservice.dto.feed.PostFeedDto;
 import faang.school.postservice.mapper.FeedMapper;
 import faang.school.postservice.repository.PostRepository;
+import faang.school.postservice.repository.redis.CommentRedisRepository;
 import faang.school.postservice.repository.redis.FeedRedisRepository;
 import faang.school.postservice.repository.redis.PostRedisRepository;
 import faang.school.postservice.repository.redis.UserRedisRepository;
@@ -30,6 +31,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -62,6 +64,9 @@ public class FeedServiceImplTest {
     private UserRedisRepository userRedisRepository;
 
     @Mock
+    private CommentRedisRepository commentRedisRepository;
+
+    @Mock
     private FeedMapper feedMapper;
 
     @InjectMocks
@@ -73,7 +78,6 @@ public class FeedServiceImplTest {
 
         doReturn(getPosts()).when(postRedisRepository).getPosts(anyList());
         doReturn(getAuthors()).when(userRedisRepository).getUserByIds(anyList());
-        doReturn(getFeedDtos()).when(feedMapper).toFeedDtos(any(), any());
     }
 
     @Test
@@ -82,12 +86,22 @@ public class FeedServiceImplTest {
         when(userContext.getUserId()).thenReturn(USER_ID);
         when(feedRedisRepository.getFeed(null, USER_ID, 10))
                 .thenReturn(getPostIdsFromRedis());
+        when(commentRedisRepository.getLatestComments(any())).thenReturn(List.of());
+
+        List<PostFeedDto> expectedFeedDtos = getFeedDtos();
+        when(feedMapper.toFeedDto(any(), any(), any()))
+            .thenReturn(
+                expectedFeedDtos.get(0),
+                expectedFeedDtos.get(1),
+                expectedFeedDtos.get(2)
+            );
 
         List<PostFeedDto> result = feedService.getFeed(null);
 
         assertThat(result).isEqualTo(getFeedDtos());
         verify(postRepository).getFirstFeedOfUser(any(), anyInt());
         verify(feedRedisRepository).getFeed(null, USER_ID, 10);
+        verify(commentRedisRepository, times(getPosts().size())).getLatestComments(any());
     }
 
     @Test
@@ -98,11 +112,22 @@ public class FeedServiceImplTest {
                 .thenReturn(List.of());
         when(postRepository.getFirstFeedOfUser(USER_ID, 10))
                 .thenReturn(getPostIdsFromDb());
+        when(commentRedisRepository.getLatestComments(any())).thenReturn(List.of());
+
+        List<PostFeedDto> expectedFeedDtos = getFeedDtos();
+        when(feedMapper.toFeedDto(any(), any(), any()))
+            .thenReturn(
+                expectedFeedDtos.get(0),
+                expectedFeedDtos.get(1),
+                expectedFeedDtos.get(2)
+            );
+
 
         List<PostFeedDto> result = feedService.getFeed(null);
 
         assertThat(result).isEqualTo(getFeedDtos());
         verify(postRepository).getFirstFeedOfUser(USER_ID, 10);
         verify(feedRedisRepository).getFeed(null, USER_ID, 10);
+        verify(commentRedisRepository, times(getPosts().size())).getLatestComments(any());
     }
 }

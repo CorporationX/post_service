@@ -1,6 +1,7 @@
 package faang.school.postservice.dto.redis;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * DTO для сохранения в репозиторий Redis
@@ -23,6 +24,7 @@ public record PostRedisDto(
         Long projectId,
         Long likeCount,
         Long commentCount,
+        List<Long> latestComments,
         LocalDateTime publishedAt
 ) {
 }

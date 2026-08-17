@@ -83,7 +83,19 @@ public class UserRedisRepository {
 
     public Optional<UserRedisDto> getUser(Long id) {
         String key = getFormattedKey(id);
-        return Optional.ofNullable((UserRedisDto) redisTemplate.opsForValue().get(key));
+        Object data = redisTemplate.opsForValue().get(key);
+
+        if (data == null) {
+            return Optional.empty();
+        }
+
+        try {
+            UserRedisDto user = objectMapper.convertValue(data, UserRedisDto.class);
+            return Optional.of(user);
+        } catch (IllegalArgumentException e) {
+            log.warn("Ошибка конвертации Redis data to UserRedisDto: {}", e.getMessage());
+            return Optional.empty();
+        }
     }
 
     public List<UserRedisDto> getUserByIds(List<Long> ids) {

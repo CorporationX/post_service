@@ -44,8 +44,8 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     @Transactional
-    public CommentViewDto create(CommentCreateDto createDto, Long postId) {
-        Post post = findPostById(postId);
+    public CommentViewDto create(CommentCreateDto createDto) {
+        Post post = findPostById(createDto.postId());
 
         Comment comment = Comment.builder()
             .content(createDto.content())

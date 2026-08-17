@@ -18,6 +18,22 @@ public interface PostRepository extends CrudRepository<Post, Long>, JpaSpecifica
 
     List<Post> findByAuthorId(long authorId);
 
+    @Query(nativeQuery = true, value = """
+            SELECT content FROM post
+            WHERE author_id = :authorId
+            LIMIT :limit
+            """)
+    List<String> findContentByAuthorId(@Param("authorId") Long authorId,
+                                        @Param("limit") int limit);
+
+    @Query(nativeQuery = true, value = """
+            SELECT content FROM post
+            WHERE post.id IN :postIds
+            LIMIT :limit
+            """)
+    List<String> findContentByIds(@Param("postIds") List<Long> postId,
+                                 @Param("limit") int limit);
+
     List<Post> findByProjectId(long projectId);
 
     @Query("""

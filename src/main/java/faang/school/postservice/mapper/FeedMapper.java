@@ -1,6 +1,6 @@
 package faang.school.postservice.mapper;
 
-import faang.school.postservice.dto.comment.CommentViewDto;
+import faang.school.postservice.dto.feed.CommentFeedDto;
 import faang.school.postservice.dto.feed.PostFeedDto;
 import faang.school.postservice.dto.redis.PostRedisDto;
 import faang.school.postservice.dto.redis.UserRedisDto;
@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 @Component
 public class FeedMapper {
 
-    public PostFeedDto toFeedDto(PostRedisDto post, UserRedisDto user, List<CommentViewDto> lastComments) {
+    public PostFeedDto toFeedDto(PostRedisDto post, UserRedisDto user, List<CommentFeedDto> lastComments) {
         return new PostFeedDto(
                 post.id(),
                 post.content(),
@@ -38,7 +38,6 @@ public class FeedMapper {
         Map<Long, UserRedisDto> authorMap = authors.stream()
                 .collect(Collectors.toMap(UserRedisDto::id, Function.identity()));
 
-        // TODO комментарии захардкодил!!!
         return posts.stream()
                 .map(post -> toFeedDto(post, authorMap.get(post.authorId()), null))
                 .toList();
